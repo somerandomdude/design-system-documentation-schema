@@ -27,9 +27,9 @@ This is a draft specification and is subject to change. It has not been endorsed
 
 The DSDS specification is organized into focused modules. Each module is a self-contained document that can be read independently. Together, they define the complete format.
 
-### Core
+### Common
 
-**[Core Module](modules/core.md)** — The foundation of the specification.
+**[Common Module](modules/common.md)** — The foundation of the specification.
 
 - Conformance language (RFC 2119)
 - Introduction and design philosophy
@@ -158,7 +158,7 @@ The DSDS specification is organized into focused modules. Each module is a self-
 | `"tokenGroup"` | A group of related tokens | [Tokens Module](modules/tokens.md) |
 | `"style"` | A macro-level visual style (color, typography, spacing) | [Styles Module](modules/styles.md) |
 | `"pattern"` | A broad interaction pattern (navigation, error messaging) | [Patterns Module](modules/patterns.md) |
-| `"collection"` | A bundle of multiple artifacts | [Core Module](modules/core.md) |
+| `"collection"` | A bundle of multiple artifacts | [Common Module](modules/common.md) |
 
 ### Conformance Levels
 

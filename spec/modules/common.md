@@ -1,6 +1,8 @@
-# DSDS Core Module
+# DSDS Common Module
 
 **Part of the [Design System Documentation Standard (DSDS) 0.1](../dsds-spec.md)**
+
+This module defines the shared properties and definitions used across all DSDS artifact types. It corresponds to the `common/` schema directory, which contains individual schema files for rich text, metadata, status, links, extensions, examples, guidelines, use cases, accessibility, and artifact references.
 
 This module defines the foundational elements of the specification: conformance language, terminology, file format, and common properties shared across all artifact types. It also covers extensions, conformance levels, and normative references.
 

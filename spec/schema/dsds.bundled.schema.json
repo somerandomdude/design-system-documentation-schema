@@ -15,7 +15,7 @@
     },
     "dsdsVersion": {
       "type": "string",
-      "const": "1.0",
+      "const": "0.1",
       "description": "The version of the DSDS specification this document conforms to."
     },
     "documentType": {
@@ -232,7 +232,7 @@
     },
     "accessibilityObject": {
       "type": "object",
-      "description": "Accessibility documentation for an artifact. Guidelines within this object use the unified guideline type from guideline.schema.json. Authors SHOULD set `category` to 'accessibility' and include `criteria` URLs on guidelines within this object.",
+      "description": "Explicit accessibility documentation for an artifact — keyboard behavior, ARIA attributes, screen reader announcements, focus management, color contrast, and motion considerations. This object is reserved for structured accessibility specifications that have their own dedicated schemas (keyboard interactions, ARIA attributes, color contrast pairs). For accessibility *guidelines* (actionable rules with rationale), add them to the artifact's top-level `guidelines` array with `category` set to 'accessibility'. This separation keeps the accessibility object focused on machine-readable specifications while guidelines remain in a single, filterable array.",
       "properties": {
         "wcagLevel": {
           "type": "string",
@@ -242,13 +242,6 @@
             "AAA"
           ],
           "description": "The minimum WCAG conformance level targeted by this artifact."
-        },
-        "guidelines": {
-          "type": "array",
-          "description": "Accessibility-specific guidelines. Each entry uses the unified guideline type. Authors SHOULD include `criteria` URLs on each guideline to reference the relevant external functional requirements.",
-          "items": {
-            "$ref": "#/$defs/guideline"
-          }
         },
         "keyboardInteraction": {
           "type": "array",
@@ -301,103 +294,6 @@
         "required": {
           "type": "boolean",
           "description": "Whether this artifact is required for the parent to function correctly. When false or omitted, the artifact is an optional enhancement or supplementary reference."
-        }
-      },
-      "additionalProperties": false
-    },
-    "richText": {
-      "description": "A text field that supports multiple content formats. Accepts either a plain string (interpreted as markdown for backward compatibility) or a structured object with an explicit format declaration.",
-      "oneOf": [
-        {
-          "type": "string",
-          "description": "A string value. When provided as a bare string, the format is assumed to be 'markdown' for backward compatibility with DSDS 1.0 documents."
-        },
-        {
-          "type": "object",
-          "description": "A structured content object with an explicit format.",
-          "required": [
-            "value",
-            "format"
-          ],
-          "properties": {
-            "value": {
-              "type": "string",
-              "description": "The text content."
-            },
-            "format": {
-              "type": "string",
-              "enum": [
-                "plain",
-                "markdown",
-                "html"
-              ],
-              "description": "The format of the content. 'plain' is unformatted text. 'markdown' is CommonMark (0.27 minimum). 'html' is sanitized HTML."
-            }
-          },
-          "additionalProperties": false
-        }
-      ]
-    },
-    "metadata": {
-      "type": "object",
-      "description": "System-level metadata about the design system.",
-      "required": [
-        "systemName"
-      ],
-      "properties": {
-        "systemName": {
-          "type": "string",
-          "description": "The name of the design system."
-        },
-        "systemVersion": {
-          "type": "string",
-          "description": "The version of the design system."
-        },
-        "organization": {
-          "type": "string",
-          "description": "The organization that maintains the system."
-        },
-        "url": {
-          "type": "string",
-          "format": "uri",
-          "description": "URL to the system's documentation site."
-        },
-        "license": {
-          "type": "string",
-          "description": "SPDX license identifier or license URL."
-        }
-      },
-      "additionalProperties": false
-    },
-    "extensions": {
-      "type": "object",
-      "description": "Vendor-specific extensions. Keys MUST use vendor-specific namespaces (reverse domain name notation recommended).",
-      "additionalProperties": true
-    },
-    "status": {
-      "type": "string",
-      "description": "The lifecycle status of the artifact. Standard values: 'draft' (under development, not ready for use), 'experimental' (available but API may change without notice), 'stable' (production-ready, changes follow semver), 'deprecated' (scheduled for removal). Custom values are permitted and SHOULD be lowercase kebab-case (e.g., 'sunset', 'archived', 'beta')."
-    },
-    "link": {
-      "type": "object",
-      "description": "A typed reference to an external resource or a related artifact. Links serve dual purposes: pointing to external resources (source code, design files, documentation, packages) and expressing relationships to other DSDS artifacts (alternatives, parents, children). The `type` property classifies the reference. Standard external types: 'source', 'design', 'storybook', 'documentation', 'package', 'repository'. Standard relationship types: 'alternative', 'parent', 'child', 'related'. Custom values are permitted.",
-      "required": [
-        "type",
-        "url"
-      ],
-      "properties": {
-        "type": {
-          "type": "string",
-          "description": "The category of the linked resource or relationship. Standard external types: 'source', 'design', 'storybook', 'documentation', 'package', 'repository'. Standard relationship types: 'alternative', 'parent', 'child', 'related'. Custom values are permitted and SHOULD be lowercase strings matching ^[a-z][a-z0-9-]*$."
-        },
-        "url": {
-          "type": "string",
-          "format": "uri",
-          "description": "The URL of the linked resource. MUST be a valid absolute URI. For related DSDS artifacts, this SHOULD point to the artifact's documentation page or DSDS document."
-        },
-        "label": {
-          "type": "string",
-          "description": "A human-readable label describing the specific resource or relationship (e.g., 'React component source', 'Design file — variants', 'Link component (alternative)')."
         }
       },
       "additionalProperties": false
@@ -553,9 +449,14 @@
       },
       "additionalProperties": false
     },
+    "extensions": {
+      "type": "object",
+      "description": "Vendor-specific extensions. Keys MUST use vendor-specific namespaces (reverse domain name notation recommended). Tools that do not recognize an extension MUST preserve it. Extension data SHOULD NOT duplicate information available in core schema fields.",
+      "additionalProperties": true
+    },
     "guideline": {
       "type": "object",
-      "description": "A single, self-contained piece of usage guidance. Guidelines appear in flat arrays on artifact documents and inside accessibility objects. The optional `category` property allows grouping by discipline (e.g., visual-design, accessibility, content). The optional `target` property identifies which anatomy part or content area the guideline applies to. The optional `criteria` property links the guideline to external functional requirements via URLs.",
+      "description": "A single, self-contained piece of usage guidance. Guidelines appear in flat arrays on artifact documents. The optional `category` property groups by discipline (e.g., visual-design, accessibility, content). The optional `target` property identifies which anatomy part or content area the guideline applies to. The optional `criteria` property links the guideline to external functional requirements via URLs. The optional `type` property classifies the guideline's enforcement level.",
       "required": [
         "guidance",
         "rationale"
@@ -567,7 +468,7 @@
         "rationale": {
           "$ref": "#/$defs/richText"
         },
-        "severity": {
+        "type": {
           "type": "string",
           "enum": [
             "required",
@@ -576,11 +477,11 @@
             "discouraged",
             "prohibited"
           ],
-          "description": "The enforcement level of the guideline, indicating how strictly it should be followed. Values align with RFC 2119 requirement levels: 'required' (MUST), 'encouraged' (SHOULD), 'informational' (MAY), 'discouraged' (SHOULD NOT), 'prohibited' (MUST NOT). When omitted, consumers MAY treat the guideline as 'encouraged'."
+          "description": "The enforcement level of the guideline, classifying how strictly it should be followed. This property answers the question: 'What kind of guideline is this?' Values align with RFC 2119 requirement levels: 'required' (MUST — non-compliance is a defect; use for accessibility mandates, platform constraints, or system invariants), 'encouraged' (SHOULD — follow in most cases; exceptions require justification; use for well-established best practices), 'informational' (MAY — advisory context with no enforcement expectation; use for tips, background, or emerging patterns), 'discouraged' (SHOULD NOT — avoid unless justified; use for practices with known drawbacks), 'prohibited' (MUST NOT — violations are defects; use for patterns that break accessibility, semantics, or system integrity). When omitted, consumers MAY treat the guideline as 'encouraged'."
         },
         "category": {
           "type": "string",
-          "description": "The discipline or domain this guideline belongs to. Used to group guidelines by professional concern. Standard values: 'visual-design' (color, typography, spacing, layout), 'interaction' (behavior, animation, transitions, gestures), 'accessibility' (inclusive design, assistive technology, WCAG compliance), 'content' (text, imagery, tone, voice, labeling), 'motion' (animation timing, easing, reduced-motion), 'development' (implementation patterns, performance, code conventions). Custom values are permitted and SHOULD be lowercase kebab-case. Category identifies the discipline; use `tags` for cross-cutting topics that span multiple disciplines (e.g., 'rtl', 'localization', 'validation')."
+          "description": "The discipline or domain this guideline belongs to. Used to group guidelines by professional concern. Standard values: 'visual-design' (color, typography, spacing, layout), 'interaction' (behavior, animation, transitions, gestures), 'accessibility' (inclusive design, assistive technology, WCAG compliance), 'content' (text, imagery, tone, voice, labeling), 'motion' (animation timing, easing, reduced-motion), 'development' (implementation patterns, performance, code conventions). Custom values are permitted and SHOULD be lowercase kebab-case. Category identifies the discipline; use `tags` for cross-cutting topics that span multiple disciplines."
         },
         "target": {
           "type": "string",
@@ -606,10 +507,102 @@
           "items": {
             "type": "string"
           },
-          "description": "Tags for categorizing or filtering guidelines."
+          "description": "Freeform keywords to relate guidelines across categories/disciplines (e.g., 'rtl', 'localization', 'validation')."
         }
       },
       "additionalProperties": false
+    },
+    "link": {
+      "type": "object",
+      "description": "A typed reference to an external resource or a related artifact. Links serve dual purposes: pointing to external resources (source code, design files, documentation, packages) and expressing relationships to other DSDS artifacts (alternatives, parents, children). The `type` property classifies the reference. Standard external types: 'source', 'design', 'storybook', 'documentation', 'package', 'repository'. Standard relationship types: 'alternative', 'parent', 'child', 'related'. Custom values are permitted.",
+      "required": [
+        "type",
+        "url"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "The category of the linked resource or relationship. Standard external types: 'source', 'design', 'storybook', 'documentation', 'package', 'repository'. Standard relationship types: 'alternative', 'parent', 'child', 'related'. Custom values are permitted and SHOULD be lowercase strings matching ^[a-z][a-z0-9-]*$."
+        },
+        "url": {
+          "type": "string",
+          "format": "uri",
+          "description": "The URL of the linked resource. MUST be a valid absolute URI. For related DSDS artifacts, this SHOULD point to the artifact's documentation page or DSDS document."
+        },
+        "label": {
+          "type": "string",
+          "description": "A human-readable label describing the specific resource or relationship (e.g., 'React component source', 'Design file — variants', 'Link component (alternative)')."
+        }
+      },
+      "additionalProperties": false
+    },
+    "metadata": {
+      "type": "object",
+      "description": "System-level metadata about the design system.",
+      "required": [
+        "systemName"
+      ],
+      "properties": {
+        "systemName": {
+          "type": "string",
+          "description": "The name of the design system."
+        },
+        "systemVersion": {
+          "type": "string",
+          "description": "The version of the design system."
+        },
+        "organization": {
+          "type": "string",
+          "description": "The organization that maintains the system."
+        },
+        "url": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL to the system's documentation site."
+        },
+        "license": {
+          "type": "string",
+          "description": "SPDX license identifier or license URL."
+        }
+      },
+      "additionalProperties": false
+    },
+    "richText": {
+      "description": "A text field that supports multiple content formats. Accepts either a plain string (interpreted as markdown for backward compatibility) or a structured object with an explicit format declaration.",
+      "oneOf": [
+        {
+          "type": "string",
+          "description": "A string value. When provided as a bare string, the format is assumed to be 'markdown' for backward compatibility with DSDS documents."
+        },
+        {
+          "type": "object",
+          "description": "A structured content object with an explicit format.",
+          "required": [
+            "value",
+            "format"
+          ],
+          "properties": {
+            "value": {
+              "type": "string",
+              "description": "The text content."
+            },
+            "format": {
+              "type": "string",
+              "enum": [
+                "plain",
+                "markdown",
+                "html"
+              ],
+              "description": "The format of the content. 'plain' is unformatted text. 'markdown' is CommonMark (0.27 minimum). 'html' is sanitized HTML."
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "status": {
+      "type": "string",
+      "description": "The lifecycle status of the artifact. Standard values: 'draft' (under development, not ready for use), 'experimental' (available but API may change without notice), 'stable' (production-ready, changes follow semver), 'deprecated' (scheduled for removal). Custom values are permitted and SHOULD be lowercase kebab-case (e.g., 'sunset', 'archived', 'beta')."
     },
     "useCase": {
       "type": "object",
@@ -1012,7 +1005,14 @@
         "name": {
           "type": "string",
           "pattern": "^[a-z][a-z0-9-]*$",
-          "description": "Machine-readable identifier."
+          "description": "Machine-readable identifier (e.g., 'button', 'dialog', 'form-field', 'data-table')."
+        },
+        "aliases": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Alternative names this component is known by across teams, tools, or legacy systems (e.g., ['btn', 'action-button', 'CTA']). Useful for search, migration mapping, and cross-referencing when different disciplines use different terminology for the same component."
         },
         "displayName": {
           "type": "string",
@@ -1041,7 +1041,7 @@
           "items": {
             "type": "string"
           },
-          "description": "Freeform tags."
+          "description": "Freeform keywords to relate guidelines across categories/disciplines (e.g., 'rtl', 'localization', 'validation')."
         },
         "category": {
           "type": "string",
@@ -1366,7 +1366,7 @@
       "properties": {
         "name": {
           "type": "string",
-          "description": "The token name."
+          "description": "The token name. Token names are intentionally unconstrained by a pattern to accommodate DTCG and design tool naming conventions that use dots, slashes, or other separators (e.g., 'color-text-primary', 'color.text.primary', 'color/text/primary')."
         },
         "displayName": {
           "type": "string",
@@ -1395,7 +1395,7 @@
           "items": {
             "type": "string"
           },
-          "description": "Freeform tags."
+          "description": "Freeform keywords to relate guidelines across categories/disciplines (e.g., 'rtl', 'localization', 'validation')."
         },
         "tokenType": {
           "type": "string",
@@ -1403,12 +1403,7 @@
         },
         "category": {
           "type": "string",
-          "enum": [
-            "base",
-            "semantic",
-            "component"
-          ],
-          "description": "The token's semantic category."
+          "description": "The token's semantic category. Standard values: 'base' (raw palette values, not used directly in components), 'semantic' (purpose-driven tokens that map to base values, e.g., 'color-text-primary'), 'component' (tokens scoped to a specific component, e.g., 'button-background'). Custom values are permitted and SHOULD be lowercase kebab-case."
         },
         "value": {
           "$ref": "#/$defs/tokenValue"
@@ -1473,7 +1468,7 @@
       "properties": {
         "name": {
           "type": "string",
-          "description": "The token group name."
+          "description": "The token group name. Token group names are intentionally unconstrained by a pattern to accommodate DTCG and design tool naming conventions (e.g., 'color-text', 'color.text', 'color/text')."
         },
         "displayName": {
           "type": "string",
@@ -1502,7 +1497,7 @@
           "items": {
             "type": "string"
           },
-          "description": "Freeform tags."
+          "description": "Freeform keywords to relate guidelines across categories/disciplines (e.g., 'rtl', 'localization', 'validation')."
         },
         "tokens": {
           "type": "array",
@@ -1666,7 +1661,7 @@
           "items": {
             "type": "string"
           },
-          "description": "Freeform tags."
+          "description": "Freeform keywords to relate guidelines across categories/disciplines (e.g., 'rtl', 'localization', 'validation')."
         },
         "category": {
           "type": "string",

@@ -42,10 +42,10 @@ MODULES = [
         "section": "Specification",
     },
     {
-        "slug": "core",
-        "source": MODULES_DIR / "core.md",
-        "title": "Core Module",
-        "nav_label": "Core",
+        "slug": "common",
+        "source": MODULES_DIR / "common.md",
+        "title": "Common Module",
+        "nav_label": "Common",
         "section": "Modules",
     },
     {

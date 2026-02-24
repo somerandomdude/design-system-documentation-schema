@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://designsystemdocspec.org/v0.1/rich-text.schema.json",
+  "title": "DSDS Rich Text Definition",
+  "description": "A text field that supports multiple content formats. Used across all DSDS schema modules for any field that contains human-written prose.",
+  "$defs": {
+    "richText": {
+      "description": "A text field that supports multiple content formats. Accepts either a plain string (interpreted as markdown for backward compatibility) or a structured object with an explicit format declaration.",
+      "oneOf": [
+        {
+          "type": "string",
+          "description": "A string value. When provided as a bare string, the format is assumed to be 'markdown' for backward compatibility with DSDS documents."
+        },
+        {
+          "type": "object",
+          "description": "A structured content object with an explicit format.",
+          "required": ["value", "format"],
+          "properties": {
+            "value": {
+              "type": "string",
+              "description": "The text content."
+            },
+            "format": {
+              "type": "string",
+              "enum": ["plain", "markdown", "html"],
+              "description": "The format of the content. 'plain' is unformatted text. 'markdown' is CommonMark (0.27 minimum). 'html' is sanitized HTML."
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
+    }
+  }
+}
