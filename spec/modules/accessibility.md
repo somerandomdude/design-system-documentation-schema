@@ -1,6 +1,6 @@
 # DSDS Accessibility Module
 
-**Part of the [Design System Documentation Standard (DSDS) 1.0](../dsds-spec.md)**
+**Part of the [Design System Documentation Standard (DSDS) 0.1](../dsds-spec.md)**
 
 This module defines the structure for documenting accessibility requirements, keyboard interactions, ARIA attributes, screen reader behavior, focus management, and color contrast specifications. It ensures accessibility documentation is thorough, concrete, and anchored to established standards like WCAG.
 

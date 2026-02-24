@@ -1,6 +1,6 @@
 # DSDS Patterns Module
 
-**Part of the [Design System Documentation Standard (DSDS) 1.0](../dsds-spec.md)**
+**Part of the [Design System Documentation Standard (DSDS) 0.1](../dsds-spec.md)**
 
 This module defines the structure for documenting broad interaction patterns — recurring, multi-component solutions to common UX problems such as navigation, error messaging, form validation, empty states, loading sequences, and onboarding flows. Where the [Components Module](components.md) documents individual UI elements, the Patterns Module documents how those elements are composed to address a user need.
 

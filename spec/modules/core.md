@@ -1,6 +1,6 @@
 # DSDS Core Module
 
-**Part of the [Design System Documentation Standard (DSDS) 1.0](../dsds-spec.md)**
+**Part of the [Design System Documentation Standard (DSDS) 0.1](../dsds-spec.md)**
 
 This module defines the foundational elements of the specification: conformance language, terminology, file format, and common properties shared across all artifact types. It also covers extensions, conformance levels, and normative references.
 
@@ -211,7 +211,7 @@ Many fields in DSDS contain human-written prose — descriptions, guidelines, ra
 
 #### String Form (backward compatible)
 
-A `richText` field _MAY_ be a bare JSON string. When a bare string is provided, the format is assumed to be **`markdown`** for backward compatibility with DSDS 1.0 documents.
+A `richText` field _MAY_ be a bare JSON string. When a bare string is provided, the format is assumed to be **`markdown`** for backward compatibility with DSDS 0.1 documents.
 
 ```json
 {

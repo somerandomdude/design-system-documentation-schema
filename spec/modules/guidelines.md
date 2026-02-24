@@ -1,6 +1,6 @@
 # DSDS Guidelines Module
 
-**Part of the [Design System Documentation Standard (DSDS) 1.0](../dsds-spec.md)**
+**Part of the [Design System Documentation Standard (DSDS) 0.1](../dsds-spec.md)**
 
 This module defines how usage guidance is structured across the specification. Every guideline is a self-contained, actionable statement paired with a rationale — whether it appears in component best practices, token usage rules, or foundation principles. The module also defines how rich examples (images, videos, code, Storybook stories) can be embedded within guidelines.
 

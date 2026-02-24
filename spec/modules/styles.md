@@ -1,6 +1,6 @@
 # DSDS Styles Module
 
-**Part of the [Design System Documentation Standard (DSDS) 1.0](../dsds-spec.md)**
+**Part of the [Design System Documentation Standard (DSDS) 0.1](../dsds-spec.md)**
 
 This module defines the structure for documenting macro-level visual styles — color, typography, spacing, elevation, motion, and other visual attributes. Where the [Tokens Module](tokens.md) documents individual token values and their architecture, the Styles Module documents the principles, guidelines, and usage rules that govern how those tokens are applied across the system.
 

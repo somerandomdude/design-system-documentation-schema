@@ -1,6 +1,6 @@
 # DSDS Components Module
 
-**Part of the [Design System Documentation Standard (DSDS) 1.0](../dsds-spec.md)**
+**Part of the [Design System Documentation Standard (DSDS) 0.1](../dsds-spec.md)**
 
 This module defines the structure for documenting reusable UI components, including their identity, anatomy, code-level API (with platform-aware and JSON Schema support), variants, states, design specifications, and content guidelines.
 

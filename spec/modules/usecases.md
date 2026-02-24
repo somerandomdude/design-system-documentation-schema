@@ -1,6 +1,6 @@
 # DSDS Use Cases Module
 
-**Part of the [Design System Documentation Standard (DSDS) 1.0](../dsds-spec.md)**
+**Part of the [Design System Documentation Standard (DSDS) 0.1](../dsds-spec.md)**
 
 This module defines the structure for documenting when to use and when not to use a design system artifact. Use cases provide scenario-driven guidance that complements guidelines by framing decisions in terms of concrete situations rather than abstract rules. Use cases appear on components, styles, and patterns.
 

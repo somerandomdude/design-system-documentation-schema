@@ -323,13 +323,13 @@ def page_html(title: str, slug: str, body_html: str) -> str:
     <head>
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width, initial-scale=1">
-      <title>{html.escape(title)} — DSDS 1.0</title>
+      <title>{html.escape(title)} — DSDS 0.1</title>
       <link rel="stylesheet" href="style.css">
     </head>
     <body>
       <button class="nav-toggle" onclick="document.querySelector('.nav').classList.toggle('nav--open')" aria-label="Toggle navigation">☰ Menu</button>
       <nav class="nav" role="navigation" aria-label="Specification navigation">
-        <div class="nav__title"><a href="index.html">DSDS 1.0</a></div>
+        <div class="nav__title"><a href="index.html">DSDS 0.1</a></div>
         <div class="nav__section">
           {nav}
         </div>
@@ -381,15 +381,68 @@ def build_index_page(md_text: str) -> str:
 
 
 # ---------------------------------------------------------------------------
+# Heading map — maps heading IDs to the slug of the page they live on
+# ---------------------------------------------------------------------------
+
+
+def build_heading_map() -> dict[str, str]:
+    """Scan all module source files and build a map of heading ID → page slug."""
+    heading_map: dict[str, str] = {}
+
+    def _heading_id_simple(text: str) -> str:
+        """Generate an id slug from raw markdown heading text (no inline HTML)."""
+        # Strip backtick code spans
+        text = re.sub(r"`([^`]+)`", r"\1", text)
+        # Strip bold/italic markers
+        text = re.sub(r"[*_]+", "", text)
+        # Remove non-word, non-space, non-hyphen characters (dots, parens, etc.)
+        text = re.sub(r"[^\w\s-]", "", text)
+        # Collapse whitespace to hyphens
+        return re.sub(r"[\s]+", "-", text.strip()).lower()
+
+    for mod in MODULES:
+        source = mod["source"]
+        if not source.exists():
+            continue
+        slug = mod["slug"]
+        md_text = source.read_text(encoding="utf-8")
+        for m in re.finditer(r"^#{1,6}\s+(.+)$", md_text, re.MULTILINE):
+            hid = _heading_id_simple(m.group(1))
+            # First occurrence wins — if two pages define the same heading,
+            # the earlier module in MODULES takes priority
+            if hid not in heading_map:
+                heading_map[hid] = slug
+
+    return heading_map
+
+
+# Global heading map — built once before page generation
+_HEADING_MAP: dict[str, str] = {}
+
+
+# ---------------------------------------------------------------------------
 # Rewrite relative links between modules
 # ---------------------------------------------------------------------------
 
 
-def rewrite_links(body_html: str, _slug: str) -> str:
-    """Rewrite relative .md links to .html."""
+def rewrite_links(body_html: str, current_slug: str) -> str:
+    """Rewrite relative .md links to .html and fix cross-page anchor links."""
+    # 1. Rewrite .md file links to .html
     body_html = re.sub(r'href="\.\./(dsds-spec\.md)"', r'href="index.html"', body_html)
     body_html = re.sub(r'href="(modules/)?(\w+)\.md"', r'href="\2.html"', body_html)
     body_html = re.sub(r'href="\.\./modules/(\w+)\.md"', r'href="\1.html"', body_html)
+
+    # 2. Fix cross-page anchor links: #some-id → otherpage.html#some-id
+    def _fix_anchor(m):
+        anchor = m.group(1)
+        target_slug = _HEADING_MAP.get(anchor)
+        if target_slug and target_slug != current_slug:
+            return f'href="{target_slug}.html#{anchor}"'
+        # Same page or unknown — leave as-is
+        return m.group(0)
+
+    body_html = re.sub(r'href="#([^"]+)"', _fix_anchor, body_html)
+
     return body_html
 
 
@@ -399,10 +452,16 @@ def rewrite_links(body_html: str, _slug: str) -> str:
 
 
 def build():
+    global _HEADING_MAP
+
     # Clean and create dist
     if DIST_DIR.exists():
         shutil.rmtree(DIST_DIR)
     DIST_DIR.mkdir(parents=True)
+
+    # Build the heading map for cross-page anchor resolution
+    _HEADING_MAP = build_heading_map()
+    print(f"  Indexed {len(_HEADING_MAP)} headings across {len(MODULES)} modules.\n")
 
     # Copy stylesheet
     shutil.copy2(SITE_DIR / "style.css", DIST_DIR / "style.css")

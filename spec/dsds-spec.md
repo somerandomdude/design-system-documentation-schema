@@ -1,4 +1,4 @@
-# Design System Documentation Standard (DSDS) 1.0
+# Design System Documentation Standard (DSDS) 0.1
 
 **Draft Specification — June 2025**
 

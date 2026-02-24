@@ -1,6 +1,6 @@
 # DSDS Links Module
 
-**Part of the [Design System Documentation Standard (DSDS) 1.0](../dsds-spec.md)**
+**Part of the [Design System Documentation Standard (DSDS) 0.1](../dsds-spec.md)**
 
 This module defines typed references to external resources associated with a documented artifact — source code repositories, design files and variables, interactive demos, documentation pages, and published packages. Links are a first-class property, distinct from vendor-specific extensions.
 

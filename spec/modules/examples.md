@@ -1,6 +1,6 @@
 # DSDS Examples Module
 
-**Part of the [Design System Documentation Standard (DSDS) 1.0](../dsds-spec.md)**
+**Part of the [Design System Documentation Standard (DSDS) 0.1](../dsds-spec.md)**
 
 This module defines a unified, reusable example model for visual and interactive demonstrations. It supports images, videos, live code snippets, and Storybook stories — used consistently as component previews, variant illustrations, state visualizations, and inline guideline demonstrations.
 
