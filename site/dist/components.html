@@ -1,0 +1,1175 @@
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <title>Components Module — DSDS 1.0</title>
+      <link rel="stylesheet" href="style.css">
+    </head>
+    <body>
+      <button class="nav-toggle" onclick="document.querySelector('.nav').classList.toggle('nav--open')" aria-label="Toggle navigation">☰ Menu</button>
+      <nav class="nav" role="navigation" aria-label="Specification navigation">
+        <div class="nav__title"><a href="index.html">DSDS 1.0</a></div>
+        <div class="nav__section">
+          <span class="nav__section-label">Specification</span>
+<a class="nav__link" href="index.html">Overview</a>
+<span class="nav__section-label">Modules</span>
+<a class="nav__link" href="core.html">Core</a>
+<a class="nav__link nav__link--active" href="components.html">Components</a>
+<a class="nav__link" href="tokens.html">Tokens</a>
+<a class="nav__link" href="styles.html">Styles</a>
+<a class="nav__link" href="patterns.html">Patterns</a>
+<a class="nav__link" href="usecases.html">Use Cases</a>
+<a class="nav__link" href="examples.html">Examples</a>
+<a class="nav__link" href="guidelines.html">Guidelines</a>
+<a class="nav__link" href="accessibility.html">Accessibility</a>
+<a class="nav__link" href="links.html">Links</a>
+        </div>
+      </nav>
+      <main class="content" role="main">
+        <div class="content__inner">
+          <h1 id="dsds-components-module">DSDS Components Module</h1>
+<p><strong>Part of the <a href="index.html">Design System Documentation Standard (DSDS) 1.0</a></strong></p>
+<p>This module defines the structure for documenting reusable UI components, including their identity, anatomy, code-level API (with platform-aware and JSON Schema support), variants, states, design specifications, and content guidelines.</p>
+<hr>
+<h2 id="6-component-documentation">6. Component Documentation</h2>
+<p>A component documentation object describes a single reusable UI component. It includes the component's identity, API, anatomy, visual specifications, and usage guidance.</p>
+<h3 id="61-structure">6.1 Structure</h3>
+<p>A component object <em>MUST</em> include the <a href="#5-common-properties">common properties</a> (<code>name</code>, <code>displayName</code>, <code>description</code>, <code>status</code>) and <em>MAY</em> include the properties defined below.</p>
+<table>
+<thead><tr>
+<th>Property</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr></thead>
+<tbody>
+<tr>
+<td><code>name</code></td>
+<td><code>string</code></td>
+<td>Yes</td>
+<td>See <a href="#51-identification">§5.1</a>.</td>
+</tr>
+<tr>
+<td><code>displayName</code></td>
+<td><code>string</code></td>
+<td>Yes</td>
+<td>See <a href="#51-identification">§5.1</a>.</td>
+</tr>
+<tr>
+<td><code>summary</code></td>
+<td><code>string</code></td>
+<td>No</td>
+<td>See <a href="#51-identification">§5.1</a>.</td>
+</tr>
+<tr>
+<td><code>description</code></td>
+<td><code>string</code></td>
+<td>Yes</td>
+<td>See <a href="#51-identification">§5.1</a>. CommonMark supported.</td>
+</tr>
+<tr>
+<td><code>status</code></td>
+<td><code>string</code></td>
+<td>Yes</td>
+<td>See <a href="#52-status">§5.2</a>.</td>
+</tr>
+<tr>
+<td><code>deprecationNotice</code></td>
+<td><code>string</code></td>
+<td>Conditional</td>
+<td>See <a href="#52-status">§5.2</a>.</td>
+</tr>
+<tr>
+<td><code>since</code></td>
+<td><code>string</code></td>
+<td>No</td>
+<td>See <a href="#52-status">§5.2</a>.</td>
+</tr>
+<tr>
+<td><code>tags</code></td>
+<td><code>string[]</code></td>
+<td>No</td>
+<td>See <a href="#53-tags">§5.3</a>.</td>
+</tr>
+<tr>
+<td><code>category</code></td>
+<td><code>string</code></td>
+<td>No</td>
+<td>A classification for the component. See <a href="#62-category">§6.2</a>.</td>
+</tr>
+<tr>
+<td><code>preview</code></td>
+<td><code>array</code></td>
+<td>No</td>
+<td>Visual previews of the component. Displayed alongside <code>displayName</code> and <code>description</code> as the hero representation. See <a href="#9-examples">§9 Examples</a>.</td>
+</tr>
+<tr>
+<td><code>anatomy</code></td>
+<td><code>object</code></td>
+<td>No</td>
+<td>The visual structure of the component. See <a href="#63-anatomy">§6.3</a>.</td>
+</tr>
+<tr>
+<td><code>api</code></td>
+<td><code>object</code></td>
+<td>No</td>
+<td>The code-level API. Accepts a single API object or a platform-keyed map of API objects. See <a href="#64-api">§6.4</a>.</td>
+</tr>
+<tr>
+<td><code>variants</code></td>
+<td><code>array</code></td>
+<td>No</td>
+<td>Named visual/behavioral configurations. See <a href="#65-variants">§6.5</a>.</td>
+</tr>
+<tr>
+<td><code>states</code></td>
+<td><code>array</code></td>
+<td>No</td>
+<td>Interactive states. See <a href="#66-states">§6.6</a>.</td>
+</tr>
+<tr>
+<td><code>designSpecifications</code></td>
+<td><code>object</code></td>
+<td>No</td>
+<td>Visual design specs. See <a href="#67-design-specifications">§6.7</a>.</td>
+</tr>
+<tr>
+<td><code>guidelines</code></td>
+<td><code>object</code></td>
+<td>No</td>
+<td>Usage guidance. See <a href="#10-guidelines-structure">§10 Guidelines Structure</a>.</td>
+</tr>
+<tr>
+<td><code>accessibility</code></td>
+<td><code>object</code></td>
+<td>No</td>
+<td>Accessibility documentation. See <a href="#11-accessibility-structure">§11 Accessibility Structure</a>.</td>
+</tr>
+<tr>
+<td><code>contentGuidelines</code></td>
+<td><code>array</code></td>
+<td>No</td>
+<td>Guidelines for the content within the component. See <a href="#68-content-guidelines">§6.8</a>.</td>
+</tr>
+<tr>
+<td><code>related</code></td>
+<td><code>array</code></td>
+<td>No</td>
+<td>See <a href="#55-related-artifacts">§5.5</a>.</td>
+</tr>
+<tr>
+<td><code>links</code></td>
+<td><code>array</code></td>
+<td>No</td>
+<td>See <a href="#56-links">§5.6</a> and <a href="#12-links">§12 Links</a>.</td>
+</tr>
+<tr>
+<td><code>$extensions</code></td>
+<td><code>object</code></td>
+<td>No</td>
+<td>See <a href="#13-extensions">§13 Extensions</a>.</td>
+</tr>
+</tbody></table>
+<h3 id="62-category">6.2 Category</h3>
+<p>The optional <code>category</code> property classifies the component within a design system's taxonomy. Common values include:</p>
+<ul>
+<li><code>"action"</code> — Buttons, links, and other interactive triggers.</li>
+<li><code>"input"</code> — Form elements and data entry controls.</li>
+<li><code>"display"</code> — Elements for presenting content (cards, badges, avatars).</li>
+<li><code>"feedback"</code> — Alerts, toasts, progress indicators.</li>
+<li><code>"navigation"</code> — Tabs, breadcrumbs, menus.</li>
+<li><code>"layout"</code> — Containers, grids, dividers.</li>
+<li><code>"overlay"</code> — Modals, popovers, tooltips.</li>
+</ul>
+<p>These values are recommendations, not an exhaustive list. Design systems <em>MAY</em> define their own categories. The value <em>MUST</em> be a lowercase string matching the pattern <code>^[a-z][a-z0-9-]*$</code>.</p>
+<h3 id="63-anatomy">6.3 Anatomy</h3>
+<p>The <code>anatomy</code> property documents the named sub-elements that make up a component's visual structure.</p>
+<table>
+<thead><tr>
+<th>Property</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr></thead>
+<tbody>
+<tr>
+<td><code>description</code></td>
+<td><code>string</code></td>
+<td>No</td>
+<td>A general description of the component's anatomy.</td>
+</tr>
+<tr>
+<td><code>parts</code></td>
+<td><code>array</code></td>
+<td>Yes</td>
+<td>An array of anatomy part objects.</td>
+</tr>
+</tbody></table>
+<p>Each part object:</p>
+<table>
+<thead><tr>
+<th>Property</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr></thead>
+<tbody>
+<tr>
+<td><code>name</code></td>
+<td><code>string</code></td>
+<td>Yes</td>
+<td>Machine-readable name of the part (e.g., <code>"container"</code>, <code>"label"</code>, <code>"icon"</code>).</td>
+</tr>
+<tr>
+<td><code>displayName</code></td>
+<td><code>string</code></td>
+<td>No</td>
+<td>Human-readable name. Defaults to <code>name</code> if omitted.</td>
+</tr>
+<tr>
+<td><code>description</code></td>
+<td><code>string</code></td>
+<td>Yes</td>
+<td>What this part is and what it does.</td>
+</tr>
+<tr>
+<td><code>required</code></td>
+<td><code>boolean</code></td>
+<td>Yes</td>
+<td>Whether this part is always present (<code>true</code>) or conditionally rendered (<code>false</code>).</td>
+</tr>
+<tr>
+<td><code>tokens</code></td>
+<td><code>string[]</code></td>
+<td>No</td>
+<td>Names of design tokens applied to this part.</td>
+</tr>
+</tbody></table>
+<p><strong>Example:</strong></p>
+<pre><code class="language-json">{
+  &quot;anatomy&quot;: {
+    &quot;description&quot;: &quot;The Button component is composed of a container, a text label, and an optional leading or trailing icon.&quot;,
+    &quot;parts&quot;: [
+      {
+        &quot;name&quot;: &quot;container&quot;,
+        &quot;displayName&quot;: &quot;Container&quot;,
+        &quot;description&quot;: &quot;The outer boundary of the button. Receives background color, border, and padding.&quot;,
+        &quot;required&quot;: true,
+        &quot;tokens&quot;: [&quot;button-background&quot;, &quot;button-border-radius&quot;, &quot;button-padding-horizontal&quot;, &quot;button-padding-vertical&quot;]
+      },
+      {
+        &quot;name&quot;: &quot;label&quot;,
+        &quot;displayName&quot;: &quot;Label&quot;,
+        &quot;description&quot;: &quot;The text content of the button.&quot;,
+        &quot;required&quot;: true,
+        &quot;tokens&quot;: [&quot;button-font-family&quot;, &quot;button-font-size&quot;, &quot;button-font-weight&quot;, &quot;button-text-color&quot;]
+      },
+      {
+        &quot;name&quot;: &quot;icon&quot;,
+        &quot;displayName&quot;: &quot;Icon&quot;,
+        &quot;description&quot;: &quot;An optional icon displayed before or after the label.&quot;,
+        &quot;required&quot;: false,
+        &quot;tokens&quot;: [&quot;button-icon-size&quot;, &quot;button-icon-gap&quot;]
+      }
+    ]
+  }
+}</code></pre>
+<h3 id="64-api">6.4 API</h3>
+<p>The <code>api</code> property documents the code-level interface of the component. It follows patterns established by the <a href="https://spec.openapis.org/oas/latest.html">OpenAPI Specification</a>, adapted from HTTP API description to UI component description.</p>
+<h4 id="640-single-platform-and-multi-platform-forms">6.4.0 Single-Platform and Multi-Platform Forms</h4>
+<p>The <code>api</code> field <em>MAY</em> take one of two forms:</p>
+<p><strong>Single-platform form</strong> — a single API object. Use this when the component has one canonical implementation (e.g., a React-only system or a Web Component).</p>
+<pre><code class="language-json">{
+  &quot;api&quot;: {
+    &quot;properties&quot;: [ ... ],
+    &quot;events&quot;: [ ... ]
+  }
+}</code></pre>
+<p><strong>Multi-platform form</strong> — a map where each key is a platform or framework identifier and each value is an API object. Use this when the same component ships across multiple frameworks with different API surfaces.</p>
+<pre><code class="language-json">{
+  &quot;api&quot;: {
+    &quot;react&quot;: {
+      &quot;properties&quot;: [ ... ],
+      &quot;events&quot;: [ ... ]
+    },
+    &quot;web-component&quot;: {
+      &quot;properties&quot;: [ ... ],
+      &quot;events&quot;: [ ... ],
+      &quot;slots&quot;: [ ... ],
+      &quot;cssCustomProperties&quot;: [ ... ],
+      &quot;cssParts&quot;: [ ... ]
+    },
+    &quot;vue&quot;: {
+      &quot;properties&quot;: [ ... ],
+      &quot;events&quot;: [ ... ],
+      &quot;slots&quot;: [ ... ]
+    }
+  }
+}</code></pre>
+<p>Platform keys <em>SHOULD</em> be lowercase strings matching the pattern <code>^[a-z][a-z0-9-]*$</code>. Common values include: <code>"react"</code>, <code>"vue"</code>, <code>"angular"</code>, <code>"svelte"</code>, <code>"web-component"</code>, <code>"swift"</code>, <code>"kotlin"</code>, <code>"flutter"</code>.</p>
+<p>Tools <em>MUST</em> distinguish the two forms by inspecting the top-level keys: if any of the standard API object keys (<code>properties</code>, <code>events</code>, <code>slots</code>, <code>cssCustomProperties</code>, <code>cssParts</code>, <code>dataAttributes</code>, <code>methods</code>) are present, the value is a single-platform API object. Otherwise, each key is treated as a platform identifier.</p>
+<p>This design mirrors the OpenAPI Specification's pattern of keying content descriptions by media type (§4.14 Media Type Object), adapted for the analogous problem of a single component having different API surfaces across platforms.</p>
+<h4 id="641-api-object-structure">6.4.1 API Object Structure</h4>
+<p>Each API object (whether the sole value or one of many in a platform-keyed map) <em>MAY</em> contain:</p>
+<table>
+<thead><tr>
+<th>Property</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr></thead>
+<tbody>
+<tr>
+<td><code>properties</code></td>
+<td><code>array</code></td>
+<td>No</td>
+<td>Configurable properties (props, attributes).</td>
+</tr>
+<tr>
+<td><code>events</code></td>
+<td><code>array</code></td>
+<td>No</td>
+<td>Events emitted by the component.</td>
+</tr>
+<tr>
+<td><code>slots</code></td>
+<td><code>array</code></td>
+<td>No</td>
+<td>Content insertion points.</td>
+</tr>
+<tr>
+<td><code>cssCustomProperties</code></td>
+<td><code>array</code></td>
+<td>No</td>
+<td>CSS custom properties exposed for styling.</td>
+</tr>
+<tr>
+<td><code>cssParts</code></td>
+<td><code>array</code></td>
+<td>No</td>
+<td>CSS shadow parts for external styling.</td>
+</tr>
+<tr>
+<td><code>dataAttributes</code></td>
+<td><code>array</code></td>
+<td>No</td>
+<td>Data attributes used for state or styling hooks.</td>
+</tr>
+<tr>
+<td><code>methods</code></td>
+<td><code>array</code></td>
+<td>No</td>
+<td>Public methods callable on the component instance.</td>
+</tr>
+</tbody></table>
+<h4 id="642-properties">6.4.2 Properties</h4>
+<p>Each property object documents a configurable input of the component. The structure draws from the OpenAPI Specification's Parameter Object (§4.12), which pairs a human-readable <code>description</code> with a machine-readable <code>schema</code> for the same parameter.</p>
+<table>
+<thead><tr>
+<th>Property</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr></thead>
+<tbody>
+<tr>
+<td><code>name</code></td>
+<td><code>string</code></td>
+<td>Yes</td>
+<td>The property name as used in code.</td>
+</tr>
+<tr>
+<td><code>type</code></td>
+<td><code>string</code></td>
+<td>Yes</td>
+<td>A human-readable type description for display in documentation (e.g., <code>"string"</code>, <code>"boolean"</code>, `"'primary' \</td>
+<td>'secondary' \</td>
+<td>'ghost'"<code>, </code>"ReactNode"`).</td>
+</tr>
+<tr>
+<td><code>schema</code></td>
+<td><code>object</code></td>
+<td>No</td>
+<td>A <a href="https://json-schema.org/draft/2020-12/json-schema-core">JSON Schema</a> object defining the property's type in a machine-readable form. See <a href="#6421-the-schema-field">§6.4.2.1</a>.</td>
+</tr>
+<tr>
+<td><code>description</code></td>
+<td><code>string</code></td>
+<td>Yes</td>
+<td>What this property controls. CommonMark <em>MAY</em> be used.</td>
+</tr>
+<tr>
+<td><code>required</code></td>
+<td><code>boolean</code></td>
+<td>Yes</td>
+<td>Whether this property is required.</td>
+</tr>
+<tr>
+<td><code>default</code></td>
+<td><code>string</code></td>
+<td>No</td>
+<td>The default value as a string representation for display.</td>
+</tr>
+<tr>
+<td><code>defaultValue</code></td>
+<td></td>
+<td>No</td>
+<td>The default value in its native JSON type. When present, tools <em>SHOULD</em> prefer this over <code>default</code> for machine consumption.</td>
+</tr>
+<tr>
+<td><code>examples</code></td>
+<td><code>array</code></td>
+<td>No</td>
+<td>Example values for this property. See <a href="#6422-property-examples">§6.4.2.2</a>.</td>
+</tr>
+<tr>
+<td><code>since</code></td>
+<td><code>string</code></td>
+<td>No</td>
+<td>The version of the design system in which this property was introduced.</td>
+</tr>
+<tr>
+<td><code>deprecated</code></td>
+<td><code>boolean</code></td>
+<td>No</td>
+<td>Whether this property is deprecated.</td>
+</tr>
+<tr>
+<td><code>deprecationNotice</code></td>
+<td><code>string</code></td>
+<td>No</td>
+<td>What to use instead, if deprecated.</td>
+</tr>
+</tbody></table>
+<h5 id="6421-the-schema-field">6.4.2.1 The <code>schema</code> Field</h5>
+<p>The optional <code>schema</code> field provides a machine-readable type definition using <a href="https://json-schema.org/draft/2020-12/json-schema-core">JSON Schema Draft 2020-12</a>. This follows the pattern established by the OpenAPI Specification (§4.24 Schema Object), where a schema allows tools to validate values, generate types, and power autocomplete — capabilities that the human-readable <code>type</code> string cannot support.</p>
+<p>The <code>type</code> field (human-readable) and <code>schema</code> field (machine-readable) <em>MAY</em> coexist on the same property. When both are present:</p>
+<ul>
+<li><code>type</code> is the display string shown in documentation.</li>
+<li><code>schema</code> is the source of truth for tools performing validation, code generation, or type checking.</li>
+</ul>
+<p>When <code>schema</code> is absent, <code>type</code> is the only type information available and tools <em>MUST NOT</em> attempt to parse it programmatically.</p>
+<p><strong>Example — property with both <code>type</code> and <code>schema</code>:</strong></p>
+<pre><code class="language-json">{
+  &quot;name&quot;: &quot;variant&quot;,
+  &quot;type&quot;: &quot;&#x27;primary&#x27; | &#x27;secondary&#x27; | &#x27;ghost&#x27; | &#x27;danger&#x27;&quot;,
+  &quot;schema&quot;: {
+    &quot;type&quot;: &quot;string&quot;,
+    &quot;enum&quot;: [&quot;primary&quot;, &quot;secondary&quot;, &quot;ghost&quot;, &quot;danger&quot;],
+    &quot;default&quot;: &quot;primary&quot;
+  },
+  &quot;description&quot;: &quot;The visual style of the button.&quot;,
+  &quot;required&quot;: false,
+  &quot;default&quot;: &quot;&#x27;primary&#x27;&quot;,
+  &quot;defaultValue&quot;: &quot;primary&quot;
+}</code></pre>
+<p><strong>Example — numeric property with constraints:</strong></p>
+<pre><code class="language-json">{
+  &quot;name&quot;: &quot;maxLength&quot;,
+  &quot;type&quot;: &quot;number&quot;,
+  &quot;schema&quot;: {
+    &quot;type&quot;: &quot;integer&quot;,
+    &quot;minimum&quot;: 0,
+    &quot;maximum&quot;: 10000
+  },
+  &quot;description&quot;: &quot;The maximum number of characters the input accepts.&quot;,
+  &quot;required&quot;: false
+}</code></pre>
+<p><strong>Example — complex property:</strong></p>
+<pre><code class="language-json">{
+  &quot;name&quot;: &quot;columns&quot;,
+  &quot;type&quot;: &quot;Column[]&quot;,
+  &quot;schema&quot;: {
+    &quot;type&quot;: &quot;array&quot;,
+    &quot;items&quot;: {
+      &quot;type&quot;: &quot;object&quot;,
+      &quot;required&quot;: [&quot;key&quot;, &quot;label&quot;],
+      &quot;properties&quot;: {
+        &quot;key&quot;: { &quot;type&quot;: &quot;string&quot; },
+        &quot;label&quot;: { &quot;type&quot;: &quot;string&quot; },
+        &quot;sortable&quot;: { &quot;type&quot;: &quot;boolean&quot;, &quot;default&quot;: false },
+        &quot;width&quot;: { &quot;type&quot;: &quot;string&quot; }
+      }
+    }
+  },
+  &quot;description&quot;: &quot;Column definitions for the data table. Each column must have a unique `key` and a display `label`.&quot;,
+  &quot;required&quot;: true
+}</code></pre>
+<h5 id="6422-property-examples">6.4.2.2 Property Examples</h5>
+<p>The optional <code>examples</code> array provides concrete usage examples for a property. Each element <em>MUST</em> be an object with:</p>
+<table>
+<thead><tr>
+<th>Property</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr></thead>
+<tbody>
+<tr>
+<td><code>value</code></td>
+<td></td>
+<td>Yes</td>
+<td>The example value, in its native JSON type.</td>
+</tr>
+<tr>
+<td><code>label</code></td>
+<td><code>string</code></td>
+<td>No</td>
+<td>A short description of the example.</td>
+</tr>
+</tbody></table>
+<p><strong>Example:</strong></p>
+<pre><code class="language-json">{
+  &quot;name&quot;: &quot;size&quot;,
+  &quot;type&quot;: &quot;&#x27;small&#x27; | &#x27;medium&#x27; | &#x27;large&#x27;&quot;,
+  &quot;schema&quot;: {
+    &quot;type&quot;: &quot;string&quot;,
+    &quot;enum&quot;: [&quot;small&quot;, &quot;medium&quot;, &quot;large&quot;],
+    &quot;default&quot;: &quot;medium&quot;
+  },
+  &quot;description&quot;: &quot;The size of the button. Affects padding, font size, and minimum target area.&quot;,
+  &quot;required&quot;: false,
+  &quot;default&quot;: &quot;&#x27;medium&#x27;&quot;,
+  &quot;defaultValue&quot;: &quot;medium&quot;,
+  &quot;examples&quot;: [
+    { &quot;value&quot;: &quot;small&quot;, &quot;label&quot;: &quot;Compact density — for toolbars and dense layouts&quot; },
+    { &quot;value&quot;: &quot;large&quot;, &quot;label&quot;: &quot;Touch-optimized — for mobile-first surfaces&quot; }
+  ]
+}</code></pre>
+<h4 id="643-events">6.4.3 Events</h4>
+<p>Each event object:</p>
+<table>
+<thead><tr>
+<th>Property</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr></thead>
+<tbody>
+<tr>
+<td><code>name</code></td>
+<td><code>string</code></td>
+<td>Yes</td>
+<td>The event name (e.g., <code>"onClick"</code>, <code>"change"</code>, <code>"close"</code>).</td>
+</tr>
+<tr>
+<td><code>description</code></td>
+<td><code>string</code></td>
+<td>Yes</td>
+<td>When this event fires and what it communicates. CommonMark <em>MAY</em> be used.</td>
+</tr>
+<tr>
+<td><code>payload</code></td>
+<td><code>string</code></td>
+<td>No</td>
+<td>Description of the event payload shape.</td>
+</tr>
+<tr>
+<td><code>since</code></td>
+<td><code>string</code></td>
+<td>No</td>
+<td>The version in which this event was introduced.</td>
+</tr>
+</tbody></table>
+<h4 id="644-slots">6.4.4 Slots</h4>
+<p>Each slot object:</p>
+<table>
+<thead><tr>
+<th>Property</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr></thead>
+<tbody>
+<tr>
+<td><code>name</code></td>
+<td><code>string</code></td>
+<td>Yes</td>
+<td>The slot name. Use <code>"default"</code> for the unnamed/default slot.</td>
+</tr>
+<tr>
+<td><code>description</code></td>
+<td><code>string</code></td>
+<td>Yes</td>
+<td>What content belongs in this slot. CommonMark <em>MAY</em> be used.</td>
+</tr>
+<tr>
+<td><code>acceptedContent</code></td>
+<td><code>string</code></td>
+<td>No</td>
+<td>Description of valid content types.</td>
+</tr>
+<tr>
+<td><code>since</code></td>
+<td><code>string</code></td>
+<td>No</td>
+<td>The version in which this slot was introduced.</td>
+</tr>
+</tbody></table>
+<h4 id="645-css-custom-properties">6.4.5 CSS Custom Properties</h4>
+<p>Each CSS custom property object:</p>
+<table>
+<thead><tr>
+<th>Property</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr></thead>
+<tbody>
+<tr>
+<td><code>name</code></td>
+<td><code>string</code></td>
+<td>Yes</td>
+<td>The full property name including <code>--</code> prefix (e.g., <code>"--button-background"</code>).</td>
+</tr>
+<tr>
+<td><code>description</code></td>
+<td><code>string</code></td>
+<td>Yes</td>
+<td>What this property controls visually. CommonMark <em>MAY</em> be used.</td>
+</tr>
+<tr>
+<td><code>default</code></td>
+<td><code>string</code></td>
+<td>No</td>
+<td>The default value.</td>
+</tr>
+<tr>
+<td><code>type</code></td>
+<td><code>string</code></td>
+<td>No</td>
+<td>The expected CSS value type (e.g., <code>"color"</code>, <code>"dimension"</code>, <code>"font-family"</code>).</td>
+</tr>
+<tr>
+<td><code>since</code></td>
+<td><code>string</code></td>
+<td>No</td>
+<td>The version in which this custom property was introduced.</td>
+</tr>
+</tbody></table>
+<h4 id="646-css-parts">6.4.6 CSS Parts</h4>
+<p>Each CSS part object:</p>
+<table>
+<thead><tr>
+<th>Property</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr></thead>
+<tbody>
+<tr>
+<td><code>name</code></td>
+<td><code>string</code></td>
+<td>Yes</td>
+<td>The part name as used in <code>::part()</code> selectors.</td>
+</tr>
+<tr>
+<td><code>description</code></td>
+<td><code>string</code></td>
+<td>Yes</td>
+<td>What visual element this part exposes. CommonMark <em>MAY</em> be used.</td>
+</tr>
+<tr>
+<td><code>since</code></td>
+<td><code>string</code></td>
+<td>No</td>
+<td>The version in which this part was introduced.</td>
+</tr>
+</tbody></table>
+<h4 id="647-data-attributes">6.4.7 Data Attributes</h4>
+<p>Each data attribute object:</p>
+<table>
+<thead><tr>
+<th>Property</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr></thead>
+<tbody>
+<tr>
+<td><code>name</code></td>
+<td><code>string</code></td>
+<td>Yes</td>
+<td>The full attribute name including <code>data-</code> prefix.</td>
+</tr>
+<tr>
+<td><code>description</code></td>
+<td><code>string</code></td>
+<td>Yes</td>
+<td>What this attribute represents. CommonMark <em>MAY</em> be used.</td>
+</tr>
+<tr>
+<td><code>values</code></td>
+<td><code>string[]</code></td>
+<td>No</td>
+<td>The set of possible values, if applicable.</td>
+</tr>
+<tr>
+<td><code>since</code></td>
+<td><code>string</code></td>
+<td>No</td>
+<td>The version in which this attribute was introduced.</td>
+</tr>
+</tbody></table>
+<h4 id="648-methods">6.4.8 Methods</h4>
+<p>Each method object:</p>
+<table>
+<thead><tr>
+<th>Property</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr></thead>
+<tbody>
+<tr>
+<td><code>name</code></td>
+<td><code>string</code></td>
+<td>Yes</td>
+<td>The method name.</td>
+</tr>
+<tr>
+<td><code>description</code></td>
+<td><code>string</code></td>
+<td>Yes</td>
+<td>What calling this method does. CommonMark <em>MAY</em> be used.</td>
+</tr>
+<tr>
+<td><code>parameters</code></td>
+<td><code>string</code></td>
+<td>No</td>
+<td>Description of the parameter signature.</td>
+</tr>
+<tr>
+<td><code>returnType</code></td>
+<td><code>string</code></td>
+<td>No</td>
+<td>Description of the return value.</td>
+</tr>
+<tr>
+<td><code>since</code></td>
+<td><code>string</code></td>
+<td>No</td>
+<td>The version in which this method was introduced.</td>
+</tr>
+</tbody></table>
+<p><strong>Single-platform example (abbreviated):</strong></p>
+<pre><code class="language-json">{
+  &quot;api&quot;: {
+    &quot;properties&quot;: [
+      {
+        &quot;name&quot;: &quot;variant&quot;,
+        &quot;type&quot;: &quot;&#x27;primary&#x27; | &#x27;secondary&#x27; | &#x27;ghost&#x27;&quot;,
+        &quot;schema&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;enum&quot;: [&quot;primary&quot;, &quot;secondary&quot;, &quot;ghost&quot;],
+          &quot;default&quot;: &quot;primary&quot;
+        },
+        &quot;description&quot;: &quot;The visual style of the button.&quot;,
+        &quot;required&quot;: false,
+        &quot;default&quot;: &quot;&#x27;primary&#x27;&quot;,
+        &quot;defaultValue&quot;: &quot;primary&quot;
+      },
+      {
+        &quot;name&quot;: &quot;size&quot;,
+        &quot;type&quot;: &quot;&#x27;small&#x27; | &#x27;medium&#x27; | &#x27;large&#x27;&quot;,
+        &quot;schema&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;enum&quot;: [&quot;small&quot;, &quot;medium&quot;, &quot;large&quot;],
+          &quot;default&quot;: &quot;medium&quot;
+        },
+        &quot;description&quot;: &quot;The size of the button. Affects padding, font size, and minimum height.&quot;,
+        &quot;required&quot;: false,
+        &quot;default&quot;: &quot;&#x27;medium&#x27;&quot;,
+        &quot;defaultValue&quot;: &quot;medium&quot;,
+        &quot;examples&quot;: [
+          { &quot;value&quot;: &quot;small&quot;, &quot;label&quot;: &quot;For dense layouts&quot; },
+          { &quot;value&quot;: &quot;large&quot;, &quot;label&quot;: &quot;For touch targets&quot; }
+        ]
+      },
+      {
+        &quot;name&quot;: &quot;disabled&quot;,
+        &quot;type&quot;: &quot;boolean&quot;,
+        &quot;schema&quot;: { &quot;type&quot;: &quot;boolean&quot;, &quot;default&quot;: false },
+        &quot;description&quot;: &quot;When true, the button is non-interactive and visually dimmed.&quot;,
+        &quot;required&quot;: false,
+        &quot;default&quot;: &quot;false&quot;,
+        &quot;defaultValue&quot;: false
+      }
+    ],
+    &quot;events&quot;: [
+      {
+        &quot;name&quot;: &quot;onClick&quot;,
+        &quot;description&quot;: &quot;Fires when the button is activated via click, tap, or keyboard.&quot;,
+        &quot;payload&quot;: &quot;(event: MouseEvent) =&gt; void&quot;
+      }
+    ],
+    &quot;slots&quot;: [
+      {
+        &quot;name&quot;: &quot;default&quot;,
+        &quot;description&quot;: &quot;The button&#x27;s text label.&quot;,
+        &quot;acceptedContent&quot;: &quot;Plain text. Avoid nesting interactive elements.&quot;
+      },
+      {
+        &quot;name&quot;: &quot;icon-start&quot;,
+        &quot;description&quot;: &quot;An icon rendered before the label.&quot;,
+        &quot;acceptedContent&quot;: &quot;A single icon component.&quot;
+      }
+    ]
+  }
+}</code></pre>
+<p><strong>Multi-platform example (abbreviated):</strong></p>
+<pre><code class="language-json">{
+  &quot;api&quot;: {
+    &quot;react&quot;: {
+      &quot;properties&quot;: [
+        {
+          &quot;name&quot;: &quot;variant&quot;,
+          &quot;type&quot;: &quot;&#x27;primary&#x27; | &#x27;secondary&#x27; | &#x27;ghost&#x27;&quot;,
+          &quot;schema&quot;: { &quot;type&quot;: &quot;string&quot;, &quot;enum&quot;: [&quot;primary&quot;, &quot;secondary&quot;, &quot;ghost&quot;] },
+          &quot;description&quot;: &quot;The visual style of the button.&quot;,
+          &quot;required&quot;: false,
+          &quot;default&quot;: &quot;&#x27;primary&#x27;&quot;
+        },
+        {
+          &quot;name&quot;: &quot;children&quot;,
+          &quot;type&quot;: &quot;ReactNode&quot;,
+          &quot;description&quot;: &quot;The button&#x27;s content. Typically a text label.&quot;,
+          &quot;required&quot;: true
+        }
+      ],
+      &quot;events&quot;: [
+        {
+          &quot;name&quot;: &quot;onClick&quot;,
+          &quot;description&quot;: &quot;Fires when the button is activated.&quot;,
+          &quot;payload&quot;: &quot;(event: React.MouseEvent&lt;HTMLButtonElement&gt;) =&gt; void&quot;
+        }
+      ]
+    },
+    &quot;web-component&quot;: {
+      &quot;properties&quot;: [
+        {
+          &quot;name&quot;: &quot;variant&quot;,
+          &quot;type&quot;: &quot;&#x27;primary&#x27; | &#x27;secondary&#x27; | &#x27;ghost&#x27;&quot;,
+          &quot;schema&quot;: { &quot;type&quot;: &quot;string&quot;, &quot;enum&quot;: [&quot;primary&quot;, &quot;secondary&quot;, &quot;ghost&quot;] },
+          &quot;description&quot;: &quot;The visual style of the button. Reflected as an HTML attribute.&quot;,
+          &quot;required&quot;: false,
+          &quot;default&quot;: &quot;&#x27;primary&#x27;&quot;
+        }
+      ],
+      &quot;slots&quot;: [
+        {
+          &quot;name&quot;: &quot;default&quot;,
+          &quot;description&quot;: &quot;The button&#x27;s text label.&quot;,
+          &quot;acceptedContent&quot;: &quot;Plain text or inline elements.&quot;
+        }
+      ],
+      &quot;cssCustomProperties&quot;: [
+        {
+          &quot;name&quot;: &quot;--button-background&quot;,
+          &quot;description&quot;: &quot;The background color of the button container.&quot;,
+          &quot;default&quot;: &quot;var(--color-action-primary)&quot;,
+          &quot;type&quot;: &quot;color&quot;
+        }
+      ],
+      &quot;cssParts&quot;: [
+        {
+          &quot;name&quot;: &quot;container&quot;,
+          &quot;description&quot;: &quot;The outer button element.&quot;
+        }
+      ]
+    }
+  }
+}</code></pre>
+<h3 id="65-variants">6.5 Variants</h3>
+<p>The <code>variants</code> array documents named configurations that change the component's visual presentation or behavior.</p>
+<p>Each variant object:</p>
+<table>
+<thead><tr>
+<th>Property</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr></thead>
+<tbody>
+<tr>
+<td><code>name</code></td>
+<td><code>string</code></td>
+<td>Yes</td>
+<td>Machine-readable variant name.</td>
+</tr>
+<tr>
+<td><code>displayName</code></td>
+<td><code>string</code></td>
+<td>No</td>
+<td>Human-readable name.</td>
+</tr>
+<tr>
+<td><code>description</code></td>
+<td><code>string</code></td>
+<td>Yes</td>
+<td>What this variant is and when to use it.</td>
+</tr>
+<tr>
+<td><code>tokens</code></td>
+<td><code>object</code></td>
+<td>No</td>
+<td>Token overrides for this variant (key = token name, value = token reference).</td>
+</tr>
+<tr>
+<td><code>preview</code></td>
+<td><code>array</code></td>
+<td>No</td>
+<td>Visual previews of this specific variant. See <a href="#9-examples">§9 Examples</a>.</td>
+</tr>
+</tbody></table>
+<p><strong>Example:</strong></p>
+<pre><code class="language-json">{
+  &quot;variants&quot;: [
+    {
+      &quot;name&quot;: &quot;primary&quot;,
+      &quot;displayName&quot;: &quot;Primary&quot;,
+      &quot;description&quot;: &quot;The default, high-emphasis variant. Use for the single most important action on a surface. Limit to one primary button per surface.&quot;
+    },
+    {
+      &quot;name&quot;: &quot;secondary&quot;,
+      &quot;displayName&quot;: &quot;Secondary&quot;,
+      &quot;description&quot;: &quot;A medium-emphasis variant. Use for actions that are important but not the primary action.&quot;
+    },
+    {
+      &quot;name&quot;: &quot;ghost&quot;,
+      &quot;displayName&quot;: &quot;Ghost&quot;,
+      &quot;description&quot;: &quot;A low-emphasis variant with no background. Use for tertiary actions or in dense layouts where visual weight must be minimized.&quot;
+    }
+  ]
+}</code></pre>
+<h3 id="66-states">6.6 States</h3>
+<p>The <code>states</code> array documents the interactive states a component can enter.</p>
+<p>Each state object:</p>
+<table>
+<thead><tr>
+<th>Property</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr></thead>
+<tbody>
+<tr>
+<td><code>name</code></td>
+<td><code>string</code></td>
+<td>Yes</td>
+<td>Machine-readable state name (e.g., <code>"default"</code>, <code>"hover"</code>, <code>"focus"</code>, <code>"active"</code>, <code>"disabled"</code>, <code>"loading"</code>, <code>"error"</code>).</td>
+</tr>
+<tr>
+<td><code>displayName</code></td>
+<td><code>string</code></td>
+<td>No</td>
+<td>Human-readable name.</td>
+</tr>
+<tr>
+<td><code>description</code></td>
+<td><code>string</code></td>
+<td>Yes</td>
+<td>What triggers this state and how the component changes.</td>
+</tr>
+<tr>
+<td><code>tokens</code></td>
+<td><code>object</code></td>
+<td>No</td>
+<td>Token overrides for this state (key = token name, value = token reference).</td>
+</tr>
+<tr>
+<td><code>preview</code></td>
+<td><code>array</code></td>
+<td>No</td>
+<td>Visual previews of this specific state. See <a href="#9-examples">§9 Examples</a>.</td>
+</tr>
+</tbody></table>
+<h3 id="67-design-specifications">6.7 Design Specifications</h3>
+<p>The <code>designSpecifications</code> property documents visual details for designers and engineers.</p>
+<table>
+<thead><tr>
+<th>Property</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr></thead>
+<tbody>
+<tr>
+<td><code>tokens</code></td>
+<td><code>string[]</code></td>
+<td>No</td>
+<td>A list of all design token names used by this component.</td>
+</tr>
+<tr>
+<td><code>spacing</code></td>
+<td><code>object</code></td>
+<td>No</td>
+<td>Spacing specifications for the component's internal layout.</td>
+</tr>
+<tr>
+<td><code>sizing</code></td>
+<td><code>object</code></td>
+<td>No</td>
+<td>Width, height, and min/max dimension constraints.</td>
+</tr>
+<tr>
+<td><code>responsive</code></td>
+<td><code>array</code></td>
+<td>No</td>
+<td>Responsive behavior documentation.</td>
+</tr>
+</tbody></table>
+<h4 id="671-spacing">6.7.1 Spacing</h4>
+<p>The <code>spacing</code> object uses token references or explicit values:</p>
+<table>
+<thead><tr>
+<th>Property</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr></thead>
+<tbody>
+<tr>
+<td><code>internal</code></td>
+<td><code>object</code></td>
+<td>No</td>
+<td>Padding and internal gaps. Keys are anatomy part names or descriptions; values are token names.</td>
+</tr>
+<tr>
+<td><code>external</code></td>
+<td><code>object</code></td>
+<td>No</td>
+<td>Recommended margins and spacing between this component and adjacent elements.</td>
+</tr>
+</tbody></table>
+<h4 id="672-sizing">6.7.2 Sizing</h4>
+<table>
+<thead><tr>
+<th>Property</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr></thead>
+<tbody>
+<tr>
+<td><code>minWidth</code></td>
+<td><code>string</code></td>
+<td>No</td>
+<td>Minimum width constraint (as a token name or explicit value).</td>
+</tr>
+<tr>
+<td><code>maxWidth</code></td>
+<td><code>string</code></td>
+<td>No</td>
+<td>Maximum width constraint.</td>
+</tr>
+<tr>
+<td><code>minHeight</code></td>
+<td><code>string</code></td>
+<td>No</td>
+<td>Minimum height constraint.</td>
+</tr>
+<tr>
+<td><code>maxHeight</code></td>
+<td><code>string</code></td>
+<td>No</td>
+<td>Maximum height constraint.</td>
+</tr>
+<tr>
+<td><code>aspectRatio</code></td>
+<td><code>string</code></td>
+<td>No</td>
+<td>Aspect ratio constraint (e.g., <code>"16:9"</code>, <code>"1:1"</code>).</td>
+</tr>
+</tbody></table>
+<h4 id="673-responsive">6.7.3 Responsive</h4>
+<p>Each responsive entry:</p>
+<table>
+<thead><tr>
+<th>Property</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr></thead>
+<tbody>
+<tr>
+<td><code>breakpoint</code></td>
+<td><code>string</code></td>
+<td>Yes</td>
+<td>The breakpoint name or value (e.g., <code>"small"</code>, <code>"768px"</code>).</td>
+</tr>
+<tr>
+<td><code>description</code></td>
+<td><code>string</code></td>
+<td>Yes</td>
+<td>How the component adapts at this breakpoint.</td>
+</tr>
+</tbody></table>
+<h3 id="68-content-guidelines">6.8 Content Guidelines</h3>
+<p>The <code>contentGuidelines</code> array provides guidance specific to the text, imagery, or data displayed within the component. These follow the same <a href="#9-guidelines-structure">Guideline Structure</a> as other guidelines.</p>
+<p>Each content guideline object:</p>
+<table>
+<thead><tr>
+<th>Property</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr></thead>
+<tbody>
+<tr>
+<td><code>target</code></td>
+<td><code>string</code></td>
+<td>Yes</td>
+<td>The anatomy part or content area this applies to (e.g., <code>"label"</code>, <code>"error-message"</code>, <code>"placeholder"</code>).</td>
+</tr>
+<tr>
+<td><code>guidance</code></td>
+<td><code>string</code></td>
+<td>Yes</td>
+<td>The concrete, actionable guidance.</td>
+</tr>
+<tr>
+<td><code>rationale</code></td>
+<td><code>string</code></td>
+<td>Yes</td>
+<td>Why this guidance exists.</td>
+</tr>
+<tr>
+<td><code>examples</code></td>
+<td><code>object</code></td>
+<td>No</td>
+<td>See <a href="#91-examples-in-guidelines">§9.1 Examples in Guidelines</a>.</td>
+</tr>
+</tbody></table>
+<p><strong>Example:</strong></p>
+<pre><code class="language-json">{
+  &quot;contentGuidelines&quot;: [
+    {
+      &quot;target&quot;: &quot;label&quot;,
+      &quot;guidance&quot;: &quot;Use a verb or verb phrase that describes the action the button performs. Two words maximum.&quot;,
+      &quot;rationale&quot;: &quot;Action-oriented labels set clear expectations. Short labels prevent truncation and improve scannability.&quot;,
+      &quot;examples&quot;: {
+        &quot;encouraged&quot;: [&quot;Save&quot;, &quot;Add item&quot;, &quot;Submit&quot;],
+        &quot;discouraged&quot;: [&quot;Click here&quot;, &quot;OK&quot;, &quot;Yes&quot;]
+      }
+    },
+    {
+      &quot;target&quot;: &quot;label&quot;,
+      &quot;guidance&quot;: &quot;Use sentence case capitalization.&quot;,
+      &quot;rationale&quot;: &quot;Sentence case is easier to read than title case or all caps. It also localizes more predictably.&quot;
+    }
+  ]
+}</code></pre>
+<hr>
+
+          <a href="#" class="back-to-top">↑ Back to top</a>
+
+          <div class="footer">
+            <p>Design System Documentation Standard (DSDS) 1.0 — Draft Specification</p>
+            <p><a href="https://github.com/pjonori/design-system-documentation-schema">GitHub</a></p>
+          </div>
+        </div>
+      </main>
+    </body>
+    </html>

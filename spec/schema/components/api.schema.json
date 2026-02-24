@@ -1,0 +1,259 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://designsystemdocspec.org/v1/api.schema.json",
+  "title": "DSDS API Definitions",
+  "description": "Definitions for documenting the code-level interface of a component: properties, events, slots, CSS custom properties, CSS shadow parts, data attributes, methods, and the composite API object.",
+  "$defs": {
+    "apiProperty": {
+      "type": "object",
+      "description": "A configurable property of a component. Pairs a human-readable type string with an optional machine-readable JSON Schema.",
+      "required": ["name", "type", "description", "required"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "The property name as used in code."
+        },
+        "type": {
+          "type": "string",
+          "description": "A human-readable type description for display."
+        },
+        "schema": {
+          "type": "object",
+          "description": "A JSON Schema (Draft 2020-12) object defining the property's type in a machine-readable form."
+        },
+        "description": {
+          "$ref": "../common/common.schema.json#/$defs/richText"
+        },
+        "required": {
+          "type": "boolean",
+          "description": "Whether this property is required."
+        },
+        "defaultValue": {
+          "description": "The default value in its native JSON type. Accepts any JSON type: string (e.g., 'primary'), number (e.g., 44), boolean (e.g., true), object, array, or null. Tools MAY format this value for display."
+        },
+        "examples": {
+          "type": "array",
+          "description": "Example values for this property.",
+          "items": {
+            "$ref": "../common/example.schema.json#/$defs/example"
+          }
+        },
+        "since": {
+          "type": "string",
+          "description": "The version in which this property was introduced."
+        },
+        "deprecated": {
+          "type": "boolean",
+          "description": "Whether this property is deprecated."
+        },
+        "deprecationNotice": {
+          "type": "string",
+          "description": "What to use instead, if deprecated."
+        }
+      },
+      "additionalProperties": false
+    },
+    "apiEvent": {
+      "type": "object",
+      "description": "An event emitted by a component.",
+      "required": ["name", "description"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "The event name."
+        },
+        "description": {
+          "$ref": "../common/common.schema.json#/$defs/richText"
+        },
+        "payload": {
+          "type": "string",
+          "description": "Description of the event payload shape."
+        },
+        "since": {
+          "type": "string",
+          "description": "The version in which this event was introduced."
+        }
+      },
+      "additionalProperties": false
+    },
+    "apiSlot": {
+      "type": "object",
+      "description": "A content insertion point of a component.",
+      "required": ["name", "description"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "The slot name. Use 'default' for the unnamed/default slot."
+        },
+        "description": {
+          "$ref": "../common/common.schema.json#/$defs/richText"
+        },
+        "acceptedContent": {
+          "$ref": "../common/common.schema.json#/$defs/richText"
+        },
+        "since": {
+          "type": "string",
+          "description": "The version in which this slot was introduced."
+        }
+      },
+      "additionalProperties": false
+    },
+    "apiCssCustomProperty": {
+      "type": "object",
+      "description": "A CSS custom property exposed by a component.",
+      "required": ["name", "description"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "pattern": "^--",
+          "description": "The full property name including -- prefix."
+        },
+        "description": {
+          "$ref": "../common/common.schema.json#/$defs/richText"
+        },
+        "defaultValue": {
+          "type": "string",
+          "description": "The default value of the CSS custom property (e.g., 'var(--color-action-primary)', '1rem', 'transparent')."
+        },
+        "type": {
+          "type": "string",
+          "description": "The expected CSS value type (e.g., 'color', 'dimension')."
+        },
+        "since": {
+          "type": "string",
+          "description": "The version in which this custom property was introduced."
+        }
+      },
+      "additionalProperties": false
+    },
+    "apiCssPart": {
+      "type": "object",
+      "description": "A CSS shadow part exposed by a component.",
+      "required": ["name", "description"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "The part name as used in ::part() selectors."
+        },
+        "description": {
+          "$ref": "../common/common.schema.json#/$defs/richText"
+        },
+        "since": {
+          "type": "string",
+          "description": "The version in which this part was introduced."
+        }
+      },
+      "additionalProperties": false
+    },
+    "apiDataAttribute": {
+      "type": "object",
+      "description": "A data attribute used by a component.",
+      "required": ["name", "description"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "pattern": "^data-",
+          "description": "The full attribute name including data- prefix."
+        },
+        "description": {
+          "$ref": "../common/common.schema.json#/$defs/richText"
+        },
+        "values": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "The set of possible values."
+        },
+        "since": {
+          "type": "string",
+          "description": "The version in which this attribute was introduced."
+        }
+      },
+      "additionalProperties": false
+    },
+    "apiMethod": {
+      "type": "object",
+      "description": "A public method on a component instance.",
+      "required": ["name", "description"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "The method name."
+        },
+        "description": {
+          "$ref": "../common/common.schema.json#/$defs/richText"
+        },
+        "parameters": {
+          "type": "string",
+          "description": "Description of the parameter signature."
+        },
+        "returnType": {
+          "type": "string",
+          "description": "Description of the return value."
+        },
+        "since": {
+          "type": "string",
+          "description": "The version in which this method was introduced."
+        }
+      },
+      "additionalProperties": false
+    },
+    "componentApi": {
+      "type": "object",
+      "description": "The code-level interface of a component.",
+      "properties": {
+        "properties": {
+          "type": "array",
+          "description": "Configurable properties.",
+          "items": {
+            "$ref": "#/$defs/apiProperty"
+          }
+        },
+        "events": {
+          "type": "array",
+          "description": "Events emitted.",
+          "items": {
+            "$ref": "#/$defs/apiEvent"
+          }
+        },
+        "slots": {
+          "type": "array",
+          "description": "Content insertion points.",
+          "items": {
+            "$ref": "#/$defs/apiSlot"
+          }
+        },
+        "cssCustomProperties": {
+          "type": "array",
+          "description": "CSS custom properties.",
+          "items": {
+            "$ref": "#/$defs/apiCssCustomProperty"
+          }
+        },
+        "cssParts": {
+          "type": "array",
+          "description": "CSS shadow parts.",
+          "items": {
+            "$ref": "#/$defs/apiCssPart"
+          }
+        },
+        "dataAttributes": {
+          "type": "array",
+          "description": "Data attributes.",
+          "items": {
+            "$ref": "#/$defs/apiDataAttribute"
+          }
+        },
+        "methods": {
+          "type": "array",
+          "description": "Public methods.",
+          "items": {
+            "$ref": "#/$defs/apiMethod"
+          }
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

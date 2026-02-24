@@ -1,0 +1,198 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://designsystemdocspec.org/v1/dsds.schema.json",
+  "title": "Design System Documentation Standard (DSDS) v1.0",
+  "description": "A standard, machine-readable format for design system documentation covering components, design tokens, styles, and patterns. This is the root schema; definitions are organized into directories: common/ (common, example, guideline, usecase, accessibility), components/ (component, anatomy, api, design-specifications, variant, state), tokens/ (token), style/ (style), and patterns/ (pattern).",
+  "type": "object",
+  "required": ["dsdsVersion", "documentType"],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "URI reference to the DSDS JSON Schema for validation."
+    },
+    "dsdsVersion": {
+      "type": "string",
+      "const": "1.0",
+      "description": "The version of the DSDS specification this document conforms to."
+    },
+    "documentType": {
+      "type": "string",
+      "enum": [
+        "component",
+        "token",
+        "tokenGroup",
+        "style",
+        "pattern",
+        "collection"
+      ],
+      "description": "The type of artifact documented."
+    },
+    "metadata": {
+      "$ref": "common/common.schema.json#/$defs/metadata"
+    },
+    "component": {
+      "$ref": "components/component.schema.json#/$defs/componentDoc"
+    },
+    "token": {
+      "$ref": "tokens/token.schema.json#/$defs/tokenDoc"
+    },
+    "tokenGroup": {
+      "$ref": "tokens/token.schema.json#/$defs/tokenGroupDoc"
+    },
+    "style": {
+      "$ref": "style/style.schema.json#/$defs/styleDoc"
+    },
+    "pattern": {
+      "$ref": "patterns/pattern.schema.json#/$defs/patternDoc"
+    },
+    "collection": {
+      "$ref": "#/$defs/collectionDoc"
+    },
+    "$extensions": {
+      "$ref": "common/common.schema.json#/$defs/extensions"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "documentType": {
+            "const": "component"
+          }
+        }
+      },
+      "then": {
+        "required": ["component"]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "documentType": {
+            "const": "token"
+          }
+        }
+      },
+      "then": {
+        "required": ["token"]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "documentType": {
+            "const": "tokenGroup"
+          }
+        }
+      },
+      "then": {
+        "required": ["tokenGroup"]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "documentType": {
+            "const": "style"
+          }
+        }
+      },
+      "then": {
+        "required": ["style"]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "documentType": {
+            "const": "pattern"
+          }
+        }
+      },
+      "then": {
+        "required": ["pattern"]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "documentType": {
+            "const": "collection"
+          }
+        }
+      },
+      "then": {
+        "required": ["collection"]
+      }
+    }
+  ],
+  "$defs": {
+    "collectionDoc": {
+      "type": "object",
+      "description": "A collection of multiple documentation artifacts.",
+      "required": ["name"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Human-readable name of the collection."
+        },
+        "description": {
+          "$ref": "common/common.schema.json#/$defs/richText"
+        },
+        "components": {
+          "type": "array",
+          "description": "Array of component documentation objects.",
+          "items": {
+            "$ref": "components/component.schema.json#/$defs/componentDoc"
+          }
+        },
+        "tokens": {
+          "type": "array",
+          "description": "Array of token documentation objects.",
+          "items": {
+            "$ref": "tokens/token.schema.json#/$defs/tokenDoc"
+          }
+        },
+        "tokenGroups": {
+          "type": "array",
+          "description": "Array of token group documentation objects.",
+          "items": {
+            "$ref": "tokens/token.schema.json#/$defs/tokenGroupDoc"
+          }
+        },
+        "styles": {
+          "type": "array",
+          "description": "Array of style documentation objects.",
+          "items": {
+            "$ref": "style/style.schema.json#/$defs/styleDoc"
+          }
+        },
+        "patterns": {
+          "type": "array",
+          "description": "Array of pattern documentation objects.",
+          "items": {
+            "$ref": "patterns/pattern.schema.json#/$defs/patternDoc"
+          }
+        }
+      },
+      "anyOf": [
+        {
+          "required": ["components"]
+        },
+        {
+          "required": ["tokens"]
+        },
+        {
+          "required": ["tokenGroups"]
+        },
+        {
+          "required": ["styles"]
+        },
+        {
+          "required": ["patterns"]
+        }
+      ],
+      "additionalProperties": false
+    }
+  }
+}

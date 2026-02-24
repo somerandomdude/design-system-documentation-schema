@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://designsystemdocspec.org/v1/usecase.schema.json",
+  "title": "DSDS Use Case Definitions",
+  "description": "Definitions for documenting when to use and when not to use a design system artifact. Use cases provide scenario-driven guidance that complements guidelines by framing decisions in terms of concrete situations.",
+  "$defs": {
+    "useCase": {
+      "type": "object",
+      "description": "A single use case scenario describing a situation in which an artifact is or is not appropriate.",
+      "required": [
+        "description"
+      ],
+      "properties": {
+        "description": {
+          "$ref": "common.schema.json#/$defs/richText"
+        },
+        "alternative": {
+          "type": "object",
+          "description": "The recommended alternative artifact for this scenario. Typically provided for whenNotToUse entries to direct the reader toward a more appropriate component or pattern.",
+          "required": [
+            "name"
+          ],
+          "properties": {
+            "name": {
+              "type": "string",
+              "description": "The name of the recommended alternative component or artifact (e.g., 'link', 'anchor', 'icon-button')."
+            },
+            "rationale": {
+              "$ref": "common.schema.json#/$defs/richText",
+              "description": "An explanation of why the alternative is more appropriate for this scenario. Cite semantic differences, accessibility implications, or UX rationale when available."
+            }
+          },
+          "additionalProperties": false
+        },
+        "examples": {
+          "type": "array",
+          "description": "Optional examples illustrating the use case scenario.",
+          "items": {
+            "$ref": "example.schema.json#/$defs/example"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "useCases": {
+      "type": "object",
+      "description": "Scenario-driven guidance describing when an artifact is and is not the right choice. Complements guidelines by framing decisions around concrete user or developer situations rather than abstract rules.",
+      "properties": {
+        "whenToUse": {
+          "type": "array",
+          "description": "Scenarios in which this artifact is the appropriate choice.",
+          "items": {
+            "$ref": "#/$defs/useCase"
+          }
+        },
+        "whenNotToUse": {
+          "type": "array",
+          "description": "Scenarios in which this artifact should not be used. Each entry SHOULD include an `alternative` pointing to a more appropriate artifact or pattern.",
+          "items": {
+            "$ref": "#/$defs/useCase"
+          }
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

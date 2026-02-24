@@ -1,0 +1,137 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://designsystemdocspec.org/v1/pattern.schema.json",
+  "title": "DSDS Pattern Definitions",
+  "description": "Definitions for documenting broad interaction patterns — recurring solutions to common UX problems such as navigation, error messaging, form validation, empty states, loading sequences, and onboarding flows. Patterns describe how multiple components work together to solve a user need.",
+  "$defs": {
+    "interaction": {
+      "type": "object",
+      "description": "A single step or event in the pattern's interaction flow, describing what happens, what triggers it, and which components are involved.",
+      "required": ["description"],
+      "properties": {
+        "trigger": {
+          "type": "string",
+          "description": "What initiates this interaction step (e.g., 'User submits the form', 'API returns a 422 response', 'Page finishes loading')."
+        },
+        "description": {
+          "$ref": "../common/common.schema.json#/$defs/richText"
+        },
+        "components": {
+          "type": "array",
+          "description": "The components involved in this interaction step, by name.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "examples": {
+          "type": "array",
+          "description": "Examples illustrating this interaction step.",
+          "items": {
+            "$ref": "../common/example.schema.json#/$defs/example"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "patternDoc": {
+      "type": "object",
+      "description": "Documentation for a broad interaction pattern — a recurring, multi-component solution to a common UX problem. Patterns sit above individual components and describe how they are composed to address a user need.",
+      "required": ["name", "displayName", "description", "status", "category"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]*$",
+          "description": "Machine-readable identifier (e.g., 'error-messaging', 'navigation', 'empty-state', 'loading-sequence')."
+        },
+        "displayName": {
+          "type": "string",
+          "description": "Human-readable name (e.g., 'Error Messaging', 'Navigation', 'Empty State')."
+        },
+        "summary": {
+          "type": "string",
+          "description": "A one-line, plain-text summary. MUST NOT contain markup."
+        },
+        "description": {
+          "$ref": "../common/common.schema.json#/$defs/richText"
+        },
+        "status": {
+          "$ref": "../common/common.schema.json#/$defs/status"
+        },
+        "deprecationNotice": {
+          "type": "string",
+          "description": "Required when status is 'deprecated'."
+        },
+        "since": {
+          "type": "string",
+          "description": "The version in which this pattern was introduced."
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Freeform tags for categorization and search."
+        },
+        "category": {
+          "type": "string",
+          "description": "The pattern category (e.g., 'feedback', 'navigation', 'data-entry', 'disclosure', 'onboarding', 'layout')."
+        },
+        "components": {
+          "type": "array",
+          "description": "The artifacts that participate in this pattern, with their roles. Typically references components by name from the component schema.",
+          "items": {
+            "$ref": "../common/artifact-reference.schema.json#/$defs/artifactReference"
+          }
+        },
+        "interactions": {
+          "type": "array",
+          "description": "The interaction flow of the pattern — an ordered sequence of steps describing triggers, system responses, and component behavior.",
+          "items": {
+            "$ref": "#/$defs/interaction"
+          }
+        },
+        "useCases": {
+          "$ref": "../common/usecase.schema.json#/$defs/useCases"
+        },
+        "guidelines": {
+          "type": "array",
+          "description": "Usage guidelines for the pattern. Each entry is a self-contained guideline. Use the `category` property on individual guidelines to group by concern (e.g., 'design', 'accessibility', 'content').",
+          "items": {
+            "$ref": "../common/guideline.schema.json#/$defs/guideline"
+          }
+        },
+        "accessibility": {
+          "$ref": "../common/accessibility.schema.json#/$defs/accessibilityObject"
+        },
+        "examples": {
+          "type": "array",
+          "description": "Examples illustrating the complete pattern in context.",
+          "items": {
+            "$ref": "../common/example.schema.json#/$defs/example"
+          }
+        },
+        "links": {
+          "type": "array",
+          "description": "External resource links and related artifact references.",
+          "items": {
+            "$ref": "../common/common.schema.json#/$defs/link"
+          }
+        },
+        "$extensions": {
+          "$ref": "../common/common.schema.json#/$defs/extensions"
+        }
+      },
+      "if": {
+        "properties": {
+          "status": {
+            "const": "deprecated"
+          }
+        }
+      },
+      "then": {
+        "required": ["deprecationNotice"]
+      },
+      "additionalProperties": false
+    }
+  }
+}

@@ -1,0 +1,165 @@
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <title>Links Module — DSDS 1.0</title>
+      <link rel="stylesheet" href="style.css">
+    </head>
+    <body>
+      <button class="nav-toggle" onclick="document.querySelector('.nav').classList.toggle('nav--open')" aria-label="Toggle navigation">☰ Menu</button>
+      <nav class="nav" role="navigation" aria-label="Specification navigation">
+        <div class="nav__title"><a href="index.html">DSDS 1.0</a></div>
+        <div class="nav__section">
+          <span class="nav__section-label">Specification</span>
+<a class="nav__link" href="index.html">Overview</a>
+<span class="nav__section-label">Modules</span>
+<a class="nav__link" href="core.html">Core</a>
+<a class="nav__link" href="components.html">Components</a>
+<a class="nav__link" href="tokens.html">Tokens</a>
+<a class="nav__link" href="styles.html">Styles</a>
+<a class="nav__link" href="patterns.html">Patterns</a>
+<a class="nav__link" href="usecases.html">Use Cases</a>
+<a class="nav__link" href="examples.html">Examples</a>
+<a class="nav__link" href="guidelines.html">Guidelines</a>
+<a class="nav__link" href="accessibility.html">Accessibility</a>
+<a class="nav__link nav__link--active" href="links.html">Links</a>
+        </div>
+      </nav>
+      <main class="content" role="main">
+        <div class="content__inner">
+          <h1 id="dsds-links-module">DSDS Links Module</h1>
+<p><strong>Part of the <a href="index.html">Design System Documentation Standard (DSDS) 1.0</a></strong></p>
+<p>This module defines typed references to external resources associated with a documented artifact — source code repositories, design files and variables, interactive demos, documentation pages, and published packages. Links are a first-class property, distinct from vendor-specific extensions.</p>
+<hr>
+<h2 id="12-links">12. Links</h2>
+<p>The optional <code>links</code> array provides typed references to external resources associated with an artifact. Unlike <code>related</code> (which references other DSDS artifacts within the system), <code>links</code> point outward — to source code, design files, interactive demos, and other tools where the artifact lives.</p>
+<h3 id="121-link-object">12.1 Link Object</h3>
+<p>Each element of the <code>links</code> array <em>MUST</em> be an object with the following properties:</p>
+<table>
+<thead><tr>
+<th>Property</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr></thead>
+<tbody>
+<tr>
+<td><code>type</code></td>
+<td><code>string</code></td>
+<td>Yes</td>
+<td>The category of the linked resource. See <a href="#112-link-types">§11.2 Link Types</a>.</td>
+</tr>
+<tr>
+<td><code>url</code></td>
+<td><code>string</code></td>
+<td>Yes</td>
+<td>The URL of the linked resource. <em>MUST</em> be a valid absolute URI.</td>
+</tr>
+<tr>
+<td><code>label</code></td>
+<td><code>string</code></td>
+<td>No</td>
+<td>A human-readable label describing the specific resource (e.g., <code>"Component source"</code>, <code>"Design file — variants"</code>, <code>"Primary story"</code>). If omitted, tools <em>MAY</em> derive a display label from the <code>type</code>.</td>
+</tr>
+</tbody></table>
+<h3 id="122-link-types">12.2 Link Types</h3>
+<p>The <code>type</code> property classifies the linked resource. The following standard values are defined by this specification:</p>
+<table>
+<thead><tr>
+<th>Type</th>
+<th>Description</th>
+<th>Typical destinations</th>
+</tr></thead>
+<tbody>
+<tr>
+<td><code>"source"</code></td>
+<td>Source code for the artifact's implementation.</td>
+<td>File or directory URLs in any hosted code repository.</td>
+</tr>
+<tr>
+<td><code>"design"</code></td>
+<td>Design file, node, or variable associated with the artifact.</td>
+<td>URLs to files, frames, or variables in any design tool.</td>
+</tr>
+<tr>
+<td><code>"storybook"</code></td>
+<td>Interactive component documentation or demo.</td>
+<td>Storybook story or docs page URLs, or compatible interactive demo tools.</td>
+</tr>
+<tr>
+<td><code>"documentation"</code></td>
+<td>External documentation page for the artifact.</td>
+<td>Documentation platform URLs or custom doc site pages.</td>
+</tr>
+<tr>
+<td><code>"package"</code></td>
+<td>Published package containing the artifact.</td>
+<td>Package registry URLs (npm, PyPI, Maven, CocoaPods, etc.).</td>
+</tr>
+<tr>
+<td><code>"repository"</code></td>
+<td>The top-level repository containing the artifact's source.</td>
+<td>Repository root URLs in any hosted code platform.</td>
+</tr>
+</tbody></table>
+<p>Design systems <em>MAY</em> use additional custom <code>type</code> values beyond those listed above. Custom values <em>SHOULD</em> be lowercase strings matching the pattern <code>^[a-z][a-z0-9-]*$</code>.</p>
+<p>Tools <em>MUST NOT</em> reject a link because its <code>type</code> is not in the standard list. Unknown types <em>MUST</em> be preserved.</p>
+<h3 id="123-multiple-links-of-the-same-type">12.3 Multiple Links of the Same Type</h3>
+<p>An artifact <em>MAY</em> have multiple links with the same <code>type</code>. This is common when a component has separate source files for different frameworks, or when a design artifact spans multiple files in a design tool.</p>
+<p>When multiple links share a <code>type</code>, the <code>label</code> property <em>SHOULD</em> be provided to distinguish them.</p>
+<h3 id="124-example">12.4 Example</h3>
+<pre><code class="language-json">{
+  &quot;links&quot;: [
+    {
+      &quot;type&quot;: &quot;source&quot;,
+      &quot;url&quot;: &quot;https://code.acme.com/design-system/src/packages/components/src/button/button.tsx&quot;,
+      &quot;label&quot;: &quot;React component source&quot;
+    },
+    {
+      &quot;type&quot;: &quot;source&quot;,
+      &quot;url&quot;: &quot;https://code.acme.com/design-system/src/packages/web-components/src/button/button.ts&quot;,
+      &quot;label&quot;: &quot;Web component source&quot;
+    },
+    {
+      &quot;type&quot;: &quot;design&quot;,
+      &quot;url&quot;: &quot;https://design-tool.acme.com/file/abc123?node-id=1234:5678&quot;,
+      &quot;label&quot;: &quot;Design file — component&quot;
+    },
+    {
+      &quot;type&quot;: &quot;design&quot;,
+      &quot;url&quot;: &quot;https://design-tool.acme.com/file/abc123?node-id=5678:9012&quot;,
+      &quot;label&quot;: &quot;Design file — variants&quot;
+    },
+    {
+      &quot;type&quot;: &quot;storybook&quot;,
+      &quot;url&quot;: &quot;https://storybook.acme.com/?path=/docs/components-button--docs&quot;,
+      &quot;label&quot;: &quot;Storybook docs&quot;
+    },
+    {
+      &quot;type&quot;: &quot;storybook&quot;,
+      &quot;url&quot;: &quot;https://storybook.acme.com/?path=/story/components-button--primary&quot;,
+      &quot;label&quot;: &quot;Primary variant story&quot;
+    },
+    {
+      &quot;type&quot;: &quot;package&quot;,
+      &quot;url&quot;: &quot;https://www.npmjs.com/package/@acme/components&quot;,
+      &quot;label&quot;: &quot;npm package&quot;
+    }
+  ]
+}</code></pre>
+<h3 id="125-links-vs-extensions">12.5 Links vs. Extensions</h3>
+<p>Links are a first-class property because source code, design files, and interactive demos are universal to design system documentation — not vendor-specific metadata. Data that is specific to a tool's internal representation (e.g., design tool component keys, Storybook story IDs, internal build hashes) <em>SHOULD</em> remain in <code>$extensions</code>.</p>
+<p><strong>Rule of thumb:</strong> If the data is a URL that a human would click to navigate to a resource, it belongs in <code>links</code>. If the data is an internal identifier consumed programmatically by a specific tool, it belongs in <code>$extensions</code>.</p>
+<hr>
+
+          <a href="#" class="back-to-top">↑ Back to top</a>
+
+          <div class="footer">
+            <p>Design System Documentation Standard (DSDS) 1.0 — Draft Specification</p>
+            <p><a href="https://github.com/pjonori/design-system-documentation-schema">GitHub</a></p>
+          </div>
+        </div>
+      </main>
+    </body>
+    </html>

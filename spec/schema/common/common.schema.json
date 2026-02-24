@@ -1,0 +1,93 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://designsystemdocspec.org/v1/common.schema.json",
+  "title": "DSDS Common Definitions",
+  "description": "Shared definitions used across all DSDS schema modules: rich text, metadata, status, links, and extensions.",
+  "$defs": {
+    "richText": {
+      "description": "A text field that supports multiple content formats. Accepts either a plain string (interpreted as markdown for backward compatibility) or a structured object with an explicit format declaration.",
+      "oneOf": [
+        {
+          "type": "string",
+          "description": "A string value. When provided as a bare string, the format is assumed to be 'markdown' for backward compatibility with DSDS 1.0 documents."
+        },
+        {
+          "type": "object",
+          "description": "A structured content object with an explicit format.",
+          "required": ["value", "format"],
+          "properties": {
+            "value": {
+              "type": "string",
+              "description": "The text content."
+            },
+            "format": {
+              "type": "string",
+              "enum": ["plain", "markdown", "html"],
+              "description": "The format of the content. 'plain' is unformatted text. 'markdown' is CommonMark (0.27 minimum). 'html' is sanitized HTML."
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "metadata": {
+      "type": "object",
+      "description": "System-level metadata about the design system.",
+      "required": ["systemName"],
+      "properties": {
+        "systemName": {
+          "type": "string",
+          "description": "The name of the design system."
+        },
+        "systemVersion": {
+          "type": "string",
+          "description": "The version of the design system."
+        },
+        "organization": {
+          "type": "string",
+          "description": "The organization that maintains the system."
+        },
+        "url": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL to the system's documentation site."
+        },
+        "license": {
+          "type": "string",
+          "description": "SPDX license identifier or license URL."
+        }
+      },
+      "additionalProperties": false
+    },
+    "extensions": {
+      "type": "object",
+      "description": "Vendor-specific extensions. Keys MUST use vendor-specific namespaces (reverse domain name notation recommended).",
+      "additionalProperties": true
+    },
+    "status": {
+      "type": "string",
+      "description": "The lifecycle status of the artifact. Standard values: 'draft' (under development, not ready for use), 'experimental' (available but API may change without notice), 'stable' (production-ready, changes follow semver), 'deprecated' (scheduled for removal). Custom values are permitted and SHOULD be lowercase kebab-case (e.g., 'sunset', 'archived', 'beta')."
+    },
+    "link": {
+      "type": "object",
+      "description": "A typed reference to an external resource or a related artifact. Links serve dual purposes: pointing to external resources (source code, design files, documentation, packages) and expressing relationships to other DSDS artifacts (alternatives, parents, children). The `type` property classifies the reference. Standard external types: 'source', 'design', 'storybook', 'documentation', 'package', 'repository'. Standard relationship types: 'alternative', 'parent', 'child', 'related'. Custom values are permitted.",
+      "required": ["type", "url"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "The category of the linked resource or relationship. Standard external types: 'source', 'design', 'storybook', 'documentation', 'package', 'repository'. Standard relationship types: 'alternative', 'parent', 'child', 'related'. Custom values are permitted and SHOULD be lowercase strings matching ^[a-z][a-z0-9-]*$."
+        },
+        "url": {
+          "type": "string",
+          "format": "uri",
+          "description": "The URL of the linked resource. MUST be a valid absolute URI. For related DSDS artifacts, this SHOULD point to the artifact's documentation page or DSDS document."
+        },
+        "label": {
+          "type": "string",
+          "description": "A human-readable label describing the specific resource or relationship (e.g., 'React component source', 'Design file — variants', 'Link component (alternative)')."
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

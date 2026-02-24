@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://designsystemdocspec.org/v1/variant.schema.json",
+  "title": "DSDS Variant Definitions",
+  "description": "Definitions for documenting named visual or behavioral configurations of a component. A variant represents a dimension of variation (e.g., 'size', 'emphasis', 'selected') and contains one or more values that describe the options within that dimension.",
+  "$defs": {
+    "variantValue": {
+      "type": "object",
+      "description": "A single value within a variant dimension. For multi-value variants (e.g., size: small/medium/large), each option is a separate value. For single-value boolean variants (e.g., selected), there is one value representing the active state.",
+      "required": ["name", "description"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Machine-readable value name (e.g., 'small', 'primary', 'selected')."
+        },
+        "displayName": {
+          "type": "string",
+          "description": "Human-readable name (e.g., 'Small', 'Primary', 'Selected')."
+        },
+        "description": {
+          "$ref": "../common/common.schema.json#/$defs/richText"
+        },
+        "tokens": {
+          "type": "object",
+          "description": "Token overrides applied when this value is active.",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "preview": {
+          "type": "array",
+          "description": "Visual previews of this variant value.",
+          "items": {
+            "$ref": "../common/example.schema.json#/$defs/example"
+          }
+        },
+        "useCases": {
+          "$ref": "../common/usecase.schema.json#/$defs/useCases"
+        }
+      },
+      "additionalProperties": false
+    },
+    "variant": {
+      "type": "object",
+      "description": "A dimension of variation on a component. Each variant has a name representing the dimension (e.g., 'size', 'emphasis', 'selected') and one or more values representing the options within that dimension. A variant with a single value represents a boolean or toggle configuration (e.g., 'selected', 'full-width'). A variant with multiple values represents an enumerated set (e.g., size: small/medium/large).",
+      "required": ["name", "description", "values"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Machine-readable name of the variant dimension (e.g., 'size', 'emphasis', 'selected', 'full-width')."
+        },
+        "displayName": {
+          "type": "string",
+          "description": "Human-readable name of the variant dimension (e.g., 'Size', 'Emphasis', 'Selected')."
+        },
+        "description": {
+          "$ref": "../common/common.schema.json#/$defs/richText"
+        },
+        "values": {
+          "type": "array",
+          "description": "The possible values for this variant. A single-entry array indicates a boolean/toggle variant. Multiple entries indicate an enumerated variant.",
+          "items": {
+            "$ref": "#/$defs/variantValue"
+          },
+          "minItems": 1
+        },
+        "useCases": {
+          "$ref": "../common/usecase.schema.json#/$defs/useCases"
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}
