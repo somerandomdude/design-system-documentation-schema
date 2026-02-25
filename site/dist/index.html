@@ -42,6 +42,7 @@
 <div class="nav__group">
 <button class="nav__group-toggle" aria-expanded="false" onclick="this.parentElement.classList.toggle('nav__group--open');this.setAttribute('aria-expanded', this.parentElement.classList.contains('nav__group--open'))"><span class="nav__group-label">Tokens</span><span class="nav__group-arrow">›</span></button>
 <div class="nav__group-children">
+<a class="nav__link nav__link--child" href="tokens-theme.html">theme</a>
 <a class="nav__link nav__link--child" href="tokens-token-api.html">token-api</a>
 <a class="nav__link nav__link--child" href="tokens-token-value.html">token-value</a>
 <a class="nav__link nav__link--child" href="tokens-token.html">token</a>
@@ -74,7 +75,7 @@
 <p><strong>Feedback:</strong> <a href="https://github.com/pjonori/design-system-documentation-schema/issues">GitHub Issues</a></p>
 <hr>
 <h2 id="abstract">Abstract</h2>
-<p>This document defines a standard, machine-readable format for design system documentation. The format covers five core domains: <strong>components</strong>, <strong>design tokens</strong>, <strong>styles</strong>, <strong>patterns</strong>, and <strong>collections</strong>. Its purpose is to establish a portable, tool-agnostic structure that enables software to create, edit, validate, and display design system documentation consistently.</p>
+<p>This document defines a standard, machine-readable format for design system documentation. The format covers six core domains: <strong>components</strong>, <strong>design tokens</strong> (including hierarchical token groups and themes), <strong>styles</strong>, <strong>patterns</strong>, and <strong>collections</strong>. Its purpose is to establish a portable, tool-agnostic structure that enables software to create, edit, validate, and display design system documentation consistently.</p>
 <p>This specification is complementary to the <a href="https://www.w3.org/community/reports/design-tokens/CG-FINAL-format-20251028/">W3C Design Tokens Format Module</a>. Where the Design Tokens Format Module defines the interchange format for token <em>values</em>, DSDS defines the interchange format for the <em>documentation</em> that surrounds components, tokens, styles, and patterns.</p>
 <h2 id="status-of-this-document">Status of This Document</h2>
 <p>This is a draft specification and is subject to change. It has not been endorsed by any standards body. Feedback and contributions are welcome via GitHub.</p>
@@ -105,14 +106,15 @@
 <li>Content guidelines</li>
 </ul>
 <h3 id="tokens">Tokens</h3>
-<p><strong><a href="index.html">Tokens Module</a></strong> — Documenting design tokens and token groups.</p>
+<p><strong><a href="index.html">Tokens Module</a></strong> — Documenting design tokens, token groups, and themes.</p>
 <ul>
 <li>Token documentation structure</li>
 <li>Token types aligned with the W3C Design Tokens Format Module</li>
 <li>Semantic categories (base, semantic, component)</li>
 <li>Value representation and DTCG file references</li>
 <li>Platform-specific API mappings (CSS, SCSS, JS, iOS, Android, design tools)</li>
-<li>Token group documentation for related sets of tokens</li>
+<li>Token group documentation with recursive nesting (collections → families → sub-families → tokens)</li>
+<li>Theme documentation for named sets of token value overrides (color modes, density, brand variants)</li>
 </ul>
 <h3 id="styles">Styles</h3>
 <p><strong><a href="index.html">Styles Module</a></strong> — Documenting macro-level visual style guidelines.</p>
@@ -203,41 +205,51 @@
 </tbody></table>
 <hr>
 <h2 id="quick-reference">Quick Reference</h2>
-<h3 id="document-types">Document Types</h3>
+<h3 id="document-structure">Document Structure</h3>
+<p>A DSDS file is a JSON object with a <code>dsdsVersion</code> and a <code>documentGroups</code> array. Each document group is a named collection containing one or more arrays of typed artifacts. There is no <code>documentType</code> discriminator — the root shape is always the same.</p>
+<h3 id="artifact-types-within-a-document-group">Artifact Types (within a document group)</h3>
+<p>The following artifact types can appear inside a document group's arrays:</p>
 <table><thead><tr>
-<th><code>documentType</code></th>
+<th>Artifact type</th>
+<th>Array property</th>
 <th>Description</th>
 <th>Defined in</th>
 </tr></thead><tbody>
 <tr>
-<td><code>"component"</code></td>
+<td>Component</td>
+<td><code>components</code></td>
 <td>A reusable UI component</td>
 <td><a href="index.html">Components Module</a></td>
 </tr>
 <tr>
-<td><code>"token"</code></td>
+<td>Token</td>
+<td><code>tokens</code></td>
 <td>A single design token</td>
 <td><a href="index.html">Tokens Module</a></td>
 </tr>
 <tr>
-<td><code>"tokenGroup"</code></td>
-<td>A group of related tokens</td>
+<td>Token Group</td>
+<td><code>tokenGroups</code></td>
+<td>A hierarchical group of related tokens (recursive — may contain tokens, nested groups, or both)</td>
 <td><a href="index.html">Tokens Module</a></td>
 </tr>
 <tr>
-<td><code>"style"</code></td>
+<td>Theme</td>
+<td><code>themes</code></td>
+<td>A named set of token value overrides (e.g., dark mode, compact density)</td>
+<td><a href="index.html">Tokens Module</a></td>
+</tr>
+<tr>
+<td>Style</td>
+<td><code>styles</code></td>
 <td>A macro-level visual style (color, typography, spacing)</td>
 <td><a href="index.html">Styles Module</a></td>
 </tr>
 <tr>
-<td><code>"pattern"</code></td>
+<td>Pattern</td>
+<td><code>patterns</code></td>
 <td>A broad interaction pattern (navigation, error messaging)</td>
 <td><a href="index.html">Patterns Module</a></td>
-</tr>
-<tr>
-<td><code>"collection"</code></td>
-<td>A bundle of multiple artifacts</td>
-<td><a href="index.html">Common Module</a></td>
 </tr>
 </tbody></table>
 <h3 id="conformance-levels">Conformance Levels</h3>
@@ -247,11 +259,11 @@
 </tr></thead><tbody>
 <tr>
 <td><strong>Level 1: Core</strong></td>
-<td><code>name</code>, <code>displayName</code>, <code>description</code>, <code>status</code> (+ <code>tokenType</code> for tokens, <code>category</code> for styles and patterns)</td>
+<td><code>name</code>, <code>displayName</code>, <code>description</code>, <code>status</code> (+ <code>tokenType</code> for tokens, <code>category</code> for styles and patterns, <code>overrides</code> for themes)</td>
 </tr>
 <tr>
 <td><strong>Level 2: Complete</strong></td>
-<td>Level 1 + at least one substantive section (anatomy/api/guidelines for components, api/guidelines/value for tokens, principles/guidelines/scales for styles, components/interactions/guidelines for patterns)</td>
+<td>Level 1 + at least one substantive section (anatomy/api/guidelines for components, api/guidelines/value for tokens, children for token groups, guidelines for themes, principles/guidelines/scales for styles, components/interactions/guidelines for patterns)</td>
 </tr>
 </tbody></table>
 <h3 id="common-properties-all-artifact-types">Common Properties (all artifact types)</h3>
@@ -321,7 +333,8 @@
 <li><a class="toc__link toc__link--sub" href="#links">Links</a></li>
 <li><a class="toc__link" href="#companion-files">Companion Files</a></li>
 <li><a class="toc__link" href="#quick-reference">Quick Reference</a></li>
-<li><a class="toc__link toc__link--sub" href="#document-types">Document Types</a></li>
+<li><a class="toc__link toc__link--sub" href="#document-structure">Document Structure</a></li>
+<li><a class="toc__link toc__link--sub" href="#artifact-types-within-a-document-group">Artifact Types (within a document group)</a></li>
 <li><a class="toc__link toc__link--sub" href="#conformance-levels">Conformance Levels</a></li>
 <li><a class="toc__link toc__link--sub" href="#common-properties-all-artifact-types">Common Properties (all artifact types)</a></li>
 <li><a class="toc__link" href="#design-principles">Design Principles</a></li>

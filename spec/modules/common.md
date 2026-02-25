@@ -131,32 +131,33 @@ A DSDS document _MUST_ be a JSON object with the following root-level properties
 | Property | Type | Required | Description |
 |---|---|---|---|
 | `$schema` | `string` | No | URI reference to the DSDS JSON Schema for validation. |
-| `dspiVersion` | `string` | Yes | The version of this specification the document conforms to. _MUST_ be `"1.0"` for this version. |
-| `documentType` | `string` | Yes | The type of artifact documented. _MUST_ be one of: `"component"`, `"token"`, `"tokenGroup"`, `"foundation"`, `"collection"`. |
+| `dsdsVersion` | `string` | Yes | The version of this specification the document conforms to. _MUST_ be `"0.1"` for this version. |
 | `metadata` | `object` | No | System-level metadata about the design system this document belongs to. |
-| `component` | `object` | Conditional | The component documentation. Required when `documentType` is `"component"`. |
-| `token` | `object` | Conditional | The token documentation. Required when `documentType` is `"token"`. |
-| `tokenGroup` | `object` | Conditional | The token group documentation. Required when `documentType` is `"tokenGroup"`. |
-| `foundation` | `object` | Conditional | The foundation documentation. Required when `documentType` is `"foundation"`. |
-| `collection` | `object` | Conditional | A collection of multiple artifacts. Required when `documentType` is `"collection"`. |
-| `$extensions` | `object` | No | Vendor-specific extensions. See [§11 Extensions](#11-extensions). |
+| `documentGroups` | `array` | Yes | One or more document groups. See [§4.5](#45-document-groups). |
+| `$extensions` | `object` | No | Vendor-specific extensions. See [§13 Extensions](#13-extensions). |
 
-A document _MUST_ include exactly one of `component`, `token`, `tokenGroup`, `foundation`, or `collection`, matching the `documentType` value.
+A DSDS file contains one or more **document groups** — named collections that each hold one or more arrays of typed artifacts (components, tokens, token groups, themes, styles, and/or patterns). Individual artifacts do not appear at the root level; they are always nested inside a document group's arrays. Multiple groups allow a single file to organize artifacts into logical sections (e.g., one group for foundations, another for components). This uniform structure simplifies parsing, validation, and tooling — a consumer always knows the shape of the root object.
 
-### 4.5 Collection Documents
+### 4.5 Document Groups
 
-A collection document aggregates multiple artifacts into a single file. This is useful for bundling related documentation.
+The `documentGroups` array contains one or more document group objects. Each document group is a named collection that aggregates one or more artifact arrays.
 
 | Property | Type | Required | Description |
 |---|---|---|---|
-| `name` | `string` | Yes | Human-readable name of the collection. |
-| `description` | `string` | No | Description of the collection. |
+| `name` | `string` | Yes | Human-readable name of the collection (e.g., `"Acme Design System"`, `"Color Tokens"`, `"Button Documentation"`). |
+| `description` | `richText` | No | Description of the collection. CommonMark supported. |
 | `components` | `array` | No | Array of component documentation objects. |
-| `tokens` | `array` | No | Array of token documentation objects. |
-| `tokenGroups` | `array` | No | Array of token group documentation objects. |
-| `foundations` | `array` | No | Array of foundation documentation objects. |
+| `tokens` | `array` | No | Array of individual token documentation objects. |
+| `tokenGroups` | `array` | No | Array of token group documentation objects. Each group can contain tokens, nested groups, or a mix of both. |
+| `themes` | `array` | No | Array of theme documentation objects. Each theme provides alternative token values for a named context. |
+| `styles` | `array` | No | Array of style documentation objects. |
+| `patterns` | `array` | No | Array of pattern documentation objects. |
 
-At least one of `components`, `tokens`, `tokenGroups`, or `foundations` _MUST_ be present.
+At least one of `components`, `tokens`, `tokenGroups`, `themes`, `styles`, or `patterns` _MUST_ be present in each document group.
+
+A document group _MAY_ contain artifacts of multiple types. For example, a single group could contain a set of token groups alongside the themes that override their values, or a component alongside the tokens it consumes.
+
+A DSDS file _MAY_ contain multiple document groups. This allows logical separation within a single file — for example, one group for foundations and another for components, or one group per product within a shared design system.
 
 ### 4.6 Metadata
 
@@ -174,21 +175,27 @@ The optional `metadata` object provides context about the design system.
 
 ```json
 {
-  "$schema": "https://designsystemdocspec.org/v1/dsds.schema.json",
-  "dspiVersion": "1.0",
-  "documentType": "component",
+  "$schema": "https://designsystemdocspec.org/v0.1/dsds.schema.json",
+  "dsdsVersion": "0.1",
   "metadata": {
     "systemName": "Acme Design System",
     "systemVersion": "4.1.0",
     "organization": "Acme Corp",
     "url": "https://design.acme.com"
   },
-  "component": {
-    "name": "button",
-    "displayName": "Button",
-    "description": "A clickable element that triggers an action.",
-    "status": "stable"
-  }
+  "documentGroups": [
+    {
+      "name": "Acme Design System",
+      "components": [
+        {
+          "name": "button",
+          "displayName": "Button",
+          "description": "A clickable element that triggers an action.",
+          "status": "stable"
+        }
+      ]
+    }
+  ]
 }
 ```
 
@@ -307,6 +314,7 @@ When `format` is `"html"`, tools _MUST_ sanitize the content before rendering. A
 | Property | Type | Required | Description |
 |---|---|---|---|
 | `status` | `string` | Yes | The lifecycle status. _MUST_ be one of: `"draft"`, `"experimental"`, `"stable"`, `"deprecated"`. |
+| `platformStatus` | `object` | No | Per-platform readiness tracking. See [§5.2.1](#521-platform-status). |
 | `deprecationNotice` | `string` | Conditional | Required when `status` is `"deprecated"`. _MUST_ explain what to use instead. |
 | `since` | `string` | No | The version of the design system in which this artifact was introduced. |
 
@@ -318,6 +326,124 @@ When `format` is `"html"`, tools _MUST_ sanitize the content before rendering. A
 | `experimental` | Available for use. API and behavior may change without notice. |
 | `stable` | Ready for production use. Changes follow semantic versioning. |
 | `deprecated` | Scheduled for removal. `deprecationNotice` explains the replacement. |
+
+### 5.2.1 Platform Status
+
+The optional `platformStatus` property provides **per-platform readiness tracking** alongside the top-level `status`. Where `status` communicates the overall lifecycle stage of an artifact, `platformStatus` captures the granular reality that a component, token, or pattern may be at different stages of readiness across different platforms, frameworks, or tools.
+
+This addresses a common need observed across major design systems:
+
+- **Gestalt (Pinterest):** Tracks readiness per platform — _Figma Library: Ready_, _Responsive Web: Ready_, _Adaptive: N/A_.
+- **Carbon (IBM):** Tracks accessibility testing status per test type — _Default state: Tested_, _Screen reader: Manually tested_, _Keyboard navigation: Tested_.
+
+An artifact _MAY_ be `"stable"` overall while individual platforms are still `"experimental"` or `"draft"`. Conversely, an artifact _MAY_ be `"deprecated"` on one platform while remaining `"stable"` on others.
+
+#### Structure
+
+`platformStatus` is an open map. Keys are **platform identifiers** — freeform strings that name the platform, framework, or tool. Values are **platform status entry** objects.
+
+Common platform keys (non-normative):
+
+| Key | Description |
+|---|---|
+| `"react"` | React component implementation. |
+| `"web-component"` | Web Component implementation. |
+| `"angular"` | Angular component implementation. |
+| `"vue"` | Vue component implementation. |
+| `"ios"` | iOS / Swift / SwiftUI implementation. |
+| `"android"` | Android / Kotlin / Compose implementation. |
+| `"flutter"` | Flutter / Dart implementation. |
+| `"figma"` | Figma design library availability. |
+| `"sketch"` | Sketch design library availability. |
+
+Design systems _MAY_ use any key name. Custom keys _SHOULD_ be lowercase kebab-case.
+
+#### Platform Status Entry
+
+Each value in the `platformStatus` map is an object with the following properties:
+
+| Property | Type | Required | Description |
+|---|---|---|---|
+| `status` | `string` | Yes | The lifecycle status on this platform. Uses the same vocabulary as the top-level `status`: `"draft"`, `"experimental"`, `"stable"`, `"deprecated"`. Custom values are permitted. |
+| `since` | `string` | No | The version in which this artifact became available on this platform. |
+| `deprecationNotice` | `string` | Conditional | Required when `status` is `"deprecated"`. Explains what to use instead on this platform. |
+| `description` | `string` | No | Optional notes about the artifact's status on this platform. |
+
+When a platform entry has `status: "deprecated"`, the `deprecationNotice` property is required on that entry.
+
+#### Example
+
+```json
+{
+  "name": "button",
+  "displayName": "Button",
+  "description": "An interactive element that triggers an action when activated.",
+  "status": "stable",
+  "platformStatus": {
+    "react": {
+      "status": "stable",
+      "since": "1.0.0"
+    },
+    "web-component": {
+      "status": "experimental",
+      "since": "3.2.0",
+      "description": "Available as a Web Component wrapper. Native shadow DOM implementation planned for v4."
+    },
+    "ios": {
+      "status": "stable",
+      "since": "2.1.0"
+    },
+    "android": {
+      "status": "draft",
+      "description": "Compose implementation in progress. Expected in v4.0."
+    },
+    "figma": {
+      "status": "stable",
+      "since": "1.0.0"
+    },
+    "vue": {
+      "status": "deprecated",
+      "since": "1.5.0",
+      "deprecationNotice": "The Vue wrapper is deprecated. Use the Web Component directly in Vue applications."
+    }
+  }
+}
+```
+
+#### Accessibility Testing Status
+
+`platformStatus` can also be used to track testing readiness. While the keys are most commonly platform/framework names, they _MAY_ represent any dimension of readiness — including accessibility test coverage:
+
+```json
+{
+  "platformStatus": {
+    "react": { "status": "stable", "since": "1.0.0" },
+    "figma": { "status": "stable", "since": "1.0.0" },
+    "a11y-keyboard": {
+      "status": "stable",
+      "description": "Passes all automated keyboard navigation tests."
+    },
+    "a11y-screen-reader": {
+      "status": "stable",
+      "description": "Manually tested with JAWS, VoiceOver, and NVDA."
+    },
+    "a11y-color-contrast": {
+      "status": "stable",
+      "description": "All variant/state combinations meet WCAG AA contrast requirements."
+    }
+  }
+}
+```
+
+#### Relationship to Top-Level Status
+
+The top-level `status` property remains **required** and represents the artifact's overall lifecycle stage. `platformStatus` is **optional** and additive — it provides detail that the top-level status cannot capture.
+
+When both are present:
+
+- Tools _SHOULD_ display the top-level `status` as the primary status indicator.
+- Tools _MAY_ display `platformStatus` as supplementary detail (e.g., in a readiness matrix, a per-platform badge row, or a detail panel).
+- The top-level `status` is _not_ required to be the "most advanced" or "least advanced" of the platform statuses. It represents an editorial judgment about the artifact's overall maturity.
 
 ### 5.3 Tags
 

@@ -6,7 +6,7 @@
   "type": "object",
   "required": [
     "dsdsVersion",
-    "documentType"
+    "documentGroups"
   ],
   "properties": {
     "$schema": {
@@ -18,111 +18,21 @@
       "const": "0.1",
       "description": "The version of the DSDS specification this document conforms to."
     },
-    "documentType": {
-      "type": "string",
-      "enum": [
-        "component",
-        "token",
-        "style",
-        "pattern",
-        "documentGroup"
-      ],
-      "description": "The type of artifact documented."
-    },
     "metadata": {
       "$ref": "#/$defs/metadata"
     },
-    "component": {
-      "$ref": "#/$defs/componentDoc"
-    },
-    "token": {
-      "$ref": "#/$defs/tokenDoc"
-    },
-    "style": {
-      "$ref": "#/$defs/styleDoc"
-    },
-    "pattern": {
-      "$ref": "#/$defs/patternDoc"
-    },
-    "documentGroup": {
-      "$ref": "#/$defs/documents"
+    "documentGroups": {
+      "type": "array",
+      "description": "One or more document groups. Each group is a named collection of typed artifacts — components, tokens, token groups, themes, styles, and/or patterns. Multiple groups allow a single DSDS file to organize artifacts into logical sections (e.g., one group for foundations, another for components).",
+      "items": {
+        "$ref": "#/$defs/documentGroup"
+      },
+      "minItems": 1
     },
     "$extensions": {
       "$ref": "#/$defs/extensions"
     }
   },
-  "allOf": [
-    {
-      "if": {
-        "properties": {
-          "documentType": {
-            "const": "component"
-          }
-        }
-      },
-      "then": {
-        "required": [
-          "component"
-        ]
-      }
-    },
-    {
-      "if": {
-        "properties": {
-          "documentType": {
-            "const": "token"
-          }
-        }
-      },
-      "then": {
-        "required": [
-          "token"
-        ]
-      }
-    },
-    {
-      "if": {
-        "properties": {
-          "documentType": {
-            "const": "style"
-          }
-        }
-      },
-      "then": {
-        "required": [
-          "style"
-        ]
-      }
-    },
-    {
-      "if": {
-        "properties": {
-          "documentType": {
-            "const": "pattern"
-          }
-        }
-      },
-      "then": {
-        "required": [
-          "pattern"
-        ]
-      }
-    },
-    {
-      "if": {
-        "properties": {
-          "documentType": {
-            "const": "documentGroup"
-          }
-        }
-      },
-      "then": {
-        "required": [
-          "documentGroup"
-        ]
-      }
-    }
-  ],
   "$defs": {
     "keyboardInteraction": {
       "type": "object",
@@ -571,6 +481,51 @@
       "type": "string",
       "description": "The lifecycle status of the artifact. Standard values: 'draft' (under development, not ready for use), 'experimental' (available but API may change without notice), 'stable' (production-ready, changes follow semver), 'deprecated' (scheduled for removal). Custom values are permitted and SHOULD be lowercase kebab-case (e.g., 'sunset', 'archived', 'beta')."
     },
+    "platformStatusEntry": {
+      "type": "object",
+      "description": "The readiness status of an artifact on a specific platform. Tracks lifecycle stage, version availability, and optional deprecation notices independently per platform.",
+      "required": [
+        "status"
+      ],
+      "properties": {
+        "status": {
+          "$ref": "#/$defs/status",
+          "description": "The lifecycle status of the artifact on this platform. Uses the same vocabulary as the top-level status: 'draft', 'experimental', 'stable', 'deprecated'. Custom values are permitted."
+        },
+        "since": {
+          "type": "string",
+          "description": "The version in which this artifact became available on this platform."
+        },
+        "deprecationNotice": {
+          "type": "string",
+          "description": "Required when status is 'deprecated'. Explains what to use instead on this platform."
+        },
+        "description": {
+          "type": "string",
+          "description": "Optional notes about the artifact's status on this platform (e.g., 'Available as a Web Component wrapper; native implementation planned for v4')."
+        }
+      },
+      "if": {
+        "properties": {
+          "status": {
+            "const": "deprecated"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "deprecationNotice"
+        ]
+      },
+      "additionalProperties": false
+    },
+    "platformStatus": {
+      "type": "object",
+      "description": "Platform-specific readiness or availability status for an artifact. Keys are platform identifiers and values describe the artifact's status on that platform. Platform keys are freeform strings — common values include 'react', 'web-component', 'ios', 'android', 'flutter', 'figma', 'sketch', and 'compose'. When present, the top-level `status` property represents the overall lifecycle stage of the artifact, while `platformStatus` provides granular per-platform detail. An artifact MAY be 'stable' overall while individual platforms are still 'experimental' or 'draft'.",
+      "additionalProperties": {
+        "$ref": "#/$defs/platformStatusEntry"
+      }
+    },
     "useCase": {
       "type": "object",
       "description": "A single use case scenario describing a situation in which an artifact is or is not appropriate.",
@@ -1002,6 +957,9 @@
         "status": {
           "$ref": "#/$defs/status"
         },
+        "platformStatus": {
+          "$ref": "#/$defs/platformStatus"
+        },
         "deprecationNotice": {
           "type": "string",
           "description": "Required when status is 'deprecated'."
@@ -1301,6 +1259,105 @@
       },
       "additionalProperties": false
     },
+    "tokenOverride": {
+      "type": "object",
+      "description": "An alternative value for a single token within a theme. A simple mapping of a token name to its theme-specific value.",
+      "required": [
+        "token",
+        "value"
+      ],
+      "properties": {
+        "token": {
+          "type": "string",
+          "description": "The name of the token being overridden. MUST match the `name` of a tokenDoc defined elsewhere in the system. Token names are intentionally unconstrained by a pattern to accommodate DTCG and design tool naming conventions (e.g., 'color-text-primary', 'color.text.primary', 'color/text/primary')."
+        },
+        "value": {
+          "$ref": "#/$defs/tokenValue",
+          "description": "The override value for this token within the theme. Follows the same structure as tokenDoc.value — a displayable representation containing a resolved value, alias reference, and/or DTCG file pointer."
+        }
+      },
+      "additionalProperties": false
+    },
+    "themeDoc": {
+      "type": "object",
+      "description": "Documentation for a theme — a named set of token value overrides that adapt the design system to a specific context. Themes are commonly used for color modes (light, dark, high-contrast), density settings (compact, comfortable), brand variants, or product-specific customizations. A theme does not redefine tokens; it references existing tokens and provides alternative values for them. The token catalog remains the authoritative source for token identity, type, documentation, and API mappings.",
+      "required": [
+        "name",
+        "displayName",
+        "status",
+        "overrides"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]*$",
+          "description": "Machine-readable identifier for the theme (e.g., 'dark', 'high-contrast', 'compact', 'brand-sub-brand')."
+        },
+        "displayName": {
+          "type": "string",
+          "description": "Human-readable name for the theme (e.g., 'Dark Mode', 'High Contrast', 'Compact Density')."
+        },
+        "status": {
+          "$ref": "#/$defs/status"
+        },
+        "platformStatus": {
+          "$ref": "#/$defs/platformStatus"
+        },
+        "deprecationNotice": {
+          "type": "string",
+          "description": "Required when status is 'deprecated'. Explains what to use instead."
+        },
+        "since": {
+          "type": "string",
+          "description": "The version of the design system in which this theme was introduced."
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Freeform keywords for categorization and search (e.g., 'dark-mode', 'accessibility', 'brand')."
+        },
+        "category": {
+          "type": "string",
+          "description": "The category of adaptation this theme represents. Common values: 'color-mode' (light/dark/high-contrast), 'density' (compact/comfortable/spacious), 'brand' (sub-brand or partner theming), 'product' (product-specific overrides). Custom values are permitted and SHOULD be lowercase kebab-case."
+        },
+        "overrides": {
+          "type": "array",
+          "description": "The set of token value overrides that define this theme. Each entry is a simple mapping of a token name to its theme-specific value. Only tokens whose values differ from the default need to be listed — unlisted tokens retain their default values.",
+          "items": {
+            "$ref": "#/$defs/tokenOverride"
+          },
+          "minItems": 1
+        },
+        "useCases": {
+          "$ref": "#/$defs/useCases"
+        },
+        "links": {
+          "type": "array",
+          "description": "External resource links related to this theme.",
+          "items": {
+            "$ref": "#/$defs/link"
+          }
+        },
+        "$extensions": {
+          "$ref": "#/$defs/extensions"
+        }
+      },
+      "if": {
+        "properties": {
+          "status": {
+            "const": "deprecated"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "deprecationNotice"
+        ]
+      },
+      "additionalProperties": false
+    },
     "tokenApi": {
       "type": "object",
       "description": "Platform-specific identifiers for a token. Keys are platform names (e.g., 'cssCustomProperty', 'scssVariable', 'jsConstant', 'iosToken', 'androidToken', 'designToolVariable') and values are the identifier strings for that platform. Additional platforms can be added without schema changes.",
@@ -1329,7 +1386,7 @@
     },
     "tokenDoc": {
       "type": "object",
-      "description": "Documentation for a single design token.",
+      "description": "Documentation for a single design token — its name, type, value, platform API mappings, use cases, guidelines, and accessibility considerations.",
       "required": [
         "name",
         "displayName",
@@ -1355,6 +1412,9 @@
         },
         "status": {
           "$ref": "#/$defs/status"
+        },
+        "platformStatus": {
+          "$ref": "#/$defs/platformStatus"
         },
         "deprecationNotice": {
           "type": "string",
@@ -1408,6 +1468,114 @@
         "links": {
           "type": "array",
           "description": "External resource links and related artifact references.",
+          "items": {
+            "$ref": "#/$defs/link"
+          }
+        },
+        "$extensions": {
+          "$ref": "#/$defs/extensions"
+        }
+      },
+      "if": {
+        "properties": {
+          "status": {
+            "const": "deprecated"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "deprecationNotice"
+        ]
+      },
+      "additionalProperties": false
+    },
+    "tokenGroupDoc": {
+      "type": "object",
+      "description": "Documentation for a group of related design tokens. Token groups are flexible organizational units that can represent a full token collection, a token family (e.g., all color tokens), a token sub-family (e.g., a single color hue with its grade scale), or any other logical grouping. Groups can be nested to form an arbitrarily deep hierarchy — a top-level group might represent 'color', containing child groups for 'color-text', 'color-background', and 'color-border', each of which contains individual tokens. This recursive structure mirrors the way real design systems organize tokens into families and sub-families.",
+      "required": [
+        "name",
+        "displayName",
+        "description",
+        "status"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "The token group name. Token group names are intentionally unconstrained by a pattern to accommodate DTCG and design tool naming conventions (e.g., 'color-text', 'color.text', 'color/text')."
+        },
+        "displayName": {
+          "type": "string",
+          "description": "Human-readable name (e.g., 'Text Colors', 'Spacing Scale', 'Red — Pushpin')."
+        },
+        "summary": {
+          "type": "string",
+          "description": "A one-line, plain-text summary. MUST NOT contain markup."
+        },
+        "description": {
+          "$ref": "#/$defs/richText",
+          "description": "A description of the group's purpose, the tokens it contains, and how they relate to each other. CommonMark supported."
+        },
+        "status": {
+          "$ref": "#/$defs/status"
+        },
+        "platformStatus": {
+          "$ref": "#/$defs/platformStatus"
+        },
+        "deprecationNotice": {
+          "type": "string",
+          "description": "Required when status is 'deprecated'."
+        },
+        "since": {
+          "type": "string",
+          "description": "The version in which this group was introduced."
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Freeform keywords for categorization and search (e.g., 'color', 'palette', 'semantic')."
+        },
+        "tokenType": {
+          "type": "string",
+          "description": "When all tokens in this group share the same DTCG token type, it MAY be declared here to avoid repetition on each child token. Individual tokenDoc objects within children MAY override this value. Common values: 'color', 'dimension', 'fontFamily', 'fontWeight', 'duration', 'number', 'shadow'."
+        },
+        "category": {
+          "type": "string",
+          "description": "When all tokens in this group share the same semantic category, it MAY be declared here. Standard values: 'base', 'semantic', 'component'. Individual tokenDoc objects within children MAY override this value."
+        },
+        "children": {
+          "type": "array",
+          "description": "An ordered array of tokens and/or nested token groups that belong to this group. Each item MUST be either a tokenDoc (identified by the presence of `tokenType` and absence of `children`) or a tokenGroupDoc (identified by the presence of `children` or the absence of `tokenType`). The ordering is significant — tools SHOULD preserve the order for display, as it often represents a meaningful progression (e.g., a color grade scale from lightest to darkest, or a spacing scale from smallest to largest).",
+          "items": {
+            "oneOf": [
+              {
+                "$ref": "#/$defs/tokenDoc"
+              },
+              {
+                "$ref": "#/$defs/tokenGroupDoc"
+              }
+            ]
+          },
+          "minItems": 1
+        },
+        "useCases": {
+          "$ref": "#/$defs/useCases"
+        },
+        "guidelines": {
+          "type": "array",
+          "description": "Usage guidelines that apply to the group as a whole. Guidelines specific to individual tokens SHOULD be placed on the tokenDoc within children.",
+          "items": {
+            "$ref": "#/$defs/guideline"
+          }
+        },
+        "accessibility": {
+          "$ref": "#/$defs/accessibilityObject"
+        },
+        "links": {
+          "type": "array",
+          "description": "External resource links related to this token group.",
           "items": {
             "$ref": "#/$defs/link"
           }
@@ -1533,6 +1701,9 @@
         },
         "status": {
           "$ref": "#/$defs/status"
+        },
+        "platformStatus": {
+          "$ref": "#/$defs/platformStatus"
         },
         "deprecationNotice": {
           "type": "string",
@@ -1673,6 +1844,9 @@
         "status": {
           "$ref": "#/$defs/status"
         },
+        "platformStatus": {
+          "$ref": "#/$defs/platformStatus"
+        },
         "deprecationNotice": {
           "type": "string",
           "description": "Required when status is 'deprecated'."
@@ -1751,16 +1925,16 @@
       },
       "additionalProperties": false
     },
-    "documents": {
+    "documentGroup": {
       "type": "object",
-      "description": "A collection of multiple documentation artifacts.",
+      "description": "A named collection of design system documentation artifacts. Contains one or more arrays of typed artifacts — components, tokens, token groups, themes, styles, and/or patterns. At least one artifact array must be present.",
       "required": [
         "name"
       ],
       "properties": {
         "name": {
           "type": "string",
-          "description": "Human-readable name of the collection."
+          "description": "Human-readable name of the collection (e.g., 'Acme Design System', 'Color Tokens', 'Button Documentation')."
         },
         "description": {
           "$ref": "#/$defs/richText"
@@ -1774,9 +1948,23 @@
         },
         "tokens": {
           "type": "array",
-          "description": "Array of token documentation objects.",
+          "description": "Array of individual token documentation objects.",
           "items": {
             "$ref": "#/$defs/tokenDoc"
+          }
+        },
+        "tokenGroups": {
+          "type": "array",
+          "description": "Array of token group documentation objects. Each group can contain tokens, nested groups, or a mix of both, forming an arbitrarily deep hierarchy.",
+          "items": {
+            "$ref": "#/$defs/tokenGroupDoc"
+          }
+        },
+        "themes": {
+          "type": "array",
+          "description": "Array of theme documentation objects. Each theme provides alternative token values for a named context such as a color mode, density setting, or brand variant.",
+          "items": {
+            "$ref": "#/$defs/themeDoc"
           }
         },
         "styles": {
@@ -1803,6 +1991,16 @@
         {
           "required": [
             "tokens"
+          ]
+        },
+        {
+          "required": [
+            "tokenGroups"
+          ]
+        },
+        {
+          "required": [
+            "themes"
           ]
         },
         {

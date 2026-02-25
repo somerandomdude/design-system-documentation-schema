@@ -2,9 +2,9 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://designsystemdocspec.org/v0.1/dsds.schema.json",
   "title": "Design System Documentation Standard (DSDS) v0.1",
-  "description": "A standard, machine-readable format for design system documentation covering components, design tokens, styles, and patterns. This is the root schema; definitions are organized into directories: common/ (rich-text, metadata, status, link, extensions, example, guideline, usecase, accessibility, artifact-reference), components/ (component, anatomy, api, design-specifications, variant, state), tokens/ (token, token-value, token-api), style/ (style), and patterns/ (pattern).",
+  "description": "A standard, machine-readable format for design system documentation covering components, design tokens, token groups, themes, styles, and patterns. A DSDS document contains one or more document groups — named collections of typed artifact arrays (components, tokens, tokenGroups, themes, styles, patterns). Individual artifacts are defined in their respective sub-schemas: components/ (component, anatomy, api, design-specifications, variant, state), tokens/ (token, token-group, token-value, token-api, theme), style/ (style), and patterns/ (pattern).",
   "type": "object",
-  "required": ["dsdsVersion", "documentType"],
+  "required": ["dsdsVersion", "documentGroups"],
   "properties": {
     "$schema": {
       "type": "string",
@@ -15,104 +15,31 @@
       "const": "0.1",
       "description": "The version of the DSDS specification this document conforms to."
     },
-    "documentType": {
-      "type": "string",
-      "enum": ["component", "token", "style", "pattern", "documentGroup"],
-      "description": "The type of artifact documented."
-    },
     "metadata": {
       "$ref": "common/metadata.schema.json#/$defs/metadata"
     },
-    "component": {
-      "$ref": "components/component.schema.json#/$defs/componentDoc"
-    },
-    "token": {
-      "$ref": "tokens/token.schema.json#/$defs/tokenDoc"
-    },
-    "style": {
-      "$ref": "style/style.schema.json#/$defs/styleDoc"
-    },
-    "pattern": {
-      "$ref": "patterns/pattern.schema.json#/$defs/patternDoc"
-    },
-    "documentGroup": {
-      "$ref": "#/$defs/documents"
+    "documentGroups": {
+      "type": "array",
+      "description": "One or more document groups. Each group is a named collection of typed artifacts — components, tokens, token groups, themes, styles, and/or patterns. Multiple groups allow a single DSDS file to organize artifacts into logical sections (e.g., one group for foundations, another for components).",
+      "items": {
+        "$ref": "#/$defs/documentGroup"
+      },
+      "minItems": 1
     },
     "$extensions": {
       "$ref": "common/extensions.schema.json#/$defs/extensions"
     }
   },
-  "allOf": [
-    {
-      "if": {
-        "properties": {
-          "documentType": {
-            "const": "component"
-          }
-        }
-      },
-      "then": {
-        "required": ["component"]
-      }
-    },
-    {
-      "if": {
-        "properties": {
-          "documentType": {
-            "const": "token"
-          }
-        }
-      },
-      "then": {
-        "required": ["token"]
-      }
-    },
-    {
-      "if": {
-        "properties": {
-          "documentType": {
-            "const": "style"
-          }
-        }
-      },
-      "then": {
-        "required": ["style"]
-      }
-    },
-    {
-      "if": {
-        "properties": {
-          "documentType": {
-            "const": "pattern"
-          }
-        }
-      },
-      "then": {
-        "required": ["pattern"]
-      }
-    },
-    {
-      "if": {
-        "properties": {
-          "documentType": {
-            "const": "documentGroup"
-          }
-        }
-      },
-      "then": {
-        "required": ["documentGroup"]
-      }
-    }
-  ],
+  "additionalProperties": false,
   "$defs": {
-    "documents": {
+    "documentGroup": {
       "type": "object",
-      "description": "A collection of multiple documentation artifacts.",
+      "description": "A named collection of design system documentation artifacts. Contains one or more arrays of typed artifacts — components, tokens, token groups, themes, styles, and/or patterns. At least one artifact array must be present.",
       "required": ["name"],
       "properties": {
         "name": {
           "type": "string",
-          "description": "Human-readable name of the collection."
+          "description": "Human-readable name of the collection (e.g., 'Acme Design System', 'Color Tokens', 'Button Documentation')."
         },
         "description": {
           "$ref": "common/rich-text.schema.json#/$defs/richText"
@@ -126,9 +53,23 @@
         },
         "tokens": {
           "type": "array",
-          "description": "Array of token documentation objects.",
+          "description": "Array of individual token documentation objects.",
           "items": {
             "$ref": "tokens/token.schema.json#/$defs/tokenDoc"
+          }
+        },
+        "tokenGroups": {
+          "type": "array",
+          "description": "Array of token group documentation objects. Each group can contain tokens, nested groups, or a mix of both, forming an arbitrarily deep hierarchy.",
+          "items": {
+            "$ref": "tokens/token.schema.json#/$defs/tokenGroupDoc"
+          }
+        },
+        "themes": {
+          "type": "array",
+          "description": "Array of theme documentation objects. Each theme provides alternative token values for a named context such as a color mode, density setting, or brand variant.",
+          "items": {
+            "$ref": "tokens/theme.schema.json#/$defs/themeDoc"
           }
         },
         "styles": {
@@ -147,18 +88,12 @@
         }
       },
       "anyOf": [
-        {
-          "required": ["components"]
-        },
-        {
-          "required": ["tokens"]
-        },
-        {
-          "required": ["styles"]
-        },
-        {
-          "required": ["patterns"]
-        }
+        { "required": ["components"] },
+        { "required": ["tokens"] },
+        { "required": ["tokenGroups"] },
+        { "required": ["themes"] },
+        { "required": ["styles"] },
+        { "required": ["patterns"] }
       ],
       "additionalProperties": false
     }

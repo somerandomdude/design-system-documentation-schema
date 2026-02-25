@@ -1,12 +1,12 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://designsystemdocspec.org/v0.1/token.schema.json",
-  "title": "DSDS Token Definition",
-  "description": "Documentation for a single design token — its name, type, value, platform API mappings, use cases, guidelines, and accessibility considerations.",
+  "title": "DSDS Token and Token Group Definitions",
+  "description": "Documentation for individual design tokens and hierarchical token groups. Token groups are flexible organizational units that can represent a full token collection, a token family (e.g., all color tokens), or a token sub-family (e.g., a single color hue family). Groups can contain tokens, nested groups, or a mix of both, forming an arbitrarily deep hierarchy that mirrors how design systems organize their token architecture.",
   "$defs": {
     "tokenDoc": {
       "type": "object",
-      "description": "Documentation for a single design token.",
+      "description": "Documentation for a single design token — its name, type, value, platform API mappings, use cases, guidelines, and accessibility considerations.",
       "required": ["name", "displayName", "description", "status", "tokenType"],
       "properties": {
         "name": {
@@ -26,6 +26,9 @@
         },
         "status": {
           "$ref": "../common/status.schema.json#/$defs/status"
+        },
+        "platformStatus": {
+          "$ref": "../common/status.schema.json#/$defs/platformStatus"
         },
         "deprecationNotice": {
           "type": "string",
@@ -79,6 +82,107 @@
         "links": {
           "type": "array",
           "description": "External resource links and related artifact references.",
+          "items": {
+            "$ref": "../common/link.schema.json#/$defs/link"
+          }
+        },
+        "$extensions": {
+          "$ref": "../common/extensions.schema.json#/$defs/extensions"
+        }
+      },
+      "if": {
+        "properties": {
+          "status": {
+            "const": "deprecated"
+          }
+        }
+      },
+      "then": {
+        "required": ["deprecationNotice"]
+      },
+      "additionalProperties": false
+    },
+    "tokenGroupDoc": {
+      "type": "object",
+      "description": "Documentation for a group of related design tokens. Token groups are flexible organizational units that can represent a full token collection, a token family (e.g., all color tokens), a token sub-family (e.g., a single color hue with its grade scale), or any other logical grouping. Groups can be nested to form an arbitrarily deep hierarchy — a top-level group might represent 'color', containing child groups for 'color-text', 'color-background', and 'color-border', each of which contains individual tokens. This recursive structure mirrors the way real design systems organize tokens into families and sub-families.",
+      "required": ["name", "displayName", "description", "status"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "The token group name. Token group names are intentionally unconstrained by a pattern to accommodate DTCG and design tool naming conventions (e.g., 'color-text', 'color.text', 'color/text')."
+        },
+        "displayName": {
+          "type": "string",
+          "description": "Human-readable name (e.g., 'Text Colors', 'Spacing Scale', 'Red — Pushpin')."
+        },
+        "summary": {
+          "type": "string",
+          "description": "A one-line, plain-text summary. MUST NOT contain markup."
+        },
+        "description": {
+          "$ref": "../common/rich-text.schema.json#/$defs/richText",
+          "description": "A description of the group's purpose, the tokens it contains, and how they relate to each other. CommonMark supported."
+        },
+        "status": {
+          "$ref": "../common/status.schema.json#/$defs/status"
+        },
+        "platformStatus": {
+          "$ref": "../common/status.schema.json#/$defs/platformStatus"
+        },
+        "deprecationNotice": {
+          "type": "string",
+          "description": "Required when status is 'deprecated'."
+        },
+        "since": {
+          "type": "string",
+          "description": "The version in which this group was introduced."
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Freeform keywords for categorization and search (e.g., 'color', 'palette', 'semantic')."
+        },
+        "tokenType": {
+          "type": "string",
+          "description": "When all tokens in this group share the same DTCG token type, it MAY be declared here to avoid repetition on each child token. Individual tokenDoc objects within children MAY override this value. Common values: 'color', 'dimension', 'fontFamily', 'fontWeight', 'duration', 'number', 'shadow'."
+        },
+        "category": {
+          "type": "string",
+          "description": "When all tokens in this group share the same semantic category, it MAY be declared here. Standard values: 'base', 'semantic', 'component'. Individual tokenDoc objects within children MAY override this value."
+        },
+        "children": {
+          "type": "array",
+          "description": "An ordered array of tokens and/or nested token groups that belong to this group. Each item MUST be either a tokenDoc (identified by the presence of `tokenType` and absence of `children`) or a tokenGroupDoc (identified by the presence of `children` or the absence of `tokenType`). The ordering is significant — tools SHOULD preserve the order for display, as it often represents a meaningful progression (e.g., a color grade scale from lightest to darkest, or a spacing scale from smallest to largest).",
+          "items": {
+            "oneOf": [
+              {
+                "$ref": "#/$defs/tokenDoc"
+              },
+              {
+                "$ref": "#/$defs/tokenGroupDoc"
+              }
+            ]
+          },
+          "minItems": 1
+        },
+        "useCases": {
+          "$ref": "../common/usecase.schema.json#/$defs/useCases"
+        },
+        "guidelines": {
+          "type": "array",
+          "description": "Usage guidelines that apply to the group as a whole. Guidelines specific to individual tokens SHOULD be placed on the tokenDoc within children.",
+          "items": {
+            "$ref": "../common/guideline.schema.json#/$defs/guideline"
+          }
+        },
+        "accessibility": {
+          "$ref": "../common/accessibility.schema.json#/$defs/accessibilityObject"
+        },
+        "links": {
+          "type": "array",
+          "description": "External resource links related to this token group.",
           "items": {
             "$ref": "../common/link.schema.json#/$defs/link"
           }

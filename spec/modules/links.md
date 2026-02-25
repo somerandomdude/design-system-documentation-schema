@@ -45,47 +45,52 @@ When multiple links share a `type`, the `label` property _SHOULD_ be provided to
 
 ### 12.4 Example
 
+<!-- dsds:include spec/examples/common/link.json#/link -->
 ```json
-{
-  "links": [
-    {
-      "type": "source",
-      "url": "https://code.acme.com/design-system/src/packages/components/src/button/button.tsx",
-      "label": "React component source"
-    },
-    {
-      "type": "source",
-      "url": "https://code.acme.com/design-system/src/packages/web-components/src/button/button.ts",
-      "label": "Web component source"
-    },
-    {
-      "type": "design",
-      "url": "https://design-tool.acme.com/file/abc123?node-id=1234:5678",
-      "label": "Design file — component"
-    },
-    {
-      "type": "design",
-      "url": "https://design-tool.acme.com/file/abc123?node-id=5678:9012",
-      "label": "Design file — variants"
-    },
-    {
-      "type": "storybook",
-      "url": "https://storybook.acme.com/?path=/docs/components-button--docs",
-      "label": "Storybook docs"
-    },
-    {
-      "type": "storybook",
-      "url": "https://storybook.acme.com/?path=/story/components-button--primary",
-      "label": "Primary variant story"
-    },
-    {
-      "type": "package",
-      "url": "https://www.npmjs.com/package/@acme/components",
-      "label": "npm package"
-    }
-  ]
-}
+[
+  {
+    "type": "source",
+    "url": "https://code.acme.com/design-system/src/components/button/button.tsx",
+    "label": "React component source"
+  },
+  {
+    "type": "design",
+    "url": "https://design-tool.acme.com/file/abc123?node-id=1234:5678",
+    "label": "Design file — component"
+  },
+  {
+    "type": "documentation",
+    "url": "https://design.acme.com/components/button",
+    "label": "Button documentation"
+  },
+  {
+    "type": "storybook",
+    "url": "https://storybook.acme.com/?path=/docs/components-button--docs",
+    "label": "Interactive docs"
+  },
+  {
+    "type": "package",
+    "url": "https://www.npmjs.com/package/@acme/components",
+    "label": "npm package"
+  },
+  {
+    "type": "repository",
+    "url": "https://code.acme.com/design-system",
+    "label": "Repository root"
+  },
+  {
+    "type": "alternative",
+    "url": "https://design.acme.com/components/link",
+    "label": "Link component (alternative)"
+  },
+  {
+    "type": "parent",
+    "url": "https://design.acme.com/components/button-group",
+    "label": "Button Group (parent)"
+  }
+]
 ```
+<!-- /dsds:include -->
 
 ### 12.5 Links vs. Extensions
 

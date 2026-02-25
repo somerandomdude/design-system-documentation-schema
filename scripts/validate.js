@@ -157,25 +157,92 @@ function identifySnippetType(data) {
     return null;
   }
 
-  // Full DSDS document
-  if (data.dsdsVersion && data.documentType) {
+  // Full DSDS document (new shape: dsdsVersion + documentGroups, no documentType)
+  if (data.dsdsVersion && data.documentGroups) {
     return { name: "dsdsDocument", ref: null };
   }
+
+  // Legacy DSDS document shape (dsdsVersion + documentType)
+  if (data.dsdsVersion && data.documentType) {
+    return { name: "dsdsDocument (legacy)", ref: null };
+  }
+
+  // ---------- Top-level artifact types ----------
+
+  // tokenGroupDoc — has name + children (check BEFORE tokenDoc because groups
+  // may also carry tokenType as an inherited default for their children)
+  if (
+    data.name &&
+    data.displayName &&
+    data.children &&
+    Array.isArray(data.children)
+  ) {
+    return { name: "tokenGroupDoc", ref: "#/$defs/tokenGroupDoc" };
+  }
+
+  // tokenDoc — has name + tokenType (check BEFORE componentDoc to avoid misidentification)
+  if (data.name && data.tokenType) {
+    return { name: "tokenDoc", ref: "#/$defs/tokenDoc" };
+  }
+
+  // themeDoc — has name + displayName + overrides
+  if (
+    data.name &&
+    data.displayName &&
+    data.overrides &&
+    Array.isArray(data.overrides)
+  ) {
+    return { name: "themeDoc", ref: "#/$defs/themeDoc" };
+  }
+
+  // componentDoc — has name + displayName + status + (anatomy | api | variants | states)
+  if (
+    data.name &&
+    data.displayName &&
+    data.status &&
+    (data.anatomy || data.api || data.variants || data.states)
+  ) {
+    return { name: "componentDoc", ref: "#/$defs/componentDoc" };
+  }
+
+  // styleDoc — has name + displayName + category + (principles | scales | tokenGroups)
+  if (
+    data.name &&
+    data.displayName &&
+    data.category &&
+    (data.principles || data.scales || data.tokenGroups)
+  ) {
+    return { name: "styleDoc", ref: "#/$defs/styleDoc" };
+  }
+
+  // patternDoc — has name + displayName + category + (components | interactions)
+  if (
+    data.name &&
+    data.displayName &&
+    data.category &&
+    (data.components || data.interactions)
+  ) {
+    return { name: "patternDoc", ref: "#/$defs/patternDoc" };
+  }
+
+  // ---------- Reusable definition types ----------
 
   // Guidelines object (has guidance + rationale)
   if (data.guidance && data.rationale) {
     return { name: "guideline", ref: "#/$defs/guideline" };
   }
 
-  // Use cases object
+  // Use cases object (whenToUse / whenNotToUse)
+  if (data.whenToUse || data.whenNotToUse) {
+    return { name: "useCases", ref: "#/$defs/useCases" };
+  }
+
+  // Use cases wrapped in a parent object
   if (
     data.useCases &&
     (data.useCases.whenToUse || data.useCases.whenNotToUse)
   ) {
     return { name: "useCases (wrapper)", ref: null };
-  }
-  if (data.whenToUse || data.whenNotToUse) {
-    return { name: "useCases", ref: "#/$defs/useCases" };
   }
 
   // Example with presentation
@@ -183,7 +250,39 @@ function identifySnippetType(data) {
     return { name: "example", ref: "#/$defs/example" };
   }
 
-  // Accessibility object
+  // Presentation objects — recognized but NOT schema-validated standalone.
+  // Spec prose shows these with extra illustrative properties (e.g., "label",
+  // "storyId") that live on the parent `example` wrapper or belonged to an
+  // earlier spec revision, not on the presentation schema itself.
+  // They are validated when they appear inside an `example` object in the
+  // per-definition example files.
+  if (data.type === "image" && data.url && data.alt) {
+    return { name: "presentationImage (illustrative)", ref: null };
+  }
+  if (data.type === "video" && data.url && data.alt) {
+    return { name: "presentationVideo (illustrative)", ref: null };
+  }
+  if (data.type === "code" && data.code) {
+    return { name: "presentationCode (illustrative)", ref: null };
+  }
+  if (data.type === "storybook" && data.url) {
+    return { name: "presentationStorybook (illustrative)", ref: null };
+  }
+  if (data.type === "url" && data.url) {
+    return { name: "presentationUrl (illustrative)", ref: null };
+  }
+
+  // Accessibility object (standalone)
+  if (
+    data.wcagLevel ||
+    data.keyboardInteraction ||
+    data.ariaAttributes ||
+    data.colorContrast
+  ) {
+    return { name: "accessibilityObject", ref: "#/$defs/accessibilityObject" };
+  }
+
+  // Accessibility wrapped in parent
   if (
     data.accessibility &&
     (data.accessibility.wcagLevel || data.accessibility.keyboardInteraction)
@@ -191,47 +290,103 @@ function identifySnippetType(data) {
     return { name: "accessibility (wrapper)", ref: null };
   }
 
-  // Link array
-  if (data.links && Array.isArray(data.links)) {
+  // Link object (has type + url, no presentation-specific fields)
+  // Only match when it looks like a standalone link, not a presentation type
+  if (data.type && data.url && !data.alt && !data.code && !data.presentation) {
+    return { name: "link", ref: "#/$defs/link" };
+  }
+
+  // Link array wrapper
+  if (
+    data.links &&
+    Array.isArray(data.links) &&
+    data.links.length > 0 &&
+    data.links[0].type &&
+    data.links[0].url
+  ) {
     return { name: "links (wrapper)", ref: null };
   }
 
-  // Principles
+  // Principle (has title + description, no guidance)
+  if (data.title && data.description && !data.guidance) {
+    return { name: "principle", ref: "#/$defs/principle" };
+  }
+
+  // Principles array wrapper
   if (data.principles && Array.isArray(data.principles)) {
     return { name: "principles (wrapper)", ref: null };
   }
 
-  // Scale
+  // Scale (has name + steps)
+  if (data.name && data.steps && Array.isArray(data.steps)) {
+    return { name: "scale", ref: "#/$defs/scale" };
+  }
+
+  // Scales array wrapper
   if (data.scales && Array.isArray(data.scales)) {
     return { name: "scales (wrapper)", ref: null };
   }
 
-  // Token API
+  // Interaction (has trigger or description + components)
+  if (data.trigger && data.description) {
+    return { name: "interaction", ref: "#/$defs/interaction" };
+  }
+
+  // Token value (has resolved or reference or dtcgFile, nothing else artifact-like)
+  if (
+    (data.resolved || data.reference || data.dtcgFile) &&
+    !data.name &&
+    !data.displayName
+  ) {
+    return { name: "tokenValue", ref: "#/$defs/tokenValue" };
+  }
+
+  // Token override (has token + value)
+  if (data.token && data.value && !data.name) {
+    return { name: "tokenOverride", ref: "#/$defs/tokenOverride" };
+  }
+
+  // Anatomy (has parts array)
+  if (data.parts && Array.isArray(data.parts)) {
+    return { name: "anatomy", ref: "#/$defs/anatomy" };
+  }
+
+  // Anatomy wrapped in parent
+  if (data.anatomy && data.anatomy.parts) {
+    return { name: "anatomy (wrapper)", ref: null };
+  }
+
+  // Token API (open map with known keys)
+  if (data.cssCustomProperty || data.scssVariable || data.jsConstant) {
+    return { name: "tokenApi", ref: "#/$defs/tokenApi" };
+  }
+
+  // Token with api wrapper
   if (data.api && (data.api.cssCustomProperty || data.api.scssVariable)) {
     return { name: "token (partial)", ref: null };
   }
 
-  // Component with anatomy
-  if (data.anatomy && data.anatomy.parts) {
-    return { name: "component (partial)", ref: null };
+  // Component reference (has name + role)
+  if (data.name && data.role && !data.displayName) {
+    return { name: "artifactReference", ref: "#/$defs/artifactReference" };
   }
 
-  // Components array
+  // Components array wrapper (pattern-like)
   if (data.components && Array.isArray(data.components)) {
-    return { name: "pattern (partial)", ref: null };
+    return { name: "components (wrapper)", ref: null };
   }
 
-  // Token groups
+  // Token groups wrapper
   if (data.tokenGroups && Array.isArray(data.tokenGroups)) {
-    return { name: "style (partial)", ref: null };
+    return { name: "tokenGroups (wrapper)", ref: null };
   }
 
-  // Interactions
+  // Interactions array wrapper
   if (data.interactions && Array.isArray(data.interactions)) {
     return { name: "interactions (wrapper)", ref: null };
   }
 
-  // Examples array
+  // Examples array wrapper
   if (data.examples && Array.isArray(data.examples)) {
     return { name: "examples (wrapper)", ref: null };
   }
@@ -239,6 +394,26 @@ function identifySnippetType(data) {
   // Guidelines array (flat)
   if (data.guidelines && Array.isArray(data.guidelines)) {
     return { name: "guidelines (wrapper)", ref: null };
+  }
+
+  // Color contrast object
+  if (data.foreground && data.background && data.contrastRatio) {
+    return { name: "colorContrast", ref: "#/$defs/colorContrast" };
+  }
+
+  // Keyboard interaction
+  if (data.key && data.action) {
+    return { name: "keyboardInteraction", ref: "#/$defs/keyboardInteraction" };
+  }
+
+  // ARIA attribute
+  if (data.attribute && data.description && !data.guidance) {
+    return { name: "ariaAttribute", ref: "#/$defs/ariaAttribute" };
+  }
+
+  // Metadata
+  if (data.systemName || data.systemVersion || data.organization) {
+    return { name: "metadata", ref: "#/$defs/metadata" };
   }
 
   return null;

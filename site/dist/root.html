@@ -42,6 +42,7 @@
 <div class="nav__group">
 <button class="nav__group-toggle" aria-expanded="false" onclick="this.parentElement.classList.toggle('nav__group--open');this.setAttribute('aria-expanded', this.parentElement.classList.contains('nav__group--open'))"><span class="nav__group-label">Tokens</span><span class="nav__group-arrow">›</span></button>
 <div class="nav__group-children">
+<a class="nav__link nav__link--child" href="tokens-theme.html">theme</a>
 <a class="nav__link nav__link--child" href="tokens-token-api.html">token-api</a>
 <a class="nav__link nav__link--child" href="tokens-token-value.html">token-value</a>
 <a class="nav__link nav__link--child" href="tokens-token.html">token</a>
@@ -65,21 +66,23 @@
     <main class="content__main" role="main">
       <div class="content__inner">
         <h1>Design System Documentation Standard (DSDS) v0.1</h1>
-<p class="schema-description">A standard, machine-readable format for design system documentation covering components, design tokens, styles, and patterns. This is the root schema; definitions are organized into directories: common/ (rich-text, metadata, status, link, extensions, example, guideline, usecase, accessibility, artifact-reference), components/ (component, anatomy, api, design-specifications, variant, state), tokens/ (token, token-value, token-api), style/ (style), and patterns/ (pattern).</p>
+<p class="schema-description">A standard, machine-readable format for design system documentation covering components, design tokens, token groups, themes, styles, and patterns. A DSDS document contains one or more document groups — named collections of typed artifact arrays (components, tokens, tokenGroups, themes, styles, patterns). Individual artifacts are defined in their respective sub-schemas: components/ (component, anatomy, api, design-specifications, variant, state), tokens/ (token, token-group, token-value, token-api, theme), style/ (style), and patterns/ (pattern).</p>
 <p class="schema-source">Source: <code>dsds.schema.json</code></p>
-<section class="def-section" id="documents">
-<h3 id="documents">documents</h3>
-<p class="def-description">A collection of multiple documentation artifacts.</p>
+<section class="def-section" id="documentgroup">
+<h3 id="documentgroup">documentGroup</h3>
+<p class="def-description">A named collection of design system documentation artifacts. Contains one or more arrays of typed artifacts — components, tokens, token groups, themes, styles, and/or patterns. At least one artifact array must be present.</p>
 <p class="def-type"><span class="type-badge">object</span></p>
-<table class="prop-table"><thead><tr><th>Property</th><th>Type</th><th>Required</th><th>Description</th></tr></thead><tbody><tr><td><code>name</code></td><td>string</td><td><span class="required-badge">required</span></td><td>Human-readable name of the collection.</td></tr>
+<table class="prop-table"><thead><tr><th>Property</th><th>Type</th><th>Required</th><th>Description</th></tr></thead><tbody><tr><td><code>name</code></td><td>string</td><td><span class="required-badge">required</span></td><td>Human-readable name of the collection (e.g., 'Acme Design System', 'Color Tokens', 'Button Documentation').</td></tr>
 <tr><td><code>components</code></td><td><a href="components-component.html#componentdoc" class="type-ref">componentDoc</a>[]</td><td><span class="conditional-badge">at least one</span></td><td>Array of component documentation objects.</td></tr>
-<tr><td><code>tokens</code></td><td><a href="tokens-token.html#tokendoc" class="type-ref">tokenDoc</a>[]</td><td><span class="conditional-badge">at least one</span></td><td>Array of token documentation objects.</td></tr>
+<tr><td><code>tokens</code></td><td><a href="tokens-token.html#tokendoc" class="type-ref">tokenDoc</a>[]</td><td><span class="conditional-badge">at least one</span></td><td>Array of individual token documentation objects.</td></tr>
+<tr><td><code>tokenGroups</code></td><td><a href="tokens-token.html#tokengroupdoc" class="type-ref">tokenGroupDoc</a>[]</td><td><span class="conditional-badge">at least one</span></td><td>Array of token group documentation objects. Each group can contain tokens, nested groups, or a mix of both, forming an arbitrarily deep hierarchy.</td></tr>
+<tr><td><code>themes</code></td><td><a href="tokens-theme.html#themedoc" class="type-ref">themeDoc</a>[]</td><td><span class="conditional-badge">at least one</span></td><td>Array of theme documentation objects. Each theme provides alternative token values for a named context such as a color mode, density setting, or brand variant.</td></tr>
 <tr><td><code>styles</code></td><td><a href="style-style.html#styledoc" class="type-ref">styleDoc</a>[]</td><td><span class="conditional-badge">at least one</span></td><td>Array of style documentation objects.</td></tr>
 <tr><td><code>patterns</code></td><td><a href="patterns-pattern.html#patterndoc" class="type-ref">patternDoc</a>[]</td><td><span class="conditional-badge">at least one</span></td><td>Array of pattern documentation objects.</td></tr>
 <tr><td><code>description</code></td><td><a href="common-rich-text.html#richtext" class="type-ref">richText</a></td><td>optional</td><td></td></tr></tbody></table>
-<p class="conditional-note"><strong>Constraint:</strong> At least one of <code>components</code>, <code>tokens</code>, <code>styles</code>, <code>patterns</code> must be present.</p>
+<p class="conditional-note"><strong>Constraint:</strong> At least one of <code>components</code>, <code>tokens</code>, <code>tokenGroups</code>, <code>themes</code>, <code>styles</code>, <code>patterns</code> must be present.</p>
 <p class="cross-refs"><strong>References:</strong> 
-<a href="common-rich-text.html#richtext">richText</a>, <a href="components-component.html#componentdoc">componentDoc</a>, <a href="tokens-token.html#tokendoc">tokenDoc</a>, <a href="style-style.html#styledoc">styleDoc</a>, <a href="patterns-pattern.html#patterndoc">patternDoc</a>
+<a href="common-rich-text.html#richtext">richText</a>, <a href="components-component.html#componentdoc">componentDoc</a>, <a href="tokens-token.html#tokendoc">tokenDoc</a>, <a href="tokens-token.html#tokengroupdoc">tokenGroupDoc</a>, <a href="tokens-theme.html#themedoc">themeDoc</a>, <a href="style-style.html#styledoc">styleDoc</a>, <a href="patterns-pattern.html#patterndoc">patternDoc</a>
 </p>
 </section>
 
@@ -94,7 +97,7 @@
     <nav class="toc" aria-label="On this page">
 <p class="toc__title">On this page</p>
 <ul class="toc__list">
-<li><a class="toc__link toc__link--sub" href="#documents">documents</a></li>
+<li><a class="toc__link toc__link--sub" href="#documentgroup">documentGroup</a></li>
 </ul>
 </nav>
   </div>

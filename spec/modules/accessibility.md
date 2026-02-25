@@ -72,58 +72,53 @@ Each color contrast object:
 
 **Example:**
 
+<!-- dsds:include spec/examples/common/accessibility.json#/accessibilityObject -->
 ```json
 {
-  "accessibility": {
-    "wcagLevel": "AA",
-    "guidelines": [
-      {
-        "guidance": "The button's accessible name is derived from its text label. When using an icon-only button, provide an aria-label.",
-        "rationale": "Screen reader users need a text equivalent for every interactive control. Without one, the button is announced as 'button' with no indication of its purpose.",
-        "category": "accessibility",
-        "criteria": ["https://www.w3.org/TR/WCAG22/#name-role-value"]
-      }
-    ],
-    "keyboardInteraction": [
-      { "key": "Enter", "action": "Activates the button." },
-      { "key": "Space", "action": "Activates the button." },
-      { "key": "Tab", "action": "Moves focus to the next focusable element." },
-      { "key": "Shift+Tab", "action": "Moves focus to the previous focusable element." }
-    ],
-    "ariaAttributes": [
-      {
-        "attribute": "role",
-        "value": "button",
-        "description": "Applied automatically by the <button> element. Only set explicitly when using a non-button element as a button.",
-        "required": false
-      },
-      {
-        "attribute": "aria-disabled",
-        "value": "true | false",
-        "description": "Set to 'true' when the button is non-interactive. Preferred over the disabled HTML attribute when the button should remain focusable for screen reader discoverability.",
-        "required": false
-      },
-      {
-        "attribute": "aria-label",
-        "value": "string",
-        "description": "Provides an accessible name for icon-only buttons that lack visible text.",
-        "required": false
-      }
-    ],
-    "screenReaderBehavior": "Announced as '[label], button'. When disabled, announced as '[label], button, dimmed' or '[label], button, unavailable' depending on the screen reader.",
-    "focusManagement": "The button participates in the normal tab order. It does not trap or redirect focus.",
-    "colorContrast": [
-      {
-        "foreground": "button-text-color-primary",
-        "background": "button-background-primary",
-        "contrastRatio": 7.1,
-        "level": "AAA",
-        "context": "Label text on primary button background."
-      }
-    ]
-  }
+  "wcagLevel": "AA",
+  "keyboardInteraction": [
+    {
+      "key": "Enter",
+      "action": "Activates the button."
+    },
+    {
+      "key": "Space",
+      "action": "Activates the button."
+    },
+    {
+      "key": "Tab",
+      "action": "Moves focus to the next focusable element."
+    }
+  ],
+  "ariaAttributes": [
+    {
+      "attribute": "aria-disabled",
+      "value": "true | false",
+      "description": "Set to true when the button is non-interactive.",
+      "required": false
+    },
+    {
+      "attribute": "aria-label",
+      "value": "string",
+      "description": "Provides an accessible name for icon-only buttons.",
+      "required": false
+    }
+  ],
+  "screenReaderBehavior": "Announced as '[label], button'. When disabled via aria-disabled, announced as '[label], button, dimmed' (VoiceOver) or '[label], button, unavailable' (NVDA/JAWS). When loading, announced as '[label], button, busy'.",
+  "focusManagement": "The button participates in the normal tab order. It does not trap or redirect focus. When the button triggers a modal, focus is moved to the opened element by the modal component, not the button.",
+  "colorContrast": [
+    {
+      "foreground": "color-text-on-action",
+      "background": "color-action-primary",
+      "contrastRatio": 7.2,
+      "level": "AAA",
+      "context": "Label text on primary button background in light mode."
+    }
+  ],
+  "motionConsiderations": "The loading spinner animation respects the prefers-reduced-motion media query. When reduced motion is preferred, the spinner is replaced with a static ellipsis indicator."
 }
 ```
+<!-- /dsds:include -->
 
 ---
 

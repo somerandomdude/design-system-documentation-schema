@@ -2,11 +2,52 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://designsystemdocspec.org/v0.1/status.schema.json",
   "title": "DSDS Status Definition",
-  "description": "The lifecycle status of a design system artifact. Used across all DSDS document types to indicate maturity and readiness.",
+  "description": "The lifecycle status of a design system artifact and optional platform-specific readiness tracking. Used across all DSDS document types to indicate maturity and readiness.",
   "$defs": {
     "status": {
       "type": "string",
       "description": "The lifecycle status of the artifact. Standard values: 'draft' (under development, not ready for use), 'experimental' (available but API may change without notice), 'stable' (production-ready, changes follow semver), 'deprecated' (scheduled for removal). Custom values are permitted and SHOULD be lowercase kebab-case (e.g., 'sunset', 'archived', 'beta')."
+    },
+    "platformStatusEntry": {
+      "type": "object",
+      "description": "The readiness status of an artifact on a specific platform. Tracks lifecycle stage, version availability, and optional deprecation notices independently per platform.",
+      "required": ["status"],
+      "properties": {
+        "status": {
+          "$ref": "#/$defs/status",
+          "description": "The lifecycle status of the artifact on this platform. Uses the same vocabulary as the top-level status: 'draft', 'experimental', 'stable', 'deprecated'. Custom values are permitted."
+        },
+        "since": {
+          "type": "string",
+          "description": "The version in which this artifact became available on this platform."
+        },
+        "deprecationNotice": {
+          "type": "string",
+          "description": "Required when status is 'deprecated'. Explains what to use instead on this platform."
+        },
+        "description": {
+          "type": "string",
+          "description": "Optional notes about the artifact's status on this platform (e.g., 'Available as a Web Component wrapper; native implementation planned for v4')."
+        }
+      },
+      "if": {
+        "properties": {
+          "status": {
+            "const": "deprecated"
+          }
+        }
+      },
+      "then": {
+        "required": ["deprecationNotice"]
+      },
+      "additionalProperties": false
+    },
+    "platformStatus": {
+      "type": "object",
+      "description": "Platform-specific readiness or availability status for an artifact. Keys are platform identifiers and values describe the artifact's status on that platform. Platform keys are freeform strings — common values include 'react', 'web-component', 'ios', 'android', 'flutter', 'figma', 'sketch', and 'compose'. When present, the top-level `status` property represents the overall lifecycle stage of the artifact, while `platformStatus` provides granular per-platform detail. An artifact MAY be 'stable' overall while individual platforms are still 'experimental' or 'draft'.",
+      "additionalProperties": {
+        "$ref": "#/$defs/platformStatusEntry"
+      }
     }
   }
 }

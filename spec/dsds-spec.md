@@ -13,7 +13,7 @@
 
 ## Abstract
 
-This document defines a standard, machine-readable format for design system documentation. The format covers five core domains: **components**, **design tokens**, **styles**, **patterns**, and **collections**. Its purpose is to establish a portable, tool-agnostic structure that enables software to create, edit, validate, and display design system documentation consistently.
+This document defines a standard, machine-readable format for design system documentation. The format covers six core domains: **components**, **design tokens** (including hierarchical token groups and themes), **styles**, **patterns**, and **collections**. Its purpose is to establish a portable, tool-agnostic structure that enables software to create, edit, validate, and display design system documentation consistently.
 
 This specification is complementary to the [W3C Design Tokens Format Module](https://www.w3.org/community/reports/design-tokens/CG-FINAL-format-20251028/). Where the Design Tokens Format Module defines the interchange format for token _values_, DSDS defines the interchange format for the _documentation_ that surrounds components, tokens, styles, and patterns.
 
@@ -57,14 +57,15 @@ The DSDS specification is organized into focused modules. Each module is a self-
 
 ### Tokens
 
-**[Tokens Module](modules/tokens.md)** — Documenting design tokens and token groups.
+**[Tokens Module](modules/tokens.md)** — Documenting design tokens, token groups, and themes.
 
 - Token documentation structure
 - Token types aligned with the W3C Design Tokens Format Module
 - Semantic categories (base, semantic, component)
 - Value representation and DTCG file references
 - Platform-specific API mappings (CSS, SCSS, JS, iOS, Android, design tools)
-- Token group documentation for related sets of tokens
+- Token group documentation with recursive nesting (collections → families → sub-families → tokens)
+- Theme documentation for named sets of token value overrides (color modes, density, brand variants)
 
 ### Styles
 
@@ -149,23 +150,29 @@ The DSDS specification is organized into focused modules. Each module is a self-
 
 ## Quick Reference
 
-### Document Types
+### Document Structure
 
-| `documentType` | Description | Defined in |
-|---|---|---|
-| `"component"` | A reusable UI component | [Components Module](modules/components.md) |
-| `"token"` | A single design token | [Tokens Module](modules/tokens.md) |
-| `"tokenGroup"` | A group of related tokens | [Tokens Module](modules/tokens.md) |
-| `"style"` | A macro-level visual style (color, typography, spacing) | [Styles Module](modules/styles.md) |
-| `"pattern"` | A broad interaction pattern (navigation, error messaging) | [Patterns Module](modules/patterns.md) |
-| `"collection"` | A bundle of multiple artifacts | [Common Module](modules/common.md) |
+A DSDS file is a JSON object with a `dsdsVersion` and a `documentGroups` array. Each document group is a named collection containing one or more arrays of typed artifacts. There is no `documentType` discriminator — the root shape is always the same.
+
+### Artifact Types (within a document group)
+
+The following artifact types can appear inside a document group's arrays:
+
+| Artifact type | Array property | Description | Defined in |
+|---|---|---|---|
+| Component | `components` | A reusable UI component | [Components Module](modules/components.md) |
+| Token | `tokens` | A single design token | [Tokens Module](modules/tokens.md) |
+| Token Group | `tokenGroups` | A hierarchical group of related tokens (recursive — may contain tokens, nested groups, or both) | [Tokens Module](modules/tokens.md) |
+| Theme | `themes` | A named set of token value overrides (e.g., dark mode, compact density) | [Tokens Module](modules/tokens.md) |
+| Style | `styles` | A macro-level visual style (color, typography, spacing) | [Styles Module](modules/styles.md) |
+| Pattern | `patterns` | A broad interaction pattern (navigation, error messaging) | [Patterns Module](modules/patterns.md) |
 
 ### Conformance Levels
 
 | Level | Requirement |
 |---|---|
-| **Level 1: Core** | `name`, `displayName`, `description`, `status` (+ `tokenType` for tokens, `category` for styles and patterns) |
-| **Level 2: Complete** | Level 1 + at least one substantive section (anatomy/api/guidelines for components, api/guidelines/value for tokens, principles/guidelines/scales for styles, components/interactions/guidelines for patterns) |
+| **Level 1: Core** | `name`, `displayName`, `description`, `status` (+ `tokenType` for tokens, `category` for styles and patterns, `overrides` for themes) |
+| **Level 2: Complete** | Level 1 + at least one substantive section (anatomy/api/guidelines for components, api/guidelines/value for tokens, children for token groups, guidelines for themes, principles/guidelines/scales for styles, components/interactions/guidelines for patterns) |
 
 ### Common Properties (all artifact types)
 
@@ -177,6 +184,7 @@ The DSDS specification is organized into focused modules. Each module is a self-
 | `description` | Yes | Description with CommonMark support |
 
 | `status` | Yes | `draft`, `experimental`, `stable`, `deprecated` |
+| `platformStatus` | No | Per-platform readiness map (e.g., `{ "react": { "status": "stable" }, "figma": { "status": "draft" } }`) |
 | `since` | No | Version introduced |
 | `tags` | No | Freeform tags |
 | `related` | No | References to other DSDS artifacts |

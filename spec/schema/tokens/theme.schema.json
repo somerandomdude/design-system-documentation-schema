@@ -1,0 +1,97 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://designsystemdocspec.org/v0.1/theme.schema.json",
+  "title": "DSDS Theme Definition",
+  "description": "A theme provides alternative token values for a named context such as a color mode, density setting, or brand variant. Themes reference existing tokens defined elsewhere in the system and supply override values without redefining the token's identity, documentation, or API mappings. This separation keeps the token catalog as the single source of truth for what a token is, while themes describe how token values change across contexts.",
+  "$defs": {
+    "tokenOverride": {
+      "type": "object",
+      "description": "An alternative value for a single token within a theme. A simple mapping of a token name to its theme-specific value.",
+      "required": ["token", "value"],
+      "properties": {
+        "token": {
+          "type": "string",
+          "description": "The name of the token being overridden. MUST match the `name` of a tokenDoc defined elsewhere in the system. Token names are intentionally unconstrained by a pattern to accommodate DTCG and design tool naming conventions (e.g., 'color-text-primary', 'color.text.primary', 'color/text/primary')."
+        },
+        "value": {
+          "$ref": "token-value.schema.json#/$defs/tokenValue",
+          "description": "The override value for this token within the theme. Follows the same structure as tokenDoc.value — a displayable representation containing a resolved value, alias reference, and/or DTCG file pointer."
+        }
+      },
+      "additionalProperties": false
+    },
+    "themeDoc": {
+      "type": "object",
+      "description": "Documentation for a theme — a named set of token value overrides that adapt the design system to a specific context. Themes are commonly used for color modes (light, dark, high-contrast), density settings (compact, comfortable), brand variants, or product-specific customizations. A theme does not redefine tokens; it references existing tokens and provides alternative values for them. The token catalog remains the authoritative source for token identity, type, documentation, and API mappings.",
+      "required": ["name", "displayName", "status", "overrides"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]*$",
+          "description": "Machine-readable identifier for the theme (e.g., 'dark', 'high-contrast', 'compact', 'brand-sub-brand')."
+        },
+        "displayName": {
+          "type": "string",
+          "description": "Human-readable name for the theme (e.g., 'Dark Mode', 'High Contrast', 'Compact Density')."
+        },
+        "status": {
+          "$ref": "../common/status.schema.json#/$defs/status"
+        },
+        "platformStatus": {
+          "$ref": "../common/status.schema.json#/$defs/platformStatus"
+        },
+        "deprecationNotice": {
+          "type": "string",
+          "description": "Required when status is 'deprecated'. Explains what to use instead."
+        },
+        "since": {
+          "type": "string",
+          "description": "The version of the design system in which this theme was introduced."
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Freeform keywords for categorization and search (e.g., 'dark-mode', 'accessibility', 'brand')."
+        },
+        "category": {
+          "type": "string",
+          "description": "The category of adaptation this theme represents. Common values: 'color-mode' (light/dark/high-contrast), 'density' (compact/comfortable/spacious), 'brand' (sub-brand or partner theming), 'product' (product-specific overrides). Custom values are permitted and SHOULD be lowercase kebab-case."
+        },
+        "overrides": {
+          "type": "array",
+          "description": "The set of token value overrides that define this theme. Each entry is a simple mapping of a token name to its theme-specific value. Only tokens whose values differ from the default need to be listed — unlisted tokens retain their default values.",
+          "items": {
+            "$ref": "#/$defs/tokenOverride"
+          },
+          "minItems": 1
+        },
+        "useCases": {
+          "$ref": "../common/usecase.schema.json#/$defs/useCases"
+        },
+        "links": {
+          "type": "array",
+          "description": "External resource links related to this theme.",
+          "items": {
+            "$ref": "../common/link.schema.json#/$defs/link"
+          }
+        },
+        "$extensions": {
+          "$ref": "../common/extensions.schema.json#/$defs/extensions"
+        }
+      },
+      "if": {
+        "properties": {
+          "status": {
+            "const": "deprecated"
+          }
+        }
+      },
+      "then": {
+        "required": ["deprecationNotice"]
+      },
+      "additionalProperties": false
+    }
+  }
+}
