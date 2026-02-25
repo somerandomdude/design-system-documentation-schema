@@ -27,6 +27,7 @@ const SPEC_DIR = path.join(ROOT, "spec");
 const SCHEMA_DIR = path.join(SPEC_DIR, "schema");
 const SITE_DIR = path.join(ROOT, "site");
 const DIST_DIR = path.join(SITE_DIR, "dist");
+const EXAMPLES_DIR = path.join(SPEC_DIR, "examples");
 
 // ---------------------------------------------------------------------------
 // Schema directory groups — defines the nav hierarchy
@@ -66,6 +67,23 @@ function discoverPages() {
       const baseName = filename.replace(".schema.json", "");
       const pageSlug = `${group.dir}-${baseName}`;
 
+      // Look for a matching example file: spec/examples/{group}/{baseName}.json
+      const examplePath = path.join(
+        EXAMPLES_DIR,
+        group.dir,
+        `${baseName}.json`,
+      );
+      let examples = null;
+      if (fs.existsSync(examplePath)) {
+        try {
+          examples = JSON.parse(fs.readFileSync(examplePath, "utf-8"));
+        } catch (e) {
+          console.error(
+            `  ⚠  Failed to parse example ${examplePath}: ${e.message}`,
+          );
+        }
+      }
+
       pages.push({
         slug: pageSlug,
         title: data.title || baseName,
@@ -74,6 +92,7 @@ function discoverPages() {
         filename,
         filePath,
         data,
+        examples,
       });
     }
   }
@@ -90,6 +109,7 @@ function discoverPages() {
       filename: "dsds.schema.json",
       filePath: rootPath,
       data: rootData,
+      examples: null,
     });
   }
 
@@ -338,8 +358,9 @@ function renderPropertyTable(defSchema) {
 
 /**
  * Render a single $defs definition as an HTML section.
+ * If `exampleData` is provided, it's rendered as a JSON code block after the definition.
  */
-function renderDefinition(defName, defSchema) {
+function renderDefinition(defName, defSchema, exampleData) {
   const parts = [];
   const hid = slug(defName);
 
@@ -494,6 +515,15 @@ function renderDefinition(defName, defSchema) {
     parts.push(`</p>`);
   }
 
+  // Example — render the matching example if one was provided
+  if (exampleData !== undefined && exampleData !== null) {
+    parts.push(`<div class="def-example">`);
+    parts.push(`<p class="def-example__title"><strong>Example</strong></p>`);
+    const jsonStr = JSON.stringify(exampleData, null, 2);
+    parts.push(`<pre><code class="language-json">${esc(jsonStr)}</code></pre>`);
+    parts.push(`</div>`);
+  }
+
   parts.push(`</section>`);
   return parts.join("\n");
 }
@@ -528,6 +558,7 @@ function renderSchemaPage(page) {
   const parts = [];
   const defs = page.data.$defs || {};
   const defNames = Object.keys(defs);
+  const examples = page.examples || {};
 
   // Page title
   parts.push(`<h1>${esc(page.title)}</h1>`);
@@ -570,9 +601,12 @@ function renderSchemaPage(page) {
     parts.push(`</nav>`);
   }
 
-  // Render each definition
+  // Render each definition with its matching example (if any)
   for (const defName of defNames) {
-    parts.push(renderDefinition(defName, defs[defName]));
+    // The example file can have the defName as a key with an example value
+    const exampleData =
+      examples[defName] !== undefined ? examples[defName] : null;
+    parts.push(renderDefinition(defName, defs[defName], exampleData));
   }
 
   return parts.join("\n");
@@ -941,11 +975,13 @@ function build() {
   }
   fs.mkdirSync(DIST_DIR, { recursive: true });
 
-  // Discover all schema pages
+  // Discover all schema pages (with examples attached)
   const pages = discoverPages();
+  const withExamples = pages.filter((p) => p.examples !== null).length;
   console.log(
-    `  Discovered ${pages.length} schema files across ${DIR_GROUPS.length} directories.\n`,
+    `  Discovered ${pages.length} schema files across ${DIR_GROUPS.length} directories.`,
   );
+  console.log(`  Found ${withExamples} matching example files.\n`);
 
   // Build the global definition index for cross-references
   DEF_INDEX = buildDefIndex(pages);

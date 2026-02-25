@@ -30,6 +30,16 @@ const BUNDLED_SCHEMA_PATH = path.join(
 );
 const EXAMPLES_DIR = path.join(ROOT, "spec/examples");
 const MODULES_DIR = path.join(ROOT, "spec/modules");
+const SCHEMA_DIR = path.join(ROOT, "spec/schema");
+
+// Schema directories that have matching example directories
+const SCHEMA_EXAMPLE_DIRS = [
+  "common",
+  "components",
+  "tokens",
+  "style",
+  "patterns",
+];
 
 // ---------------------------------------------------------------------------
 // Setup Ajv
@@ -382,6 +392,120 @@ function validateModuleSnippets(ajv) {
 }
 
 // ---------------------------------------------------------------------------
+// Part 3: Validate per-definition example files against their schema defs
+// ---------------------------------------------------------------------------
+
+function validateDefinitionExamples(ajv) {
+  console.log("━━━ Validating per-definition example files ━━━\n");
+
+  const schema = JSON.parse(fs.readFileSync(BUNDLED_SCHEMA_PATH, "utf-8"));
+  const defs = schema.$defs || {};
+
+  // Pre-compile validators for each definition
+  const defValidators = {};
+  for (const [name, defSchema] of Object.entries(defs)) {
+    try {
+      const standalone = {
+        $schema: "https://json-schema.org/draft/2020-12/schema",
+        $defs: schema.$defs,
+        ...defSchema,
+      };
+      defValidators[name] = ajv.compile(standalone);
+    } catch (e) {
+      // Some defs may not compile standalone — skip
+    }
+  }
+
+  let passed = 0;
+  let failed = 0;
+  let skipped = 0;
+  const errors = [];
+
+  for (const dir of SCHEMA_EXAMPLE_DIRS) {
+    const exampleDir = path.join(EXAMPLES_DIR, dir);
+    if (!fs.existsSync(exampleDir)) continue;
+
+    const files = fs
+      .readdirSync(exampleDir)
+      .filter((f) => f.endsWith(".json"))
+      .sort();
+
+    for (const file of files) {
+      const filePath = path.join(exampleDir, file);
+      let data;
+      try {
+        data = JSON.parse(fs.readFileSync(filePath, "utf-8"));
+      } catch (e) {
+        console.error(`  ✗ ${dir}/${file}: Invalid JSON — ${e.message}`);
+        failed++;
+        errors.push({
+          file: `${dir}/${file}`,
+          error: `Invalid JSON: ${e.message}`,
+        });
+        continue;
+      }
+
+      const defNames = Object.keys(data);
+      let fileOk = true;
+
+      for (const defName of defNames) {
+        const exampleValue = data[defName];
+        const validator = defValidators[defName];
+
+        if (!validator) {
+          console.log(
+            `  ~ ${dir}/${file} → ${defName}: no standalone validator (skipped)`,
+          );
+          skipped++;
+          continue;
+        }
+
+        // The example value can be a single instance or an array of instances
+        const instances = Array.isArray(exampleValue)
+          ? exampleValue
+          : [exampleValue];
+
+        for (let idx = 0; idx < instances.length; idx++) {
+          const instance = instances[idx];
+          const label = Array.isArray(exampleValue)
+            ? `${defName}[${idx}]`
+            : defName;
+
+          const valid = validator(instance);
+          if (valid) {
+            passed++;
+          } else {
+            fileOk = false;
+            console.error(`  ✗ ${dir}/${file} → ${label}`);
+            for (const err of validator.errors.slice(0, 3)) {
+              const loc = err.instancePath || "(root)";
+              const msg = err.message || JSON.stringify(err.params);
+              console.error(`      ${loc}: ${msg}`);
+              errors.push({
+                file: `${dir}/${file}`,
+                def: label,
+                path: loc,
+                message: msg,
+              });
+            }
+            failed++;
+          }
+        }
+      }
+
+      if (fileOk) {
+        console.log(
+          `  ✓ ${dir}/${file} (${defNames.length} definition${defNames.length === 1 ? "" : "s"})`,
+        );
+      }
+    }
+  }
+
+  console.log(`\n  ${passed} passed, ${failed} failed, ${skipped} skipped\n`);
+  return { passed, failed, skipped, errors };
+}
+
+// ---------------------------------------------------------------------------
 // Main
 // ---------------------------------------------------------------------------
 
@@ -393,30 +517,39 @@ function main() {
 
   const ajv = createValidator();
 
-  // Validate example files
+  // Part 1: Validate full document example files
   const exampleResults = validateExamples(ajv);
 
-  // Validate module snippets (fresh Ajv instance to avoid schema conflicts)
+  // Part 2: Validate module snippets (fresh Ajv instance to avoid schema conflicts)
   const snippetAjv = createValidator();
   const snippetResults = validateModuleSnippets(snippetAjv);
+
+  // Part 3: Validate per-definition example files
+  const defAjv = createValidator();
+  const defResults = validateDefinitionExamples(defAjv);
 
   // Summary
   console.log("━━━ Summary ━━━\n");
 
-  const totalPassed = exampleResults.passed + snippetResults.schemaValidated;
+  const totalPassed =
+    exampleResults.passed + snippetResults.schemaValidated + defResults.passed;
   const totalFailed =
     exampleResults.failed +
     snippetResults.invalidJson +
-    snippetResults.schemaFailed;
+    snippetResults.schemaFailed +
+    defResults.failed;
 
   console.log(
-    `  Examples:  ${exampleResults.passed} passed, ${exampleResults.failed} failed`,
+    `  Documents: ${exampleResults.passed} passed, ${exampleResults.failed} failed`,
   );
   console.log(
     `  Snippets:  ${snippetResults.validJson} valid JSON, ${snippetResults.invalidJson} invalid`,
   );
   console.log(
     `             ${snippetResults.schemaValidated} schema-validated, ${snippetResults.schemaFailed} schema-failed, ${snippetResults.skipped} skipped`,
+  );
+  console.log(
+    `  Defs:      ${defResults.passed} passed, ${defResults.failed} failed, ${defResults.skipped} skipped`,
   );
   console.log(`  Total:     ${totalPassed} passed, ${totalFailed} failed\n`);
 

@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://designsystemdocspec.org/v0.1/dsds.schema.json",
   "title": "Design System Documentation Standard (DSDS) v0.1",
-  "description": "A standard, machine-readable format for design system documentation covering components, design tokens, styles, and patterns. This is the root schema; definitions are organized into directories: common/ (rich-text, metadata, status, link, extensions, example, guideline, usecase, accessibility, artifact-reference), components/ (component, anatomy, api, design-specifications, variant, state), tokens/ (token), style/ (style), and patterns/ (pattern).",
+  "description": "A standard, machine-readable format for design system documentation covering components, design tokens, styles, and patterns. This is the root schema; definitions are organized into directories: common/ (rich-text, metadata, status, link, extensions, example, guideline, usecase, accessibility, artifact-reference), components/ (component, anatomy, api, design-specifications, variant, state), tokens/ (token, token-value, token-api), style/ (style), and patterns/ (pattern).",
   "type": "object",
   "required": ["dsdsVersion", "documentType"],
   "properties": {
@@ -17,14 +17,7 @@
     },
     "documentType": {
       "type": "string",
-      "enum": [
-        "component",
-        "token",
-        "tokenGroup",
-        "style",
-        "pattern",
-        "documentGroup"
-      ],
+      "enum": ["component", "token", "style", "pattern", "documentGroup"],
       "description": "The type of artifact documented."
     },
     "metadata": {
@@ -35,9 +28,6 @@
     },
     "token": {
       "$ref": "tokens/token.schema.json#/$defs/tokenDoc"
-    },
-    "tokenGroup": {
-      "$ref": "tokens/token.schema.json#/$defs/tokenGroupDoc"
     },
     "style": {
       "$ref": "style/style.schema.json#/$defs/styleDoc"
@@ -75,18 +65,6 @@
       },
       "then": {
         "required": ["token"]
-      }
-    },
-    {
-      "if": {
-        "properties": {
-          "documentType": {
-            "const": "tokenGroup"
-          }
-        }
-      },
-      "then": {
-        "required": ["tokenGroup"]
       }
     },
     {
@@ -153,13 +131,6 @@
             "$ref": "tokens/token.schema.json#/$defs/tokenDoc"
           }
         },
-        "tokenGroups": {
-          "type": "array",
-          "description": "Array of token group documentation objects.",
-          "items": {
-            "$ref": "tokens/token.schema.json#/$defs/tokenGroupDoc"
-          }
-        },
         "styles": {
           "type": "array",
           "description": "Array of style documentation objects.",
@@ -181,9 +152,6 @@
         },
         {
           "required": ["tokens"]
-        },
-        {
-          "required": ["tokenGroups"]
         },
         {
           "required": ["styles"]

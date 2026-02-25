@@ -1,45 +1,13 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://designsystemdocspec.org/v0.1/token.schema.json",
-  "title": "DSDS Token Definitions",
-  "description": "Definitions for documenting design tokens and token groups.",
+  "title": "DSDS Token Definition",
+  "description": "Documentation for a single design token — its name, type, value, platform API mappings, use cases, guidelines, and accessibility considerations.",
   "$defs": {
-    "tokenValue": {
-      "type": "object",
-      "description": "A displayable representation of the token's value for documentation tools.",
-      "properties": {
-        "resolved": {
-          "type": "string",
-          "description": "The resolved value as a human-readable string."
-        },
-        "reference": {
-          "type": "string",
-          "description": "If this token is an alias, the name of the referenced token."
-        },
-        "dtcgFile": {
-          "type": "string",
-          "description": "URI or relative path to the DTCG file."
-        }
-      },
-      "additionalProperties": false
-    },
-    "tokenApi": {
-      "type": "object",
-      "description": "Platform-specific identifiers for a token. Keys are platform names (e.g., 'cssCustomProperty', 'scssVariable', 'jsConstant', 'iosToken', 'androidToken', 'designToolVariable') and values are the identifier strings for that platform. Additional platforms can be added without schema changes.",
-      "additionalProperties": {
-        "type": "string"
-      }
-    },
     "tokenDoc": {
       "type": "object",
       "description": "Documentation for a single design token.",
-      "required": [
-        "name",
-        "displayName",
-        "description",
-        "status",
-        "tokenType"
-      ],
+      "required": ["name", "displayName", "description", "status", "tokenType"],
       "properties": {
         "name": {
           "type": "string",
@@ -76,14 +44,14 @@
         },
         "tokenType": {
           "type": "string",
-          "description": "The type of token aligned with the DTCG spec."
+          "description": "The type of token aligned with the DTCG spec (e.g., 'color', 'dimension', 'fontFamily', 'fontWeight', 'duration', 'cubicBezier', 'shadow')."
         },
         "category": {
           "type": "string",
           "description": "The token's semantic category. Standard values: 'base' (raw palette values, not used directly in components), 'semantic' (purpose-driven tokens that map to base values, e.g., 'color-text-primary'), 'component' (tokens scoped to a specific component, e.g., 'button-background'). Custom values are permitted and SHOULD be lowercase kebab-case."
         },
         "value": {
-          "$ref": "#/$defs/tokenValue"
+          "$ref": "token-value.schema.json#/$defs/tokenValue"
         },
         "aliases": {
           "type": "array",
@@ -93,7 +61,7 @@
           "description": "Names of tokens that alias this token."
         },
         "api": {
-          "$ref": "#/$defs/tokenApi"
+          "$ref": "token-api.schema.json#/$defs/tokenApi"
         },
         "useCases": {
           "$ref": "../common/usecase.schema.json#/$defs/useCases"
@@ -127,97 +95,7 @@
         }
       },
       "then": {
-        "required": [
-          "deprecationNotice"
-        ]
-      },
-      "additionalProperties": false
-    },
-    "tokenGroupDoc": {
-      "type": "object",
-      "description": "Documentation for a group of related design tokens.",
-      "required": [
-        "name",
-        "displayName",
-        "description",
-        "status"
-      ],
-      "properties": {
-        "name": {
-          "type": "string",
-          "description": "The token group name. Token group names are intentionally unconstrained by a pattern to accommodate DTCG and design tool naming conventions (e.g., 'color-text', 'color.text', 'color/text')."
-        },
-        "displayName": {
-          "type": "string",
-          "description": "Human-readable name."
-        },
-        "summary": {
-          "type": "string",
-          "description": "A one-line, plain-text summary. MUST NOT contain markup."
-        },
-        "description": {
-          "$ref": "../common/rich-text.schema.json#/$defs/richText"
-        },
-        "status": {
-          "$ref": "../common/status.schema.json#/$defs/status"
-        },
-        "deprecationNotice": {
-          "type": "string",
-          "description": "Required when status is 'deprecated'."
-        },
-        "since": {
-          "type": "string",
-          "description": "The version in which this group was introduced."
-        },
-        "tags": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "description": "Freeform keywords to relate guidelines across categories/disciplines (e.g., 'rtl', 'localization', 'validation')."
-        },
-        "tokens": {
-          "type": "array",
-          "description": "Individual token documentation within the group.",
-          "items": {
-            "$ref": "#/$defs/tokenDoc"
-          }
-        },
-        "useCases": {
-          "$ref": "../common/usecase.schema.json#/$defs/useCases"
-        },
-        "guidelines": {
-          "type": "array",
-          "description": "Usage guidelines for the token group. Each entry is a self-contained guideline. Use the `category` property on individual guidelines to group by concern (e.g., 'design', 'accessibility', 'content').",
-          "items": {
-            "$ref": "../common/guideline.schema.json#/$defs/guideline"
-          }
-        },
-        "accessibility": {
-          "$ref": "../common/accessibility.schema.json#/$defs/accessibilityObject"
-        },
-        "links": {
-          "type": "array",
-          "description": "External resource links and related artifact references.",
-          "items": {
-            "$ref": "../common/link.schema.json#/$defs/link"
-          }
-        },
-        "$extensions": {
-          "$ref": "../common/extensions.schema.json#/$defs/extensions"
-        }
-      },
-      "if": {
-        "properties": {
-          "status": {
-            "const": "deprecated"
-          }
-        }
-      },
-      "then": {
-        "required": [
-          "deprecationNotice"
-        ]
+        "required": ["deprecationNotice"]
       },
       "additionalProperties": false
     }
