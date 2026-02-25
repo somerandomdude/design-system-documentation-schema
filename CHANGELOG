@@ -1,0 +1,277 @@
+# CHANGELOG
+
+All notable changes to the DSDS specification are documented in this file.
+
+---
+
+## [0.1.1] — 2025-02-28
+
+Simplicity, flexibility, and comprehension improvements based on a full schema review.
+These are **breaking changes** to the 0.1 draft. Documents authored against the
+previous 0.1 draft will need migration (see Migration Guide below).
+
+### Breaking Changes
+
+#### 1. Purpose guideline: `whenToUse`/`whenNotToUse` replaced by `useCases`
+
+The `purpose` guideline no longer carries `whenToUse` and `whenNotToUse` as direct
+properties. Instead, it wraps them in a `useCases` object — matching the shape already
+used by variant values and state entries.
+
+**Before:**
+```json
+{
+  "type": "purpose",
+  "whenToUse": [{ "description": "..." }],
+  "whenNotToUse": [{ "description": "..." }]
+}
+```
+
+**After:**
+```json
+{
+  "type": "purpose",
+  "useCases": {
+    "whenToUse": [{ "description": "..." }],
+    "whenNotToUse": [{ "description": "..." }]
+  }
+}
+```
+
+**Files changed:** `guidelines/purpose.schema.json`
+**Rationale:** One concept, one name. The `useCases` shape is now used identically in
+purpose guidelines, variant values, and state entries.
+
+---
+
+#### 2. Best practice `entryType` renamed to `level`
+
+The enforcement level property on `bestPracticeEntry` was renamed from `entryType` to
+`level` to avoid collision with the `type` discriminator used on every guideline.
+
+**Before:** `"entryType": "required"`
+**After:** `"level": "required"`
+
+Valid values are unchanged: `required`, `encouraged`, `informational`, `discouraged`,
+`prohibited`.
+
+**Files changed:** `guidelines/best-practice.schema.json`
+
+---
+
+#### 3. `artifact-reference` guideline removed — merged into `links`
+
+The `artifact-reference` guideline type has been removed entirely. Internal artifact
+relationships are now expressed through the unified `links` array on each entity.
+
+The `link` object has been extended with three new optional properties:
+
+| Property   | Type      | Description                                           |
+|------------|-----------|-------------------------------------------------------|
+| `name`     | `string`  | Name of a referenced DSDS artifact                    |
+| `role`     | `string`  | The role this artifact plays in the current context    |
+| `required` | `boolean` | Whether this artifact is required for the parent       |
+
+The `url` property is now optional — a link requires at least one of `url` or `name`.
+
+**Before (guideline):**
+```json
+{
+  "type": "artifact-reference",
+  "referenceType": "component",
+  "references": [
+    { "name": "button", "role": "Submit trigger", "required": true }
+  ]
+}
+```
+
+**After (in the entity's `links` array):**
+```json
+{
+  "type": "component",
+  "name": "button",
+  "role": "Submit trigger",
+  "required": true
+}
+```
+
+**Files changed:** `common/link.schema.json`, `guidelines/guideline.schema.json`
+**Files deleted:** `guidelines/artifact-reference.schema.json`
+
+---
+
+#### 4. Token `displayName` removed
+
+The `displayName` property has been removed from `token` and `tokenGroup` schemas.
+Token names (e.g., `color-text-primary`, `color.text.primary`) are already
+human-readable in their native format and serve as the display name.
+
+**Files changed:** `entities/token.schema.json`
+
+---
+
+#### 5. Token `description` and `status` now optional
+
+Both `description` and `status` are no longer required on `token` and `tokenGroup`.
+When omitted inside a token group, `status` is inherited from the parent group (same
+inheritance model already used by `tokenType` and `category`).
+
+Token required fields: `type`, `name`, `tokenType` (was: + `displayName`, `description`, `status`)
+Token group required fields: `type`, `name` (was: + `displayName`, `description`, `status`)
+
+**Files changed:** `entities/token.schema.json`
+
+---
+
+#### 6. Anatomy `tokens` changed from array to object map
+
+The `tokens` property on `anatomyEntry` was changed from `string[]` to an object map
+(`{ [purpose]: tokenName }`) for consistency with how tokens are referenced in variant
+values and state entries.
+
+**Before:** `"tokens": ["button-background", "button-border-radius"]`
+**After:** `"tokens": { "background": "button-background", "border-radius": "button-border-radius" }`
+
+**Files changed:** `guidelines/anatomy.schema.json`
+
+---
+
+### New Features
+
+#### 7. Variant exclusions
+
+The `variants` guideline now supports an optional `exclusions` array for documenting
+invalid combinations across variant dimensions.
+
+```json
+{
+  "type": "variants",
+  "items": [
+    { "name": "emphasis", "values": [...] },
+    { "name": "size", "values": [...] }
+  ],
+  "exclusions": [
+    {
+      "conditions": [
+        { "dimension": "emphasis", "value": "ghost" },
+        { "dimension": "size", "value": "sm" }
+      ],
+      "description": "Ghost emphasis requires at least medium size for adequate touch target area."
+    }
+  ]
+}
+```
+
+Each exclusion requires at least two conditions (a single condition would remove an
+entire value, which should be done in the values array instead).
+
+**Files changed:** `guidelines/variant.schema.json`
+
+---
+
+#### 8. `$profile` property for progressive authoring
+
+The root document schema now accepts an optional `$profile` property with two values:
+
+- `"core"` — Minimal viable documentation. Signals to tools that missing optional
+  fields are intentional, not errors. Use for migration drafts and skeleton documents.
+- `"complete"` — Full specification conformance (default when omitted).
+
+```json
+{
+  "dsdsVersion": "0.1",
+  "$profile": "core",
+  "documentation": [...]
+}
+```
+
+**Files changed:** `dsds.schema.json`
+
+---
+
+#### 9. `statusValue` pattern enforcement
+
+`statusValue` now enforces a `^[a-z][a-z0-9-]*$` pattern. The four standard values
+(`draft`, `experimental`, `stable`, `deprecated`) are unchanged. Custom values are
+still permitted but must be lowercase kebab-case, catching common errors like
+`"Stable"` or `"DEPRECATED"`.
+
+**Files changed:** `common/status.schema.json`
+
+---
+
+#### 10. `example` no longer requires `presentation` when `value` is provided
+
+The `example` object now uses `anyOf` — either `presentation` or `value` (or both)
+must be present. This reduces ceremony for API property examples where the meaningful
+content is a literal value like `true` or `"primary"`.
+
+**Before (required a presentation even for value-only examples):**
+```json
+{
+  "value": "primary",
+  "presentation": { "type": "code", "code": "variant=\"primary\"", "language": "jsx" }
+}
+```
+
+**After:**
+```json
+{ "value": "primary", "title": "Default variant" }
+```
+
+**Files changed:** `common/example.schema.json`
+
+---
+
+#### 11. Minimal examples
+
+A new `examples/minimal/` directory provides lightweight examples showing the floor
+of documentation for each entity type:
+
+| File                  | Lines | Description                              |
+|-----------------------|-------|------------------------------------------|
+| `minimal.dsds.json`   | ~77   | Complete DSDS document with all 6 types  |
+| `component.json`      | ~31   | Component with one purpose guideline     |
+| `token.json`          | ~8    | Bare minimum token                       |
+| `token-group.json`    | ~31   | Group with inherited status              |
+| `pattern.json`        | ~14   | Pattern with component links             |
+| `style.json`          | ~18   | Style with one principle                 |
+| `theme.json`          | ~22   | Theme with three overrides               |
+
+---
+
+### Migration Guide
+
+To update documents from the previous 0.1 draft to 0.1.1:
+
+1. **Purpose guidelines:** Wrap `whenToUse`/`whenNotToUse` in a `useCases` object.
+
+2. **Best practice entries:** Rename `entryType` → `level`.
+
+3. **Artifact references:** Move each `artifact-reference` guideline's `references`
+   into the entity's `links` array. Set `type` to the former `referenceType`. Copy
+   `name`, `role`, and `required` directly. Delete the guideline.
+
+4. **Token displayName:** Remove `displayName` from all token and token-group objects.
+
+5. **Anatomy tokens:** Convert `tokens` arrays to objects. Each array entry becomes a
+   key-value pair where the key is the token's purpose (e.g., `"background"`) and the
+   value is the token name.
+
+**Automated migration (sed, one-liners):**
+
+```sh
+# Rename entryType to level
+sed -i 's/"entryType"/"level"/g' *.json
+
+# Remove displayName from tokens (manual review recommended)
+# Wrap purpose whenToUse/whenNotToUse (use the Python script pattern from this release)
+```
+
+---
+
+### Internal
+
+- Bundled schema now contains 66 definitions from 25 files (was 26 files; artifact-reference removed).
+- All 143 validations pass across examples and definition fragments.
+- Example sync pipeline (`sync-examples`) updated; 6 entity examples regenerated.

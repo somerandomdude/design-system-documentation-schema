@@ -2,15 +2,12 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://designsystemdocspec.org/v0.1/theme.schema.json",
   "title": "DSDS Theme Definition",
-  "description": "A theme provides alternative token values for a named context such as a color mode, density setting, or brand variant. Themes reference existing tokens defined elsewhere in the system and supply override values without redefining the token's identity, documentation, or API mappings. This separation keeps the token catalog as the single source of truth for what a token is, while themes describe how token values change across contexts.",
+  "description": "A theme provides alternative token values for a named context such as a color mode, density setting, or brand variant. Themes reference existing tokens defined elsewhere in the system and supply override values without redefining the token's identity, documentation, or API mappings. This separation keeps the token catalog as the single source of truth for what a token is, while themes describe how token values change across contexts. Internal artifact relationships (e.g., related themes, parent styles) are expressed through the unified `links` array rather than a dedicated guideline type.",
   "$defs": {
     "tokenOverride": {
       "type": "object",
       "description": "An alternative value for a single token within a theme. A simple mapping of a token name to its theme-specific value.",
-      "required": [
-        "token",
-        "value"
-      ],
+      "required": ["token", "value"],
       "properties": {
         "token": {
           "type": "string",
@@ -92,14 +89,14 @@
         },
         "guidelines": {
           "type": "array",
-          "description": "All structured documentation for this theme, expressed as an ordered array of typed guideline objects. Themes accept general guideline types only (best-practices, use-cases, accessibility, examples, artifact-references). Each guideline has a `type` property that determines its shape. The ordering is significant: tools SHOULD preserve it for display.",
+          "description": "All structured documentation for this theme, expressed as an ordered array of typed guideline objects. Themes accept general guideline types only (best-practices, use-cases, accessibility, examples). Each guideline has a `type` property that determines its shape. The ordering is significant: tools SHOULD preserve it for display.",
           "items": {
             "$ref": "../guidelines/guideline.schema.json#/$defs/tokenGuideline"
           }
         },
         "links": {
           "type": "array",
-          "description": "External resource links related to this theme.",
+          "description": "External resource links, related artifact references, and internal relationships. Each link is a typed reference that can point to an external URL, an internal DSDS artifact by name, or both.",
           "items": {
             "$ref": "../common/link.schema.json#/$defs/link"
           }

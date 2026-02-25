@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://designsystemdocspec.org/v0.1/guidelines/variant.schema.json",
   "title": "DSDS Variants Guideline",
-  "description": "Documents all dimensions of visual or behavioral variation on a component. Each item in the variants array represents a single axis of configuration (e.g., 'size', 'emphasis', 'selected') and contains one or more values describing the options within that axis. A variant dimension with a single value represents a boolean/toggle configuration (e.g., 'full-width', 'icon-only'). A variant dimension with multiple values represents an enumerated set (e.g., size: small/medium/large).",
+  "description": "Documents all dimensions of visual or behavioral variation on a component. Each item in the variants array represents a single axis of configuration (e.g., 'size', 'emphasis', 'selected') and contains one or more values describing the options within that axis. A variant dimension with a single value represents a boolean/toggle configuration (e.g., 'full-width', 'icon-only'). A variant dimension with multiple values represents an enumerated set (e.g., size: small/medium/large). Optional exclusions document invalid combinations across dimensions.",
   "$defs": {
     "variantValue": {
       "type": "object",
@@ -74,9 +74,45 @@
       },
       "additionalProperties": false
     },
+    "variantExclusionCondition": {
+      "type": "object",
+      "description": "A single condition in a variant exclusion — identifies a specific value on a specific dimension. When all conditions in an exclusion are active simultaneously, the combination is invalid.",
+      "required": ["dimension", "value"],
+      "properties": {
+        "dimension": {
+          "type": "string",
+          "description": "The name of the variant dimension (must match a variantEntry name in the items array)."
+        },
+        "value": {
+          "type": "string",
+          "description": "The name of the variant value within that dimension (must match a variantValue name)."
+        }
+      },
+      "additionalProperties": false
+    },
+    "variantExclusion": {
+      "type": "object",
+      "description": "An invalid combination of variant values. When ALL conditions are active simultaneously, the combination is not supported. For example, an exclusion with conditions [{dimension: 'emphasis', value: 'ghost'}, {dimension: 'size', value: 'sm'}] means that ghost emphasis at small size is not a valid configuration. Exclusions with more than two conditions express higher-order constraints (e.g., 'ghost + small + icon-only is invalid').",
+      "required": ["conditions"],
+      "properties": {
+        "conditions": {
+          "type": "array",
+          "description": "The set of dimension-value pairs that, when all active at the same time, represent an invalid configuration. Must contain at least two conditions (a single condition would exclude an entire value, which should be removed from the dimension's values array instead).",
+          "items": {
+            "$ref": "#/$defs/variantExclusionCondition"
+          },
+          "minItems": 2
+        },
+        "description": {
+          "type": "string",
+          "description": "A human-readable explanation of why this combination is invalid and what the user should choose instead (e.g., 'Ghost emphasis requires at least medium size for adequate touch target area. Use secondary emphasis for small buttons instead.')."
+        }
+      },
+      "additionalProperties": false
+    },
     "variants": {
       "type": "object",
-      "description": "Documents all dimensions of visual or behavioral variation on a component. Each item represents a single axis of configuration — a Button might have an 'emphasis' axis (primary/secondary/ghost/danger), a 'size' axis (small/medium/large), and a 'full-width' axis (a single boolean value). Multiple axes document orthogonal dimensions that can be combined independently.",
+      "description": "Documents all dimensions of visual or behavioral variation on a component. Each item represents a single axis of configuration — a Button might have an 'emphasis' axis (primary/secondary/ghost/danger), a 'size' axis (small/medium/large), and a 'full-width' axis (a single boolean value). Multiple axes document orthogonal dimensions that can be combined independently. Optional exclusions document combinations across dimensions that are not valid.",
       "required": ["type", "items"],
       "properties": {
         "type": {
@@ -91,6 +127,13 @@
             "$ref": "#/$defs/variantEntry"
           },
           "minItems": 1
+        },
+        "exclusions": {
+          "type": "array",
+          "description": "Invalid combinations across variant dimensions. Each exclusion describes a set of dimension-value pairs that cannot be active simultaneously. Tools SHOULD use exclusions to disable invalid options in component configurators, generate warnings in code review, or display 'not available' badges in documentation. When no exclusions are present, all value combinations across all dimensions are assumed to be valid.",
+          "items": {
+            "$ref": "#/$defs/variantExclusion"
+          }
         }
       },
       "additionalProperties": false

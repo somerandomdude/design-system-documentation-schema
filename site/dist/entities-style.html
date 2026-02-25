@@ -41,7 +41,6 @@
 <a class="nav__link nav__link--child" href="guidelines-accessibility.html">accessibility</a>
 <a class="nav__link nav__link--child" href="guidelines-anatomy.html">anatomy</a>
 <a class="nav__link nav__link--child" href="guidelines-api.html">api</a>
-<a class="nav__link nav__link--child" href="guidelines-artifact-reference.html">artifact-reference</a>
 <a class="nav__link nav__link--child" href="guidelines-best-practice.html">best-practice</a>
 <a class="nav__link nav__link--child" href="guidelines-design-specifications.html">design-specifications</a>
 <a class="nav__link nav__link--child" href="guidelines-guideline.html">guideline</a>
@@ -75,8 +74,8 @@
 <tr><td><code>since</code></td><td>string</td><td>optional</td><td>The version of the design system in which this style was introduced (e.g., '1.0.0', '2.3.0').</td></tr>
 <tr><td><code>tags</code></td><td>string[]</td><td>optional</td><td>Freeform keywords for categorization, search, and cross-referencing (e.g., 'visual', 'foundation', 'layout', 'theming'). Tags are not constrained to a vocabulary — use them for any cross-cutting concern.</td></tr>
 <tr><td><code>category</code></td><td>string</td><td>optional</td><td>The visual attribute category this style governs. Common values: 'color' (color system, palettes, semantic color usage, and color modes), 'typography' (type hierarchy, font families, type scales, and typographic rules), 'spacing' (spatial system, spacing scale, and layout rhythm), 'elevation' (shadows, layering, z-index strategy, and depth), 'motion' (animation timing, easing curves, transition patterns, and reduced-motion considerations), 'shape' (border radius, corner treatments, and geometric conventions). Custom values are permitted and SHOULD be lowercase kebab-case.</td></tr>
-<tr><td><code>guidelines</code></td><td><a href="guidelines-guideline.html#styleguideline" class="type-ref">styleGuideline</a>[]</td><td>optional</td><td>All structured documentation for this style, expressed as an ordered array of typed guideline objects. Styles accept style-specific guideline types (principles, scale) and general types (best-practices, use-cases, accessibility, examples, artifact-references). Each guideline has a `type` property that determines its shape. The ordering is significant: tools SHOULD preserve it for display. A typical style includes guidelines in roughly this order: examples (hero previews), principles, scales, artifact-references (token groups), use-cases, best-practices, accessibility. However, authors are free to order guidelines in whatever way best serves their documentation.</td></tr>
-<tr><td><code>links</code></td><td><a href="common-link.html#link" class="type-ref">link</a>[]</td><td>optional</td><td>External resource links and related artifact references — source code, design files, Storybook stories, documentation pages, npm packages, and relationships to other DSDS artifacts.</td></tr>
+<tr><td><code>guidelines</code></td><td><a href="guidelines-guideline.html#styleguideline" class="type-ref">styleGuideline</a>[]</td><td>optional</td><td>All structured documentation for this style, expressed as an ordered array of typed guideline objects. Styles accept style-specific guideline types (principles, scale) and general types (best-practices, use-cases, accessibility, examples). Each guideline has a `type` property that determines its shape. The ordering is significant: tools SHOULD preserve it for display. A typical style includes guidelines in roughly this order: examples (hero previews), principles, scales, use-cases, best-practices, accessibility. Internal artifact relationships (e.g., references to token groups that implement this style) are expressed through the `links` array rather than as guidelines. However, authors are free to order guidelines in whatever way best serves their documentation.</td></tr>
+<tr><td><code>links</code></td><td><a href="common-link.html#link" class="type-ref">link</a>[]</td><td>optional</td><td>External resource links, related artifact references, and internal relationships — source code, design files, Storybook stories, documentation pages, npm packages, and relationships to other DSDS artifacts (alternatives, token groups, related styles). Each link can point to an external URL, an internal DSDS artifact by name, or both.</td></tr>
 <tr><td><code>$extensions</code></td><td><a href="common-extensions.html#extensions" class="type-ref">extensions</a></td><td>optional</td><td></td></tr></tbody></table>
 <p class="cross-refs"><strong>References:</strong> 
 <a href="common-rich-text.html#richtext">richText</a>, <a href="common-status.html#statusobject">statusObject</a>, <a href="guidelines-guideline.html#styleguideline">styleGuideline</a>, <a href="common-link.html#link">link</a>, <a href="common-extensions.html#extensions">extensions</a>
@@ -117,17 +116,6 @@
         {
           &quot;title&quot;: &quot;Consistent internal, flexible external&quot;,
           &quot;description&quot;: &quot;Internal spacing within a component is fixed by the component's design specification. External spacing between components is determined by the layout context.&quot;
-        }
-      ]
-    },
-    {
-      &quot;type&quot;: &quot;artifact-reference&quot;,
-      &quot;referenceType&quot;: &quot;token-group&quot;,
-      &quot;description&quot;: &quot;The token group that implements the spacing system.&quot;,
-      &quot;references&quot;: [
-        {
-          &quot;name&quot;: &quot;spacing&quot;,
-          &quot;role&quot;: &quot;Provides all spatial tokens from space-0 (0px) through space-8 (48px), built on a 4px base unit.&quot;
         }
       ]
     },
@@ -190,43 +178,43 @@
         {
           &quot;guidance&quot;: &quot;Use the spacing scale tokens for all padding, margin, and gap properties. Do not use hard-coded values.&quot;,
           &quot;rationale&quot;: &quot;Hard-coded values create visual inconsistency and are not responsive to system-wide spacing changes. Tokens enable global adjustment of spatial density from a single source of truth.&quot;,
-          &quot;entryType&quot;: &quot;required&quot;,
+          &quot;level&quot;: &quot;required&quot;,
           &quot;category&quot;: &quot;visual-design&quot;
         },
         {
           &quot;guidance&quot;: &quot;Components must not apply external margin. Margin between components is the responsibility of the parent layout.&quot;,
           &quot;rationale&quot;: &quot;Components that own their margins create unpredictable spacing when composed. A button with built-in margin-bottom behaves differently depending on what follows it. Delegating margin to layout makes spacing composable and predictable.&quot;,
-          &quot;entryType&quot;: &quot;required&quot;,
+          &quot;level&quot;: &quot;required&quot;,
           &quot;category&quot;: &quot;visual-design&quot;
         },
         {
           &quot;guidance&quot;: &quot;Select spacing based on the relationship between elements, not their size. Related elements use smaller spacing. Unrelated elements use larger spacing.&quot;,
           &quot;rationale&quot;: &quot;Gestalt proximity principle: objects that are closer together are perceived as related. Spacing encodes information hierarchy. A label 4px from its input is clearly associated with it. A label 32px from an input appears disconnected.&quot;,
-          &quot;entryType&quot;: &quot;encouraged&quot;,
+          &quot;level&quot;: &quot;encouraged&quot;,
           &quot;category&quot;: &quot;visual-design&quot;
         },
         {
           &quot;guidance&quot;: &quot;Do not use spacing tokens for non-spatial properties such as border-width, font-size, or icon-size. Use the tokens designated for those properties.&quot;,
           &quot;rationale&quot;: &quot;Spacing tokens are tuned for whitespace. A spacing scale step that works well as padding produces incorrect results as a border-width or icon-size. Using the wrong token category couples unrelated visual properties.&quot;,
-          &quot;entryType&quot;: &quot;prohibited&quot;,
+          &quot;level&quot;: &quot;prohibited&quot;,
           &quot;category&quot;: &quot;development&quot;
         },
         {
           &quot;guidance&quot;: &quot;Use CSS gap (in Flexbox or Grid) as the primary mechanism for spacing between sibling elements. Reserve margin for spacing between non-sibling elements or layout-level offset.&quot;,
           &quot;rationale&quot;: &quot;Gap applies spacing uniformly between children without affecting the first or last child. Margin requires :first-child/:last-child overrides to prevent unwanted space at container edges.&quot;,
-          &quot;entryType&quot;: &quot;encouraged&quot;,
+          &quot;level&quot;: &quot;encouraged&quot;,
           &quot;category&quot;: &quot;development&quot;
         },
         {
           &quot;guidance&quot;: &quot;For responsive layouts, reduce spacing density at smaller breakpoints by stepping down the scale. Do not introduce arbitrary breakpoint-specific values.&quot;,
           &quot;rationale&quot;: &quot;Stepping down the scale (e.g., space-7 at desktop becoming space-5 at mobile) maintains proportional relationships while conserving space. Arbitrary values break out of the scale and undermine system consistency.&quot;,
-          &quot;entryType&quot;: &quot;encouraged&quot;,
+          &quot;level&quot;: &quot;encouraged&quot;,
           &quot;category&quot;: &quot;visual-design&quot;
         },
         {
           &quot;guidance&quot;: &quot;Ensure all interactive elements maintain a minimum 44x44 CSS pixel touch target, inclusive of padding.&quot;,
           &quot;rationale&quot;: &quot;Users with motor impairments and touch device users require a minimum target size to interact reliably. WCAG 2.5.8 requires 24x24px minimum and recommends 44x44px. The spacing system's role is to ensure padding contributes to meeting this target.&quot;,
-          &quot;entryType&quot;: &quot;required&quot;,
+          &quot;level&quot;: &quot;required&quot;,
           &quot;category&quot;: &quot;accessibility&quot;,
           &quot;criteria&quot;: [
             &quot;https://www.w3.org/TR/WCAG22/#target-size-minimum&quot;
@@ -235,7 +223,7 @@
         {
           &quot;guidance&quot;: &quot;When users increase text size to 200% via browser settings, spacing must not collapse to zero or cause content to overlap.&quot;,
           &quot;rationale&quot;: &quot;Users with low vision enlarge text. If spacing is defined in fixed pixel units that do not scale, text enlargement causes overlap and loss of content. Use rem-based spacing tokens where possible, and test all layouts at 200% text zoom.&quot;,
-          &quot;entryType&quot;: &quot;required&quot;,
+          &quot;level&quot;: &quot;required&quot;,
           &quot;category&quot;: &quot;accessibility&quot;,
           &quot;criteria&quot;: [
             &quot;https://www.w3.org/TR/WCAG22/#resize-text&quot;
@@ -245,46 +233,53 @@
     },
     {
       &quot;type&quot;: &quot;purpose&quot;,
-      &quot;whenToUse&quot;: [
-        {
-          &quot;description&quot;: &quot;When defining padding, margin, or gap values for any layout or component. All spatial values in production code must reference the spacing scale.&quot;
-        },
-        {
-          &quot;description&quot;: &quot;When establishing vertical rhythm between content sections, form groups, or card layouts.&quot;
-        },
-        {
-          &quot;description&quot;: &quot;When setting internal padding for containers such as cards, dialogs, panels, and page regions.&quot;
-        },
-        {
-          &quot;description&quot;: &quot;When controlling the gap between sibling elements in Flexbox or Grid layouts.&quot;
-        }
-      ],
-      &quot;whenNotToUse&quot;: [
-        {
-          &quot;description&quot;: &quot;When defining border widths, outline offsets, or stroke values.&quot;,
-          &quot;alternative&quot;: {
-            &quot;name&quot;: &quot;border-width&quot;,
-            &quot;rationale&quot;: &quot;Border tokens are tuned for visual weight at sub-pixel and single-pixel sizes. Spacing tokens start at 0px and jump to values optimized for whitespace, which produce incorrect visual results when applied to borders.&quot;
+      &quot;useCases&quot;: {
+        &quot;whenToUse&quot;: [
+          {
+            &quot;description&quot;: &quot;When defining padding, margin, or gap values for any layout or component. All spatial values in production code must reference the spacing scale.&quot;
+          },
+          {
+            &quot;description&quot;: &quot;When establishing vertical rhythm between content sections, form groups, or card layouts.&quot;
+          },
+          {
+            &quot;description&quot;: &quot;When setting internal padding for containers such as cards, dialogs, panels, and page regions.&quot;
+          },
+          {
+            &quot;description&quot;: &quot;When controlling the gap between sibling elements in Flexbox or Grid layouts.&quot;
           }
-        },
-        {
-          &quot;description&quot;: &quot;When setting font sizes or line heights.&quot;,
-          &quot;alternative&quot;: {
-            &quot;name&quot;: &quot;typography&quot;,
-            &quot;rationale&quot;: &quot;Typographic tokens follow a modular scale designed for readability and vertical rhythm. Spacing tokens follow a geometric scale designed for whitespace. The two scales serve different purposes and should not be interchanged.&quot;
+        ],
+        &quot;whenNotToUse&quot;: [
+          {
+            &quot;description&quot;: &quot;When defining border widths, outline offsets, or stroke values.&quot;,
+            &quot;alternative&quot;: {
+              &quot;name&quot;: &quot;border-width&quot;,
+              &quot;rationale&quot;: &quot;Border tokens are tuned for visual weight at sub-pixel and single-pixel sizes. Spacing tokens start at 0px and jump to values optimized for whitespace, which produce incorrect visual results when applied to borders.&quot;
+            }
+          },
+          {
+            &quot;description&quot;: &quot;When setting font sizes or line heights.&quot;,
+            &quot;alternative&quot;: {
+              &quot;name&quot;: &quot;typography&quot;,
+              &quot;rationale&quot;: &quot;Typographic tokens follow a modular scale designed for readability and vertical rhythm. Spacing tokens follow a geometric scale designed for whitespace. The two scales serve different purposes and should not be interchanged.&quot;
+            }
+          },
+          {
+            &quot;description&quot;: &quot;When sizing icons or illustration containers.&quot;,
+            &quot;alternative&quot;: {
+              &quot;name&quot;: &quot;icon-size&quot;,
+              &quot;rationale&quot;: &quot;Icon size tokens are calibrated to optical alignment with adjacent text at each type scale step. Spacing tokens do not account for optical sizing and produce misaligned icons.&quot;
+            }
           }
-        },
-        {
-          &quot;description&quot;: &quot;When sizing icons or illustration containers.&quot;,
-          &quot;alternative&quot;: {
-            &quot;name&quot;: &quot;icon-size&quot;,
-            &quot;rationale&quot;: &quot;Icon size tokens are calibrated to optical alignment with adjacent text at each type scale step. Spacing tokens do not account for optical sizing and produce misaligned icons.&quot;
-          }
-        }
-      ]
+        ]
+      }
     }
   ],
   &quot;links&quot;: [
+    {
+      &quot;type&quot;: &quot;token-group&quot;,
+      &quot;name&quot;: &quot;spacing&quot;,
+      &quot;role&quot;: &quot;Provides all spatial tokens from space-0 (0px) through space-8 (48px), built on a 4px base unit.&quot;
+    },
     {
       &quot;type&quot;: &quot;source&quot;,
       &quot;url&quot;: &quot;https://code.acme.com/design-system/src/tokens/spacing.tokens.json&quot;,

@@ -41,7 +41,6 @@
 <a class="nav__link nav__link--child" href="guidelines-accessibility.html">accessibility</a>
 <a class="nav__link nav__link--child" href="guidelines-anatomy.html">anatomy</a>
 <a class="nav__link nav__link--child" href="guidelines-api.html">api</a>
-<a class="nav__link nav__link--child" href="guidelines-artifact-reference.html">artifact-reference</a>
 <a class="nav__link nav__link--child" href="guidelines-best-practice.html">best-practice</a>
 <a class="nav__link nav__link--child" href="guidelines-design-specifications.html">design-specifications</a>
 <a class="nav__link nav__link--child" href="guidelines-guideline.html">guideline</a>
@@ -59,7 +58,7 @@
     <main class="content__main" role="main">
       <div class="content__inner">
         <h1>DSDS Theme Definition</h1>
-<p class="schema-description">A theme provides alternative token values for a named context such as a color mode, density setting, or brand variant. Themes reference existing tokens defined elsewhere in the system and supply override values without redefining the token's identity, documentation, or API mappings. This separation keeps the token catalog as the single source of truth for what a token is, while themes describe how token values change across contexts.</p>
+<p class="schema-description">A theme provides alternative token values for a named context such as a color mode, density setting, or brand variant. Themes reference existing tokens defined elsewhere in the system and supply override values without redefining the token's identity, documentation, or API mappings. This separation keeps the token catalog as the single source of truth for what a token is, while themes describe how token values change across contexts. Internal artifact relationships (e.g., related themes, parent styles) are expressed through the unified `links` array rather than a dedicated guideline type.</p>
 <p class="schema-source">Source: <code>entities/theme.schema.json</code></p>
 <nav class="page-def-index">
 <p><strong>2 definitions</strong> in this file:</p>
@@ -119,8 +118,8 @@
 <tr><td><code>since</code></td><td>string</td><td>optional</td><td>The version of the design system in which this theme was introduced.</td></tr>
 <tr><td><code>tags</code></td><td>string[]</td><td>optional</td><td>Freeform keywords for categorization and search (e.g., 'dark-mode', 'accessibility', 'brand').</td></tr>
 <tr><td><code>category</code></td><td>string</td><td>optional</td><td>The category of adaptation this theme represents. Common values: 'color-mode' (light/dark/high-contrast), 'density' (compact/comfortable/spacious), 'brand' (sub-brand or partner theming), 'product' (product-specific overrides). Custom values are permitted and SHOULD be lowercase kebab-case.</td></tr>
-<tr><td><code>guidelines</code></td><td><a href="guidelines-guideline.html#tokenguideline" class="type-ref">tokenGuideline</a>[]</td><td>optional</td><td>All structured documentation for this theme, expressed as an ordered array of typed guideline objects. Themes accept general guideline types only (best-practices, use-cases, accessibility, examples, artifact-references). Each guideline has a `type` property that determines its shape. The ordering is significant: tools SHOULD preserve it for display.</td></tr>
-<tr><td><code>links</code></td><td><a href="common-link.html#link" class="type-ref">link</a>[]</td><td>optional</td><td>External resource links related to this theme.</td></tr>
+<tr><td><code>guidelines</code></td><td><a href="guidelines-guideline.html#tokenguideline" class="type-ref">tokenGuideline</a>[]</td><td>optional</td><td>All structured documentation for this theme, expressed as an ordered array of typed guideline objects. Themes accept general guideline types only (best-practices, use-cases, accessibility, examples). Each guideline has a `type` property that determines its shape. The ordering is significant: tools SHOULD preserve it for display.</td></tr>
+<tr><td><code>links</code></td><td><a href="common-link.html#link" class="type-ref">link</a>[]</td><td>optional</td><td>External resource links, related artifact references, and internal relationships. Each link is a typed reference that can point to an external URL, an internal DSDS artifact by name, or both.</td></tr>
 <tr><td><code>$extensions</code></td><td><a href="common-extensions.html#extensions" class="type-ref">extensions</a></td><td>optional</td><td></td></tr></tbody></table>
 <p class="cross-refs"><strong>References:</strong> 
 <a href="common-rich-text.html#richtext">richText</a>, <a href="common-status.html#statusobject">statusObject</a>, <a href="entities-theme.html#tokenoverride">tokenOverride</a>, <a href="guidelines-guideline.html#tokenguideline">tokenGuideline</a>, <a href="common-link.html#link">link</a>, <a href="common-extensions.html#extensions">extensions</a>
@@ -436,40 +435,42 @@
   &quot;guidelines&quot;: [
     {
       &quot;type&quot;: &quot;purpose&quot;,
-      &quot;whenToUse&quot;: [
-        {
-          &quot;description&quot;: &quot;When the user's system preference is `prefers-color-scheme: dark` or they have explicitly selected dark mode in the application settings.&quot;
-        },
-        {
-          &quot;description&quot;: &quot;When the application is used in low-light environments where a bright screen causes eye strain or discomfort.&quot;
-        },
-        {
-          &quot;description&quot;: &quot;When embedding content in a context that is already dark (e.g., a media player, a code editor, or a presentation tool in dark mode).&quot;
-        }
-      ],
-      &quot;whenNotToUse&quot;: [
-        {
-          &quot;description&quot;: &quot;When the user has not expressed a preference for dark mode. Default to the light theme.&quot;,
-          &quot;alternative&quot;: {
-            &quot;name&quot;: &quot;light&quot;,
-            &quot;rationale&quot;: &quot;Dark mode can reduce readability for users with certain visual impairments such as astigmatism, where light text on dark backgrounds causes halation. Defaulting to light ensures the broadest accessibility baseline.&quot;
+      &quot;useCases&quot;: {
+        &quot;whenToUse&quot;: [
+          {
+            &quot;description&quot;: &quot;When the user's system preference is `prefers-color-scheme: dark` or they have explicitly selected dark mode in the application settings.&quot;
+          },
+          {
+            &quot;description&quot;: &quot;When the application is used in low-light environments where a bright screen causes eye strain or discomfort.&quot;
+          },
+          {
+            &quot;description&quot;: &quot;When embedding content in a context that is already dark (e.g., a media player, a code editor, or a presentation tool in dark mode).&quot;
           }
-        },
-        {
-          &quot;description&quot;: &quot;When high-contrast accessibility is the primary concern rather than a dark aesthetic.&quot;,
-          &quot;alternative&quot;: {
-            &quot;name&quot;: &quot;high-contrast&quot;,
-            &quot;rationale&quot;: &quot;The dark theme is optimized for comfort in low-light environments, not maximum contrast. The high-contrast theme provides stronger contrast ratios that better serve users with low vision.&quot;
+        ],
+        &quot;whenNotToUse&quot;: [
+          {
+            &quot;description&quot;: &quot;When the user has not expressed a preference for dark mode. Default to the light theme.&quot;,
+            &quot;alternative&quot;: {
+              &quot;name&quot;: &quot;light&quot;,
+              &quot;rationale&quot;: &quot;Dark mode can reduce readability for users with certain visual impairments such as astigmatism, where light text on dark backgrounds causes halation. Defaulting to light ensures the broadest accessibility baseline.&quot;
+            }
+          },
+          {
+            &quot;description&quot;: &quot;When high-contrast accessibility is the primary concern rather than a dark aesthetic.&quot;,
+            &quot;alternative&quot;: {
+              &quot;name&quot;: &quot;high-contrast&quot;,
+              &quot;rationale&quot;: &quot;The dark theme is optimized for comfort in low-light environments, not maximum contrast. The high-contrast theme provides stronger contrast ratios that better serve users with low vision.&quot;
+            }
+          },
+          {
+            &quot;description&quot;: &quot;When the content is primarily photographic or illustrative and the surrounding chrome should not compete visually.&quot;,
+            &quot;alternative&quot;: {
+              &quot;name&quot;: &quot;light&quot;,
+              &quot;rationale&quot;: &quot;Photographic content often assumes a neutral white surround for accurate color perception. A dark surround shifts the viewer's perception of brightness and color in the images.&quot;
+            }
           }
-        },
-        {
-          &quot;description&quot;: &quot;When the content is primarily photographic or illustrative and the surrounding chrome should not compete visually.&quot;,
-          &quot;alternative&quot;: {
-            &quot;name&quot;: &quot;light&quot;,
-            &quot;rationale&quot;: &quot;Photographic content often assumes a neutral white surround for accurate color perception. A dark surround shifts the viewer's perception of brightness and color in the images.&quot;
-          }
-        }
-      ]
+        ]
+      }
     },
     {
       &quot;type&quot;: &quot;best-practices&quot;,
@@ -477,31 +478,31 @@
         {
           &quot;guidance&quot;: &quot;Apply the dark theme at the application root when the user's system preference is `prefers-color-scheme: dark` or when they explicitly select dark mode in the application settings.&quot;,
           &quot;rationale&quot;: &quot;Respecting the user's color scheme preference improves comfort in low-light environments and can reduce eye strain. Forcing a color mode against the user's preference creates friction.&quot;,
-          &quot;entryType&quot;: &quot;required&quot;,
+          &quot;level&quot;: &quot;required&quot;,
           &quot;category&quot;: &quot;development&quot;
         },
         {
           &quot;guidance&quot;: &quot;In dark mode, layers become one step lighter with each added layer. Do not apply components that are darker than their background surface.&quot;,
           &quot;rationale&quot;: &quot;The dark theme's layering model uses increasing lightness to communicate depth. Reversing this — placing darker elements on lighter surfaces — breaks the spatial hierarchy and confuses the visual relationship between layers.&quot;,
-          &quot;entryType&quot;: &quot;required&quot;,
+          &quot;level&quot;: &quot;required&quot;,
           &quot;category&quot;: &quot;visual-design&quot;
         },
         {
           &quot;guidance&quot;: &quot;Do not mix light-mode and dark-mode semantic tokens on the same surface. Use inline theme switching if a component must appear in the opposite mode.&quot;,
           &quot;rationale&quot;: &quot;Mixing tokens from different themes produces unpredictable contrast pairings. Semantic tokens are only validated for contrast within their own theme context.&quot;,
-          &quot;entryType&quot;: &quot;prohibited&quot;,
+          &quot;level&quot;: &quot;prohibited&quot;,
           &quot;category&quot;: &quot;visual-design&quot;
         },
         {
           &quot;guidance&quot;: &quot;Shadows (elevation tokens) are replaced with surface color differentiation in dark mode. Do not add custom box-shadow values to create depth.&quot;,
           &quot;rationale&quot;: &quot;Dark backgrounds absorb shadow, making traditional drop shadows invisible or visually muddy. The dark theme communicates depth through lighter surface values instead.&quot;,
-          &quot;entryType&quot;: &quot;discouraged&quot;,
+          &quot;level&quot;: &quot;discouraged&quot;,
           &quot;category&quot;: &quot;visual-design&quot;
         },
         {
           &quot;guidance&quot;: &quot;Ensure all custom illustrations, charts, and images remain legible in dark mode. Provide dark-mode variants of images that use light backgrounds or thin strokes.&quot;,
           &quot;rationale&quot;: &quot;Illustrations designed for light backgrounds may become invisible or illegible on dark surfaces. Custom visual content requires the same level of dark-mode adaptation as UI components.&quot;,
-          &quot;entryType&quot;: &quot;encouraged&quot;,
+          &quot;level&quot;: &quot;encouraged&quot;,
           &quot;category&quot;: &quot;visual-design&quot;
         }
       ]

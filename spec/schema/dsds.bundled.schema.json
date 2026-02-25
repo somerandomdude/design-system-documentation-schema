@@ -18,6 +18,15 @@
       "const": "0.1",
       "description": "The version of the DSDS specification this document conforms to."
     },
+    "$profile": {
+      "type": "string",
+      "enum": [
+        "core",
+        "complete"
+      ],
+      "default": "complete",
+      "description": "The conformance profile this document targets. Profiles control how strictly tools SHOULD validate the document.\n\n- 'core': Minimal viable documentation. Only identity fields are required on entities (type, name for tokens; type, name, displayName for components/styles/patterns/themes). Description, status, and all other properties are optional. Use this profile for early-stage documentation, migration drafts, or skeleton documents that will be filled in over time.\n\n- 'complete': Full specification conformance. All required fields as defined by each entity schema must be present. This is the default when $profile is omitted.\n\nTools SHOULD use this property to adjust validation strictness. When $profile is 'core', tools SHOULD suppress validation errors for missing optional-in-core fields and MAY display a badge or indicator showing the document's completeness level."
+    },
     "metadata": {
       "$ref": "#/$defs/metadata"
     },
@@ -134,9 +143,18 @@
     },
     "example": {
       "type": "object",
-      "description": "A single example. Every example requires a presentation — a visual or interactive demonstration of the concept. The optional title and description provide context. The optional value property carries a literal value for API property examples.",
-      "required": [
-        "presentation"
+      "description": "A single example. Every example requires at least a presentation or a value (or both). The presentation provides a visual or interactive demonstration. The value carries a literal value for API property examples. The optional title and description provide context. When only a value is provided without a presentation, the example represents a concrete data point (e.g., a prop value of 'primary' or a token value of 44) — tools SHOULD render these as table rows or inline displays rather than visual demonstrations.",
+      "anyOf": [
+        {
+          "required": [
+            "presentation"
+          ]
+        },
+        {
+          "required": [
+            "value"
+          ]
+        }
       ],
       "properties": {
         "title": {
@@ -148,10 +166,10 @@
           "description": "An explanation of the example — why it is encouraged, discouraged, or notable."
         },
         "value": {
-          "description": "A literal value carried by the example. Used for API property examples where the content is a concrete value rather than a visual demonstration. Accepts any JSON type: string (e.g., 'primary'), number (e.g., 44), boolean (e.g., true), object, array, or null. Do not use `value` for display text — use `title` for captions and `description` for explanations."
+          "description": "A literal value carried by the example. Used for API property examples where the content is a concrete value rather than a visual demonstration. Accepts any JSON type: string (e.g., 'primary'), number (e.g., 44), boolean (e.g., true), object, array, or null. When provided without a presentation, this value alone constitutes the example. Do not use `value` for display text — use `title` for captions and `description` for explanations."
         },
         "presentation": {
-          "description": "The visual or interactive presentation for the example.",
+          "description": "The visual or interactive presentation for the example. Required when `value` is not provided. Optional when `value` is provided — value-only examples represent concrete data points (prop values, token values) that tools render as table rows or inline displays.",
           "oneOf": [
             {
               "$ref": "#/$defs/presentationImage"
@@ -172,7 +190,7 @@
     },
     "examples": {
       "type": "object",
-      "description": "A guideline container of visual or interactive demonstrations of an artifact. Each item is a single example — a static image, a video recording, a code snippet, or a URL to a live demo. Multiple items allow different representations of the same artifact: a static screenshot alongside an interactive Storybook embed, code examples in multiple frameworks, or a sequence of annotated diagrams. This container unifies what was previously split across 'preview' (on components, variants, states) and 'examples' (on patterns) into a single guideline type that can appear on any artifact.",
+      "description": "A guideline container of visual or interactive demonstrations of an artifact. Each item is a single example — a static image, a video recording, a code snippet, a URL to a live demo, or a literal value. Multiple items allow different representations of the same artifact: a static screenshot alongside an interactive Storybook embed, code examples in multiple frameworks, or a sequence of annotated diagrams. This container unifies what was previously split across 'preview' (on components, variants, states) and 'examples' (on patterns) into a single guideline type that can appear on any artifact.",
       "required": [
         "type",
         "items"
@@ -185,7 +203,7 @@
         },
         "items": {
           "type": "array",
-          "description": "The individual examples. Each item is a single demonstration with a required presentation and optional title, description, and value. The ordering is significant — tools SHOULD display examples in this order. Authors typically place the most representative or hero example first.",
+          "description": "The individual examples. Each item is a single demonstration with a required presentation or value (or both) and optional title and description. The ordering is significant — tools SHOULD display examples in this order. Authors typically place the most representative or hero example first.",
           "items": {
             "$ref": "#/$defs/example"
           },
@@ -201,24 +219,47 @@
     },
     "link": {
       "type": "object",
-      "description": "A typed reference to an external resource or a related artifact. Links serve dual purposes: pointing to external resources (source code, design files, documentation, packages) and expressing relationships to other DSDS artifacts (alternatives, parents, children). The `type` property classifies the reference. Standard external types: 'source', 'design', 'storybook', 'documentation', 'package', 'repository'. Standard relationship types: 'alternative', 'parent', 'child', 'related'. Custom values are permitted.",
+      "description": "A typed reference to an external resource or an internal DSDS artifact. Links serve three purposes: pointing to external resources (source code, design files, documentation, packages), expressing relationships to other DSDS artifacts by name (components in a pattern, token groups in a style), and combining both when an internal artifact also has an addressable URL. The `type` property classifies the reference. Standard external types: 'source', 'design', 'storybook', 'documentation', 'package', 'repository'. Standard relationship types: 'alternative', 'parent', 'child', 'related'. Standard artifact types: 'component', 'token', 'token-group', 'style', 'pattern', 'theme'. Custom values are permitted.",
       "required": [
-        "type",
-        "url"
+        "type"
+      ],
+      "anyOf": [
+        {
+          "required": [
+            "url"
+          ]
+        },
+        {
+          "required": [
+            "name"
+          ]
+        }
       ],
       "properties": {
         "type": {
           "type": "string",
-          "description": "The category of the linked resource or relationship. Standard external types: 'source', 'design', 'storybook', 'documentation', 'package', 'repository'. Standard relationship types: 'alternative', 'parent', 'child', 'related'. Custom values are permitted and SHOULD be lowercase strings matching ^[a-z][a-z0-9-]*$."
+          "description": "The category of the linked resource or relationship. Standard external types: 'source', 'design', 'storybook', 'documentation', 'package', 'repository'. Standard relationship types: 'alternative', 'parent', 'child', 'related'. Standard artifact types (for internal references): 'component', 'token', 'token-group', 'style', 'pattern', 'theme'. Custom values are permitted and SHOULD be lowercase strings matching ^[a-z][a-z0-9-]*$."
         },
         "url": {
           "type": "string",
           "format": "uri",
-          "description": "The URL of the linked resource. MUST be a valid absolute URI. For related DSDS artifacts, this SHOULD point to the artifact's documentation page or DSDS document."
+          "description": "The URL of the linked resource. MUST be a valid absolute URI. Required for external resource links. Optional for internal artifact references (where `name` identifies the artifact). When both `url` and `name` are present, `url` points to the artifact's documentation page or canonical location while `name` provides the machine-readable cross-reference."
+        },
+        "name": {
+          "type": "string",
+          "description": "The name of a referenced DSDS artifact (e.g., 'button', 'form-field', 'color-text', 'spacing'). MUST match the `name` property of a documented DSDS artifact. Required for internal artifact references. Optional for external resource links. When present, tools SHOULD resolve this name against the artifact catalog to create navigable cross-references."
         },
         "label": {
           "type": "string",
-          "description": "A human-readable label describing the specific resource or relationship (e.g., 'React component source', 'Design file — variants', 'Link component (alternative)')."
+          "description": "A human-readable label describing the specific resource or relationship (e.g., 'React component source', 'Design file — variants', 'Primary navigation trigger', 'Provides semantic text color tokens')."
+        },
+        "role": {
+          "type": "string",
+          "description": "A short description of the role this artifact plays in the current context. Primarily used for internal artifact references to describe the relationship (e.g., 'Primary action trigger', 'Error summary container', 'Provides semantic text color tokens'). When omitted, the relationship is a general association without a specific role."
+        },
+        "required": {
+          "type": "boolean",
+          "description": "Whether this linked artifact is required for the parent entity to function correctly. Primarily used for internal artifact references — for example, a form-validation pattern might mark 'form-field' as required and 'toast' as optional. When false or omitted, the artifact is an optional enhancement or supplementary reference. Not applicable to external resource links."
         }
       },
       "additionalProperties": false
@@ -289,7 +330,8 @@
     },
     "statusValue": {
       "type": "string",
-      "description": "A lifecycle status value. Standard values: 'draft' (under development, not ready for use), 'experimental' (available but API may change without notice), 'stable' (production-ready, changes follow semver), 'deprecated' (scheduled for removal). Custom values are permitted and SHOULD be lowercase kebab-case (e.g., 'sunset', 'archived', 'beta')."
+      "pattern": "^[a-z][a-z0-9-]*$",
+      "description": "A lifecycle status value. MUST be lowercase kebab-case. Standard values: 'draft' (under development, not ready for use), 'experimental' (available but API may change without notice), 'stable' (production-ready, changes follow semver), 'deprecated' (scheduled for removal). Custom values are permitted (e.g., 'sunset', 'archived', 'beta') and MUST follow the same pattern."
     },
     "platformStatusEntry": {
       "type": "object",
@@ -598,11 +640,11 @@
           "description": "Whether this part is always present in the component's rendered output. When false, the part is conditionally rendered based on props or content."
         },
         "tokens": {
-          "type": "array",
-          "items": {
+          "type": "object",
+          "description": "Design tokens applied to this part. Keys are token-purpose names describing what visual attribute the token controls (e.g., 'background', 'border-radius', 'padding-horizontal', 'text-color'). Values are the token names that provide the value (e.g., 'color-action-primary', 'radius-md', 'space-4'). This map format is consistent with how tokens are referenced in variant values and state entries, connecting the visual structure to the token architecture.",
+          "additionalProperties": {
             "type": "string"
-          },
-          "description": "Names of design tokens applied to this part (e.g., 'button-background', 'button-border-radius', 'button-padding-horizontal'). Connects the visual structure to the token architecture."
+          }
         },
         "links": {
           "type": "array",
@@ -943,64 +985,9 @@
       },
       "additionalProperties": false
     },
-    "artifactReferenceEntry": {
-      "type": "object",
-      "description": "A single reference to another DSDS artifact, with an optional description of the role it plays in the current context.",
-      "required": [
-        "name"
-      ],
-      "properties": {
-        "name": {
-          "type": "string",
-          "description": "The name of the referenced artifact (e.g., 'button', 'form-field', 'color-text', 'spacing'). MUST match the `name` property of a documented DSDS artifact."
-        },
-        "role": {
-          "type": "string",
-          "description": "A short description of the role this artifact plays in the current context (e.g., 'Primary navigation trigger', 'Error summary container', 'Provides semantic text color tokens'). When omitted, the relationship is a general association without a specific role."
-        },
-        "required": {
-          "type": "boolean",
-          "description": "Whether this artifact is required for the parent to function correctly. When false or omitted, the artifact is an optional enhancement or supplementary reference."
-        }
-      },
-      "additionalProperties": false
-    },
-    "artifactReference": {
-      "type": "object",
-      "description": "Documents relationships between the current artifact and other artifacts in the system. Contains a categorized list of referenced artifacts — each with a name, an optional role description, and an optional required flag. The `referenceType` property classifies the nature of the relationship (e.g., 'component' for pattern-to-component references, 'token-group' for style-to-token-group references). Custom reference types are permitted for system-specific relationship categories.",
-      "required": [
-        "type",
-        "referenceType",
-        "references"
-      ],
-      "properties": {
-        "type": {
-          "type": "string",
-          "const": "artifact-reference",
-          "description": "Identifies this guideline as an artifact reference specification."
-        },
-        "referenceType": {
-          "type": "string",
-          "description": "The category of artifacts being referenced. Classifies the nature of the relationship. Standard values: 'component' (references to UI components that participate in a pattern or are related to the current artifact), 'token-group' (references to token groups that implement a style), 'pattern' (references to interaction patterns), 'style' (references to visual style guidelines), 'token' (references to individual tokens). Custom values are permitted and SHOULD be lowercase kebab-case."
-        },
-        "description": {
-          "$ref": "#/$defs/richText",
-          "description": "An optional overview of the relationship — why these artifacts are referenced, how they relate to the current artifact, and any constraints on their usage together."
-        },
-        "references": {
-          "type": "array",
-          "description": "The artifacts being referenced. Each entry identifies a single artifact by name and optionally describes its role and whether it is required.",
-          "items": {
-            "$ref": "#/$defs/artifactReferenceEntry"
-          },
-          "minItems": 1
-        }
-      },
-      "additionalProperties": false
-    },
     "bestPracticeEntry": {
       "type": "object",
-      "description": "A single, self-contained piece of usage guidance. Every best practice pairs an actionable statement with a rationale explaining why. The optional entryType classifies enforcement level. The optional category groups by discipline. The optional target identifies which anatomy part or content area the guidance applies to. The optional criteria links to external standards (WCAG, platform guidelines, etc.).",
+      "description": "A single, self-contained piece of usage guidance. Every best practice pairs an actionable statement with a rationale explaining why. The optional level classifies enforcement level. The optional category groups by discipline. The optional target identifies which anatomy part or content area the guidance applies to. The optional criteria links to external standards (WCAG, platform guidelines, etc.).",
       "required": [
         "guidance",
         "rationale"
@@ -1014,7 +1001,7 @@
           "$ref": "#/$defs/richText",
           "description": "Why this guidance exists. Cite evidence, accessibility standards, or user research when available. MUST NOT be a restatement of the guidance."
         },
-        "entryType": {
+        "level": {
           "type": "string",
           "enum": [
             "required",
@@ -1274,15 +1261,11 @@
         {
           "$ref": "#/$defs/examples",
           "description": "Visual or interactive demonstrations — images, videos, code snippets, and URLs to live demos."
-        },
-        {
-          "$ref": "#/$defs/artifactReference",
-          "description": "Named references to other DSDS artifacts with their roles and relationship types."
         }
       ]
     },
     "componentGuideline": {
-      "description": "A guideline type accepted on component artifacts. Includes component-specific types (anatomy, API, variants, states, design specifications) and all general types (best practices, purpose, accessibility, examples, artifact references).",
+      "description": "A guideline type accepted on component artifacts. Includes component-specific types (anatomy, API, variants, states, design specifications) and all general types (best practices, purpose, accessibility, examples).",
       "oneOf": [
         {
           "$ref": "#/$defs/anatomy",
@@ -1294,7 +1277,7 @@
         },
         {
           "$ref": "#/$defs/variants",
-          "description": "All dimensions of visual or behavioral variation — each axis (size, emphasis, etc.) with its enumerated values, token overrides, previews, and purpose."
+          "description": "All dimensions of visual or behavioral variation — each axis (size, emphasis, etc.) with its enumerated values, token overrides, previews, and purpose. Optional exclusions document invalid combinations."
         },
         {
           "$ref": "#/$defs/states",
@@ -1315,14 +1298,11 @@
         },
         {
           "$ref": "#/$defs/examples"
-        },
-        {
-          "$ref": "#/$defs/artifactReference"
         }
       ]
     },
     "styleGuideline": {
-      "description": "A guideline type accepted on style artifacts. Includes style-specific types (principles, scales) and all general types (best practices, purpose, accessibility, examples, artifact references).",
+      "description": "A guideline type accepted on style artifacts. Includes style-specific types (principles, scales) and all general types (best practices, purpose, accessibility, examples).",
       "oneOf": [
         {
           "$ref": "#/$defs/principles",
@@ -1343,14 +1323,11 @@
         },
         {
           "$ref": "#/$defs/examples"
-        },
-        {
-          "$ref": "#/$defs/artifactReference"
         }
       ]
     },
     "patternGuideline": {
-      "description": "A guideline type accepted on pattern artifacts. Includes pattern-specific types (interactions) and all general types (best practices, purpose, accessibility, examples, artifact references).",
+      "description": "A guideline type accepted on pattern artifacts. Includes pattern-specific types (interactions) and all general types (best practices, purpose, accessibility, examples).",
       "oneOf": [
         {
           "$ref": "#/$defs/interactions",
@@ -1367,9 +1344,6 @@
         },
         {
           "$ref": "#/$defs/examples"
-        },
-        {
-          "$ref": "#/$defs/artifactReference"
         }
       ]
     },
@@ -1387,9 +1361,6 @@
         },
         {
           "$ref": "#/$defs/examples"
-        },
-        {
-          "$ref": "#/$defs/artifactReference"
         }
       ]
     },
@@ -1494,7 +1465,7 @@
     },
     "purpose": {
       "type": "object",
-      "description": "Documents the purpose of an artifact — when to reach for it and when to choose something else. Contains whenToUse and whenNotToUse arrays of scenario-driven use case entries drawn from the common useCases schema. Purpose guidelines help the reader decide whether this is the right artifact *before* they start implementing it. For guidance on *how* to use the artifact correctly after choosing it, see best-practices. For guidance on *what* the artifact looks like and how it behaves, see variants, states, and anatomy.",
+      "description": "Documents the purpose of an artifact — when to reach for it and when to choose something else. Contains a `useCases` object with whenToUse and whenNotToUse arrays of scenario-driven use case entries drawn from the common useCases schema. This follows the same pattern used by variant values and state entries. Purpose guidelines help the reader decide whether this is the right artifact *before* they start implementing it. For guidance on *how* to use the artifact correctly after choosing it, see best-practices. For guidance on *what* the artifact looks like and how it behaves, see variants, states, and anatomy.",
       "required": [
         "type"
       ],
@@ -1504,19 +1475,9 @@
           "const": "purpose",
           "description": "Identifies this guideline as a purpose specification."
         },
-        "whenToUse": {
-          "type": "array",
-          "description": "Scenarios in which this artifact is the appropriate choice. Each entry should be scenario-driven — describe the user's situation, not the artifact's features. For example, 'When the user needs to trigger an action such as submitting a form' rather than 'When you need a clickable element'.",
-          "items": {
-            "$ref": "#/$defs/useCase"
-          }
-        },
-        "whenNotToUse": {
-          "type": "array",
-          "description": "Scenarios in which this artifact should not be used. Each entry SHOULD include an `alternative` pointing to a more appropriate artifact or pattern, along with a rationale explaining why the alternative is better.",
-          "items": {
-            "$ref": "#/$defs/useCase"
-          }
+        "useCases": {
+          "$ref": "#/$defs/useCases",
+          "description": "Scenario-driven guidance describing when this artifact is and is not the right choice. Contains whenToUse and whenNotToUse arrays of use case entries. Each 'when not to use' entry SHOULD include an alternative pointing to a more appropriate artifact along with a rationale explaining why. Follows the same shape used by variant values and state entries."
         }
       },
       "additionalProperties": false
@@ -1727,9 +1688,50 @@
       },
       "additionalProperties": false
     },
+    "variantExclusionCondition": {
+      "type": "object",
+      "description": "A single condition in a variant exclusion — identifies a specific value on a specific dimension. When all conditions in an exclusion are active simultaneously, the combination is invalid.",
+      "required": [
+        "dimension",
+        "value"
+      ],
+      "properties": {
+        "dimension": {
+          "type": "string",
+          "description": "The name of the variant dimension (must match a variantEntry name in the items array)."
+        },
+        "value": {
+          "type": "string",
+          "description": "The name of the variant value within that dimension (must match a variantValue name)."
+        }
+      },
+      "additionalProperties": false
+    },
+    "variantExclusion": {
+      "type": "object",
+      "description": "An invalid combination of variant values. When ALL conditions are active simultaneously, the combination is not supported. For example, an exclusion with conditions [{dimension: 'emphasis', value: 'ghost'}, {dimension: 'size', value: 'sm'}] means that ghost emphasis at small size is not a valid configuration. Exclusions with more than two conditions express higher-order constraints (e.g., 'ghost + small + icon-only is invalid').",
+      "required": [
+        "conditions"
+      ],
+      "properties": {
+        "conditions": {
+          "type": "array",
+          "description": "The set of dimension-value pairs that, when all active at the same time, represent an invalid configuration. Must contain at least two conditions (a single condition would exclude an entire value, which should be removed from the dimension's values array instead).",
+          "items": {
+            "$ref": "#/$defs/variantExclusionCondition"
+          },
+          "minItems": 2
+        },
+        "description": {
+          "type": "string",
+          "description": "A human-readable explanation of why this combination is invalid and what the user should choose instead (e.g., 'Ghost emphasis requires at least medium size for adequate touch target area. Use secondary emphasis for small buttons instead.')."
+        }
+      },
+      "additionalProperties": false
+    },
     "variants": {
       "type": "object",
-      "description": "Documents all dimensions of visual or behavioral variation on a component. Each item represents a single axis of configuration — a Button might have an 'emphasis' axis (primary/secondary/ghost/danger), a 'size' axis (small/medium/large), and a 'full-width' axis (a single boolean value). Multiple axes document orthogonal dimensions that can be combined independently.",
+      "description": "Documents all dimensions of visual or behavioral variation on a component. Each item represents a single axis of configuration — a Button might have an 'emphasis' axis (primary/secondary/ghost/danger), a 'size' axis (small/medium/large), and a 'full-width' axis (a single boolean value). Multiple axes document orthogonal dimensions that can be combined independently. Optional exclusions document combinations across dimensions that are not valid.",
       "required": [
         "type",
         "items"
@@ -1747,6 +1749,13 @@
             "$ref": "#/$defs/variantEntry"
           },
           "minItems": 1
+        },
+        "exclusions": {
+          "type": "array",
+          "description": "Invalid combinations across variant dimensions. Each exclusion describes a set of dimension-value pairs that cannot be active simultaneously. Tools SHOULD use exclusions to disable invalid options in component configurators, generate warnings in code review, or display 'not available' badges in documentation. When no exclusions are present, all value combinations across all dimensions are assumed to be valid.",
+          "items": {
+            "$ref": "#/$defs/variantExclusion"
+          }
         }
       },
       "additionalProperties": false
@@ -1812,14 +1821,14 @@
         },
         "guidelines": {
           "type": "array",
-          "description": "All structured documentation for this component, expressed as an ordered array of typed guideline objects. Components accept component-specific guideline types (anatomy, api, variants, states, design-specifications) and general types (best-practices, use-cases, accessibility, examples, artifact-references). Each guideline has a `type` property that determines its shape. The ordering is significant: tools SHOULD preserve it for display. A typical component includes guidelines in roughly this order: examples (hero previews), anatomy, api, variants, states, design-specifications, use-cases, best-practices, accessibility. However, authors are free to order guidelines in whatever way best serves their documentation.",
+          "description": "All structured documentation for this component, expressed as an ordered array of typed guideline objects. Components accept component-specific guideline types (anatomy, api, variants, states, design-specifications) and general types (best-practices, purpose, accessibility, examples). Each guideline has a `type` property that determines its shape. The ordering is significant: tools SHOULD preserve it for display. A typical component includes guidelines in roughly this order: examples (hero previews), anatomy, api, variants, states, design-specifications, purpose, best-practices, accessibility. However, authors are free to order guidelines in whatever way best serves their documentation. Internal artifact relationships (e.g., related components, parent/child) are expressed through the `links` array rather than as guidelines.",
           "items": {
             "$ref": "#/$defs/componentGuideline"
           }
         },
         "links": {
           "type": "array",
-          "description": "External resource links and related artifact references — source code, design files, Storybook stories, documentation pages, npm packages, and relationships to other DSDS artifacts (alternatives, parents, children).",
+          "description": "External resource links, internal artifact references, and entity relationships — source code, design files, Storybook stories, documentation pages, npm packages, related components, parent/child relationships, and alternatives. Each link is a typed reference that can point to an external URL, an internal DSDS artifact by name, or both.",
           "items": {
             "$ref": "#/$defs/link"
           }
@@ -1890,14 +1899,14 @@
         },
         "guidelines": {
           "type": "array",
-          "description": "All structured documentation for this pattern, expressed as an ordered array of typed guideline objects. Patterns accept pattern-specific guideline types (interactions) and general types (best-practices, use-cases, accessibility, examples, artifact-references). Each guideline has a `type` property that determines its shape. The ordering is significant: tools SHOULD preserve it for display. Interaction guidelines in particular rely on ordering to represent chronological flow. A typical pattern includes guidelines in roughly this order: examples (hero demonstrations), artifact-references (participating components), interactions (flow steps), use-cases, best-practices, accessibility. However, authors are free to order guidelines in whatever way best serves their documentation.",
+          "description": "All structured documentation for this pattern, expressed as an ordered array of typed guideline objects. Patterns accept pattern-specific guideline types (interactions) and general types (best-practices, use-cases, accessibility, examples). Each guideline has a `type` property that determines its shape. The ordering is significant: tools SHOULD preserve it for display. Interaction guidelines in particular rely on ordering to represent chronological flow. Participating component references are now expressed through the `links` array (with type 'component', name, and role) rather than through a dedicated guideline type. A typical pattern includes guidelines in roughly this order: examples (hero demonstrations), interactions (flow steps), use-cases, best-practices, accessibility. However, authors are free to order guidelines in whatever way best serves their documentation.",
           "items": {
             "$ref": "#/$defs/patternGuideline"
           }
         },
         "links": {
           "type": "array",
-          "description": "External resource links and related artifact references — source code, design files, Storybook stories, documentation pages, npm packages, and relationships to other DSDS artifacts (alternatives, related patterns, related components).",
+          "description": "External resource links, internal artifact references, and relationships — source code, design files, Storybook stories, documentation pages, npm packages, participating components (with roles), and relationships to other DSDS artifacts (alternatives, related patterns). Each link can point to an external URL, an internal DSDS artifact by name, or both.",
           "items": {
             "$ref": "#/$defs/link"
           }
@@ -1968,14 +1977,14 @@
         },
         "guidelines": {
           "type": "array",
-          "description": "All structured documentation for this style, expressed as an ordered array of typed guideline objects. Styles accept style-specific guideline types (principles, scale) and general types (best-practices, use-cases, accessibility, examples, artifact-references). Each guideline has a `type` property that determines its shape. The ordering is significant: tools SHOULD preserve it for display. A typical style includes guidelines in roughly this order: examples (hero previews), principles, scales, artifact-references (token groups), use-cases, best-practices, accessibility. However, authors are free to order guidelines in whatever way best serves their documentation.",
+          "description": "All structured documentation for this style, expressed as an ordered array of typed guideline objects. Styles accept style-specific guideline types (principles, scale) and general types (best-practices, use-cases, accessibility, examples). Each guideline has a `type` property that determines its shape. The ordering is significant: tools SHOULD preserve it for display. A typical style includes guidelines in roughly this order: examples (hero previews), principles, scales, use-cases, best-practices, accessibility. Internal artifact relationships (e.g., references to token groups that implement this style) are expressed through the `links` array rather than as guidelines. However, authors are free to order guidelines in whatever way best serves their documentation.",
           "items": {
             "$ref": "#/$defs/styleGuideline"
           }
         },
         "links": {
           "type": "array",
-          "description": "External resource links and related artifact references — source code, design files, Storybook stories, documentation pages, npm packages, and relationships to other DSDS artifacts.",
+          "description": "External resource links, related artifact references, and internal relationships — source code, design files, Storybook stories, documentation pages, npm packages, and relationships to other DSDS artifacts (alternatives, token groups, related styles). Each link can point to an external URL, an internal DSDS artifact by name, or both.",
           "items": {
             "$ref": "#/$defs/link"
           }
@@ -2074,14 +2083,14 @@
         },
         "guidelines": {
           "type": "array",
-          "description": "All structured documentation for this theme, expressed as an ordered array of typed guideline objects. Themes accept general guideline types only (best-practices, use-cases, accessibility, examples, artifact-references). Each guideline has a `type` property that determines its shape. The ordering is significant: tools SHOULD preserve it for display.",
+          "description": "All structured documentation for this theme, expressed as an ordered array of typed guideline objects. Themes accept general guideline types only (best-practices, use-cases, accessibility, examples). Each guideline has a `type` property that determines its shape. The ordering is significant: tools SHOULD preserve it for display.",
           "items": {
             "$ref": "#/$defs/tokenGuideline"
           }
         },
         "links": {
           "type": "array",
-          "description": "External resource links related to this theme.",
+          "description": "External resource links, related artifact references, and internal relationships. Each link is a typed reference that can point to an external URL, an internal DSDS artifact by name, or both.",
           "items": {
             "$ref": "#/$defs/link"
           }
@@ -2120,13 +2129,10 @@
     },
     "token": {
       "type": "object",
-      "description": "Documentation for a single design token — its name, type, value, platform API mappings, use cases, guidelines, and accessibility considerations.",
+      "description": "Documentation for a single design token — its name, type, value, platform API mappings, use cases, guidelines, and accessibility considerations. The displayName property is intentionally absent — the token name itself is the display name. Description and status are optional; when a token appears inside a token group, an omitted status is inherited from the parent group.",
       "required": [
         "type",
         "name",
-        "displayName",
-        "description",
-        "status",
         "tokenType"
       ],
       "properties": {
@@ -2137,21 +2143,26 @@
         },
         "name": {
           "type": "string",
-          "description": "The token name. Token names are intentionally unconstrained by a pattern to accommodate DTCG and design tool naming conventions that use dots, slashes, or other separators (e.g., 'color-text-primary', 'color.text.primary', 'color/text/primary')."
+          "description": "The token name. Token names are intentionally unconstrained by a pattern to accommodate DTCG and design tool naming conventions that use dots, slashes, or other separators (e.g., 'color-text-primary', 'color.text.primary', 'color/text/primary'). The token name also serves as the human-readable display name."
         },
-        "displayName": {
-          "type": "string",
-          "description": "Human-readable name."
+        "aliases": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Alternative names this token is known by across teams, tools, or legacy systems. Useful for search, migration mapping, and cross-referencing."
         },
         "summary": {
           "type": "string",
           "description": "A one-line, plain-text summary. MUST NOT contain markup."
         },
         "description": {
-          "$ref": "#/$defs/richText"
+          "$ref": "#/$defs/richText",
+          "description": "A description of the token — what it represents, where it should be used, and any constraints. Optional; when omitted, tools MAY generate a description from the token name and type."
         },
         "status": {
-          "$ref": "#/$defs/statusObject"
+          "$ref": "#/$defs/statusObject",
+          "description": "Lifecycle status of the token. Optional; when omitted inside a token group, the status is inherited from the parent group. When omitted at the top level (not inside a group), tools SHOULD treat the token as having no declared status."
         },
         "since": {
           "type": "string",
@@ -2175,26 +2186,19 @@
         "value": {
           "$ref": "#/$defs/tokenValue"
         },
-        "aliases": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "description": "Names of tokens that alias this token."
-        },
         "api": {
           "$ref": "#/$defs/tokenApi"
         },
         "guidelines": {
           "type": "array",
-          "description": "All structured documentation for this token, expressed as an ordered array of typed guideline objects. Tokens accept general guideline types only (best-practices, use-cases, accessibility, examples, artifact-references). Each guideline has a `type` property that determines its shape. The ordering is significant: tools SHOULD preserve it for display.",
+          "description": "All structured documentation for this token, expressed as an ordered array of typed guideline objects. Tokens accept general guideline types only (best-practices, use-cases, accessibility, examples). Each guideline has a `type` property that determines its shape. The ordering is significant: tools SHOULD preserve it for display.",
           "items": {
             "$ref": "#/$defs/tokenGuideline"
           }
         },
         "links": {
           "type": "array",
-          "description": "External resource links and related artifact references.",
+          "description": "External resource links, related artifact references, and internal relationships. Each link is a typed reference that can point to an external URL, an internal DSDS artifact by name, or both.",
           "items": {
             "$ref": "#/$defs/link"
           }
@@ -2207,13 +2211,10 @@
     },
     "tokenGroup": {
       "type": "object",
-      "description": "Documentation for a group of related design tokens. Token groups are flexible organizational units that can represent a full token collection, a token family (e.g., all color tokens), a token sub-family (e.g., a single color hue with its grade scale), or any other logical grouping. Groups can be nested to form an arbitrarily deep hierarchy — a top-level group might represent 'color', containing child groups for 'color-text', 'color-background', and 'color-border', each of which contains individual tokens. This recursive structure mirrors the way real design systems organize tokens into families and sub-families.",
+      "description": "Documentation for a group of related design tokens. Token groups are flexible organizational units that can represent a full token collection, a token family (e.g., all color tokens), a token sub-family (e.g., a single color hue with its grade scale), or any other logical grouping. Groups can be nested to form an arbitrarily deep hierarchy — a top-level group might represent 'color', containing child groups for 'color-text', 'color-background', and 'color-border', each of which contains individual tokens. This recursive structure mirrors the way real design systems organize tokens into families and sub-families. The displayName property is intentionally absent — the token group name itself is the display name. Description and status are optional; children inherit the parent group's status when they omit their own.",
       "required": [
         "type",
-        "name",
-        "displayName",
-        "description",
-        "status"
+        "name"
       ],
       "properties": {
         "type": {
@@ -2223,11 +2224,7 @@
         },
         "name": {
           "type": "string",
-          "description": "The token group name. Token group names are intentionally unconstrained by a pattern to accommodate DTCG and design tool naming conventions (e.g., 'color-text', 'color.text', 'color/text')."
-        },
-        "displayName": {
-          "type": "string",
-          "description": "Human-readable name (e.g., 'Text Colors', 'Spacing Scale', 'Red — Pushpin')."
+          "description": "The token group name. Token group names are intentionally unconstrained by a pattern to accommodate DTCG and design tool naming conventions (e.g., 'color-text', 'color.text', 'color/text'). The token group name also serves as the human-readable display name."
         },
         "aliases": {
           "type": "array",
@@ -2242,10 +2239,11 @@
         },
         "description": {
           "$ref": "#/$defs/richText",
-          "description": "A description of the group's purpose, the tokens it contains, and how they relate to each other. CommonMark supported."
+          "description": "A description of the group's purpose, the tokens it contains, and how they relate to each other. Optional; when omitted, tools MAY generate a description from the group name and children."
         },
         "status": {
-          "$ref": "#/$defs/statusObject"
+          "$ref": "#/$defs/statusObject",
+          "description": "Lifecycle status of the token group. Optional; when omitted inside a parent token group, the status is inherited from the parent. Children of this group that omit their own status inherit this group's status."
         },
         "since": {
           "type": "string",
@@ -2268,7 +2266,7 @@
         },
         "children": {
           "type": "array",
-          "description": "An ordered array of tokens and/or nested token groups that belong to this group. Each item MUST be either a token (identified by the presence of `tokenType` and absence of `children`) or a tokenGroup (identified by the presence of `children` or the absence of `tokenType`). The ordering is significant — tools SHOULD preserve the order for display, as it often represents a meaningful progression (e.g., a color grade scale from lightest to darkest, or a spacing scale from smallest to largest).",
+          "description": "An ordered array of tokens and/or nested token groups that belong to this group. Each item MUST be either a token (identified by the presence of `tokenType` and absence of `children`) or a tokenGroup (identified by the presence of `children` or the absence of `tokenType`). The ordering is significant — tools SHOULD preserve the order for display, as it often represents a meaningful progression (e.g., a color grade scale from lightest to darkest, or a spacing scale from smallest to largest). Children inherit tokenType, category, and status from this group when they omit their own values.",
           "items": {
             "oneOf": [
               {
@@ -2283,14 +2281,14 @@
         },
         "guidelines": {
           "type": "array",
-          "description": "All structured documentation for this token group, expressed as an ordered array of typed guideline objects. Token groups accept general guideline types only (best-practices, use-cases, accessibility, examples, artifact-references). Guidelines that apply to the group as a whole live here. Guidelines specific to individual tokens SHOULD be placed on the token within children.",
+          "description": "All structured documentation for this token group, expressed as an ordered array of typed guideline objects. Token groups accept general guideline types only (best-practices, use-cases, accessibility, examples). Guidelines that apply to the group as a whole live here. Guidelines specific to individual tokens SHOULD be placed on the token within children.",
           "items": {
             "$ref": "#/$defs/tokenGuideline"
           }
         },
         "links": {
           "type": "array",
-          "description": "External resource links related to this token group.",
+          "description": "External resource links, related artifact references, and internal relationships.",
           "items": {
             "$ref": "#/$defs/link"
           }

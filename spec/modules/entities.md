@@ -120,49 +120,49 @@ A well-documented component typically includes guidelines in roughly this order,
           "displayName": "Container",
           "description": "The outer boundary of the button. Receives background color, border, border radius, and padding. Defines the clickable area.",
           "required": true,
-          "tokens": [
-            "button-background",
-            "button-border-color",
-            "button-border-width",
-            "button-border-radius",
-            "button-padding-horizontal",
-            "button-padding-vertical"
-          ]
+          "tokens": {
+            "background": "button-background",
+            "border-color": "button-border-color",
+            "border-width": "button-border-width",
+            "border-radius": "button-border-radius",
+            "padding-horizontal": "button-padding-horizontal",
+            "padding-vertical": "button-padding-vertical"
+          }
         },
         {
           "name": "label",
           "displayName": "Label",
           "description": "The text content of the button. Communicates the action that will occur on activation.",
           "required": true,
-          "tokens": [
-            "button-font-family",
-            "button-font-size",
-            "button-font-weight",
-            "button-line-height",
-            "button-text-color"
-          ]
+          "tokens": {
+            "font-family": "button-font-family",
+            "font-size": "button-font-size",
+            "font-weight": "button-font-weight",
+            "line-height": "button-line-height",
+            "text-color": "button-text-color"
+          }
         },
         {
           "name": "icon",
           "displayName": "Icon",
           "description": "An optional icon displayed before (leading) or after (trailing) the label. Reinforces the label's meaning visually.",
           "required": false,
-          "tokens": [
-            "button-icon-size",
-            "button-icon-color",
-            "button-icon-gap"
-          ]
+          "tokens": {
+            "size": "button-icon-size",
+            "color": "button-icon-color",
+            "gap": "button-icon-gap"
+          }
         },
         {
           "name": "focus-ring",
           "displayName": "Focus Ring",
           "description": "A visible outline rendered when the button receives keyboard focus. Not displayed on mouse interaction.",
           "required": true,
-          "tokens": [
-            "button-focus-ring-color",
-            "button-focus-ring-width",
-            "button-focus-ring-offset"
-          ]
+          "tokens": {
+            "color": "button-focus-ring-color",
+            "width": "button-focus-ring-width",
+            "offset": "button-focus-ring-offset"
+          }
         }
       ],
       "preview": [
@@ -569,37 +569,39 @@ A well-documented component typically includes guidelines in roughly this order,
     },
     {
       "type": "purpose",
-      "whenToUse": [
-        {
-          "description": "When the user needs to trigger an action such as submitting a form, saving data, opening a dialog, or confirming a decision."
-        },
-        {
-          "description": "When a destructive or irreversible action needs to be initiated, such as deleting a record or revoking access. Pair with a confirmation dialog."
-        }
-      ],
-      "whenNotToUse": [
-        {
-          "description": "When the action navigates the user to a different page or URL.",
-          "alternative": {
-            "name": "link",
-            "rationale": "Links carry native navigation semantics. Screen readers announce them as links, and browsers support standard navigation behaviors such as open-in-new-tab."
+      "useCases": {
+        "whenToUse": [
+          {
+            "description": "When the user needs to trigger an action such as submitting a form, saving data, opening a dialog, or confirming a decision."
+          },
+          {
+            "description": "When a destructive or irreversible action needs to be initiated, such as deleting a record or revoking access. Pair with a confirmation dialog."
           }
-        },
-        {
-          "description": "When the user needs to select one option from a set of mutually exclusive choices.",
-          "alternative": {
-            "name": "radio-group",
-            "rationale": "Radio groups communicate exclusivity through their semantic role. A set of buttons styled to look like a selector does not convey mutual exclusivity to assistive technology."
+        ],
+        "whenNotToUse": [
+          {
+            "description": "When the action navigates the user to a different page or URL.",
+            "alternative": {
+              "name": "link",
+              "rationale": "Links carry native navigation semantics. Screen readers announce them as links, and browsers support standard navigation behaviors such as open-in-new-tab."
+            }
+          },
+          {
+            "description": "When the user needs to select one option from a set of mutually exclusive choices.",
+            "alternative": {
+              "name": "radio-group",
+              "rationale": "Radio groups communicate exclusivity through their semantic role. A set of buttons styled to look like a selector does not convey mutual exclusivity to assistive technology."
+            }
+          },
+          {
+            "description": "When the only content is an icon with no visible text label.",
+            "alternative": {
+              "name": "icon-button",
+              "rationale": "Icon buttons enforce an aria-label requirement and apply size adjustments for icon-only touch targets. A standard button with its label removed may fail accessibility requirements silently."
+            }
           }
-        },
-        {
-          "description": "When the only content is an icon with no visible text label.",
-          "alternative": {
-            "name": "icon-button",
-            "rationale": "Icon buttons enforce an aria-label requirement and apply size adjustments for icon-only touch targets. A standard button with its label removed may fail accessibility requirements silently."
-          }
-        }
-      ]
+        ]
+      }
     },
     {
       "type": "best-practices",
@@ -607,43 +609,43 @@ A well-documented component typically includes guidelines in roughly this order,
         {
           "guidance": "Limit each surface to one primary button.",
           "rationale": "Multiple primary buttons dilute visual hierarchy. When everything is emphasized, nothing is. A single primary button directs the user to the most important action.",
-          "entryType": "required",
+          "level": "required",
           "category": "visual-design"
         },
         {
           "guidance": "Place the primary button on the right side of a button group in left-to-right layouts.",
           "rationale": "Users scan in the direction of the layout's reading order. Placing the primary action at the natural endpoint aligns with the completion point of reading.",
-          "entryType": "encouraged",
+          "level": "encouraged",
           "category": "visual-design"
         },
         {
           "guidance": "Do not use a Button when the action navigates the user to a different page or URL. Use a Link component instead.",
           "rationale": "Buttons and links have different semantic roles. Buttons trigger actions (submit, open, close). Links navigate. Screen reader users rely on element role to anticipate behavior.",
-          "entryType": "prohibited",
+          "level": "prohibited",
           "category": "visual-design"
         },
         {
           "guidance": "Use the danger variant exclusively for destructive or irreversible actions. Pair danger buttons with a confirmation dialog.",
           "rationale": "Red is a strong signal. If danger styling is used for non-destructive actions, it dilutes the warning signal and conditions users to ignore it.",
-          "entryType": "required",
+          "level": "required",
           "category": "visual-design"
         },
         {
           "guidance": "Use the loading state instead of disabling the button during asynchronous operations.",
           "rationale": "A disabled button gives no feedback that an action is in progress. The loading state communicates that the action was registered and the system is working.",
-          "entryType": "encouraged",
+          "level": "encouraged",
           "category": "interaction"
         },
         {
           "guidance": "Do not wrap a button's label text across multiple lines.",
           "rationale": "Multi-line button labels are harder to scan and create inconsistent button heights in groups. If the label is too long, rewrite it to be shorter.",
-          "entryType": "prohibited",
+          "level": "prohibited",
           "category": "visual-design"
         },
         {
           "guidance": "Maintain a minimum tap target of 44x44 CSS pixels for all button sizes.",
           "rationale": "The WCAG 2.5.8 target size criterion requires a minimum 24x24px target, with 44x44px recommended. Touch devices require larger targets to prevent mis-taps.",
-          "entryType": "required",
+          "level": "required",
           "category": "accessibility",
           "criteria": [
             "https://www.w3.org/TR/WCAG22/#target-size-minimum"
@@ -652,21 +654,21 @@ A well-documented component typically includes guidelines in roughly this order,
         {
           "guidance": "Use a verb or verb phrase that describes the action the button performs. Two words maximum.",
           "rationale": "Action-oriented labels set clear expectations about what will happen on activation. Short labels prevent truncation on narrow viewports.",
-          "entryType": "required",
+          "level": "required",
           "category": "content",
           "target": "label"
         },
         {
           "guidance": "Use sentence case capitalization.",
           "rationale": "Sentence case is easier to read than title case or all caps. It also localizes more predictably across languages where capitalization rules differ.",
-          "entryType": "required",
+          "level": "required",
           "category": "content",
           "target": "label"
         },
         {
           "guidance": "When using an icon-only button (no visible label), provide an aria-label that describes the action.",
           "rationale": "Screen readers announce button content as the accessible name. Without visible text, there is no accessible name. The aria-label provides one.",
-          "entryType": "required",
+          "level": "required",
           "category": "accessibility",
           "criteria": [
             "https://www.w3.org/TR/WCAG22/#name-role-value"
@@ -675,7 +677,7 @@ A well-documented component typically includes guidelines in roughly this order,
         {
           "guidance": "Use the native <button> element. Do not recreate button behavior on a <div> or <span>.",
           "rationale": "Native buttons provide built-in keyboard interaction (Enter, Space), focus management, and form submission behavior. Recreating this on a non-semantic element is error-prone.",
-          "entryType": "required",
+          "level": "required",
           "category": "accessibility",
           "criteria": [
             "https://www.w3.org/TR/WCAG22/#name-role-value"
@@ -684,7 +686,7 @@ A well-documented component typically includes guidelines in roughly this order,
         {
           "guidance": "Prefer aria-disabled=\"true\" over the HTML disabled attribute when the button should remain discoverable by screen reader users.",
           "rationale": "The HTML disabled attribute removes the button from the tab order, making it invisible to keyboard users. aria-disabled keeps the button focusable and announceable.",
-          "entryType": "encouraged",
+          "level": "encouraged",
           "category": "accessibility",
           "criteria": [
             "https://www.w3.org/TR/WCAG22/#keyboard"
@@ -693,7 +695,7 @@ A well-documented component typically includes guidelines in roughly this order,
         {
           "guidance": "The focus ring must be visible in all color modes (light, dark, high contrast).",
           "rationale": "Keyboard users depend on the focus indicator to track their position. If the focus ring is invisible against the background, navigation becomes impossible.",
-          "entryType": "required",
+          "level": "required",
           "category": "accessibility",
           "criteria": [
             "https://www.w3.org/TR/WCAG22/#focus-visible"
@@ -702,7 +704,7 @@ A well-documented component typically includes guidelines in roughly this order,
         {
           "guidance": "Button label text must meet a minimum 4.5:1 contrast ratio against the button background.",
           "rationale": "Text contrast ensures readability for users with low vision.",
-          "entryType": "required",
+          "level": "required",
           "category": "accessibility",
           "criteria": [
             "https://www.w3.org/TR/WCAG22/#contrast-minimum"
@@ -886,7 +888,6 @@ Token names _SHOULD_ still be human-readable, but the schema does not enforce a 
 {
   "type": "token",
   "name": "color-text-primary",
-  "displayName": "Text Primary",
   "summary": "Default body text color for light and dark surfaces.",
   "description": "The default color for body text, headings, and labels. Provides the highest-contrast text color for standard reading content on default background surfaces.",
   "status": {
@@ -938,30 +939,32 @@ Token names _SHOULD_ still be human-readable, but the schema does not enforce a 
   "guidelines": [
     {
       "type": "purpose",
-      "whenToUse": [
-        {
-          "description": "When applying color to body text, headings, and form labels on default background surfaces."
-        },
-        {
-          "description": "When building components that display primary reading content that must adapt across color modes."
-        }
-      ],
-      "whenNotToUse": [
-        {
-          "description": "When placing text on dark or colored background surfaces.",
-          "alternative": {
-            "name": "color-text-inverse",
-            "rationale": "This token is optimized for contrast against light backgrounds. Using it on dark or saturated surfaces will fail contrast requirements."
+      "useCases": {
+        "whenToUse": [
+          {
+            "description": "When applying color to body text, headings, and form labels on default background surfaces."
+          },
+          {
+            "description": "When building components that display primary reading content that must adapt across color modes."
           }
-        },
-        {
-          "description": "When the text is inside a component that supplies its own scoped color tokens (e.g., text on a filled button).",
-          "alternative": {
-            "name": "color-text-on-action",
-            "rationale": "Component-scoped tokens account for the specific background they sit on. Applying a general text token to a scoped context risks contrast failures."
+        ],
+        "whenNotToUse": [
+          {
+            "description": "When placing text on dark or colored background surfaces.",
+            "alternative": {
+              "name": "color-text-inverse",
+              "rationale": "This token is optimized for contrast against light backgrounds. Using it on dark or saturated surfaces will fail contrast requirements."
+            }
+          },
+          {
+            "description": "When the text is inside a component that supplies its own scoped color tokens (e.g., text on a filled button).",
+            "alternative": {
+              "name": "color-text-on-action",
+              "rationale": "Component-scoped tokens account for the specific background they sit on. Applying a general text token to a scoped context risks contrast failures."
+            }
           }
-        }
-      ]
+        ]
+      }
     },
     {
       "type": "best-practices",
@@ -969,19 +972,19 @@ Token names _SHOULD_ still be human-readable, but the schema does not enforce a 
         {
           "guidance": "Use for all body text, headings, and form labels on default background surfaces.",
           "rationale": "A single primary text color ensures visual consistency and meets WCAG 2.1 AA contrast requirements against the system's default background.",
-          "entryType": "encouraged",
+          "level": "encouraged",
           "category": "visual-design"
         },
         {
           "guidance": "Do not override this token's value at the component level. Use color-text-secondary or color-text-tertiary for reduced emphasis.",
           "rationale": "Overriding the primary text color creates inconsistency. The system provides lower-emphasis text tokens for visual hierarchy.",
-          "entryType": "prohibited",
+          "level": "prohibited",
           "category": "visual-design"
         },
         {
           "guidance": "This color meets a 15.3:1 contrast ratio against color-background-default in light mode.",
           "rationale": "Exceeds WCAG 2.1 AAA requirements (7:1 for normal text), ensuring readability for users with low vision.",
-          "entryType": "informational",
+          "level": "informational",
           "category": "accessibility",
           "criteria": [
             "https://www.w3.org/TR/WCAG22/#contrast-minimum",
@@ -1077,7 +1080,6 @@ This inheritance is a documentation convenience — it reduces repetition in gro
 {
   "type": "token-group",
   "name": "color-palette",
-  "displayName": "Extended Color Palette",
   "description": "The full range of color options in the system. Colors are organized into named hue families, each with a grade scale from 0 (lightest) to 900 (darkest). The 450 grades are reserved for brand usage.",
   "status": {
     "status": "stable"
@@ -1094,7 +1096,6 @@ This inheritance is a documentation convenience — it reduces repetition in gro
     {
       "type": "token-group",
       "name": "color-red-pushpin",
-      "displayName": "Pushpin (Red)",
       "description": "The red hue family. Pushpin 450 is the system's primary hero color, used for brand moments and primary product actions.",
       "status": {
         "status": "stable"
@@ -1109,7 +1110,6 @@ This inheritance is a documentation convenience — it reduces repetition in gro
         {
           "type": "token",
           "name": "color-red-pushpin-0",
-          "displayName": "Pushpin 0",
           "description": "Lightest tint of the Pushpin red family. Suitable for large background surfaces and subtle error-state backgrounds.",
           "status": {
             "status": "stable"
@@ -1127,7 +1127,6 @@ This inheritance is a documentation convenience — it reduces repetition in gro
         {
           "type": "token",
           "name": "color-red-pushpin-50",
-          "displayName": "Pushpin 50",
           "description": "Very light tint of the Pushpin red family.",
           "status": {
             "status": "stable"
@@ -1145,7 +1144,6 @@ This inheritance is a documentation convenience — it reduces repetition in gro
         {
           "type": "token",
           "name": "color-red-pushpin-100",
-          "displayName": "Pushpin 100",
           "description": "Light tint of the Pushpin red family.",
           "status": {
             "status": "stable"
@@ -1163,7 +1161,6 @@ This inheritance is a documentation convenience — it reduces repetition in gro
         {
           "type": "token",
           "name": "color-red-pushpin-200",
-          "displayName": "Pushpin 200",
           "description": "Light-medium tint of the Pushpin red family.",
           "status": {
             "status": "stable"
@@ -1181,7 +1178,6 @@ This inheritance is a documentation convenience — it reduces repetition in gro
         {
           "type": "token",
           "name": "color-red-pushpin-300",
-          "displayName": "Pushpin 300",
           "description": "Medium tint of the Pushpin red family.",
           "status": {
             "status": "stable"
@@ -1199,7 +1195,6 @@ This inheritance is a documentation convenience — it reduces repetition in gro
         {
           "type": "token",
           "name": "color-red-pushpin-400",
-          "displayName": "Pushpin 400",
           "description": "Medium shade of the Pushpin red family.",
           "status": {
             "status": "stable"
@@ -1217,7 +1212,6 @@ This inheritance is a documentation convenience — it reduces repetition in gro
         {
           "type": "token",
           "name": "color-red-pushpin-450",
-          "displayName": "Pushpin 450",
           "description": "The system's primary hero color. Reserved for brand usage and primary product actions. Among the least accessible colors in the palette — do not use for functional color pairings without explicit contrast verification.",
           "status": {
             "status": "stable"
@@ -1244,7 +1238,7 @@ This inheritance is a documentation convenience — it reduces repetition in gro
                 {
                   "guidance": "Reserve this color for brand moments and the primary product action. Do not use for general UI elements.",
                   "rationale": "Pushpin 450 is the system's hero color. Overusing it dilutes its impact and creates accessibility challenges, as the 450 grades have limited contrast pairing options.",
-                  "entryType": "required",
+                  "level": "required",
                   "category": "visual-design"
                 }
               ]
@@ -1254,7 +1248,6 @@ This inheritance is a documentation convenience — it reduces repetition in gro
         {
           "type": "token",
           "name": "color-red-pushpin-500",
-          "displayName": "Pushpin 500",
           "description": "Core red used for error states and critical status indicators.",
           "status": {
             "status": "stable"
@@ -1272,7 +1265,6 @@ This inheritance is a documentation convenience — it reduces repetition in gro
         {
           "type": "token",
           "name": "color-red-pushpin-600",
-          "displayName": "Pushpin 600",
           "description": "Dark shade of the Pushpin red family.",
           "status": {
             "status": "stable"
@@ -1290,7 +1282,6 @@ This inheritance is a documentation convenience — it reduces repetition in gro
         {
           "type": "token",
           "name": "color-red-pushpin-700",
-          "displayName": "Pushpin 700",
           "description": "Deep shade of the Pushpin red family.",
           "status": {
             "status": "stable"
@@ -1308,7 +1299,6 @@ This inheritance is a documentation convenience — it reduces repetition in gro
         {
           "type": "token",
           "name": "color-red-pushpin-800",
-          "displayName": "Pushpin 800",
           "description": "Very dark shade of the Pushpin red family.",
           "status": {
             "status": "stable"
@@ -1326,7 +1316,6 @@ This inheritance is a documentation convenience — it reduces repetition in gro
         {
           "type": "token",
           "name": "color-red-pushpin-900",
-          "displayName": "Pushpin 900",
           "description": "Darkest shade of the Pushpin red family.",
           "status": {
             "status": "stable"
@@ -1346,7 +1335,6 @@ This inheritance is a documentation convenience — it reduces repetition in gro
     {
       "type": "token-group",
       "name": "color-blue-skycicle",
-      "displayName": "Skycicle (Blue)",
       "description": "The blue hue family. Used for interactive elements, education surfaces, informational indicators, and shopping experiences.",
       "status": {
         "status": "stable"
@@ -1361,7 +1349,6 @@ This inheritance is a documentation convenience — it reduces repetition in gro
         {
           "type": "token",
           "name": "color-blue-skycicle-0",
-          "displayName": "Skycicle 0",
           "description": "Lightest tint of the Skycicle blue family.",
           "status": {
             "status": "stable"
@@ -1379,7 +1366,6 @@ This inheritance is a documentation convenience — it reduces repetition in gro
         {
           "type": "token",
           "name": "color-blue-skycicle-100",
-          "displayName": "Skycicle 100",
           "description": "Light tint of the Skycicle blue family.",
           "status": {
             "status": "stable"
@@ -1397,7 +1383,6 @@ This inheritance is a documentation convenience — it reduces repetition in gro
         {
           "type": "token",
           "name": "color-blue-skycicle-300",
-          "displayName": "Skycicle 300",
           "description": "Medium tint of the Skycicle blue family. Used as the interactive element color in dark mode.",
           "status": {
             "status": "stable"
@@ -1415,7 +1400,6 @@ This inheritance is a documentation convenience — it reduces repetition in gro
         {
           "type": "token",
           "name": "color-blue-skycicle-500",
-          "displayName": "Skycicle 500",
           "description": "Core blue used for interactive elements, education surfaces, and shopping experiences in light mode.",
           "status": {
             "status": "stable"
@@ -1433,7 +1417,6 @@ This inheritance is a documentation convenience — it reduces repetition in gro
         {
           "type": "token",
           "name": "color-blue-skycicle-700",
-          "displayName": "Skycicle 700",
           "description": "Deep shade of the Skycicle blue family. Used for link text in light mode.",
           "status": {
             "status": "stable"
@@ -1451,7 +1434,6 @@ This inheritance is a documentation convenience — it reduces repetition in gro
         {
           "type": "token",
           "name": "color-blue-skycicle-900",
-          "displayName": "Skycicle 900",
           "description": "Darkest shade of the Skycicle blue family.",
           "status": {
             "status": "stable"
@@ -1471,7 +1453,6 @@ This inheritance is a documentation convenience — it reduces repetition in gro
     {
       "type": "token-group",
       "name": "color-gray-roboflow",
-      "displayName": "Roboflow (Gray)",
       "description": "The neutral gray family. The foundation of the system's layering model and the most commonly used color family in both light and dark modes.",
       "status": {
         "status": "stable"
@@ -1485,7 +1466,6 @@ This inheritance is a documentation convenience — it reduces repetition in gro
         {
           "type": "token",
           "name": "color-gray-roboflow-50",
-          "displayName": "Roboflow 50",
           "description": "Near-white neutral. Used for subtle background differentiation.",
           "status": {
             "status": "stable"
@@ -1503,7 +1483,6 @@ This inheritance is a documentation convenience — it reduces repetition in gro
         {
           "type": "token",
           "name": "color-gray-roboflow-200",
-          "displayName": "Roboflow 200",
           "description": "Light gray. Used for secondary backgrounds and borders.",
           "status": {
             "status": "stable"
@@ -1521,7 +1500,6 @@ This inheritance is a documentation convenience — it reduces repetition in gro
         {
           "type": "token",
           "name": "color-gray-roboflow-500",
-          "displayName": "Roboflow 500",
           "description": "Mid-gray. Used for subtle text, default borders, and disabled states in light mode. The minimum gray that meets WCAG AA contrast on white for large text.",
           "status": {
             "status": "stable"
@@ -1539,7 +1517,6 @@ This inheritance is a documentation convenience — it reduces repetition in gro
         {
           "type": "token",
           "name": "color-gray-roboflow-700",
-          "displayName": "Roboflow 700",
           "description": "Dark gray.",
           "status": {
             "status": "stable"
@@ -1559,7 +1536,6 @@ This inheritance is a documentation convenience — it reduces repetition in gro
     {
       "type": "token-group",
       "name": "color-white-mochimalist",
-      "displayName": "Mochimalist (White)",
       "description": "The white value. Used as the default background surface in light mode and as inverse text in dark mode.",
       "status": {
         "status": "stable"
@@ -1569,7 +1545,6 @@ This inheritance is a documentation convenience — it reduces repetition in gro
         {
           "type": "token",
           "name": "color-white-mochimalist-0",
-          "displayName": "Mochimalist 0",
           "description": "Pure white.",
           "status": {
             "status": "stable"
@@ -1589,7 +1564,6 @@ This inheritance is a documentation convenience — it reduces repetition in gro
     {
       "type": "token-group",
       "name": "color-black-cosmicore",
-      "displayName": "Cosmicore (Black)",
       "description": "The near-black value. Used as the default text color and background surface in dark mode.",
       "status": {
         "status": "stable"
@@ -1599,7 +1573,6 @@ This inheritance is a documentation convenience — it reduces repetition in gro
         {
           "type": "token",
           "name": "color-black-cosmicore-900",
-          "displayName": "Cosmicore 900",
           "description": "Near-black. The darkest color in the system — used for default text in light mode and the default background in dark mode.",
           "status": {
             "status": "stable"
@@ -1624,13 +1597,13 @@ This inheritance is a documentation convenience — it reduces repetition in gro
         {
           "guidance": "The 450 colors are reserved for brand usage. Do not use 450 grades for functional UI elements without explicit accessibility verification.",
           "rationale": "The 450 grades are among the least accessible colors in the palette. They work best within larger brand moments and are not suitable for functional color pairings.",
-          "entryType": "required",
+          "level": "required",
           "category": "visual-design"
         },
         {
           "guidance": "Use the darkGray text color on any background color at grade 400 or below. Use white text on grade 500 and above.",
           "rationale": "Ensures WCAG 2.1 AA contrast compliance for text placed on palette colors.",
-          "entryType": "required",
+          "level": "required",
           "category": "accessibility",
           "criteria": [
             "https://www.w3.org/TR/WCAG22/#contrast-minimum"
@@ -1639,7 +1612,7 @@ This inheritance is a documentation convenience — it reduces repetition in gro
         {
           "guidance": "Do not use base palette tokens directly in product code. Use semantic tokens that reference these base values instead.",
           "rationale": "Semantic tokens adapt automatically across color modes. Direct use of base palette tokens bypasses the theming system and will produce incorrect results in dark mode.",
-          "entryType": "prohibited",
+          "level": "prohibited",
           "category": "engineering"
         }
       ]
@@ -2007,40 +1980,42 @@ The optional `category` property classifies the type of adaptation the theme rep
   "guidelines": [
     {
       "type": "purpose",
-      "whenToUse": [
-        {
-          "description": "When the user's system preference is `prefers-color-scheme: dark` or they have explicitly selected dark mode in the application settings."
-        },
-        {
-          "description": "When the application is used in low-light environments where a bright screen causes eye strain or discomfort."
-        },
-        {
-          "description": "When embedding content in a context that is already dark (e.g., a media player, a code editor, or a presentation tool in dark mode)."
-        }
-      ],
-      "whenNotToUse": [
-        {
-          "description": "When the user has not expressed a preference for dark mode. Default to the light theme.",
-          "alternative": {
-            "name": "light",
-            "rationale": "Dark mode can reduce readability for users with certain visual impairments such as astigmatism, where light text on dark backgrounds causes halation. Defaulting to light ensures the broadest accessibility baseline."
+      "useCases": {
+        "whenToUse": [
+          {
+            "description": "When the user's system preference is `prefers-color-scheme: dark` or they have explicitly selected dark mode in the application settings."
+          },
+          {
+            "description": "When the application is used in low-light environments where a bright screen causes eye strain or discomfort."
+          },
+          {
+            "description": "When embedding content in a context that is already dark (e.g., a media player, a code editor, or a presentation tool in dark mode)."
           }
-        },
-        {
-          "description": "When high-contrast accessibility is the primary concern rather than a dark aesthetic.",
-          "alternative": {
-            "name": "high-contrast",
-            "rationale": "The dark theme is optimized for comfort in low-light environments, not maximum contrast. The high-contrast theme provides stronger contrast ratios that better serve users with low vision."
+        ],
+        "whenNotToUse": [
+          {
+            "description": "When the user has not expressed a preference for dark mode. Default to the light theme.",
+            "alternative": {
+              "name": "light",
+              "rationale": "Dark mode can reduce readability for users with certain visual impairments such as astigmatism, where light text on dark backgrounds causes halation. Defaulting to light ensures the broadest accessibility baseline."
+            }
+          },
+          {
+            "description": "When high-contrast accessibility is the primary concern rather than a dark aesthetic.",
+            "alternative": {
+              "name": "high-contrast",
+              "rationale": "The dark theme is optimized for comfort in low-light environments, not maximum contrast. The high-contrast theme provides stronger contrast ratios that better serve users with low vision."
+            }
+          },
+          {
+            "description": "When the content is primarily photographic or illustrative and the surrounding chrome should not compete visually.",
+            "alternative": {
+              "name": "light",
+              "rationale": "Photographic content often assumes a neutral white surround for accurate color perception. A dark surround shifts the viewer's perception of brightness and color in the images."
+            }
           }
-        },
-        {
-          "description": "When the content is primarily photographic or illustrative and the surrounding chrome should not compete visually.",
-          "alternative": {
-            "name": "light",
-            "rationale": "Photographic content often assumes a neutral white surround for accurate color perception. A dark surround shifts the viewer's perception of brightness and color in the images."
-          }
-        }
-      ]
+        ]
+      }
     },
     {
       "type": "best-practices",
@@ -2048,31 +2023,31 @@ The optional `category` property classifies the type of adaptation the theme rep
         {
           "guidance": "Apply the dark theme at the application root when the user's system preference is `prefers-color-scheme: dark` or when they explicitly select dark mode in the application settings.",
           "rationale": "Respecting the user's color scheme preference improves comfort in low-light environments and can reduce eye strain. Forcing a color mode against the user's preference creates friction.",
-          "entryType": "required",
+          "level": "required",
           "category": "development"
         },
         {
           "guidance": "In dark mode, layers become one step lighter with each added layer. Do not apply components that are darker than their background surface.",
           "rationale": "The dark theme's layering model uses increasing lightness to communicate depth. Reversing this — placing darker elements on lighter surfaces — breaks the spatial hierarchy and confuses the visual relationship between layers.",
-          "entryType": "required",
+          "level": "required",
           "category": "visual-design"
         },
         {
           "guidance": "Do not mix light-mode and dark-mode semantic tokens on the same surface. Use inline theme switching if a component must appear in the opposite mode.",
           "rationale": "Mixing tokens from different themes produces unpredictable contrast pairings. Semantic tokens are only validated for contrast within their own theme context.",
-          "entryType": "prohibited",
+          "level": "prohibited",
           "category": "visual-design"
         },
         {
           "guidance": "Shadows (elevation tokens) are replaced with surface color differentiation in dark mode. Do not add custom box-shadow values to create depth.",
           "rationale": "Dark backgrounds absorb shadow, making traditional drop shadows invisible or visually muddy. The dark theme communicates depth through lighter surface values instead.",
-          "entryType": "discouraged",
+          "level": "discouraged",
           "category": "visual-design"
         },
         {
           "guidance": "Ensure all custom illustrations, charts, and images remain legible in dark mode. Provide dark-mode variants of images that use light backgrounds or thin strokes.",
           "rationale": "Illustrations designed for light backgrounds may become invisible or illegible on dark surfaces. Custom visual content requires the same level of dark-mode adaptation as UI components.",
-          "entryType": "encouraged",
+          "level": "encouraged",
           "category": "visual-design"
         }
       ]
@@ -2240,17 +2215,6 @@ Custom categories are permitted and _SHOULD_ be lowercase kebab-case.
       ]
     },
     {
-      "type": "artifact-reference",
-      "referenceType": "token-group",
-      "description": "The token group that implements the spacing system.",
-      "references": [
-        {
-          "name": "spacing",
-          "role": "Provides all spatial tokens from space-0 (0px) through space-8 (48px), built on a 4px base unit."
-        }
-      ]
-    },
-    {
       "type": "scale",
       "name": "spacing-scale",
       "displayName": "Spacing Scale",
@@ -2309,43 +2273,43 @@ Custom categories are permitted and _SHOULD_ be lowercase kebab-case.
         {
           "guidance": "Use the spacing scale tokens for all padding, margin, and gap properties. Do not use hard-coded values.",
           "rationale": "Hard-coded values create visual inconsistency and are not responsive to system-wide spacing changes. Tokens enable global adjustment of spatial density from a single source of truth.",
-          "entryType": "required",
+          "level": "required",
           "category": "visual-design"
         },
         {
           "guidance": "Components must not apply external margin. Margin between components is the responsibility of the parent layout.",
           "rationale": "Components that own their margins create unpredictable spacing when composed. A button with built-in margin-bottom behaves differently depending on what follows it. Delegating margin to layout makes spacing composable and predictable.",
-          "entryType": "required",
+          "level": "required",
           "category": "visual-design"
         },
         {
           "guidance": "Select spacing based on the relationship between elements, not their size. Related elements use smaller spacing. Unrelated elements use larger spacing.",
           "rationale": "Gestalt proximity principle: objects that are closer together are perceived as related. Spacing encodes information hierarchy. A label 4px from its input is clearly associated with it. A label 32px from an input appears disconnected.",
-          "entryType": "encouraged",
+          "level": "encouraged",
           "category": "visual-design"
         },
         {
           "guidance": "Do not use spacing tokens for non-spatial properties such as border-width, font-size, or icon-size. Use the tokens designated for those properties.",
           "rationale": "Spacing tokens are tuned for whitespace. A spacing scale step that works well as padding produces incorrect results as a border-width or icon-size. Using the wrong token category couples unrelated visual properties.",
-          "entryType": "prohibited",
+          "level": "prohibited",
           "category": "development"
         },
         {
           "guidance": "Use CSS gap (in Flexbox or Grid) as the primary mechanism for spacing between sibling elements. Reserve margin for spacing between non-sibling elements or layout-level offset.",
           "rationale": "Gap applies spacing uniformly between children without affecting the first or last child. Margin requires :first-child/:last-child overrides to prevent unwanted space at container edges.",
-          "entryType": "encouraged",
+          "level": "encouraged",
           "category": "development"
         },
         {
           "guidance": "For responsive layouts, reduce spacing density at smaller breakpoints by stepping down the scale. Do not introduce arbitrary breakpoint-specific values.",
           "rationale": "Stepping down the scale (e.g., space-7 at desktop becoming space-5 at mobile) maintains proportional relationships while conserving space. Arbitrary values break out of the scale and undermine system consistency.",
-          "entryType": "encouraged",
+          "level": "encouraged",
           "category": "visual-design"
         },
         {
           "guidance": "Ensure all interactive elements maintain a minimum 44x44 CSS pixel touch target, inclusive of padding.",
           "rationale": "Users with motor impairments and touch device users require a minimum target size to interact reliably. WCAG 2.5.8 requires 24x24px minimum and recommends 44x44px. The spacing system's role is to ensure padding contributes to meeting this target.",
-          "entryType": "required",
+          "level": "required",
           "category": "accessibility",
           "criteria": [
             "https://www.w3.org/TR/WCAG22/#target-size-minimum"
@@ -2354,7 +2318,7 @@ Custom categories are permitted and _SHOULD_ be lowercase kebab-case.
         {
           "guidance": "When users increase text size to 200% via browser settings, spacing must not collapse to zero or cause content to overlap.",
           "rationale": "Users with low vision enlarge text. If spacing is defined in fixed pixel units that do not scale, text enlargement causes overlap and loss of content. Use rem-based spacing tokens where possible, and test all layouts at 200% text zoom.",
-          "entryType": "required",
+          "level": "required",
           "category": "accessibility",
           "criteria": [
             "https://www.w3.org/TR/WCAG22/#resize-text"
@@ -2364,46 +2328,53 @@ Custom categories are permitted and _SHOULD_ be lowercase kebab-case.
     },
     {
       "type": "purpose",
-      "whenToUse": [
-        {
-          "description": "When defining padding, margin, or gap values for any layout or component. All spatial values in production code must reference the spacing scale."
-        },
-        {
-          "description": "When establishing vertical rhythm between content sections, form groups, or card layouts."
-        },
-        {
-          "description": "When setting internal padding for containers such as cards, dialogs, panels, and page regions."
-        },
-        {
-          "description": "When controlling the gap between sibling elements in Flexbox or Grid layouts."
-        }
-      ],
-      "whenNotToUse": [
-        {
-          "description": "When defining border widths, outline offsets, or stroke values.",
-          "alternative": {
-            "name": "border-width",
-            "rationale": "Border tokens are tuned for visual weight at sub-pixel and single-pixel sizes. Spacing tokens start at 0px and jump to values optimized for whitespace, which produce incorrect visual results when applied to borders."
+      "useCases": {
+        "whenToUse": [
+          {
+            "description": "When defining padding, margin, or gap values for any layout or component. All spatial values in production code must reference the spacing scale."
+          },
+          {
+            "description": "When establishing vertical rhythm between content sections, form groups, or card layouts."
+          },
+          {
+            "description": "When setting internal padding for containers such as cards, dialogs, panels, and page regions."
+          },
+          {
+            "description": "When controlling the gap between sibling elements in Flexbox or Grid layouts."
           }
-        },
-        {
-          "description": "When setting font sizes or line heights.",
-          "alternative": {
-            "name": "typography",
-            "rationale": "Typographic tokens follow a modular scale designed for readability and vertical rhythm. Spacing tokens follow a geometric scale designed for whitespace. The two scales serve different purposes and should not be interchanged."
+        ],
+        "whenNotToUse": [
+          {
+            "description": "When defining border widths, outline offsets, or stroke values.",
+            "alternative": {
+              "name": "border-width",
+              "rationale": "Border tokens are tuned for visual weight at sub-pixel and single-pixel sizes. Spacing tokens start at 0px and jump to values optimized for whitespace, which produce incorrect visual results when applied to borders."
+            }
+          },
+          {
+            "description": "When setting font sizes or line heights.",
+            "alternative": {
+              "name": "typography",
+              "rationale": "Typographic tokens follow a modular scale designed for readability and vertical rhythm. Spacing tokens follow a geometric scale designed for whitespace. The two scales serve different purposes and should not be interchanged."
+            }
+          },
+          {
+            "description": "When sizing icons or illustration containers.",
+            "alternative": {
+              "name": "icon-size",
+              "rationale": "Icon size tokens are calibrated to optical alignment with adjacent text at each type scale step. Spacing tokens do not account for optical sizing and produce misaligned icons."
+            }
           }
-        },
-        {
-          "description": "When sizing icons or illustration containers.",
-          "alternative": {
-            "name": "icon-size",
-            "rationale": "Icon size tokens are calibrated to optical alignment with adjacent text at each type scale step. Spacing tokens do not account for optical sizing and produce misaligned icons."
-          }
-        }
-      ]
+        ]
+      }
     }
   ],
   "links": [
+    {
+      "type": "token-group",
+      "name": "spacing",
+      "role": "Provides all spatial tokens from space-0 (0px) through space-8 (48px), built on a 4px base unit."
+    },
     {
       "type": "source",
       "url": "https://code.acme.com/design-system/src/tokens/spacing.tokens.json",
@@ -2550,43 +2521,6 @@ Custom categories are permitted and _SHOULD_ be lowercase kebab-case.
       ]
     },
     {
-      "type": "artifact-reference",
-      "referenceType": "component",
-      "description": "The components that participate in this pattern. Each plays a specific role in surfacing, summarizing, or resolving errors.",
-      "references": [
-        {
-          "name": "form-field",
-          "role": "Container for individual inputs. Displays inline validation messages directly below the field when validation fails.",
-          "required": true
-        },
-        {
-          "name": "alert",
-          "role": "Page-level error summary. Appears at the top of the form or page listing all current errors with anchor links to each invalid field.",
-          "required": true
-        },
-        {
-          "name": "toast",
-          "role": "Transient notification for server-side or asynchronous errors that cannot be tied to a specific field (e.g., network failure, timeout).",
-          "required": false
-        },
-        {
-          "name": "icon",
-          "role": "Visual error indicator displayed alongside inline validation text and inside the error summary. Provides a non-color signal that reinforces the error state.",
-          "required": true
-        },
-        {
-          "name": "button",
-          "role": "Submit trigger for the form. Initiates client-side validation before submission.",
-          "required": true
-        },
-        {
-          "name": "link",
-          "role": "Anchor links within the error summary that navigate the user to the corresponding invalid field.",
-          "required": true
-        }
-      ]
-    },
-    {
       "type": "interactions",
       "items": [
         {
@@ -2673,40 +2607,42 @@ Custom categories are permitted and _SHOULD_ be lowercase kebab-case.
     },
     {
       "type": "purpose",
-      "whenToUse": [
-        {
-          "description": "When a user submits a form and one or more fields fail validation — whether client-side or server-side."
-        },
-        {
-          "description": "When an asynchronous operation fails and the user needs to be informed (e.g., save failed, API error, network timeout)."
-        },
-        {
-          "description": "When the user needs to correct input before proceeding, such as during account creation, checkout, or settings changes."
-        }
-      ],
-      "whenNotToUse": [
-        {
-          "description": "When the feedback is a successful outcome (e.g., 'Changes saved', 'Account created').",
-          "alternative": {
-            "name": "success-messaging",
-            "rationale": "Success feedback uses the success color and icon. Reusing the error pattern for positive outcomes confuses the visual language and dilutes the urgency of actual errors."
+      "useCases": {
+        "whenToUse": [
+          {
+            "description": "When a user submits a form and one or more fields fail validation — whether client-side or server-side."
+          },
+          {
+            "description": "When an asynchronous operation fails and the user needs to be informed (e.g., save failed, API error, network timeout)."
+          },
+          {
+            "description": "When the user needs to correct input before proceeding, such as during account creation, checkout, or settings changes."
           }
-        },
-        {
-          "description": "When the feedback is an informational or warning message that does not block the user from proceeding.",
-          "alternative": {
-            "name": "notification-messaging",
-            "rationale": "Informational messages use a neutral or warning color. Treating them as errors creates false urgency and trains users to ignore error styling."
+        ],
+        "whenNotToUse": [
+          {
+            "description": "When the feedback is a successful outcome (e.g., 'Changes saved', 'Account created').",
+            "alternative": {
+              "name": "success-messaging",
+              "rationale": "Success feedback uses the success color and icon. Reusing the error pattern for positive outcomes confuses the visual language and dilutes the urgency of actual errors."
+            }
+          },
+          {
+            "description": "When the feedback is an informational or warning message that does not block the user from proceeding.",
+            "alternative": {
+              "name": "notification-messaging",
+              "rationale": "Informational messages use a neutral or warning color. Treating them as errors creates false urgency and trains users to ignore error styling."
+            }
+          },
+          {
+            "description": "When the entire page or view fails to load (e.g., 404, 503).",
+            "alternative": {
+              "name": "empty-state",
+              "rationale": "Full-page failures are better handled by empty state patterns that replace the entire content area with an explanation and recovery action, rather than overlaying error messages on a non-functional page."
+            }
           }
-        },
-        {
-          "description": "When the entire page or view fails to load (e.g., 404, 503).",
-          "alternative": {
-            "name": "empty-state",
-            "rationale": "Full-page failures are better handled by empty state patterns that replace the entire content area with an explanation and recovery action, rather than overlaying error messages on a non-functional page."
-          }
-        }
-      ]
+        ]
+      }
     },
     {
       "type": "best-practices",
@@ -2714,31 +2650,31 @@ Custom categories are permitted and _SHOULD_ be lowercase kebab-case.
         {
           "guidance": "Always display inline errors directly below the invalid field, not in a separate location or only in the summary.",
           "rationale": "Users scan forms top-to-bottom. An error placed away from its field forces the user to map the message to the field mentally. Proximity eliminates that cognitive load.",
-          "entryType": "required",
+          "level": "required",
           "category": "visual-design"
         },
         {
           "guidance": "Error messages must describe the problem and, when possible, suggest how to fix it.",
           "rationale": "A message like 'Invalid input' forces the user to guess what went wrong. A message like 'Enter a date in MM/DD/YYYY format' removes ambiguity and speeds correction.",
-          "entryType": "required",
+          "level": "required",
           "category": "content"
         },
         {
           "guidance": "When two or more fields have errors, display an error summary at the top of the form in addition to inline messages.",
           "rationale": "Users on long forms may not see all inline errors, especially those below the fold. The summary provides a single scannable list of everything that needs attention.",
-          "entryType": "required",
+          "level": "required",
           "category": "visual-design"
         },
         {
           "guidance": "Each entry in the error summary must link to the corresponding invalid field.",
           "rationale": "Keyboard and screen reader users need a way to navigate directly from the summary to the problematic field without tabbing through the entire form.",
-          "entryType": "required",
+          "level": "required",
           "category": "interaction"
         },
         {
           "guidance": "Move focus to the error summary when it appears.",
           "rationale": "Screen reader users will not discover the summary unless focus is moved to it. Sighted keyboard users benefit from the same behavior — their next Tab press lands them in the summary's link list.",
-          "entryType": "required",
+          "level": "required",
           "category": "accessibility",
           "criteria": [
             "https://www.w3.org/TR/WCAG22/#error-identification"
@@ -2747,19 +2683,19 @@ Custom categories are permitted and _SHOULD_ be lowercase kebab-case.
         {
           "guidance": "Do not clear the form or reset field values when validation fails.",
           "rationale": "Clearing the form destroys the user's work. They must re-enter all data, including fields that were valid. This is hostile to all users and catastrophic for users with motor impairments who rely on slow, deliberate input.",
-          "entryType": "prohibited",
+          "level": "prohibited",
           "category": "interaction"
         },
         {
           "guidance": "Use real-time inline validation only for fields where the constraint is unambiguous and immediate feedback is helpful (e.g., password strength, email format). Do not validate on every keystroke for fields that require the user to finish typing.",
           "rationale": "Premature validation interrupts the user. Showing 'Invalid email' while the user is still typing 'j' is noise. Wait for a blur event or a pause in typing.",
-          "entryType": "encouraged",
+          "level": "encouraged",
           "category": "interaction"
         },
         {
           "guidance": "Pair every inline error message with an error icon. Do not rely on color alone.",
           "rationale": "Approximately 8% of men have some form of color vision deficiency. An icon provides a second, non-color signal that the field is in an error state. WCAG 1.4.1 requires that color is not the sole means of conveying information.",
-          "entryType": "required",
+          "level": "required",
           "category": "accessibility",
           "criteria": [
             "https://www.w3.org/TR/WCAG22/#use-of-color"
@@ -2768,7 +2704,7 @@ Custom categories are permitted and _SHOULD_ be lowercase kebab-case.
         {
           "guidance": "Each inline error message must be programmatically associated with its field using aria-describedby.",
           "rationale": "Screen readers announce aria-describedby content when the field receives focus. Without it, the user hears the field label but not the error, and has no way to know the field is invalid.",
-          "entryType": "required",
+          "level": "required",
           "category": "accessibility",
           "criteria": [
             "https://www.w3.org/TR/WCAG22/#error-identification",
@@ -2778,7 +2714,7 @@ Custom categories are permitted and _SHOULD_ be lowercase kebab-case.
         {
           "guidance": "Invalid fields must be marked with aria-invalid=\"true\".",
           "rationale": "The aria-invalid attribute allows screen readers to announce that a field's value is not accepted. It is the standard mechanism for communicating validation state in ARIA.",
-          "entryType": "required",
+          "level": "required",
           "category": "accessibility",
           "criteria": [
             "https://www.w3.org/TR/WCAG22/#error-identification"
@@ -2787,7 +2723,7 @@ Custom categories are permitted and _SHOULD_ be lowercase kebab-case.
         {
           "guidance": "The error summary must use role=\"alert\" or be injected into an aria-live=\"assertive\" region so that screen readers announce it immediately when it appears.",
           "rationale": "Without a live region, screen readers will not announce dynamically injected content. The user will not know the summary exists unless they navigate to it manually.",
-          "entryType": "required",
+          "level": "required",
           "category": "accessibility",
           "criteria": [
             "https://www.w3.org/TR/WCAG22/#status-messages"
@@ -2796,7 +2732,7 @@ Custom categories are permitted and _SHOULD_ be lowercase kebab-case.
         {
           "guidance": "Error summary anchor links must move focus to the corresponding field, not just scroll to it.",
           "rationale": "Keyboard users rely on focus position to interact. Scrolling without moving focus leaves the keyboard cursor at the summary, requiring the user to Tab through potentially many elements to reach the field.",
-          "entryType": "required",
+          "level": "required",
           "category": "accessibility",
           "criteria": [
             "https://www.w3.org/TR/WCAG22/#focus-order"
@@ -2805,7 +2741,7 @@ Custom categories are permitted and _SHOULD_ be lowercase kebab-case.
         {
           "guidance": "Toast notifications for errors must persist until the user dismisses them or the error is resolved. Do not auto-dismiss error toasts.",
           "rationale": "Users with cognitive disabilities or screen reader users may need more time to read and understand the error. Auto-dismissing the toast removes the information before they can act on it.",
-          "entryType": "required",
+          "level": "required",
           "category": "accessibility",
           "criteria": [
             "https://www.w3.org/TR/WCAG22/#timing-adjustable"
@@ -2835,6 +2771,41 @@ Custom categories are permitted and _SHOULD_ be lowercase kebab-case.
     }
   ],
   "links": [
+    {
+      "type": "component",
+      "name": "form-field",
+      "role": "Container for individual inputs. Displays inline validation messages directly below the field when validation fails.",
+      "required": true
+    },
+    {
+      "type": "component",
+      "name": "alert",
+      "role": "Page-level error summary. Appears at the top of the form or page listing all current errors with anchor links to each invalid field.",
+      "required": true
+    },
+    {
+      "type": "component",
+      "name": "toast",
+      "role": "Transient notification for server-side or asynchronous errors that cannot be tied to a specific field (e.g., network failure, timeout)"
+    },
+    {
+      "type": "component",
+      "name": "icon",
+      "role": "Visual error indicator displayed alongside inline validation text and inside the error summary. Provides a non-color signal that reinforces the error state.",
+      "required": true
+    },
+    {
+      "type": "component",
+      "name": "button",
+      "role": "Submit trigger for the form. Initiates client-side validation before submission.",
+      "required": true
+    },
+    {
+      "type": "component",
+      "name": "link",
+      "role": "Anchor links within the error summary that navigate the user to the corresponding invalid field.",
+      "required": true
+    },
     {
       "type": "design",
       "url": "https://design-tool.acme.com/file/abc123?node-id=3000:1",

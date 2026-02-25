@@ -41,7 +41,6 @@
 <a class="nav__link nav__link--child" href="guidelines-accessibility.html">accessibility</a>
 <a class="nav__link nav__link--child" href="guidelines-anatomy.html">anatomy</a>
 <a class="nav__link nav__link--child" href="guidelines-api.html">api</a>
-<a class="nav__link nav__link--child" href="guidelines-artifact-reference.html">artifact-reference</a>
 <a class="nav__link nav__link--child" href="guidelines-best-practice.html">best-practice</a>
 <a class="nav__link nav__link--child" href="guidelines-design-specifications.html">design-specifications</a>
 <a class="nav__link nav__link--child" href="guidelines-guideline.html">guideline</a>
@@ -59,13 +58,15 @@
     <main class="content__main" role="main">
       <div class="content__inner">
         <h1>DSDS Variants Guideline</h1>
-<p class="schema-description">Documents all dimensions of visual or behavioral variation on a component. Each item in the variants array represents a single axis of configuration (e.g., 'size', 'emphasis', 'selected') and contains one or more values describing the options within that axis. A variant dimension with a single value represents a boolean/toggle configuration (e.g., 'full-width', 'icon-only'). A variant dimension with multiple values represents an enumerated set (e.g., size: small/medium/large).</p>
+<p class="schema-description">Documents all dimensions of visual or behavioral variation on a component. Each item in the variants array represents a single axis of configuration (e.g., 'size', 'emphasis', 'selected') and contains one or more values describing the options within that axis. A variant dimension with a single value represents a boolean/toggle configuration (e.g., 'full-width', 'icon-only'). A variant dimension with multiple values represents an enumerated set (e.g., size: small/medium/large). Optional exclusions document invalid combinations across dimensions.</p>
 <p class="schema-source">Source: <code>guidelines/variant.schema.json</code></p>
 <nav class="page-def-index">
-<p><strong>3 definitions</strong> in this file:</p>
+<p><strong>5 definitions</strong> in this file:</p>
 <ul>
 <li><a href="#variantvalue"><code>variantValue</code></a></li>
 <li><a href="#variantentry"><code>variantEntry</code></a></li>
+<li><a href="#variantexclusioncondition"><code>variantExclusionCondition</code></a></li>
+<li><a href="#variantexclusion"><code>variantExclusion</code></a></li>
 <li><a href="#variants"><code>variants</code></a></li>
 </ul>
 </nav>
@@ -265,14 +266,32 @@
 ]</code></pre>
 </div>
 </section>
+<section class="def-section" id="variantexclusioncondition">
+<h3 id="variantexclusioncondition">variantExclusionCondition</h3>
+<p class="def-description">A single condition in a variant exclusion — identifies a specific value on a specific dimension. When all conditions in an exclusion are active simultaneously, the combination is invalid.</p>
+<p class="def-type"><span class="type-badge">object</span></p>
+<table class="prop-table"><thead><tr><th>Property</th><th>Type</th><th>Required</th><th>Description</th></tr></thead><tbody><tr><td><code>dimension</code></td><td>string</td><td><span class="required-badge">required</span></td><td>The name of the variant dimension (must match a variantEntry name in the items array).</td></tr>
+<tr><td><code>value</code></td><td>string</td><td><span class="required-badge">required</span></td><td>The name of the variant value within that dimension (must match a variantValue name).</td></tr></tbody></table>
+</section>
+<section class="def-section" id="variantexclusion">
+<h3 id="variantexclusion">variantExclusion</h3>
+<p class="def-description">An invalid combination of variant values. When ALL conditions are active simultaneously, the combination is not supported. For example, an exclusion with conditions [{dimension: 'emphasis', value: 'ghost'}, {dimension: 'size', value: 'sm'}] means that ghost emphasis at small size is not a valid configuration. Exclusions with more than two conditions express higher-order constraints (e.g., 'ghost + small + icon-only is invalid').</p>
+<p class="def-type"><span class="type-badge">object</span></p>
+<table class="prop-table"><thead><tr><th>Property</th><th>Type</th><th>Required</th><th>Description</th></tr></thead><tbody><tr><td><code>conditions</code></td><td><a href="guidelines-variant.html#variantexclusioncondition" class="type-ref">variantExclusionCondition</a>[]</td><td><span class="required-badge">required</span></td><td>The set of dimension-value pairs that, when all active at the same time, represent an invalid configuration. Must contain at least two conditions (a single condition would exclude an entire value, which should be removed from the dimension's values array instead).<br><small>Min items: 2</small></td></tr>
+<tr><td><code>description</code></td><td>string</td><td>optional</td><td>A human-readable explanation of why this combination is invalid and what the user should choose instead (e.g., 'Ghost emphasis requires at least medium size for adequate touch target area. Use secondary emphasis for small buttons instead.').</td></tr></tbody></table>
+<p class="cross-refs"><strong>References:</strong> 
+<a href="guidelines-variant.html#variantexclusioncondition">variantExclusionCondition</a>
+</p>
+</section>
 <section class="def-section" id="variants">
 <h3 id="variants">variants</h3>
-<p class="def-description">Documents all dimensions of visual or behavioral variation on a component. Each item represents a single axis of configuration — a Button might have an 'emphasis' axis (primary/secondary/ghost/danger), a 'size' axis (small/medium/large), and a 'full-width' axis (a single boolean value). Multiple axes document orthogonal dimensions that can be combined independently.</p>
+<p class="def-description">Documents all dimensions of visual or behavioral variation on a component. Each item represents a single axis of configuration — a Button might have an 'emphasis' axis (primary/secondary/ghost/danger), a 'size' axis (small/medium/large), and a 'full-width' axis (a single boolean value). Multiple axes document orthogonal dimensions that can be combined independently. Optional exclusions document combinations across dimensions that are not valid.</p>
 <p class="def-type"><span class="type-badge">object</span></p>
 <table class="prop-table"><thead><tr><th>Property</th><th>Type</th><th>Required</th><th>Description</th></tr></thead><tbody><tr><td><code>type</code></td><td><code>"variants"</code></td><td><span class="required-badge">required</span></td><td>Identifies this guideline as a variants specification.</td></tr>
-<tr><td><code>items</code></td><td><a href="guidelines-variant.html#variantentry" class="type-ref">variantEntry</a>[]</td><td><span class="required-badge">required</span></td><td>The variant dimensions. Each item documents a single axis of variation with its enumerated values. The ordering is significant — tools SHOULD display dimensions in this order.<br><small>Min items: 1</small></td></tr></tbody></table>
+<tr><td><code>items</code></td><td><a href="guidelines-variant.html#variantentry" class="type-ref">variantEntry</a>[]</td><td><span class="required-badge">required</span></td><td>The variant dimensions. Each item documents a single axis of variation with its enumerated values. The ordering is significant — tools SHOULD display dimensions in this order.<br><small>Min items: 1</small></td></tr>
+<tr><td><code>exclusions</code></td><td><a href="guidelines-variant.html#variantexclusion" class="type-ref">variantExclusion</a>[]</td><td>optional</td><td>Invalid combinations across variant dimensions. Each exclusion describes a set of dimension-value pairs that cannot be active simultaneously. Tools SHOULD use exclusions to disable invalid options in component configurators, generate warnings in code review, or display 'not available' badges in documentation. When no exclusions are present, all value combinations across all dimensions are assumed to be valid.</td></tr></tbody></table>
 <p class="cross-refs"><strong>References:</strong> 
-<a href="guidelines-variant.html#variantentry">variantEntry</a>
+<a href="guidelines-variant.html#variantentry">variantEntry</a>, <a href="guidelines-variant.html#variantexclusion">variantExclusion</a>
 </p>
 </section>
 
@@ -289,6 +308,8 @@
 <ul class="toc__list">
 <li><a class="toc__link toc__link--sub" href="#variantvalue">variantValue</a></li>
 <li><a class="toc__link toc__link--sub" href="#variantentry">variantEntry</a></li>
+<li><a class="toc__link toc__link--sub" href="#variantexclusioncondition">variantExclusionCondition</a></li>
+<li><a class="toc__link toc__link--sub" href="#variantexclusion">variantExclusion</a></li>
 <li><a class="toc__link toc__link--sub" href="#variants">variants</a></li>
 </ul>
 </nav>

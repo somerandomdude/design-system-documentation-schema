@@ -1,21 +1,22 @@
 {
-  "$schema": "https://designsystemdocspec.org/v0.1/dsds.schema.json",
+  "$schema": "../schema/dsds.bundled.schema.json",
   "dsdsVersion": "0.1",
   "metadata": {
     "systemName": "Acme Design System",
-    "systemVersion": "1.0.0",
+    "systemVersion": "2.0.0",
     "organization": "Acme Corp",
     "url": "https://design.acme.com"
   },
   "documentation": [
     {
-      "name": "Acme Starter Kit",
-      "description": "A minimal design system bundle containing core components, foundational tokens, a spacing style, and an error messaging pattern.",
+      "name": "Acme Design System — Starter Kit",
+      "description": "A representative sample of components, tokens, a style, and a pattern demonstrating DSDS document structure.",
       "items": [
         {
+          "type": "component",
           "name": "button",
           "displayName": "Button",
-          "description": "An interactive element that triggers an action when activated.",
+          "description": "A clickable element that triggers an action. Buttons are the primary mechanism for submitting forms, opening dialogs, confirming decisions, and initiating operations.",
           "status": {
             "status": "stable"
           },
@@ -28,31 +29,31 @@
                 {
                   "name": "emphasis",
                   "displayName": "Emphasis",
-                  "description": "Controls the visual weight of the button.",
+                  "description": "The visual weight of the button, indicating the relative importance of the action.",
                   "values": [
                     {
                       "name": "primary",
-                      "description": "High-emphasis \u2014 the main action on the surface.",
+                      "description": "The highest-emphasis button. Used for the single most important action on the surface.",
                       "tokens": {
                         "button-background": "color-action-primary",
-                        "button-text-color": "color-text-on-action"
+                        "button-text-color": "color-text-inverse"
                       }
                     },
                     {
                       "name": "secondary",
-                      "description": "Medium-emphasis \u2014 important but not the primary action.",
+                      "description": "A medium-emphasis button with a visible border. Used alongside a primary button for secondary actions.",
                       "tokens": {
-                        "button-background": "transparent",
+                        "button-background": "color-transparent",
                         "button-text-color": "color-action-primary",
                         "button-border-color": "color-action-primary"
                       }
                     },
                     {
-                      "name": "danger",
-                      "description": "Signals a destructive or irreversible action.",
+                      "name": "ghost",
+                      "description": "A low-emphasis button with no border or background. Used for tertiary actions in dense layouts.",
                       "tokens": {
-                        "button-background": "color-action-danger",
-                        "button-text-color": "color-text-on-action"
+                        "button-background": "color-transparent",
+                        "button-text-color": "color-action-primary"
                       }
                     }
                   ]
@@ -60,19 +61,19 @@
                 {
                   "name": "size",
                   "displayName": "Size",
-                  "description": "Controls the physical dimensions of the button.",
+                  "description": "Controls padding, font size, and minimum touch target area.",
                   "values": [
                     {
                       "name": "small",
-                      "description": "Compact size for toolbars and dense layouts."
+                      "description": "Compact size for dense layouts such as toolbars and table rows."
                     },
                     {
                       "name": "medium",
-                      "description": "The default size for most contexts."
+                      "description": "Default size for most contexts."
                     },
                     {
                       "name": "large",
-                      "description": "Touch-optimized size for mobile-first surfaces."
+                      "description": "Large size for hero surfaces and mobile-first layouts."
                     }
                   ]
                 }
@@ -84,44 +85,49 @@
                 {
                   "name": "default",
                   "displayName": "Default",
-                  "description": "The resting state."
+                  "description": "The resting state of the button."
                 },
                 {
                   "name": "hover",
                   "displayName": "Hover",
-                  "description": "Pointer is over the button. Background darkens by 8%."
+                  "description": "Visual feedback when the pointer is over the button.",
+                  "tokens": {
+                    "button-background": "color-action-primary-hover"
+                  }
+                },
+                {
+                  "name": "focus",
+                  "displayName": "Focus",
+                  "description": "Visible focus ring when the button receives keyboard focus."
                 },
                 {
                   "name": "disabled",
                   "displayName": "Disabled",
-                  "description": "Non-interactive. Opacity reduced to 40%."
-                },
-                {
-                  "name": "loading",
-                  "displayName": "Loading",
-                  "description": "Label replaced by a spinner. Button is non-interactive."
+                  "description": "Non-interactive state. The button is visible but cannot be activated."
                 }
               ]
             },
             {
               "type": "purpose",
-              "whenToUse": [
-                {
-                  "description": "When the user needs to trigger an action such as submitting a form, saving data, or opening a dialog."
-                },
-                {
-                  "description": "When a destructive action needs to be initiated, such as deleting a record. Pair with a confirmation dialog."
-                }
-              ],
-              "whenNotToUse": [
-                {
-                  "description": "When the action navigates to a different page or URL.",
-                  "alternative": {
-                    "name": "link",
-                    "rationale": "Links carry native navigation semantics. Screen readers announce them as links, and browsers support open-in-new-tab."
+              "useCases": {
+                "whenToUse": [
+                  {
+                    "description": "When the user needs to trigger an action such as submitting a form, saving data, or opening a dialog."
+                  },
+                  {
+                    "description": "When a destructive action needs to be initiated, such as deleting a record. Pair with a confirmation dialog."
                   }
-                }
-              ]
+                ],
+                "whenNotToUse": [
+                  {
+                    "description": "When the action navigates to a different page or URL.",
+                    "alternative": {
+                      "name": "link",
+                      "rationale": "Links carry native navigation semantics. Screen readers announce them as links, and browsers support open-in-new-tab."
+                    }
+                  }
+                ]
+              }
             },
             {
               "type": "best-practices",
@@ -129,23 +135,21 @@
                 {
                   "guidance": "Limit each surface to one primary button.",
                   "rationale": "Multiple primary buttons dilute visual hierarchy.",
-                  "entryType": "required",
+                  "level": "required",
                   "category": "visual-design"
                 },
                 {
                   "guidance": "Use the loading state instead of disabling the button during async operations.",
                   "rationale": "A disabled button gives no feedback that an action is in progress.",
-                  "entryType": "encouraged",
+                  "level": "encouraged",
                   "category": "interaction"
                 },
                 {
                   "guidance": "When using an icon-only button, provide an aria-label.",
                   "rationale": "Screen readers need a text equivalent for every interactive control.",
-                  "entryType": "required",
+                  "level": "required",
                   "category": "accessibility",
-                  "criteria": [
-                    "https://www.w3.org/TR/WCAG22/#name-role-value"
-                  ]
+                  "criteria": ["https://www.w3.org/TR/WCAG22/#name-role-value"]
                 }
               ]
             },
@@ -175,10 +179,10 @@
               "url": "https://design.acme.com/components/button",
               "label": "Documentation"
             }
-          ],
-          "type": "component"
+          ]
         },
         {
+          "type": "component",
           "name": "link",
           "displayName": "Link",
           "description": "A navigational element that takes the user to a different page or URL.",
@@ -190,20 +194,22 @@
           "guidelines": [
             {
               "type": "purpose",
-              "whenToUse": [
-                {
-                  "description": "When the action navigates the user to a different page, section, or external resource."
-                }
-              ],
-              "whenNotToUse": [
-                {
-                  "description": "When the action triggers a state change or submits data without navigation.",
-                  "alternative": {
-                    "name": "button",
-                    "rationale": "Buttons have action semantics. Using a link for non-navigation actions creates a mismatch between role and behavior."
+              "useCases": {
+                "whenToUse": [
+                  {
+                    "description": "When the action navigates the user to a different page, section, or external resource."
                   }
-                }
-              ]
+                ],
+                "whenNotToUse": [
+                  {
+                    "description": "When the action triggers a state change or submits data without navigation.",
+                    "alternative": {
+                      "name": "button",
+                      "rationale": "Buttons have action semantics. Using a link for non-navigation actions creates a mismatch between role and behavior."
+                    }
+                  }
+                ]
+              }
             },
             {
               "type": "best-practices",
@@ -211,11 +217,9 @@
                 {
                   "guidance": "Always pair link color with an underline for inline links within body text.",
                   "rationale": "Color alone is insufficient to distinguish links for users with color vision deficiency.",
-                  "entryType": "required",
+                  "level": "required",
                   "category": "accessibility",
-                  "criteria": [
-                    "https://www.w3.org/TR/WCAG22/#use-of-color"
-                  ]
+                  "criteria": ["https://www.w3.org/TR/WCAG22/#use-of-color"]
                 }
               ]
             }
@@ -226,10 +230,10 @@
               "url": "https://design.acme.com/components/link",
               "label": "Documentation"
             }
-          ],
-          "type": "component"
+          ]
         },
         {
+          "type": "component",
           "name": "alert",
           "displayName": "Alert",
           "description": "A message bar that communicates status, errors, warnings, or informational messages to the user.",
@@ -273,11 +277,9 @@
                 {
                   "guidance": "Use role='alert' or aria-live='assertive' for error alerts so screen readers announce them immediately.",
                   "rationale": "Without a live region, dynamically injected error messages are invisible to assistive technology.",
-                  "entryType": "required",
+                  "level": "required",
                   "category": "accessibility",
-                  "criteria": [
-                    "https://www.w3.org/TR/WCAG22/#status-messages"
-                  ]
+                  "criteria": ["https://www.w3.org/TR/WCAG22/#status-messages"]
                 }
               ]
             }
@@ -288,67 +290,64 @@
               "url": "https://design.acme.com/components/alert",
               "label": "Documentation"
             }
-          ],
-          "type": "component"
+          ]
         },
         {
+          "type": "token",
           "name": "color-action-primary",
-          "displayName": "Action Primary",
-          "description": "The primary interactive color. Used for primary buttons and key interactive elements.",
+          "tokenType": "color",
+          "category": "semantic",
           "status": {
             "status": "stable"
           },
-          "tokenType": "color",
-          "category": "semantic",
+          "description": "The primary interactive color. Used for primary buttons and key interactive elements.",
           "value": {
-            "resolved": "#0055b3",
-            "reference": "color.blue.700"
+            "resolved": "#0055B3",
+            "reference": "color.blue.600"
           },
           "api": {
             "cssCustomProperty": "--color-action-primary",
-            "jsConstant": "colorActionPrimary"
-          },
-          "type": "token"
+            "jsConstant": "COLOR_ACTION_PRIMARY"
+          }
         },
         {
-          "name": "color-action-danger",
-          "displayName": "Action Danger",
-          "description": "The danger interactive color. Used for destructive actions.",
+          "type": "token",
+          "name": "color-text-primary",
+          "tokenType": "color",
+          "category": "semantic",
           "status": {
             "status": "stable"
           },
-          "tokenType": "color",
-          "category": "semantic",
+          "description": "The default text color. Used for body text, headings, and labels on standard backgrounds.",
           "value": {
-            "resolved": "#cc1100",
-            "reference": "color.red.700"
+            "resolved": "#1A1A1A",
+            "reference": "color.neutral.900"
           },
           "api": {
-            "cssCustomProperty": "--color-action-danger",
-            "jsConstant": "colorActionDanger"
-          },
-          "type": "token"
+            "cssCustomProperty": "--color-text-primary",
+            "jsConstant": "COLOR_TEXT_PRIMARY"
+          }
         },
         {
-          "name": "color-text-on-action",
-          "displayName": "Text on Action",
-          "description": "Text color for use on filled interactive surfaces (primary buttons, danger buttons).",
+          "type": "token",
+          "name": "space-4",
+          "tokenType": "dimension",
+          "category": "base",
           "status": {
             "status": "stable"
           },
-          "tokenType": "color",
-          "category": "semantic",
+          "description": "Base spacing unit. The most commonly used spacing value across components and layouts.",
           "value": {
-            "resolved": "#ffffff",
-            "reference": "color.white"
+            "resolved": "16px",
+            "reference": "spacing.400"
           },
           "api": {
-            "cssCustomProperty": "--color-text-on-action",
-            "jsConstant": "colorTextOnAction"
-          },
-          "type": "token"
+            "cssCustomProperty": "--space-4",
+            "jsConstant": "SPACE_4"
+          }
         },
         {
+          "type": "style",
           "name": "spacing",
           "displayName": "Spacing",
           "description": "A spatial system built on a 4px base unit for consistent whitespace across all surfaces.",
@@ -367,16 +366,6 @@
                 {
                   "title": "Density over decoration",
                   "description": "Spacing exists to create clear relationships between elements, not to fill empty areas."
-                }
-              ]
-            },
-            {
-              "type": "artifact-reference",
-              "referenceType": "token-group",
-              "references": [
-                {
-                  "name": "spacing",
-                  "role": "Provides all spatial tokens from space-0 through space-8."
                 }
               ]
             },
@@ -439,21 +428,28 @@
                 {
                   "guidance": "Components must not apply external margin. Margin between components is the responsibility of the parent layout.",
                   "rationale": "Components that own their margins create unpredictable spacing when composed.",
-                  "entryType": "required",
+                  "level": "required",
                   "category": "visual-design"
                 },
                 {
                   "guidance": "Use CSS gap as the primary mechanism for spacing between sibling elements.",
                   "rationale": "Gap applies spacing uniformly without affecting the first or last child.",
-                  "entryType": "encouraged",
+                  "level": "encouraged",
                   "category": "development"
                 }
               ]
             }
           ],
-          "type": "style"
+          "links": [
+            {
+              "type": "token-group",
+              "name": "spacing",
+              "role": "Provides all spatial tokens from space-0 through space-8."
+            }
+          ]
         },
         {
+          "type": "pattern",
           "name": "error-messaging",
           "displayName": "Error Messaging",
           "description": "How errors are surfaced through inline validation, summary banners, and toast notifications.",
@@ -462,22 +458,6 @@
           },
           "category": "feedback",
           "guidelines": [
-            {
-              "type": "artifact-reference",
-              "referenceType": "component",
-              "references": [
-                {
-                  "name": "alert",
-                  "role": "Page-level error summary listing all current errors.",
-                  "required": true
-                },
-                {
-                  "name": "button",
-                  "role": "Submit trigger that initiates client-side validation.",
-                  "required": true
-                }
-              ]
-            },
             {
               "type": "interactions",
               "items": [
@@ -497,20 +477,22 @@
             },
             {
               "type": "purpose",
-              "whenToUse": [
-                {
-                  "description": "When a form submission fails validation and the user needs to correct one or more fields."
-                }
-              ],
-              "whenNotToUse": [
-                {
-                  "description": "When the feedback is a successful outcome.",
-                  "alternative": {
-                    "name": "success-messaging",
-                    "rationale": "Success feedback uses success colors and icons. Reusing the error pattern for positive outcomes confuses the visual language."
+              "useCases": {
+                "whenToUse": [
+                  {
+                    "description": "When a form submission fails validation and the user needs to correct one or more fields."
                   }
-                }
-              ]
+                ],
+                "whenNotToUse": [
+                  {
+                    "description": "When the feedback is a successful outcome.",
+                    "alternative": {
+                      "name": "success-messaging",
+                      "rationale": "Success feedback uses success colors and icons. Reusing the error pattern for positive outcomes confuses the visual language."
+                    }
+                  }
+                ]
+              }
             },
             {
               "type": "best-practices",
@@ -518,13 +500,13 @@
                 {
                   "guidance": "Always display inline errors directly below the invalid field.",
                   "rationale": "Proximity eliminates the cognitive load of mapping an error message to its field.",
-                  "entryType": "required",
+                  "level": "required",
                   "category": "interaction"
                 },
                 {
                   "guidance": "Move focus to the error summary when it appears.",
                   "rationale": "Screen reader users will not discover the summary unless focus is moved to it.",
-                  "entryType": "required",
+                  "level": "required",
                   "category": "accessibility",
                   "criteria": [
                     "https://www.w3.org/TR/WCAG22/#error-identification"
@@ -533,13 +515,26 @@
                 {
                   "guidance": "Do not clear the form or reset field values when validation fails.",
                   "rationale": "Clearing the form destroys the user's work.",
-                  "entryType": "prohibited",
+                  "level": "prohibited",
                   "category": "interaction"
                 }
               ]
             }
           ],
-          "type": "pattern"
+          "links": [
+            {
+              "type": "component",
+              "name": "alert",
+              "role": "Page-level error summary listing all current errors.",
+              "required": true
+            },
+            {
+              "type": "component",
+              "name": "button",
+              "role": "Submit trigger that initiates client-side validation.",
+              "required": true
+            }
+          ]
         }
       ]
     }
