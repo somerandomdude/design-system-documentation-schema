@@ -1,0 +1,78 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://designsystemdocspec.org/v0.1/guidelines/anatomy.schema.json",
+  "title": "DSDS Anatomy Guideline",
+  "description": "Documents the visual structure of a component — its named sub-elements (parts), their associated design tokens, and optional visual previews. Anatomy guidelines decompose a component into the discrete parts that designers and engineers need to understand, style, and test.",
+  "$defs": {
+    "anatomyEntry": {
+      "type": "object",
+      "description": "A named sub-element of a component's visual structure.",
+      "required": ["name", "description", "required"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Machine-readable name of the part (e.g., 'container', 'label', 'icon', 'focus-ring')."
+        },
+        "displayName": {
+          "type": "string",
+          "description": "Human-readable name (e.g., 'Container', 'Label', 'Leading Icon')."
+        },
+        "description": {
+          "$ref": "../common/rich-text.schema.json#/$defs/richText",
+          "description": "What this part is, what it does, and any constraints on its content or appearance."
+        },
+        "required": {
+          "type": "boolean",
+          "description": "Whether this part is always present in the component's rendered output. When false, the part is conditionally rendered based on props or content."
+        },
+        "tokens": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Names of design tokens applied to this part (e.g., 'button-background', 'button-border-radius', 'button-padding-horizontal'). Connects the visual structure to the token architecture."
+        },
+        "links": {
+          "type": "array",
+          "description": "Links to resources that represent this anatomy part — design tool nodes, source code blocks, documentation sections, or any other addressable reference.",
+          "items": {
+            "$ref": "../common/link.schema.json#/$defs/link"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "anatomy": {
+      "type": "object",
+      "description": "Documents the visual structure of a component by enumerating its named sub-elements (parts). Each part can reference the design tokens that style it, creating a bridge between the component's visual design and its token architecture. An optional preview provides an annotated diagram of the assembled structure.",
+      "required": ["type", "parts"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "anatomy",
+          "description": "Identifies this guideline as an anatomy specification."
+        },
+        "description": {
+          "$ref": "../common/rich-text.schema.json#/$defs/richText",
+          "description": "A prose overview of the component's visual structure — how the parts relate to each other and any notable structural constraints."
+        },
+        "parts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/anatomyEntry"
+          },
+          "minItems": 1,
+          "description": "The named sub-elements of the component, in visual order (typically outside-in or top-to-bottom). Each part documents a discrete element that can be independently styled, tested, or referenced."
+        },
+        "preview": {
+          "type": "array",
+          "description": "Visual previews of the anatomy — typically annotated diagrams with numbered callouts mapping to the parts array. Multiple previews allow different views (e.g., expanded vs. collapsed, with icon vs. without).",
+          "items": {
+            "$ref": "../common/example.schema.json#/$defs/example"
+          }
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

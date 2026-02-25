@@ -38,10 +38,8 @@ const EXAMPLES_DIR = path.join(SPEC_DIR, "examples");
 
 const DIR_GROUPS = [
   { dir: "common", label: "Common" },
-  { dir: "components", label: "Components" },
-  { dir: "tokens", label: "Tokens" },
-  { dir: "style", label: "Style" },
-  { dir: "patterns", label: "Patterns" },
+  { dir: "entities", label: "Entities" },
+  { dir: "guidelines", label: "Guidelines" },
 ];
 
 /**
@@ -576,12 +574,14 @@ function renderSchemaPage(page) {
     `<p class="schema-source">Source: <code>${esc(relPath)}</code></p>`,
   );
 
+  // Always render top-level properties when they exist (e.g., the root schema
+  // has both its own properties AND $defs like documentationGroup)
+  if (page.data.properties) {
+    parts.push(`<h2 id="properties-heading">Root Properties</h2>`);
+    parts.push(renderPropertyTable(page.data));
+  }
+
   if (defNames.length === 0) {
-    // Root schema or files with no $defs — show top-level properties
-    if (page.data.properties) {
-      parts.push(`<h2 id="properties-heading">Properties</h2>`);
-      parts.push(renderPropertyTable(page.data));
-    }
     return parts.join("\n");
   }
 

@@ -1,0 +1,133 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://designsystemdocspec.org/v0.1/guidelines/accessibility.schema.json",
+  "title": "DSDS Accessibility Guideline",
+  "description": "Documents the accessibility specifications for an artifact — keyboard interactions, ARIA attributes, screen reader behavior, focus management, color contrast pairs, and motion considerations. This guideline type captures structured, machine-readable accessibility data. For actionable accessibility rules with rationale (e.g., 'Provide an aria-label for icon-only buttons'), use a best-practice guideline with category 'accessibility' instead.",
+  "$defs": {
+    "keyboardInteraction": {
+      "type": "object",
+      "description": "A keyboard interaction specification documenting what happens when a specific key or key combination is pressed.",
+      "required": ["key", "action"],
+      "properties": {
+        "key": {
+          "type": "string",
+          "description": "The key or key combination (e.g., 'Enter', 'Space', 'Tab', 'Shift+Tab', 'Escape', 'Arrow Down', 'Home', 'End')."
+        },
+        "action": {
+          "type": "string",
+          "description": "What happens when this key is pressed (e.g., 'Activates the button', 'Moves focus to the next item in the list', 'Closes the dialog and returns focus to the trigger')."
+        },
+        "context": {
+          "type": "string",
+          "description": "Any preconditions for this interaction (e.g., 'When the menu is open', 'When focus is on the trigger element', 'When the component is not disabled'). When omitted, the interaction applies in all contexts."
+        }
+      },
+      "additionalProperties": false
+    },
+    "ariaAttribute": {
+      "type": "object",
+      "description": "Documentation for an ARIA attribute used by the artifact, explaining what it communicates and when it should be applied.",
+      "required": ["attribute", "description"],
+      "properties": {
+        "attribute": {
+          "type": "string",
+          "description": "The ARIA attribute name (e.g., 'role', 'aria-label', 'aria-expanded', 'aria-disabled', 'aria-live', 'aria-controls')."
+        },
+        "value": {
+          "type": "string",
+          "description": "The expected value or value pattern (e.g., 'true | false', 'string', 'button', 'dialog', 'assertive | polite')."
+        },
+        "description": {
+          "$ref": "../common/rich-text.schema.json#/$defs/richText",
+          "description": "What this attribute communicates to assistive technology and when it should be applied. Include guidance on dynamic value changes if applicable."
+        },
+        "required": {
+          "type": "boolean",
+          "description": "Whether this attribute is always required on the artifact. When false or omitted, the attribute is conditionally required or optional."
+        }
+      },
+      "additionalProperties": false
+    },
+    "colorContrast": {
+      "type": "object",
+      "description": "A color contrast specification documenting the measured contrast ratio between a foreground and background color pair and the WCAG conformance level it meets.",
+      "required": ["foreground", "background", "contrastRatio", "level"],
+      "properties": {
+        "foreground": {
+          "type": "string",
+          "description": "The foreground token name or resolved color value (e.g., 'color-text-primary', '#1a1a1a', 'var(--button-text-color)')."
+        },
+        "background": {
+          "type": "string",
+          "description": "The background token name or resolved color value (e.g., 'color-background-default', '#ffffff', 'var(--button-background)')."
+        },
+        "contrastRatio": {
+          "type": "number",
+          "description": "The contrast ratio as a decimal number (e.g., 4.5, 7.2, 15.3). Represents the ratio N:1 where N is this value. Tools MAY format for display as 'N:1'.",
+          "exclusiveMinimum": 0
+        },
+        "level": {
+          "type": "string",
+          "enum": ["A", "AA", "AAA"],
+          "description": "The WCAG conformance level met by this contrast ratio. AA requires 4.5:1 for normal text and 3:1 for large text. AAA requires 7:1 for normal text and 4.5:1 for large text."
+        },
+        "context": {
+          "type": "string",
+          "description": "Where this foreground/background combination is used (e.g., 'Label text on primary button background in light mode', 'Secondary text on card surface')."
+        }
+      },
+      "additionalProperties": false
+    },
+    "accessibility": {
+      "type": "object",
+      "description": "Structured accessibility specifications for an artifact. Documents keyboard behavior, ARIA attributes, screen reader announcements, focus management, color contrast pairs, and motion considerations. This is distinct from best-practice guidelines — accessibility guidelines capture machine-readable specifications, while best practices capture actionable rules with rationale. Both can coexist in the same guidelines array.",
+      "required": ["type"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "accessibility",
+          "description": "Identifies this guideline as an accessibility specification."
+        },
+        "wcagLevel": {
+          "type": "string",
+          "enum": ["A", "AA", "AAA"],
+          "description": "The minimum WCAG conformance level targeted by this artifact. Most design systems target AA. Set to AAA when the artifact exceeds standard requirements."
+        },
+        "keyboardInteraction": {
+          "type": "array",
+          "description": "Keyboard interaction specifications. Documents what happens when each key or key combination is pressed while the artifact has focus.",
+          "items": {
+            "$ref": "#/$defs/keyboardInteraction"
+          }
+        },
+        "ariaAttributes": {
+          "type": "array",
+          "description": "ARIA attribute documentation. Lists every ARIA attribute the artifact uses, what it communicates, and when it should be applied.",
+          "items": {
+            "$ref": "#/$defs/ariaAttribute"
+          }
+        },
+        "screenReaderBehavior": {
+          "$ref": "../common/rich-text.schema.json#/$defs/richText",
+          "description": "How the artifact is announced by screen readers in various states. Include announcements for default, focused, disabled, loading, expanded, and any other relevant states. Name specific screen readers (VoiceOver, NVDA, JAWS) when behavior differs."
+        },
+        "focusManagement": {
+          "$ref": "../common/rich-text.schema.json#/$defs/richText",
+          "description": "How focus moves into, within, and out of the artifact. Document focus trapping (for modals/dialogs), focus restoration (when dismissing overlays), and any programmatic focus movement. Describe both keyboard and programmatic focus behavior."
+        },
+        "colorContrast": {
+          "type": "array",
+          "description": "Contrast ratio documentation for foreground/background color pairs used by this artifact. Each entry documents a specific pairing, its measured ratio, and the WCAG level it meets.",
+          "items": {
+            "$ref": "#/$defs/colorContrast"
+          }
+        },
+        "motionConsiderations": {
+          "$ref": "../common/rich-text.schema.json#/$defs/richText",
+          "description": "How the artifact respects the prefers-reduced-motion media query. Document what animations or transitions are present and what happens when reduced motion is preferred (e.g., 'The loading spinner is replaced with a static ellipsis indicator')."
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

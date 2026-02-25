@@ -2,170 +2,263 @@
 
 **Part of the [Design System Documentation Standard (DSDS) 0.1](../dsds-spec.md)**
 
-This module defines how usage guidance is structured across the specification. Every guideline is a self-contained, actionable statement paired with a rationale — whether it appears in component best practices, token usage rules, or foundation principles. The module also defines how rich examples (images, videos, code, Storybook stories) can be embedded within guidelines.
+This module defines the unified guideline system — the fundamental unit of structured documentation in DSDS. Every piece of documentation attached to an entity is a guideline object with a `type` discriminator. Guidelines are typed containers that hold arrays of atomic items, following the same pattern established by anatomy (which has `parts`) and purpose (which has `whenToUse`/`whenNotToUse`).
 
 ---
 
-## 10. Guidelines Structure
+## 1. Overview
 
-Guidelines are the core of design system documentation. DSDS structures guidelines to be self-contained, actionable, and justified — regardless of where they appear.
+All structured documentation in DSDS lives in the `guidelines` array on each entity. Each guideline is a JSON object with a required `type` property that determines its shape. Different entity types accept different subsets of guideline types through **scoped unions** — this ensures that component-specific documentation (like anatomy or API specs) cannot accidentally be attached to a style or token.
 
-### 10.1 Guidelines Object
+### 1.1 Scoped Guideline Unions
 
-The `guidelines` object appears in component, token, and foundation documentation. It _MAY_ contain any of the following arrays:
+**Schema:** `guidelines/guideline.schema.json`
 
-| Property | Type | Description |
+| Scope | Used by | Accepts |
 |---|---|---|
-| `bestPractices` | `array` | Usage guidance: when to use, how to use, when not to use. |
-| `contentGuidelines` | `array` | Guidance for content within the artifact (text, imagery). Only applicable when defined at the component level. See [§6.8](#68-content-guidelines) for the inline version. |
+| **Component** | component | anatomy, api, variants, states, design-specifications + general |
+| **Style** | style | principles, scale + general |
+| **Pattern** | pattern | interactions + general |
+| **Token** | token, token-group, theme | general only |
 
-Each guideline object follows the same shape:
+**General** (available on all entity types): best-practices, purpose, accessibility, examples, artifact-references.
 
-| Property | Type | Required | Description |
-|---|---|---|---|
-| `guidance` | `string` | Yes | The actionable guidance statement. _MUST_ be concrete and unambiguous. Avoid subjective language like "use sparingly" or "when possible". |
-| `rationale` | `string` | Yes | Why this guidance exists. Cite evidence, accessibility standards, or user research when available. |
-| `severity` | `string` | No | The enforcement level of the guideline. _MUST_ be one of: `"required"`, `"encouraged"`, `"informational"`, `"discouraged"`, `"prohibited"`. See [§10.3](#103-severity-levels). When omitted, consumers _MAY_ treat the guideline as `"encouraged"`. |
-| `examples` | `object` | No | Examples illustrating the guideline. See below. |
-| `tags` | `string[]` | No | Tags for categorizing or filtering guidelines. |
+### 1.2 Naming Convention
 
-### 10.2 Severity Levels
+Guideline type values follow two naming patterns based on their structural role:
 
-The optional `severity` property communicates how strictly a guideline should be followed. The values align with RFC 2119 requirement levels:
+- **Plural names** for guideline types that wrap a homogeneous list of items in an `items` array: `"best-practices"`, `"variants"`, `"states"`, `"principles"`, `"interactions"`, `"examples"`.
+- **Singular names** for guideline types that are self-contained named entities with their own internal structure: `"scale"` (has `name`, `steps`), `"anatomy"` (has `parts`), `"api"` (has `properties`, `events`, etc.), `"accessibility"` (has `keyboardInteraction`, `ariaAttributes`, etc.), `"design-specifications"` (has `tokens`, `spacing`, etc.), `"artifact-reference"` (has `referenceType`, `references`), `"purpose"` (has `whenToUse`, `whenNotToUse`).
 
-| Value | RFC 2119 Equivalent | Meaning |
-|---|---|---|
-| `"required"` | MUST | The guideline _MUST_ be followed. Non-compliance is considered a defect. |
-| `"encouraged"` | SHOULD | The guideline _SHOULD_ be followed in most cases. Exceptions require justification. |
-| `"informational"` | MAY | The guideline provides advisory context. It describes a pattern or consideration with no enforcement expectation. |
-| `"discouraged"` | SHOULD NOT | The described practice _SHOULD NOT_ be used. Exceptions require justification. |
-| `"prohibited"` | MUST NOT | The described practice _MUST NOT_ be used. Violations are considered defects. |
+The distinction: plural types are containers of interchangeable items where the container itself has no identity beyond its type. Singular types have meaningful internal structure where the properties are named and semantically distinct (not a flat list).
 
-When `severity` is omitted, tools _MAY_ treat the guideline as `"encouraged"` for display and enforcement purposes.
+---
 
-**Choosing a severity level:**
+## 2. General Guidelines
 
-- Use `"required"` and `"prohibited"` for guidelines rooted in accessibility requirements, platform constraints, or invariants that would break the system if violated.
-- Use `"encouraged"` and `"discouraged"` for best practices that have well-understood rationale but where context may warrant exceptions.
-- Use `"informational"` for background context, tips, or patterns that are helpful but have no enforcement expectation.
+These guideline types are available on **all** entity types.
 
-### 10.3 Examples in Guidelines
+### 2.1 Best Practices (`best-practices`)
 
-The optional `examples` object within a guideline:
+**Schema:** `guidelines/best-practice.schema.json`
+**Type value:** `"best-practices"`
+**Container property:** `items`
+**Item type:** `bestPracticeEntry`
 
-| Property | Type | Required | Description |
-|---|---|---|---|
-| `encouraged` | `array` | No | An array of example items showing the encouraged approach. |
-| `discouraged` | `array` | No | An array of example items showing the approach to avoid. Each discouraged example _SHOULD_ be paired with an encouraged alternative. |
+Documents actionable usage rules for an artifact. Each item is a self-contained rule pairing an actionable guidance statement with a rationale explaining why. Best practices tell the reader _how_ to use the artifact correctly after they have chosen it. For guidance on _whether_ to use the artifact at all, see [purpose](#23-purpose-purpose).
 
-Each item in the `encouraged` or `discouraged` array _MUST_ be one of the following three formats:
+#### Best Practice Entry
 
-**1. Simple string** — a short text example.
 
-```json
-"Save changes"
-```
+#### 2.1.1 Enforcement Levels
 
-**2. Text example object** — a text example with an explanation.
+The optional `entryType` property classifies how strictly a best practice should be followed. Values align with RFC 2119 requirement levels:
 
-| Property | Type | Required | Description |
-|---|---|---|---|
-| `value` | `string` | Yes | The example content (code snippet, text, description). |
-| `description` | `string` | No | Explanation of why this example is encouraged or discouraged. |
 
-**3. Rich example object** — an image, video, code, or Storybook example as defined in [§9 Examples](#9-examples).
-
-A rich example is distinguished from a text example by the presence of a `type` property. Tools _MUST_ treat any object with a `type` property set to `"image"`, `"video"`, `"code"`, or `"storybook"` as a rich example, and any object with a `value` property (and no `type`) as a text example.
-
-All three formats _MAY_ be mixed within the same array. This allows a guideline to include a short text description alongside a visual illustration:
-
-```json
-{
-  "encouraged": [
-    {
-      "value": "[Cancel (secondary)] [Save (primary)]",
-      "description": "One primary action with a secondary alternative."
-    },
-    {
-      "type": "image",
-      "url": "https://design.acme.com/assets/button-group-correct.png",
-      "alt": "A dialog footer with a secondary Cancel button on the left and a primary Save button on the right.",
-      "label": "Correct button group layout"
-    }
-  ]
-}
-```
-
-**Example:**
-
-```json
-{
-  "guidelines": {
-    "bestPractices": [
-      {
-        "guidance": "Place the primary button on the right side of a button group in left-to-right layouts.",
-        "rationale": "Users scan left-to-right. Placing the primary action on the right aligns with the natural completion point of reading and mirrors the convention established by operating system dialogs.",
-        "type": "encouraged",
-        "examples": {
-          "encouraged": [
-            {
-              "value": "[Cancel] [Save]",
-              "description": "Primary action on the right."
-            }
-          ],
-          "discouraged": [
-            {
-              "value": "[Save] [Cancel]",
-              "description": "Primary action on the left violates the expected reading order for action completion."
-            }
-          ]
-        }
-      },
-      {
-        "guidance": "Limit each surface to one primary button.",
-        "rationale": "Multiple primary buttons dilute visual hierarchy. When everything is emphasized, nothing is. A single primary button draws the user toward the most important action.",
-        "type": "required"
-      },
-      {
-        "guidance": "Do not use a button when the action navigates the user to a different page or URL. Use a link instead.",
-        "rationale": "Buttons and links have different semantic meaning. Buttons perform actions. Links navigate. Conflating the two creates confusion for screen reader users who rely on element role to understand behavior.",
-        "type": "prohibited"
-      }
-    ]
-  }
-}
-```
-
-### 10.4 Writing Guidelines (Non-normative)
+#### 2.1.2 Writing Best Practices (Non-normative)
 
 _This section is non-normative._
-
-When authoring guideline text for DSDS documents, consider the following:
 
 - **Be specific.** "Limit each surface to one primary button" is better than "Use primary buttons sparingly."
 - **State what to do, not just what not to do.** If a "don't" is necessary, pair it with a "do this instead."
 - **Write for action.** The reader is trying to build something right now. Help them do it.
 - **Include the why.** Every `rationale` should be a real reason — not a restatement of the guidance.
-- **Use simple language.** A junior developer or a non-native English speaker should be able to understand every guideline.
-- **Keep it self-contained.** A reader should understand a single guideline without reading the entire document.
-
-### 10.5 Guidelines vs. Use Cases
-
-Guidelines and use cases are complementary but serve different purposes. Understanding the boundary helps authors place information in the right location.
-
-| Concern | Guidelines | Use Cases |
-|---|---|---|
-| **Question answered** | _How_ should I use this? | _When_ should I use this? |
-| **Focus** | Rules and best practices for correct implementation | Scenarios that help a reader decide whether this is the right artifact for their situation |
-| **Scope** | Applies once the reader has already chosen this artifact | Applies before the reader has committed to this artifact |
-| **Examples** | Show correct and incorrect implementation patterns | Show concrete situations where this artifact is or is not appropriate |
-| **Structure** | Flat array of `guideline` objects with `guidance`, `rationale`, and optional `severity` | `useCases` object with `whenToUse` and `whenNotToUse` arrays |
-
-**Rule of thumb:** If the advice helps someone _decide whether to reach for this artifact_, it belongs in use cases. If the advice helps someone _implement it correctly after choosing it_, it belongs in guidelines.
-
-**Example — Button:**
-
-- _Use case:_ "When the user needs to trigger an action such as submitting a form or opening a dialog." → This helps the reader decide whether to use a Button vs. a Link or a Menu Button.
-- _Guideline:_ "Limit each surface to one primary button." → This helps the reader implement the Button correctly after choosing it.
+- **Use simple language.** A junior developer or a non-native English speaker should be able to understand every best practice.
+- **Keep it self-contained.** A reader should understand a single best practice without reading the entire document.
 
 ---
+
+### 2.2 Examples (`examples`)
+
+**Schema:** `common/example.schema.json` (the `examples` container def)
+**Type value:** `"examples"`
+**Container property:** `items`
+**Item type:** `example` (from common)
+
+Documents visual or interactive demonstrations of an artifact. Each item is a single demonstration — a static image, a video recording, a code snippet, or a URL to a live demo. Multiple items allow different representations: a static screenshot alongside an interactive Storybook embed, code examples in multiple frameworks, or a sequence of annotated diagrams.
+
+See [Common Module §4](common.md#4-examples-example-examples) for the full example and presentation type reference.
+
+---
+
+### 2.3 Purpose (`purpose`)
+
+**Schema:** `guidelines/purpose.schema.json`
+**Type value:** `"purpose"`
+**Container properties:** `whenToUse`, `whenNotToUse`
+**Item type:** `useCase` (from `common/usecase.schema.json`)
+
+Documents what an artifact is used for — the concrete scenarios in which it is the right choice and the scenarios in which a different artifact would be more appropriate. Purpose guidelines help the reader decide _whether_ to reach for this artifact before they start implementing it. For guidance on _how_ to use the artifact correctly after choosing it, see [best-practices](#21-best-practices-best-practices).
+
+
+See [Common Module §7](common.md#7-use-cases-usecase-usecases) for the full use case and alternative reference.
+
+---
+
+### 2.4 Accessibility (`accessibility`)
+
+**Schema:** `guidelines/accessibility.schema.json`
+**Type value:** `"accessibility"`
+
+Documents structured accessibility specifications for an artifact — keyboard interactions, ARIA attributes, screen reader behavior, focus management, color contrast pairs, and motion considerations. This guideline type captures machine-readable a11y data. For actionable accessibility _rules_ with rationale (e.g., "Provide an aria-label for icon-only buttons"), use a best-practice entry with `category: "accessibility"` instead.
+
+
+---
+
+### 2.5 Artifact Reference (`artifact-reference`)
+
+**Schema:** `guidelines/artifact-reference.schema.json`
+**Type value:** `"artifact-reference"`
+**Container property:** `references`
+**Item type:** `artifactReferenceEntry`
+
+Documents relationships between the current entity and other entities in the system. Used by patterns to list participating components (with their roles), by styles to reference implementing token groups, and by any entity that needs to express typed relationships to other DSDS entities.
+
+
+---
+
+## 3. Component-Scoped Guidelines
+
+These guideline types are only accepted on **component** entities.
+
+### 3.1 Anatomy (`anatomy`)
+
+**Schema:** `guidelines/anatomy.schema.json`
+**Type value:** `"anatomy"`
+**Container property:** `parts`
+**Item type:** `anatomyEntry`
+
+Documents the visual structure of a component by enumerating its named sub-elements. Each part references the design tokens that style it, creating a bridge between the component's visual design and its token architecture.
+
+
+#### Anatomy Entry
+
+
+---
+
+### 3.2 API (`api`)
+
+**Schema:** `guidelines/api.schema.json`
+**Type value:** `"api"`
+
+Documents the code-level interface of a component on a single platform. For multi-platform components (e.g., React + Web Component + Vue), include one API guideline per platform and set the `platform` property.
+
+
+---
+
+### 3.3 Variants (`variants`)
+
+**Schema:** `guidelines/variant.schema.json`
+**Type value:** `"variants"`
+**Container property:** `items`
+**Item type:** `variantEntry`
+
+Documents all dimensions of visual or behavioral variation on a component. Each item represents a single axis of configuration — a Button might have an "emphasis" axis (primary/secondary/ghost/danger), a "size" axis (small/medium/large), and a "full-width" axis (a single boolean value). Multiple axes document orthogonal dimensions that can be combined independently.
+
+#### Variant Entry
+
+
+---
+
+### 3.4 States (`states`)
+
+**Schema:** `guidelines/state.schema.json`
+**Type value:** `"states"`
+**Container property:** `items`
+**Item type:** `stateEntry`
+
+Documents all interactive states of a component — hover, focus, active, disabled, loading, selected, error, etc. Each item describes what triggers the state, how appearance and behavior change, which design tokens are overridden, and optional visual previews.
+
+#### State Entry
+
+
+---
+
+### 3.5 Design Specifications (`design-specifications`)
+
+**Schema:** `guidelines/design-specifications.schema.json`
+**Type value:** `"design-specifications"`
+
+Documents the measurable visual specifications of a component — the design tokens it consumes, spacing relationships, dimension constraints, typography settings, and responsive behavior. At least one content section (tokens, spacing, sizing, typography, or responsive) must be present.
+
+
+---
+
+## 4. Style-Scoped Guidelines
+
+These guideline types are only accepted on **style** entities.
+
+### 4.1 Principles (`principles`)
+
+**Schema:** `guidelines/principle.schema.json`
+**Type value:** `"principles"`
+**Container property:** `items`
+**Item type:** `principleEntry`
+
+Documents the high-level guiding principles that shape decision-making for a visual style or design domain. Principles answer "what do we believe?" and "what constraints do we accept?" — they sit above individual best practices and inform the entire approach to a domain.
+
+#### Principle Entry
+
+
+---
+
+### 4.2 Scale (`scale`)
+
+**Schema:** `guidelines/scale.schema.json`
+**Type value:** `"scale"`
+**Container property:** `steps`
+**Item type:** `scaleStep`
+
+Documents an ordered sequence of values that forms a visual scale — a type scale, spacing scale, elevation scale, or any other progression of design token values. Each step references a design token. The ordering is significant — steps are listed from smallest/lowest to largest/highest.
+
+
+#### Scale Step
+
+
+---
+
+## 5. Pattern-Scoped Guidelines
+
+These guideline types are only accepted on **pattern** entities.
+
+### 5.1 Interactions (`interactions`)
+
+**Schema:** `guidelines/interaction.schema.json`
+**Type value:** `"interactions"`
+**Container property:** `items`
+**Item type:** `interactionEntry`
+
+Documents the interaction flow of a pattern as an ordered sequence of steps. Each item describes a single step — what triggers it, what the system does in response, which components are involved, and optional examples. The ordering of items is critical: it represents the chronological flow of the user journey.
+
+Authors _SHOULD_ include steps for:
+- The initial trigger (e.g., user action, system event)
+- The system's response (what changes on screen)
+- Recovery or correction steps (how the user gets back to a good state)
+- Completion (what indicates the pattern has concluded)
+
+#### Interaction Entry
+
+
+---
+
+## 6. Guideline Type Summary
+
+| Type value | Container property | Item type | Scope | Description |
+|---|---|---|---|---|
+| `"best-practices"` | `items` | bestPracticeEntry | General | Actionable usage rules with rationale and enforcement levels. |
+| `"purpose"` | `whenToUse`, `whenNotToUse` | useCase | General | Scenario-driven guidance for when to use and when not to use an artifact. |
+| `"accessibility"` | Named arrays | various | General | Structured a11y specs — keyboard, ARIA, screen reader, contrast, motion. |
+| `"examples"` | `items` | example | General | Visual/interactive demonstrations — images, videos, code, URLs. |
+| `"artifact-reference"` | `references` | artifactReferenceEntry | General | Named references to other DSDS entities with roles. |
+| `"anatomy"` | `parts` | anatomyEntry | Component | Visual structure decomposed into named parts with token references. |
+| `"api"` | Named arrays | various | Component | Code-level interface — props, events, slots, CSS hooks, methods. |
+| `"variants"` | `items` | variantEntry | Component | Dimensions of visual/behavioral variation with enumerated values. |
+| `"states"` | `items` | stateEntry | Component | Interactive states with triggers, token overrides, and previews. |
+| `"design-specifications"` | Named properties | various | Component | Token inventory, spacing, sizing, typography, responsive behavior. |
+| `"principles"` | `items` | principleEntry | Style | High-level guiding beliefs that shape decision-making. |
+| `"scale"` | `steps` | scaleStep | Style | Ordered progression of token values (spacing scale, type scale, etc.). |
+| `"interactions"` | `items` | interactionEntry | Pattern | Ordered steps in a pattern's interaction flow. |
+
+---
+
+*See [Entities Module](entities.md) for entity type documentation and [Common Module](common.md) for shared primitives (richText, statusObject, link, example, useCase, extensions, metadata).*

@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://designsystemdocspec.org/v0.1/guidelines/purpose.schema.json",
+  "title": "DSDS Purpose Guideline",
+  "description": "Documents what an artifact is used for — the concrete scenarios in which it is the right choice and the scenarios in which a different artifact would be more appropriate. The purpose guideline wraps the common useCases data model (whenToUse / whenNotToUse arrays) with a guideline `type` discriminator so it can appear in the unified guidelines array on any entity. Each 'when not to use' entry SHOULD include an alternative pointing to a more appropriate artifact along with a rationale explaining why.",
+  "$defs": {
+    "purpose": {
+      "type": "object",
+      "description": "Documents the purpose of an artifact — when to reach for it and when to choose something else. Contains whenToUse and whenNotToUse arrays of scenario-driven use case entries drawn from the common useCases schema. Purpose guidelines help the reader decide whether this is the right artifact *before* they start implementing it. For guidance on *how* to use the artifact correctly after choosing it, see best-practices. For guidance on *what* the artifact looks like and how it behaves, see variants, states, and anatomy.",
+      "required": ["type"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "purpose",
+          "description": "Identifies this guideline as a purpose specification."
+        },
+        "whenToUse": {
+          "type": "array",
+          "description": "Scenarios in which this artifact is the appropriate choice. Each entry should be scenario-driven — describe the user's situation, not the artifact's features. For example, 'When the user needs to trigger an action such as submitting a form' rather than 'When you need a clickable element'.",
+          "items": {
+            "$ref": "../common/usecase.schema.json#/$defs/useCase"
+          }
+        },
+        "whenNotToUse": {
+          "type": "array",
+          "description": "Scenarios in which this artifact should not be used. Each entry SHOULD include an `alternative` pointing to a more appropriate artifact or pattern, along with a rationale explaining why the alternative is better.",
+          "items": {
+            "$ref": "../common/usecase.schema.json#/$defs/useCase"
+          }
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

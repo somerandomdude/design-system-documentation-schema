@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DSDS API Guideline — DSDS 0.1</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <button class="nav-toggle" onclick="document.querySelector('.nav').classList.toggle('nav--open')" aria-label="Toggle navigation">☰ Menu</button>
+  <nav class="nav" role="navigation" aria-label="Specification navigation">
+    <div class="nav__title"><a href="index.html">DSDS 0.1</a></div>
+    <div class="nav__items">
+      <a class="nav__link" href="index.html">Overview</a>
+<a class="nav__link" href="root.html">Root Schema</a>
+<div class="nav__group">
+<button class="nav__group-toggle" aria-expanded="false" onclick="this.parentElement.classList.toggle('nav__group--open');this.setAttribute('aria-expanded', this.parentElement.classList.contains('nav__group--open'))"><span class="nav__group-label">Common</span><span class="nav__group-arrow">›</span></button>
+<div class="nav__group-children">
+<a class="nav__link nav__link--child" href="common-example.html">example</a>
+<a class="nav__link nav__link--child" href="common-extensions.html">extensions</a>
+<a class="nav__link nav__link--child" href="common-link.html">link</a>
+<a class="nav__link nav__link--child" href="common-metadata.html">metadata</a>
+<a class="nav__link nav__link--child" href="common-rich-text.html">rich-text</a>
+<a class="nav__link nav__link--child" href="common-status.html">status</a>
+<a class="nav__link nav__link--child" href="common-usecase.html">usecase</a>
+</div>
+</div>
+<div class="nav__group">
+<button class="nav__group-toggle" aria-expanded="false" onclick="this.parentElement.classList.toggle('nav__group--open');this.setAttribute('aria-expanded', this.parentElement.classList.contains('nav__group--open'))"><span class="nav__group-label">Entities</span><span class="nav__group-arrow">›</span></button>
+<div class="nav__group-children">
+<a class="nav__link nav__link--child" href="entities-component.html">component</a>
+<a class="nav__link nav__link--child" href="entities-pattern.html">pattern</a>
+<a class="nav__link nav__link--child" href="entities-style.html">style</a>
+<a class="nav__link nav__link--child" href="entities-theme.html">theme</a>
+<a class="nav__link nav__link--child" href="entities-token.html">token</a>
+</div>
+</div>
+<div class="nav__group nav__group--open">
+<button class="nav__group-toggle" aria-expanded="true" onclick="this.parentElement.classList.toggle('nav__group--open');this.setAttribute('aria-expanded', this.parentElement.classList.contains('nav__group--open'))"><span class="nav__group-label">Guidelines</span><span class="nav__group-arrow">›</span></button>
+<div class="nav__group-children">
+<a class="nav__link nav__link--child" href="guidelines-accessibility.html">accessibility</a>
+<a class="nav__link nav__link--child" href="guidelines-anatomy.html">anatomy</a>
+<a class="nav__link nav__link--child nav__link--active" href="guidelines-api.html">api</a>
+<a class="nav__link nav__link--child" href="guidelines-artifact-reference.html">artifact-reference</a>
+<a class="nav__link nav__link--child" href="guidelines-best-practice.html">best-practice</a>
+<a class="nav__link nav__link--child" href="guidelines-design-specifications.html">design-specifications</a>
+<a class="nav__link nav__link--child" href="guidelines-guideline.html">guideline</a>
+<a class="nav__link nav__link--child" href="guidelines-interaction.html">interaction</a>
+<a class="nav__link nav__link--child" href="guidelines-principle.html">principle</a>
+<a class="nav__link nav__link--child" href="guidelines-purpose.html">purpose</a>
+<a class="nav__link nav__link--child" href="guidelines-scale.html">scale</a>
+<a class="nav__link nav__link--child" href="guidelines-state.html">state</a>
+<a class="nav__link nav__link--child" href="guidelines-variant.html">variant</a>
+</div>
+</div>
+    </div>
+  </nav>
+  <div class="content content--with-toc">
+    <main class="content__main" role="main">
+      <div class="content__inner">
+        <h1>DSDS API Guideline</h1>
+<p class="schema-description">Documents the code-level interface of a component — its configurable properties, emitted events, content slots, CSS custom properties, CSS shadow parts, data attributes, and public methods. When a component supports multiple platforms, each platform gets its own API guideline with the `platform` property identifying which implementation it describes.</p>
+<p class="schema-source">Source: <code>guidelines/api.schema.json</code></p>
+<nav class="page-def-index">
+<p><strong>8 definitions</strong> in this file:</p>
+<ul>
+<li><a href="#apiproperty"><code>apiProperty</code></a></li>
+<li><a href="#apievent"><code>apiEvent</code></a></li>
+<li><a href="#apislot"><code>apiSlot</code></a></li>
+<li><a href="#apicsscustomproperty"><code>apiCssCustomProperty</code></a></li>
+<li><a href="#apicsspart"><code>apiCssPart</code></a></li>
+<li><a href="#apidataattribute"><code>apiDataAttribute</code></a></li>
+<li><a href="#apimethod"><code>apiMethod</code></a></li>
+<li><a href="#api"><code>api</code></a></li>
+</ul>
+</nav>
+<section class="def-section" id="apiproperty">
+<h3 id="apiproperty">apiProperty</h3>
+<p class="def-description">A configurable property of a component. Pairs a human-readable type string with an optional machine-readable JSON Schema for tooling.</p>
+<p class="def-type"><span class="type-badge">object</span></p>
+<table class="prop-table"><thead><tr><th>Property</th><th>Type</th><th>Required</th><th>Description</th></tr></thead><tbody><tr><td><code>name</code></td><td>string</td><td><span class="required-badge">required</span></td><td>The property name as used in code (e.g., 'variant', 'size', 'disabled', 'onClick').</td></tr>
+<tr><td><code>type</code></td><td>string</td><td><span class="required-badge">required</span></td><td>A human-readable type description for display (e.g., &quot;'primary' | 'secondary' | 'ghost'&quot;, 'boolean', 'IconComponent').</td></tr>
+<tr><td><code>description</code></td><td><a href="common-rich-text.html#richtext" class="type-ref">richText</a></td><td><span class="required-badge">required</span></td><td>What this property controls, how it affects the component, and any constraints or side effects.</td></tr>
+<tr><td><code>required</code></td><td>boolean</td><td><span class="required-badge">required</span></td><td>Whether this property must be provided by the consumer.</td></tr>
+<tr><td><code>schema</code></td><td>object</td><td>optional</td><td>A JSON Schema (Draft 2020-12) object defining the property's type in a machine-readable form. Follows the same conventions as OpenAPI parameter schemas.</td></tr>
+<tr><td><code>defaultValue</code></td><td>any</td><td>optional</td><td>The default value in its native JSON type. Accepts any JSON type: string (e.g., 'primary'), number (e.g., 44), boolean (e.g., true), object, array, or null.</td></tr>
+<tr><td><code>examples</code></td><td><a href="common-example.html#example" class="type-ref">example</a>[]</td><td>optional</td><td>Example values for this property.</td></tr>
+<tr><td><code>since</code></td><td>string</td><td>optional</td><td>The version in which this property was introduced.</td></tr>
+<tr><td><code>deprecated</code></td><td>boolean</td><td>optional</td><td>Whether this property is deprecated.</td></tr>
+<tr><td><code>deprecationNotice</code></td><td>string</td><td>optional</td><td>What to use instead, if deprecated.</td></tr></tbody></table>
+<p class="cross-refs"><strong>References:</strong> 
+<a href="common-rich-text.html#richtext">richText</a>, <a href="common-example.html#example">example</a>
+</p>
+<div class="def-example">
+<p class="def-example__title"><strong>Example</strong></p>
+<pre><code class="language-json">[
+  {
+    &quot;name&quot;: &quot;variant&quot;,
+    &quot;type&quot;: &quot;'primary' | 'secondary' | 'ghost' | 'danger'&quot;,
+    &quot;schema&quot;: {
+      &quot;type&quot;: &quot;string&quot;,
+      &quot;enum&quot;: [
+        &quot;primary&quot;,
+        &quot;secondary&quot;,
+        &quot;ghost&quot;,
+        &quot;danger&quot;
+      ],
+      &quot;default&quot;: &quot;primary&quot;
+    },
+    &quot;description&quot;: &quot;The visual style of the button. Determines background color, text color, and border treatment.&quot;,
+    &quot;required&quot;: false,
+    &quot;defaultValue&quot;: &quot;primary&quot;,
+    &quot;examples&quot;: [
+      {
+        &quot;value&quot;: &quot;primary&quot;,
+        &quot;title&quot;: &quot;High-emphasis — the main action on the surface&quot;,
+        &quot;presentation&quot;: {
+          &quot;type&quot;: &quot;code&quot;,
+          &quot;code&quot;: &quot;&lt;Button variant=\&quot;primary\&quot;&gt;Save&lt;/Button&gt;&quot;,
+          &quot;language&quot;: &quot;jsx&quot;
+        }
+      },
+      {
+        &quot;value&quot;: &quot;danger&quot;,
+        &quot;title&quot;: &quot;Destructive — delete, remove, disconnect&quot;,
+        &quot;presentation&quot;: {
+          &quot;type&quot;: &quot;code&quot;,
+          &quot;code&quot;: &quot;&lt;Button variant=\&quot;danger\&quot;&gt;Delete project&lt;/Button&gt;&quot;,
+          &quot;language&quot;: &quot;jsx&quot;
+        }
+      }
+    ],
+    &quot;since&quot;: &quot;1.0.0&quot;
+  },
+  {
+    &quot;name&quot;: &quot;disabled&quot;,
+    &quot;type&quot;: &quot;boolean&quot;,
+    &quot;schema&quot;: {
+      &quot;type&quot;: &quot;boolean&quot;,
+      &quot;default&quot;: false
+    },
+    &quot;description&quot;: &quot;When true, the button is non-interactive. The cursor changes to not-allowed, and the button is visually dimmed to 40% opacity.&quot;,
+    &quot;required&quot;: false,
+    &quot;defaultValue&quot;: false,
+    &quot;since&quot;: &quot;1.0.0&quot;
+  },
+  {
+    &quot;name&quot;: &quot;loading&quot;,
+    &quot;type&quot;: &quot;boolean&quot;,
+    &quot;schema&quot;: {
+      &quot;type&quot;: &quot;boolean&quot;,
+      &quot;default&quot;: false
+    },
+    &quot;description&quot;: &quot;When true, the label is replaced with a spinner and the button is non-interactive. The button retains its dimensions to prevent layout shift.&quot;,
+    &quot;required&quot;: false,
+    &quot;defaultValue&quot;: false,
+    &quot;since&quot;: &quot;2.1.0&quot;
+  },
+  {
+    &quot;name&quot;: &quot;size&quot;,
+    &quot;type&quot;: &quot;'small' | 'medium' | 'large'&quot;,
+    &quot;schema&quot;: {
+      &quot;type&quot;: &quot;string&quot;,
+      &quot;enum&quot;: [
+        &quot;small&quot;,
+        &quot;medium&quot;,
+        &quot;large&quot;
+      ],
+      &quot;default&quot;: &quot;medium&quot;
+    },
+    &quot;description&quot;: &quot;The size of the button. Affects padding, font size, icon size, and minimum target area.&quot;,
+    &quot;required&quot;: false,
+    &quot;defaultValue&quot;: &quot;medium&quot;,
+    &quot;since&quot;: &quot;1.0.0&quot;
+  }
+]</code></pre>
+</div>
+</section>
+<section class="def-section" id="apievent">
+<h3 id="apievent">apiEvent</h3>
+<p class="def-description">An event emitted by a component.</p>
+<p class="def-type"><span class="type-badge">object</span></p>
+<table class="prop-table"><thead><tr><th>Property</th><th>Type</th><th>Required</th><th>Description</th></tr></thead><tbody><tr><td><code>name</code></td><td>string</td><td><span class="required-badge">required</span></td><td>The event name (e.g., 'onClick', 'onChange', 'onDismiss').</td></tr>
+<tr><td><code>description</code></td><td><a href="common-rich-text.html#richtext" class="type-ref">richText</a></td><td><span class="required-badge">required</span></td><td>When this event fires, what it communicates, and how consumers should respond.</td></tr>
+<tr><td><code>payload</code></td><td>string</td><td>optional</td><td>Description of the event payload shape (e.g., '(event: MouseEvent) =&gt; void', '{ value: string, index: number }').</td></tr>
+<tr><td><code>since</code></td><td>string</td><td>optional</td><td>The version in which this event was introduced.</td></tr></tbody></table>
+<p class="cross-refs"><strong>References:</strong> 
+<a href="common-rich-text.html#richtext">richText</a>
+</p>
+<div class="def-example">
+<p class="def-example__title"><strong>Example</strong></p>
+<pre><code class="language-json">[
+  {
+    &quot;name&quot;: &quot;onClick&quot;,
+    &quot;description&quot;: &quot;Fires when the button is activated via mouse click, touch tap, Enter key, or Space key. Does not fire when the button is disabled or loading.&quot;,
+    &quot;payload&quot;: &quot;(event: MouseEvent) =&gt; void&quot;,
+    &quot;since&quot;: &quot;1.0.0&quot;
+  },
+  {
+    &quot;name&quot;: &quot;onFocus&quot;,
+    &quot;description&quot;: &quot;Fires when the button receives focus.&quot;,
+    &quot;payload&quot;: &quot;(event: FocusEvent) =&gt; void&quot;,
+    &quot;since&quot;: &quot;1.0.0&quot;
+  },
+  {
+    &quot;name&quot;: &quot;onBlur&quot;,
+    &quot;description&quot;: &quot;Fires when the button loses focus.&quot;,
+    &quot;payload&quot;: &quot;(event: FocusEvent) =&gt; void&quot;,
+    &quot;since&quot;: &quot;1.0.0&quot;
+  }
+]</code></pre>
+</div>
+</section>
+<section class="def-section" id="apislot">
+<h3 id="apislot">apiSlot</h3>
+<p class="def-description">A content insertion point of a component.</p>
+<p class="def-type"><span class="type-badge">object</span></p>
+<table class="prop-table"><thead><tr><th>Property</th><th>Type</th><th>Required</th><th>Description</th></tr></thead><tbody><tr><td><code>name</code></td><td>string</td><td><span class="required-badge">required</span></td><td>The slot name. Use 'default' for the unnamed/default slot.</td></tr>
+<tr><td><code>description</code></td><td><a href="common-rich-text.html#richtext" class="type-ref">richText</a></td><td><span class="required-badge">required</span></td><td>What content this slot accepts and any constraints on its children.</td></tr>
+<tr><td><code>acceptedContent</code></td><td><a href="common-rich-text.html#richtext" class="type-ref">richText</a></td><td>optional</td><td>A description of the allowed content (e.g., 'Plain text or a text node. Do not nest interactive elements.').</td></tr>
+<tr><td><code>since</code></td><td>string</td><td>optional</td><td>The version in which this slot was introduced.</td></tr></tbody></table>
+<p class="cross-refs"><strong>References:</strong> 
+<a href="common-rich-text.html#richtext">richText</a>
+</p>
+<div class="def-example">
+<p class="def-example__title"><strong>Example</strong></p>
+<pre><code class="language-json">[
+  {
+    &quot;name&quot;: &quot;default&quot;,
+    &quot;description&quot;: &quot;The primary content slot. Accepts text, icons, or a combination of both. When both an icon and text are provided, the icon appears before the text by default.&quot;,
+    &quot;acceptedContent&quot;: &quot;Text, Icon, or a combination. Avoid placing interactive elements inside the button.&quot;,
+    &quot;since&quot;: &quot;1.0.0&quot;
+  }
+]</code></pre>
+</div>
+</section>
+<section class="def-section" id="apicsscustomproperty">
+<h3 id="apicsscustomproperty">apiCssCustomProperty</h3>
+<p class="def-description">A CSS custom property exposed by a component for external styling.</p>
+<p class="def-type"><span class="type-badge">object</span></p>
+<table class="prop-table"><thead><tr><th>Property</th><th>Type</th><th>Required</th><th>Description</th></tr></thead><tbody><tr><td><code>name</code></td><td>string</td><td><span class="required-badge">required</span></td><td>The full property name including the -- prefix (e.g., '--button-background', '--button-border-radius').<br><small>Pattern: <code>^--</code></small></td></tr>
+<tr><td><code>description</code></td><td><a href="common-rich-text.html#richtext" class="type-ref">richText</a></td><td><span class="required-badge">required</span></td><td>What visual attribute this property controls.</td></tr>
+<tr><td><code>defaultValue</code></td><td>string</td><td>optional</td><td>The default value of the CSS custom property (e.g., 'var(--color-action-primary)', '1rem', 'transparent').</td></tr>
+<tr><td><code>type</code></td><td>string</td><td>optional</td><td>The expected CSS value type (e.g., 'color', 'dimension', 'number').</td></tr>
+<tr><td><code>since</code></td><td>string</td><td>optional</td><td>The version in which this custom property was introduced.</td></tr></tbody></table>
+<p class="cross-refs"><strong>References:</strong> 
+<a href="common-rich-text.html#richtext">richText</a>
+</p>
+<div class="def-example">
+<p class="def-example__title"><strong>Example</strong></p>
+<pre><code class="language-json">[
+  {
+    &quot;name&quot;: &quot;--button-background&quot;,
+    &quot;description&quot;: &quot;The background color of the button container.&quot;,
+    &quot;defaultValue&quot;: &quot;var(--color-action-primary)&quot;,
+    &quot;type&quot;: &quot;color&quot;,
+    &quot;since&quot;: &quot;1.0.0&quot;
+  },
+  {
+    &quot;name&quot;: &quot;--button-text-color&quot;,
+    &quot;description&quot;: &quot;The color of the label text.&quot;,
+    &quot;defaultValue&quot;: &quot;var(--color-text-on-action)&quot;,
+    &quot;type&quot;: &quot;color&quot;,
+    &quot;since&quot;: &quot;1.0.0&quot;
+  },
+  {
+    &quot;name&quot;: &quot;--button-border-radius&quot;,
+    &quot;description&quot;: &quot;The border radius of the button container.&quot;,
+    &quot;defaultValue&quot;: &quot;var(--radius-medium)&quot;,
+    &quot;type&quot;: &quot;dimension&quot;,
+    &quot;since&quot;: &quot;1.0.0&quot;
+  },
+  {
+    &quot;name&quot;: &quot;--button-padding-horizontal&quot;,
+    &quot;description&quot;: &quot;The left and right padding inside the button container.&quot;,
+    &quot;defaultValue&quot;: &quot;var(--space-4)&quot;,
+    &quot;type&quot;: &quot;dimension&quot;,
+    &quot;since&quot;: &quot;1.0.0&quot;
+  }
+]</code></pre>
+</div>
+</section>
+<section class="def-section" id="apicsspart">
+<h3 id="apicsspart">apiCssPart</h3>
+<p class="def-description">A CSS shadow part exposed by a web component for external styling via ::part() selectors.</p>
+<p class="def-type"><span class="type-badge">object</span></p>
+<table class="prop-table"><thead><tr><th>Property</th><th>Type</th><th>Required</th><th>Description</th></tr></thead><tbody><tr><td><code>name</code></td><td>string</td><td><span class="required-badge">required</span></td><td>The part name as used in ::part() selectors.</td></tr>
+<tr><td><code>description</code></td><td><a href="common-rich-text.html#richtext" class="type-ref">richText</a></td><td><span class="required-badge">required</span></td><td>What element this part exposes and what styling it enables.</td></tr>
+<tr><td><code>since</code></td><td>string</td><td>optional</td><td>The version in which this part was introduced.</td></tr></tbody></table>
+<p class="cross-refs"><strong>References:</strong> 
+<a href="common-rich-text.html#richtext">richText</a>
+</p>
+<div class="def-example">
+<p class="def-example__title"><strong>Example</strong></p>
+<pre><code class="language-json">[
+  {
+    &quot;name&quot;: &quot;base&quot;,
+    &quot;description&quot;: &quot;The root container element of the button. Use for overriding background, border, and padding from outside the shadow DOM.&quot;,
+    &quot;since&quot;: &quot;1.0.0&quot;
+  },
+  {
+    &quot;name&quot;: &quot;label&quot;,
+    &quot;description&quot;: &quot;The text label element. Use for overriding font styles from outside the shadow DOM.&quot;,
+    &quot;since&quot;: &quot;1.0.0&quot;
+  },
+  {
+    &quot;name&quot;: &quot;icon&quot;,
+    &quot;description&quot;: &quot;The icon wrapper element. Use for adjusting icon size or color from outside the shadow DOM.&quot;,
+    &quot;since&quot;: &quot;2.0.0&quot;
+  }
+]</code></pre>
+</div>
+</section>
+<section class="def-section" id="apidataattribute">
+<h3 id="apidataattribute">apiDataAttribute</h3>
+<p class="def-description">A data attribute used by a component to reflect state or variant information into the DOM.</p>
+<p class="def-type"><span class="type-badge">object</span></p>
+<table class="prop-table"><thead><tr><th>Property</th><th>Type</th><th>Required</th><th>Description</th></tr></thead><tbody><tr><td><code>name</code></td><td>string</td><td><span class="required-badge">required</span></td><td>The full attribute name including the data- prefix (e.g., 'data-state', 'data-variant').<br><small>Pattern: <code>^data-</code></small></td></tr>
+<tr><td><code>description</code></td><td><a href="common-rich-text.html#richtext" class="type-ref">richText</a></td><td><span class="required-badge">required</span></td><td>What this attribute reflects and how it can be used for styling or testing.</td></tr>
+<tr><td><code>values</code></td><td>string[]</td><td>optional</td><td>The set of possible values (e.g., ['default', 'hover', 'active', 'disabled']).</td></tr>
+<tr><td><code>since</code></td><td>string</td><td>optional</td><td>The version in which this attribute was introduced.</td></tr></tbody></table>
+<p class="cross-refs"><strong>References:</strong> 
+<a href="common-rich-text.html#richtext">richText</a>
+</p>
+<div class="def-example">
+<p class="def-example__title"><strong>Example</strong></p>
+<pre><code class="language-json">[
+  {
+    &quot;name&quot;: &quot;data-variant&quot;,
+    &quot;description&quot;: &quot;Reflects the current variant. Useful for parent-level conditional styling.&quot;,
+    &quot;values&quot;: [
+      &quot;primary&quot;,
+      &quot;secondary&quot;,
+      &quot;ghost&quot;,
+      &quot;danger&quot;
+    ],
+    &quot;since&quot;: &quot;1.0.0&quot;
+  },
+  {
+    &quot;name&quot;: &quot;data-loading&quot;,
+    &quot;description&quot;: &quot;Present when the button is in a loading state. Useful for CSS selectors that target loading buttons.&quot;,
+    &quot;values&quot;: [
+      &quot;true&quot;
+    ],
+    &quot;since&quot;: &quot;2.1.0&quot;
+  }
+]</code></pre>
+</div>
+</section>
+<section class="def-section" id="apimethod">
+<h3 id="apimethod">apiMethod</h3>
+<p class="def-description">A public method on a component instance.</p>
+<p class="def-type"><span class="type-badge">object</span></p>
+<table class="prop-table"><thead><tr><th>Property</th><th>Type</th><th>Required</th><th>Description</th></tr></thead><tbody><tr><td><code>name</code></td><td>string</td><td><span class="required-badge">required</span></td><td>The method name (e.g., 'focus', 'reset', 'scrollTo').</td></tr>
+<tr><td><code>description</code></td><td><a href="common-rich-text.html#richtext" class="type-ref">richText</a></td><td><span class="required-badge">required</span></td><td>What this method does, when to call it, and any side effects.</td></tr>
+<tr><td><code>parameters</code></td><td>string</td><td>optional</td><td>Description of the parameter signature (e.g., '(options?: { preventScroll: boolean }) =&gt; void').</td></tr>
+<tr><td><code>returnType</code></td><td>string</td><td>optional</td><td>Description of the return value (e.g., 'void', 'Promise&lt;void&gt;', 'HTMLElement | null').</td></tr>
+<tr><td><code>since</code></td><td>string</td><td>optional</td><td>The version in which this method was introduced.</td></tr></tbody></table>
+<p class="cross-refs"><strong>References:</strong> 
+<a href="common-rich-text.html#richtext">richText</a>
+</p>
+<div class="def-example">
+<p class="def-example__title"><strong>Example</strong></p>
+<pre><code class="language-json">[
+  {
+    &quot;name&quot;: &quot;focus&quot;,
+    &quot;description&quot;: &quot;Programmatically moves focus to the button element. Useful after closing a modal or completing a flow that should return focus to the triggering button.&quot;,
+    &quot;parameters&quot;: &quot;(options?: FocusOptions) — optional FocusOptions object with `preventScroll` boolean.&quot;,
+    &quot;returnType&quot;: &quot;void&quot;,
+    &quot;since&quot;: &quot;1.0.0&quot;
+  },
+  {
+    &quot;name&quot;: &quot;click&quot;,
+    &quot;description&quot;: &quot;Programmatically triggers the button's click handler. Does not fire if the button is disabled or loading.&quot;,
+    &quot;parameters&quot;: &quot;none&quot;,
+    &quot;returnType&quot;: &quot;void&quot;,
+    &quot;since&quot;: &quot;1.0.0&quot;
+  }
+]</code></pre>
+</div>
+</section>
+<section class="def-section" id="api">
+<h3 id="api">api</h3>
+<p class="def-description">Documents the code-level interface of a component on a single platform. Lists the configurable properties, emitted events, content slots, CSS hooks, data attributes, and public methods that consumers interact with. For multi-platform components (e.g., React + Web Component + Vue), create one API guideline per platform and use the `platform` property to distinguish them.</p>
+<p class="def-type"><span class="type-badge">object</span></p>
+<table class="prop-table"><thead><tr><th>Property</th><th>Type</th><th>Required</th><th>Description</th></tr></thead><tbody><tr><td><code>type</code></td><td><code>"api"</code></td><td><span class="required-badge">required</span></td><td>Identifies this guideline as an API specification.</td></tr>
+<tr><td><code>platform</code></td><td>string</td><td>optional</td><td>The platform or framework this API describes. Use when a component has different APIs across platforms (e.g., 'react', 'web-component', 'vue', 'angular', 'ios', 'android'). When omitted, the API is assumed to be the single/default platform.</td></tr>
+<tr><td><code>properties</code></td><td><a href="guidelines-api.html#apiproperty" class="type-ref">apiProperty</a>[]</td><td>optional</td><td>Configurable properties (props, attributes, inputs) that consumers pass to the component.</td></tr>
+<tr><td><code>events</code></td><td><a href="guidelines-api.html#apievent" class="type-ref">apiEvent</a>[]</td><td>optional</td><td>Events emitted by the component that consumers can listen to.</td></tr>
+<tr><td><code>slots</code></td><td><a href="guidelines-api.html#apislot" class="type-ref">apiSlot</a>[]</td><td>optional</td><td>Content insertion points where consumers can project child content.</td></tr>
+<tr><td><code>cssCustomProperties</code></td><td><a href="guidelines-api.html#apicsscustomproperty" class="type-ref">apiCssCustomProperty</a>[]</td><td>optional</td><td>CSS custom properties exposed for external styling.</td></tr>
+<tr><td><code>cssParts</code></td><td><a href="guidelines-api.html#apicsspart" class="type-ref">apiCssPart</a>[]</td><td>optional</td><td>CSS shadow parts exposed for external styling via ::part() selectors.</td></tr>
+<tr><td><code>dataAttributes</code></td><td><a href="guidelines-api.html#apidataattribute" class="type-ref">apiDataAttribute</a>[]</td><td>optional</td><td>Data attributes that reflect component state or configuration into the DOM.</td></tr>
+<tr><td><code>methods</code></td><td><a href="guidelines-api.html#apimethod" class="type-ref">apiMethod</a>[]</td><td>optional</td><td>Public methods available on the component instance.</td></tr></tbody></table>
+<p class="cross-refs"><strong>References:</strong> 
+<a href="guidelines-api.html#apiproperty">apiProperty</a>, <a href="guidelines-api.html#apievent">apiEvent</a>, <a href="guidelines-api.html#apislot">apiSlot</a>, <a href="guidelines-api.html#apicsscustomproperty">apiCssCustomProperty</a>, <a href="guidelines-api.html#apicsspart">apiCssPart</a>, <a href="guidelines-api.html#apidataattribute">apiDataAttribute</a>, <a href="guidelines-api.html#apimethod">apiMethod</a>
+</p>
+<div class="def-example">
+<p class="def-example__title"><strong>Example</strong></p>
+<pre><code class="language-json">{
+  &quot;properties&quot;: [
+    {
+      &quot;name&quot;: &quot;variant&quot;,
+      &quot;type&quot;: &quot;'primary' | 'secondary' | 'ghost' | 'danger'&quot;,
+      &quot;description&quot;: &quot;The visual style of the button.&quot;,
+      &quot;required&quot;: false,
+      &quot;defaultValue&quot;: &quot;primary&quot;,
+      &quot;since&quot;: &quot;1.0.0&quot;
+    },
+    {
+      &quot;name&quot;: &quot;disabled&quot;,
+      &quot;type&quot;: &quot;boolean&quot;,
+      &quot;description&quot;: &quot;When true, the button is non-interactive.&quot;,
+      &quot;required&quot;: false,
+      &quot;defaultValue&quot;: false,
+      &quot;since&quot;: &quot;1.0.0&quot;
+    }
+  ],
+  &quot;events&quot;: [
+    {
+      &quot;name&quot;: &quot;onClick&quot;,
+      &quot;description&quot;: &quot;Fires when the button is activated.&quot;,
+      &quot;payload&quot;: &quot;(event: MouseEvent) =&gt; void&quot;,
+      &quot;since&quot;: &quot;1.0.0&quot;
+    }
+  ],
+  &quot;slots&quot;: [
+    {
+      &quot;name&quot;: &quot;default&quot;,
+      &quot;description&quot;: &quot;The primary content slot.&quot;,
+      &quot;acceptedContent&quot;: &quot;Text, Icon, or a combination.&quot;,
+      &quot;since&quot;: &quot;1.0.0&quot;
+    }
+  ],
+  &quot;cssCustomProperties&quot;: [
+    {
+      &quot;name&quot;: &quot;--button-background&quot;,
+      &quot;description&quot;: &quot;The background color of the button container.&quot;,
+      &quot;defaultValue&quot;: &quot;var(--color-action-primary)&quot;,
+      &quot;type&quot;: &quot;color&quot;,
+      &quot;since&quot;: &quot;1.0.0&quot;
+    }
+  ],
+  &quot;cssParts&quot;: [
+    {
+      &quot;name&quot;: &quot;base&quot;,
+      &quot;description&quot;: &quot;The root container element of the button.&quot;,
+      &quot;since&quot;: &quot;1.0.0&quot;
+    }
+  ],
+  &quot;dataAttributes&quot;: [
+    {
+      &quot;name&quot;: &quot;data-variant&quot;,
+      &quot;description&quot;: &quot;Reflects the current variant.&quot;,
+      &quot;values&quot;: [
+        &quot;primary&quot;,
+        &quot;secondary&quot;,
+        &quot;ghost&quot;,
+        &quot;danger&quot;
+      ],
+      &quot;since&quot;: &quot;1.0.0&quot;
+    }
+  ],
+  &quot;methods&quot;: [
+    {
+      &quot;name&quot;: &quot;focus&quot;,
+      &quot;description&quot;: &quot;Programmatically moves focus to the button element.&quot;,
+      &quot;parameters&quot;: &quot;(options?: FocusOptions)&quot;,
+      &quot;returnType&quot;: &quot;void&quot;,
+      &quot;since&quot;: &quot;1.0.0&quot;
+    }
+  ],
+  &quot;type&quot;: &quot;api&quot;
+}</code></pre>
+</div>
+</section>
+
+        <a href="#" class="back-to-top">↑ Back to top</a>
+
+        <div class="footer">
+          <p>Design System Documentation Standard (DSDS) 0.1 — Draft Specification</p>
+          <p><a href="https://github.com/pjonori/design-system-documentation-schema">GitHub</a></p>
+        </div>
+      </div>
+    </main>
+    <nav class="toc" aria-label="On this page">
+<p class="toc__title">On this page</p>
+<ul class="toc__list">
+<li><a class="toc__link toc__link--sub" href="#apiproperty">apiProperty</a></li>
+<li><a class="toc__link toc__link--sub" href="#apievent">apiEvent</a></li>
+<li><a class="toc__link toc__link--sub" href="#apislot">apiSlot</a></li>
+<li><a class="toc__link toc__link--sub" href="#apicsscustomproperty">apiCssCustomProperty</a></li>
+<li><a class="toc__link toc__link--sub" href="#apicsspart">apiCssPart</a></li>
+<li><a class="toc__link toc__link--sub" href="#apidataattribute">apiDataAttribute</a></li>
+<li><a class="toc__link toc__link--sub" href="#apimethod">apiMethod</a></li>
+<li><a class="toc__link toc__link--sub" href="#api">api</a></li>
+</ul>
+</nav>
+  </div>
+</body>
+</html>

@@ -28,10 +28,8 @@ const OUTPUT = path.join(SCHEMA_DIR, "dsds.bundled.schema.json");
 // Directories containing split schema files (stable order for deterministic output)
 const SPLIT_DIRS = [
   path.join(SCHEMA_DIR, "common"),
-  path.join(SCHEMA_DIR, "components"),
-  path.join(SCHEMA_DIR, "tokens"),
-  path.join(SCHEMA_DIR, "style"),
-  path.join(SCHEMA_DIR, "patterns"),
+  path.join(SCHEMA_DIR, "guidelines"),
+  path.join(SCHEMA_DIR, "entities"),
 ];
 
 // ---------------------------------------------------------------------------
