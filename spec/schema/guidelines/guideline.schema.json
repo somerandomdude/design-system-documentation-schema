@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://designsystemdocspec.org/v0.1/guidelines/guideline.schema.json",
   "title": "DSDS Guideline — Scoped Unions",
-  "description": "Defines scoped guideline unions for each artifact type. Every piece of structured documentation attached to an artifact — best practices, anatomy, API specifications, variant definitions, state descriptions, accessibility specs, purpose, examples, design specifications, principles, scales, and interactions — is a guideline object with a `type` discriminator. Each artifact type accepts only the guideline types relevant to it: component guidelines accept component-specific and general types, style guidelines accept style-specific and general types, etc. This scoping ensures that authors cannot attach irrelevant documentation to an artifact (e.g., an interaction flow on a token, or an API specification on a style). Internal artifact relationships are now expressed through the unified `links` array on each entity rather than through a dedicated guideline type.",
+  "description": "Defines scoped guideline unions for each artifact type. Every piece of structured documentation attached to an artifact — best practices, anatomy, API specifications, variant definitions, state descriptions, accessibility specs, purpose, examples, design specifications, principles, scales, motion, content, and interactions — is a guideline object with a `type` discriminator. Each artifact type accepts only the guideline types relevant to it: component guidelines accept component-specific and general types, style guidelines accept style-specific and general types, etc. This scoping ensures that authors cannot attach irrelevant documentation to an artifact (e.g., an API specification on a style). Internal artifact relationships are now expressed through the unified `links` array on each entity rather than through a dedicated guideline type.",
   "$defs": {
     "generalGuideline": {
       "description": "A guideline type available on all artifact types. General guidelines cover cross-cutting documentation concerns that apply regardless of whether the artifact is a component, token, style, or pattern.",
@@ -22,11 +22,15 @@
         {
           "$ref": "../common/example.schema.json#/$defs/examples",
           "description": "Visual or interactive demonstrations — images, videos, code snippets, and URLs to live demos."
+        },
+        {
+          "$ref": "content.schema.json#/$defs/content",
+          "description": "Structured content guidelines — recommended action labels with definitions, usage context, and cross-references, plus localization and internationalization considerations such as RTL behavior and text expansion."
         }
       ]
     },
     "componentGuideline": {
-      "description": "A guideline type accepted on component artifacts. Includes component-specific types (anatomy, API, variants, states, design specifications) and all general types (best practices, purpose, accessibility, examples).",
+      "description": "A guideline type accepted on component artifacts. Includes component-specific types (anatomy, API, variants, states, design specifications) and all general types (best practices, purpose, accessibility, examples, content).",
       "oneOf": [
         {
           "$ref": "anatomy.schema.json#/$defs/anatomy",
@@ -59,11 +63,14 @@
         },
         {
           "$ref": "../common/example.schema.json#/$defs/examples"
+        },
+        {
+          "$ref": "content.schema.json#/$defs/content"
         }
       ]
     },
     "styleGuideline": {
-      "description": "A guideline type accepted on style artifacts. Includes style-specific types (principles, scales) and all general types (best practices, purpose, accessibility, examples).",
+      "description": "A guideline type accepted on style artifacts. Includes style-specific types (principles, scales, motion) and all general types (best practices, purpose, accessibility, examples, content).",
       "oneOf": [
         {
           "$ref": "principle.schema.json#/$defs/principles",
@@ -74,6 +81,10 @@
           "description": "An ordered sequence of values forming a visual scale — a type scale, spacing scale, elevation scale, or similar progression. Each step references a design token."
         },
         {
+          "$ref": "motion.schema.json#/$defs/motion",
+          "description": "Named easing curves with cubic-bezier functions (aligned with DTCG cubicBezier type), recommended durations, and usage guidance for the motion system."
+        },
+        {
           "$ref": "best-practice.schema.json#/$defs/bestPractices"
         },
         {
@@ -84,17 +95,32 @@
         },
         {
           "$ref": "../common/example.schema.json#/$defs/examples"
+        },
+        {
+          "$ref": "content.schema.json#/$defs/content"
         }
       ]
     },
     "patternGuideline": {
-      "description": "A guideline type accepted on pattern artifacts. Includes pattern-specific types (interactions) and all general types (best practices, purpose, accessibility, examples).",
+      "description": "A guideline type accepted on pattern artifacts. Includes pattern-specific types (interactions) and shared structural types (anatomy, variants, states) for documenting pattern sub-types, visual structure, and states. Also includes all general types (best practices, purpose, accessibility, examples, content).",
       "oneOf": [
         {
           "$ref": "interaction.schema.json#/$defs/interactions",
           "description": "The interaction flow of the pattern — an ordered sequence of steps describing triggers, system responses, and component behavior."
         },
         {
+          "$ref": "anatomy.schema.json#/$defs/anatomy",
+          "description": "The visual structure of the pattern — its named sub-elements (e.g., image, title, body, primary action, secondary CTA for an empty state pattern), their associated design tokens, and optional annotated diagrams."
+        },
+        {
+          "$ref": "variant.schema.json#/$defs/variants",
+          "description": "Dimensions of variation within the pattern — sub-types, modes, or configurations (e.g., an empty state pattern with 'no-data', 'user-action', and 'error-management' variants). Optional exclusions document invalid combinations."
+        },
+        {
+          "$ref": "state.schema.json#/$defs/states",
+          "description": "States the pattern can enter — populated, empty, loading, error, etc. — with triggers, visual changes, and optional previews."
+        },
+        {
           "$ref": "best-practice.schema.json#/$defs/bestPractices"
         },
         {
@@ -105,6 +131,9 @@
         },
         {
           "$ref": "../common/example.schema.json#/$defs/examples"
+        },
+        {
+          "$ref": "content.schema.json#/$defs/content"
         }
       ]
     },
@@ -122,6 +151,9 @@
         },
         {
           "$ref": "../common/example.schema.json#/$defs/examples"
+        },
+        {
+          "$ref": "content.schema.json#/$defs/content"
         }
       ]
     }

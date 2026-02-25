@@ -68,9 +68,7 @@ const MODULES_DIR = path.join(ROOT, "spec", "modules");
  */
 function parseDirective(line) {
   const trimmed = line.trim();
-  const match = trimmed.match(
-    /^<!--\s*dsds:include\s+(\S+)\s*-->$/
-  );
+  const match = trimmed.match(/^<!--\s*dsds:include\s+(\S+)\s*-->$/);
   if (!match) return null;
 
   const raw = match[1];
@@ -148,7 +146,7 @@ function readExample(filePath, keyPath) {
   if (value === undefined) {
     throw new Error(
       `Key path /${keyPath.join("/")} not found in ${filePath}. ` +
-        `Available top-level keys: ${Object.keys(data).join(", ")}`
+        `Available top-level keys: ${Object.keys(data).join(", ")}`,
     );
   }
 
@@ -320,8 +318,14 @@ function main() {
   console.log(
     checkOnly
       ? "Checking markdown include directives...\n"
-      : "Syncing markdown include directives...\n"
+      : "Syncing markdown include directives...\n",
   );
+
+  if (!fs.existsSync(MODULES_DIR)) {
+    console.log("  No modules directory found — nothing to sync.\n");
+    console.log("Done.\n");
+    return;
+  }
 
   const mdFiles = fs
     .readdirSync(MODULES_DIR)
@@ -371,17 +375,15 @@ function main() {
   }
 
   console.log(
-    `\n  ${totalIncludes} include${totalIncludes === 1 ? "" : "s"} found`
+    `\n  ${totalIncludes} include${totalIncludes === 1 ? "" : "s"} found`,
   );
 
   if (checkOnly) {
     if (filesWithChanges > 0) {
       console.log(
-        `  ${filesWithChanges} file${filesWithChanges === 1 ? "" : "s"} out of date`
+        `  ${filesWithChanges} file${filesWithChanges === 1 ? "" : "s"} out of date`,
       );
-      console.log(
-        "\n  Run `node scripts/sync-examples.js` to update.\n"
-      );
+      console.log("\n  Run `node scripts/sync-examples.js` to update.\n");
       process.exit(1);
     } else if (totalErrors > 0) {
       console.log(`  ${totalErrors} error${totalErrors === 1 ? "" : "s"}`);
@@ -393,7 +395,7 @@ function main() {
   } else {
     if (totalUpdated > 0) {
       console.log(
-        `  ${totalUpdated} block${totalUpdated === 1 ? "" : "s"} updated across ${filesWithChanges} file${filesWithChanges === 1 ? "" : "s"}`
+        `  ${totalUpdated} block${totalUpdated === 1 ? "" : "s"} updated across ${filesWithChanges} file${filesWithChanges === 1 ? "" : "s"}`,
       );
     } else {
       console.log("  All includes already up to date.");

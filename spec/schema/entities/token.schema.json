@@ -6,7 +6,7 @@
   "$defs": {
     "tokenValue": {
       "type": "object",
-      "description": "A displayable representation of the token's value for documentation tools. This is not the authoritative source of truth for the value — the Design Tokens Format file is. The resolved value provides a human-readable snapshot, the reference traces the alias chain, and the dtcgFile points to the authoritative source.",
+      "description": "A displayable representation of the token's value for documentation tools. This is not the authoritative source of truth for the value — the Design Tokens Format file is. The resolved value provides a human-readable snapshot, the reference traces the alias chain, the resolution field classifies how the value was derived (using W3C DTCG terminology), and the dtcgFile points to the authoritative source.",
       "properties": {
         "resolved": {
           "type": "string",
@@ -14,7 +14,12 @@
         },
         "reference": {
           "type": "string",
-          "description": "If this token is an alias, the name of the referenced token (e.g., 'color.neutral.900', 'spacing.base')."
+          "description": "If this token is an alias, the name of the referenced token (e.g., 'color.neutral.900', 'spacing.base'). Corresponds to the W3C Design Tokens Format Module concept of an alias/reference (§3.8, §7): a token whose value references another token rather than containing an explicit value."
+        },
+        "resolution": {
+          "type": "string",
+          "enum": ["explicit", "alias"],
+          "description": "How the token's value was derived, using terminology aligned with the W3C Design Tokens Format Module (§3.8 'Alias/Reference', §7 'Aliases/References'). 'explicit' means the token has a direct, standalone value — it does not reference another token. 'alias' means the token's value is a reference to another token (the target is identified in the `reference` property). When omitted, tools SHOULD infer: if `reference` is present the token is an alias, otherwise it is explicit."
         },
         "dtcgFile": {
           "type": "string",

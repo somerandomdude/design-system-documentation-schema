@@ -4,11 +4,185 @@ All notable changes to the DSDS specification are documented in this file.
 
 ---
 
-## [0.1.1] — 2025-02-28
+## [0.1.2] — 2025-02-28
 
-Simplicity, flexibility, and comprehension improvements based on a full schema review.
-These are **breaking changes** to the 0.1 draft. Documents authored against the
-previous 0.1 draft will need migration (see Migration Guide below).
+### New Features
+
+#### 1. Motion guideline (`motion`)
+
+A new style-scoped guideline type for documenting easing curves, recommended durations,
+and usage guidance. Each entry carries a cubic-bezier function aligned with the W3C
+Design Tokens Format Module `cubicBezier` type (§8.6).
+
+```json
+{
+  "type": "motion",
+  "items": [
+    {
+      "name": "enter",
+      "displayName": "Enter Ease",
+      "description": "For elements entering the viewport from off-screen.",
+      "function": [0.05, 0.7, 0.1, 1],
+      "token": "motion-ease-enter",
+      "usage": "entering elements",
+      "duration": { "min": "300ms", "max": "500ms" }
+    }
+  ]
+}
+```
+
+Each `motionEntry` supports:
+
+| Property      | Type            | Required | Description                                         |
+|---------------|-----------------|----------|-----------------------------------------------------|
+| `name`        | `string`        | Yes      | Machine-readable easing name                        |
+| `displayName` | `string`        | No       | Human-readable name                                 |
+| `description` | `richText`      | Yes      | What this easing is for and when to use it          |
+| `function`    | `number[4]`     | No       | Cubic-bezier control points [P1x, P1y, P2x, P2y]   |
+| `token`       | `string`        | No       | Reference to a DTCG cubicBezier or transition token |
+| `duration`    | `motionDuration`| No       | Recommended duration range (min, max, description)  |
+| `usage`       | `string`        | No       | Comma-separated usage contexts                      |
+| `examples`    | `example[]`     | No       | Visual/interactive demonstrations                   |
+
+**Files created:** `guidelines/motion.schema.json`
+**Scope:** Style entities only
+
+---
+
+#### 2. Content guideline (`content`)
+
+A new general guideline type for structured content guidelines — recommended action
+labels (terminology dictionaries) and localization/internationalization considerations.
+
+```json
+{
+  "type": "content",
+  "labels": [
+    {
+      "term": "Add",
+      "definition": "Takes an existing object and uses it in a new context.",
+      "usage": "Combine Add with the object (e.g., Add user, Add role).",
+      "alternatives": ["Create", "Insert", "New"],
+      "context": "Buttons, menu items"
+    }
+  ],
+  "localization": [
+    {
+      "concern": "rtl",
+      "description": "For RTL languages, the entire component is mirrored horizontally."
+    },
+    {
+      "concern": "text-expansion",
+      "description": "Localization can lengthen text by 20-30%. Avoid truncating labels."
+    }
+  ]
+}
+```
+
+Each `contentLabelEntry` supports:
+
+| Property       | Type        | Required | Description                                          |
+|----------------|-------------|----------|------------------------------------------------------|
+| `term`         | `string`    | Yes      | The canonical label text (e.g., "Add", "Cancel")     |
+| `definition`   | `richText`  | Yes      | What the label means                                 |
+| `usage`        | `richText`  | No       | When and how to use this label                       |
+| `alternatives` | `string[]`  | No       | Related terms commonly confused with this one        |
+| `context`      | `string`    | No       | Where this label is commonly used in the UI          |
+| `examples`     | `example[]` | No       | Visual examples showing the label in context         |
+
+Each `localizationEntry` supports:
+
+| Property      | Type        | Required | Description                                           |
+|---------------|-------------|----------|-------------------------------------------------------|
+| `concern`     | `string`    | Yes      | The i18n concern (e.g., "rtl", "text-expansion")      |
+| `description` | `richText`  | Yes      | Actionable guidance for this concern                  |
+| `examples`    | `example[]` | No       | Visual examples illustrating the concern              |
+
+Standard localization concerns: `rtl`, `text-expansion`, `pluralization`, `date-format`,
+`number-format`, `currency`, `text-direction`, `icon-direction`, `truncation`, `sorting`,
+`concatenation`. Custom values are permitted.
+
+At least one of `labels` or `localization` must be present (enforced via `anyOf`).
+
+**Files created:** `guidelines/content.schema.json`
+**Scope:** All entity types (general guideline)
+
+---
+
+#### 3. Anatomy, variants, and states now available on patterns
+
+The `patternGuideline` union now includes `anatomy`, `variants`, and `states` alongside
+`interactions` and the general guidelines. This resolves three real-world gaps:
+
+- **Anatomy for patterns:** Carbon's empty states have named parts (image, title, body,
+  primary action, secondary CTA) that can now be documented structurally.
+- **Variants for patterns:** Patterns with sub-types (e.g., empty state: no-data,
+  user-action, error-management) can now express them as variant dimensions.
+- **States for patterns:** Patterns with distinct states (populated, empty, loading,
+  error) can now document triggers, visual changes, and token overrides.
+
+**Before:** Patterns accepted only `interactions` + general guidelines.
+**After:** Patterns accept `interactions`, `anatomy`, `variants`, `states` + general guidelines.
+
+**Files changed:** `guidelines/guideline.schema.json`
+
+---
+
+#### 4. Token `useCases` property
+
+Tokens now accept an optional `useCases` property directly on the entity, following the
+same shape used by variant values, state entries, and the purpose guideline.
+
+```json
+{
+  "type": "token",
+  "name": "color-text-primary",
+  "tokenType": "color",
+  "useCases": {
+    "whenToUse": [
+      { "description": "When applying color to body text on default backgrounds." }
+    ],
+    "whenNotToUse": [
+      {
+        "description": "When placing text on dark or brand-colored surfaces.",
+        "alternative": { "name": "color-text-inverse", "rationale": "..." }
+      }
+    ]
+  }
+}
+```
+
+**Files changed:** `entities/token.schema.json`
+
+---
+
+#### 5. Token value `resolution` field (DTCG-aligned)
+
+The `tokenValue` object now includes an optional `resolution` field with values aligned
+to the W3C Design Tokens Format Module terminology (§3.8 "Alias/Reference", §7
+"Aliases/References"):
+
+| Value      | DTCG concept                       | Description                           |
+|------------|------------------------------------|---------------------------------------|
+| `explicit` | Token with a direct `$value`       | Value is set directly, not an alias   |
+| `alias`    | Token whose `$value` is a reference| Value references another token        |
+
+When omitted, tools SHOULD infer: if `reference` is present the token is an alias,
+otherwise it is explicit.
+
+**Files changed:** `entities/token.schema.json`
+
+---
+
+### Internal
+
+- Bundled schema now contains 72 definitions from 27 files (up from 66/25).
+- All 163 validations pass across 1 document + 162 definition fragments.
+- New example files: `guidelines/motion.json` (2 defs), `guidelines/content.json` (3 defs).
+
+---
+
+## [0.1.1] — 2025-02-28
 
 ### Breaking Changes
 

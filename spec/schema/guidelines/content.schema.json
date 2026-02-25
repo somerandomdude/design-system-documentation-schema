@@ -1,0 +1,103 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://designsystemdocspec.org/v0.1/guidelines/content.schema.json",
+  "title": "DSDS Content Guideline",
+  "description": "Documents structured content guidelines for an artifact or the design system as a whole. Content guidelines cover two concerns: recommended action labels (a terminology dictionary of standard labels like 'Add', 'Cancel', 'Delete' with definitions, usage context, and cross-references to related terms) and localization considerations (RTL behavior, text expansion, pluralization, and other internationalization concerns). At least one of `labels` or `localization` must be present.",
+  "$defs": {
+    "contentLabelEntry": {
+      "type": "object",
+      "description": "A single recommended action label or term in the content dictionary. Each entry defines a standard label with its meaning, usage guidance, and cross-references to related or alternative terms. Entries follow the {verb} + {noun} content formula established by systems like Carbon and Gestalt.",
+      "required": ["term", "definition"],
+      "properties": {
+        "term": {
+          "type": "string",
+          "description": "The recommended label text (e.g., 'Add', 'Cancel', 'Delete', 'Save as', 'Learn more'). This is the canonical form of the label as it should appear in the UI."
+        },
+        "definition": {
+          "$ref": "../common/rich-text.schema.json#/$defs/richText",
+          "description": "What this label means — the action it represents. Should be concrete and unambiguous (e.g., 'Destroys an existing object so that it no longer exists' for Delete, 'Stops the current action and closes the dialog' for Cancel)."
+        },
+        "usage": {
+          "$ref": "../common/rich-text.schema.json#/$defs/richText",
+          "description": "When and how to use this label. Include context, formatting rules, and any qualifications (e.g., 'Where appropriate, combine Add with the object: Add user, Add role', 'Use instead of Previous', 'Write as shown: two letters, both uppercase')."
+        },
+        "alternatives": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Related terms that serve a different purpose but are commonly confused with this one. Listed for comparison — helps authors choose the right label. For example, 'Add' might list ['Create', 'Insert', 'New', 'Upload'] as alternatives. The terms SHOULD match other `term` values in the same content guideline for cross-referencing."
+        },
+        "context": {
+          "type": "string",
+          "description": "Where this label is commonly used in the UI (e.g., 'Buttons in dialogs', 'Navigation links', 'Form submission', 'Toolbar actions'). Helps authors understand the typical placement and scope of this label."
+        },
+        "examples": {
+          "type": "array",
+          "description": "Visual or code examples showing the label in context — do/don't pairs, screenshots of correct usage, or code snippets.",
+          "items": {
+            "$ref": "../common/example.schema.json#/$defs/example"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "localizationEntry": {
+      "type": "object",
+      "description": "A single localization or internationalization consideration. Each entry documents a concern that affects how content is authored, translated, or rendered across languages and writing systems.",
+      "required": ["concern", "description"],
+      "properties": {
+        "concern": {
+          "type": "string",
+          "description": "The localization concern being addressed. Standard values: 'rtl' (right-to-left layout mirroring and bidirectional text), 'text-expansion' (content lengthening during translation — typically 20-30% for Western European languages, more for CJK), 'pluralization' (plural forms varying across languages), 'date-format' (date and time formatting conventions), 'number-format' (number formatting — decimal separators, grouping), 'currency' (currency symbol placement and formatting), 'text-direction' (mixed-direction content within a single string), 'icon-direction' (icons that imply directionality — arrows, progress indicators), 'truncation' (text overflow behavior across languages), 'sorting' (locale-specific sort order and collation), 'concatenation' (avoiding string concatenation that breaks in other languages). Custom values are permitted and SHOULD be lowercase kebab-case."
+        },
+        "description": {
+          "$ref": "../common/rich-text.schema.json#/$defs/richText",
+          "description": "Guidance for addressing this localization concern. Should be actionable and specific — describe what changes across locales, what the author or developer must do, and what to avoid."
+        },
+        "examples": {
+          "type": "array",
+          "description": "Visual or code examples illustrating the localization concern — before/after screenshots for RTL, examples of text expansion, or code patterns for pluralization.",
+          "items": {
+            "$ref": "../common/example.schema.json#/$defs/example"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "content": {
+      "type": "object",
+      "description": "Documents structured content guidelines — recommended action labels and localization considerations. The labels array provides a terminology dictionary of standard UI labels with definitions, usage context, and cross-references (following the pattern established by Carbon's action labels and Gestalt's writing guidelines). The localization array documents internationalization concerns like RTL behavior, text expansion, and pluralization. At least one of `labels` or `localization` must be present. Content guidelines complement best-practice guidelines — best practices say 'Use sentence case' (a rule), content guidelines say 'Add: Takes an existing object and uses it in a new context' (a reference).",
+      "required": ["type"],
+      "anyOf": [{ "required": ["labels"] }, { "required": ["localization"] }],
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "content",
+          "description": "Identifies this guideline as a content specification."
+        },
+        "description": {
+          "$ref": "../common/rich-text.schema.json#/$defs/richText",
+          "description": "An overview of the content guidelines — the content philosophy, voice and tone principles, or the scope of labels and localization rules covered."
+        },
+        "labels": {
+          "type": "array",
+          "description": "Recommended action labels and terminology. Each entry defines a standard label with its meaning, usage guidance, and cross-references to related terms. The ordering is significant — tools SHOULD preserve it for display. Authors MAY order alphabetically (as in Carbon's action labels) or by frequency of use.",
+          "items": {
+            "$ref": "#/$defs/contentLabelEntry"
+          },
+          "minItems": 1
+        },
+        "localization": {
+          "type": "array",
+          "description": "Localization and internationalization considerations. Each entry documents a concern that affects content across languages and writing systems — RTL mirroring, text expansion during translation, pluralization rules, and other i18n concerns. The ordering is significant — tools SHOULD display considerations in this order. Authors SHOULD order by impact or frequency.",
+          "items": {
+            "$ref": "#/$defs/localizationEntry"
+          },
+          "minItems": 1
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

@@ -42,9 +42,11 @@
 <a class="nav__link nav__link--child" href="guidelines-anatomy.html">anatomy</a>
 <a class="nav__link nav__link--child" href="guidelines-api.html">api</a>
 <a class="nav__link nav__link--child" href="guidelines-best-practice.html">best-practice</a>
+<a class="nav__link nav__link--child" href="guidelines-content.html">content</a>
 <a class="nav__link nav__link--child" href="guidelines-design-specifications.html">design-specifications</a>
 <a class="nav__link nav__link--child" href="guidelines-guideline.html">guideline</a>
 <a class="nav__link nav__link--child" href="guidelines-interaction.html">interaction</a>
+<a class="nav__link nav__link--child" href="guidelines-motion.html">motion</a>
 <a class="nav__link nav__link--child" href="guidelines-principle.html">principle</a>
 <a class="nav__link nav__link--child" href="guidelines-purpose.html">purpose</a>
 <a class="nav__link nav__link--child" href="guidelines-scale.html">scale</a>
@@ -67,8 +69,8 @@
 <p><strong>Feedback:</strong> <a href="https://github.com/somerandomdude/design-system-documentation-schema/issues">GitHub Issues</a></p>
 <hr>
 <h2 id="abstract">Abstract</h2>
-<p>This document defines a standard, machine-readable format for design system documentation. The format covers five entity types: <strong>components</strong>, <strong>design tokens</strong> (including hierarchical token groups), <strong>themes</strong>, <strong>styles</strong>, and <strong>patterns</strong>. Its purpose is to establish a portable, tool-agnostic structure that enables software to create, edit, validate, and display design system documentation consistently.</p>
-<p>All structured documentation — best practices, anatomy, API specifications, variants, states, accessibility specs, use cases, examples, design specifications, principles, scales, interactions, and artifact references — is expressed through a unified <strong>guidelines</strong> system. Each guideline is a typed container that holds an array of atomic items. Artifact types accept only the guideline types relevant to them: component guidelines accept component-specific and general types, style guidelines accept style-specific and general types, and so on.</p>
+<p>This document defines a standard, machine-readable format for design system documentation. The format covers six entity types: <strong>components</strong>, <strong>design tokens</strong> (including hierarchical token groups), <strong>themes</strong>, <strong>styles</strong>, and <strong>patterns</strong>. Its purpose is to establish a portable, tool-agnostic structure that enables software to create, edit, validate, and display design system documentation consistently.</p>
+<p>All structured documentation — best practices, anatomy, API specifications, variants, states, accessibility specs, use cases, examples, design specifications, principles, scales, motion definitions, content guidelines, and interactions — is expressed through a unified <strong>guidelines</strong> system. Each guideline is a typed container with a <code>type</code> discriminator. Artifact types accept only the guideline types relevant to them: component guidelines accept component-specific and general types, pattern guidelines accept pattern-specific and general types, and so on.</p>
 <p>This specification is complementary to the <a href="https://www.w3.org/community/reports/design-tokens/CG-FINAL-format-20251028/">W3C Design Tokens Format Module</a>. Where the Design Tokens Format Module defines the interchange format for token <em>values</em>, DSDS defines the interchange format for the <em>documentation</em> that surrounds components, tokens, styles, and patterns.</p>
 <h2 id="status-of-this-document">Status of This Document</h2>
 <p>This is a draft specification and is subject to change. It has not been endorsed by any standards body. Feedback and contributions are welcome via GitHub.</p>
@@ -81,7 +83,7 @@
 </tr></thead><tbody>
 <tr>
 <td><code>common/</code></td>
-<td>Shared primitives used across all schemas — richText, statusObject, link, example, extensions, metadata</td>
+<td>Shared primitives used across all schemas — richText, statusObject, link, example, extensions, metadata, useCases</td>
 </tr>
 <tr>
 <td><code>entities/</code></td>
@@ -89,7 +91,7 @@
 </tr>
 <tr>
 <td><code>guidelines/</code></td>
-<td>Guideline type schemas — best-practice, anatomy, api, variant, state, design-specifications, accessibility, purpose, scale, principle, interaction, artifact-reference, plus the scoped union (guideline.schema.json)</td>
+<td>Guideline type schemas — best-practice, anatomy, api, variant, state, design-specifications, accessibility, purpose, scale, principle, motion, content, interaction, plus the scoped union (guideline.schema.json)</td>
 </tr>
 </tbody></table>
 <pre><code>spec/schema/
@@ -98,10 +100,11 @@
 ├── common/                             # Shared primitives
 │   ├── example.schema.json             # example, examples (guideline container), presentations
 │   ├── extensions.schema.json          # $extensions
-│   ├── link.schema.json                # link
+│   ├── link.schema.json                # link (external resources + internal artifact references)
 │   ├── metadata.schema.json            # metadata
 │   ├── rich-text.schema.json           # richText
-│   └── status.schema.json              # statusValue, statusObject, platformStatusEntry
+│   ├── status.schema.json              # statusValue, statusObject, platformStatusEntry
+│   └── usecase.schema.json             # useCase, useCases
 ├── entities/                           # Artifact types
 │   ├── component.schema.json           # component
 │   ├── pattern.schema.json             # pattern
@@ -113,18 +116,19 @@
     ├── accessibility.schema.json       # accessibility, keyboardInteraction, ariaAttribute, colorContrast
     ├── anatomy.schema.json             # anatomy, anatomyEntry
     ├── api.schema.json                 # api, apiProperty, apiEvent, apiSlot, etc.
-    ├── artifact-reference.schema.json  # artifactReference, artifactReferenceEntry
     ├── best-practice.schema.json       # bestPractices, bestPracticeEntry
-    ├── design-specifications.schema.json # designSpecifications, responsiveEntry
+    ├── content.schema.json             # content, contentLabelEntry, localizationEntry
+    ├── design-specifications.schema.json # designSpecifications, spacingSpec, sizingSpec, etc.
     ├── interaction.schema.json         # interactions, interactionEntry
+    ├── motion.schema.json              # motion, motionEntry, motionDuration
     ├── principle.schema.json           # principles, principleEntry
+    ├── purpose.schema.json             # purpose (wraps useCases)
     ├── scale.schema.json               # scale, scaleStep
     ├── state.schema.json               # states, stateEntry
-    ├── purpose.schema.json           # useCases, useCase, inlineUseCases
-    └── variant.schema.json             # variants, variantEntry, variantValue</code></pre>
+    └── variant.schema.json             # variants, variantEntry, variantValue, variantExclusion</code></pre>
 <hr>
 <h2 id="document-structure">Document Structure</h2>
-<p>A DSDS file is a JSON object with a <code>dsdsVersion</code> string and a <code>documentation</code> array. Each documentation group is a named collection containing one or more arrays of typed artifacts.</p>
+<p>A DSDS file is a JSON object with a <code>dsdsVersion</code> string and a <code>documentation</code> array. Each documentation group is a named collection containing one or more typed artifacts.</p>
 <h3 id="root-properties">Root Properties</h3>
 <table><thead><tr>
 <th>Property</th>
@@ -154,13 +158,13 @@
 <td><code>documentation</code></td>
 <td><code>array</code></td>
 <td>Yes</td>
-<td>One or more documentation groups. See <a href="#document-groups">Documentation Groups</a>.</td>
+<td>One or more documentation groups. See <a href="#documentation-groups">Documentation Groups</a>.</td>
 </tr>
 <tr>
 <td><code>$extensions</code></td>
 <td><code>object</code></td>
 <td>No</td>
-<td>Vendor-specific extensions.</td>
+<td>Vendor-specific extensions. See <a href="#extensions">Extensions</a>.</td>
 </tr>
 </tbody></table>
 <h3 id="documentation-groups">Documentation Groups</h3>
@@ -225,7 +229,7 @@
 </tr>
 <tr>
 <td><code>"style"</code></td>
-<td>A macro-level visual style</td>
+<td>A macro-level visual style (foundation)</td>
 <td><code>entities/style.schema.json</code></td>
 </tr>
 <tr>
@@ -243,7 +247,7 @@
     { &quot;type&quot;: &quot;theme&quot;, &quot;name&quot;: &quot;dark&quot;, &quot;...&quot; },
     { &quot;type&quot;: &quot;style&quot;, &quot;name&quot;: &quot;spacing&quot;, &quot;...&quot; },
     { &quot;type&quot;: &quot;component&quot;, &quot;name&quot;: &quot;button&quot;, &quot;...&quot; },
-    { &quot;type&quot;: &quot;pattern&quot;, &quot;name&quot;: &quot;error-messaging&quot;, &quot;...&quot; }
+    { &quot;type&quot;: &quot;pattern&quot;, &quot;name&quot;: &quot;empty-state&quot;, &quot;...&quot; }
   ]
 }</code></pre>
 <h3 id="metadata">Metadata</h3>
@@ -288,29 +292,30 @@
 <h2 id="entity-types">Entity Types</h2>
 <p>Every entity shares a common set of identity and metadata properties, plus a <code>guidelines</code> array for all structured documentation. The <code>guidelines</code> array accepts only the guideline types appropriate for that entity type. Every entity also carries a required <code>type</code> discriminator (see <a href="#entity-type-discriminators">Entity Type Discriminators</a> above).</p>
 <h3 id="common-entity-properties">Common Entity Properties</h3>
+<p>The following properties are available on all entity types. <strong>Required</strong> fields differ by entity type — see the notes column and the individual entity sections below.</p>
 <table><thead><tr>
 <th>Property</th>
 <th>Type</th>
 <th>Required</th>
-<th>Description</th>
+<th>Notes</th>
 </tr></thead><tbody>
 <tr>
 <td><code>type</code></td>
 <td><code>string</code></td>
 <td>Yes</td>
-<td>Entity type discriminator: <code>"component"</code>, <code>"token"</code>, <code>"token-group"</code>, <code>"theme"</code>, <code>"style"</code>, or <code>"pattern"</code>.</td>
+<td>Entity type discriminator.</td>
 </tr>
 <tr>
 <td><code>name</code></td>
 <td><code>string</code></td>
 <td>Yes</td>
-<td>Machine-readable identifier. Components, styles, patterns, and themes enforce <code>^[a-z][a-z0-9-]*$</code>. Token and token group names are intentionally unconstrained to accommodate DTCG and design tool naming conventions that use dots, slashes, or other separators (e.g., <code>color.text.primary</code>, <code>color/text/primary</code>).</td>
+<td>Machine-readable identifier. Components, styles, patterns, and themes enforce <code>^[a-z][a-z0-9-]*$</code>. Token and token group names are intentionally unconstrained (see <a href="#token-name-exception">Token Name Exception</a>).</td>
 </tr>
 <tr>
 <td><code>displayName</code></td>
 <td><code>string</code></td>
-<td>Yes</td>
-<td>Human-readable name.</td>
+<td>Varies</td>
+<td>Human-readable name. Required on component, style, pattern, theme. <strong>Not present</strong> on token or token-group — the token name serves as the display name.</td>
 </tr>
 <tr>
 <td><code>summary</code></td>
@@ -321,14 +326,14 @@
 <tr>
 <td><code>description</code></td>
 <td><code>richText</code></td>
-<td>Yes</td>
-<td>Description with CommonMark support.</td>
+<td>Varies</td>
+<td>Description with CommonMark support. Required on component, style, pattern, theme. <strong>Optional</strong> on token and token-group.</td>
 </tr>
 <tr>
 <td><code>status</code></td>
 <td><code>statusObject</code></td>
-<td>Yes</td>
-<td>Lifecycle status with optional per-platform readiness. See <a href="#status">Status</a>.</td>
+<td>Varies</td>
+<td>Lifecycle status with optional per-platform readiness. Required on component, style, pattern, theme. <strong>Optional</strong> on token and token-group — when omitted inside a group, inherited from the parent.</td>
 </tr>
 <tr>
 <td><code>since</code></td>
@@ -346,13 +351,13 @@
 <td><code>aliases</code></td>
 <td><code>string[]</code></td>
 <td>No</td>
-<td>Alternative names this artifact is known by across teams, tools, or legacy systems (e.g., <code>["btn", "action-button", "CTA"]</code>). Useful for search, migration mapping, and cross-referencing.</td>
+<td>Alternative names for search, migration mapping, and cross-referencing.</td>
 </tr>
 <tr>
 <td><code>category</code></td>
 <td><code>string</code></td>
 <td>No</td>
-<td>Classification within the system's taxonomy (e.g., <code>"action"</code> for components, <code>"color"</code> for styles, <code>"feedback"</code> for patterns).</td>
+<td>Classification within the system's taxonomy.</td>
 </tr>
 <tr>
 <td><code>guidelines</code></td>
@@ -364,33 +369,150 @@
 <td><code>links</code></td>
 <td><code>array</code></td>
 <td>No</td>
-<td>Typed external links. See <a href="#links">Links</a>.</td>
+<td>Typed references to external resources and internal artifacts. See <a href="#links">Links</a>.</td>
 </tr>
 <tr>
 <td><code>$extensions</code></td>
 <td><code>object</code></td>
 <td>No</td>
-<td>Vendor-specific extensions.</td>
+<td>Vendor-specific extensions. See <a href="#extensions">Extensions</a>.</td>
 </tr>
 </tbody></table>
 <h3 id="component">Component</h3>
-<p>A reusable UI element. Accepts component-scoped guidelines (anatomy, api, variants, states, design-specifications) and all general guidelines.</p>
+<p>A reusable UI element. Accepts <strong>component-scoped guidelines</strong> (anatomy, api, variants, states, design-specifications) and all general guidelines.</p>
+<p>Required properties: <code>type</code>, <code>name</code>, <code>displayName</code>, <code>description</code>, <code>status</code>.</p>
 <h3 id="token">Token</h3>
-<p>A single design token. Accepts general guidelines only.</p>
-<p>Additional properties: <code>tokenType</code> (required — DTCG-aligned type), <code>value</code> (tokenValue), <code>api</code> (tokenApi — platform-specific identifiers).</p>
+<p>A single design token. Accepts <strong>general guidelines</strong> only.</p>
+<p>Required properties: <code>type</code>, <code>name</code>, <code>tokenType</code>.</p>
+<p>Additional properties:</p>
+<table><thead><tr>
+<th>Property</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr></thead><tbody>
+<tr>
+<td><code>tokenType</code></td>
+<td><code>string</code></td>
+<td>Yes</td>
+<td>DTCG-aligned token type (e.g., <code>"color"</code>, <code>"dimension"</code>, <code>"fontFamily"</code>, <code>"fontWeight"</code>, <code>"duration"</code>, <code>"cubicBezier"</code>, <code>"shadow"</code>).</td>
+</tr>
+<tr>
+<td><code>value</code></td>
+<td><code>tokenValue</code></td>
+<td>No</td>
+<td>Displayable representation of the token's value. See <a href="#token-value">Token Value</a>.</td>
+</tr>
+<tr>
+<td><code>api</code></td>
+<td><code>tokenApi</code></td>
+<td>No</td>
+<td>Platform-specific identifiers. See <a href="#token-api">Token API</a>.</td>
+</tr>
+<tr>
+<td><code>category</code></td>
+<td><code>string</code></td>
+<td>No</td>
+<td>Semantic category: <code>"base"</code>, <code>"semantic"</code>, <code>"component"</code>. Custom values permitted.</td>
+</tr>
+</tbody></table>
+<p>The <code>displayName</code> property is intentionally absent from tokens. The token name itself serves as the human-readable display name, since token naming conventions (dots, slashes, kebab-case) are already human-readable in their native format.</p>
+<p>The <code>description</code> and <code>status</code> properties are optional on tokens to reduce verbosity at scale. When omitted inside a token group, <code>status</code> is inherited from the parent group.</p>
 <h3 id="token-group">Token Group</h3>
-<p>A hierarchical group of related tokens. The <code>children</code> array can contain token objects, nested token group objects, or a mix of both. Accepts general guidelines only.</p>
-<p>Additional properties: <code>tokenType</code> (inherited default for children), <code>children</code> (recursive array of tokens and token groups).</p>
+<p>A hierarchical group of related tokens. The <code>children</code> array can contain token objects, nested token group objects, or a mix of both — forming an arbitrarily deep recursive hierarchy. Accepts <strong>general guidelines</strong> only.</p>
+<p>Required properties: <code>type</code>, <code>name</code>.</p>
+<p>Additional properties:</p>
+<table><thead><tr>
+<th>Property</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr></thead><tbody>
+<tr>
+<td><code>tokenType</code></td>
+<td><code>string</code></td>
+<td>No</td>
+<td>Inherited default for children that omit their own <code>tokenType</code>.</td>
+</tr>
+<tr>
+<td><code>category</code></td>
+<td><code>string</code></td>
+<td>No</td>
+<td>Inherited default for children that omit their own <code>category</code>.</td>
+</tr>
+<tr>
+<td><code>children</code></td>
+<td><code>array</code></td>
+<td>No</td>
+<td>Recursive array of tokens and/or nested token groups.</td>
+</tr>
+</tbody></table>
+<p>Like tokens, <code>displayName</code>, <code>description</code>, and <code>status</code> are optional. Children inherit <code>tokenType</code>, <code>category</code>, and <code>status</code> from the parent group when they omit their own values.</p>
 <h3 id="theme">Theme</h3>
-<p>A named set of token value overrides that adapt the system to a specific context (color mode, density, brand variant). Accepts general guidelines.</p>
-<p>Additional properties: <code>overrides</code> (required — array of token→value mappings).</p>
+<p>A named set of token value overrides that adapt the system to a specific context (color mode, density, brand variant). Accepts <strong>general guidelines</strong>.</p>
+<p>Required properties: <code>type</code>, <code>name</code>, <code>displayName</code>, <code>description</code>, <code>status</code>, <code>overrides</code>.</p>
+<p>Additional properties:</p>
+<table><thead><tr>
+<th>Property</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr></thead><tbody>
+<tr>
+<td><code>overrides</code></td>
+<td><code>tokenOverride[]</code></td>
+<td>Yes</td>
+<td>Array of token name → value mappings. Only tokens that differ from the default need to be listed.</td>
+</tr>
+</tbody></table>
+<p>Each <code>tokenOverride</code> has two required properties: <code>token</code> (the token name to override) and <code>value</code> (a <code>tokenValue</code> object with the theme-specific resolved value and/or alias reference).</p>
 <h3 id="style">Style</h3>
-<p>A macro-level visual style governing a domain like color, typography, spacing, or elevation. Accepts style-scoped guidelines (principles, scale) and all general guidelines.</p>
+<p>A macro-level visual style (foundation) governing a domain like color, typography, spacing, elevation, motion, or content. Accepts <strong>style-scoped guidelines</strong> (principles, scale, motion) and all general guidelines.</p>
+<p>Required properties: <code>type</code>, <code>name</code>, <code>displayName</code>, <code>description</code>, <code>status</code>.</p>
+<p>Styles are the entity type for documenting foundations — not just visual attributes like color and spacing, but also cross-cutting concerns like accessibility guidelines, motion systems, and content rules. The <code>category</code> property classifies the domain (e.g., <code>"color"</code>, <code>"typography"</code>, <code>"spacing"</code>, <code>"motion"</code>, <code>"accessibility"</code>, <code>"content"</code>).</p>
 <h3 id="pattern">Pattern</h3>
-<p>A broad interaction pattern — a recurring, multi-component solution to a common UX problem. Accepts pattern-scoped guidelines (interactions) and all general guidelines.</p>
+<p>A broad interaction pattern — a recurring, multi-component solution to a common UX problem. Accepts <strong>pattern-scoped guidelines</strong> (interactions) and <strong>shared structural guidelines</strong> (anatomy, variants, states) as well as all general guidelines.</p>
+<p>Required properties: <code>type</code>, <code>name</code>, <code>displayName</code>, <code>description</code>, <code>status</code>.</p>
+<p>Patterns reference their participating components through the <code>links</code> array (with <code>type: "component"</code>, <code>name</code>, and <code>role</code>) rather than through a dedicated guideline type.</p>
+<hr>
+<h2 id="token-value">Token Value</h2>
+<p>The <code>tokenValue</code> object is a displayable representation of a token's value for documentation tools. It is <strong>not</strong> the authoritative source of truth — the W3C Design Tokens Format file is.</p>
+<table><thead><tr>
+<th>Property</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr></thead><tbody>
+<tr>
+<td><code>resolved</code></td>
+<td><code>string</code></td>
+<td>No</td>
+<td>The resolved value as a human-readable string (e.g., <code>"#1a1a1a"</code>, <code>"16px"</code>, <code>"400"</code>).</td>
+</tr>
+<tr>
+<td><code>reference</code></td>
+<td><code>string</code></td>
+<td>No</td>
+<td>If this token is an alias, the name of the referenced token (e.g., <code>"color.neutral.900"</code>). Corresponds to the W3C DTCG concept of an alias/reference (§3.8, §7).</td>
+</tr>
+<tr>
+<td><code>resolution</code></td>
+<td><code>string</code></td>
+<td>No</td>
+<td>How the value was derived: <code>"explicit"</code> (direct value, not an alias) or <code>"alias"</code> (value references another token). When omitted, tools SHOULD infer: if <code>reference</code> is present, the token is an alias; otherwise it is explicit. Terminology is aligned with the W3C Design Tokens Format Module (§3.8 "Alias/Reference", §7 "Aliases/References").</td>
+</tr>
+<tr>
+<td><code>dtcgFile</code></td>
+<td><code>string</code></td>
+<td>No</td>
+<td>URI or relative path to the DTCG file containing the authoritative value.</td>
+</tr>
+</tbody></table>
+<h2 id="token-api">Token API</h2>
+<p>The <code>tokenApi</code> object maps platform names to identifier strings. Keys are platform names (e.g., <code>"cssCustomProperty"</code>, <code>"scssVariable"</code>, <code>"jsConstant"</code>, <code>"iosToken"</code>, <code>"androidToken"</code>, <code>"designToolVariable"</code>). Values are the identifier strings for that platform. Additional platforms can be added without schema changes.</p>
 <hr>
 <h2 id="status">Status</h2>
-<p>The <code>statusObject</code> consolidates lifecycle status, per-platform readiness, and deprecation notices into a single object. Every entity carries status as an object, not a bare string.</p>
+<p>The <code>statusObject</code> consolidates lifecycle status, per-platform readiness, and deprecation notices into a single object. Every entity that carries status uses this object rather than a bare string.</p>
 <table><thead><tr>
 <th>Property</th>
 <th>Type</th>
@@ -399,9 +521,9 @@
 </tr></thead><tbody>
 <tr>
 <td><code>status</code></td>
-<td><code>string</code></td>
+<td><code>statusValue</code></td>
 <td>Yes</td>
-<td>Overall lifecycle status: <code>"draft"</code>, <code>"experimental"</code>, <code>"stable"</code>, <code>"deprecated"</code>. Custom values permitted.</td>
+<td>Overall lifecycle status. See <a href="#status-values">Status Values</a>.</td>
 </tr>
 <tr>
 <td><code>platformStatus</code></td>
@@ -416,6 +538,30 @@
 <td>Required when status is <code>"deprecated"</code>. MUST explain what to use instead.</td>
 </tr>
 </tbody></table>
+<h3 id="status-values">Status Values</h3>
+<p>Status values MUST be lowercase kebab-case (pattern: <code>^[a-z][a-z0-9-]*$</code>). The four standard values are:</p>
+<table><thead><tr>
+<th>Value</th>
+<th>Meaning</th>
+</tr></thead><tbody>
+<tr>
+<td><code>draft</code></td>
+<td>Under development, not ready for use.</td>
+</tr>
+<tr>
+<td><code>experimental</code></td>
+<td>Available but API may change without notice.</td>
+</tr>
+<tr>
+<td><code>stable</code></td>
+<td>Production-ready, changes follow semver.</td>
+</tr>
+<tr>
+<td><code>deprecated</code></td>
+<td>Scheduled for removal. <code>deprecationNotice</code> is required.</td>
+</tr>
+</tbody></table>
+<p>Custom values are permitted (e.g., <code>"sunset"</code>, <code>"archived"</code>, <code>"beta"</code>) and MUST follow the same pattern.</p>
 <h3 id="platform-status-entry">Platform Status Entry</h3>
 <table><thead><tr>
 <th>Property</th>
@@ -425,7 +571,7 @@
 </tr></thead><tbody>
 <tr>
 <td><code>status</code></td>
-<td><code>string</code></td>
+<td><code>statusValue</code></td>
 <td>Yes</td>
 <td>Lifecycle status on this platform.</td>
 </tr>
@@ -450,10 +596,15 @@
 </tbody></table>
 <hr>
 <h2 id="guidelines">Guidelines</h2>
-<p>Guidelines are the fundamental unit of structured documentation in DSDS. Every piece of documentation attached to an entity — best practices, anatomy breakdowns, API specifications, variant definitions, state descriptions, accessibility specs, use cases, examples, design specifications, principles, scales, interactions, and artifact references — is a guideline object with a <code>entryType</code> discriminator.</p>
-<p>Every guideline is a <strong>typed container</strong> that holds an array of atomic items. This consistent model means all guidelines follow the same pattern established by anatomy (which has <code>parts</code>) and purpose (which has <code>whenToUse</code>/<code>whenNotToUse</code>).</p>
+<p>Guidelines are the fundamental unit of structured documentation in DSDS. Every piece of documentation attached to an entity — best practices, anatomy breakdowns, API specifications, variant definitions, state descriptions, accessibility specs, use cases, examples, design specifications, principles, scales, motion definitions, content guidelines, and interactions — is a guideline object with a <code>type</code> discriminator.</p>
 <h3 id="scoped-guideline-unions">Scoped Guideline Unions</h3>
-<p>Each entity type accepts only the guideline types relevant to it:</p>
+<p>Each entity type accepts only the guideline types relevant to it. The scoping follows this rationale:</p>
+<ul>
+<li><strong>Components</strong> get full structural documentation — they are rendered UI elements with code-level interfaces, visual anatomy, configurable dimensions, interactive states, and measurable design specifications.</li>
+<li><strong>Patterns</strong> get structural documentation without code-level details — they have visual layouts (anatomy), sub-types (variants), and states, but they are not single-component code interfaces. They do not accept <code>api</code> or <code>design-specifications</code>.</li>
+<li><strong>Styles</strong> get domain-level documentation — they govern a visual or cross-cutting domain through guiding principles, constrained value progressions (scales), and motion definitions.</li>
+<li><strong>Tokens</strong> get only general guidelines — they are atomic values with usage guidance but no visual structure or interaction behavior.</li>
+</ul>
 <table><thead><tr>
 <th>Scope</th>
 <th>Used by</th>
@@ -465,110 +616,135 @@
 <td>anatomy, api, variants, states, design-specifications + general</td>
 </tr>
 <tr>
-<td><strong>Style</strong></td>
-<td>style</td>
-<td>principles, scale + general</td>
-</tr>
-<tr>
 <td><strong>Pattern</strong></td>
 <td>pattern</td>
-<td>interactions + general</td>
+<td>interactions, anatomy, variants, states + general</td>
+</tr>
+<tr>
+<td><strong>Style</strong></td>
+<td>style</td>
+<td>principles, scale, motion + general</td>
 </tr>
 <tr>
 <td><strong>Token</strong></td>
-<td>token, tokenGroup, theme</td>
+<td>token, token-group, theme</td>
 <td>general only</td>
 </tr>
 </tbody></table>
-<p><strong>General</strong> (available on all entity types): best-practices, purpose, accessibility, examples, artifact-references.</p>
+<p><strong>General</strong> (available on all entity types): best-practices, purpose, accessibility, examples, content.</p>
 <h3 id="guideline-types">Guideline Types</h3>
 <table><thead><tr>
 <th>Type value</th>
 <th>Container property</th>
 <th>Item type</th>
 <th>Scope</th>
+<th>Description</th>
 </tr></thead><tbody>
 <tr>
 <td><code>"best-practices"</code></td>
 <td><code>items</code></td>
-<td>bestPracticeEntry (guidance + rationale + entryType)</td>
+<td>bestPracticeEntry</td>
 <td>General</td>
+<td>Actionable usage rules with rationale and enforcement levels.</td>
 </tr>
 <tr>
 <td><code>"purpose"</code></td>
-<td><code>whenToUse</code>, <code>whenNotToUse</code></td>
-<td>useCase</td>
+<td><code>useCases</code></td>
+<td>useCases (whenToUse/whenNotToUse)</td>
 <td>General</td>
+<td>Scenario-driven guidance for when to use and when not to use an artifact.</td>
 </tr>
 <tr>
 <td><code>"accessibility"</code></td>
-<td><code>keyboardInteraction</code>, <code>ariaAttributes</code>, <code>colorContrast</code>, etc.</td>
+<td>Named properties</td>
 <td>various</td>
 <td>General</td>
+<td>Structured a11y specs — keyboard, ARIA, screen reader, contrast, motion.</td>
 </tr>
 <tr>
 <td><code>"examples"</code></td>
 <td><code>items</code></td>
-<td>example (presentation-based)</td>
+<td>example</td>
 <td>General</td>
+<td>Visual/interactive demonstrations — images, videos, code, URLs, values.</td>
 </tr>
 <tr>
-<td><code>"artifact-reference"</code></td>
-<td><code>references</code></td>
-<td>artifactReferenceEntry (name + role)</td>
+<td><code>"content"</code></td>
+<td><code>labels</code>, <code>localization</code></td>
+<td>contentLabelEntry, localizationEntry</td>
 <td>General</td>
+<td>Recommended action labels and localization/i18n considerations.</td>
 </tr>
 <tr>
 <td><code>"anatomy"</code></td>
 <td><code>parts</code></td>
 <td>anatomyEntry</td>
-<td>Component</td>
+<td>Component, Pattern</td>
+<td>Visual structure decomposed into named parts with token references.</td>
 </tr>
 <tr>
 <td><code>"api"</code></td>
-<td><code>properties</code>, <code>events</code>, <code>slots</code>, etc.</td>
-<td>apiProperty, apiEvent, etc.</td>
+<td>Named arrays</td>
+<td>various</td>
 <td>Component</td>
+<td>Code-level interface — props, events, slots, CSS hooks, methods.</td>
 </tr>
 <tr>
 <td><code>"variants"</code></td>
 <td><code>items</code></td>
-<td>variantEntry (dimension with values)</td>
-<td>Component</td>
+<td>variantEntry</td>
+<td>Component, Pattern</td>
+<td>Dimensions of variation with enumerated values. Optional exclusions.</td>
 </tr>
 <tr>
 <td><code>"states"</code></td>
 <td><code>items</code></td>
 <td>stateEntry</td>
-<td>Component</td>
+<td>Component, Pattern</td>
+<td>Interactive states with triggers, token overrides, and previews.</td>
 </tr>
 <tr>
 <td><code>"design-specifications"</code></td>
-<td><code>tokens</code>, <code>spacing</code>, <code>sizing</code>, <code>typography</code>, <code>responsive</code></td>
+<td>Named properties</td>
 <td>various</td>
 <td>Component</td>
+<td>Token inventory, spacing, sizing, typography, responsive behavior.</td>
 </tr>
 <tr>
 <td><code>"principles"</code></td>
 <td><code>items</code></td>
-<td>principleEntry (title + description)</td>
+<td>principleEntry</td>
 <td>Style</td>
+<td>High-level guiding beliefs that shape decision-making.</td>
 </tr>
 <tr>
 <td><code>"scale"</code></td>
 <td><code>steps</code></td>
-<td>scaleStep (token + label + value)</td>
+<td>scaleStep</td>
 <td>Style</td>
+<td>Ordered progression of token values (spacing scale, type scale, etc.).</td>
+</tr>
+<tr>
+<td><code>"motion"</code></td>
+<td><code>items</code></td>
+<td>motionEntry</td>
+<td>Style</td>
+<td>Named easing curves with cubic-bezier functions and recommended durations.</td>
 </tr>
 <tr>
 <td><code>"interactions"</code></td>
 <td><code>items</code></td>
-<td>interactionEntry (trigger + description)</td>
+<td>interactionEntry</td>
 <td>Pattern</td>
+<td>Ordered steps in a pattern's interaction flow.</td>
 </tr>
 </tbody></table>
-<h3 id="best-practice-entry">Best Practice Entry</h3>
-<p>Every best practice pairs an actionable guidance statement with a rationale explaining why. The optional <code>entryType</code> classifies the enforcement level.</p>
+<hr>
+<h2 id="general-guidelines">General Guidelines</h2>
+<p>These guideline types are available on <strong>all</strong> entity types.</p>
+<h3 id="best-practices-best-practices">Best Practices (<code>best-practices</code>)</h3>
+<p>Documents actionable usage rules for an artifact. Each item is a self-contained rule pairing an actionable guidance statement with a rationale explaining why. Best practices tell the reader <em>how</em> to use the artifact correctly after they have chosen it. For guidance on <em>whether</em> to use the artifact at all, see <a href="#purpose-purpose">Purpose</a>.</p>
+<h4 id="best-practice-entry">Best Practice Entry</h4>
 <table><thead><tr>
 <th>Property</th>
 <th>Type</th>
@@ -579,31 +755,31 @@
 <td><code>guidance</code></td>
 <td><code>richText</code></td>
 <td>Yes</td>
-<td>The actionable guidance statement.</td>
+<td>The actionable guidance statement. MUST be concrete and unambiguous.</td>
 </tr>
 <tr>
 <td><code>rationale</code></td>
 <td><code>richText</code></td>
 <td>Yes</td>
-<td>Why this guidance exists.</td>
+<td>Why this guidance exists. MUST NOT be a restatement of the guidance.</td>
 </tr>
 <tr>
-<td><code>entryType</code></td>
+<td><code>level</code></td>
 <td><code>string</code></td>
 <td>No</td>
-<td>The enforcement level: <code>"required"</code>, <code>"encouraged"</code>, <code>"informational"</code>, <code>"discouraged"</code>, <code>"prohibited"</code>.</td>
+<td>Enforcement level: <code>"required"</code>, <code>"encouraged"</code>, <code>"informational"</code>, <code>"discouraged"</code>, <code>"prohibited"</code>. When omitted, consumers MAY treat as <code>"encouraged"</code>.</td>
 </tr>
 <tr>
 <td><code>category</code></td>
 <td><code>string</code></td>
 <td>No</td>
-<td>Discipline grouping (e.g., <code>"visual-design"</code>, <code>"accessibility"</code>, <code>"content"</code>).</td>
+<td>Discipline grouping (e.g., <code>"visual-design"</code>, <code>"accessibility"</code>, <code>"content"</code>, <code>"interaction"</code>, <code>"motion"</code>, <code>"development"</code>).</td>
 </tr>
 <tr>
 <td><code>target</code></td>
 <td><code>string</code></td>
 <td>No</td>
-<td>Anatomy part this applies to (e.g., <code>"label"</code>, <code>"icon"</code>).</td>
+<td>Anatomy part this applies to (e.g., <code>"label"</code>, <code>"icon"</code>). When omitted, applies to the artifact as a whole.</td>
 </tr>
 <tr>
 <td><code>criteria</code></td>
@@ -613,9 +789,9 @@
 </tr>
 <tr>
 <td><code>examples</code></td>
-<td><code>array</code></td>
+<td><code>example[]</code></td>
 <td>No</td>
-<td>Example objects illustrating the guidance.</td>
+<td>Examples illustrating encouraged and discouraged approaches.</td>
 </tr>
 <tr>
 <td><code>tags</code></td>
@@ -624,9 +800,61 @@
 <td>Freeform keywords.</td>
 </tr>
 </tbody></table>
-<hr>
-<h2 id="links">Links</h2>
-<p>The <code>links</code> array provides typed references to external resources and related artifacts.</p>
+<p>Enforcement levels align with RFC 2119 requirement levels:</p>
+<table><thead><tr>
+<th>Level</th>
+<th>RFC 2119</th>
+<th>Meaning</th>
+</tr></thead><tbody>
+<tr>
+<td><code>required</code></td>
+<td>MUST</td>
+<td>Non-compliance is a defect.</td>
+</tr>
+<tr>
+<td><code>encouraged</code></td>
+<td>SHOULD</td>
+<td>Follow in most cases; exceptions require justification.</td>
+</tr>
+<tr>
+<td><code>informational</code></td>
+<td>MAY</td>
+<td>Advisory context with no enforcement expectation.</td>
+</tr>
+<tr>
+<td><code>discouraged</code></td>
+<td>SHOULD NOT</td>
+<td>Avoid unless justified.</td>
+</tr>
+<tr>
+<td><code>prohibited</code></td>
+<td>MUST NOT</td>
+<td>Violations are defects.</td>
+</tr>
+</tbody></table>
+<h3 id="purpose-purpose">Purpose (<code>purpose</code>)</h3>
+<p>Documents what an artifact is used for — the concrete scenarios in which it is the right choice and the scenarios in which a different artifact would be more appropriate. Purpose guidelines help the reader decide <em>whether</em> to reach for this artifact before they start implementing it.</p>
+<p>The purpose guideline wraps the common <code>useCases</code> data model with a <code>type</code> discriminator:</p>
+<pre><code class="language-json">{
+  &quot;type&quot;: &quot;purpose&quot;,
+  &quot;useCases&quot;: {
+    &quot;whenToUse&quot;: [
+      { &quot;description&quot;: &quot;When the user needs to trigger an action such as submitting a form.&quot; }
+    ],
+    &quot;whenNotToUse&quot;: [
+      {
+        &quot;description&quot;: &quot;When the action navigates to a different page.&quot;,
+        &quot;alternative&quot;: {
+          &quot;name&quot;: &quot;link&quot;,
+          &quot;rationale&quot;: &quot;Links carry native navigation semantics.&quot;
+        }
+      }
+    ]
+  }
+}</code></pre>
+<p>This follows the same <code>useCases</code> shape used by variant values and state entries (see <a href="#use-cases">Use Cases</a>).</p>
+<h3 id="accessibility-accessibility">Accessibility (<code>accessibility</code>)</h3>
+<p>Documents structured accessibility specifications — keyboard interactions, ARIA attributes, screen reader behavior, focus management, color contrast pairs, and motion considerations. This guideline type captures <em>machine-readable specifications</em>. For actionable accessibility <em>rules</em> with rationale (e.g., "Provide an aria-label for icon-only buttons"), use a best-practice entry with <code>category: "accessibility"</code> instead.</p>
 <table><thead><tr>
 <th>Property</th>
 <th>Type</th>
@@ -634,34 +862,532 @@
 <th>Description</th>
 </tr></thead><tbody>
 <tr>
-<td><code>entryType</code></td>
+<td><code>type</code></td>
+<td><code>"accessibility"</code></td>
+<td>Yes</td>
+<td>Discriminator.</td>
+</tr>
+<tr>
+<td><code>wcagLevel</code></td>
+<td><code>string</code></td>
+<td>No</td>
+<td>Minimum WCAG conformance level: <code>"A"</code>, <code>"AA"</code>, <code>"AAA"</code>.</td>
+</tr>
+<tr>
+<td><code>keyboardInteraction</code></td>
+<td><code>keyboardInteraction[]</code></td>
+<td>No</td>
+<td>Key/action pairs. Each entry has <code>key</code>, <code>action</code>, and optional <code>context</code>.</td>
+</tr>
+<tr>
+<td><code>ariaAttributes</code></td>
+<td><code>ariaAttribute[]</code></td>
+<td>No</td>
+<td>ARIA attribute documentation. Each entry has <code>attribute</code>, <code>value</code>, <code>description</code>, <code>required</code>.</td>
+</tr>
+<tr>
+<td><code>screenReaderBehavior</code></td>
+<td><code>richText</code></td>
+<td>No</td>
+<td>How the artifact is announced by screen readers.</td>
+</tr>
+<tr>
+<td><code>focusManagement</code></td>
+<td><code>richText</code></td>
+<td>No</td>
+<td>How focus moves into, within, and out of the artifact.</td>
+</tr>
+<tr>
+<td><code>colorContrast</code></td>
+<td><code>colorContrast[]</code></td>
+<td>No</td>
+<td>Measured contrast ratios for foreground/background pairs. Each entry has <code>foreground</code>, <code>background</code>, <code>contrastRatio</code>, <code>level</code>, and optional <code>context</code>.</td>
+</tr>
+<tr>
+<td><code>motionConsiderations</code></td>
+<td><code>richText</code></td>
+<td>No</td>
+<td>How the artifact respects <code>prefers-reduced-motion</code>.</td>
+</tr>
+</tbody></table>
+<h3 id="examples-examples">Examples (<code>examples</code>)</h3>
+<p>Documents visual or interactive demonstrations of an artifact. Each item is a single demonstration — a static image, a video recording, a code snippet, a URL to a live demo, or a literal value.</p>
+<p>Each <code>example</code> requires at least a <code>presentation</code> or a <code>value</code> (or both):</p>
+<ul>
+<li><strong>Presentation</strong>: A visual or interactive demonstration — one of <code>presentationImage</code>, <code>presentationVideo</code>, <code>presentationCode</code>, or <code>presentationUrl</code>.</li>
+<li><strong>Value</strong>: A literal value for API property examples (e.g., <code>"primary"</code>, <code>44</code>, <code>true</code>). When provided without a presentation, the example represents a concrete data point.</li>
+</ul>
+<p>Optional <code>title</code> and <code>description</code> provide context.</p>
+<h3 id="content-content">Content (<code>content</code>)</h3>
+<p>Documents structured content guidelines — recommended action labels and localization/internationalization considerations. Content guidelines complement best-practice guidelines: best practices say "Use sentence case" (a <em>rule</em>), content guidelines say "Add: Takes an existing object and uses it in a new context" (a <em>reference</em>).</p>
+<p>At least one of <code>labels</code> or <code>localization</code> must be present.</p>
+<h4 id="content-label-entry">Content Label Entry</h4>
+<table><thead><tr>
+<th>Property</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr></thead><tbody>
+<tr>
+<td><code>term</code></td>
 <td><code>string</code></td>
 <td>Yes</td>
-<td>Category: <code>"source"</code>, <code>"design"</code>, <code>"storybook"</code>, <code>"documentation"</code>, <code>"package"</code>, <code>"repository"</code>, <code>"alternative"</code>, <code>"parent"</code>, <code>"child"</code>, <code>"related"</code>. Custom values permitted.</td>
+<td>The canonical label text (e.g., <code>"Add"</code>, <code>"Cancel"</code>, <code>"Delete"</code>).</td>
+</tr>
+<tr>
+<td><code>definition</code></td>
+<td><code>richText</code></td>
+<td>Yes</td>
+<td>What this label means — the action it represents.</td>
+</tr>
+<tr>
+<td><code>usage</code></td>
+<td><code>richText</code></td>
+<td>No</td>
+<td>When and how to use this label.</td>
+</tr>
+<tr>
+<td><code>alternatives</code></td>
+<td><code>string[]</code></td>
+<td>No</td>
+<td>Related terms commonly confused with this one (e.g., Add lists <code>["Create", "Insert", "New"]</code>).</td>
+</tr>
+<tr>
+<td><code>context</code></td>
+<td><code>string</code></td>
+<td>No</td>
+<td>Where this label is commonly used (e.g., <code>"Buttons in dialogs"</code>, <code>"Toolbar actions"</code>).</td>
+</tr>
+<tr>
+<td><code>examples</code></td>
+<td><code>example[]</code></td>
+<td>No</td>
+<td>Visual examples showing the label in context.</td>
+</tr>
+</tbody></table>
+<h4 id="localization-entry">Localization Entry</h4>
+<table><thead><tr>
+<th>Property</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr></thead><tbody>
+<tr>
+<td><code>concern</code></td>
+<td><code>string</code></td>
+<td>Yes</td>
+<td>The i18n concern: <code>"rtl"</code>, <code>"text-expansion"</code>, <code>"pluralization"</code>, <code>"concatenation"</code>, <code>"date-format"</code>, <code>"number-format"</code>, <code>"currency"</code>, <code>"icon-direction"</code>, <code>"truncation"</code>, <code>"sorting"</code>. Custom values permitted.</td>
+</tr>
+<tr>
+<td><code>description</code></td>
+<td><code>richText</code></td>
+<td>Yes</td>
+<td>Actionable guidance for this concern.</td>
+</tr>
+<tr>
+<td><code>examples</code></td>
+<td><code>example[]</code></td>
+<td>No</td>
+<td>Visual examples illustrating the concern.</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="component-scoped-guidelines">Component-Scoped Guidelines</h2>
+<p>These guideline types are only accepted on <strong>component</strong> entities.</p>
+<h3 id="anatomy-anatomy">Anatomy (<code>anatomy</code>)</h3>
+<p>Documents the visual structure of a component or pattern by enumerating its named sub-elements (parts). Each part can reference the design tokens that style it, creating a bridge between the artifact's visual design and its token architecture.</p>
+<p>For components, parts represent rendered UI sub-elements (container, label, icon, focus-ring). For patterns, parts represent the structural sections of the pattern's visual layout (image, title, body, primary action).</p>
+<h4 id="anatomy-entry">Anatomy Entry</h4>
+<table><thead><tr>
+<th>Property</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr></thead><tbody>
+<tr>
+<td><code>name</code></td>
+<td><code>string</code></td>
+<td>Yes</td>
+<td>Machine-readable part name (e.g., <code>"container"</code>, <code>"label"</code>).</td>
+</tr>
+<tr>
+<td><code>displayName</code></td>
+<td><code>string</code></td>
+<td>No</td>
+<td>Human-readable name.</td>
+</tr>
+<tr>
+<td><code>description</code></td>
+<td><code>richText</code></td>
+<td>Yes</td>
+<td>What this part is and any constraints.</td>
+</tr>
+<tr>
+<td><code>required</code></td>
+<td><code>boolean</code></td>
+<td>Yes</td>
+<td>Whether this part is always present in the rendered output.</td>
+</tr>
+<tr>
+<td><code>tokens</code></td>
+<td><code>object</code></td>
+<td>No</td>
+<td>Token map: keys are purposes (e.g., <code>"background"</code>, <code>"text-color"</code>), values are token names (e.g., <code>"color-action-primary"</code>). Same format as variant and state token references.</td>
+</tr>
+<tr>
+<td><code>links</code></td>
+<td><code>link[]</code></td>
+<td>No</td>
+<td>Links to design tool nodes, source code, etc.</td>
+</tr>
+</tbody></table>
+<h3 id="api-api">API (<code>api</code>)</h3>
+<p>Documents the code-level interface of a component on a single platform. For multi-platform components, create one API guideline per platform using the <code>platform</code> property.</p>
+<p>Sections: <code>properties</code> (apiProperty[]), <code>events</code> (apiEvent[]), <code>slots</code> (apiSlot[]), <code>cssCustomProperties</code> (apiCssCustomProperty[]), <code>cssParts</code> (apiCssPart[]), <code>dataAttributes</code> (apiDataAttribute[]), <code>methods</code> (apiMethod[]).</p>
+<h3 id="variants-variants">Variants (<code>variants</code>)</h3>
+<p>Documents all dimensions of visual or behavioral variation. Each item represents a single axis of configuration (e.g., <code>"size"</code>, <code>"emphasis"</code>, <code>"full-width"</code>). Multiple axes document orthogonal dimensions that can be combined independently.</p>
+<p>The optional <code>exclusions</code> array documents invalid combinations across dimensions:</p>
+<pre><code class="language-json">{
+  &quot;type&quot;: &quot;variants&quot;,
+  &quot;items&quot;: [
+    { &quot;name&quot;: &quot;emphasis&quot;, &quot;description&quot;: &quot;...&quot;, &quot;values&quot;: [...] },
+    { &quot;name&quot;: &quot;size&quot;, &quot;description&quot;: &quot;...&quot;, &quot;values&quot;: [...] }
+  ],
+  &quot;exclusions&quot;: [
+    {
+      &quot;conditions&quot;: [
+        { &quot;dimension&quot;: &quot;emphasis&quot;, &quot;value&quot;: &quot;ghost&quot; },
+        { &quot;dimension&quot;: &quot;size&quot;, &quot;value&quot;: &quot;sm&quot; }
+      ],
+      &quot;description&quot;: &quot;Ghost emphasis at small size does not provide adequate visual affordance.&quot;
+    }
+  ]
+}</code></pre>
+<p>Each exclusion requires at least two conditions (a single condition would exclude an entire value, which should be removed from the dimension's values array instead).</p>
+<h4 id="variant-value">Variant Value</h4>
+<table><thead><tr>
+<th>Property</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr></thead><tbody>
+<tr>
+<td><code>name</code></td>
+<td><code>string</code></td>
+<td>Yes</td>
+<td>Machine-readable value name.</td>
+</tr>
+<tr>
+<td><code>displayName</code></td>
+<td><code>string</code></td>
+<td>No</td>
+<td>Human-readable name.</td>
+</tr>
+<tr>
+<td><code>description</code></td>
+<td><code>richText</code></td>
+<td>Yes</td>
+<td>What this value looks like and when to use it.</td>
+</tr>
+<tr>
+<td><code>tokens</code></td>
+<td><code>object</code></td>
+<td>No</td>
+<td>Token overrides: keys are purposes, values are token names.</td>
+</tr>
+<tr>
+<td><code>preview</code></td>
+<td><code>example[]</code></td>
+<td>No</td>
+<td>Visual previews.</td>
+</tr>
+<tr>
+<td><code>useCases</code></td>
+<td><code>useCases</code></td>
+<td>No</td>
+<td>When to choose this value over others.</td>
+</tr>
+</tbody></table>
+<h3 id="states-states">States (<code>states</code>)</h3>
+<p>Documents all interactive states — hover, focus, active, disabled, loading, selected, error, etc. — with triggers, token overrides, and previews.</p>
+<h4 id="state-entry">State Entry</h4>
+<table><thead><tr>
+<th>Property</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr></thead><tbody>
+<tr>
+<td><code>name</code></td>
+<td><code>string</code></td>
+<td>Yes</td>
+<td>Machine-readable state name.</td>
+</tr>
+<tr>
+<td><code>displayName</code></td>
+<td><code>string</code></td>
+<td>No</td>
+<td>Human-readable name.</td>
+</tr>
+<tr>
+<td><code>description</code></td>
+<td><code>richText</code></td>
+<td>Yes</td>
+<td>Triggers, visual changes, and constraints.</td>
+</tr>
+<tr>
+<td><code>tokens</code></td>
+<td><code>object</code></td>
+<td>No</td>
+<td>Token overrides active in this state. Same map format as variants.</td>
+</tr>
+<tr>
+<td><code>preview</code></td>
+<td><code>example[]</code></td>
+<td>No</td>
+<td>Visual previews.</td>
+</tr>
+<tr>
+<td><code>useCases</code></td>
+<td><code>useCases</code></td>
+<td>No</td>
+<td>When this state is and is not appropriate.</td>
+</tr>
+</tbody></table>
+<h3 id="design-specifications-design-specifications">Design Specifications (<code>design-specifications</code>)</h3>
+<p>Documents measurable visual specifications — token inventory, spacing relationships, dimension constraints, typography settings, and responsive behavior. At least one section must be present.</p>
+<table><thead><tr>
+<th>Section</th>
+<th>Type</th>
+<th>Description</th>
+</tr></thead><tbody>
+<tr>
+<td><code>tokens</code></td>
+<td><code>string[]</code></td>
+<td>Flat inventory of all token names consumed by the component.</td>
+</tr>
+<tr>
+<td><code>spacing</code></td>
+<td><code>spacingSpec</code></td>
+<td>Internal padding/gaps and external recommended margins. Keys are named relationships (e.g., <code>"container-horizontal"</code>, <code>"icon-to-label"</code>), values are token names or resolved values.</td>
+</tr>
+<tr>
+<td><code>sizing</code></td>
+<td><code>sizingSpec</code></td>
+<td>Dimension constraints: <code>minWidth</code>, <code>maxWidth</code>, <code>minHeight</code>, <code>maxHeight</code>, <code>aspectRatio</code>.</td>
+</tr>
+<tr>
+<td><code>typography</code></td>
+<td><code>typographySpec</code></td>
+<td>Per-element typographic settings. Keys are anatomy part names, values are objects with <code>fontFamily</code>, <code>fontSize</code>, <code>fontWeight</code>, <code>lineHeight</code>, <code>letterSpacing</code>, <code>textTransform</code>, <code>typeToken</code>.</td>
+</tr>
+<tr>
+<td><code>responsive</code></td>
+<td><code>responsiveEntry[]</code></td>
+<td>Breakpoint-specific behavior. Each entry has <code>breakpoint</code> and <code>description</code>.</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="style-scoped-guidelines">Style-Scoped Guidelines</h2>
+<p>These guideline types are only accepted on <strong>style</strong> entities.</p>
+<h3 id="principles-principles">Principles (<code>principles</code>)</h3>
+<p>Documents high-level guiding principles that shape decision-making for a domain. Principles answer "what do we believe?" and "what constraints do we accept?" — they sit above individual best practices.</p>
+<p>Each <code>principleEntry</code> has a <code>title</code> (short, memorable name) and a <code>description</code> (what it means in practice).</p>
+<h3 id="scale-scale">Scale (<code>scale</code>)</h3>
+<p>Documents an ordered sequence of values forming a visual scale — a type scale, spacing scale, elevation scale, or any other progression of design token values.</p>
+<p>Each <code>scaleStep</code> references a design token and optionally provides a <code>label</code>, <code>value</code> (display convenience), and <code>description</code> (usage notes). Steps are ordered from smallest/lowest to largest/highest.</p>
+<p>The scale guideline requires a <code>name</code>, <code>description</code>, and <code>steps</code> array.</p>
+<h3 id="motion-motion">Motion (<code>motion</code>)</h3>
+<p>Documents the motion system — named easing curves, their cubic-bezier timing functions, recommended durations, and usage guidance. Each item represents a single easing definition that designers and engineers select from when adding animation or transitions.</p>
+<h4 id="motion-entry">Motion Entry</h4>
+<table><thead><tr>
+<th>Property</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr></thead><tbody>
+<tr>
+<td><code>name</code></td>
+<td><code>string</code></td>
+<td>Yes</td>
+<td>Machine-readable easing name (e.g., <code>"expressive"</code>, <code>"enter"</code>, <code>"exit"</code>).</td>
+</tr>
+<tr>
+<td><code>displayName</code></td>
+<td><code>string</code></td>
+<td>No</td>
+<td>Human-readable name.</td>
+</tr>
+<tr>
+<td><code>description</code></td>
+<td><code>richText</code></td>
+<td>Yes</td>
+<td>Visual character, usage context, and UX effect.</td>
+</tr>
+<tr>
+<td><code>function</code></td>
+<td><code>number[4]</code></td>
+<td>No</td>
+<td>Cubic-bezier control points <code>[P1x, P1y, P2x, P2y]</code>, aligned with the W3C DTCG <code>cubicBezier</code> type (§8.6).</td>
+</tr>
+<tr>
+<td><code>token</code></td>
+<td><code>string</code></td>
+<td>No</td>
+<td>Reference to a DTCG cubicBezier or transition token.</td>
+</tr>
+<tr>
+<td><code>duration</code></td>
+<td><code>motionDuration</code></td>
+<td>No</td>
+<td>Recommended duration range: <code>min</code>, <code>max</code>, and/or <code>description</code>.</td>
+</tr>
+<tr>
+<td><code>usage</code></td>
+<td><code>string</code></td>
+<td>No</td>
+<td>Comma-separated usage contexts (e.g., <code>"entering elements, snap-to-position"</code>).</td>
+</tr>
+<tr>
+<td><code>examples</code></td>
+<td><code>example[]</code></td>
+<td>No</td>
+<td>Visual demonstrations.</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="pattern-scoped-guidelines">Pattern-Scoped Guidelines</h2>
+<p>These guideline types are only accepted on <strong>pattern</strong> entities (in addition to the shared anatomy, variants, and states guidelines).</p>
+<h3 id="interactions-interactions">Interactions (<code>interactions</code>)</h3>
+<p>Documents the interaction flow of a pattern as an ordered sequence of steps. The ordering is critical: it represents the chronological flow of the user journey.</p>
+<h4 id="interaction-entry">Interaction Entry</h4>
+<table><thead><tr>
+<th>Property</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr></thead><tbody>
+<tr>
+<td><code>trigger</code></td>
+<td><code>string</code></td>
+<td>No</td>
+<td>What initiates this step. When omitted, the step continues the previous flow.</td>
+</tr>
+<tr>
+<td><code>description</code></td>
+<td><code>richText</code></td>
+<td>Yes</td>
+<td>What happens — system response, visual changes, state transitions.</td>
+</tr>
+<tr>
+<td><code>components</code></td>
+<td><code>string[]</code></td>
+<td>No</td>
+<td>Names of components involved. MUST match documented component names.</td>
+</tr>
+<tr>
+<td><code>examples</code></td>
+<td><code>example[]</code></td>
+<td>No</td>
+<td>Visual/interactive illustrations of this step.</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="links">Links</h2>
+<p>The <code>links</code> array provides typed references to external resources and internal DSDS artifact relationships. Links unify what was previously split between external URL references and internal artifact references into a single relationship model.</p>
+<p>Every link requires a <code>type</code> and at least one of <code>url</code> (for external resources) or <code>name</code> (for internal DSDS artifact references). Both can be present when an internal artifact also has an addressable URL.</p>
+<table><thead><tr>
+<th>Property</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr></thead><tbody>
+<tr>
+<td><code>type</code></td>
+<td><code>string</code></td>
+<td>Yes</td>
+<td>Category of the link. See below.</td>
 </tr>
 <tr>
 <td><code>url</code></td>
 <td><code>string</code></td>
-<td>Yes</td>
-<td>URL of the linked resource. MUST be a valid absolute URI.</td>
+<td>Conditional</td>
+<td>URL of the external resource. Required when <code>name</code> is not provided.</td>
+</tr>
+<tr>
+<td><code>name</code></td>
+<td><code>string</code></td>
+<td>Conditional</td>
+<td>Name of a referenced DSDS artifact. Required when <code>url</code> is not provided.</td>
 </tr>
 <tr>
 <td><code>label</code></td>
 <td><code>string</code></td>
 <td>No</td>
-<td>Human-readable label for the link.</td>
+<td>Display text for the link — what a user sees when it is rendered in documentation.</td>
+</tr>
+<tr>
+<td><code>role</code></td>
+<td><code>string</code></td>
+<td>No</td>
+<td>The functional relationship this artifact has to the current entity — what part it plays in the current context. Distinct from <code>label</code>: label names the thing, role describes its function here.</td>
+</tr>
+<tr>
+<td><code>required</code></td>
+<td><code>boolean</code></td>
+<td>No</td>
+<td>Whether this linked artifact is required for the parent entity to function correctly.</td>
 </tr>
 </tbody></table>
+<h3 id="standard-link-types">Standard Link Types</h3>
+<p><strong>External resource types:</strong> <code>"source"</code>, <code>"design"</code>, <code>"storybook"</code>, <code>"documentation"</code>, <code>"package"</code>, <code>"repository"</code>.</p>
+<p><strong>Relationship types:</strong> <code>"alternative"</code>, <code>"parent"</code>, <code>"child"</code>, <code>"related"</code>.</p>
+<p><strong>Artifact types (for internal references):</strong> <code>"component"</code>, <code>"token"</code>, <code>"token-group"</code>, <code>"style"</code>, <code>"pattern"</code>, <code>"theme"</code>.</p>
+<p>Custom values are permitted and SHOULD be lowercase strings matching <code>^[a-z][a-z0-9-]*$</code>.</p>
 <hr>
 <h2 id="rich-text">Rich Text</h2>
 <p>Fields that contain human-written prose use the <code>richText</code> type:</p>
 <ul>
-<li><strong>String form:</strong> A bare JSON string, interpreted as CommonMark.</li>
+<li><strong>String form:</strong> A bare JSON string, interpreted as CommonMark for backward compatibility.</li>
 <li><strong>Object form:</strong> <code>{ "value": "...", "format": "plain" | "markdown" | "html" }</code> for explicit format control.</li>
 </ul>
 <hr>
+<h2 id="use-cases">Use Cases</h2>
+<p>The <code>useCases</code> data model provides scenario-driven guidance for when an artifact or option is and is not the right choice. It appears in three contexts:</p>
+<ol>
+<li><strong>Purpose guideline</strong> — wrapped with a <code>type: "purpose"</code> discriminator to appear in the guidelines array.</li>
+<li><strong>Variant values</strong> — inline <code>useCases</code> property on each variant value for "when to choose this value."</li>
+<li><strong>State entries</strong> — inline <code>useCases</code> property on each state entry for "when this state is appropriate."</li>
+</ol>
+<p>In all three contexts, the shape is identical:</p>
+<pre><code class="language-json">{
+  &quot;whenToUse&quot;: [
+    { &quot;description&quot;: &quot;Scenario description...&quot; }
+  ],
+  &quot;whenNotToUse&quot;: [
+    {
+      &quot;description&quot;: &quot;Scenario description...&quot;,
+      &quot;alternative&quot;: {
+        &quot;name&quot;: &quot;alternative-artifact&quot;,
+        &quot;rationale&quot;: &quot;Why the alternative is better.&quot;
+      }
+    }
+  ]
+}</code></pre>
+<p>Each <code>whenNotToUse</code> entry SHOULD include an <code>alternative</code> pointing to a more appropriate artifact.</p>
+<hr>
 <h2 id="extensions">Extensions</h2>
-<p>The <code>$extensions</code> property is available on the root document, on each documentation group, and on each entity. Keys MUST use vendor-specific namespaces. Tools that do not recognize an extension MUST preserve it.</p>
+<p>The <code>$extensions</code> property is available on the root document, on each documentation group, and on each entity. Keys MUST use vendor-specific namespaces (reverse domain name notation recommended). Tools that do not recognize an extension MUST preserve it. Extension data SHOULD NOT duplicate information available in core schema fields.</p>
+<pre><code class="language-json">{
+  &quot;$extensions&quot;: {
+    &quot;com.designTool&quot;: {
+      &quot;componentId&quot;: &quot;1234:5678&quot;
+    },
+    &quot;com.storybook&quot;: {
+      &quot;storyId&quot;: &quot;components-button--primary&quot;
+    }
+  }
+}</code></pre>
 <hr>
 <h2 id="naming-conventions">Naming Conventions</h2>
 <h3 id="token-name-exception">Token Name Exception</h3>
@@ -669,10 +1395,10 @@
 <h3 id="guideline-type-naming">Guideline Type Naming</h3>
 <p>Guideline type values follow two naming patterns based on their structural role:</p>
 <ul>
-<li><strong>Plural names</strong> for guideline types that wrap a homogeneous list of items in an <code>items</code> array: <code>"best-practices"</code>, <code>"variants"</code>, <code>"states"</code>, <code>"principles"</code>, <code>"interactions"</code>, <code>"examples"</code>.</li>
-<li><strong>Singular names</strong> for guideline types that are self-contained named entities with their own internal structure: <code>"scale"</code> (has <code>name</code>, <code>steps</code>), <code>"anatomy"</code> (has <code>parts</code>), <code>"api"</code> (has <code>properties</code>, <code>events</code>, etc.), <code>"accessibility"</code> (has <code>keyboardInteraction</code>, <code>ariaAttributes</code>, etc.), <code>"design-specifications"</code> (has <code>tokens</code>, <code>spacing</code>, etc.), <code>"artifact-reference"</code> (has <code>referenceType</code>, <code>references</code>), <code>"purpose"</code> (has <code>whenToUse</code>, <code>whenNotToUse</code>).</li>
+<li><strong>Plural names</strong> for guideline types that wrap a homogeneous list of items in an <code>items</code> array: <code>"best-practices"</code>, <code>"variants"</code>, <code>"states"</code>, <code>"principles"</code>, <code>"interactions"</code>, <code>"examples"</code>, <code>"motion"</code>, <code>"content"</code>.</li>
+<li><strong>Singular names</strong> for guideline types that are self-contained entities with their own internal structure: <code>"scale"</code> (has <code>name</code>, <code>steps</code>), <code>"anatomy"</code> (has <code>parts</code>), <code>"api"</code> (has <code>properties</code>, <code>events</code>, etc.), <code>"accessibility"</code> (has <code>keyboardInteraction</code>, <code>ariaAttributes</code>, etc.), <code>"design-specifications"</code> (has <code>tokens</code>, <code>spacing</code>, etc.), <code>"purpose"</code> (has <code>useCases</code>).</li>
 </ul>
-<p>The distinction: plural types are containers of interchangeable items where the container itself has no identity beyond its type. Singular types have meaningful internal structure where the properties are named and semantically distinct (not a flat list).</p>
+<p>The distinction: plural types are containers of interchangeable items where the container itself has no identity beyond its type. Singular types have meaningful internal structure where the properties are named and semantically distinct.</p>
 <hr>
 <h2 id="companion-files">Companion Files</h2>
 <table><thead><tr>
@@ -692,12 +1418,16 @@
 <td>Starter kit with components, tokens, a style, and a pattern.</td>
 </tr>
 <tr>
+<td><a href="examples/minimal/"><code>examples/minimal/</code></a></td>
+<td>Minimal examples showing the floor of documentation for each entity type.</td>
+</tr>
+<tr>
 <td><a href="examples/entities/component.json"><code>examples/entities/component.json</code></a></td>
 <td>Complete component documentation (Button).</td>
 </tr>
 <tr>
 <td><a href="examples/entities/token.json"><code>examples/entities/token.json</code></a></td>
-<td>Token documentation with value and API examples.</td>
+<td>Token documentation with value, API, and resolution examples.</td>
 </tr>
 <tr>
 <td><a href="examples/entities/token-group.json"><code>examples/entities/token-group.json</code></a></td>
@@ -709,7 +1439,15 @@
 </tr>
 <tr>
 <td><a href="examples/entities/style.json"><code>examples/entities/style.json</code></a></td>
-<td>Style documentation (Spacing).</td>
+<td>Style documentation (Spacing) with scale, motion, and best practices.</td>
+</tr>
+<tr>
+<td><a href="examples/entities/pattern.json"><code>examples/entities/pattern.json</code></a></td>
+<td>Pattern documentation (Error Messaging).</td>
+</tr>
+<tr>
+<td><a href="examples/entities/empty-state-pattern.json"><code>examples/entities/empty-state-pattern.json</code></a></td>
+<td>Pattern documentation (Empty State) with anatomy, variants, states, interactions, and content.</td>
 </tr>
 </tbody></table>
 <hr>
@@ -720,11 +1458,11 @@
 </tr></thead><tbody>
 <tr>
 <td><strong>Level 1: Core</strong></td>
-<td><code>name</code>, <code>displayName</code>, <code>description</code>, <code>status</code> (+ <code>tokenType</code> for tokens, <code>overrides</code> for themes)</td>
+<td>Identity fields only. For tokens: <code>type</code>, <code>name</code>, <code>tokenType</code>. For all others: <code>type</code>, <code>name</code>, <code>displayName</code>, <code>description</code>, <code>status</code> (+ <code>overrides</code> for themes).</td>
 </tr>
 <tr>
 <td><strong>Level 2: Complete</strong></td>
-<td>Level 1 + at least one substantive guideline (anatomy/api/variants for components, principles/scale for styles, interactions for patterns, best-practices/purpose for tokens)</td>
+<td>Level 1 + at least one substantive guideline (anatomy/api/variants for components, principles/scale for styles, interactions for patterns, best-practices/purpose for tokens).</td>
 </tr>
 </tbody></table>
 <hr>
@@ -739,7 +1477,7 @@
 <li><strong>Specificity over subjectivity.</strong> "Use sparingly" is not guidance. "Limit to one per surface" is.</li>
 </ol>
 <hr>
-<p><em>End of overview. See individual module files in <code>spec/modules/</code> for the complete specification of each section.</em></p>
+<p><em>End of specification. See the schema files in <code>spec/schema/</code> for the normative JSON Schema definitions and the examples in <code>spec/examples/</code> for complete, validated demonstrations of each entity and guideline type.</em></p>
 
         <a href="#" class="back-to-top">↑ Back to top</a>
 
@@ -768,14 +1506,36 @@
 <li><a class="toc__link toc__link--sub" href="#theme">Theme</a></li>
 <li><a class="toc__link toc__link--sub" href="#style">Style</a></li>
 <li><a class="toc__link toc__link--sub" href="#pattern">Pattern</a></li>
+<li><a class="toc__link" href="#token-value">Token Value</a></li>
+<li><a class="toc__link" href="#token-api">Token API</a></li>
 <li><a class="toc__link" href="#status">Status</a></li>
+<li><a class="toc__link toc__link--sub" href="#status-values">Status Values</a></li>
 <li><a class="toc__link toc__link--sub" href="#platform-status-entry">Platform Status Entry</a></li>
 <li><a class="toc__link" href="#guidelines">Guidelines</a></li>
 <li><a class="toc__link toc__link--sub" href="#scoped-guideline-unions">Scoped Guideline Unions</a></li>
 <li><a class="toc__link toc__link--sub" href="#guideline-types">Guideline Types</a></li>
-<li><a class="toc__link toc__link--sub" href="#best-practice-entry">Best Practice Entry</a></li>
+<li><a class="toc__link" href="#general-guidelines">General Guidelines</a></li>
+<li><a class="toc__link toc__link--sub" href="#best-practices-best-practices">Best Practices (best-practices)</a></li>
+<li><a class="toc__link toc__link--sub" href="#purpose-purpose">Purpose (purpose)</a></li>
+<li><a class="toc__link toc__link--sub" href="#accessibility-accessibility">Accessibility (accessibility)</a></li>
+<li><a class="toc__link toc__link--sub" href="#examples-examples">Examples (examples)</a></li>
+<li><a class="toc__link toc__link--sub" href="#content-content">Content (content)</a></li>
+<li><a class="toc__link" href="#component-scoped-guidelines">Component-Scoped Guidelines</a></li>
+<li><a class="toc__link toc__link--sub" href="#anatomy-anatomy">Anatomy (anatomy)</a></li>
+<li><a class="toc__link toc__link--sub" href="#api-api">API (api)</a></li>
+<li><a class="toc__link toc__link--sub" href="#variants-variants">Variants (variants)</a></li>
+<li><a class="toc__link toc__link--sub" href="#states-states">States (states)</a></li>
+<li><a class="toc__link toc__link--sub" href="#design-specifications-design-specifications">Design Specifications (design-specifications)</a></li>
+<li><a class="toc__link" href="#style-scoped-guidelines">Style-Scoped Guidelines</a></li>
+<li><a class="toc__link toc__link--sub" href="#principles-principles">Principles (principles)</a></li>
+<li><a class="toc__link toc__link--sub" href="#scale-scale">Scale (scale)</a></li>
+<li><a class="toc__link toc__link--sub" href="#motion-motion">Motion (motion)</a></li>
+<li><a class="toc__link" href="#pattern-scoped-guidelines">Pattern-Scoped Guidelines</a></li>
+<li><a class="toc__link toc__link--sub" href="#interactions-interactions">Interactions (interactions)</a></li>
 <li><a class="toc__link" href="#links">Links</a></li>
+<li><a class="toc__link toc__link--sub" href="#standard-link-types">Standard Link Types</a></li>
 <li><a class="toc__link" href="#rich-text">Rich Text</a></li>
+<li><a class="toc__link" href="#use-cases">Use Cases</a></li>
 <li><a class="toc__link" href="#extensions">Extensions</a></li>
 <li><a class="toc__link" href="#naming-conventions">Naming Conventions</a></li>
 <li><a class="toc__link toc__link--sub" href="#token-name-exception">Token Name Exception</a></li>

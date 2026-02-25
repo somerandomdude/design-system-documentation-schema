@@ -8,14 +8,14 @@ A standard, machine-readable format for design system documentation.
 
 DSDS defines a JSON-based format for documenting the six entity types of a design system:
 
-- **Components** — Anatomy, API, variants, states, design specifications, best practices, accessibility
+- **Components** — Anatomy, API, variants, states, design specifications, best practices, accessibility, content
 - **Tokens** — Semantic meaning, platform mappings, contrast ratios, usage rules
 - **Token Groups** — Hierarchical organization of tokens into families and sub-families
 - **Themes** — Named sets of token value overrides for color modes, density, brand variants
-- **Styles** — Macro-level visual guidelines for color, typography, spacing, elevation, and motion
-- **Patterns** — Broad interaction patterns like navigation, error messaging, and empty states
+- **Styles** — Foundations for color, typography, spacing, elevation, motion, and content — with principles, scales, motion definitions, and best practices
+- **Patterns** — Broad interaction patterns like navigation, error messaging, and empty states — with anatomy, variants, states, interactions, and content
 
-All structured documentation — best practices, anatomy, API specs, variants, states, accessibility, examples, design specifications, principles, scales, interactions, and artifact references — lives in a unified **guidelines** system. Each guideline is a typed container identified by a `type` discriminator.
+All structured documentation — best practices, anatomy, API specs, variants, states, accessibility, examples, design specifications, principles, scales, motion definitions, content guidelines, and interactions — lives in a unified **guidelines** system. Each guideline is a typed container identified by a `type` discriminator.
 
 The goal is simple: make design system documentation structured, portable, and consumable by tools — whether that tool is a documentation site, a linter, a code assistant, or a human reading JSON.
 
@@ -50,11 +50,7 @@ The two formats are designed to work together. A DSDS token entity can reference
 
 ```
 spec/
-├── dsds-spec.md                                        # Specification overview
-├── modules/                                            # Prose documentation
-│   ├── common.md                                       # Shared primitives (richText, status, link, example, etc.)
-│   ├── entities.md                                     # Entity types (component, token, theme, style, pattern)
-│   └── guidelines.md                                   # Guideline types (best-practices, anatomy, api, variants, etc.)
+├── dsds-spec.md                                        # Complete specification (single source of truth)
 ├── schema/
 │   ├── dsds.schema.json                                # Root JSON Schema
 │   ├── dsds.bundled.schema.json                        # Auto-generated single-file bundle
@@ -77,20 +73,22 @@ spec/
 │       ├── accessibility.schema.json                   # accessibility, keyboardInteraction, ariaAttribute, colorContrast
 │       ├── anatomy.schema.json                         # anatomy, anatomyEntry
 │       ├── api.schema.json                             # api, apiProperty, apiEvent, apiSlot, etc.
-│       ├── artifact-reference.schema.json              # artifactReference, artifactReferenceEntry
 │       ├── best-practice.schema.json                   # bestPractices, bestPracticeEntry
+│       ├── content.schema.json                         # content, contentLabelEntry, localizationEntry
 │       ├── design-specifications.schema.json           # designSpecifications, spacingSpec, sizingSpec, typographySpec, etc.
 │       ├── interaction.schema.json                     # interactions, interactionEntry
+│       ├── motion.schema.json                          # motion, motionEntry, motionDuration
 │       ├── principle.schema.json                       # principles, principleEntry
-│       ├── purpose.schema.json                         # purpose (whenToUse / whenNotToUse)
+│       ├── purpose.schema.json                         # purpose (wraps useCases)
 │       ├── scale.schema.json                           # scale, scaleStep
 │       ├── state.schema.json                           # states, stateEntry
-│       └── variant.schema.json                         # variants, variantEntry, variantValue
+│       └── variant.schema.json                         # variants, variantEntry, variantValue, variantExclusion
 └── examples/
     ├── starter-kit.dsds.json                           # Complete document with components, tokens, styles, patterns
+    ├── minimal/                                        # Lightweight examples showing the floor of documentation
     ├── common/                                         # Per-definition examples for common primitives
-    ├── entities/                                       # Per-definition examples for entity types
-    └── guidelines/                                     # Per-definition examples for guideline types
+    ├── entities/                                       # Per-definition examples for entity types (incl. empty-state pattern)
+    └── guidelines/                                     # Per-definition examples for guideline types (incl. motion, content)
 
 scripts/
 ├── bundle.js                                           # Generates dsds.bundled.schema.json from split schemas
@@ -107,22 +105,20 @@ site/
 
 ### 1. Read the spec
 
-Start with [`spec/dsds-spec.md`](spec/dsds-spec.md) for the architecture overview. Then read the three modules:
-
-- [`spec/modules/common.md`](spec/modules/common.md) — Shared primitives (richText, status, link, example, extensions, metadata, use cases)
-- [`spec/modules/entities.md`](spec/modules/entities.md) — The six entity types (component, token, token group, theme, style, pattern)
-- [`spec/modules/guidelines.md`](spec/modules/guidelines.md) — The unified guideline system (13 guideline types with scoped unions)
+Start with [`spec/dsds-spec.md`](spec/dsds-spec.md) — it is the single source of truth for the entire specification, covering document structure, entity types, all guideline types, links, status, rich text, use cases, extensions, and naming conventions.
 
 ### 2. Look at the examples
 
 The [`spec/examples/`](spec/examples/) directory contains validated example files:
 
 - **[`starter-kit.dsds.json`](spec/examples/starter-kit.dsds.json)** — A complete document with components, tokens, a style, and a pattern, showing the full architecture.
-- **[`entities/component.json`](spec/examples/entities/component.json)** — A full Button component with anatomy, API, variants, states, design specs, best practices, purpose, and accessibility.
-- **[`entities/token.json`](spec/examples/entities/token.json)** — A semantic color token with value, API mappings, and guidelines.
+- **[`minimal/`](spec/examples/minimal/)** — Lightweight examples (8–30 lines each) showing the floor of documentation for each entity type.
+- **[`entities/component.json`](spec/examples/entities/component.json)** — A full Button component with anatomy, API, variants (with exclusions), states, design specs, best practices, purpose, and accessibility.
+- **[`entities/empty-state-pattern.json`](spec/examples/entities/empty-state-pattern.json)** — An Empty State pattern demonstrating anatomy, variants, states, interactions, content guidelines, and localization on a pattern entity.
+- **[`entities/style.json`](spec/examples/entities/style.json)** — A Spacing style with principles, scale, motion definitions, and best practices.
+- **[`entities/token.json`](spec/examples/entities/token.json)** — A semantic color token with value, resolution, API mappings, and guidelines.
 - **[`entities/token-group.json`](spec/examples/entities/token-group.json)** — A hierarchical color palette with nested hue families and grade scales.
 - **[`entities/theme.json`](spec/examples/entities/theme.json)** — A dark mode theme with token overrides, purpose, best practices, and accessibility.
-- **[`entities/style.json`](spec/examples/entities/style.json)** — A spacing style with principles, scales, token group references, and best practices.
 - **[`entities/pattern.json`](spec/examples/entities/pattern.json)** — An error messaging pattern with interactions, component references, and accessibility.
 
 ### 3. Validate your documents

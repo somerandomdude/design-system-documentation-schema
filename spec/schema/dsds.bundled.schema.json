@@ -18,15 +18,6 @@
       "const": "0.1",
       "description": "The version of the DSDS specification this document conforms to."
     },
-    "$profile": {
-      "type": "string",
-      "enum": [
-        "core",
-        "complete"
-      ],
-      "default": "complete",
-      "description": "The conformance profile this document targets. Profiles control how strictly tools SHOULD validate the document.\n\n- 'core': Minimal viable documentation. Only identity fields are required on entities (type, name for tokens; type, name, displayName for components/styles/patterns/themes). Description, status, and all other properties are optional. Use this profile for early-stage documentation, migration drafts, or skeleton documents that will be filled in over time.\n\n- 'complete': Full specification conformance. All required fields as defined by each entity schema must be present. This is the default when $profile is omitted.\n\nTools SHOULD use this property to adjust validation strictness. When $profile is 'core', tools SHOULD suppress validation errors for missing optional-in-core fields and MAY display a badge or indicator showing the document's completeness level."
-    },
     "metadata": {
       "$ref": "#/$defs/metadata"
     },
@@ -251,11 +242,11 @@
         },
         "label": {
           "type": "string",
-          "description": "A human-readable label describing the specific resource or relationship (e.g., 'React component source', 'Design file — variants', 'Primary navigation trigger', 'Provides semantic text color tokens')."
+          "description": "The display text for this link — what a user sees when the link is rendered in documentation (e.g., 'React component source', 'Design file — variants', 'Button component'). Use label for the human-readable name of the resource. For describing the functional relationship an internal artifact has to the current entity, use `role` instead."
         },
         "role": {
           "type": "string",
-          "description": "A short description of the role this artifact plays in the current context. Primarily used for internal artifact references to describe the relationship (e.g., 'Primary action trigger', 'Error summary container', 'Provides semantic text color tokens'). When omitted, the relationship is a general association without a specific role."
+          "description": "The functional relationship this artifact has to the current entity — what part it plays in the current context (e.g., 'Primary action trigger', 'Error summary container', 'Provides semantic text color tokens'). Distinct from `label`, which is display text for the link itself. Use role for internal artifact references to explain *why* this artifact is referenced, not just *what* it is. When omitted, the relationship is a general association without a specific role."
         },
         "required": {
           "type": "boolean",
@@ -616,7 +607,7 @@
     },
     "anatomyEntry": {
       "type": "object",
-      "description": "A named sub-element of a component's visual structure.",
+      "description": "A named sub-element of a component's or pattern's visual structure.",
       "required": [
         "name",
         "description",
@@ -658,7 +649,7 @@
     },
     "anatomy": {
       "type": "object",
-      "description": "Documents the visual structure of a component by enumerating its named sub-elements (parts). Each part can reference the design tokens that style it, creating a bridge between the component's visual design and its token architecture. An optional preview provides an annotated diagram of the assembled structure.",
+      "description": "Documents the visual structure of a component or pattern by enumerating its named sub-elements (parts). Each part can reference the design tokens that style it, creating a bridge between the artifact's visual design and its token architecture. An optional preview provides an annotated diagram of the assembled structure. For components, parts are rendered UI sub-elements (e.g., container, label, icon, focus-ring). For patterns, parts are the structural sections of the pattern's layout (e.g., image, title, body, primary action, secondary CTA).",
       "required": [
         "type",
         "parts"
@@ -671,7 +662,7 @@
         },
         "description": {
           "$ref": "#/$defs/richText",
-          "description": "A prose overview of the component's visual structure — how the parts relate to each other and any notable structural constraints."
+          "description": "A prose overview of the artifact's visual structure — how the parts relate to each other and any notable structural constraints."
         },
         "parts": {
           "type": "array",
@@ -679,7 +670,7 @@
             "$ref": "#/$defs/anatomyEntry"
           },
           "minItems": 1,
-          "description": "The named sub-elements of the component, in visual order (typically outside-in or top-to-bottom). Each part documents a discrete element that can be independently styled, tested, or referenced."
+          "description": "The named sub-elements of the artifact, in visual order (typically outside-in or top-to-bottom). Each part documents a discrete element that can be independently styled, tested, or referenced."
         },
         "preview": {
           "type": "array",
@@ -1069,6 +1060,120 @@
       },
       "additionalProperties": false
     },
+    "contentLabelEntry": {
+      "type": "object",
+      "description": "A single recommended action label or term in the content dictionary. Each entry defines a standard label with its meaning, usage guidance, and cross-references to related or alternative terms. Entries follow the {verb} + {noun} content formula established by systems like Carbon and Gestalt.",
+      "required": [
+        "term",
+        "definition"
+      ],
+      "properties": {
+        "term": {
+          "type": "string",
+          "description": "The recommended label text (e.g., 'Add', 'Cancel', 'Delete', 'Save as', 'Learn more'). This is the canonical form of the label as it should appear in the UI."
+        },
+        "definition": {
+          "$ref": "#/$defs/richText",
+          "description": "What this label means — the action it represents. Should be concrete and unambiguous (e.g., 'Destroys an existing object so that it no longer exists' for Delete, 'Stops the current action and closes the dialog' for Cancel)."
+        },
+        "usage": {
+          "$ref": "#/$defs/richText",
+          "description": "When and how to use this label. Include context, formatting rules, and any qualifications (e.g., 'Where appropriate, combine Add with the object: Add user, Add role', 'Use instead of Previous', 'Write as shown: two letters, both uppercase')."
+        },
+        "alternatives": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Related terms that serve a different purpose but are commonly confused with this one. Listed for comparison — helps authors choose the right label. For example, 'Add' might list ['Create', 'Insert', 'New', 'Upload'] as alternatives. The terms SHOULD match other `term` values in the same content guideline for cross-referencing."
+        },
+        "context": {
+          "type": "string",
+          "description": "Where this label is commonly used in the UI (e.g., 'Buttons in dialogs', 'Navigation links', 'Form submission', 'Toolbar actions'). Helps authors understand the typical placement and scope of this label."
+        },
+        "examples": {
+          "type": "array",
+          "description": "Visual or code examples showing the label in context — do/don't pairs, screenshots of correct usage, or code snippets.",
+          "items": {
+            "$ref": "#/$defs/example"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "localizationEntry": {
+      "type": "object",
+      "description": "A single localization or internationalization consideration. Each entry documents a concern that affects how content is authored, translated, or rendered across languages and writing systems.",
+      "required": [
+        "concern",
+        "description"
+      ],
+      "properties": {
+        "concern": {
+          "type": "string",
+          "description": "The localization concern being addressed. Standard values: 'rtl' (right-to-left layout mirroring and bidirectional text), 'text-expansion' (content lengthening during translation — typically 20-30% for Western European languages, more for CJK), 'pluralization' (plural forms varying across languages), 'date-format' (date and time formatting conventions), 'number-format' (number formatting — decimal separators, grouping), 'currency' (currency symbol placement and formatting), 'text-direction' (mixed-direction content within a single string), 'icon-direction' (icons that imply directionality — arrows, progress indicators), 'truncation' (text overflow behavior across languages), 'sorting' (locale-specific sort order and collation), 'concatenation' (avoiding string concatenation that breaks in other languages). Custom values are permitted and SHOULD be lowercase kebab-case."
+        },
+        "description": {
+          "$ref": "#/$defs/richText",
+          "description": "Guidance for addressing this localization concern. Should be actionable and specific — describe what changes across locales, what the author or developer must do, and what to avoid."
+        },
+        "examples": {
+          "type": "array",
+          "description": "Visual or code examples illustrating the localization concern — before/after screenshots for RTL, examples of text expansion, or code patterns for pluralization.",
+          "items": {
+            "$ref": "#/$defs/example"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "content": {
+      "type": "object",
+      "description": "Documents structured content guidelines — recommended action labels and localization considerations. The labels array provides a terminology dictionary of standard UI labels with definitions, usage context, and cross-references (following the pattern established by Carbon's action labels and Gestalt's writing guidelines). The localization array documents internationalization concerns like RTL behavior, text expansion, and pluralization. At least one of `labels` or `localization` must be present. Content guidelines complement best-practice guidelines — best practices say 'Use sentence case' (a rule), content guidelines say 'Add: Takes an existing object and uses it in a new context' (a reference).",
+      "required": [
+        "type"
+      ],
+      "anyOf": [
+        {
+          "required": [
+            "labels"
+          ]
+        },
+        {
+          "required": [
+            "localization"
+          ]
+        }
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "content",
+          "description": "Identifies this guideline as a content specification."
+        },
+        "description": {
+          "$ref": "#/$defs/richText",
+          "description": "An overview of the content guidelines — the content philosophy, voice and tone principles, or the scope of labels and localization rules covered."
+        },
+        "labels": {
+          "type": "array",
+          "description": "Recommended action labels and terminology. Each entry defines a standard label with its meaning, usage guidance, and cross-references to related terms. The ordering is significant — tools SHOULD preserve it for display. Authors MAY order alphabetically (as in Carbon's action labels) or by frequency of use.",
+          "items": {
+            "$ref": "#/$defs/contentLabelEntry"
+          },
+          "minItems": 1
+        },
+        "localization": {
+          "type": "array",
+          "description": "Localization and internationalization considerations. Each entry documents a concern that affects content across languages and writing systems — RTL mirroring, text expansion during translation, pluralization rules, and other i18n concerns. The ordering is significant — tools SHOULD display considerations in this order. Authors SHOULD order by impact or frequency.",
+          "items": {
+            "$ref": "#/$defs/localizationEntry"
+          },
+          "minItems": 1
+        }
+      },
+      "additionalProperties": false
+    },
     "spacingSpec": {
       "type": "object",
       "description": "Spacing specifications documenting the spatial relationships within and around the component. Separates internal spacing (owned by the component) from external spacing (recommended by the component but controlled by the parent layout).",
@@ -1261,11 +1366,15 @@
         {
           "$ref": "#/$defs/examples",
           "description": "Visual or interactive demonstrations — images, videos, code snippets, and URLs to live demos."
+        },
+        {
+          "$ref": "#/$defs/content",
+          "description": "Structured content guidelines — recommended action labels with definitions, usage context, and cross-references, plus localization and internationalization considerations such as RTL behavior and text expansion."
         }
       ]
     },
     "componentGuideline": {
-      "description": "A guideline type accepted on component artifacts. Includes component-specific types (anatomy, API, variants, states, design specifications) and all general types (best practices, purpose, accessibility, examples).",
+      "description": "A guideline type accepted on component artifacts. Includes component-specific types (anatomy, API, variants, states, design specifications) and all general types (best practices, purpose, accessibility, examples, content).",
       "oneOf": [
         {
           "$ref": "#/$defs/anatomy",
@@ -1298,11 +1407,14 @@
         },
         {
           "$ref": "#/$defs/examples"
+        },
+        {
+          "$ref": "#/$defs/content"
         }
       ]
     },
     "styleGuideline": {
-      "description": "A guideline type accepted on style artifacts. Includes style-specific types (principles, scales) and all general types (best practices, purpose, accessibility, examples).",
+      "description": "A guideline type accepted on style artifacts. Includes style-specific types (principles, scales, motion) and all general types (best practices, purpose, accessibility, examples, content).",
       "oneOf": [
         {
           "$ref": "#/$defs/principles",
@@ -1313,6 +1425,10 @@
           "description": "An ordered sequence of values forming a visual scale — a type scale, spacing scale, elevation scale, or similar progression. Each step references a design token."
         },
         {
+          "$ref": "#/$defs/motion",
+          "description": "Named easing curves with cubic-bezier functions (aligned with DTCG cubicBezier type), recommended durations, and usage guidance for the motion system."
+        },
+        {
           "$ref": "#/$defs/bestPractices"
         },
         {
@@ -1323,17 +1439,32 @@
         },
         {
           "$ref": "#/$defs/examples"
+        },
+        {
+          "$ref": "#/$defs/content"
         }
       ]
     },
     "patternGuideline": {
-      "description": "A guideline type accepted on pattern artifacts. Includes pattern-specific types (interactions) and all general types (best practices, purpose, accessibility, examples).",
+      "description": "A guideline type accepted on pattern artifacts. Includes pattern-specific types (interactions) and shared structural types (anatomy, variants, states) for documenting pattern sub-types, visual structure, and states. Also includes all general types (best practices, purpose, accessibility, examples, content).",
       "oneOf": [
         {
           "$ref": "#/$defs/interactions",
           "description": "The interaction flow of the pattern — an ordered sequence of steps describing triggers, system responses, and component behavior."
         },
         {
+          "$ref": "#/$defs/anatomy",
+          "description": "The visual structure of the pattern — its named sub-elements (e.g., image, title, body, primary action, secondary CTA for an empty state pattern), their associated design tokens, and optional annotated diagrams."
+        },
+        {
+          "$ref": "#/$defs/variants",
+          "description": "Dimensions of variation within the pattern — sub-types, modes, or configurations (e.g., an empty state pattern with 'no-data', 'user-action', and 'error-management' variants). Optional exclusions document invalid combinations."
+        },
+        {
+          "$ref": "#/$defs/states",
+          "description": "States the pattern can enter — populated, empty, loading, error, etc. — with triggers, visual changes, and optional previews."
+        },
+        {
           "$ref": "#/$defs/bestPractices"
         },
         {
@@ -1344,6 +1475,9 @@
         },
         {
           "$ref": "#/$defs/examples"
+        },
+        {
+          "$ref": "#/$defs/content"
         }
       ]
     },
@@ -1361,6 +1495,9 @@
         },
         {
           "$ref": "#/$defs/examples"
+        },
+        {
+          "$ref": "#/$defs/content"
         }
       ]
     },
@@ -1414,6 +1551,104 @@
           "description": "The interaction steps in chronological order. Each item documents a single step in the flow with its trigger, description, involved components, and optional examples. The ordering is significant — tools SHOULD preserve and display steps in this order to represent the temporal sequence of the interaction.",
           "items": {
             "$ref": "#/$defs/interactionEntry"
+          },
+          "minItems": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "motionDuration": {
+      "type": "object",
+      "description": "A recommended duration range for an easing curve. Duration values are strings representing time values (e.g., '200ms', '0.3s') or token references (e.g., 'duration-quick'). When both min and max are provided, they define a range. When only one is provided, it serves as a point recommendation. When neither is provided, the description field should explain the guidance (e.g., 'depends on element size').",
+      "properties": {
+        "min": {
+          "type": "string",
+          "description": "The minimum recommended duration as a time value or token reference (e.g., '200ms', '0.3s', 'duration-quick'). When omitted, there is no minimum recommendation."
+        },
+        "max": {
+          "type": "string",
+          "description": "The maximum recommended duration as a time value or token reference (e.g., '500ms', '0.5s', 'duration-slow'). When omitted, there is no maximum recommendation."
+        },
+        "description": {
+          "$ref": "#/$defs/richText",
+          "description": "Freeform duration guidance. Use when the recommendation cannot be expressed as a simple min/max range (e.g., 'Depends on element size — use shorter durations for small elements and longer durations for full-screen transitions'). Also useful for supplementary notes when min/max are provided."
+        }
+      },
+      "additionalProperties": false
+    },
+    "motionEntry": {
+      "type": "object",
+      "description": "A single named easing definition in the motion system. Each entry documents a cubic-bezier timing function with its recommended usage and duration. The `function` property uses the same four-number array format as the W3C Design Tokens Format Module cubicBezier type: [P1x, P1y, P2x, P2y] where P1x and P2x are in the range [0, 1] and P1y and P2y can be any real number.",
+      "required": [
+        "name",
+        "description"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Machine-readable name of the easing (e.g., 'expressive', 'enter', 'exit', 'lateral', 'bounce', 'linear'). Used for cross-referencing and tooling."
+        },
+        "displayName": {
+          "type": "string",
+          "description": "Human-readable name of the easing (e.g., 'Expressive Ease', 'Enter Ease', 'Exit Ease', 'Bounce Ease')."
+        },
+        "description": {
+          "$ref": "#/$defs/richText",
+          "description": "What this easing is for, when to use it, and how it affects the user experience. Should explain the visual character of the curve (e.g., 'elements accelerate quickly and decelerate into their final position') and the types of transitions it suits."
+        },
+        "function": {
+          "type": "array",
+          "description": "The cubic-bezier control points as a four-number array [P1x, P1y, P2x, P2y], aligned with the W3C Design Tokens Format Module cubicBezier type (§8.6). P1x and P2x MUST be in the range [0, 1]. P1y and P2y can be any real number (values outside [0, 1] produce bounce/overshoot effects). Maps directly to CSS cubic-bezier() and DTCG cubicBezier token values. When omitted, the easing is described qualitatively in the description field or references a token via the `token` property.",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 4,
+          "maxItems": 4
+        },
+        "token": {
+          "type": "string",
+          "description": "Reference to a DTCG cubicBezier or transition token that defines this easing (e.g., 'motion-ease-expressive', 'transition-enter'). When both `function` and `token` are present, `function` is the display value and `token` is the authoritative source."
+        },
+        "duration": {
+          "$ref": "#/$defs/motionDuration",
+          "description": "The recommended duration range when using this easing. Different easings suit different durations — enter transitions are typically longer (300-500ms) to draw attention, while exit transitions are shorter (200-300ms) to feel responsive."
+        },
+        "usage": {
+          "type": "string",
+          "description": "A short, comma-separated list of usage contexts for this easing (e.g., 'entering elements', 'exiting elements', 'moving, pushing', 'lateral navigation', 'micro-interactions'). Provides a scannable summary — use description for detailed guidance."
+        },
+        "examples": {
+          "type": "array",
+          "description": "Visual or interactive examples showing this easing in action — screen recordings of transitions, interactive curve visualizations, or code snippets demonstrating CSS usage.",
+          "items": {
+            "$ref": "#/$defs/example"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "motion": {
+      "type": "object",
+      "description": "Documents the motion system for a visual style — the named easing curves, their timing functions, recommended durations, and usage guidance. Each item represents a single easing definition that designers and engineers select from when adding animation or transitions. The ordering is significant — tools SHOULD display easings in this order. A typical motion guideline lists easings from most commonly used to most specialized (e.g., expressive first, then enter, exit, lateral, bounce, linear). This guideline type is scoped to style entities and complements the scale guideline (which documents duration token progressions) and best-practice guidelines (which document motion rules like reduced-motion handling).",
+      "required": [
+        "type",
+        "items"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "motion",
+          "description": "Identifies this guideline as a motion specification."
+        },
+        "description": {
+          "$ref": "#/$defs/richText",
+          "description": "An overview of the motion system — the philosophy behind the easing choices, how duration and easing interact, and any system-wide motion principles not covered by individual easing entries."
+        },
+        "items": {
+          "type": "array",
+          "description": "The named easing definitions in the motion system. Each item documents a single easing curve with its cubic-bezier function, recommended duration, and usage guidance. The ordering is significant — tools SHOULD display easings in this order.",
+          "items": {
+            "$ref": "#/$defs/motionEntry"
           },
           "minItems": 1
         }
@@ -1723,8 +1958,8 @@
           "minItems": 2
         },
         "description": {
-          "type": "string",
-          "description": "A human-readable explanation of why this combination is invalid and what the user should choose instead (e.g., 'Ghost emphasis requires at least medium size for adequate touch target area. Use secondary emphasis for small buttons instead.')."
+          "$ref": "#/$defs/richText",
+          "description": "A human-readable explanation of why this combination is invalid and what the user should choose instead (e.g., 'Ghost emphasis requires at least medium size for adequate touch target area. Use secondary emphasis for small buttons instead.'). CommonMark supported."
         }
       },
       "additionalProperties": false
@@ -2103,7 +2338,7 @@
     },
     "tokenValue": {
       "type": "object",
-      "description": "A displayable representation of the token's value for documentation tools. This is not the authoritative source of truth for the value — the Design Tokens Format file is. The resolved value provides a human-readable snapshot, the reference traces the alias chain, and the dtcgFile points to the authoritative source.",
+      "description": "A displayable representation of the token's value for documentation tools. This is not the authoritative source of truth for the value — the Design Tokens Format file is. The resolved value provides a human-readable snapshot, the reference traces the alias chain, the resolution field classifies how the value was derived (using W3C DTCG terminology), and the dtcgFile points to the authoritative source.",
       "properties": {
         "resolved": {
           "type": "string",
@@ -2111,7 +2346,15 @@
         },
         "reference": {
           "type": "string",
-          "description": "If this token is an alias, the name of the referenced token (e.g., 'color.neutral.900', 'spacing.base')."
+          "description": "If this token is an alias, the name of the referenced token (e.g., 'color.neutral.900', 'spacing.base'). Corresponds to the W3C Design Tokens Format Module concept of an alias/reference (§3.8, §7): a token whose value references another token rather than containing an explicit value."
+        },
+        "resolution": {
+          "type": "string",
+          "enum": [
+            "explicit",
+            "alias"
+          ],
+          "description": "How the token's value was derived, using terminology aligned with the W3C Design Tokens Format Module (§3.8 'Alias/Reference', §7 'Aliases/References'). 'explicit' means the token has a direct, standalone value — it does not reference another token. 'alias' means the token's value is a reference to another token (the target is identified in the `reference` property). When omitted, tools SHOULD infer: if `reference` is present the token is an alias, otherwise it is explicit."
         },
         "dtcgFile": {
           "type": "string",
