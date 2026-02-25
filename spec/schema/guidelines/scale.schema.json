@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://designsystemdocspec.org/v0.1/guidelines/scale.schema.json",
+  "title": "DSDS Scale Guideline",
+  "description": "Documents an ordered sequence of values that forms a visual scale — a type scale, spacing scale, elevation scale, or any other progression of design token values. Each step in the scale references a design token and optionally provides a human-readable label, a resolved value for display, and usage notes. Scales establish the constrained set of values that designers and engineers choose from, replacing ad hoc values with a deliberate, harmonious progression.",
+  "$defs": {
+    "scaleStep": {
+      "type": "object",
+      "description": "A single step in an ordered scale. Each step references a design token that provides the concrete value for that position in the progression. The optional label, value, and description provide context for documentation display without duplicating the token's authoritative definition.",
+      "required": ["token"],
+      "properties": {
+        "token": {
+          "type": "string",
+          "description": "The token name for this step. MUST reference a token defined in the token schema (e.g., 'space-4', 'font-size-300', 'elevation-low'). This is the single source of truth for the step's value — the optional `value` property is a display convenience only."
+        },
+        "label": {
+          "type": "string",
+          "description": "A human-readable label for this step in the scale (e.g., 'sm', 'md', 'lg', '2xl', 'body', 'heading-1'). Labels provide a shorthand vocabulary that designers and engineers use to communicate about scale positions without referring to raw values."
+        },
+        "value": {
+          "type": "string",
+          "description": "The resolved value for display purposes (e.g., '16px', '1rem', '#1a1a1a', '400'). This is a documentation convenience — the authoritative value lives in the referenced token. Tools MAY populate this automatically from the token catalog."
+        },
+        "description": {
+          "$ref": "../common/rich-text.schema.json#/$defs/richText",
+          "description": "Usage notes for this specific step — when to use it, what it pairs with, and any constraints (e.g., 'The base unit. Use for default internal component padding.', 'Reserved for page-level hero sections only.')."
+        }
+      },
+      "additionalProperties": false
+    },
+    "scale": {
+      "type": "object",
+      "description": "Documents an ordered scale — a deliberate progression of values that constrains design decisions to a harmonious, consistent set. Scales are the primary mechanism for spacing systems, type hierarchies, elevation levels, and other graduated visual attributes. The steps array is ordered from smallest/lowest to largest/highest, and tools SHOULD preserve this ordering for display.",
+      "required": ["type", "name", "description", "steps"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "scale",
+          "description": "Identifies this guideline as a scale specification."
+        },
+        "name": {
+          "type": "string",
+          "description": "Machine-readable name of the scale (e.g., 'spacing-scale', 'type-scale', 'elevation-scale'). Used for cross-referencing and tooling."
+        },
+        "displayName": {
+          "type": "string",
+          "description": "Human-readable name of the scale (e.g., 'Spacing Scale', 'Type Scale', 'Elevation Levels')."
+        },
+        "description": {
+          "$ref": "../common/rich-text.schema.json#/$defs/richText",
+          "description": "What this scale is, how it was constructed (e.g., geometric progression, modular scale), and the rules for using it. This is the place to document the scale's rationale and constraints — why these specific values were chosen and when it's appropriate to deviate."
+        },
+        "steps": {
+          "type": "array",
+          "description": "The ordered steps in the scale, from smallest/lowest to largest/highest. The ordering is significant — tools SHOULD preserve it for display, and consumers SHOULD treat adjacent steps as the natural next-smaller and next-larger options when adjusting a value.",
+          "items": {
+            "$ref": "#/$defs/scaleStep"
+          },
+          "minItems": 1
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

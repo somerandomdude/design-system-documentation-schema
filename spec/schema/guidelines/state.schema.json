@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://designsystemdocspec.org/v0.1/guidelines/state.schema.json",
+  "title": "DSDS States Guideline",
+  "description": "Documents all interactive states that a component can enter — such as hover, focus, active, disabled, loading, selected, or error. Each item in the states array describes a single state: what triggers it, how the component's appearance and behavior change, which design tokens are overridden, and how the state appears visually.",
+  "$defs": {
+    "stateEntry": {
+      "type": "object",
+      "description": "A single interactive state of a component. States represent transient or persistent visual/behavioral changes triggered by user interaction, system events, or data conditions.",
+      "required": ["name", "description"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Machine-readable state name (e.g., 'default', 'hover', 'focus', 'active', 'disabled', 'loading', 'selected', 'error', 'read-only')."
+        },
+        "displayName": {
+          "type": "string",
+          "description": "Human-readable name (e.g., 'Default', 'Hover', 'Focus', 'Active / Pressed', 'Disabled', 'Loading')."
+        },
+        "description": {
+          "$ref": "../common/rich-text.schema.json#/$defs/richText",
+          "description": "What triggers this state, how the component's appearance and behavior change, and any constraints or side effects."
+        },
+        "tokens": {
+          "type": "object",
+          "description": "Design token overrides applied when this state is active. Keys are token property names scoped to the component (e.g., 'button-background', 'button-border-color'). Values are the token names or resolved values used in this state. Only tokens that change from the default state need to be listed.",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "preview": {
+          "type": "array",
+          "description": "Visual previews showing the component in this state.",
+          "items": {
+            "$ref": "../common/example.schema.json#/$defs/example"
+          }
+        },
+        "useCases": {
+          "$ref": "../common/usecase.schema.json#/$defs/useCases",
+          "description": "When this state is and is not appropriate."
+        }
+      },
+      "additionalProperties": false
+    },
+    "states": {
+      "type": "object",
+      "description": "Documents all interactive states of a component. Each item describes a single state the component can enter — what triggers it, how appearance and behavior change, which tokens are overridden, and how it looks visually. States are listed in a meaningful order — typically default first, then hover, focus, active, followed by disabled, loading, and other special states.",
+      "required": ["type", "items"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "states",
+          "description": "Identifies this guideline as a states specification."
+        },
+        "items": {
+          "type": "array",
+          "description": "The interactive states. Each item documents a single state with its trigger, visual changes, token overrides, and optional previews. The ordering is significant — tools SHOULD display states in this order.",
+          "items": {
+            "$ref": "#/$defs/stateEntry"
+          },
+          "minItems": 1
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

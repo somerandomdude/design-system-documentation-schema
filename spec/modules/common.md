@@ -2,225 +2,21 @@
 
 **Part of the [Design System Documentation Standard (DSDS) 0.1](../dsds-spec.md)**
 
-This module defines the shared properties and definitions used across all DSDS artifact types. It corresponds to the `common/` schema directory, which contains individual schema files for rich text, metadata, status, links, extensions, examples, guidelines, use cases, accessibility, and artifact references.
+This module defines the shared primitive types used across all DSDS schemas. These types provide the building blocks that entity schemas and guideline schemas compose — text formatting, lifecycle status, external links, visual examples, vendor extensions, system metadata, and use case scenarios.
 
-This module defines the foundational elements of the specification: conformance language, terminology, file format, and common properties shared across all artifact types. It also covers extensions, conformance levels, and normative references.
-
----
-
-## 1. Conformance
-
-As well as sections marked as non-normative, all authoring guidelines, diagrams, examples, and notes in this specification are non-normative. Everything else in this specification is normative.
-
-The key words _MAY_, _MUST_, _MUST NOT_, _SHOULD_, and _SHOULD NOT_ in this document are to be interpreted as described in [BCP 14](https://www.rfc-editor.org/rfc/rfc2119) [RFC2119] [RFC8174] when, and only when, they appear in all capitals, as shown here.
+> **Property tables** for each type are auto-generated from the schema JSON files and available on the corresponding schema reference pages. This module provides prose context, usage guidance, and examples.
 
 ---
 
-## 2. Introduction
+## 1. Rich Text (`richText`)
 
-_This section is non-normative._
+**Schema reference:** `common/rich-text.schema.json`
 
-Design systems produce three categories of artifacts that require documentation:
+Many fields in DSDS contain human-written prose — descriptions, guidance, rationale, accessibility notes. These fields use the `richText` type, which supports three content formats: plain text, Markdown, and HTML.
 
-1. **Components** — Reusable UI elements with defined APIs, behavior, and usage guidance.
-2. **Design tokens** — Named values representing design decisions (colors, spacing, typography, etc.).
-3. **Foundations** — Principles and guidelines governing the use of visual and interaction primitives (color systems, type scales, spacing scales, elevation, motion).
+### 1.1 String Form
 
-Today, design system documentation exists in many forms — Storybook pages, Notion docs, Markdown files, Zeroheight sites, Supernova exports, custom-built doc sites — each with its own structure, conventions, and limitations. There is no standard format for the documentation itself.
-
-This creates several problems:
-
-- **Migration cost.** Moving between documentation tools requires restructuring content from scratch.
-- **Inconsistency.** Each team invents its own documentation structure. Consumers of different systems must relearn what to expect.
-- **Tooling gaps.** Tools cannot reliably consume documentation from other tools because there is no shared schema.
-- **AI readiness.** Language models and code assistants benefit from structured, predictable documentation. Ad hoc formats limit their effectiveness.
-
-DSDS addresses these problems by defining a JSON-based format for design system documentation. The format is:
-
-- **Structured** — Every section has a defined shape. Consumers know what to expect.
-- **Machine-readable** — Tools can parse, generate, validate, and transform documentation programmatically.
-- **Portable** — Documentation is decoupled from any specific tool or platform.
-- **Extensible** — Vendor-specific metadata can be added without breaking interoperability.
-- **Complementary** — DSDS does not replace the W3C Design Tokens format. It wraps documentation around it.
-
-### 2.1 Relationship to W3C Design Tokens Format
-
-The W3C Design Tokens Community Group defines a format for exchanging token _values_ between tools. DSDS defines a format for exchanging the _documentation_ that describes how those tokens — and the components and foundations that use them — should be understood and applied.
-
-A DSDS token documentation file _MAY_ reference a Design Tokens Format file for the token's value. The two formats are designed to work together, not compete.
-
-### 2.2 Design Philosophy
-
-_This section is non-normative._
-
-This specification follows several documentation principles:
-
-- **Succinctness.** Each field has a clear purpose. Optional fields are optional for a reason.
-- **Predictability.** All component docs have the same shape. All token docs have the same shape. A reader — human or machine — learns the format once.
-- **Actionability.** Guidelines are structured as concrete, self-contained statements with rationale. Not essays.
-- **Justification.** Every best practice includes a `rationale` field. Guidance without explanation is incomplete.
-- **Encapsulation.** Each guideline is self-contained. A reader should understand it without reading every other guideline.
-
----
-
-## 3. Terminology
-
-### 3.1 DSDS Document
-
-A JSON file conforming to this specification that contains documentation for one or more design system artifacts (components, tokens, or foundations).
-
-### 3.2 Component
-
-A reusable user interface element with a defined API, visual presentation, and usage context. Examples include buttons, text inputs, modals, and tooltips.
-
-### 3.3 Design Token
-
-A named design decision expressed as a value. Design tokens follow the definition established by the [W3C Design Tokens Community Group](https://www.w3.org/community/design-tokens/): a name/value pair with an associated type.
-
-### 3.4 Foundation
-
-A category of design guidance that governs the use of a visual or interaction primitive across an entire system. Examples include color, typography, spacing, elevation, and motion.
-
-### 3.5 Guideline
-
-A single, self-contained piece of usage guidance. In DSDS, a guideline is always a structured object containing at minimum a `guidance` statement and a `rationale` explanation.
-
-### 3.6 Anatomy Part
-
-A named sub-element of a component's visual structure. For example, a Button component might have anatomy parts: `container`, `label`, `icon`, `focus-ring`.
-
-### 3.7 API Property
-
-A configurable input of a component. In web contexts this maps to HTML attributes, framework props, CSS custom properties, or slots. In other contexts it maps to the equivalent configuration surface.
-
-### 3.8 Status
-
-The lifecycle stage of a documented artifact: `draft`, `experimental`, `stable`, or `deprecated`.
-
-### 3.9 Variant
-
-A named configuration of a component that changes its visual presentation or behavior. Examples include size variants (`small`, `medium`, `large`) and style variants (`primary`, `secondary`, `ghost`).
-
----
-
-## 4. File Format
-
-### 4.1 Encoding
-
-DSDS documents are JSON files as defined in [RFC 8259](https://www.rfc-editor.org/rfc/rfc8259). Files _MUST_ use UTF-8 encoding.
-
-### 4.2 File Extensions
-
-DSDS files _SHOULD_ use one of the following extensions:
-
-- `.dsds.json` — Preferred. Clearly identifies the file as a DSDS document.
-- `.dsds` — Shorter alternative.
-
-### 4.3 MIME Type
-
-When serving DSDS files over HTTP, the following MIME type _SHOULD_ be used:
-
-- `application/dsds+json`
-
-The generic `application/json` MIME type _MAY_ be used as a fallback.
-
-### 4.4 Document Structure
-
-A DSDS document _MUST_ be a JSON object with the following root-level properties:
-
-| Property | Type | Required | Description |
-|---|---|---|---|
-| `$schema` | `string` | No | URI reference to the DSDS JSON Schema for validation. |
-| `dsdsVersion` | `string` | Yes | The version of this specification the document conforms to. _MUST_ be `"0.1"` for this version. |
-| `metadata` | `object` | No | System-level metadata about the design system this document belongs to. |
-| `documentGroups` | `array` | Yes | One or more document groups. See [§4.5](#45-document-groups). |
-| `$extensions` | `object` | No | Vendor-specific extensions. See [§13 Extensions](#13-extensions). |
-
-A DSDS file contains one or more **document groups** — named collections that each hold one or more arrays of typed artifacts (components, tokens, token groups, themes, styles, and/or patterns). Individual artifacts do not appear at the root level; they are always nested inside a document group's arrays. Multiple groups allow a single file to organize artifacts into logical sections (e.g., one group for foundations, another for components). This uniform structure simplifies parsing, validation, and tooling — a consumer always knows the shape of the root object.
-
-### 4.5 Document Groups
-
-The `documentGroups` array contains one or more document group objects. Each document group is a named collection that aggregates one or more artifact arrays.
-
-| Property | Type | Required | Description |
-|---|---|---|---|
-| `name` | `string` | Yes | Human-readable name of the collection (e.g., `"Acme Design System"`, `"Color Tokens"`, `"Button Documentation"`). |
-| `description` | `richText` | No | Description of the collection. CommonMark supported. |
-| `components` | `array` | No | Array of component documentation objects. |
-| `tokens` | `array` | No | Array of individual token documentation objects. |
-| `tokenGroups` | `array` | No | Array of token group documentation objects. Each group can contain tokens, nested groups, or a mix of both. |
-| `themes` | `array` | No | Array of theme documentation objects. Each theme provides alternative token values for a named context. |
-| `styles` | `array` | No | Array of style documentation objects. |
-| `patterns` | `array` | No | Array of pattern documentation objects. |
-
-At least one of `components`, `tokens`, `tokenGroups`, `themes`, `styles`, or `patterns` _MUST_ be present in each document group.
-
-A document group _MAY_ contain artifacts of multiple types. For example, a single group could contain a set of token groups alongside the themes that override their values, or a component alongside the tokens it consumes.
-
-A DSDS file _MAY_ contain multiple document groups. This allows logical separation within a single file — for example, one group for foundations and another for components, or one group per product within a shared design system.
-
-### 4.6 Metadata
-
-The optional `metadata` object provides context about the design system.
-
-| Property | Type | Required | Description |
-|---|---|---|---|
-| `systemName` | `string` | No | The name of the design system (e.g., "Carbon", "Polaris", "Spectrum"). |
-| `systemVersion` | `string` | No | The version of the design system. |
-| `organization` | `string` | No | The organization that maintains the system. |
-| `url` | `string` | No | URL to the system's documentation site. |
-| `license` | `string` | No | SPDX license identifier or license URL. |
-
-**Example:**
-
-```json
-{
-  "$schema": "https://designsystemdocspec.org/v0.1/dsds.schema.json",
-  "dsdsVersion": "0.1",
-  "metadata": {
-    "systemName": "Acme Design System",
-    "systemVersion": "4.1.0",
-    "organization": "Acme Corp",
-    "url": "https://design.acme.com"
-  },
-  "documentGroups": [
-    {
-      "name": "Acme Design System",
-      "components": [
-        {
-          "name": "button",
-          "displayName": "Button",
-          "description": "A clickable element that triggers an action.",
-          "status": "stable"
-        }
-      ]
-    }
-  ]
-}
-```
-
----
-
-## 5. Common Properties
-
-Several properties are shared across component, token, and foundation documentation objects. This section defines them once.
-
-### 5.1 Identification
-
-| Property | Type | Required | Description |
-|---|---|---|---|
-| `name` | `string` | Yes | A machine-readable identifier. _MUST_ match the pattern `^[a-z][a-z0-9-]*$` (lowercase, hyphen-separated). |
-| `displayName` | `string` | Yes | A human-readable name for display in documentation. |
-| `summary` | `string` | No | A one-line, plain-text summary of the artifact. Intended for compact display contexts such as list views, tooltips, search results, and card layouts. _MUST NOT_ contain markup of any kind. Always a bare string. When omitted, tools _MAY_ truncate `description` for these contexts. |
-| `description` | `richText` | Yes | A description of the artifact. Accepts a bare string or a content format object. See [§5.1.1 Content Formats](#511-content-formats-richtext). |
-
-### 5.1.1 Content Formats (`richText`)
-
-Many fields in DSDS contain human-written prose — descriptions, guidelines, rationale, accessibility notes. These fields use a shared type called **`richText`** that supports three content formats: plain text, Markdown, and HTML.
-
-#### String Form (backward compatible)
-
-A `richText` field _MAY_ be a bare JSON string. When a bare string is provided, the format is assumed to be **`markdown`** for backward compatibility with DSDS 0.1 documents.
+A `richText` field _MAY_ be a bare JSON string. When a bare string is provided, the format is assumed to be **`markdown`**.
 
 ```json
 {
@@ -228,44 +24,15 @@ A `richText` field _MAY_ be a bare JSON string. When a bare string is provided, 
 }
 ```
 
-This is equivalent to:
+### 1.2 Object Form
 
-```json
-{
-  "description": {
-    "value": "An interactive element that triggers an action when activated.",
-    "format": "markdown"
-  }
-}
-```
+A `richText` field _MAY_ be an object with `value` and `format` properties for explicit format control.
 
-#### Object Form (explicit format)
+The three supported formats:
 
-A `richText` field _MAY_ be an object with a `value` and a `format` property, both required:
-
-| Property | Type | Required | Description |
-|---|---|---|---|
-| `value` | `string` | Yes | The text content. |
-| `format` | `string` | Yes | The content format. _MUST_ be one of: `"plain"`, `"markdown"`, `"html"`. |
-
-**Format definitions:**
-
-| Format | Description |
-|---|---|
-| `"plain"` | Unformatted text. No markup of any kind. Tools _MUST_ render as-is. Suitable for short descriptions, labels, and content consumed by systems that cannot render markup. |
-| `"markdown"` | [CommonMark](https://spec.commonmark.org/) syntax. Where tooling renders rich text, it _MUST_ support, at a minimum, CommonMark as described by [CommonMark 0.27](https://spec.commonmark.org/0.27/). Tooling _MAY_ support extensions but _SHOULD NOT_ rely on them for interoperability. This is the default format when a bare string is used. |
-| `"html"` | Sanitized HTML. Tools _MUST_ sanitize HTML content before rendering to prevent script injection and other security risks. Suitable for content migrated from CMS platforms or documentation tools that produce HTML output. |
-
-**Examples:**
-
-```json
-{
-  "description": {
-    "value": "An interactive element that triggers an action when activated.",
-    "format": "plain"
-  }
-}
-```
+- **`"plain"`** — Unformatted text. No markup of any kind. Tools _MUST_ render as-is.
+- **`"markdown"`** — [CommonMark](https://spec.commonmark.org/) syntax. Tools _MUST_ support CommonMark 0.27 at minimum. This is the default format when a bare string is used.
+- **`"html"`** — Sanitized HTML. Tools _MUST_ sanitize content before rendering to prevent script injection.
 
 ```json
 {
@@ -276,108 +43,62 @@ A `richText` field _MAY_ be an object with a `value` and a `format` property, bo
 }
 ```
 
-```json
-{
-  "description": {
-    "value": "<p>An interactive element that triggers an action when activated.</p><p>See the <a href=\"#guidelines\">usage guidelines</a> for placement rules.</p>",
-    "format": "html"
-  }
-}
-```
+### 1.3 Where `richText` Applies
 
-#### Where `richText` Applies
+The `richText` type is used for:
 
-The `richText` type is used for all fields that contain human-written prose. This includes:
-
-- `description` — on all artifacts, anatomy parts, API properties, events, slots, CSS custom properties, CSS parts, data attributes, methods, scale steps, and responsive entries
-- `guidance` and `rationale` — in guideline and accessibility guideline objects
-- `acceptedContent` — on slot objects
-- `screenReaderBehavior`, `focusManagement`, and `motionConsiderations` — on accessibility objects
+- `description` — on all entities, anatomy entries, API properties/events/slots, scale steps, and responsive entries
+- `guidance` and `rationale` — in best practice entries
+- `acceptedContent` — on API slot objects
+- `screenReaderBehavior`, `focusManagement`, and `motionConsiderations` — on accessibility guidelines
 
 The `summary` field is _not_ a `richText` field. It is always a plain string and _MUST NOT_ contain markup.
 
-#### Tool Behavior
+### 1.4 Tool Behavior
 
 Tools _MUST_ accept both the string form and the object form for any `richText` field. When encountering a bare string, tools _MUST_ treat it as `format: "markdown"`.
 
 Tools that do not support a particular format _SHOULD_ fall back gracefully:
-- For `"markdown"` content, tools that cannot render Markdown _SHOULD_ strip formatting and display the plain text.
-- For `"html"` content, tools that cannot render HTML _SHOULD_ strip tags and display the plain text.
-- For `"plain"` content, tools _MUST_ render as-is without applying any markup interpretation.
+- For `"markdown"` content, strip formatting and display plain text.
+- For `"html"` content, strip tags and display plain text.
+- For `"plain"` content, render as-is.
 
-#### Security Considerations
+### 1.5 Security Considerations
 
-When `format` is `"html"`, tools _MUST_ sanitize the content before rendering. At minimum, tools _MUST_ remove or neutralize `<script>` elements, `on*` event handler attributes, `javascript:` URIs, and any other vectors for script injection. Tools _MAY_ restrict the allowed HTML elements and attributes to a safe subset (e.g., headings, paragraphs, lists, links, code, emphasis, tables).
+When `format` is `"html"`, tools _MUST_ sanitize the content before rendering. At minimum, tools _MUST_ remove or neutralize `<script>` elements, `on*` event handler attributes, `javascript:` URIs, and any other vectors for script injection.
 
-### 5.2 Status
+---
 
-| Property | Type | Required | Description |
-|---|---|---|---|
-| `status` | `string` | Yes | The lifecycle status. _MUST_ be one of: `"draft"`, `"experimental"`, `"stable"`, `"deprecated"`. |
-| `platformStatus` | `object` | No | Per-platform readiness tracking. See [§5.2.1](#521-platform-status). |
-| `deprecationNotice` | `string` | Conditional | Required when `status` is `"deprecated"`. _MUST_ explain what to use instead. |
-| `since` | `string` | No | The version of the design system in which this artifact was introduced. |
+## 2. Status (`statusObject`)
 
-**Status definitions:**
+**Schema reference:** `common/status.schema.json`
 
-| Status | Meaning |
-|---|---|
-| `draft` | Under development. Not ready for use. |
-| `experimental` | Available for use. API and behavior may change without notice. |
-| `stable` | Ready for production use. Changes follow semantic versioning. |
-| `deprecated` | Scheduled for removal. `deprecationNotice` explains the replacement. |
+The `statusObject` consolidates lifecycle status, per-platform readiness, and deprecation notices into a single reusable object. Every entity carries status as an object, not a bare string.
 
-### 5.2.1 Platform Status
+See the schema reference page for the full property table covering `statusObject`, `statusValue`, and `platformStatusEntry`.
 
-The optional `platformStatus` property provides **per-platform readiness tracking** alongside the top-level `status`. Where `status` communicates the overall lifecycle stage of an artifact, `platformStatus` captures the granular reality that a component, token, or pattern may be at different stages of readiness across different platforms, frameworks, or tools.
+### 2.1 Status Values
 
-This addresses a common need observed across major design systems:
+Standard values for the `status` string:
 
-- **Gestalt (Pinterest):** Tracks readiness per platform — _Figma Library: Ready_, _Responsive Web: Ready_, _Adaptive: N/A_.
-- **Carbon (IBM):** Tracks accessibility testing status per test type — _Default state: Tested_, _Screen reader: Manually tested_, _Keyboard navigation: Tested_.
+- **`"draft"`** — Under development. Not ready for use.
+- **`"experimental"`** — Available for use. API and behavior may change without notice.
+- **`"stable"`** — Ready for production use. Changes follow semantic versioning.
+- **`"deprecated"`** — Scheduled for removal. `deprecationNotice` explains the replacement.
 
-An artifact _MAY_ be `"stable"` overall while individual platforms are still `"experimental"` or `"draft"`. Conversely, an artifact _MAY_ be `"deprecated"` on one platform while remaining `"stable"` on others.
+Custom values are permitted and _SHOULD_ be lowercase kebab-case (e.g., `"sunset"`, `"archived"`, `"beta"`).
 
-#### Structure
+### 2.2 Platform Status
 
-`platformStatus` is an open map. Keys are **platform identifiers** — freeform strings that name the platform, framework, or tool. Values are **platform status entry** objects.
+The optional `platformStatus` property provides per-platform readiness tracking. Keys are platform identifiers (freeform strings such as `"react"`, `"web-component"`, `"ios"`, `"android"`, `"flutter"`, `"figma"`, `"sketch"`, `"compose"`). Values are platform status entry objects, each carrying their own `status`, optional `since`, optional `deprecationNotice`, and optional `description`.
 
-Common platform keys (non-normative):
+An entity _MAY_ be `"stable"` overall while individual platforms are still `"experimental"` or `"draft"`. Platform keys _MAY_ also represent testing readiness dimensions (e.g., `"a11y-keyboard"`, `"a11y-screen-reader"`) in addition to platform/framework names.
 
-| Key | Description |
-|---|---|
-| `"react"` | React component implementation. |
-| `"web-component"` | Web Component implementation. |
-| `"angular"` | Angular component implementation. |
-| `"vue"` | Vue component implementation. |
-| `"ios"` | iOS / Swift / SwiftUI implementation. |
-| `"android"` | Android / Kotlin / Compose implementation. |
-| `"flutter"` | Flutter / Dart implementation. |
-| `"figma"` | Figma design library availability. |
-| `"sketch"` | Sketch design library availability. |
+**Example:**
 
-Design systems _MAY_ use any key name. Custom keys _SHOULD_ be lowercase kebab-case.
-
-#### Platform Status Entry
-
-Each value in the `platformStatus` map is an object with the following properties:
-
-| Property | Type | Required | Description |
-|---|---|---|---|
-| `status` | `string` | Yes | The lifecycle status on this platform. Uses the same vocabulary as the top-level `status`: `"draft"`, `"experimental"`, `"stable"`, `"deprecated"`. Custom values are permitted. |
-| `since` | `string` | No | The version in which this artifact became available on this platform. |
-| `deprecationNotice` | `string` | Conditional | Required when `status` is `"deprecated"`. Explains what to use instead on this platform. |
-| `description` | `string` | No | Optional notes about the artifact's status on this platform. |
-
-When a platform entry has `status: "deprecated"`, the `deprecationNotice` property is required on that entry.
-
-#### Example
-
+<!-- dsds:include spec/examples/common/status.json#/statusObject/1 -->
 ```json
 {
-  "name": "button",
-  "displayName": "Button",
-  "description": "An interactive element that triggers an action when activated.",
   "status": "stable",
   "platformStatus": {
     "react": {
@@ -409,83 +130,213 @@ When a platform entry has `status: "deprecated"`, the `deprecationNotice` proper
   }
 }
 ```
+<!-- /dsds:include -->
 
-#### Accessibility Testing Status
+### 2.3 Relationship to Top-Level Status
 
-`platformStatus` can also be used to track testing readiness. While the keys are most commonly platform/framework names, they _MAY_ represent any dimension of readiness — including accessibility test coverage:
-
-```json
-{
-  "platformStatus": {
-    "react": { "status": "stable", "since": "1.0.0" },
-    "figma": { "status": "stable", "since": "1.0.0" },
-    "a11y-keyboard": {
-      "status": "stable",
-      "description": "Passes all automated keyboard navigation tests."
-    },
-    "a11y-screen-reader": {
-      "status": "stable",
-      "description": "Manually tested with JAWS, VoiceOver, and NVDA."
-    },
-    "a11y-color-contrast": {
-      "status": "stable",
-      "description": "All variant/state combinations meet WCAG AA contrast requirements."
-    }
-  }
-}
-```
-
-#### Relationship to Top-Level Status
-
-The top-level `status` property remains **required** and represents the artifact's overall lifecycle stage. `platformStatus` is **optional** and additive — it provides detail that the top-level status cannot capture.
+The top-level `status` property represents the entity's overall lifecycle stage. `platformStatus` provides detail that the top-level status cannot capture.
 
 When both are present:
 
 - Tools _SHOULD_ display the top-level `status` as the primary status indicator.
-- Tools _MAY_ display `platformStatus` as supplementary detail (e.g., in a readiness matrix, a per-platform badge row, or a detail panel).
-- The top-level `status` is _not_ required to be the "most advanced" or "least advanced" of the platform statuses. It represents an editorial judgment about the artifact's overall maturity.
-
-### 5.3 Tags
-
-| Property | Type | Required | Description |
-|---|---|---|---|
-| `tags` | `string[]` | No | An array of freeform tags for categorization and search. |
-
-### 5.4 Related Artifacts
-
-| Property | Type | Required | Description |
-|---|---|---|---|
-| `related` | `array` | No | An array of related artifact references. |
-
-Each element of `related` _MUST_ be an object with:
-
-| Property | Type | Required | Description |
-|---|---|---|---|
-| `name` | `string` | Yes | The `name` of the related artifact. |
-| `type` | `string` | Yes | The artifact type: `"component"`, `"token"`, `"tokenGroup"`, `"foundation"`. |
-| `relationship` | `string` | Yes | A description of the relationship (e.g., `"alternative"`, `"parent"`, `"child"`, `"related"`). |
-
-### 5.5 Links
-
-| Property | Type | Required | Description |
-|---|---|---|---|
-| `links` | `array` | No | An array of external links to resources related to this artifact. See [§11 Links](#11-links). |
+- Tools _MAY_ display `platformStatus` as supplementary detail (e.g., in a readiness matrix or per-platform badge row).
 
 ---
 
-## 13. Extensions
+## 3. Links (`link`)
 
-### 13.1 The `$extensions` Property
+**Schema reference:** `common/link.schema.json`
 
-The optional `$extensions` property is an object where tools _MAY_ add proprietary, user-, team-, or vendor-specific data. This property _MAY_ appear on any object within a DSDS document.
+The `links` array provides typed references to external resources and related artifacts. Links serve dual purposes: pointing to external resources (source code, design files, documentation, packages) and expressing relationships to other DSDS entities (alternatives, parents, children).
 
-Each key within `$extensions` _MUST_ use a vendor-specific namespace. Reverse domain name notation is recommended to avoid naming collisions.
+See the schema reference page for the full property table.
+
+### 3.1 Standard Link Types
+
+**External types:**
+
+- `"source"` — Source code for the entity's implementation.
+- `"design"` — Design file, node, or variable associated with the entity.
+- `"storybook"` — Interactive component documentation or demo.
+- `"documentation"` — External documentation page.
+- `"package"` — Published package containing the entity.
+- `"repository"` — The top-level repository containing the entity's source.
+
+**Relationship types:**
+
+- `"alternative"` — A different entity that serves a similar purpose.
+- `"parent"` — The parent entity that contains or composes this one.
+- `"child"` — A child entity contained within or composed by this one.
+- `"related"` — A general association to another entity.
+
+Custom `type` values are permitted and _SHOULD_ be lowercase strings matching `^[a-z][a-z0-9-]*$`. Tools _MUST NOT_ reject a link because its `type` is not in the standard list.
+
+### 3.2 Multiple Links of the Same Type
+
+An entity _MAY_ have multiple links with the same `type`. When multiple links share a `type`, the `label` property _SHOULD_ be provided to distinguish them.
+
+### 3.3 Example
+
+<!-- dsds:include spec/examples/common/link.json#/link -->
+```json
+[
+  {
+    "type": "source",
+    "url": "https://code.acme.com/design-system/src/components/button/button.tsx",
+    "label": "React component source"
+  },
+  {
+    "type": "design",
+    "url": "https://design-tool.acme.com/file/abc123?node-id=1234:5678",
+    "label": "Design file — component"
+  },
+  {
+    "type": "documentation",
+    "url": "https://design.acme.com/components/button",
+    "label": "Button documentation"
+  },
+  {
+    "type": "storybook",
+    "url": "https://storybook.acme.com/?path=/docs/components-button--docs",
+    "label": "Interactive docs"
+  },
+  {
+    "type": "package",
+    "url": "https://www.npmjs.com/package/@acme/components",
+    "label": "npm package"
+  },
+  {
+    "type": "repository",
+    "url": "https://code.acme.com/design-system",
+    "label": "Repository root"
+  },
+  {
+    "type": "alternative",
+    "url": "https://design.acme.com/components/link",
+    "label": "Link component (alternative)"
+  },
+  {
+    "type": "parent",
+    "url": "https://design.acme.com/components/button-group",
+    "label": "Button Group (parent)"
+  }
+]
+```
+<!-- /dsds:include -->
+
+### 3.4 Links vs. Extensions
+
+Links are a first-class property because source code, design files, and interactive demos are universal to design system documentation — not vendor-specific metadata. Data that is specific to a tool's internal representation (e.g., design tool component keys, Storybook story IDs, internal build hashes) _SHOULD_ remain in `$extensions`.
+
+**Rule of thumb:** If the data is a URL that a human would click to navigate to a resource, it belongs in `links`. If the data is an internal identifier consumed programmatically by a specific tool, it belongs in `$extensions`.
+
+---
+
+## 4. Examples (`example`, `examples`)
+
+**Schema reference:** `common/example.schema.json`
+
+Examples are visual or interactive demonstrations of a documented entity. They appear as hero previews, annotated diagrams, code snippets, video walkthroughs, and links to live interactive demos.
+
+DSDS defines a single, reusable example model that supports four media types: images, videos, code snippets, and URLs. This model is used both for nesting within other guideline items (best-practice examples, variant previews, state previews, interaction illustrations) and as a top-level guideline container.
+
+See the schema reference page for the full property tables covering `example`, `examples`, and the four presentation types.
+
+### 4.1 The Two Example Shapes
+
+**`example`** — The raw example object used for nesting within other structures (best-practice `examples`, variant `preview`, state `preview`, interaction `examples`, anatomy `preview`). Every example requires a `presentation` — one of the four media types.
+
+**`examples`** — The guideline container used as a top-level guideline in an entity's `guidelines` array. Wraps individual example objects in an `items` array with a `type: "examples"` discriminator.
+
+### 4.2 Presentation Types
+
+Each presentation is a typed object with a `type` property that determines its shape:
+
+- **`"image"`** — A static image. Requires `url` and `alt`.
+- **`"video"`** — A video recording or animation. Requires `url` and `alt`.
+- **`"code"`** — A source code snippet. Requires `code` and `language`.
+- **`"url"`** — A link to any web resource (Storybook stories, CodeSandbox embeds, StackBlitz projects, etc.). Requires `url`.
+
+### 4.3 Examples Container
+
+When examples appear as a top-level guideline in an entity's `guidelines` array, they use the `examples` container:
+
+<!-- dsds:include spec/examples/common/example.json#/examples -->
+```json
+{
+  "type": "examples",
+  "items": [
+    {
+      "title": "All button variants",
+      "presentation": {
+        "type": "image",
+        "url": "https://design.acme.com/assets/button-hero.png",
+        "alt": "A row of four buttons showing the primary, secondary, ghost, and danger variants side by side, each in their default state."
+      }
+    },
+    {
+      "title": "Interactive primary button",
+      "presentation": {
+        "type": "url",
+        "url": "https://storybook.acme.com/?path=/story/components-button--primary"
+      }
+    },
+    {
+      "title": "Basic primary button usage",
+      "presentation": {
+        "type": "code",
+        "code": "<Button variant=\"primary\" onClick={handleSave}>Save</Button>",
+        "language": "jsx"
+      }
+    }
+  ]
+}
+```
+<!-- /dsds:include -->
+
+### 4.4 Alt Text Requirements
+
+Image and video examples _MUST_ include an `alt` property. When writing alt text:
+
+- **Describe what is shown, not what it means.** "A primary button with a blue background and white label 'Save'" is better than "The correct way to use a button."
+- **Include relevant visual details.** Colors, sizes, states, and text content visible in the image or video should be mentioned when they are the point of the example.
+- **Keep it concise but complete.** One to three sentences is typical.
+- **For videos, describe the sequence of events.** "A user clicks the button. The label is replaced by a spinner. After two seconds, the button returns to its default state."
+
+### 4.5 Where Examples Appear
+
+| Location | Schema type | Description |
+|---|---|---|
+| Entity `guidelines` array | `examples` container | Top-level hero previews and demonstrations. |
+| Best practice `examples` | `example` (raw) | Inline visual examples within a best practice's guidance. |
+| Variant value `preview` | `example` (raw) | Visual demonstration of a specific variant value. |
+| State entry `preview` | `example` (raw) | Visual demonstration of a specific interactive state. |
+| Interaction entry `examples` | `example` (raw) | Illustration of a specific interaction step within a pattern. |
+| Anatomy `preview` | `example` (raw) | Annotated diagram of the assembled component structure. |
+
+---
+
+## 5. Extensions (`$extensions`)
+
+**Schema reference:** `common/extensions.schema.json`
+
+The `$extensions` property is available on the root document, on each documentation group, and on each entity. It provides an open object for vendor-specific metadata that does not belong in the core schema.
+
+### 5.1 Rules
+
+- Keys _MUST_ use vendor-specific namespaces (reverse domain name notation recommended).
+- Tools that do not recognize an extension _MUST_ preserve it (round-trip safety).
+- Extension data _SHOULD NOT_ duplicate information available in core schema fields.
+- Extensions _MUST NOT_ alter the semantics of core schema properties.
+
+**Example:**
 
 ```json
 {
   "$extensions": {
     "com.designTool": {
-      "componentId": "abc123def456"
+      "componentId": "abc123def456",
+      "lastSync": "2025-01-15T10:30:00Z"
     },
     "com.storybook": {
       "storyId": "components-button--primary"
@@ -494,126 +345,96 @@ Each key within `$extensions` _MUST_ use a vendor-specific namespace. Reverse do
 }
 ```
 
-Note that navigable URLs belong in `links` (see [§12 Links](#12-links)), while tool-specific internal identifiers belong here.
+---
 
-### 13.2 Preservation
+## 6. Metadata (`metadata`)
 
-Tools that process DSDS files _MUST_ preserve any `$extensions` data they do not understand. If a DSDS document contains extensions from Tool A and is processed by Tool B, Tool B _MUST_ include Tool A's extension data when saving the document.
+**Schema reference:** `common/metadata.schema.json`
 
-### 13.3 Non-interference
+The optional `metadata` object on the root DSDS document provides context about the design system — its name, version, organization, URL, and license.
 
-Extension data _SHOULD_ be restricted to metadata that is not essential for understanding the documented artifact. The core documentation _MUST_ be fully comprehensible without any extension data.
+See the schema reference page for the full property table.
+
+**Example:**
+
+<!-- dsds:include spec/examples/common/metadata.json#/metadata -->
+```json
+{
+  "systemName": "Acme Design System",
+  "systemVersion": "2.4.0",
+  "organization": "Acme Corp",
+  "url": "https://design.acme.com",
+  "license": "MIT"
+}
+```
+<!-- /dsds:include -->
 
 ---
 
-## 14. Conformance Levels
+## 7. Use Cases (`useCase`, `useCases`)
 
-DSDS defines two conformance levels. These levels help design system teams adopt the format incrementally.
+**Schema reference:** `common/usecase.schema.json`
 
-### 14.1 Level 1: Core
+Use cases provide scenario-driven guidance for when to use and when not to use an entity or option. The use case types defined here are the raw data model — they carry no guideline `type` discriminator. They are used for nesting inside variant values, state entries, and as the content of the [purpose guideline type](guidelines.md).
 
-A **Level 1** conformant document _MUST_ include:
+See the schema reference page for the full property tables covering `useCase` and `useCases`.
 
-- Valid `dspiVersion` and `documentType` root properties.
-- The corresponding artifact object (e.g., `component`, `token`, `foundation`).
-- All required common properties: `name`, `displayName`, `description`, `status`.
-- For tokens: `tokenType`.
-- For foundations: `category`.
+### 7.1 Alternatives
 
-A Level 1 document provides the minimum metadata for a tool to catalog and display the artifact.
+Each `whenNotToUse` entry _SHOULD_ include an `alternative` object with the `name` of a recommended alternative entity and an optional `rationale` explaining why the alternative is more appropriate. Cite semantic differences, accessibility implications, or UX rationale when available.
 
-### 14.2 Level 2: Complete
+### 7.2 Inline vs. Guideline Use
 
-A **Level 2** conformant document _MUST_ include everything in Level 1, plus:
+When use cases appear as a top-level guideline in an entity's `guidelines` array, they use the [purpose guideline type](guidelines.md), which wraps the same `useCase` data model with a `type: "purpose"` discriminator.
 
-- **For components:** At least one of `anatomy`, `api`, or `guidelines`.
-- **For tokens:** At least one of `api`, `guidelines`, or `value`.
-- **For foundations:** At least one of `principles`, `guidelines`, or `scales`.
+When use cases appear nested inside variant values or state entries, they use the `useCases` object directly (no `type` discriminator needed since the parent context provides the type).
 
-A Level 2 document provides enough information for a reader to understand how to use the artifact.
-
-### 14.3 Validation
-
-Tools _SHOULD_ indicate the conformance level of a DSDS document. Tools _MAY_ provide warnings for documents that meet Level 1 but not Level 2, encouraging completeness without blocking adoption.
-
----
-
-## A. JSON Schema
-
-A JSON Schema for validating DSDS documents is provided as a companion file:
-
-- `dsds.schema.json`
-
-The schema validates the structure defined in this specification and can be used by editors, CI pipelines, and documentation tools to ensure DSDS documents are well-formed.
-
-See the `spec/schema/` directory for the full schema.
-
----
-
-## B. Examples
-
-Complete examples are provided in the `spec/examples/` directory:
-
-| File | Description |
-|---|---|
-| `button.dsds.json` | A complete Level 2 component documentation example for a Button. |
-| `color-tokens.dsds.json` | Token documentation for a set of color tokens. |
-| `spacing-foundation.dsds.json` | Foundation documentation for a spacing system. |
-
----
-
-## C. Design Principles
+### 7.3 Writing Guidance (Non-normative)
 
 _This section is non-normative._
 
-The following principles guided the design of this specification:
+**`whenToUse` entries should be:**
 
-### C.1 Documentation is a product
+- **Scenario-driven.** Describe the user's situation, not the entity's features. _"When the user needs to trigger an action"_ is better than _"When you need a clickable element."_
+- **Concrete.** Include specific actions or contexts. _"When submitting a form, saving data, or opening a dialog"_ is better than _"When an action is needed."_
 
-Design system documentation is consumed by designers, engineers, QA, product managers, and (increasingly) AI models. It deserves the same rigor as the components it describes.
+**`whenNotToUse` entries should:**
 
-### C.2 Structure enables quality
-
-Unstructured documentation tends toward inconsistency. A defined format creates a floor of quality and completeness.
-
-### C.3 Guidance without justification is incomplete
-
-Every recommendation should be answerable with "why?". The `rationale` field exists to make design system teams accountable for their guidance — and to help consumers understand the thinking behind the rules.
-
-### C.4 Documentation should be portable
-
-Teams change tools. Documentation should survive the transition. A standard format makes migration tractable.
-
-### C.5 Education is a responsibility
-
-Design systems that hide complexity create dependency. Documentation should explain not just _what_ to do, but _why_ and _how_ — building the reader's understanding of fundamentals along the way.
-
-### C.6 Specificity over subjectivity
-
-"Use sparingly" is not guidance. "Limit to one per surface" is. DSDS's structure nudges authors toward concrete, testable statements.
+- **Always suggest an alternative.** A "don't use this" without a "use that instead" leaves the reader stuck.
+- **Explain why the alternative is better.** The `rationale` should cite concrete reasons — semantic differences, accessibility implications, or user experience improvements.
+- **Be specific about the boundary.** _"When the action navigates to a different page"_ draws a clear line. _"When a button isn't appropriate"_ does not.
 
 ---
 
-## D. References
+## 8. Document Structure
 
-### D.1 Normative References
+**Schema reference:** `dsds.schema.json`
 
-- **[RFC2119]** Bradner, S. "Key words for use in RFCs to Indicate Requirement Levels." BCP 14, RFC 2119. March 1997. https://www.rfc-editor.org/rfc/rfc2119
-- **[RFC8174]** Leiba, B. "Ambiguity of Uppercase vs Lowercase in RFC 2119 Key Words." BCP 14, RFC 8174. May 2017. https://www.rfc-editor.org/rfc/rfc8174
-- **[RFC8259]** Bray, T., Ed. "The JavaScript Object Notation (JSON) Data Interchange Format." RFC 8259. December 2017. https://www.rfc-editor.org/rfc/rfc8259
+A DSDS file is a JSON object with a `dsdsVersion` string and a `documentation` array. See the root schema reference page for the full property tables covering the root document and `documentationGroup`.
 
-### D.2 Informative References
+### 8.1 Root Shape
 
-- **[DTCG-FORMAT]** Design Tokens Community Group. "Design Tokens Format Module 2025.10." W3C Community Group Final Report. October 2025. https://www.w3.org/community/reports/design-tokens/CG-FINAL-format-20251028/
-- **[DTCG-COLOR]** Design Tokens Community Group. "Design Tokens Color Module 2025.10." W3C Community Group Final Report. October 2025. https://www.w3.org/community/reports/design-tokens/CG-FINAL-color-20251028/
-- **[DTCG-RESOLVER]** Design Tokens Community Group. "Design Tokens Resolver Module 2025.10." W3C Community Group Final Report. October 2025. https://www.w3.org/community/reports/design-tokens/CG-FINAL-resolver-20251028/
-- **[OPENAPI]** OpenAPI Initiative. "OpenAPI Specification v3.2.0." September 2025. https://spec.openapis.org/oas/v3.2.0.html
-- **[CommonMark]** CommonMark Spec. https://spec.commonmark.org/
-- **[CommonMark-0.27]** CommonMark Spec, Version 0.27. John MacFarlane. 18 November 2016. https://spec.commonmark.org/0.27/
-- **[JSON-Schema-2020-12]** JSON Schema: A Media Type for Describing JSON Documents. Draft 2020-12. Austin Wright; Henry Andrews; Ben Hutton; Greg Dennis. IETF. 10 June 2022. https://datatracker.ietf.org/doc/html/draft-bhutton-json-schema-01
-- **[WCAG21]** W3C. "Web Content Accessibility Guidelines (WCAG) 2.1." W3C Recommendation. June 2018. https://www.w3.org/TR/WCAG21/
-- **[WAI-ARIA]** W3C. "Accessible Rich Internet Applications (WAI-ARIA) 1.2." W3C Recommendation. June 2023. https://www.w3.org/TR/wai-aria-1.2/
+The root object requires `dsdsVersion` and `documentation`. The optional `metadata` provides system-level context. The optional `$extensions` allows vendor-specific data at the document level.
+
+### 8.2 Documentation Groups
+
+Each entry in `documentation` is a named collection of typed entities. Entities of different types can be mixed freely in a single `items` array — each entity identifies itself via a `type` discriminator property.
+
+### 8.3 Entity Type Discriminators
+
+Every entity carries a required `type` property:
+
+| `type` value | Entity | Description |
+|---|---|---|
+| `"component"` | Component | A reusable UI component |
+| `"token"` | Token | A single design token |
+| `"token-group"` | Token Group | A hierarchical group of related tokens (recursive) |
+| `"theme"` | Theme | A named set of token value overrides |
+| `"style"` | Style | A macro-level visual style |
+| `"pattern"` | Pattern | A broad interaction pattern |
+
+Entities of different types can be mixed in any order within the same `items` array.
 
 ---
 
-*End of specification.*
+*See [Entities Module](entities.md) for entity type documentation and [Guidelines Module](guidelines.md) for guideline type documentation.*

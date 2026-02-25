@@ -38,10 +38,8 @@ const EXAMPLES_DIR = path.join(SPEC_DIR, "examples");
 
 const DIR_GROUPS = [
   { dir: "common", label: "Common" },
-  { dir: "components", label: "Components" },
-  { dir: "tokens", label: "Tokens" },
-  { dir: "style", label: "Style" },
-  { dir: "patterns", label: "Patterns" },
+  { dir: "entities", label: "Entities" },
+  { dir: "guidelines", label: "Guidelines" },
 ];
 
 /**

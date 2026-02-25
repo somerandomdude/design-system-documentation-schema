@@ -2,28 +2,25 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://designsystemdocspec.org/v0.1/usecase.schema.json",
   "title": "DSDS Use Case Definitions",
-  "description": "Definitions for documenting when to use and when not to use a design system artifact. Use cases provide scenario-driven guidance that complements guidelines by framing decisions in terms of concrete situations.",
+  "description": "Definitions for documenting when to use and when not to use a design system artifact or option. Use cases provide scenario-driven guidance that complements best practices by framing decisions in terms of concrete situations rather than abstract rules. The useCase and useCases defs defined here carry no guideline `type` discriminator — they are the raw data model used for nesting inside variant values, state entries, and as the content of the purpose guideline type.",
   "$defs": {
     "useCase": {
       "type": "object",
-      "description": "A single use case scenario describing a situation in which an artifact is or is not appropriate.",
-      "required": [
-        "description"
-      ],
+      "description": "A single use case scenario describing a situation in which an artifact or option is or is not appropriate.",
+      "required": ["description"],
       "properties": {
         "description": {
-          "$ref": "rich-text.schema.json#/$defs/richText"
+          "$ref": "rich-text.schema.json#/$defs/richText",
+          "description": "A description of the scenario. Should be concrete and situation-driven — describe the user's situation, not the artifact's features."
         },
         "alternative": {
           "type": "object",
-          "description": "The recommended alternative artifact for this scenario. Typically provided for whenNotToUse entries to direct the reader toward a more appropriate component or pattern.",
-          "required": [
-            "name"
-          ],
+          "description": "The recommended alternative artifact for this scenario. Typically provided for whenNotToUse entries to direct the reader toward a more appropriate component, pattern, or token.",
+          "required": ["name"],
           "properties": {
             "name": {
               "type": "string",
-              "description": "The name of the recommended alternative component or artifact (e.g., 'link', 'anchor', 'icon-button')."
+              "description": "The name of the recommended alternative artifact (e.g., 'link', 'radio-group', 'icon-button', 'empty-state')."
             },
             "rationale": {
               "$ref": "rich-text.schema.json#/$defs/richText",
@@ -44,18 +41,18 @@
     },
     "useCases": {
       "type": "object",
-      "description": "Scenario-driven guidance describing when an artifact is and is not the right choice. Complements guidelines by framing decisions around concrete user or developer situations rather than abstract rules.",
+      "description": "Scenario-driven guidance describing when an artifact or option is and is not the right choice. Contains whenToUse and whenNotToUse arrays of use case entries. This def carries no guideline `type` discriminator — it is the raw data model for nesting inside other structures (variant values, state entries) and as the content payload of the purpose guideline type.",
       "properties": {
         "whenToUse": {
           "type": "array",
-          "description": "Scenarios in which this artifact is the appropriate choice.",
+          "description": "Scenarios in which this artifact or option is the appropriate choice. Each entry should be scenario-driven — describe the user's situation, not the artifact's features. For example, 'When the user needs to trigger an action such as submitting a form' rather than 'When you need a clickable element'.",
           "items": {
             "$ref": "#/$defs/useCase"
           }
         },
         "whenNotToUse": {
           "type": "array",
-          "description": "Scenarios in which this artifact should not be used. Each entry SHOULD include an `alternative` pointing to a more appropriate artifact or pattern.",
+          "description": "Scenarios in which this artifact or option should not be used. Each entry SHOULD include an `alternative` pointing to a more appropriate artifact or pattern, along with a rationale explaining why the alternative is better.",
           "items": {
             "$ref": "#/$defs/useCase"
           }

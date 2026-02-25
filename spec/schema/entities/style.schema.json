@@ -1,0 +1,86 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://designsystemdocspec.org/v0.1/style.schema.json",
+  "title": "DSDS Style Definitions",
+  "description": "Definitions for documenting macro-level visual style guidelines \u2014 color palettes, typography systems, spacing scales, elevation levels, and other visual attributes. A style document captures the identity and metadata of a visual attribute domain. All structured documentation \u2014 principles, scales, token group references, best practices, accessibility specs, use cases, and examples \u2014 lives in the unified `guidelines` array as typed guideline objects.",
+  "$defs": {
+    "style": {
+      "type": "object",
+      "description": "Documentation for a macro-level visual style \u2014 the principles, guidelines, scales, and token references that govern a visual attribute such as color, typography, spacing, or elevation across the entire system. The style's identity (name, description, status, category) lives at the top level. All structured documentation lives in the `guidelines` array \u2014 each entry is a typed guideline object (principle, scale, artifact-reference, best-practice, accessibility, use-cases, example, etc.). This unified model replaces the previous architecture where principles, tokenGroups, scales, useCases, guidelines, and accessibility were separate top-level properties.",
+      "required": [
+        "type",
+        "name",
+        "displayName",
+        "description",
+        "status"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "style",
+          "description": "Identifies this entity as a style."
+        },
+        "name": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]*$",
+          "description": "Machine-readable identifier for the style (e.g., 'color', 'typography', 'spacing', 'elevation', 'motion', 'shape'). MUST be unique within the documentation group."
+        },
+        "displayName": {
+          "type": "string",
+          "description": "Human-readable name for display in documentation (e.g., 'Color', 'Typography', 'Spacing', 'Elevation', 'Motion', 'Shape')."
+        },
+        "aliases": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Alternative names this artifact is known by across teams, tools, or legacy systems. Useful for search, migration mapping, and cross-referencing."
+        },
+        "summary": {
+          "type": "string",
+          "description": "A one-line, plain-text summary for compact display contexts such as list views, tooltips, search results, and card layouts. MUST NOT contain markup of any kind."
+        },
+        "description": {
+          "$ref": "../common/rich-text.schema.json#/$defs/richText",
+          "description": "A description of the style \u2014 what visual attribute it governs, how the system approaches it, and its role in the overall design language. CommonMark supported."
+        },
+        "status": {
+          "$ref": "../common/status.schema.json#/$defs/statusObject"
+        },
+        "since": {
+          "type": "string",
+          "description": "The version of the design system in which this style was introduced (e.g., '1.0.0', '2.3.0')."
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Freeform keywords for categorization, search, and cross-referencing (e.g., 'visual', 'foundation', 'layout', 'theming'). Tags are not constrained to a vocabulary \u2014 use them for any cross-cutting concern."
+        },
+        "category": {
+          "type": "string",
+          "description": "The visual attribute category this style governs. Common values: 'color' (color system, palettes, semantic color usage, and color modes), 'typography' (type hierarchy, font families, type scales, and typographic rules), 'spacing' (spatial system, spacing scale, and layout rhythm), 'elevation' (shadows, layering, z-index strategy, and depth), 'motion' (animation timing, easing curves, transition patterns, and reduced-motion considerations), 'shape' (border radius, corner treatments, and geometric conventions). Custom values are permitted and SHOULD be lowercase kebab-case."
+        },
+        "guidelines": {
+          "type": "array",
+          "description": "All structured documentation for this style, expressed as an ordered array of typed guideline objects. Styles accept style-specific guideline types (principles, scale) and general types (best-practices, use-cases, accessibility, examples, artifact-references). Each guideline has a `type` property that determines its shape. The ordering is significant: tools SHOULD preserve it for display. A typical style includes guidelines in roughly this order: examples (hero previews), principles, scales, artifact-references (token groups), use-cases, best-practices, accessibility. However, authors are free to order guidelines in whatever way best serves their documentation.",
+          "items": {
+            "$ref": "../guidelines/guideline.schema.json#/$defs/styleGuideline"
+          }
+        },
+        "links": {
+          "type": "array",
+          "description": "External resource links and related artifact references \u2014 source code, design files, Storybook stories, documentation pages, npm packages, and relationships to other DSDS artifacts.",
+          "items": {
+            "$ref": "../common/link.schema.json#/$defs/link"
+          }
+        },
+        "$extensions": {
+          "$ref": "../common/extensions.schema.json#/$defs/extensions"
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

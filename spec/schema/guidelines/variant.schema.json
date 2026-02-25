@@ -1,0 +1,99 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://designsystemdocspec.org/v0.1/guidelines/variant.schema.json",
+  "title": "DSDS Variants Guideline",
+  "description": "Documents all dimensions of visual or behavioral variation on a component. Each item in the variants array represents a single axis of configuration (e.g., 'size', 'emphasis', 'selected') and contains one or more values describing the options within that axis. A variant dimension with a single value represents a boolean/toggle configuration (e.g., 'full-width', 'icon-only'). A variant dimension with multiple values represents an enumerated set (e.g., size: small/medium/large).",
+  "$defs": {
+    "variantValue": {
+      "type": "object",
+      "description": "A single option within a variant dimension.",
+      "required": ["name", "description"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Machine-readable value name (e.g., 'small', 'primary', 'selected', 'full-width')."
+        },
+        "displayName": {
+          "type": "string",
+          "description": "Human-readable name (e.g., 'Small', 'Primary', 'Selected', 'Full Width')."
+        },
+        "description": {
+          "$ref": "../common/rich-text.schema.json#/$defs/richText",
+          "description": "What this value looks like, when to use it, and how it differs from the other values in this dimension."
+        },
+        "tokens": {
+          "type": "object",
+          "description": "Design token overrides applied when this value is active. Keys are token-purpose names scoped to the component (e.g., 'button-background', 'button-text-color'). Values are the token names or resolved values that apply for this variant value.",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "preview": {
+          "type": "array",
+          "description": "Visual previews showing this variant value in isolation or in context.",
+          "items": {
+            "$ref": "../common/example.schema.json#/$defs/example"
+          }
+        },
+        "useCases": {
+          "$ref": "../common/usecase.schema.json#/$defs/useCases",
+          "description": "When to choose this value over the other values in this dimension."
+        }
+      },
+      "additionalProperties": false
+    },
+    "variantEntry": {
+      "type": "object",
+      "description": "A single dimension of variation on a component. The name identifies the axis (e.g., 'size', 'emphasis') and the values array enumerates the options along that axis.",
+      "required": ["name", "description", "values"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Machine-readable name of the variant dimension (e.g., 'size', 'emphasis', 'selected', 'full-width'). This is the axis name, not a value within the axis."
+        },
+        "displayName": {
+          "type": "string",
+          "description": "Human-readable name of the variant dimension (e.g., 'Size', 'Emphasis', 'Selected')."
+        },
+        "description": {
+          "$ref": "../common/rich-text.schema.json#/$defs/richText",
+          "description": "What this dimension of variation controls and how its values affect the component's appearance or behavior."
+        },
+        "values": {
+          "type": "array",
+          "description": "The possible values for this variant. A single-entry array indicates a boolean/toggle variant. Multiple entries indicate an enumerated variant. The ordering is significant — tools SHOULD preserve it for display.",
+          "items": {
+            "$ref": "#/$defs/variantValue"
+          },
+          "minItems": 1
+        },
+        "useCases": {
+          "$ref": "../common/usecase.schema.json#/$defs/useCases",
+          "description": "When to use this variant dimension at all (as opposed to use cases on individual values, which address choosing between options within the dimension)."
+        }
+      },
+      "additionalProperties": false
+    },
+    "variants": {
+      "type": "object",
+      "description": "Documents all dimensions of visual or behavioral variation on a component. Each item represents a single axis of configuration — a Button might have an 'emphasis' axis (primary/secondary/ghost/danger), a 'size' axis (small/medium/large), and a 'full-width' axis (a single boolean value). Multiple axes document orthogonal dimensions that can be combined independently.",
+      "required": ["type", "items"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "variants",
+          "description": "Identifies this guideline as a variants specification."
+        },
+        "items": {
+          "type": "array",
+          "description": "The variant dimensions. Each item documents a single axis of variation with its enumerated values. The ordering is significant — tools SHOULD display dimensions in this order.",
+          "items": {
+            "$ref": "#/$defs/variantEntry"
+          },
+          "minItems": 1
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

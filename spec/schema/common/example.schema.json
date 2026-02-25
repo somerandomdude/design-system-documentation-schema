@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://designsystemdocspec.org/v0.1/example.schema.json",
   "title": "DSDS Example Definitions",
-  "description": "A unified example model used across DSDS. Each example requires a presentation — a visual or interactive demonstration. Optional title, description, and value properties provide context. Presentations are independent typed objects for images, videos, code snippets, and Storybook stories.",
+  "description": "A unified example model used across DSDS. Each example requires a presentation — a visual or interactive demonstration. Optional title, description, and value properties provide context. Presentations are independent typed objects for images, videos, code snippets, and URLs. The `examples` container def adds a `type` discriminator for use as a guideline type in the unified guidelines array, while the `example` def is used for nesting within other guideline items (best-practice examples, variant previews, state previews, interaction illustrations).",
   "$defs": {
     "presentationImage": {
       "type": "object",
@@ -119,6 +119,27 @@
               "$ref": "#/$defs/presentationUrl"
             }
           ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "examples": {
+      "type": "object",
+      "description": "A guideline container of visual or interactive demonstrations of an artifact. Each item is a single example — a static image, a video recording, a code snippet, or a URL to a live demo. Multiple items allow different representations of the same artifact: a static screenshot alongside an interactive Storybook embed, code examples in multiple frameworks, or a sequence of annotated diagrams. This container unifies what was previously split across 'preview' (on components, variants, states) and 'examples' (on patterns) into a single guideline type that can appear on any artifact.",
+      "required": ["type", "items"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "examples",
+          "description": "Identifies this guideline as an examples specification."
+        },
+        "items": {
+          "type": "array",
+          "description": "The individual examples. Each item is a single demonstration with a required presentation and optional title, description, and value. The ordering is significant — tools SHOULD display examples in this order. Authors typically place the most representative or hero example first.",
+          "items": {
+            "$ref": "#/$defs/example"
+          },
+          "minItems": 1
         }
       },
       "additionalProperties": false

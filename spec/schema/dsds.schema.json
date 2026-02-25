@@ -2,9 +2,9 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://designsystemdocspec.org/v0.1/dsds.schema.json",
   "title": "Design System Documentation Standard (DSDS) v0.1",
-  "description": "A standard, machine-readable format for design system documentation covering components, design tokens, token groups, themes, styles, and patterns. A DSDS document contains one or more document groups — named collections of typed artifact arrays (components, tokens, tokenGroups, themes, styles, patterns). Individual artifacts are defined in their respective sub-schemas: components/ (component, anatomy, api, design-specifications, variant, state), tokens/ (token, token-group, token-value, token-api, theme), style/ (style), and patterns/ (pattern).",
+  "description": "A standard, machine-readable format for design system documentation covering components, design tokens, token groups, themes, styles, and patterns. A DSDS document contains one or more documentation groups — named collections of typed entities. Each entity carries a `type` discriminator that identifies it as a component, token, token-group, theme, style, or pattern. Entity schemas are defined in entities/. Guideline schemas are defined in guidelines/. Common schemas are defined in common/.",
   "type": "object",
-  "required": ["dsdsVersion", "documentGroups"],
+  "required": ["dsdsVersion", "documentation"],
   "properties": {
     "$schema": {
       "type": "string",
@@ -18,11 +18,11 @@
     "metadata": {
       "$ref": "common/metadata.schema.json#/$defs/metadata"
     },
-    "documentGroups": {
+    "documentation": {
       "type": "array",
-      "description": "One or more document groups. Each group is a named collection of typed artifacts — components, tokens, token groups, themes, styles, and/or patterns. Multiple groups allow a single DSDS file to organize artifacts into logical sections (e.g., one group for foundations, another for components).",
+      "description": "One or more documentation groups. Each group is a named collection of typed entities — components, tokens, token groups, themes, styles, and/or patterns. Multiple groups allow a single DSDS file to organize artifacts into logical sections (e.g., one group for foundations, another for components).",
       "items": {
-        "$ref": "#/$defs/documentGroup"
+        "$ref": "#/$defs/documentationGroup"
       },
       "minItems": 1
     },
@@ -32,10 +32,10 @@
   },
   "additionalProperties": false,
   "$defs": {
-    "documentGroup": {
+    "documentationGroup": {
       "type": "object",
-      "description": "A named collection of design system documentation artifacts. Contains one or more arrays of typed artifacts — components, tokens, token groups, themes, styles, and/or patterns. At least one artifact array must be present.",
-      "required": ["name"],
+      "description": "A named collection of design system documentation entities. Contains a single `items` array of typed entities — components, tokens, token groups, themes, styles, and/or patterns mixed freely in any order. Each entity is identified by its `type` discriminator property. At least one entity must be present.",
+      "required": ["name", "items"],
       "properties": {
         "name": {
           "type": "string",
@@ -44,57 +44,37 @@
         "description": {
           "$ref": "common/rich-text.schema.json#/$defs/richText"
         },
-        "components": {
+        "items": {
           "type": "array",
-          "description": "Array of component documentation objects.",
+          "description": "The entities in this documentation group. Each item is a typed entity — its `type` property determines which schema applies. Entities of different types can be mixed freely in the same array. The ordering is significant: tools SHOULD preserve it for display. Authors MAY organize entities in whatever order best serves their documentation (e.g., tokens before components, or grouped by domain).",
           "items": {
-            "$ref": "components/component.schema.json#/$defs/componentDoc"
-          }
+            "oneOf": [
+              {
+                "$ref": "entities/component.schema.json#/$defs/component"
+              },
+              {
+                "$ref": "entities/token.schema.json#/$defs/token"
+              },
+              {
+                "$ref": "entities/token.schema.json#/$defs/tokenGroup"
+              },
+              {
+                "$ref": "entities/theme.schema.json#/$defs/theme"
+              },
+              {
+                "$ref": "entities/style.schema.json#/$defs/style"
+              },
+              {
+                "$ref": "entities/pattern.schema.json#/$defs/pattern"
+              }
+            ]
+          },
+          "minItems": 1
         },
-        "tokens": {
-          "type": "array",
-          "description": "Array of individual token documentation objects.",
-          "items": {
-            "$ref": "tokens/token.schema.json#/$defs/tokenDoc"
-          }
-        },
-        "tokenGroups": {
-          "type": "array",
-          "description": "Array of token group documentation objects. Each group can contain tokens, nested groups, or a mix of both, forming an arbitrarily deep hierarchy.",
-          "items": {
-            "$ref": "tokens/token.schema.json#/$defs/tokenGroupDoc"
-          }
-        },
-        "themes": {
-          "type": "array",
-          "description": "Array of theme documentation objects. Each theme provides alternative token values for a named context such as a color mode, density setting, or brand variant.",
-          "items": {
-            "$ref": "tokens/theme.schema.json#/$defs/themeDoc"
-          }
-        },
-        "styles": {
-          "type": "array",
-          "description": "Array of style documentation objects.",
-          "items": {
-            "$ref": "style/style.schema.json#/$defs/styleDoc"
-          }
-        },
-        "patterns": {
-          "type": "array",
-          "description": "Array of pattern documentation objects.",
-          "items": {
-            "$ref": "patterns/pattern.schema.json#/$defs/patternDoc"
-          }
+        "$extensions": {
+          "$ref": "common/extensions.schema.json#/$defs/extensions"
         }
       },
-      "anyOf": [
-        { "required": ["components"] },
-        { "required": ["tokens"] },
-        { "required": ["tokenGroups"] },
-        { "required": ["themes"] },
-        { "required": ["styles"] },
-        { "required": ["patterns"] }
-      ],
       "additionalProperties": false
     }
   }

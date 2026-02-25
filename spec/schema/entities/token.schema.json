@@ -1,0 +1,217 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://designsystemdocspec.org/v0.1/token.schema.json",
+  "title": "DSDS Token and Token Group Definitions",
+  "description": "Documentation for individual design tokens and hierarchical token groups. Includes token value representation and platform-specific API mappings. Token groups are flexible organizational units that can represent a full token collection, a token family (e.g., all color tokens), or a token sub-family (e.g., a single color hue family). Groups can contain tokens, nested groups, or a mix of both, forming an arbitrarily deep hierarchy that mirrors how design systems organize their token architecture.",
+  "$defs": {
+    "tokenValue": {
+      "type": "object",
+      "description": "A displayable representation of the token's value for documentation tools. This is not the authoritative source of truth for the value \u2014 the Design Tokens Format file is. The resolved value provides a human-readable snapshot, the reference traces the alias chain, and the dtcgFile points to the authoritative source.",
+      "properties": {
+        "resolved": {
+          "type": "string",
+          "description": "The resolved value as a human-readable string (e.g., '#1a1a1a', '16px', '400', 'rgb(0, 85, 179)')."
+        },
+        "reference": {
+          "type": "string",
+          "description": "If this token is an alias, the name of the referenced token (e.g., 'color.neutral.900', 'spacing.base')."
+        },
+        "dtcgFile": {
+          "type": "string",
+          "description": "URI or relative path to the W3C Design Tokens Format (DTCG) file containing the authoritative value."
+        }
+      },
+      "additionalProperties": false
+    },
+    "tokenApi": {
+      "type": "object",
+      "description": "Platform-specific identifiers for a token. Keys are platform names (e.g., 'cssCustomProperty', 'scssVariable', 'jsConstant', 'iosToken', 'androidToken', 'designToolVariable') and values are the identifier strings for that platform. Additional platforms can be added without schema changes.",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "token": {
+      "type": "object",
+      "description": "Documentation for a single design token \u2014 its name, type, value, platform API mappings, use cases, guidelines, and accessibility considerations.",
+      "required": [
+        "type",
+        "name",
+        "displayName",
+        "description",
+        "status",
+        "tokenType"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "token",
+          "description": "Identifies this entity as a token."
+        },
+        "name": {
+          "type": "string",
+          "description": "The token name. Token names are intentionally unconstrained by a pattern to accommodate DTCG and design tool naming conventions that use dots, slashes, or other separators (e.g., 'color-text-primary', 'color.text.primary', 'color/text/primary')."
+        },
+        "displayName": {
+          "type": "string",
+          "description": "Human-readable name."
+        },
+        "summary": {
+          "type": "string",
+          "description": "A one-line, plain-text summary. MUST NOT contain markup."
+        },
+        "description": {
+          "$ref": "../common/rich-text.schema.json#/$defs/richText"
+        },
+        "status": {
+          "$ref": "../common/status.schema.json#/$defs/statusObject"
+        },
+        "since": {
+          "type": "string",
+          "description": "The version in which this token was introduced."
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Freeform keywords to relate guidelines across categories/disciplines (e.g., 'rtl', 'localization', 'validation')."
+        },
+        "tokenType": {
+          "type": "string",
+          "description": "The type of token aligned with the DTCG spec (e.g., 'color', 'dimension', 'fontFamily', 'fontWeight', 'duration', 'cubicBezier', 'shadow')."
+        },
+        "category": {
+          "type": "string",
+          "description": "The token's semantic category. Standard values: 'base' (raw palette values, not used directly in components), 'semantic' (purpose-driven tokens that map to base values, e.g., 'color-text-primary'), 'component' (tokens scoped to a specific component, e.g., 'button-background'). Custom values are permitted and SHOULD be lowercase kebab-case."
+        },
+        "value": {
+          "$ref": "#/$defs/tokenValue"
+        },
+        "aliases": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Names of tokens that alias this token."
+        },
+        "api": {
+          "$ref": "#/$defs/tokenApi"
+        },
+        "guidelines": {
+          "type": "array",
+          "description": "All structured documentation for this token, expressed as an ordered array of typed guideline objects. Tokens accept general guideline types only (best-practices, use-cases, accessibility, examples, artifact-references). Each guideline has a `type` property that determines its shape. The ordering is significant: tools SHOULD preserve it for display.",
+          "items": {
+            "$ref": "../guidelines/guideline.schema.json#/$defs/tokenGuideline"
+          }
+        },
+        "links": {
+          "type": "array",
+          "description": "External resource links and related artifact references.",
+          "items": {
+            "$ref": "../common/link.schema.json#/$defs/link"
+          }
+        },
+        "$extensions": {
+          "$ref": "../common/extensions.schema.json#/$defs/extensions"
+        }
+      },
+      "additionalProperties": false
+    },
+    "tokenGroup": {
+      "type": "object",
+      "description": "Documentation for a group of related design tokens. Token groups are flexible organizational units that can represent a full token collection, a token family (e.g., all color tokens), a token sub-family (e.g., a single color hue with its grade scale), or any other logical grouping. Groups can be nested to form an arbitrarily deep hierarchy \u2014 a top-level group might represent 'color', containing child groups for 'color-text', 'color-background', and 'color-border', each of which contains individual tokens. This recursive structure mirrors the way real design systems organize tokens into families and sub-families.",
+      "required": [
+        "type",
+        "name",
+        "displayName",
+        "description",
+        "status"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "token-group",
+          "description": "Identifies this entity as a token-group."
+        },
+        "name": {
+          "type": "string",
+          "description": "The token group name. Token group names are intentionally unconstrained by a pattern to accommodate DTCG and design tool naming conventions (e.g., 'color-text', 'color.text', 'color/text')."
+        },
+        "displayName": {
+          "type": "string",
+          "description": "Human-readable name (e.g., 'Text Colors', 'Spacing Scale', 'Red \u2014 Pushpin')."
+        },
+        "aliases": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Alternative names this token group is known by across teams, tools, or legacy systems. Useful for search, migration mapping, and cross-referencing."
+        },
+        "summary": {
+          "type": "string",
+          "description": "A one-line, plain-text summary. MUST NOT contain markup."
+        },
+        "description": {
+          "$ref": "../common/rich-text.schema.json#/$defs/richText",
+          "description": "A description of the group's purpose, the tokens it contains, and how they relate to each other. CommonMark supported."
+        },
+        "status": {
+          "$ref": "../common/status.schema.json#/$defs/statusObject"
+        },
+        "since": {
+          "type": "string",
+          "description": "The version in which this group was introduced."
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Freeform keywords for categorization and search (e.g., 'color', 'palette', 'semantic')."
+        },
+        "tokenType": {
+          "type": "string",
+          "description": "When all tokens in this group share the same DTCG token type, it MAY be declared here to avoid repetition on each child token. Individual token objects within children MAY override this value. Common values: 'color', 'dimension', 'fontFamily', 'fontWeight', 'duration', 'number', 'shadow'."
+        },
+        "category": {
+          "type": "string",
+          "description": "When all tokens in this group share the same semantic category, it MAY be declared here. Standard values: 'base', 'semantic', 'component'. Individual token objects within children MAY override this value."
+        },
+        "children": {
+          "type": "array",
+          "description": "An ordered array of tokens and/or nested token groups that belong to this group. Each item MUST be either a token (identified by the presence of `tokenType` and absence of `children`) or a tokenGroup (identified by the presence of `children` or the absence of `tokenType`). The ordering is significant \u2014 tools SHOULD preserve the order for display, as it often represents a meaningful progression (e.g., a color grade scale from lightest to darkest, or a spacing scale from smallest to largest).",
+          "items": {
+            "oneOf": [
+              {
+                "$ref": "#/$defs/token"
+              },
+              {
+                "$ref": "#/$defs/tokenGroup"
+              }
+            ]
+          },
+          "minItems": 1
+        },
+        "guidelines": {
+          "type": "array",
+          "description": "All structured documentation for this token group, expressed as an ordered array of typed guideline objects. Token groups accept general guideline types only (best-practices, use-cases, accessibility, examples, artifact-references). Guidelines that apply to the group as a whole live here. Guidelines specific to individual tokens SHOULD be placed on the token within children.",
+          "items": {
+            "$ref": "../guidelines/guideline.schema.json#/$defs/tokenGuideline"
+          }
+        },
+        "links": {
+          "type": "array",
+          "description": "External resource links related to this token group.",
+          "items": {
+            "$ref": "../common/link.schema.json#/$defs/link"
+          }
+        },
+        "$extensions": {
+          "$ref": "../common/extensions.schema.json#/$defs/extensions"
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

@@ -1,0 +1,145 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://designsystemdocspec.org/v0.1/guidelines/design-specifications.schema.json",
+  "title": "DSDS Design Specifications Guideline",
+  "description": "Documents the visual design specifications of a component — the design tokens it consumes, its internal and external spacing relationships, dimension constraints, typography settings, and responsive behavior. Design specifications bridge the gap between design intent and engineering implementation by making every visual decision explicit, measurable, and tied to the token architecture.",
+  "$defs": {
+    "responsiveEntry": {
+      "type": "object",
+      "description": "A responsive behavior specification describing how the component adapts at a specific breakpoint or viewport condition.",
+      "required": ["breakpoint", "description"],
+      "properties": {
+        "breakpoint": {
+          "type": "string",
+          "description": "The breakpoint name or value at which this behavior applies (e.g., 'small', 'medium', 'large', '768px', 'min-width: 1024px')."
+        },
+        "description": {
+          "$ref": "../common/rich-text.schema.json#/$defs/richText",
+          "description": "How the component's layout, sizing, or behavior changes at this breakpoint."
+        }
+      },
+      "additionalProperties": false
+    },
+    "designSpecifications": {
+      "type": "object",
+      "description": "Documents the measurable visual specifications of a component — every token reference, spacing relationship, dimension constraint, typographic setting, and responsive adaptation. This guideline type makes design decisions explicit so that engineers can implement them precisely and reviewers can verify them against the design.",
+      "required": ["type"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "design-specifications",
+          "description": "Identifies this guideline as a design specifications document."
+        },
+        "tokens": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "All design token names consumed by this component, across all variants and states. Provides a flat inventory of every token the component depends on. Individual variant and state guidelines document which tokens apply in specific configurations."
+        },
+        "spacing": {
+          "type": "object",
+          "description": "Spacing specifications documenting the spatial relationships within and around the component.",
+          "properties": {
+            "internal": {
+              "type": "object",
+              "description": "Padding and internal gaps within the component. Keys are named spatial relationships between anatomy parts or edges (e.g., 'container-horizontal', 'container-vertical', 'icon-to-label', 'label-to-description'). Values are token names or resolved values (e.g., 'space-4', '8px'). Internal spacing is owned by the component and does not change based on context.",
+              "additionalProperties": {
+                "type": "string"
+              }
+            },
+            "external": {
+              "type": "object",
+              "description": "Recommended margins and gaps between this component and its siblings or container edges. Keys are named spatial relationships to surrounding elements (e.g., 'button-to-button', 'button-group-gap', 'stack-gap'). Values are token names or resolved values. External spacing is a recommendation — the parent layout ultimately controls the space between components.",
+              "additionalProperties": {
+                "type": "string"
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        "sizing": {
+          "type": "object",
+          "description": "Dimension constraints defining the minimum and maximum bounds of the component and any aspect ratio requirements.",
+          "properties": {
+            "minWidth": {
+              "type": "string",
+              "description": "Minimum width as a token name or resolved value (e.g., 'size-button-min-width', '64px')."
+            },
+            "maxWidth": {
+              "type": "string",
+              "description": "Maximum width as a token name or resolved value (e.g., 'size-dialog-max-width', '600px')."
+            },
+            "minHeight": {
+              "type": "string",
+              "description": "Minimum height as a token name or resolved value (e.g., 'size-button-min-height', '44px')."
+            },
+            "maxHeight": {
+              "type": "string",
+              "description": "Maximum height as a token name or resolved value."
+            },
+            "aspectRatio": {
+              "type": "string",
+              "description": "Aspect ratio constraint as a ratio string (e.g., '16/9', '1/1', '4/3')."
+            }
+          },
+          "additionalProperties": false
+        },
+        "typography": {
+          "type": "object",
+          "description": "Typographic specifications for text content within the component. Keys are named text elements that correspond to anatomy parts (e.g., 'label', 'helper-text', 'heading', 'body'). Values are objects mapping CSS typographic properties to token names or resolved values.",
+          "additionalProperties": {
+            "type": "object",
+            "description": "Typographic settings for a single text element within the component.",
+            "properties": {
+              "fontFamily": {
+                "type": "string",
+                "description": "Font family token name or resolved value (e.g., 'font-family-body', 'Inter, sans-serif')."
+              },
+              "fontSize": {
+                "type": "string",
+                "description": "Font size token name or resolved value (e.g., 'font-size-body', '14px', '0.875rem')."
+              },
+              "fontWeight": {
+                "type": "string",
+                "description": "Font weight token name or resolved value (e.g., 'font-weight-regular', '400', 'bold')."
+              },
+              "lineHeight": {
+                "type": "string",
+                "description": "Line height token name or resolved value (e.g., 'line-height-body', '1.5', '20px')."
+              },
+              "letterSpacing": {
+                "type": "string",
+                "description": "Letter spacing token name or resolved value (e.g., 'letter-spacing-body', '0.01em')."
+              },
+              "textTransform": {
+                "type": "string",
+                "description": "Text transform value (e.g., 'uppercase', 'capitalize', 'none')."
+              },
+              "typeToken": {
+                "type": "string",
+                "description": "A composite typography token that encapsulates multiple typographic properties (e.g., '$body-compact-01', 'type-scale-body-sm'). When a type token is provided, individual properties (fontSize, fontWeight, etc.) serve as documentation of what the token resolves to."
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "responsive": {
+          "type": "array",
+          "description": "Responsive behavior documentation describing how the component adapts across breakpoints. Entries are ordered from smallest to largest breakpoint.",
+          "items": {
+            "$ref": "#/$defs/responsiveEntry"
+          }
+        }
+      },
+      "anyOf": [
+        { "required": ["tokens"] },
+        { "required": ["spacing"] },
+        { "required": ["sizing"] },
+        { "required": ["typography"] },
+        { "required": ["responsive"] }
+      ],
+      "additionalProperties": false
+    }
+  }
+}

@@ -1,0 +1,277 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://designsystemdocspec.org/v0.1/guidelines/api.schema.json",
+  "title": "DSDS API Guideline",
+  "description": "Documents the code-level interface of a component — its configurable properties, emitted events, content slots, CSS custom properties, CSS shadow parts, data attributes, and public methods. When a component supports multiple platforms, each platform gets its own API guideline with the `platform` property identifying which implementation it describes.",
+  "$defs": {
+    "apiProperty": {
+      "type": "object",
+      "description": "A configurable property of a component. Pairs a human-readable type string with an optional machine-readable JSON Schema for tooling.",
+      "required": ["name", "type", "description", "required"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "The property name as used in code (e.g., 'variant', 'size', 'disabled', 'onClick')."
+        },
+        "type": {
+          "type": "string",
+          "description": "A human-readable type description for display (e.g., \"'primary' | 'secondary' | 'ghost'\", 'boolean', 'IconComponent')."
+        },
+        "schema": {
+          "type": "object",
+          "description": "A JSON Schema (Draft 2020-12) object defining the property's type in a machine-readable form. Follows the same conventions as OpenAPI parameter schemas."
+        },
+        "description": {
+          "$ref": "../common/rich-text.schema.json#/$defs/richText",
+          "description": "What this property controls, how it affects the component, and any constraints or side effects."
+        },
+        "required": {
+          "type": "boolean",
+          "description": "Whether this property must be provided by the consumer."
+        },
+        "defaultValue": {
+          "description": "The default value in its native JSON type. Accepts any JSON type: string (e.g., 'primary'), number (e.g., 44), boolean (e.g., true), object, array, or null."
+        },
+        "examples": {
+          "type": "array",
+          "description": "Example values for this property.",
+          "items": {
+            "$ref": "../common/example.schema.json#/$defs/example"
+          }
+        },
+        "since": {
+          "type": "string",
+          "description": "The version in which this property was introduced."
+        },
+        "deprecated": {
+          "type": "boolean",
+          "description": "Whether this property is deprecated."
+        },
+        "deprecationNotice": {
+          "type": "string",
+          "description": "What to use instead, if deprecated."
+        }
+      },
+      "additionalProperties": false
+    },
+    "apiEvent": {
+      "type": "object",
+      "description": "An event emitted by a component.",
+      "required": ["name", "description"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "The event name (e.g., 'onClick', 'onChange', 'onDismiss')."
+        },
+        "description": {
+          "$ref": "../common/rich-text.schema.json#/$defs/richText",
+          "description": "When this event fires, what it communicates, and how consumers should respond."
+        },
+        "payload": {
+          "type": "string",
+          "description": "Description of the event payload shape (e.g., '(event: MouseEvent) => void', '{ value: string, index: number }')."
+        },
+        "since": {
+          "type": "string",
+          "description": "The version in which this event was introduced."
+        }
+      },
+      "additionalProperties": false
+    },
+    "apiSlot": {
+      "type": "object",
+      "description": "A content insertion point of a component.",
+      "required": ["name", "description"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "The slot name. Use 'default' for the unnamed/default slot."
+        },
+        "description": {
+          "$ref": "../common/rich-text.schema.json#/$defs/richText",
+          "description": "What content this slot accepts and any constraints on its children."
+        },
+        "acceptedContent": {
+          "$ref": "../common/rich-text.schema.json#/$defs/richText",
+          "description": "A description of the allowed content (e.g., 'Plain text or a text node. Do not nest interactive elements.')."
+        },
+        "since": {
+          "type": "string",
+          "description": "The version in which this slot was introduced."
+        }
+      },
+      "additionalProperties": false
+    },
+    "apiCssCustomProperty": {
+      "type": "object",
+      "description": "A CSS custom property exposed by a component for external styling.",
+      "required": ["name", "description"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "pattern": "^--",
+          "description": "The full property name including the -- prefix (e.g., '--button-background', '--button-border-radius')."
+        },
+        "description": {
+          "$ref": "../common/rich-text.schema.json#/$defs/richText",
+          "description": "What visual attribute this property controls."
+        },
+        "defaultValue": {
+          "type": "string",
+          "description": "The default value of the CSS custom property (e.g., 'var(--color-action-primary)', '1rem', 'transparent')."
+        },
+        "type": {
+          "type": "string",
+          "description": "The expected CSS value type (e.g., 'color', 'dimension', 'number')."
+        },
+        "since": {
+          "type": "string",
+          "description": "The version in which this custom property was introduced."
+        }
+      },
+      "additionalProperties": false
+    },
+    "apiCssPart": {
+      "type": "object",
+      "description": "A CSS shadow part exposed by a web component for external styling via ::part() selectors.",
+      "required": ["name", "description"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "The part name as used in ::part() selectors."
+        },
+        "description": {
+          "$ref": "../common/rich-text.schema.json#/$defs/richText",
+          "description": "What element this part exposes and what styling it enables."
+        },
+        "since": {
+          "type": "string",
+          "description": "The version in which this part was introduced."
+        }
+      },
+      "additionalProperties": false
+    },
+    "apiDataAttribute": {
+      "type": "object",
+      "description": "A data attribute used by a component to reflect state or variant information into the DOM.",
+      "required": ["name", "description"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "pattern": "^data-",
+          "description": "The full attribute name including the data- prefix (e.g., 'data-state', 'data-variant')."
+        },
+        "description": {
+          "$ref": "../common/rich-text.schema.json#/$defs/richText",
+          "description": "What this attribute reflects and how it can be used for styling or testing."
+        },
+        "values": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "The set of possible values (e.g., ['default', 'hover', 'active', 'disabled'])."
+        },
+        "since": {
+          "type": "string",
+          "description": "The version in which this attribute was introduced."
+        }
+      },
+      "additionalProperties": false
+    },
+    "apiMethod": {
+      "type": "object",
+      "description": "A public method on a component instance.",
+      "required": ["name", "description"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "The method name (e.g., 'focus', 'reset', 'scrollTo')."
+        },
+        "description": {
+          "$ref": "../common/rich-text.schema.json#/$defs/richText",
+          "description": "What this method does, when to call it, and any side effects."
+        },
+        "parameters": {
+          "type": "string",
+          "description": "Description of the parameter signature (e.g., '(options?: { preventScroll: boolean }) => void')."
+        },
+        "returnType": {
+          "type": "string",
+          "description": "Description of the return value (e.g., 'void', 'Promise<void>', 'HTMLElement | null')."
+        },
+        "since": {
+          "type": "string",
+          "description": "The version in which this method was introduced."
+        }
+      },
+      "additionalProperties": false
+    },
+    "api": {
+      "type": "object",
+      "description": "Documents the code-level interface of a component on a single platform. Lists the configurable properties, emitted events, content slots, CSS hooks, data attributes, and public methods that consumers interact with. For multi-platform components (e.g., React + Web Component + Vue), create one API guideline per platform and use the `platform` property to distinguish them.",
+      "required": ["type"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "api",
+          "description": "Identifies this guideline as an API specification."
+        },
+        "platform": {
+          "type": "string",
+          "description": "The platform or framework this API describes. Use when a component has different APIs across platforms (e.g., 'react', 'web-component', 'vue', 'angular', 'ios', 'android'). When omitted, the API is assumed to be the single/default platform."
+        },
+        "properties": {
+          "type": "array",
+          "description": "Configurable properties (props, attributes, inputs) that consumers pass to the component.",
+          "items": {
+            "$ref": "#/$defs/apiProperty"
+          }
+        },
+        "events": {
+          "type": "array",
+          "description": "Events emitted by the component that consumers can listen to.",
+          "items": {
+            "$ref": "#/$defs/apiEvent"
+          }
+        },
+        "slots": {
+          "type": "array",
+          "description": "Content insertion points where consumers can project child content.",
+          "items": {
+            "$ref": "#/$defs/apiSlot"
+          }
+        },
+        "cssCustomProperties": {
+          "type": "array",
+          "description": "CSS custom properties exposed for external styling.",
+          "items": {
+            "$ref": "#/$defs/apiCssCustomProperty"
+          }
+        },
+        "cssParts": {
+          "type": "array",
+          "description": "CSS shadow parts exposed for external styling via ::part() selectors.",
+          "items": {
+            "$ref": "#/$defs/apiCssPart"
+          }
+        },
+        "dataAttributes": {
+          "type": "array",
+          "description": "Data attributes that reflect component state or configuration into the DOM.",
+          "items": {
+            "$ref": "#/$defs/apiDataAttribute"
+          }
+        },
+        "methods": {
+          "type": "array",
+          "description": "Public methods available on the component instance.",
+          "items": {
+            "$ref": "#/$defs/apiMethod"
+          }
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

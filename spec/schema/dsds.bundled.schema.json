@@ -6,7 +6,7 @@
   "type": "object",
   "required": [
     "dsdsVersion",
-    "documentGroups"
+    "documentation"
   ],
   "properties": {
     "$schema": {
@@ -21,11 +21,11 @@
     "metadata": {
       "$ref": "#/$defs/metadata"
     },
-    "documentGroups": {
+    "documentation": {
       "type": "array",
-      "description": "One or more document groups. Each group is a named collection of typed artifacts — components, tokens, token groups, themes, styles, and/or patterns. Multiple groups allow a single DSDS file to organize artifacts into logical sections (e.g., one group for foundations, another for components).",
+      "description": "One or more documentation groups. Each group is a named collection of typed entities — components, tokens, token groups, themes, styles, and/or patterns. Multiple groups allow a single DSDS file to organize artifacts into logical sections (e.g., one group for foundations, another for components).",
       "items": {
-        "$ref": "#/$defs/documentGroup"
+        "$ref": "#/$defs/documentationGroup"
       },
       "minItems": 1
     },
@@ -34,162 +34,6 @@
     }
   },
   "$defs": {
-    "keyboardInteraction": {
-      "type": "object",
-      "description": "A keyboard interaction specification.",
-      "required": [
-        "key",
-        "action"
-      ],
-      "properties": {
-        "key": {
-          "type": "string",
-          "description": "The key or key combination (e.g., 'Enter', 'Space', 'Tab', 'Shift+Tab', 'Escape')."
-        },
-        "action": {
-          "type": "string",
-          "description": "What happens when this key is pressed."
-        },
-        "context": {
-          "type": "string",
-          "description": "Any preconditions for this interaction (e.g., 'When the menu is open', 'When focus is on the trigger')."
-        }
-      },
-      "additionalProperties": false
-    },
-    "ariaAttribute": {
-      "type": "object",
-      "description": "Documentation for an ARIA attribute used by the artifact.",
-      "required": [
-        "attribute",
-        "description"
-      ],
-      "properties": {
-        "attribute": {
-          "type": "string",
-          "description": "The ARIA attribute name (e.g., 'role', 'aria-label', 'aria-expanded', 'aria-disabled')."
-        },
-        "value": {
-          "type": "string",
-          "description": "The expected value or value pattern (e.g., 'true | false', 'string', 'button')."
-        },
-        "description": {
-          "$ref": "#/$defs/richText"
-        },
-        "required": {
-          "type": "boolean",
-          "description": "Whether this attribute is always required on the artifact."
-        }
-      },
-      "additionalProperties": false
-    },
-    "colorContrast": {
-      "type": "object",
-      "description": "A color contrast specification documenting the contrast ratio between a foreground and background color pair.",
-      "required": [
-        "foreground",
-        "background",
-        "contrastRatio",
-        "level"
-      ],
-      "properties": {
-        "foreground": {
-          "type": "string",
-          "description": "The foreground token name or resolved color value (e.g., 'color-text-primary', '#1a1a1a')."
-        },
-        "background": {
-          "type": "string",
-          "description": "The background token name or resolved color value (e.g., 'color-background-default', '#ffffff')."
-        },
-        "contrastRatio": {
-          "type": "number",
-          "description": "The contrast ratio as a decimal number (e.g., 4.5, 7.2, 15.3). Represents the ratio N:1 where N is this value. Tools can format for display as 'N:1'.",
-          "exclusiveMinimum": 0
-        },
-        "level": {
-          "type": "string",
-          "enum": [
-            "A",
-            "AA",
-            "AAA"
-          ],
-          "description": "The WCAG conformance level met by this contrast ratio."
-        },
-        "context": {
-          "type": "string",
-          "description": "Where this foreground/background combination is used (e.g., 'Label text on primary button background in light mode')."
-        }
-      },
-      "additionalProperties": false
-    },
-    "accessibilityObject": {
-      "type": "object",
-      "description": "Explicit accessibility documentation for an artifact — keyboard behavior, ARIA attributes, screen reader announcements, focus management, color contrast, and motion considerations. This object is reserved for structured accessibility specifications that have their own dedicated schemas (keyboard interactions, ARIA attributes, color contrast pairs). For accessibility *guidelines* (actionable rules with rationale), add them to the artifact's top-level `guidelines` array with `category` set to 'accessibility'. This separation keeps the accessibility object focused on machine-readable specifications while guidelines remain in a single, filterable array.",
-      "properties": {
-        "wcagLevel": {
-          "type": "string",
-          "enum": [
-            "A",
-            "AA",
-            "AAA"
-          ],
-          "description": "The minimum WCAG conformance level targeted by this artifact."
-        },
-        "keyboardInteraction": {
-          "type": "array",
-          "description": "Keyboard interaction specifications.",
-          "items": {
-            "$ref": "#/$defs/keyboardInteraction"
-          }
-        },
-        "ariaAttributes": {
-          "type": "array",
-          "description": "ARIA attribute documentation.",
-          "items": {
-            "$ref": "#/$defs/ariaAttribute"
-          }
-        },
-        "screenReaderBehavior": {
-          "$ref": "#/$defs/richText"
-        },
-        "focusManagement": {
-          "$ref": "#/$defs/richText"
-        },
-        "colorContrast": {
-          "type": "array",
-          "description": "Contrast ratio documentation for foreground/background color pairs.",
-          "items": {
-            "$ref": "#/$defs/colorContrast"
-          }
-        },
-        "motionConsiderations": {
-          "$ref": "#/$defs/richText"
-        }
-      },
-      "additionalProperties": false
-    },
-    "artifactReference": {
-      "type": "object",
-      "description": "A reference to another DSDS artifact by name, with an optional description of the role it plays in the current context. Used to connect patterns to their participating components, styles to their implementing token groups, and similar cross-artifact relationships.",
-      "required": [
-        "name"
-      ],
-      "properties": {
-        "name": {
-          "type": "string",
-          "description": "The name of the referenced artifact (e.g., 'button', 'color-text', 'form-field'). MUST match the `name` property of a documented DSDS artifact."
-        },
-        "role": {
-          "type": "string",
-          "description": "A short description of the role this artifact plays in the current context (e.g., 'Primary navigation trigger', 'Error summary container', 'Provides semantic text color tokens'). When omitted, the relationship is a general association without a specific role."
-        },
-        "required": {
-          "type": "boolean",
-          "description": "Whether this artifact is required for the parent to function correctly. When false or omitted, the artifact is an optional enhancement or supplementary reference."
-        }
-      },
-      "additionalProperties": false
-    },
     "presentationImage": {
       "type": "object",
       "description": "An image presentation — a screenshot, diagram, annotated mockup, or exported design frame.",
@@ -326,68 +170,34 @@
       },
       "additionalProperties": false
     },
+    "examples": {
+      "type": "object",
+      "description": "A guideline container of visual or interactive demonstrations of an artifact. Each item is a single example — a static image, a video recording, a code snippet, or a URL to a live demo. Multiple items allow different representations of the same artifact: a static screenshot alongside an interactive Storybook embed, code examples in multiple frameworks, or a sequence of annotated diagrams. This container unifies what was previously split across 'preview' (on components, variants, states) and 'examples' (on patterns) into a single guideline type that can appear on any artifact.",
+      "required": [
+        "type",
+        "items"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "examples",
+          "description": "Identifies this guideline as an examples specification."
+        },
+        "items": {
+          "type": "array",
+          "description": "The individual examples. Each item is a single demonstration with a required presentation and optional title, description, and value. The ordering is significant — tools SHOULD display examples in this order. Authors typically place the most representative or hero example first.",
+          "items": {
+            "$ref": "#/$defs/example"
+          },
+          "minItems": 1
+        }
+      },
+      "additionalProperties": false
+    },
     "extensions": {
       "type": "object",
       "description": "Vendor-specific extensions. Keys MUST use vendor-specific namespaces (reverse domain name notation recommended). Tools that do not recognize an extension MUST preserve it. Extension data SHOULD NOT duplicate information available in core schema fields.",
       "additionalProperties": true
-    },
-    "guideline": {
-      "type": "object",
-      "description": "A single, self-contained piece of usage guidance. Guidelines appear in flat arrays on artifact documents. The optional `category` property groups by discipline (e.g., visual-design, accessibility, content). The optional `target` property identifies which anatomy part or content area the guideline applies to. The optional `criteria` property links the guideline to external functional requirements via URLs. The optional `type` property classifies the guideline's enforcement level.",
-      "required": [
-        "guidance",
-        "rationale"
-      ],
-      "properties": {
-        "guidance": {
-          "$ref": "#/$defs/richText"
-        },
-        "rationale": {
-          "$ref": "#/$defs/richText"
-        },
-        "type": {
-          "type": "string",
-          "enum": [
-            "required",
-            "encouraged",
-            "informational",
-            "discouraged",
-            "prohibited"
-          ],
-          "description": "The enforcement level of the guideline, classifying how strictly it should be followed. This property answers the question: 'What kind of guideline is this?' Values align with RFC 2119 requirement levels: 'required' (MUST — non-compliance is a defect; use for accessibility mandates, platform constraints, or system invariants), 'encouraged' (SHOULD — follow in most cases; exceptions require justification; use for well-established best practices), 'informational' (MAY — advisory context with no enforcement expectation; use for tips, background, or emerging patterns), 'discouraged' (SHOULD NOT — avoid unless justified; use for practices with known drawbacks), 'prohibited' (MUST NOT — violations are defects; use for patterns that break accessibility, semantics, or system integrity). When omitted, consumers MAY treat the guideline as 'encouraged'."
-        },
-        "category": {
-          "type": "string",
-          "description": "The discipline or domain this guideline belongs to. Used to group guidelines by professional concern. Standard values: 'visual-design' (color, typography, spacing, layout), 'interaction' (behavior, animation, transitions, gestures), 'accessibility' (inclusive design, assistive technology, WCAG compliance), 'content' (text, imagery, tone, voice, labeling), 'motion' (animation timing, easing, reduced-motion), 'development' (implementation patterns, performance, code conventions). Custom values are permitted and SHOULD be lowercase kebab-case. Category identifies the discipline; use `tags` for cross-cutting topics that span multiple disciplines."
-        },
-        "target": {
-          "type": "string",
-          "description": "The anatomy part or content area this guideline applies to (e.g., 'label', 'icon', 'helper-text'). Typically used when category is 'content'. When omitted, the guideline applies to the artifact as a whole."
-        },
-        "criteria": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "format": "uri"
-          },
-          "description": "URLs to external functional requirements or standards that this guideline addresses. Generalizes beyond WCAG to any published criteria — accessibility standards, platform guidelines, regulatory requirements, or internal compliance documents. For WCAG criteria, use the direct URL to the success criterion (e.g., 'https://www.w3.org/TR/WCAG22/#contrast-minimum'). For platform guidelines, link to the specific section (e.g., 'https://developer.apple.com/design/human-interface-guidelines/accessibility')."
-        },
-        "examples": {
-          "type": "array",
-          "description": "Examples illustrating the guideline.",
-          "items": {
-            "$ref": "#/$defs/example"
-          }
-        },
-        "tags": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "description": "Freeform keywords to relate guidelines across categories/disciplines (e.g., 'rtl', 'localization', 'validation')."
-        }
-      },
-      "additionalProperties": false
     },
     "link": {
       "type": "object",
@@ -477,9 +287,9 @@
         }
       ]
     },
-    "status": {
+    "statusValue": {
       "type": "string",
-      "description": "The lifecycle status of the artifact. Standard values: 'draft' (under development, not ready for use), 'experimental' (available but API may change without notice), 'stable' (production-ready, changes follow semver), 'deprecated' (scheduled for removal). Custom values are permitted and SHOULD be lowercase kebab-case (e.g., 'sunset', 'archived', 'beta')."
+      "description": "A lifecycle status value. Standard values: 'draft' (under development, not ready for use), 'experimental' (available but API may change without notice), 'stable' (production-ready, changes follow semver), 'deprecated' (scheduled for removal). Custom values are permitted and SHOULD be lowercase kebab-case (e.g., 'sunset', 'archived', 'beta')."
     },
     "platformStatusEntry": {
       "type": "object",
@@ -489,7 +299,7 @@
       ],
       "properties": {
         "status": {
-          "$ref": "#/$defs/status",
+          "$ref": "#/$defs/statusValue",
           "description": "The lifecycle status of the artifact on this platform. Uses the same vocabulary as the top-level status: 'draft', 'experimental', 'stable', 'deprecated'. Custom values are permitted."
         },
         "since": {
@@ -519,33 +329,64 @@
       },
       "additionalProperties": false
     },
-    "platformStatus": {
+    "statusObject": {
       "type": "object",
-      "description": "Platform-specific readiness or availability status for an artifact. Keys are platform identifiers and values describe the artifact's status on that platform. Platform keys are freeform strings — common values include 'react', 'web-component', 'ios', 'android', 'flutter', 'figma', 'sketch', and 'compose'. When present, the top-level `status` property represents the overall lifecycle stage of the artifact, while `platformStatus` provides granular per-platform detail. An artifact MAY be 'stable' overall while individual platforms are still 'experimental' or 'draft'.",
-      "additionalProperties": {
-        "$ref": "#/$defs/platformStatusEntry"
-      }
+      "description": "The consolidated lifecycle status of an artifact. Contains the overall status value, optional per-platform readiness tracking, and a conditional deprecation notice. Every artifact that carries status uses this single object rather than spreading status, platformStatus, and deprecationNotice as separate sibling properties. When the overall status is 'deprecated', the deprecationNotice property becomes required.",
+      "required": [
+        "status"
+      ],
+      "properties": {
+        "status": {
+          "$ref": "#/$defs/statusValue",
+          "description": "The overall lifecycle status of the artifact. Represents an editorial judgment about the artifact's maturity — it is not required to be the most or least advanced of the platform statuses. Tools SHOULD display this as the primary status indicator."
+        },
+        "platformStatus": {
+          "type": "object",
+          "description": "Platform-specific readiness or availability status. Keys are platform identifiers (freeform strings — common values include 'react', 'web-component', 'ios', 'android', 'flutter', 'figma', 'sketch', and 'compose'). Values describe the artifact's status on that platform independently. An artifact MAY be 'stable' overall while individual platforms are still 'experimental' or 'draft'.",
+          "additionalProperties": {
+            "$ref": "#/$defs/platformStatusEntry"
+          }
+        },
+        "deprecationNotice": {
+          "type": "string",
+          "description": "Required when status is 'deprecated'. MUST explain what to use instead and provide a migration path. When present, tools SHOULD display this prominently alongside the status indicator."
+        }
+      },
+      "if": {
+        "properties": {
+          "status": {
+            "const": "deprecated"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "deprecationNotice"
+        ]
+      },
+      "additionalProperties": false
     },
     "useCase": {
       "type": "object",
-      "description": "A single use case scenario describing a situation in which an artifact is or is not appropriate.",
+      "description": "A single use case scenario describing a situation in which an artifact or option is or is not appropriate.",
       "required": [
         "description"
       ],
       "properties": {
         "description": {
-          "$ref": "#/$defs/richText"
+          "$ref": "#/$defs/richText",
+          "description": "A description of the scenario. Should be concrete and situation-driven — describe the user's situation, not the artifact's features."
         },
         "alternative": {
           "type": "object",
-          "description": "The recommended alternative artifact for this scenario. Typically provided for whenNotToUse entries to direct the reader toward a more appropriate component or pattern.",
+          "description": "The recommended alternative artifact for this scenario. Typically provided for whenNotToUse entries to direct the reader toward a more appropriate component, pattern, or token.",
           "required": [
             "name"
           ],
           "properties": {
             "name": {
               "type": "string",
-              "description": "The name of the recommended alternative component or artifact (e.g., 'link', 'anchor', 'icon-button')."
+              "description": "The name of the recommended alternative artifact (e.g., 'link', 'radio-group', 'icon-button', 'empty-state')."
             },
             "rationale": {
               "$ref": "#/$defs/richText",
@@ -566,18 +407,18 @@
     },
     "useCases": {
       "type": "object",
-      "description": "Scenario-driven guidance describing when an artifact is and is not the right choice. Complements guidelines by framing decisions around concrete user or developer situations rather than abstract rules.",
+      "description": "Scenario-driven guidance describing when an artifact or option is and is not the right choice. Contains whenToUse and whenNotToUse arrays of use case entries. This def carries no guideline `type` discriminator — it is the raw data model for nesting inside other structures (variant values, state entries) and as the content payload of the purpose guideline type.",
       "properties": {
         "whenToUse": {
           "type": "array",
-          "description": "Scenarios in which this artifact is the appropriate choice.",
+          "description": "Scenarios in which this artifact or option is the appropriate choice. Each entry should be scenario-driven — describe the user's situation, not the artifact's features. For example, 'When the user needs to trigger an action such as submitting a form' rather than 'When you need a clickable element'.",
           "items": {
             "$ref": "#/$defs/useCase"
           }
         },
         "whenNotToUse": {
           "type": "array",
-          "description": "Scenarios in which this artifact should not be used. Each entry SHOULD include an `alternative` pointing to a more appropriate artifact or pattern.",
+          "description": "Scenarios in which this artifact or option should not be used. Each entry SHOULD include an `alternative` pointing to a more appropriate artifact or pattern, along with a rationale explaining why the alternative is better.",
           "items": {
             "$ref": "#/$defs/useCase"
           }
@@ -585,7 +426,153 @@
       },
       "additionalProperties": false
     },
-    "anatomyPart": {
+    "keyboardInteraction": {
+      "type": "object",
+      "description": "A keyboard interaction specification documenting what happens when a specific key or key combination is pressed.",
+      "required": [
+        "key",
+        "action"
+      ],
+      "properties": {
+        "key": {
+          "type": "string",
+          "description": "The key or key combination (e.g., 'Enter', 'Space', 'Tab', 'Shift+Tab', 'Escape', 'Arrow Down', 'Home', 'End')."
+        },
+        "action": {
+          "type": "string",
+          "description": "What happens when this key is pressed (e.g., 'Activates the button', 'Moves focus to the next item in the list', 'Closes the dialog and returns focus to the trigger')."
+        },
+        "context": {
+          "type": "string",
+          "description": "Any preconditions for this interaction (e.g., 'When the menu is open', 'When focus is on the trigger element', 'When the component is not disabled'). When omitted, the interaction applies in all contexts."
+        }
+      },
+      "additionalProperties": false
+    },
+    "ariaAttribute": {
+      "type": "object",
+      "description": "Documentation for an ARIA attribute used by the artifact, explaining what it communicates and when it should be applied.",
+      "required": [
+        "attribute",
+        "description"
+      ],
+      "properties": {
+        "attribute": {
+          "type": "string",
+          "description": "The ARIA attribute name (e.g., 'role', 'aria-label', 'aria-expanded', 'aria-disabled', 'aria-live', 'aria-controls')."
+        },
+        "value": {
+          "type": "string",
+          "description": "The expected value or value pattern (e.g., 'true | false', 'string', 'button', 'dialog', 'assertive | polite')."
+        },
+        "description": {
+          "$ref": "#/$defs/richText",
+          "description": "What this attribute communicates to assistive technology and when it should be applied. Include guidance on dynamic value changes if applicable."
+        },
+        "required": {
+          "type": "boolean",
+          "description": "Whether this attribute is always required on the artifact. When false or omitted, the attribute is conditionally required or optional."
+        }
+      },
+      "additionalProperties": false
+    },
+    "colorContrast": {
+      "type": "object",
+      "description": "A color contrast specification documenting the measured contrast ratio between a foreground and background color pair and the WCAG conformance level it meets.",
+      "required": [
+        "foreground",
+        "background",
+        "contrastRatio",
+        "level"
+      ],
+      "properties": {
+        "foreground": {
+          "type": "string",
+          "description": "The foreground token name or resolved color value (e.g., 'color-text-primary', '#1a1a1a', 'var(--button-text-color)')."
+        },
+        "background": {
+          "type": "string",
+          "description": "The background token name or resolved color value (e.g., 'color-background-default', '#ffffff', 'var(--button-background)')."
+        },
+        "contrastRatio": {
+          "type": "number",
+          "description": "The contrast ratio as a decimal number (e.g., 4.5, 7.2, 15.3). Represents the ratio N:1 where N is this value. Tools MAY format for display as 'N:1'.",
+          "exclusiveMinimum": 0
+        },
+        "level": {
+          "type": "string",
+          "enum": [
+            "A",
+            "AA",
+            "AAA"
+          ],
+          "description": "The WCAG conformance level met by this contrast ratio. AA requires 4.5:1 for normal text and 3:1 for large text. AAA requires 7:1 for normal text and 4.5:1 for large text."
+        },
+        "context": {
+          "type": "string",
+          "description": "Where this foreground/background combination is used (e.g., 'Label text on primary button background in light mode', 'Secondary text on card surface')."
+        }
+      },
+      "additionalProperties": false
+    },
+    "accessibility": {
+      "type": "object",
+      "description": "Structured accessibility specifications for an artifact. Documents keyboard behavior, ARIA attributes, screen reader announcements, focus management, color contrast pairs, and motion considerations. This is distinct from best-practice guidelines — accessibility guidelines capture machine-readable specifications, while best practices capture actionable rules with rationale. Both can coexist in the same guidelines array.",
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "accessibility",
+          "description": "Identifies this guideline as an accessibility specification."
+        },
+        "wcagLevel": {
+          "type": "string",
+          "enum": [
+            "A",
+            "AA",
+            "AAA"
+          ],
+          "description": "The minimum WCAG conformance level targeted by this artifact. Most design systems target AA. Set to AAA when the artifact exceeds standard requirements."
+        },
+        "keyboardInteraction": {
+          "type": "array",
+          "description": "Keyboard interaction specifications. Documents what happens when each key or key combination is pressed while the artifact has focus.",
+          "items": {
+            "$ref": "#/$defs/keyboardInteraction"
+          }
+        },
+        "ariaAttributes": {
+          "type": "array",
+          "description": "ARIA attribute documentation. Lists every ARIA attribute the artifact uses, what it communicates, and when it should be applied.",
+          "items": {
+            "$ref": "#/$defs/ariaAttribute"
+          }
+        },
+        "screenReaderBehavior": {
+          "$ref": "#/$defs/richText",
+          "description": "How the artifact is announced by screen readers in various states. Include announcements for default, focused, disabled, loading, expanded, and any other relevant states. Name specific screen readers (VoiceOver, NVDA, JAWS) when behavior differs."
+        },
+        "focusManagement": {
+          "$ref": "#/$defs/richText",
+          "description": "How focus moves into, within, and out of the artifact. Document focus trapping (for modals/dialogs), focus restoration (when dismissing overlays), and any programmatic focus movement. Describe both keyboard and programmatic focus behavior."
+        },
+        "colorContrast": {
+          "type": "array",
+          "description": "Contrast ratio documentation for foreground/background color pairs used by this artifact. Each entry documents a specific pairing, its measured ratio, and the WCAG level it meets.",
+          "items": {
+            "$ref": "#/$defs/colorContrast"
+          }
+        },
+        "motionConsiderations": {
+          "$ref": "#/$defs/richText",
+          "description": "How the artifact respects the prefers-reduced-motion media query. Document what animations or transitions are present and what happens when reduced motion is preferred (e.g., 'The loading spinner is replaced with a static ellipsis indicator')."
+        }
+      },
+      "additionalProperties": false
+    },
+    "anatomyEntry": {
       "type": "object",
       "description": "A named sub-element of a component's visual structure.",
       "required": [
@@ -596,29 +583,30 @@
       "properties": {
         "name": {
           "type": "string",
-          "description": "Machine-readable name of the part."
+          "description": "Machine-readable name of the part (e.g., 'container', 'label', 'icon', 'focus-ring')."
         },
         "displayName": {
           "type": "string",
-          "description": "Human-readable name."
+          "description": "Human-readable name (e.g., 'Container', 'Label', 'Leading Icon')."
         },
         "description": {
-          "$ref": "#/$defs/richText"
+          "$ref": "#/$defs/richText",
+          "description": "What this part is, what it does, and any constraints on its content or appearance."
         },
         "required": {
           "type": "boolean",
-          "description": "Whether this part is always present."
+          "description": "Whether this part is always present in the component's rendered output. When false, the part is conditionally rendered based on props or content."
         },
         "tokens": {
           "type": "array",
           "items": {
             "type": "string"
           },
-          "description": "Names of design tokens applied to this part."
+          "description": "Names of design tokens applied to this part (e.g., 'button-background', 'button-border-radius', 'button-padding-horizontal'). Connects the visual structure to the token architecture."
         },
         "links": {
           "type": "array",
-          "description": "Links to resources that represent this anatomy part — design tool nodes, source code blocks, documentation sections, or any other addressable reference. Uses the standard link type.",
+          "description": "Links to resources that represent this anatomy part — design tool nodes, source code blocks, documentation sections, or any other addressable reference.",
           "items": {
             "$ref": "#/$defs/link"
           }
@@ -628,28 +616,42 @@
     },
     "anatomy": {
       "type": "object",
-      "description": "The visual structure of a component.",
+      "description": "Documents the visual structure of a component by enumerating its named sub-elements (parts). Each part can reference the design tokens that style it, creating a bridge between the component's visual design and its token architecture. An optional preview provides an annotated diagram of the assembled structure.",
       "required": [
+        "type",
         "parts"
       ],
       "properties": {
+        "type": {
+          "type": "string",
+          "const": "anatomy",
+          "description": "Identifies this guideline as an anatomy specification."
+        },
         "description": {
-          "$ref": "#/$defs/richText"
+          "$ref": "#/$defs/richText",
+          "description": "A prose overview of the component's visual structure — how the parts relate to each other and any notable structural constraints."
         },
         "parts": {
           "type": "array",
           "items": {
-            "$ref": "#/$defs/anatomyPart"
+            "$ref": "#/$defs/anatomyEntry"
           },
           "minItems": 1,
-          "description": "The named sub-elements of the component."
+          "description": "The named sub-elements of the component, in visual order (typically outside-in or top-to-bottom). Each part documents a discrete element that can be independently styled, tested, or referenced."
+        },
+        "preview": {
+          "type": "array",
+          "description": "Visual previews of the anatomy — typically annotated diagrams with numbered callouts mapping to the parts array. Multiple previews allow different views (e.g., expanded vs. collapsed, with icon vs. without).",
+          "items": {
+            "$ref": "#/$defs/example"
+          }
         }
       },
       "additionalProperties": false
     },
     "apiProperty": {
       "type": "object",
-      "description": "A configurable property of a component. Pairs a human-readable type string with an optional machine-readable JSON Schema.",
+      "description": "A configurable property of a component. Pairs a human-readable type string with an optional machine-readable JSON Schema for tooling.",
       "required": [
         "name",
         "type",
@@ -659,25 +661,26 @@
       "properties": {
         "name": {
           "type": "string",
-          "description": "The property name as used in code."
+          "description": "The property name as used in code (e.g., 'variant', 'size', 'disabled', 'onClick')."
         },
         "type": {
           "type": "string",
-          "description": "A human-readable type description for display."
+          "description": "A human-readable type description for display (e.g., \"'primary' | 'secondary' | 'ghost'\", 'boolean', 'IconComponent')."
         },
         "schema": {
           "type": "object",
-          "description": "A JSON Schema (Draft 2020-12) object defining the property's type in a machine-readable form."
+          "description": "A JSON Schema (Draft 2020-12) object defining the property's type in a machine-readable form. Follows the same conventions as OpenAPI parameter schemas."
         },
         "description": {
-          "$ref": "#/$defs/richText"
+          "$ref": "#/$defs/richText",
+          "description": "What this property controls, how it affects the component, and any constraints or side effects."
         },
         "required": {
           "type": "boolean",
-          "description": "Whether this property is required."
+          "description": "Whether this property must be provided by the consumer."
         },
         "defaultValue": {
-          "description": "The default value in its native JSON type. Accepts any JSON type: string (e.g., 'primary'), number (e.g., 44), boolean (e.g., true), object, array, or null. Tools MAY format this value for display."
+          "description": "The default value in its native JSON type. Accepts any JSON type: string (e.g., 'primary'), number (e.g., 44), boolean (e.g., true), object, array, or null."
         },
         "examples": {
           "type": "array",
@@ -711,14 +714,15 @@
       "properties": {
         "name": {
           "type": "string",
-          "description": "The event name."
+          "description": "The event name (e.g., 'onClick', 'onChange', 'onDismiss')."
         },
         "description": {
-          "$ref": "#/$defs/richText"
+          "$ref": "#/$defs/richText",
+          "description": "When this event fires, what it communicates, and how consumers should respond."
         },
         "payload": {
           "type": "string",
-          "description": "Description of the event payload shape."
+          "description": "Description of the event payload shape (e.g., '(event: MouseEvent) => void', '{ value: string, index: number }')."
         },
         "since": {
           "type": "string",
@@ -740,10 +744,12 @@
           "description": "The slot name. Use 'default' for the unnamed/default slot."
         },
         "description": {
-          "$ref": "#/$defs/richText"
+          "$ref": "#/$defs/richText",
+          "description": "What content this slot accepts and any constraints on its children."
         },
         "acceptedContent": {
-          "$ref": "#/$defs/richText"
+          "$ref": "#/$defs/richText",
+          "description": "A description of the allowed content (e.g., 'Plain text or a text node. Do not nest interactive elements.')."
         },
         "since": {
           "type": "string",
@@ -754,7 +760,7 @@
     },
     "apiCssCustomProperty": {
       "type": "object",
-      "description": "A CSS custom property exposed by a component.",
+      "description": "A CSS custom property exposed by a component for external styling.",
       "required": [
         "name",
         "description"
@@ -763,10 +769,11 @@
         "name": {
           "type": "string",
           "pattern": "^--",
-          "description": "The full property name including -- prefix."
+          "description": "The full property name including the -- prefix (e.g., '--button-background', '--button-border-radius')."
         },
         "description": {
-          "$ref": "#/$defs/richText"
+          "$ref": "#/$defs/richText",
+          "description": "What visual attribute this property controls."
         },
         "defaultValue": {
           "type": "string",
@@ -774,7 +781,7 @@
         },
         "type": {
           "type": "string",
-          "description": "The expected CSS value type (e.g., 'color', 'dimension')."
+          "description": "The expected CSS value type (e.g., 'color', 'dimension', 'number')."
         },
         "since": {
           "type": "string",
@@ -785,7 +792,7 @@
     },
     "apiCssPart": {
       "type": "object",
-      "description": "A CSS shadow part exposed by a component.",
+      "description": "A CSS shadow part exposed by a web component for external styling via ::part() selectors.",
       "required": [
         "name",
         "description"
@@ -796,7 +803,8 @@
           "description": "The part name as used in ::part() selectors."
         },
         "description": {
-          "$ref": "#/$defs/richText"
+          "$ref": "#/$defs/richText",
+          "description": "What element this part exposes and what styling it enables."
         },
         "since": {
           "type": "string",
@@ -807,7 +815,7 @@
     },
     "apiDataAttribute": {
       "type": "object",
-      "description": "A data attribute used by a component.",
+      "description": "A data attribute used by a component to reflect state or variant information into the DOM.",
       "required": [
         "name",
         "description"
@@ -816,17 +824,18 @@
         "name": {
           "type": "string",
           "pattern": "^data-",
-          "description": "The full attribute name including data- prefix."
+          "description": "The full attribute name including the data- prefix (e.g., 'data-state', 'data-variant')."
         },
         "description": {
-          "$ref": "#/$defs/richText"
+          "$ref": "#/$defs/richText",
+          "description": "What this attribute reflects and how it can be used for styling or testing."
         },
         "values": {
           "type": "array",
           "items": {
             "type": "string"
           },
-          "description": "The set of possible values."
+          "description": "The set of possible values (e.g., ['default', 'hover', 'active', 'disabled'])."
         },
         "since": {
           "type": "string",
@@ -845,18 +854,19 @@
       "properties": {
         "name": {
           "type": "string",
-          "description": "The method name."
+          "description": "The method name (e.g., 'focus', 'reset', 'scrollTo')."
         },
         "description": {
-          "$ref": "#/$defs/richText"
+          "$ref": "#/$defs/richText",
+          "description": "What this method does, when to call it, and any side effects."
         },
         "parameters": {
           "type": "string",
-          "description": "Description of the parameter signature."
+          "description": "Description of the parameter signature (e.g., '(options?: { preventScroll: boolean }) => void')."
         },
         "returnType": {
           "type": "string",
-          "description": "Description of the return value."
+          "description": "Description of the return value (e.g., 'void', 'Promise<void>', 'HTMLElement | null')."
         },
         "since": {
           "type": "string",
@@ -865,55 +875,67 @@
       },
       "additionalProperties": false
     },
-    "componentApi": {
+    "api": {
       "type": "object",
-      "description": "The code-level interface of a component.",
+      "description": "Documents the code-level interface of a component on a single platform. Lists the configurable properties, emitted events, content slots, CSS hooks, data attributes, and public methods that consumers interact with. For multi-platform components (e.g., React + Web Component + Vue), create one API guideline per platform and use the `platform` property to distinguish them.",
+      "required": [
+        "type"
+      ],
       "properties": {
+        "type": {
+          "type": "string",
+          "const": "api",
+          "description": "Identifies this guideline as an API specification."
+        },
+        "platform": {
+          "type": "string",
+          "description": "The platform or framework this API describes. Use when a component has different APIs across platforms (e.g., 'react', 'web-component', 'vue', 'angular', 'ios', 'android'). When omitted, the API is assumed to be the single/default platform."
+        },
         "properties": {
           "type": "array",
-          "description": "Configurable properties.",
+          "description": "Configurable properties (props, attributes, inputs) that consumers pass to the component.",
           "items": {
             "$ref": "#/$defs/apiProperty"
           }
         },
         "events": {
           "type": "array",
-          "description": "Events emitted.",
+          "description": "Events emitted by the component that consumers can listen to.",
           "items": {
             "$ref": "#/$defs/apiEvent"
           }
         },
         "slots": {
           "type": "array",
-          "description": "Content insertion points.",
+          "description": "Content insertion points where consumers can project child content.",
           "items": {
             "$ref": "#/$defs/apiSlot"
           }
         },
         "cssCustomProperties": {
           "type": "array",
-          "description": "CSS custom properties.",
+          "description": "CSS custom properties exposed for external styling.",
           "items": {
             "$ref": "#/$defs/apiCssCustomProperty"
           }
         },
         "cssParts": {
           "type": "array",
-          "description": "CSS shadow parts.",
+          "description": "CSS shadow parts exposed for external styling via ::part() selectors.",
           "items": {
             "$ref": "#/$defs/apiCssPart"
           }
         },
         "dataAttributes": {
           "type": "array",
-          "description": "Data attributes.",
+          "description": "Data attributes that reflect component state or configuration into the DOM.",
           "items": {
             "$ref": "#/$defs/apiDataAttribute"
           }
         },
         "methods": {
           "type": "array",
-          "description": "Public methods.",
+          "description": "Public methods available on the component instance.",
           "items": {
             "$ref": "#/$defs/apiMethod"
           }
@@ -921,148 +943,148 @@
       },
       "additionalProperties": false
     },
-    "componentDoc": {
+    "artifactReferenceEntry": {
       "type": "object",
-      "description": "Documentation for a single reusable UI component.",
+      "description": "A single reference to another DSDS artifact, with an optional description of the role it plays in the current context.",
       "required": [
-        "name",
-        "displayName",
-        "description",
-        "status"
+        "name"
       ],
       "properties": {
         "name": {
           "type": "string",
-          "pattern": "^[a-z][a-z0-9-]*$",
-          "description": "Machine-readable identifier (e.g., 'button', 'dialog', 'form-field', 'data-table')."
+          "description": "The name of the referenced artifact (e.g., 'button', 'form-field', 'color-text', 'spacing'). MUST match the `name` property of a documented DSDS artifact."
         },
-        "aliases": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "description": "Alternative names this component is known by across teams, tools, or legacy systems (e.g., ['btn', 'action-button', 'CTA']). Useful for search, migration mapping, and cross-referencing when different disciplines use different terminology for the same component."
-        },
-        "displayName": {
+        "role": {
           "type": "string",
-          "description": "Human-readable name."
+          "description": "A short description of the role this artifact plays in the current context (e.g., 'Primary navigation trigger', 'Error summary container', 'Provides semantic text color tokens'). When omitted, the relationship is a general association without a specific role."
         },
-        "summary": {
+        "required": {
+          "type": "boolean",
+          "description": "Whether this artifact is required for the parent to function correctly. When false or omitted, the artifact is an optional enhancement or supplementary reference."
+        }
+      },
+      "additionalProperties": false
+    },
+    "artifactReference": {
+      "type": "object",
+      "description": "Documents relationships between the current artifact and other artifacts in the system. Contains a categorized list of referenced artifacts — each with a name, an optional role description, and an optional required flag. The `referenceType` property classifies the nature of the relationship (e.g., 'component' for pattern-to-component references, 'token-group' for style-to-token-group references). Custom reference types are permitted for system-specific relationship categories.",
+      "required": [
+        "type",
+        "referenceType",
+        "references"
+      ],
+      "properties": {
+        "type": {
           "type": "string",
-          "description": "A one-line, plain-text summary. MUST NOT contain markup."
+          "const": "artifact-reference",
+          "description": "Identifies this guideline as an artifact reference specification."
+        },
+        "referenceType": {
+          "type": "string",
+          "description": "The category of artifacts being referenced. Classifies the nature of the relationship. Standard values: 'component' (references to UI components that participate in a pattern or are related to the current artifact), 'token-group' (references to token groups that implement a style), 'pattern' (references to interaction patterns), 'style' (references to visual style guidelines), 'token' (references to individual tokens). Custom values are permitted and SHOULD be lowercase kebab-case."
         },
         "description": {
-          "$ref": "#/$defs/richText"
+          "$ref": "#/$defs/richText",
+          "description": "An optional overview of the relationship — why these artifacts are referenced, how they relate to the current artifact, and any constraints on their usage together."
         },
-        "status": {
-          "$ref": "#/$defs/status"
+        "references": {
+          "type": "array",
+          "description": "The artifacts being referenced. Each entry identifies a single artifact by name and optionally describes its role and whether it is required.",
+          "items": {
+            "$ref": "#/$defs/artifactReferenceEntry"
+          },
+          "minItems": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "bestPracticeEntry": {
+      "type": "object",
+      "description": "A single, self-contained piece of usage guidance. Every best practice pairs an actionable statement with a rationale explaining why. The optional entryType classifies enforcement level. The optional category groups by discipline. The optional target identifies which anatomy part or content area the guidance applies to. The optional criteria links to external standards (WCAG, platform guidelines, etc.).",
+      "required": [
+        "guidance",
+        "rationale"
+      ],
+      "properties": {
+        "guidance": {
+          "$ref": "#/$defs/richText",
+          "description": "The actionable guidance statement. MUST be concrete and unambiguous. Avoid subjective language like 'use sparingly' or 'when possible'."
         },
-        "platformStatus": {
-          "$ref": "#/$defs/platformStatus"
+        "rationale": {
+          "$ref": "#/$defs/richText",
+          "description": "Why this guidance exists. Cite evidence, accessibility standards, or user research when available. MUST NOT be a restatement of the guidance."
         },
-        "deprecationNotice": {
+        "entryType": {
           "type": "string",
-          "description": "Required when status is 'deprecated'."
+          "enum": [
+            "required",
+            "encouraged",
+            "informational",
+            "discouraged",
+            "prohibited"
+          ],
+          "description": "The enforcement level of the best practice, classifying how strictly it should be followed. Values align with RFC 2119 requirement levels: 'required' (MUST — non-compliance is a defect), 'encouraged' (SHOULD — follow in most cases; exceptions require justification), 'informational' (MAY — advisory context with no enforcement expectation), 'discouraged' (SHOULD NOT — avoid unless justified), 'prohibited' (MUST NOT — violations are defects). When omitted, consumers MAY treat the best practice as 'encouraged'."
         },
-        "since": {
+        "category": {
           "type": "string",
-          "description": "The version in which this component was introduced."
+          "description": "The discipline or domain this best practice belongs to. Used to group best practices by professional concern. Standard values: 'visual-design' (color, typography, spacing, layout), 'interaction' (behavior, animation, transitions, gestures), 'accessibility' (inclusive design, assistive technology, WCAG compliance), 'content' (text, imagery, tone, voice, labeling), 'motion' (animation timing, easing, reduced-motion), 'development' (implementation patterns, performance, code conventions). Custom values are permitted and SHOULD be lowercase kebab-case."
+        },
+        "target": {
+          "type": "string",
+          "description": "The anatomy part or content area this best practice applies to (e.g., 'label', 'icon', 'helper-text'). When omitted, the best practice applies to the artifact as a whole."
+        },
+        "criteria": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uri"
+          },
+          "description": "URLs to external functional requirements or standards that this best practice addresses. For WCAG criteria, use the direct URL to the success criterion (e.g., 'https://www.w3.org/TR/WCAG22/#contrast-minimum'). For platform guidelines, link to the specific section."
+        },
+        "examples": {
+          "type": "array",
+          "description": "Examples illustrating the best practice — showing encouraged and discouraged approaches.",
+          "items": {
+            "$ref": "#/$defs/example"
+          }
         },
         "tags": {
           "type": "array",
           "items": {
             "type": "string"
           },
-          "description": "Freeform keywords to relate guidelines across categories/disciplines (e.g., 'rtl', 'localization', 'validation')."
+          "description": "Freeform keywords to relate best practices across categories and disciplines (e.g., 'rtl', 'localization', 'validation', 'contrast')."
+        }
+      },
+      "additionalProperties": false
+    },
+    "bestPractices": {
+      "type": "object",
+      "description": "Documents actionable usage rules for an artifact. Each item is a self-contained best practice pairing an actionable guidance statement with a rationale. Best practices can be categorized by discipline (visual-design, accessibility, content, etc.), targeted to specific anatomy parts, and linked to external standards like WCAG. They complement other guideline types — use-cases tell the reader *when* to use the artifact, best practices tell the reader *how* to use it correctly.",
+      "required": [
+        "type",
+        "items"
+      ],
+      "properties": {
+        "items": {
+          "type": "array",
+          "description": "The best practice rules. Each item is a self-contained guidance statement paired with a rationale. The ordering is significant — tools SHOULD display best practices in this order. Authors SHOULD order by importance or group by category.",
+          "items": {
+            "$ref": "#/$defs/bestPracticeEntry"
+          },
+          "minItems": 1
         },
-        "category": {
+        "type": {
           "type": "string",
-          "pattern": "^[a-z][a-z0-9-]*$",
-          "description": "Component classification."
-        },
-        "preview": {
-          "type": "array",
-          "description": "Visual previews of the component.",
-          "items": {
-            "$ref": "#/$defs/example"
-          }
-        },
-        "anatomy": {
-          "$ref": "#/$defs/anatomy"
-        },
-        "api": {
-          "oneOf": [
-            {
-              "$ref": "#/$defs/componentApi"
-            },
-            {
-              "type": "object",
-              "description": "A platform-keyed map of API objects.",
-              "additionalProperties": {
-                "$ref": "#/$defs/componentApi"
-              }
-            }
-          ],
-          "description": "The code-level API. Single API object or platform-keyed map."
-        },
-        "variants": {
-          "type": "array",
-          "description": "Named visual/behavioral configurations.",
-          "items": {
-            "$ref": "#/$defs/variant"
-          }
-        },
-        "states": {
-          "type": "array",
-          "description": "Interactive states.",
-          "items": {
-            "$ref": "#/$defs/state"
-          }
-        },
-        "designSpecifications": {
-          "$ref": "#/$defs/designSpecifications"
-        },
-        "useCases": {
-          "$ref": "#/$defs/useCases"
-        },
-        "guidelines": {
-          "type": "array",
-          "description": "Usage guidelines for the component. Each entry is a self-contained guideline. Use the `category` property on individual guidelines to group by concern (e.g., 'design', 'accessibility', 'content').",
-          "items": {
-            "$ref": "#/$defs/guideline"
-          }
-        },
-        "accessibility": {
-          "$ref": "#/$defs/accessibilityObject"
-        },
-        "links": {
-          "type": "array",
-          "description": "External resource links and related artifact references.",
-          "items": {
-            "$ref": "#/$defs/link"
-          }
-        },
-        "$extensions": {
-          "$ref": "#/$defs/extensions"
+          "const": "best-practices",
+          "description": "Identifies this guideline as a best practices specification."
         }
-      },
-      "if": {
-        "properties": {
-          "status": {
-            "const": "deprecated"
-          }
-        }
-      },
-      "then": {
-        "required": [
-          "deprecationNotice"
-        ]
       },
       "additionalProperties": false
     },
     "responsiveEntry": {
       "type": "object",
-      "description": "A responsive behavior specification.",
+      "description": "A responsive behavior specification describing how the component adapts at a specific breakpoint or viewport condition.",
       "required": [
         "breakpoint",
         "description"
@@ -1070,28 +1092,37 @@
       "properties": {
         "breakpoint": {
           "type": "string",
-          "description": "The breakpoint name or value."
+          "description": "The breakpoint name or value at which this behavior applies (e.g., 'small', 'medium', 'large', '768px', 'min-width: 1024px')."
         },
         "description": {
-          "$ref": "#/$defs/richText"
+          "$ref": "#/$defs/richText",
+          "description": "How the component's layout, sizing, or behavior changes at this breakpoint."
         }
       },
       "additionalProperties": false
     },
     "designSpecifications": {
       "type": "object",
-      "description": "Visual design specifications for a component.",
+      "description": "Documents the measurable visual specifications of a component — every token reference, spacing relationship, dimension constraint, typographic setting, and responsive adaptation. This guideline type makes design decisions explicit so that engineers can implement them precisely and reviewers can verify them against the design.",
+      "required": [
+        "type"
+      ],
       "properties": {
+        "type": {
+          "type": "string",
+          "const": "design-specifications",
+          "description": "Identifies this guideline as a design specifications document."
+        },
         "tokens": {
           "type": "array",
           "items": {
             "type": "string"
           },
-          "description": "All design token names used by this component."
+          "description": "All design token names consumed by this component, across all variants and states. Provides a flat inventory of every token the component depends on. Individual variant and state guidelines document which tokens apply in specific configurations."
         },
         "spacing": {
           "type": "object",
-          "description": "Spacing specifications.",
+          "description": "Spacing specifications documenting the spatial relationships within and around the component.",
           "properties": {
             "internal": {
               "type": "object",
@@ -1112,44 +1143,439 @@
         },
         "sizing": {
           "type": "object",
-          "description": "Dimension constraints.",
+          "description": "Dimension constraints defining the minimum and maximum bounds of the component and any aspect ratio requirements.",
           "properties": {
             "minWidth": {
               "type": "string",
-              "description": "Minimum width."
+              "description": "Minimum width as a token name or resolved value (e.g., 'size-button-min-width', '64px')."
             },
             "maxWidth": {
               "type": "string",
-              "description": "Maximum width."
+              "description": "Maximum width as a token name or resolved value (e.g., 'size-dialog-max-width', '600px')."
             },
             "minHeight": {
               "type": "string",
-              "description": "Minimum height."
+              "description": "Minimum height as a token name or resolved value (e.g., 'size-button-min-height', '44px')."
             },
             "maxHeight": {
               "type": "string",
-              "description": "Maximum height."
+              "description": "Maximum height as a token name or resolved value."
             },
             "aspectRatio": {
               "type": "string",
-              "description": "Aspect ratio constraint."
+              "description": "Aspect ratio constraint as a ratio string (e.g., '16/9', '1/1', '4/3')."
             }
           },
           "additionalProperties": false
         },
+        "typography": {
+          "type": "object",
+          "description": "Typographic specifications for text content within the component. Keys are named text elements that correspond to anatomy parts (e.g., 'label', 'helper-text', 'heading', 'body'). Values are objects mapping CSS typographic properties to token names or resolved values.",
+          "additionalProperties": {
+            "type": "object",
+            "description": "Typographic settings for a single text element within the component.",
+            "properties": {
+              "fontFamily": {
+                "type": "string",
+                "description": "Font family token name or resolved value (e.g., 'font-family-body', 'Inter, sans-serif')."
+              },
+              "fontSize": {
+                "type": "string",
+                "description": "Font size token name or resolved value (e.g., 'font-size-body', '14px', '0.875rem')."
+              },
+              "fontWeight": {
+                "type": "string",
+                "description": "Font weight token name or resolved value (e.g., 'font-weight-regular', '400', 'bold')."
+              },
+              "lineHeight": {
+                "type": "string",
+                "description": "Line height token name or resolved value (e.g., 'line-height-body', '1.5', '20px')."
+              },
+              "letterSpacing": {
+                "type": "string",
+                "description": "Letter spacing token name or resolved value (e.g., 'letter-spacing-body', '0.01em')."
+              },
+              "textTransform": {
+                "type": "string",
+                "description": "Text transform value (e.g., 'uppercase', 'capitalize', 'none')."
+              },
+              "typeToken": {
+                "type": "string",
+                "description": "A composite typography token that encapsulates multiple typographic properties (e.g., '$body-compact-01', 'type-scale-body-sm'). When a type token is provided, individual properties (fontSize, fontWeight, etc.) serve as documentation of what the token resolves to."
+              }
+            },
+            "additionalProperties": false
+          }
+        },
         "responsive": {
           "type": "array",
-          "description": "Responsive behavior documentation.",
+          "description": "Responsive behavior documentation describing how the component adapts across breakpoints. Entries are ordered from smallest to largest breakpoint.",
           "items": {
             "$ref": "#/$defs/responsiveEntry"
           }
         }
       },
+      "anyOf": [
+        {
+          "required": [
+            "tokens"
+          ]
+        },
+        {
+          "required": [
+            "spacing"
+          ]
+        },
+        {
+          "required": [
+            "sizing"
+          ]
+        },
+        {
+          "required": [
+            "typography"
+          ]
+        },
+        {
+          "required": [
+            "responsive"
+          ]
+        }
+      ],
       "additionalProperties": false
     },
-    "state": {
+    "generalGuideline": {
+      "description": "A guideline type available on all artifact types. General guidelines cover cross-cutting documentation concerns that apply regardless of whether the artifact is a component, token, style, or pattern.",
+      "oneOf": [
+        {
+          "$ref": "#/$defs/bestPractices",
+          "description": "Actionable usage rules paired with rationale. Tells the reader what to do (or not do) and why."
+        },
+        {
+          "$ref": "#/$defs/purpose",
+          "description": "Scenario-driven guidance for when to use and when not to use the artifact."
+        },
+        {
+          "$ref": "#/$defs/accessibility",
+          "description": "Structured accessibility specifications — keyboard interactions, ARIA attributes, screen reader behavior, focus management, color contrast, and motion considerations."
+        },
+        {
+          "$ref": "#/$defs/examples",
+          "description": "Visual or interactive demonstrations — images, videos, code snippets, and URLs to live demos."
+        },
+        {
+          "$ref": "#/$defs/artifactReference",
+          "description": "Named references to other DSDS artifacts with their roles and relationship types."
+        }
+      ]
+    },
+    "componentGuideline": {
+      "description": "A guideline type accepted on component artifacts. Includes component-specific types (anatomy, API, variants, states, design specifications) and all general types (best practices, purpose, accessibility, examples, artifact references).",
+      "oneOf": [
+        {
+          "$ref": "#/$defs/anatomy",
+          "description": "The visual structure of the component — its named sub-elements (parts), their associated design tokens, and optional annotated diagrams."
+        },
+        {
+          "$ref": "#/$defs/api",
+          "description": "The code-level interface — configurable properties, emitted events, content slots, CSS custom properties, CSS shadow parts, data attributes, and public methods. For multi-platform components, include one API guideline per platform."
+        },
+        {
+          "$ref": "#/$defs/variants",
+          "description": "All dimensions of visual or behavioral variation — each axis (size, emphasis, etc.) with its enumerated values, token overrides, previews, and purpose."
+        },
+        {
+          "$ref": "#/$defs/states",
+          "description": "All interactive states the component can enter — hover, focus, active, disabled, loading, etc. — with triggers, token overrides, and previews."
+        },
+        {
+          "$ref": "#/$defs/designSpecifications",
+          "description": "Measurable visual specifications — token inventory, spacing relationships, dimension constraints, typography settings, and responsive behavior."
+        },
+        {
+          "$ref": "#/$defs/bestPractices"
+        },
+        {
+          "$ref": "#/$defs/purpose"
+        },
+        {
+          "$ref": "#/$defs/accessibility"
+        },
+        {
+          "$ref": "#/$defs/examples"
+        },
+        {
+          "$ref": "#/$defs/artifactReference"
+        }
+      ]
+    },
+    "styleGuideline": {
+      "description": "A guideline type accepted on style artifacts. Includes style-specific types (principles, scales) and all general types (best practices, purpose, accessibility, examples, artifact references).",
+      "oneOf": [
+        {
+          "$ref": "#/$defs/principles",
+          "description": "High-level guiding principles that shape decision-making for the visual domain — what the system believes and what constraints it accepts."
+        },
+        {
+          "$ref": "#/$defs/scale",
+          "description": "An ordered sequence of values forming a visual scale — a type scale, spacing scale, elevation scale, or similar progression. Each step references a design token."
+        },
+        {
+          "$ref": "#/$defs/bestPractices"
+        },
+        {
+          "$ref": "#/$defs/purpose"
+        },
+        {
+          "$ref": "#/$defs/accessibility"
+        },
+        {
+          "$ref": "#/$defs/examples"
+        },
+        {
+          "$ref": "#/$defs/artifactReference"
+        }
+      ]
+    },
+    "patternGuideline": {
+      "description": "A guideline type accepted on pattern artifacts. Includes pattern-specific types (interactions) and all general types (best practices, purpose, accessibility, examples, artifact references).",
+      "oneOf": [
+        {
+          "$ref": "#/$defs/interactions",
+          "description": "The interaction flow of the pattern — an ordered sequence of steps describing triggers, system responses, and component behavior."
+        },
+        {
+          "$ref": "#/$defs/bestPractices"
+        },
+        {
+          "$ref": "#/$defs/purpose"
+        },
+        {
+          "$ref": "#/$defs/accessibility"
+        },
+        {
+          "$ref": "#/$defs/examples"
+        },
+        {
+          "$ref": "#/$defs/artifactReference"
+        }
+      ]
+    },
+    "tokenGuideline": {
+      "description": "A guideline type accepted on token and token group artifacts. Tokens use only general guideline types — they do not have component-specific, style-specific, or pattern-specific documentation concerns.",
+      "oneOf": [
+        {
+          "$ref": "#/$defs/bestPractices"
+        },
+        {
+          "$ref": "#/$defs/purpose"
+        },
+        {
+          "$ref": "#/$defs/accessibility"
+        },
+        {
+          "$ref": "#/$defs/examples"
+        },
+        {
+          "$ref": "#/$defs/artifactReference"
+        }
+      ]
+    },
+    "interactionEntry": {
       "type": "object",
-      "description": "An interactive state a component can enter.",
+      "description": "A single step in an interaction flow. Each interaction describes a trigger (what initiates the step), a description (what happens), the components involved, and optional examples illustrating the step.",
+      "required": [
+        "description"
+      ],
+      "properties": {
+        "trigger": {
+          "type": "string",
+          "description": "What initiates this interaction step. Describes the user action, system event, or condition that causes this step to occur (e.g., 'User submits the form by activating the submit button', 'API returns a 422 response', 'Client-side validation detects one or more invalid fields'). When omitted, the step is a continuation of the previous step's flow without a new trigger."
+        },
+        "description": {
+          "$ref": "#/$defs/richText",
+          "description": "What happens during this step — the system's response, visual changes, state transitions, and any user-facing feedback. CommonMark supported."
+        },
+        "components": {
+          "type": "array",
+          "description": "The names of the components involved in this interaction step. Each name MUST match the `name` of a component documented elsewhere in the system. This creates a cross-reference between the pattern's interaction flow and the individual component documentation.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "examples": {
+          "type": "array",
+          "description": "Visual or interactive examples illustrating this specific interaction step — screenshots of the state after this step, screen recordings of the transition, or code snippets showing the implementation.",
+          "items": {
+            "$ref": "#/$defs/example"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "interactions": {
+      "type": "object",
+      "description": "Documents the interaction flow of a pattern as an ordered sequence of steps. Each item describes a single step — what triggers it, what the system does in response, which components are involved, and optional examples. The ordering of items is critical: it represents the chronological flow of the user journey. Authors SHOULD include steps for the initial trigger, the system's response, recovery or correction steps, and completion. Multiple interaction guidelines on the same pattern can document alternative flows (e.g., a happy path and an error path).",
+      "required": [
+        "type",
+        "items"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "interactions",
+          "description": "Identifies this guideline as an interactions specification."
+        },
+        "items": {
+          "type": "array",
+          "description": "The interaction steps in chronological order. Each item documents a single step in the flow with its trigger, description, involved components, and optional examples. The ordering is significant — tools SHOULD preserve and display steps in this order to represent the temporal sequence of the interaction.",
+          "items": {
+            "$ref": "#/$defs/interactionEntry"
+          },
+          "minItems": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "principleEntry": {
+      "type": "object",
+      "description": "A single guiding principle. Each principle has a short title and a description that explains what the principle means in practice and how it guides decisions. Principles are intentionally high-level — they set direction rather than prescribe specific actions. For specific, actionable rules, use best-practice guidelines instead.",
+      "required": [
+        "title",
+        "description"
+      ],
+      "properties": {
+        "title": {
+          "type": "string",
+          "description": "A short, memorable name for the principle (e.g., 'Functional first', 'Accessible by default', 'Use the scale', 'Density over decoration', 'Optical alignment over mathematical alignment'). Should be concise enough to serve as a heading or reference label."
+        },
+        "description": {
+          "$ref": "#/$defs/richText",
+          "description": "What this principle means and how it guides decisions. Should explain the belief or constraint in concrete terms, not just restate the title. Good descriptions answer: 'What does this look like in practice?' and 'How would I use this to resolve a disagreement?'"
+        }
+      },
+      "additionalProperties": false
+    },
+    "principles": {
+      "type": "object",
+      "description": "Documents the guiding principles for a visual style or design domain. Each item is a high-level belief or constraint that shapes how decisions are made within this domain. Principles sit above individual best practices — they inform the philosophy, while best practices encode the specific rules. A spacing style might have principles like 'Use the scale' and 'Density over decoration'; a color style might have 'Functional first' and 'Accessible by default'.",
+      "required": [
+        "type",
+        "items"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "principles",
+          "description": "Identifies this guideline as a principles specification."
+        },
+        "items": {
+          "type": "array",
+          "description": "The guiding principles. Each item documents a single principle with a title and description. The ordering is significant — tools SHOULD display principles in this order. Authors SHOULD order by importance or by the natural progression of the design philosophy.",
+          "items": {
+            "$ref": "#/$defs/principleEntry"
+          },
+          "minItems": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "purpose": {
+      "type": "object",
+      "description": "Documents the purpose of an artifact — when to reach for it and when to choose something else. Contains whenToUse and whenNotToUse arrays of scenario-driven use case entries drawn from the common useCases schema. Purpose guidelines help the reader decide whether this is the right artifact *before* they start implementing it. For guidance on *how* to use the artifact correctly after choosing it, see best-practices. For guidance on *what* the artifact looks like and how it behaves, see variants, states, and anatomy.",
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "purpose",
+          "description": "Identifies this guideline as a purpose specification."
+        },
+        "whenToUse": {
+          "type": "array",
+          "description": "Scenarios in which this artifact is the appropriate choice. Each entry should be scenario-driven — describe the user's situation, not the artifact's features. For example, 'When the user needs to trigger an action such as submitting a form' rather than 'When you need a clickable element'.",
+          "items": {
+            "$ref": "#/$defs/useCase"
+          }
+        },
+        "whenNotToUse": {
+          "type": "array",
+          "description": "Scenarios in which this artifact should not be used. Each entry SHOULD include an `alternative` pointing to a more appropriate artifact or pattern, along with a rationale explaining why the alternative is better.",
+          "items": {
+            "$ref": "#/$defs/useCase"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "scaleStep": {
+      "type": "object",
+      "description": "A single step in an ordered scale. Each step references a design token that provides the concrete value for that position in the progression. The optional label, value, and description provide context for documentation display without duplicating the token's authoritative definition.",
+      "required": [
+        "token"
+      ],
+      "properties": {
+        "token": {
+          "type": "string",
+          "description": "The token name for this step. MUST reference a token defined in the token schema (e.g., 'space-4', 'font-size-300', 'elevation-low'). This is the single source of truth for the step's value — the optional `value` property is a display convenience only."
+        },
+        "label": {
+          "type": "string",
+          "description": "A human-readable label for this step in the scale (e.g., 'sm', 'md', 'lg', '2xl', 'body', 'heading-1'). Labels provide a shorthand vocabulary that designers and engineers use to communicate about scale positions without referring to raw values."
+        },
+        "value": {
+          "type": "string",
+          "description": "The resolved value for display purposes (e.g., '16px', '1rem', '#1a1a1a', '400'). This is a documentation convenience — the authoritative value lives in the referenced token. Tools MAY populate this automatically from the token catalog."
+        },
+        "description": {
+          "$ref": "#/$defs/richText",
+          "description": "Usage notes for this specific step — when to use it, what it pairs with, and any constraints (e.g., 'The base unit. Use for default internal component padding.', 'Reserved for page-level hero sections only.')."
+        }
+      },
+      "additionalProperties": false
+    },
+    "scale": {
+      "type": "object",
+      "description": "Documents an ordered scale — a deliberate progression of values that constrains design decisions to a harmonious, consistent set. Scales are the primary mechanism for spacing systems, type hierarchies, elevation levels, and other graduated visual attributes. The steps array is ordered from smallest/lowest to largest/highest, and tools SHOULD preserve this ordering for display.",
+      "required": [
+        "type",
+        "name",
+        "description",
+        "steps"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "scale",
+          "description": "Identifies this guideline as a scale specification."
+        },
+        "name": {
+          "type": "string",
+          "description": "Machine-readable name of the scale (e.g., 'spacing-scale', 'type-scale', 'elevation-scale'). Used for cross-referencing and tooling."
+        },
+        "displayName": {
+          "type": "string",
+          "description": "Human-readable name of the scale (e.g., 'Spacing Scale', 'Type Scale', 'Elevation Levels')."
+        },
+        "description": {
+          "$ref": "#/$defs/richText",
+          "description": "What this scale is, how it was constructed (e.g., geometric progression, modular scale), and the rules for using it. This is the place to document the scale's rationale and constraints — why these specific values were chosen and when it's appropriate to deviate."
+        },
+        "steps": {
+          "type": "array",
+          "description": "The ordered steps in the scale, from smallest/lowest to largest/highest. The ordering is significant — tools SHOULD preserve it for display, and consumers SHOULD treat adjacent steps as the natural next-smaller and next-larger options when adjusting a value.",
+          "items": {
+            "$ref": "#/$defs/scaleStep"
+          },
+          "minItems": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "stateEntry": {
+      "type": "object",
+      "description": "A single interactive state of a component. States represent transient or persistent visual/behavioral changes triggered by user interaction, system events, or data conditions.",
       "required": [
         "name",
         "description"
@@ -1157,38 +1583,64 @@
       "properties": {
         "name": {
           "type": "string",
-          "description": "Machine-readable state name."
+          "description": "Machine-readable state name (e.g., 'default', 'hover', 'focus', 'active', 'disabled', 'loading', 'selected', 'error', 'read-only')."
         },
         "displayName": {
           "type": "string",
-          "description": "Human-readable name."
+          "description": "Human-readable name (e.g., 'Default', 'Hover', 'Focus', 'Active / Pressed', 'Disabled', 'Loading')."
         },
         "description": {
-          "$ref": "#/$defs/richText"
+          "$ref": "#/$defs/richText",
+          "description": "What triggers this state, how the component's appearance and behavior change, and any constraints or side effects."
         },
         "tokens": {
           "type": "object",
-          "description": "Token overrides for this state.",
+          "description": "Design token overrides applied when this state is active. Keys are token property names scoped to the component (e.g., 'button-background', 'button-border-color'). Values are the token names or resolved values used in this state. Only tokens that change from the default state need to be listed.",
           "additionalProperties": {
             "type": "string"
           }
         },
         "preview": {
           "type": "array",
-          "description": "Visual previews of this state.",
+          "description": "Visual previews showing the component in this state.",
           "items": {
             "$ref": "#/$defs/example"
           }
         },
         "useCases": {
-          "$ref": "#/$defs/useCases"
+          "$ref": "#/$defs/useCases",
+          "description": "When this state is and is not appropriate."
+        }
+      },
+      "additionalProperties": false
+    },
+    "states": {
+      "type": "object",
+      "description": "Documents all interactive states of a component. Each item describes a single state the component can enter — what triggers it, how appearance and behavior change, which tokens are overridden, and how it looks visually. States are listed in a meaningful order — typically default first, then hover, focus, active, followed by disabled, loading, and other special states.",
+      "required": [
+        "type",
+        "items"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "states",
+          "description": "Identifies this guideline as a states specification."
+        },
+        "items": {
+          "type": "array",
+          "description": "The interactive states. Each item documents a single state with its trigger, visual changes, token overrides, and optional previews. The ordering is significant — tools SHOULD display states in this order.",
+          "items": {
+            "$ref": "#/$defs/stateEntry"
+          },
+          "minItems": 1
         }
       },
       "additionalProperties": false
     },
     "variantValue": {
       "type": "object",
-      "description": "A single value within a variant dimension. For multi-value variants (e.g., size: small/medium/large), each option is a separate value. For single-value boolean variants (e.g., selected), there is one value representing the active state.",
+      "description": "A single option within a variant dimension.",
       "required": [
         "name",
         "description"
@@ -1196,38 +1648,40 @@
       "properties": {
         "name": {
           "type": "string",
-          "description": "Machine-readable value name (e.g., 'small', 'primary', 'selected')."
+          "description": "Machine-readable value name (e.g., 'small', 'primary', 'selected', 'full-width')."
         },
         "displayName": {
           "type": "string",
-          "description": "Human-readable name (e.g., 'Small', 'Primary', 'Selected')."
+          "description": "Human-readable name (e.g., 'Small', 'Primary', 'Selected', 'Full Width')."
         },
         "description": {
-          "$ref": "#/$defs/richText"
+          "$ref": "#/$defs/richText",
+          "description": "What this value looks like, when to use it, and how it differs from the other values in this dimension."
         },
         "tokens": {
           "type": "object",
-          "description": "Token overrides applied when this value is active.",
+          "description": "Design token overrides applied when this value is active. Keys are token-purpose names scoped to the component (e.g., 'button-background', 'button-text-color'). Values are the token names or resolved values that apply for this variant value.",
           "additionalProperties": {
             "type": "string"
           }
         },
         "preview": {
           "type": "array",
-          "description": "Visual previews of this variant value.",
+          "description": "Visual previews showing this variant value in isolation or in context.",
           "items": {
             "$ref": "#/$defs/example"
           }
         },
         "useCases": {
-          "$ref": "#/$defs/useCases"
+          "$ref": "#/$defs/useCases",
+          "description": "When to choose this value over the other values in this dimension."
         }
       },
       "additionalProperties": false
     },
-    "variant": {
+    "variantEntry": {
       "type": "object",
-      "description": "A dimension of variation on a component. Each variant has a name representing the dimension (e.g., 'size', 'emphasis', 'selected') and one or more values representing the options within that dimension. A variant with a single value represents a boolean or toggle configuration (e.g., 'selected', 'full-width'). A variant with multiple values represents an enumerated set (e.g., size: small/medium/large).",
+      "description": "A single dimension of variation on a component. The name identifies the axis (e.g., 'size', 'emphasis') and the values array enumerates the options along that axis.",
       "required": [
         "name",
         "description",
@@ -1236,25 +1690,286 @@
       "properties": {
         "name": {
           "type": "string",
-          "description": "Machine-readable name of the variant dimension (e.g., 'size', 'emphasis', 'selected', 'full-width')."
+          "description": "Machine-readable name of the variant dimension (e.g., 'size', 'emphasis', 'selected', 'full-width'). This is the axis name, not a value within the axis."
         },
         "displayName": {
           "type": "string",
           "description": "Human-readable name of the variant dimension (e.g., 'Size', 'Emphasis', 'Selected')."
         },
         "description": {
-          "$ref": "#/$defs/richText"
+          "$ref": "#/$defs/richText",
+          "description": "What this dimension of variation controls and how its values affect the component's appearance or behavior."
         },
         "values": {
           "type": "array",
-          "description": "The possible values for this variant. A single-entry array indicates a boolean/toggle variant. Multiple entries indicate an enumerated variant.",
+          "description": "The possible values for this variant. A single-entry array indicates a boolean/toggle variant. Multiple entries indicate an enumerated variant. The ordering is significant — tools SHOULD preserve it for display.",
           "items": {
             "$ref": "#/$defs/variantValue"
           },
           "minItems": 1
         },
         "useCases": {
-          "$ref": "#/$defs/useCases"
+          "$ref": "#/$defs/useCases",
+          "description": "When to use this variant dimension at all (as opposed to use cases on individual values, which address choosing between options within the dimension)."
+        }
+      },
+      "additionalProperties": false
+    },
+    "variants": {
+      "type": "object",
+      "description": "Documents all dimensions of visual or behavioral variation on a component. Each item represents a single axis of configuration — a Button might have an 'emphasis' axis (primary/secondary/ghost/danger), a 'size' axis (small/medium/large), and a 'full-width' axis (a single boolean value). Multiple axes document orthogonal dimensions that can be combined independently.",
+      "required": [
+        "type",
+        "items"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "variants",
+          "description": "Identifies this guideline as a variants specification."
+        },
+        "items": {
+          "type": "array",
+          "description": "The variant dimensions. Each item documents a single axis of variation with its enumerated values. The ordering is significant — tools SHOULD display dimensions in this order.",
+          "items": {
+            "$ref": "#/$defs/variantEntry"
+          },
+          "minItems": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "component": {
+      "type": "object",
+      "description": "Documentation for a single reusable UI component. The component's identity (name, description, status, category) lives at the top level. All structured documentation lives in the `guidelines` array — each entry is a typed guideline object (anatomy, api, variant, state, design-specifications, best-practice, accessibility, use-cases, example, etc.). This unified model replaces the previous architecture where each documentation concern was a separate top-level property.",
+      "required": [
+        "type",
+        "name",
+        "displayName",
+        "description",
+        "status"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "component",
+          "description": "Identifies this entity as a component."
+        },
+        "name": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]*$",
+          "description": "Machine-readable identifier (e.g., 'button', 'dialog', 'form-field', 'data-table'). MUST be unique within the documentation group."
+        },
+        "aliases": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Alternative names this component is known by across teams, tools, or legacy systems (e.g., ['btn', 'action-button', 'CTA']). Useful for search, migration mapping, and cross-referencing when different disciplines use different terminology for the same component."
+        },
+        "displayName": {
+          "type": "string",
+          "description": "Human-readable name for display in documentation (e.g., 'Button', 'Dialog', 'Form Field', 'Data Table')."
+        },
+        "summary": {
+          "type": "string",
+          "description": "A one-line, plain-text summary for compact display contexts such as list views, tooltips, search results, and card layouts. MUST NOT contain markup of any kind."
+        },
+        "description": {
+          "$ref": "#/$defs/richText",
+          "description": "A description of the component — what it is, what it does, and its role in the design system. CommonMark supported."
+        },
+        "status": {
+          "$ref": "#/$defs/statusObject"
+        },
+        "since": {
+          "type": "string",
+          "description": "The version of the design system in which this component was introduced (e.g., '1.0.0', '2.3.0')."
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Freeform keywords for categorization, search, and cross-referencing (e.g., 'action', 'form', 'interactive', 'navigation', 'feedback'). Tags are not constrained to a vocabulary — use them for any cross-cutting concern."
+        },
+        "category": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]*$",
+          "description": "Component classification within the design system's taxonomy (e.g., 'action', 'navigation', 'feedback', 'data-display', 'layout', 'form', 'overlay'). Used for organizing components into sections in documentation sites and component libraries."
+        },
+        "guidelines": {
+          "type": "array",
+          "description": "All structured documentation for this component, expressed as an ordered array of typed guideline objects. Components accept component-specific guideline types (anatomy, api, variants, states, design-specifications) and general types (best-practices, use-cases, accessibility, examples, artifact-references). Each guideline has a `type` property that determines its shape. The ordering is significant: tools SHOULD preserve it for display. A typical component includes guidelines in roughly this order: examples (hero previews), anatomy, api, variants, states, design-specifications, use-cases, best-practices, accessibility. However, authors are free to order guidelines in whatever way best serves their documentation.",
+          "items": {
+            "$ref": "#/$defs/componentGuideline"
+          }
+        },
+        "links": {
+          "type": "array",
+          "description": "External resource links and related artifact references — source code, design files, Storybook stories, documentation pages, npm packages, and relationships to other DSDS artifacts (alternatives, parents, children).",
+          "items": {
+            "$ref": "#/$defs/link"
+          }
+        },
+        "$extensions": {
+          "$ref": "#/$defs/extensions"
+        }
+      },
+      "additionalProperties": false
+    },
+    "pattern": {
+      "type": "object",
+      "description": "Documentation for a broad interaction pattern — a recurring, multi-component solution to a common UX problem. Patterns sit above individual components and describe how they are composed to address a user need. The pattern's identity (name, description, status, category) lives at the top level. All structured documentation lives in the `guidelines` array — each entry is a typed guideline object (artifact-reference for participating components, interaction for flow steps, best-practice for rules, accessibility for a11y specs, use-cases for scenario guidance, example for demonstrations, etc.). This unified model replaces the previous architecture where components, interactions, useCases, guidelines, accessibility, and examples were separate top-level properties.",
+      "required": [
+        "type",
+        "name",
+        "displayName",
+        "description",
+        "status"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "pattern",
+          "description": "Identifies this entity as a pattern."
+        },
+        "name": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]*$",
+          "description": "Machine-readable identifier for the pattern (e.g., 'error-messaging', 'navigation', 'empty-state', 'loading-sequence', 'onboarding', 'form-validation'). MUST be unique within the documentation group."
+        },
+        "displayName": {
+          "type": "string",
+          "description": "Human-readable name for display in documentation (e.g., 'Error Messaging', 'Navigation', 'Empty State', 'Loading Sequence')."
+        },
+        "aliases": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Alternative names this artifact is known by across teams, tools, or legacy systems. Useful for search, migration mapping, and cross-referencing."
+        },
+        "summary": {
+          "type": "string",
+          "description": "A one-line, plain-text summary for compact display contexts such as list views, tooltips, search results, and card layouts. MUST NOT contain markup of any kind."
+        },
+        "description": {
+          "$ref": "#/$defs/richText",
+          "description": "A description of the pattern — what user need it addresses, how it works at a high level, and its role in the design system. CommonMark supported."
+        },
+        "status": {
+          "$ref": "#/$defs/statusObject"
+        },
+        "since": {
+          "type": "string",
+          "description": "The version of the design system in which this pattern was introduced (e.g., '1.0.0', '2.3.0')."
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Freeform keywords for categorization, search, and cross-referencing (e.g., 'feedback', 'validation', 'forms', 'errors', 'async'). Tags are not constrained to a vocabulary — use them for any cross-cutting concern."
+        },
+        "category": {
+          "type": "string",
+          "description": "The interaction problem this pattern solves. Common values: 'feedback' (communicating system status, errors, success, and warnings), 'navigation' (moving between views, sections, or pages), 'data-entry' (collecting input — forms, search, filters, inline editing), 'disclosure' (revealing and hiding content — accordions, drawers, modals, tooltips), 'onboarding' (introducing the user to features, flows, or concepts), 'layout' (organizing content across screen sizes and contexts), 'selection' (choosing one or more items from a set), 'loading' (communicating progress and managing expectations during async operations). Custom values are permitted and SHOULD be lowercase kebab-case."
+        },
+        "guidelines": {
+          "type": "array",
+          "description": "All structured documentation for this pattern, expressed as an ordered array of typed guideline objects. Patterns accept pattern-specific guideline types (interactions) and general types (best-practices, use-cases, accessibility, examples, artifact-references). Each guideline has a `type` property that determines its shape. The ordering is significant: tools SHOULD preserve it for display. Interaction guidelines in particular rely on ordering to represent chronological flow. A typical pattern includes guidelines in roughly this order: examples (hero demonstrations), artifact-references (participating components), interactions (flow steps), use-cases, best-practices, accessibility. However, authors are free to order guidelines in whatever way best serves their documentation.",
+          "items": {
+            "$ref": "#/$defs/patternGuideline"
+          }
+        },
+        "links": {
+          "type": "array",
+          "description": "External resource links and related artifact references — source code, design files, Storybook stories, documentation pages, npm packages, and relationships to other DSDS artifacts (alternatives, related patterns, related components).",
+          "items": {
+            "$ref": "#/$defs/link"
+          }
+        },
+        "$extensions": {
+          "$ref": "#/$defs/extensions"
+        }
+      },
+      "additionalProperties": false
+    },
+    "style": {
+      "type": "object",
+      "description": "Documentation for a macro-level visual style — the principles, guidelines, scales, and token references that govern a visual attribute such as color, typography, spacing, or elevation across the entire system. The style's identity (name, description, status, category) lives at the top level. All structured documentation lives in the `guidelines` array — each entry is a typed guideline object (principle, scale, artifact-reference, best-practice, accessibility, use-cases, example, etc.). This unified model replaces the previous architecture where principles, tokenGroups, scales, useCases, guidelines, and accessibility were separate top-level properties.",
+      "required": [
+        "type",
+        "name",
+        "displayName",
+        "description",
+        "status"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "style",
+          "description": "Identifies this entity as a style."
+        },
+        "name": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]*$",
+          "description": "Machine-readable identifier for the style (e.g., 'color', 'typography', 'spacing', 'elevation', 'motion', 'shape'). MUST be unique within the documentation group."
+        },
+        "displayName": {
+          "type": "string",
+          "description": "Human-readable name for display in documentation (e.g., 'Color', 'Typography', 'Spacing', 'Elevation', 'Motion', 'Shape')."
+        },
+        "aliases": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Alternative names this artifact is known by across teams, tools, or legacy systems. Useful for search, migration mapping, and cross-referencing."
+        },
+        "summary": {
+          "type": "string",
+          "description": "A one-line, plain-text summary for compact display contexts such as list views, tooltips, search results, and card layouts. MUST NOT contain markup of any kind."
+        },
+        "description": {
+          "$ref": "#/$defs/richText",
+          "description": "A description of the style — what visual attribute it governs, how the system approaches it, and its role in the overall design language. CommonMark supported."
+        },
+        "status": {
+          "$ref": "#/$defs/statusObject"
+        },
+        "since": {
+          "type": "string",
+          "description": "The version of the design system in which this style was introduced (e.g., '1.0.0', '2.3.0')."
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Freeform keywords for categorization, search, and cross-referencing (e.g., 'visual', 'foundation', 'layout', 'theming'). Tags are not constrained to a vocabulary — use them for any cross-cutting concern."
+        },
+        "category": {
+          "type": "string",
+          "description": "The visual attribute category this style governs. Common values: 'color' (color system, palettes, semantic color usage, and color modes), 'typography' (type hierarchy, font families, type scales, and typographic rules), 'spacing' (spatial system, spacing scale, and layout rhythm), 'elevation' (shadows, layering, z-index strategy, and depth), 'motion' (animation timing, easing curves, transition patterns, and reduced-motion considerations), 'shape' (border radius, corner treatments, and geometric conventions). Custom values are permitted and SHOULD be lowercase kebab-case."
+        },
+        "guidelines": {
+          "type": "array",
+          "description": "All structured documentation for this style, expressed as an ordered array of typed guideline objects. Styles accept style-specific guideline types (principles, scale) and general types (best-practices, use-cases, accessibility, examples, artifact-references). Each guideline has a `type` property that determines its shape. The ordering is significant: tools SHOULD preserve it for display. A typical style includes guidelines in roughly this order: examples (hero previews), principles, scales, artifact-references (token groups), use-cases, best-practices, accessibility. However, authors are free to order guidelines in whatever way best serves their documentation.",
+          "items": {
+            "$ref": "#/$defs/styleGuideline"
+          }
+        },
+        "links": {
+          "type": "array",
+          "description": "External resource links and related artifact references — source code, design files, Storybook stories, documentation pages, npm packages, and relationships to other DSDS artifacts.",
+          "items": {
+            "$ref": "#/$defs/link"
+          }
+        },
+        "$extensions": {
+          "$ref": "#/$defs/extensions"
         }
       },
       "additionalProperties": false
@@ -1269,25 +1984,32 @@
       "properties": {
         "token": {
           "type": "string",
-          "description": "The name of the token being overridden. MUST match the `name` of a tokenDoc defined elsewhere in the system. Token names are intentionally unconstrained by a pattern to accommodate DTCG and design tool naming conventions (e.g., 'color-text-primary', 'color.text.primary', 'color/text/primary')."
+          "description": "The name of the token being overridden. MUST match the `name` of a token defined elsewhere in the system. Token names are intentionally unconstrained by a pattern to accommodate DTCG and design tool naming conventions (e.g., 'color-text-primary', 'color.text.primary', 'color/text/primary')."
         },
         "value": {
           "$ref": "#/$defs/tokenValue",
-          "description": "The override value for this token within the theme. Follows the same structure as tokenDoc.value — a displayable representation containing a resolved value, alias reference, and/or DTCG file pointer."
+          "description": "The override value for this token within the theme. Follows the same structure as token.value — a displayable representation containing a resolved value, alias reference, and/or DTCG file pointer."
         }
       },
       "additionalProperties": false
     },
-    "themeDoc": {
+    "theme": {
       "type": "object",
       "description": "Documentation for a theme — a named set of token value overrides that adapt the design system to a specific context. Themes are commonly used for color modes (light, dark, high-contrast), density settings (compact, comfortable), brand variants, or product-specific customizations. A theme does not redefine tokens; it references existing tokens and provides alternative values for them. The token catalog remains the authoritative source for token identity, type, documentation, and API mappings.",
       "required": [
+        "type",
         "name",
         "displayName",
+        "description",
         "status",
         "overrides"
       ],
       "properties": {
+        "type": {
+          "type": "string",
+          "const": "theme",
+          "description": "Identifies this entity as a theme."
+        },
         "name": {
           "type": "string",
           "pattern": "^[a-z][a-z0-9-]*$",
@@ -1297,15 +2019,23 @@
           "type": "string",
           "description": "Human-readable name for the theme (e.g., 'Dark Mode', 'High Contrast', 'Compact Density')."
         },
-        "status": {
-          "$ref": "#/$defs/status"
+        "aliases": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Alternative names this artifact is known by across teams, tools, or legacy systems. Useful for search, migration mapping, and cross-referencing."
         },
-        "platformStatus": {
-          "$ref": "#/$defs/platformStatus"
-        },
-        "deprecationNotice": {
+        "summary": {
           "type": "string",
-          "description": "Required when status is 'deprecated'. Explains what to use instead."
+          "description": "A one-line, plain-text summary for compact display contexts such as list views, tooltips, search results, and card layouts. MUST NOT contain markup of any kind."
+        },
+        "description": {
+          "$ref": "#/$defs/richText",
+          "description": "A description of the theme — what context it adapts the system to, when to apply it, and how it differs from the default token values. CommonMark supported."
+        },
+        "status": {
+          "$ref": "#/$defs/statusObject"
         },
         "since": {
           "type": "string",
@@ -1330,8 +2060,12 @@
           },
           "minItems": 1
         },
-        "useCases": {
-          "$ref": "#/$defs/useCases"
+        "guidelines": {
+          "type": "array",
+          "description": "All structured documentation for this theme, expressed as an ordered array of typed guideline objects. Themes accept general guideline types only (best-practices, use-cases, accessibility, examples, artifact-references). Each guideline has a `type` property that determines its shape. The ordering is significant: tools SHOULD preserve it for display.",
+          "items": {
+            "$ref": "#/$defs/tokenGuideline"
+          }
         },
         "links": {
           "type": "array",
@@ -1344,30 +2078,11 @@
           "$ref": "#/$defs/extensions"
         }
       },
-      "if": {
-        "properties": {
-          "status": {
-            "const": "deprecated"
-          }
-        }
-      },
-      "then": {
-        "required": [
-          "deprecationNotice"
-        ]
-      },
       "additionalProperties": false
-    },
-    "tokenApi": {
-      "type": "object",
-      "description": "Platform-specific identifiers for a token. Keys are platform names (e.g., 'cssCustomProperty', 'scssVariable', 'jsConstant', 'iosToken', 'androidToken', 'designToolVariable') and values are the identifier strings for that platform. Additional platforms can be added without schema changes.",
-      "additionalProperties": {
-        "type": "string"
-      }
     },
     "tokenValue": {
       "type": "object",
-      "description": "A displayable representation of the token's value for documentation tools.",
+      "description": "A displayable representation of the token's value for documentation tools. This is not the authoritative source of truth for the value — the Design Tokens Format file is. The resolved value provides a human-readable snapshot, the reference traces the alias chain, and the dtcgFile points to the authoritative source.",
       "properties": {
         "resolved": {
           "type": "string",
@@ -1384,10 +2099,18 @@
       },
       "additionalProperties": false
     },
-    "tokenDoc": {
+    "tokenApi": {
+      "type": "object",
+      "description": "Platform-specific identifiers for a token. Keys are platform names (e.g., 'cssCustomProperty', 'scssVariable', 'jsConstant', 'iosToken', 'androidToken', 'designToolVariable') and values are the identifier strings for that platform. Additional platforms can be added without schema changes.",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "token": {
       "type": "object",
       "description": "Documentation for a single design token — its name, type, value, platform API mappings, use cases, guidelines, and accessibility considerations.",
       "required": [
+        "type",
         "name",
         "displayName",
         "description",
@@ -1395,6 +2118,11 @@
         "tokenType"
       ],
       "properties": {
+        "type": {
+          "type": "string",
+          "const": "token",
+          "description": "Identifies this entity as a token."
+        },
         "name": {
           "type": "string",
           "description": "The token name. Token names are intentionally unconstrained by a pattern to accommodate DTCG and design tool naming conventions that use dots, slashes, or other separators (e.g., 'color-text-primary', 'color.text.primary', 'color/text/primary')."
@@ -1411,14 +2139,7 @@
           "$ref": "#/$defs/richText"
         },
         "status": {
-          "$ref": "#/$defs/status"
-        },
-        "platformStatus": {
-          "$ref": "#/$defs/platformStatus"
-        },
-        "deprecationNotice": {
-          "type": "string",
-          "description": "Required when status is 'deprecated'."
+          "$ref": "#/$defs/statusObject"
         },
         "since": {
           "type": "string",
@@ -1452,18 +2173,12 @@
         "api": {
           "$ref": "#/$defs/tokenApi"
         },
-        "useCases": {
-          "$ref": "#/$defs/useCases"
-        },
         "guidelines": {
           "type": "array",
-          "description": "Usage guidelines for the token. Each entry is a self-contained guideline. Use the `category` property on individual guidelines to group by concern (e.g., 'design', 'accessibility', 'content').",
+          "description": "All structured documentation for this token, expressed as an ordered array of typed guideline objects. Tokens accept general guideline types only (best-practices, use-cases, accessibility, examples, artifact-references). Each guideline has a `type` property that determines its shape. The ordering is significant: tools SHOULD preserve it for display.",
           "items": {
-            "$ref": "#/$defs/guideline"
+            "$ref": "#/$defs/tokenGuideline"
           }
-        },
-        "accessibility": {
-          "$ref": "#/$defs/accessibilityObject"
         },
         "links": {
           "type": "array",
@@ -1476,30 +2191,24 @@
           "$ref": "#/$defs/extensions"
         }
       },
-      "if": {
-        "properties": {
-          "status": {
-            "const": "deprecated"
-          }
-        }
-      },
-      "then": {
-        "required": [
-          "deprecationNotice"
-        ]
-      },
       "additionalProperties": false
     },
-    "tokenGroupDoc": {
+    "tokenGroup": {
       "type": "object",
       "description": "Documentation for a group of related design tokens. Token groups are flexible organizational units that can represent a full token collection, a token family (e.g., all color tokens), a token sub-family (e.g., a single color hue with its grade scale), or any other logical grouping. Groups can be nested to form an arbitrarily deep hierarchy — a top-level group might represent 'color', containing child groups for 'color-text', 'color-background', and 'color-border', each of which contains individual tokens. This recursive structure mirrors the way real design systems organize tokens into families and sub-families.",
       "required": [
+        "type",
         "name",
         "displayName",
         "description",
         "status"
       ],
       "properties": {
+        "type": {
+          "type": "string",
+          "const": "token-group",
+          "description": "Identifies this entity as a token-group."
+        },
         "name": {
           "type": "string",
           "description": "The token group name. Token group names are intentionally unconstrained by a pattern to accommodate DTCG and design tool naming conventions (e.g., 'color-text', 'color.text', 'color/text')."
@@ -1507,6 +2216,13 @@
         "displayName": {
           "type": "string",
           "description": "Human-readable name (e.g., 'Text Colors', 'Spacing Scale', 'Red — Pushpin')."
+        },
+        "aliases": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Alternative names this token group is known by across teams, tools, or legacy systems. Useful for search, migration mapping, and cross-referencing."
         },
         "summary": {
           "type": "string",
@@ -1517,14 +2233,7 @@
           "description": "A description of the group's purpose, the tokens it contains, and how they relate to each other. CommonMark supported."
         },
         "status": {
-          "$ref": "#/$defs/status"
-        },
-        "platformStatus": {
-          "$ref": "#/$defs/platformStatus"
-        },
-        "deprecationNotice": {
-          "type": "string",
-          "description": "Required when status is 'deprecated'."
+          "$ref": "#/$defs/statusObject"
         },
         "since": {
           "type": "string",
@@ -1539,39 +2248,33 @@
         },
         "tokenType": {
           "type": "string",
-          "description": "When all tokens in this group share the same DTCG token type, it MAY be declared here to avoid repetition on each child token. Individual tokenDoc objects within children MAY override this value. Common values: 'color', 'dimension', 'fontFamily', 'fontWeight', 'duration', 'number', 'shadow'."
+          "description": "When all tokens in this group share the same DTCG token type, it MAY be declared here to avoid repetition on each child token. Individual token objects within children MAY override this value. Common values: 'color', 'dimension', 'fontFamily', 'fontWeight', 'duration', 'number', 'shadow'."
         },
         "category": {
           "type": "string",
-          "description": "When all tokens in this group share the same semantic category, it MAY be declared here. Standard values: 'base', 'semantic', 'component'. Individual tokenDoc objects within children MAY override this value."
+          "description": "When all tokens in this group share the same semantic category, it MAY be declared here. Standard values: 'base', 'semantic', 'component'. Individual token objects within children MAY override this value."
         },
         "children": {
           "type": "array",
-          "description": "An ordered array of tokens and/or nested token groups that belong to this group. Each item MUST be either a tokenDoc (identified by the presence of `tokenType` and absence of `children`) or a tokenGroupDoc (identified by the presence of `children` or the absence of `tokenType`). The ordering is significant — tools SHOULD preserve the order for display, as it often represents a meaningful progression (e.g., a color grade scale from lightest to darkest, or a spacing scale from smallest to largest).",
+          "description": "An ordered array of tokens and/or nested token groups that belong to this group. Each item MUST be either a token (identified by the presence of `tokenType` and absence of `children`) or a tokenGroup (identified by the presence of `children` or the absence of `tokenType`). The ordering is significant — tools SHOULD preserve the order for display, as it often represents a meaningful progression (e.g., a color grade scale from lightest to darkest, or a spacing scale from smallest to largest).",
           "items": {
             "oneOf": [
               {
-                "$ref": "#/$defs/tokenDoc"
+                "$ref": "#/$defs/token"
               },
               {
-                "$ref": "#/$defs/tokenGroupDoc"
+                "$ref": "#/$defs/tokenGroup"
               }
             ]
           },
           "minItems": 1
         },
-        "useCases": {
-          "$ref": "#/$defs/useCases"
-        },
         "guidelines": {
           "type": "array",
-          "description": "Usage guidelines that apply to the group as a whole. Guidelines specific to individual tokens SHOULD be placed on the tokenDoc within children.",
+          "description": "All structured documentation for this token group, expressed as an ordered array of typed guideline objects. Token groups accept general guideline types only (best-practices, use-cases, accessibility, examples, artifact-references). Guidelines that apply to the group as a whole live here. Guidelines specific to individual tokens SHOULD be placed on the token within children.",
           "items": {
-            "$ref": "#/$defs/guideline"
+            "$ref": "#/$defs/tokenGuideline"
           }
-        },
-        "accessibility": {
-          "$ref": "#/$defs/accessibilityObject"
         },
         "links": {
           "type": "array",
@@ -1584,352 +2287,14 @@
           "$ref": "#/$defs/extensions"
         }
       },
-      "if": {
-        "properties": {
-          "status": {
-            "const": "deprecated"
-          }
-        }
-      },
-      "then": {
-        "required": [
-          "deprecationNotice"
-        ]
-      },
       "additionalProperties": false
     },
-    "principle": {
+    "documentationGroup": {
       "type": "object",
-      "description": "A high-level guiding principle for the visual style.",
-      "required": [
-        "title",
-        "description"
-      ],
-      "properties": {
-        "title": {
-          "type": "string",
-          "description": "A short name for the principle."
-        },
-        "description": {
-          "$ref": "#/$defs/richText"
-        }
-      },
-      "additionalProperties": false
-    },
-    "scaleStep": {
-      "type": "object",
-      "description": "A single step in an ordered scale (e.g., a type size, a spacing value, an elevation level).",
-      "required": [
-        "token"
-      ],
-      "properties": {
-        "token": {
-          "type": "string",
-          "description": "The token name for this step. MUST reference a token defined in the token schema."
-        },
-        "label": {
-          "type": "string",
-          "description": "A human-readable label (e.g., 'sm', 'md', 'lg', '2xl')."
-        },
-        "value": {
-          "type": "string",
-          "description": "The resolved value for display (e.g., '16px', '#1a1a1a', '400')."
-        },
-        "description": {
-          "$ref": "#/$defs/richText"
-        }
-      },
-      "additionalProperties": false
-    },
-    "scale": {
-      "type": "object",
-      "description": "An ordered sequence of values that forms a visual scale (e.g., type scale, spacing scale, elevation scale). Each step references a design token.",
+      "description": "A named collection of design system documentation entities. Contains a single `items` array of typed entities — components, tokens, token groups, themes, styles, and/or patterns mixed freely in any order. Each entity is identified by its `type` discriminator property. At least one entity must be present.",
       "required": [
         "name",
-        "description",
-        "steps"
-      ],
-      "properties": {
-        "name": {
-          "type": "string",
-          "description": "Machine-readable name of the scale."
-        },
-        "displayName": {
-          "type": "string",
-          "description": "Human-readable name."
-        },
-        "description": {
-          "$ref": "#/$defs/richText"
-        },
-        "steps": {
-          "type": "array",
-          "description": "The ordered steps in the scale, from smallest/lowest to largest/highest.",
-          "items": {
-            "$ref": "#/$defs/scaleStep"
-          },
-          "minItems": 1
-        }
-      },
-      "additionalProperties": false
-    },
-    "styleDoc": {
-      "type": "object",
-      "description": "Documentation for a macro-level visual style — the principles, guidelines, scales, and token references that govern a visual attribute such as color, typography, spacing, or elevation across the entire system.",
-      "required": [
-        "name",
-        "displayName",
-        "description",
-        "status",
-        "category"
-      ],
-      "properties": {
-        "name": {
-          "type": "string",
-          "pattern": "^[a-z][a-z0-9-]*$",
-          "description": "Machine-readable identifier (e.g., 'color', 'typography', 'spacing', 'elevation')."
-        },
-        "displayName": {
-          "type": "string",
-          "description": "Human-readable name."
-        },
-        "summary": {
-          "type": "string",
-          "description": "A one-line, plain-text summary. MUST NOT contain markup."
-        },
-        "description": {
-          "$ref": "#/$defs/richText"
-        },
-        "status": {
-          "$ref": "#/$defs/status"
-        },
-        "platformStatus": {
-          "$ref": "#/$defs/platformStatus"
-        },
-        "deprecationNotice": {
-          "type": "string",
-          "description": "Required when status is 'deprecated'."
-        },
-        "since": {
-          "type": "string",
-          "description": "The version in which this style was introduced."
-        },
-        "tags": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "description": "Freeform keywords to relate guidelines across categories/disciplines (e.g., 'rtl', 'localization', 'validation')."
-        },
-        "category": {
-          "type": "string",
-          "description": "The visual attribute category (e.g., 'color', 'typography', 'spacing', 'elevation', 'motion', 'shape')."
-        },
-        "principles": {
-          "type": "array",
-          "description": "High-level guiding principles for this visual style.",
-          "items": {
-            "$ref": "#/$defs/principle"
-          }
-        },
-        "tokenGroups": {
-          "type": "array",
-          "description": "References to the token groups that implement this style. Connects macro-level guidance to concrete token values defined in the token schema.",
-          "items": {
-            "$ref": "#/$defs/artifactReference"
-          }
-        },
-        "scales": {
-          "type": "array",
-          "description": "Ordered scales that define the progression of values for this style (e.g., a type scale, a spacing scale, an elevation scale). Each scale step references a design token.",
-          "items": {
-            "$ref": "#/$defs/scale"
-          }
-        },
-        "useCases": {
-          "$ref": "#/$defs/useCases"
-        },
-        "guidelines": {
-          "type": "array",
-          "description": "Usage guidelines for the style. Each entry is a self-contained guideline. Use the `category` property on individual guidelines to group by concern (e.g., 'design', 'accessibility', 'content').",
-          "items": {
-            "$ref": "#/$defs/guideline"
-          }
-        },
-        "accessibility": {
-          "$ref": "#/$defs/accessibilityObject"
-        },
-        "links": {
-          "type": "array",
-          "description": "External resource links and related artifact references.",
-          "items": {
-            "$ref": "#/$defs/link"
-          }
-        },
-        "$extensions": {
-          "$ref": "#/$defs/extensions"
-        }
-      },
-      "if": {
-        "properties": {
-          "status": {
-            "const": "deprecated"
-          }
-        }
-      },
-      "then": {
-        "required": [
-          "deprecationNotice"
-        ]
-      },
-      "additionalProperties": false
-    },
-    "interaction": {
-      "type": "object",
-      "description": "A single step or event in the pattern's interaction flow, describing what happens, what triggers it, and which components are involved.",
-      "required": [
-        "description"
-      ],
-      "properties": {
-        "trigger": {
-          "type": "string",
-          "description": "What initiates this interaction step (e.g., 'User submits the form', 'API returns a 422 response', 'Page finishes loading')."
-        },
-        "description": {
-          "$ref": "#/$defs/richText"
-        },
-        "components": {
-          "type": "array",
-          "description": "The components involved in this interaction step, by name.",
-          "items": {
-            "type": "string"
-          }
-        },
-        "examples": {
-          "type": "array",
-          "description": "Examples illustrating this interaction step.",
-          "items": {
-            "$ref": "#/$defs/example"
-          }
-        }
-      },
-      "additionalProperties": false
-    },
-    "patternDoc": {
-      "type": "object",
-      "description": "Documentation for a broad interaction pattern — a recurring, multi-component solution to a common UX problem. Patterns sit above individual components and describe how they are composed to address a user need.",
-      "required": [
-        "name",
-        "displayName",
-        "description",
-        "status",
-        "category"
-      ],
-      "properties": {
-        "name": {
-          "type": "string",
-          "pattern": "^[a-z][a-z0-9-]*$",
-          "description": "Machine-readable identifier (e.g., 'error-messaging', 'navigation', 'empty-state', 'loading-sequence')."
-        },
-        "displayName": {
-          "type": "string",
-          "description": "Human-readable name (e.g., 'Error Messaging', 'Navigation', 'Empty State')."
-        },
-        "summary": {
-          "type": "string",
-          "description": "A one-line, plain-text summary. MUST NOT contain markup."
-        },
-        "description": {
-          "$ref": "#/$defs/richText"
-        },
-        "status": {
-          "$ref": "#/$defs/status"
-        },
-        "platformStatus": {
-          "$ref": "#/$defs/platformStatus"
-        },
-        "deprecationNotice": {
-          "type": "string",
-          "description": "Required when status is 'deprecated'."
-        },
-        "since": {
-          "type": "string",
-          "description": "The version in which this pattern was introduced."
-        },
-        "tags": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "description": "Freeform tags for categorization and search."
-        },
-        "category": {
-          "type": "string",
-          "description": "The pattern category (e.g., 'feedback', 'navigation', 'data-entry', 'disclosure', 'onboarding', 'layout')."
-        },
-        "components": {
-          "type": "array",
-          "description": "The artifacts that participate in this pattern, with their roles. Typically references components by name from the component schema.",
-          "items": {
-            "$ref": "#/$defs/artifactReference"
-          }
-        },
-        "interactions": {
-          "type": "array",
-          "description": "The interaction flow of the pattern — an ordered sequence of steps describing triggers, system responses, and component behavior.",
-          "items": {
-            "$ref": "#/$defs/interaction"
-          }
-        },
-        "useCases": {
-          "$ref": "#/$defs/useCases"
-        },
-        "guidelines": {
-          "type": "array",
-          "description": "Usage guidelines for the pattern. Each entry is a self-contained guideline. Use the `category` property on individual guidelines to group by concern (e.g., 'design', 'accessibility', 'content').",
-          "items": {
-            "$ref": "#/$defs/guideline"
-          }
-        },
-        "accessibility": {
-          "$ref": "#/$defs/accessibilityObject"
-        },
-        "examples": {
-          "type": "array",
-          "description": "Examples illustrating the complete pattern in context.",
-          "items": {
-            "$ref": "#/$defs/example"
-          }
-        },
-        "links": {
-          "type": "array",
-          "description": "External resource links and related artifact references.",
-          "items": {
-            "$ref": "#/$defs/link"
-          }
-        },
-        "$extensions": {
-          "$ref": "#/$defs/extensions"
-        }
-      },
-      "if": {
-        "properties": {
-          "status": {
-            "const": "deprecated"
-          }
-        }
-      },
-      "then": {
-        "required": [
-          "deprecationNotice"
-        ]
-      },
-      "additionalProperties": false
-    },
-    "documentGroup": {
-      "type": "object",
-      "description": "A named collection of design system documentation artifacts. Contains one or more arrays of typed artifacts — components, tokens, token groups, themes, styles, and/or patterns. At least one artifact array must be present.",
-      "required": [
-        "name"
+        "items"
       ],
       "properties": {
         "name": {
@@ -1939,81 +2304,37 @@
         "description": {
           "$ref": "#/$defs/richText"
         },
-        "components": {
+        "items": {
           "type": "array",
-          "description": "Array of component documentation objects.",
+          "description": "The entities in this documentation group. Each item is a typed entity — its `type` property determines which schema applies. Entities of different types can be mixed freely in the same array. The ordering is significant: tools SHOULD preserve it for display. Authors MAY organize entities in whatever order best serves their documentation (e.g., tokens before components, or grouped by domain).",
           "items": {
-            "$ref": "#/$defs/componentDoc"
-          }
+            "oneOf": [
+              {
+                "$ref": "#/$defs/component"
+              },
+              {
+                "$ref": "#/$defs/token"
+              },
+              {
+                "$ref": "#/$defs/tokenGroup"
+              },
+              {
+                "$ref": "#/$defs/theme"
+              },
+              {
+                "$ref": "#/$defs/style"
+              },
+              {
+                "$ref": "#/$defs/pattern"
+              }
+            ]
+          },
+          "minItems": 1
         },
-        "tokens": {
-          "type": "array",
-          "description": "Array of individual token documentation objects.",
-          "items": {
-            "$ref": "#/$defs/tokenDoc"
-          }
-        },
-        "tokenGroups": {
-          "type": "array",
-          "description": "Array of token group documentation objects. Each group can contain tokens, nested groups, or a mix of both, forming an arbitrarily deep hierarchy.",
-          "items": {
-            "$ref": "#/$defs/tokenGroupDoc"
-          }
-        },
-        "themes": {
-          "type": "array",
-          "description": "Array of theme documentation objects. Each theme provides alternative token values for a named context such as a color mode, density setting, or brand variant.",
-          "items": {
-            "$ref": "#/$defs/themeDoc"
-          }
-        },
-        "styles": {
-          "type": "array",
-          "description": "Array of style documentation objects.",
-          "items": {
-            "$ref": "#/$defs/styleDoc"
-          }
-        },
-        "patterns": {
-          "type": "array",
-          "description": "Array of pattern documentation objects.",
-          "items": {
-            "$ref": "#/$defs/patternDoc"
-          }
+        "$extensions": {
+          "$ref": "#/$defs/extensions"
         }
       },
-      "anyOf": [
-        {
-          "required": [
-            "components"
-          ]
-        },
-        {
-          "required": [
-            "tokens"
-          ]
-        },
-        {
-          "required": [
-            "tokenGroups"
-          ]
-        },
-        {
-          "required": [
-            "themes"
-          ]
-        },
-        {
-          "required": [
-            "styles"
-          ]
-        },
-        {
-          "required": [
-            "patterns"
-          ]
-        }
-      ],
       "additionalProperties": false
     }
   }
