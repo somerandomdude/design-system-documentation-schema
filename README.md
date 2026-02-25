@@ -6,13 +6,16 @@ A standard, machine-readable format for design system documentation.
 
 ## What is DSDS?
 
-DSDS defines a JSON-based format for documenting the five core artifact types of a design system:
+DSDS defines a JSON-based format for documenting the six entity types of a design system:
 
-- **Components (In progress)** — API, anatomy, variants, states, use cases, guidelines, accessibility, design specifications
-- **Design tokens (Early placeholder draft)** — Semantic meaning, platform mappings, contrast ratios, usage rules
-- **Styles (Early placeholder draft)** — Macro-level visual guidelines for color, typography, spacing, elevation, and motion
-- **Patterns (Early placeholder draft)** — Broad interaction patterns like navigation, error messaging, and empty states
-- **Collections (Early placeholder draft)** — Bundles of multiple artifacts into a single document
+- **Components** — Anatomy, API, variants, states, design specifications, best practices, accessibility
+- **Tokens** — Semantic meaning, platform mappings, contrast ratios, usage rules
+- **Token Groups** — Hierarchical organization of tokens into families and sub-families
+- **Themes** — Named sets of token value overrides for color modes, density, brand variants
+- **Styles** — Macro-level visual guidelines for color, typography, spacing, elevation, and motion
+- **Patterns** — Broad interaction patterns like navigation, error messaging, and empty states
+
+All structured documentation — best practices, anatomy, API specs, variants, states, accessibility, examples, design specifications, principles, scales, interactions, and artifact references — lives in a unified **guidelines** system. Each guideline is a typed container identified by a `type` discriminator.
 
 The goal is simple: make design system documentation structured, portable, and consumable by tools — whether that tool is a documentation site, a linter, a code assistant, or a human reading JSON.
 
@@ -41,198 +44,294 @@ DSDS addresses these problems by defining a standard format that is:
 
 The W3C Design Tokens Community Group defines a format for exchanging token **values** between tools. DSDS defines a format for exchanging the **documentation** that describes how those tokens — and the components, styles, and patterns that use them — should be understood and applied.
 
-The two formats are designed to work together. A DSDS token documentation file can reference a DTCG file for the token's authoritative value.
+The two formats are designed to work together. A DSDS token entity can reference a DTCG file for the token's authoritative value.
 
 ## Project Structure
 
 ```
 spec/
-├── dsds-spec.md                                    # The full specification overview
-├── modules/                                        # Spec module documents
-│   ├── core.md                                     # Common properties, file format, extensions
-│   ├── components.md                               # Component documentation
-│   ├── tokens.md                                   # Token and token group documentation
-│   ├── styles.md                                   # Visual style documentation
-│   ├── patterns.md                                 # Interaction pattern documentation
-│   ├── usecases.md                                 # Use case documentation
-│   ├── examples.md                                 # Example and presentation model
-│   ├── guidelines.md                               # Guideline structure
-│   ├── accessibility.md                            # Accessibility specifications
-│   └── links.md                                    # External resource links
+├── dsds-spec.md                                        # Specification overview
+├── modules/                                            # Prose documentation
+│   ├── common.md                                       # Shared primitives (richText, status, link, example, etc.)
+│   ├── entities.md                                     # Entity types (component, token, theme, style, pattern)
+│   └── guidelines.md                                   # Guideline types (best-practices, anatomy, api, variants, etc.)
 ├── schema/
-│   ├── dsds.schema.json                            # Root JSON Schema
-│   ├── dsds.bundled.schema.json                    # Auto-generated bundled schema
-│   ├── common/                                     # Shared definitions
-│   │   ├── common.schema.json                      # richText, metadata, status, link, extensions
-│   │   ├── example.schema.json                     # example + presentation types
-│   │   ├── guideline.schema.json                   # unified guideline
-│   │   ├── usecase.schema.json                     # use cases (whenToUse / whenNotToUse)
-│   │   ├── accessibility.schema.json               # keyboard, ARIA, contrast, accessibility object
-│   │   └── artifact-reference.schema.json          # shared artifact reference
-│   ├── components/                                 # Component-specific definitions
-│   │   ├── component.schema.json                   # componentDoc
-│   │   ├── anatomy.schema.json                     # anatomyPart, anatomy
-│   │   ├── api.schema.json                         # apiProperty, apiEvent, apiSlot, componentApi
-│   │   ├── design-specifications.schema.json       # spacing, sizing, responsive
-│   │   ├── variant.schema.json                     # variant, variantValue
-│   │   └── state.schema.json                       # state
-│   ├── tokens/                                     # Token-specific definitions
-│   │   └── token.schema.json                       # tokenDoc, tokenGroupDoc, tokenApi
-│   ├── style/                                      # Style-specific definitions
-│   │   └── style.schema.json                       # styleDoc, principle, scale, scaleStep
-│   └── patterns/                                   # Pattern-specific definitions
-│       └── pattern.schema.json                     # patternDoc, interaction
+│   ├── dsds.schema.json                                # Root JSON Schema
+│   ├── dsds.bundled.schema.json                        # Auto-generated single-file bundle
+│   ├── common/                                         # Shared primitives
+│   │   ├── example.schema.json                         # example, examples, presentations
+│   │   ├── extensions.schema.json                      # $extensions
+│   │   ├── link.schema.json                            # link
+│   │   ├── metadata.schema.json                        # metadata
+│   │   ├── rich-text.schema.json                       # richText
+│   │   ├── status.schema.json                          # statusObject, statusValue, platformStatusEntry
+│   │   └── usecase.schema.json                         # useCase, useCases
+│   ├── entities/                                       # Entity types
+│   │   ├── component.schema.json                       # component
+│   │   ├── pattern.schema.json                         # pattern
+│   │   ├── style.schema.json                           # style
+│   │   ├── theme.schema.json                           # theme, tokenOverride
+│   │   └── token.schema.json                           # token, tokenGroup, tokenValue, tokenApi
+│   └── guidelines/                                     # Guideline types
+│       ├── guideline.schema.json                       # Scoped unions (componentGuideline, styleGuideline, etc.)
+│       ├── accessibility.schema.json                   # accessibility, keyboardInteraction, ariaAttribute, colorContrast
+│       ├── anatomy.schema.json                         # anatomy, anatomyEntry
+│       ├── api.schema.json                             # api, apiProperty, apiEvent, apiSlot, etc.
+│       ├── artifact-reference.schema.json              # artifactReference, artifactReferenceEntry
+│       ├── best-practice.schema.json                   # bestPractices, bestPracticeEntry
+│       ├── design-specifications.schema.json           # designSpecifications, spacingSpec, sizingSpec, typographySpec, etc.
+│       ├── interaction.schema.json                     # interactions, interactionEntry
+│       ├── principle.schema.json                       # principles, principleEntry
+│       ├── purpose.schema.json                         # purpose (whenToUse / whenNotToUse)
+│       ├── scale.schema.json                           # scale, scaleStep
+│       ├── state.schema.json                           # states, stateEntry
+│       └── variant.schema.json                         # variants, variantEntry, variantValue
 └── examples/
-    ├── button.dsds.json                            # Component documentation (Button)
-    ├── color-tokens.dsds.json                      # Token group documentation (Text Colors)
-    ├── spacing-style.dsds.json                     # Style documentation (Spacing)
-    └── error-messaging.dsds.json                   # Pattern documentation (Error Messaging)
+    ├── starter-kit.dsds.json                           # Complete document with components, tokens, styles, patterns
+    ├── common/                                         # Per-definition examples for common primitives
+    ├── entities/                                       # Per-definition examples for entity types
+    └── guidelines/                                     # Per-definition examples for guideline types
 
 scripts/
-├── bundle_schema.py                                # Auto-generates dsds.bundled.schema.json
-├── migrate_examples.py                             # Migration script for example files
-└── migrate_criteria.py                             # Migration script for criteria/category changes
+├── bundle.js                                           # Generates dsds.bundled.schema.json from split schemas
+├── validate.js                                         # Validates all example files against the bundled schema
+├── sync-examples.js                                    # Syncs markdown dsds:include directives with example JSON
+└── build-site.js                                       # Generates the static specification site
 
 site/
-├── build.py                                        # Static site generator for the spec
-├── style.css                                       # Site stylesheet
-└── dist/                                           # Generated HTML site
+├── style.css                                           # Site stylesheet
+└── dist/                                               # Generated HTML site (auto-generated)
 ```
 
 ## Quick Start
 
 ### 1. Read the spec
 
-Start with [`spec/dsds-spec.md`](spec/dsds-spec.md). It defines the format, the rules, and the reasoning behind both.
+Start with [`spec/dsds-spec.md`](spec/dsds-spec.md) for the architecture overview. Then read the three modules:
+
+- [`spec/modules/common.md`](spec/modules/common.md) — Shared primitives (richText, status, link, example, extensions, metadata, use cases)
+- [`spec/modules/entities.md`](spec/modules/entities.md) — The six entity types (component, token, token group, theme, style, pattern)
+- [`spec/modules/guidelines.md`](spec/modules/guidelines.md) — The unified guideline system (13 guideline types with scoped unions)
 
 ### 2. Look at the examples
 
-The [`spec/examples/`](spec/examples/) directory contains complete, realistic documentation files:
+The [`spec/examples/`](spec/examples/) directory contains validated example files:
 
-- **[`button.dsds.json`](spec/examples/button.dsds.json)** — A full component doc covering anatomy, API, variants (with dimension-based modeling), states, design specs, use cases, guidelines, accessibility, and links.
-- **[`color-tokens.dsds.json`](spec/examples/color-tokens.dsds.json)** — A token group documenting semantic text color tokens with contrast ratios, platform mappings, and usage guidelines.
-- **[`spacing-style.dsds.json`](spec/examples/spacing-style.dsds.json)** — A style doc covering the spacing scale, principles, token group references, guidelines, and accessibility considerations.
-- **[`error-messaging.dsds.json`](spec/examples/error-messaging.dsds.json)** — A pattern doc covering the error messaging flow with component references, interaction steps, use cases, guidelines, and accessibility.
+- **[`starter-kit.dsds.json`](spec/examples/starter-kit.dsds.json)** — A complete document with components, tokens, a style, and a pattern, showing the full architecture.
+- **[`entities/component.json`](spec/examples/entities/component.json)** — A full Button component with anatomy, API, variants, states, design specs, best practices, purpose, and accessibility.
+- **[`entities/token.json`](spec/examples/entities/token.json)** — A semantic color token with value, API mappings, and guidelines.
+- **[`entities/token-group.json`](spec/examples/entities/token-group.json)** — A hierarchical color palette with nested hue families and grade scales.
+- **[`entities/theme.json`](spec/examples/entities/theme.json)** — A dark mode theme with token overrides, purpose, best practices, and accessibility.
+- **[`entities/style.json`](spec/examples/entities/style.json)** — A spacing style with principles, scales, token group references, and best practices.
+- **[`entities/pattern.json`](spec/examples/entities/pattern.json)** — An error messaging pattern with interactions, component references, and accessibility.
 
 ### 3. Validate your documents
 
-Use the JSON Schema at [`spec/schema/dsds.schema.json`](spec/schema/dsds.schema.json) (split) or [`spec/schema/dsds.bundled.schema.json`](spec/schema/dsds.bundled.schema.json) (single file) to validate your own DSDS files:
+Install dependencies and run the validation suite:
 
 ```bash
-# Using ajv-cli (Node.js)
-npx ajv validate -s spec/schema/dsds.bundled.schema.json -d my-button.dsds.json
-
-# Using check-jsonschema (Python)
-pip install check-jsonschema
-check-jsonschema --schemafile spec/schema/dsds.bundled.schema.json my-button.dsds.json
+npm install
+npm run validate
 ```
 
-Reference the schema directly in your DSDS files for editor support:
+This runs three steps automatically: syncs example includes, bundles the schema, and validates all example files.
+
+To validate your own DSDS file:
+
+```bash
+npx ajv validate -s spec/schema/dsds.bundled.schema.json -d my-system.dsds.json
+```
+
+Reference the schema in your DSDS files for editor support:
 
 ```json
 {
   "$schema": "./spec/schema/dsds.schema.json",
   "dsdsVersion": "0.1",
-  "documentType": "component",
-  "component": {
-    "name": "my-component",
-    "displayName": "My Component",
-    "description": "A brief description.",
-    "status": "draft"
-  }
+  "documentation": [
+    {
+      "name": "My Design System",
+      "items": [
+        {
+          "type": "component",
+          "name": "my-component",
+          "displayName": "My Component",
+          "description": "A brief description.",
+          "status": { "status": "draft" }
+        }
+      ]
+    }
+  ]
 }
 ```
 
 ### 4. Build the spec site
 
 ```bash
-python3 site/build.py
+npm run build
 # Open site/dist/index.html
 ```
 
+The site is auto-generated from the schema JSON files — property tables, type descriptions, and cross-references are all derived directly from the schemas. The prose modules provide context and examples.
+
 ### 5. Regenerate the bundled schema
 
-After changing any split schema file, regenerate the bundled version:
+After changing any schema file, regenerate the bundled version:
 
 ```bash
-python3 scripts/bundle_schema.py
+npm run bundle
 ```
 
-## Document Types
+## Document Structure
 
-| `documentType` | Description | Example |
-|---|---|---|
-| `"component"` | A reusable UI component | Button, Dialog, Form Field |
-| `"token"` | A single design token | `color-text-primary` |
-| `"tokenGroup"` | A group of related tokens | Text Colors |
-| `"style"` | A macro-level visual style | Color, Typography, Spacing |
-| `"pattern"` | A broad interaction pattern | Error Messaging, Navigation |
-| `"collection"` | A bundle of multiple artifacts | — |
-
-## Core Concepts
-
-### Use cases tell you *when*. Guidelines tell you *how*.
-
-DSDS separates two kinds of guidance:
-
-- **Use cases** provide concrete scenarios for when to use and when *not* to use an artifact. They answer: "Is this the right tool for my situation?" Each `whenNotToUse` entry can recommend an alternative with a rationale.
-- **Guidelines** provide concrete rules for how to use an artifact correctly *after* you've chosen it. They answer: "How do I implement this well?"
+A DSDS file has a `dsdsVersion` and a `documentation` array. Each entry in `documentation` is a named group containing an `items` array of typed entities. Entities of different types can be mixed freely:
 
 ```json
 {
-  "useCases": {
-    "whenToUse": [
-      { "description": "When the user needs to trigger an action such as submitting a form." }
-    ],
-    "whenNotToUse": [
-      {
-        "description": "When the action navigates to a different page.",
-        "alternative": {
-          "name": "link",
-          "rationale": "Links carry native navigation semantics."
-        }
-      }
-    ]
-  },
-  "guidelines": [
+  "dsdsVersion": "0.1",
+  "documentation": [
     {
-      "guidance": "Limit each surface to one primary button.",
-      "rationale": "Multiple primary buttons dilute visual hierarchy.",
-      "type": "required",
-      "category": "visual-design"
+      "name": "Acme Design System",
+      "items": [
+        { "type": "token", "name": "color-text-primary", "..." },
+        { "type": "token-group", "name": "color-palette", "..." },
+        { "type": "theme", "name": "dark", "..." },
+        { "type": "style", "name": "spacing", "..." },
+        { "type": "component", "name": "button", "..." },
+        { "type": "pattern", "name": "error-messaging", "..." }
+      ]
     }
   ]
 }
 ```
 
-### Every guideline has a rationale
+### Entity Types
 
-DSDS requires that every piece of guidance includes a `rationale` field explaining *why* it exists. This is not optional.
+Every entity carries a `type` discriminator, common identity properties (`name`, `displayName`, `description`, `status`), and a `guidelines` array for all structured documentation.
 
-### Guidelines are categorized by discipline
+| `type` value | Entity | Description |
+|---|---|---|
+| `"component"` | Component | A reusable UI component |
+| `"token"` | Token | A single design token |
+| `"token-group"` | Token Group | A hierarchical group of related tokens (recursive) |
+| `"theme"` | Theme | A named set of token value overrides |
+| `"style"` | Style | A macro-level visual style |
+| `"pattern"` | Pattern | A broad interaction pattern |
 
-Every guideline has an optional `category` that identifies the professional discipline it belongs to:
+### Status
 
-| Category | Discipline |
-|---|---|
-| `visual-design` | Color, typography, spacing, layout |
-| `interaction` | Behavior, animation, transitions, gestures |
-| `accessibility` | Inclusive design, assistive technology, WCAG |
-| `content` | Text, imagery, tone, voice, labeling |
-| `motion` | Animation timing, easing, reduced-motion |
-| `development` | Implementation patterns, performance, code |
+Every entity carries status as an object with the overall lifecycle stage and optional per-platform readiness:
 
-Custom categories are permitted. Cross-cutting topics like `rtl`, `localization`, or `validation` go in `tags` rather than `category`.
+```json
+{
+  "status": {
+    "status": "stable",
+    "platformStatus": {
+      "react": { "status": "stable", "since": "1.0.0" },
+      "ios": { "status": "experimental", "since": "3.0.0" },
+      "figma": { "status": "stable", "since": "1.0.0" }
+    }
+  }
+}
+```
 
-### Guidelines link to external criteria
+## Guidelines System
 
-Any guideline can reference external functional requirements via the `criteria` property — URLs to WCAG success criteria, platform guidelines, regulatory documents, or internal compliance standards:
+All structured documentation lives in the `guidelines` array on each entity. Each guideline is a typed container with a `type` discriminator. Entity types accept only the guideline types relevant to them through scoped unions:
+
+| Scope | Used by | Specific types | General types (all entities) |
+|---|---|---|---|
+| **Component** | component | anatomy, api, variants, states, design-specifications | best-practices, purpose, accessibility, examples, artifact-references |
+| **Style** | style | principles, scale | *(same)* |
+| **Pattern** | pattern | interactions | *(same)* |
+| **Token** | token, token-group, theme | *(none)* | *(same)* |
+
+### Guideline Types
+
+| Type value | Container | Items | Description |
+|---|---|---|---|
+| `"best-practices"` | `items` | bestPracticeEntry | Actionable usage rules with rationale and enforcement levels |
+| `"purpose"` | `whenToUse`, `whenNotToUse` | useCase | When to use and when not to use the entity |
+| `"accessibility"` | Named arrays | various | Keyboard, ARIA, screen reader, contrast, motion specs |
+| `"examples"` | `items` | example | Images, videos, code snippets, URLs to demos |
+| `"artifact-reference"` | `references` | artifactReferenceEntry | Named references to other entities with roles |
+| `"anatomy"` | `parts` | anatomyEntry | Component visual structure with token references |
+| `"api"` | Named arrays | various | Props, events, slots, CSS hooks, methods |
+| `"variants"` | `items` | variantEntry | Dimensions of visual/behavioral variation |
+| `"states"` | `items` | stateEntry | Interactive states with token overrides |
+| `"design-specifications"` | Named properties | various | Tokens, spacing, sizing, typography, responsive |
+| `"principles"` | `items` | principleEntry | High-level guiding beliefs |
+| `"scale"` | `steps` | scaleStep | Ordered token value progressions |
+| `"interactions"` | `items` | interactionEntry | Pattern flow steps |
+
+### Naming Convention
+
+Guideline types follow two naming patterns:
+
+- **Plural names** for homogeneous lists: `"best-practices"`, `"variants"`, `"states"`, `"principles"`, `"interactions"`, `"examples"`
+- **Singular names** for self-contained structures: `"scale"`, `"anatomy"`, `"api"`, `"accessibility"`, `"design-specifications"`, `"artifact-reference"`, `"purpose"`
+
+### Purpose tells you *when*. Best practices tell you *how*.
+
+DSDS separates two kinds of guidance:
+
+- **Purpose** provides concrete scenarios for when to use and when *not* to use an entity. Each `whenNotToUse` entry recommends an alternative with a rationale.
+- **Best practices** provide concrete rules for using an entity correctly *after* you've chosen it. Each rule pairs an actionable `guidance` statement with a `rationale` explaining why.
+
+```json
+{
+  "guidelines": [
+    {
+      "type": "purpose",
+      "whenToUse": [
+        { "description": "When the user needs to trigger an action such as submitting a form." }
+      ],
+      "whenNotToUse": [
+        {
+          "description": "When the action navigates to a different page.",
+          "alternative": {
+            "name": "link",
+            "rationale": "Links carry native navigation semantics."
+          }
+        }
+      ]
+    },
+    {
+      "type": "best-practices",
+      "items": [
+        {
+          "guidance": "Limit each surface to one primary button.",
+          "rationale": "Multiple primary buttons dilute visual hierarchy.",
+          "entryType": "required",
+          "category": "visual-design"
+        }
+      ]
+    }
+  ]
+}
+```
+
+### Best Practice Enforcement Levels
+
+The `entryType` property on each best practice entry classifies how strictly it should be followed:
+
+| Value | RFC 2119 | Meaning |
+|---|---|---|
+| `"required"` | MUST | Non-compliance is a defect. |
+| `"encouraged"` | SHOULD | Follow in most cases; exceptions need justification. |
+| `"informational"` | MAY | Advisory context with no enforcement. |
+| `"discouraged"` | SHOULD NOT | Avoid unless justified. |
+| `"prohibited"` | MUST NOT | Violations are defects. |
+
+### Best Practices Link to External Criteria
+
+Any best practice can reference external standards via the `criteria` property:
 
 ```json
 {
   "guidance": "Button label text must meet a minimum 4.5:1 contrast ratio.",
   "rationale": "Text contrast ensures readability for users with low vision.",
-  "type": "required",
+  "entryType": "required",
   "category": "accessibility",
   "criteria": [
     "https://www.w3.org/TR/WCAG22/#contrast-minimum"
@@ -240,13 +339,14 @@ Any guideline can reference external functional requirements via the `criteria` 
 }
 ```
 
-### Variants model dimensions, not flat lists
+### Variants Model Dimensions
 
-Component variants are modeled as dimensions of variation, each with one or more values:
+Component variants are modeled as dimensions of variation inside a `"variants"` guideline, each dimension with one or more values:
 
 ```json
 {
-  "variants": [
+  "type": "variants",
+  "items": [
     {
       "name": "emphasis",
       "displayName": "Emphasis",
@@ -269,31 +369,36 @@ Component variants are modeled as dimensions of variation, each with one or more
 }
 ```
 
-A variant with multiple values is an enumerated set (like size: small/medium/large). A variant with a single value is a boolean toggle (like full-width or icon-only). Both levels accept `useCases`.
+A dimension with multiple values is an enumerated set (like size: small/medium/large). A dimension with a single value is a boolean toggle (like full-width or icon-only).
 
-### Examples require a presentation
+### Examples Use Presentations
 
-Every example in DSDS requires a `presentation` — a visual or interactive demonstration. Four presentation types are supported:
+Every example requires a `presentation` — a visual or interactive demonstration. Four media types are supported:
 
-| Type | What it shows |
+| `type` | What it shows |
 |---|---|
-| `presentationImage` | Screenshot, diagram, mockup |
-| `presentationVideo` | Screen recording, animation |
-| `presentationCode` | Source code snippet with language |
-| `presentationStory` | Storybook story reference |
+| `"image"` | Screenshot, diagram, annotated mockup |
+| `"video"` | Screen recording, animation, walkthrough |
+| `"code"` | Source code snippet with language metadata |
+| `"url"` | Link to any web resource (Storybook, CodeSandbox, etc.) |
 
 ```json
 {
-  "title": "Primary button in default state",
-  "presentation": {
-    "type": "image",
-    "url": "https://design.acme.com/assets/button-primary.png",
-    "alt": "A primary button with a blue background and white label text 'Save'."
-  }
+  "type": "examples",
+  "items": [
+    {
+      "title": "Primary button in default state",
+      "presentation": {
+        "type": "image",
+        "url": "https://design.acme.com/assets/button-primary.png",
+        "alt": "A primary button with a blue background and white label text 'Save'."
+      }
+    }
+  ]
 }
 ```
 
-### Token APIs are open maps
+### Token APIs Are Open Maps
 
 The `tokenApi` object uses an open map — keys are platform names, values are identifier strings. New platforms can be added without schema changes:
 
@@ -309,9 +414,13 @@ The `tokenApi` object uses an open map — keys are platform names, values are i
 }
 ```
 
-### Links handle both resources and relationships
+### Token Names Are Unconstrained
 
-DSDS uses a single `links` array for both external resources and artifact relationships. The `type` property classifies each link:
+Most entity types enforce `^[a-z][a-z0-9-]*$` on the `name` property. Tokens and token groups are the intentional exception — their names are unconstrained to accommodate DTCG and design tool naming conventions that use dots (`color.text.primary`), slashes (`color/text/primary`), or other separators.
+
+### Links Handle Both Resources and Relationships
+
+The `links` array on each entity handles both external resources and entity relationships via a `type` discriminator:
 
 ```json
 {
@@ -330,11 +439,11 @@ DSDS uses a single `links` array for both external resources and artifact relati
 }
 ```
 
-Standard types include `source`, `design`, `storybook`, `documentation`, `package`, `repository` (external resources) and `alternative`, `parent`, `child`, `related` (artifact relationships). Custom types are permitted.
+Standard external types: `source`, `design`, `storybook`, `documentation`, `package`, `repository`. Standard relationship types: `alternative`, `parent`, `child`, `related`. Custom types are permitted.
 
-### Extensions preserve interoperability
+### Extensions Preserve Interoperability
 
-Tool-specific internal identifiers go in `$extensions` using namespaced keys:
+Tool-specific internal identifiers go in `$extensions` using namespaced keys. Extensions are available on the root document, on each documentation group, and on each entity:
 
 ```json
 {
@@ -349,25 +458,26 @@ Tool-specific internal identifiers go in `$extensions` using namespaced keys:
 
 ## Schema Architecture
 
-The schema is organized into directories by concern:
+The schema is organized into three directories plus a root schema:
 
 | Directory | Contents |
 |---|---|
-| `common/` | Shared definitions used across all artifact types — richText, metadata, status, link, example, guideline, use case, accessibility, artifact reference |
-| `components/` | Component-specific definitions — componentDoc, anatomy, API, design specs, variant, state |
-| `tokens/` | Token and token group definitions — tokenDoc, tokenGroupDoc, tokenApi |
-| `style/` | Visual style definitions — styleDoc, principle, scale |
-| `patterns/` | Interaction pattern definitions — patternDoc, interaction |
+| `common/` | Shared primitives — richText, statusObject, link, example, extensions, metadata, useCase |
+| `entities/` | Entity types — component, token (+ tokenGroup), theme, style, pattern |
+| `guidelines/` | Guideline types — 13 type schemas + scoped unions (componentGuideline, styleGuideline, patternGuideline, tokenGuideline) |
 
-The root `dsds.schema.json` ties everything together. The `dsds.bundled.schema.json` is auto-generated by `scripts/bundle_schema.py` for tools that require a single-file schema.
+The root `dsds.schema.json` defines the document structure and references entity schemas via a `oneOf` discriminated union. The `dsds.bundled.schema.json` is auto-generated by `scripts/bundle.js` for tools that require a single-file schema.
+
+Property tables on the [specification site](site/dist/index.html) are generated directly from the schema JSON — they are always in sync with the schema and cannot drift from the implementation.
 
 ## Design Principles
 
 1. **Structure enables quality.** A defined format creates a floor of quality and completeness.
-2. **Guidance without justification is incomplete.** Every recommendation must answer "why?"
+2. **Guidance without justification is incomplete.** Every best practice must answer "why?"
 3. **Documentation should be portable.** Teams change tools. Documentation should survive the transition.
 4. **Education is a responsibility.** Explain *what*, *why*, and *how*.
 5. **Specificity over subjectivity.** "Use sparingly" is not guidance. "Limit to one per surface" is.
+6. **Schema is the source of truth.** Property tables are generated from schema JSON, not hand-written. Prose provides context; schemas provide structure.
 
 ## Contributing
 

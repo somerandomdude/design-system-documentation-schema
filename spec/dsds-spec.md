@@ -7,7 +7,7 @@
 **Editors:**
 - PJ Onori
 
-**Feedback:** [GitHub Issues](https://github.com/pjonori/design-system-documentation-schema/issues)
+**Feedback:** [GitHub Issues](https://github.com/somerandomdude/design-system-documentation-schema/issues)
 
 ---
 

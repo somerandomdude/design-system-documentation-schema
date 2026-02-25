@@ -1,94 +1,365 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>DSDS Status Definition — DSDS 0.1</title>
-  <link rel="stylesheet" href="style.css">
-</head>
-<body>
-  <button class="nav-toggle" onclick="document.querySelector('.nav').classList.toggle('nav--open')" aria-label="Toggle navigation">☰ Menu</button>
-  <nav class="nav" role="navigation" aria-label="Specification navigation">
-    <div class="nav__title"><a href="index.html">DSDS 0.1</a></div>
-    <div class="nav__items">
-      <a class="nav__link" href="index.html">Overview</a>
-<a class="nav__link" href="root.html">Root Schema</a>
-<div class="nav__group nav__group--open">
-<button class="nav__group-toggle" aria-expanded="true" onclick="this.parentElement.classList.toggle('nav__group--open');this.setAttribute('aria-expanded', this.parentElement.classList.contains('nav__group--open'))"><span class="nav__group-label">Common</span><span class="nav__group-arrow">›</span></button>
-<div class="nav__group-children">
-<a class="nav__link nav__link--child" href="common-example.html">example</a>
-<a class="nav__link nav__link--child" href="common-extensions.html">extensions</a>
-<a class="nav__link nav__link--child" href="common-link.html">link</a>
-<a class="nav__link nav__link--child" href="common-metadata.html">metadata</a>
-<a class="nav__link nav__link--child" href="common-rich-text.html">rich-text</a>
-<a class="nav__link nav__link--child nav__link--active" href="common-status.html">status</a>
-<a class="nav__link nav__link--child" href="common-usecase.html">usecase</a>
-</div>
-</div>
-<div class="nav__group">
-<button class="nav__group-toggle" aria-expanded="false" onclick="this.parentElement.classList.toggle('nav__group--open');this.setAttribute('aria-expanded', this.parentElement.classList.contains('nav__group--open'))"><span class="nav__group-label">Entities</span><span class="nav__group-arrow">›</span></button>
-<div class="nav__group-children">
-<a class="nav__link nav__link--child" href="entities-component.html">component</a>
-<a class="nav__link nav__link--child" href="entities-pattern.html">pattern</a>
-<a class="nav__link nav__link--child" href="entities-style.html">style</a>
-<a class="nav__link nav__link--child" href="entities-theme.html">theme</a>
-<a class="nav__link nav__link--child" href="entities-token.html">token</a>
-</div>
-</div>
-<div class="nav__group">
-<button class="nav__group-toggle" aria-expanded="false" onclick="this.parentElement.classList.toggle('nav__group--open');this.setAttribute('aria-expanded', this.parentElement.classList.contains('nav__group--open'))"><span class="nav__group-label">Guidelines</span><span class="nav__group-arrow">›</span></button>
-<div class="nav__group-children">
-<a class="nav__link nav__link--child" href="guidelines-accessibility.html">accessibility</a>
-<a class="nav__link nav__link--child" href="guidelines-anatomy.html">anatomy</a>
-<a class="nav__link nav__link--child" href="guidelines-api.html">api</a>
-<a class="nav__link nav__link--child" href="guidelines-artifact-reference.html">artifact-reference</a>
-<a class="nav__link nav__link--child" href="guidelines-best-practice.html">best-practice</a>
-<a class="nav__link nav__link--child" href="guidelines-design-specifications.html">design-specifications</a>
-<a class="nav__link nav__link--child" href="guidelines-guideline.html">guideline</a>
-<a class="nav__link nav__link--child" href="guidelines-interaction.html">interaction</a>
-<a class="nav__link nav__link--child" href="guidelines-principle.html">principle</a>
-<a class="nav__link nav__link--child" href="guidelines-purpose.html">purpose</a>
-<a class="nav__link nav__link--child" href="guidelines-scale.html">scale</a>
-<a class="nav__link nav__link--child" href="guidelines-state.html">state</a>
-<a class="nav__link nav__link--child" href="guidelines-variant.html">variant</a>
-</div>
-</div>
-    </div>
-  </nav>
-  <div class="content content--with-toc">
-    <main class="content__main" role="main">
-      <div class="content__inner">
-        <h1>DSDS Status Definition</h1>
-<p class="schema-description">The lifecycle status of a design system artifact and optional platform-specific readiness tracking. Used across all DSDS document types to indicate maturity and readiness. The statusObject consolidates status, platformStatus, and deprecationNotice into a single reusable object with a built-in conditional requiring deprecationNotice when status is 'deprecated'.</p>
-<p class="schema-source">Source: <code>common/status.schema.json</code></p>
-<nav class="page-def-index">
-<p><strong>3 definitions</strong> in this file:</p>
-<ul>
-<li><a href="#statusvalue"><code>statusValue</code></a></li>
-<li><a href="#platformstatusentry"><code>platformStatusEntry</code></a></li>
-<li><a href="#statusobject"><code>statusObject</code></a></li>
-</ul>
-</nav>
-<section class="def-section" id="statusvalue">
-<h3 id="statusvalue">statusValue</h3>
-<p class="def-description">A lifecycle status value. Standard values: 'draft' (under development, not ready for use), 'experimental' (available but API may change without notice), 'stable' (production-ready, changes follow semver), 'deprecated' (scheduled for removal). Custom values are permitted and SHOULD be lowercase kebab-case (e.g., 'sunset', 'archived', 'beta').</p>
-<p class="def-type"><span class="type-badge">string</span></p>
-</section>
-<section class="def-section" id="platformstatusentry">
-<h3 id="platformstatusentry">platformStatusEntry</h3>
-<p class="def-description">The readiness status of an artifact on a specific platform. Tracks lifecycle stage, version availability, and optional deprecation notices independently per platform.</p>
-<p class="def-type"><span class="type-badge">object</span></p>
-<table class="prop-table"><thead><tr><th>Property</th><th>Type</th><th>Required</th><th>Description</th></tr></thead><tbody><tr><td><code>status</code></td><td><a href="common-status.html#statusvalue" class="type-ref">statusValue</a></td><td><span class="required-badge">required</span></td><td>The lifecycle status of the artifact on this platform. Uses the same vocabulary as the top-level status: 'draft', 'experimental', 'stable', 'deprecated'. Custom values are permitted.</td></tr>
-<tr><td><code>since</code></td><td>string</td><td>optional</td><td>The version in which this artifact became available on this platform.</td></tr>
-<tr><td><code>deprecationNotice</code></td><td>string</td><td>optional</td><td>Required when status is 'deprecated'. Explains what to use instead on this platform.</td></tr>
-<tr><td><code>description</code></td><td>string</td><td>optional</td><td>Optional notes about the artifact's status on this platform (e.g., 'Available as a Web Component wrapper; native implementation planned for v4').</td></tr></tbody></table>
-<p class="conditional-note"><strong>Conditional:</strong> When <code>status</code> is <code>"deprecated"</code>, then <code>deprecationNotice</code> is required.</p>
-<p class="cross-refs"><strong>References:</strong> 
-<a href="common-status.html#statusvalue">statusValue</a>
-</p>
-<div class="def-example">
-<p class="def-example__title"><strong>Example</strong></p>
-<pre><code class="language-json">[
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>DSDS Status Definition — DSDS 0.1</title>
+        <link rel="stylesheet" href="style.css" />
+    </head>
+    <body>
+        <button
+            class="nav-toggle"
+            onclick="
+                document.querySelector('.nav').classList.toggle('nav--open')
+            "
+            aria-label="Toggle navigation"
+        >
+            ☰ Menu
+        </button>
+        <nav
+            class="nav"
+            role="navigation"
+            aria-label="Specification navigation"
+        >
+            <div class="nav__title"><a href="index.html">DSDS 0.1</a></div>
+            <div class="nav__items">
+                <a class="nav__link" href="index.html">Overview</a>
+                <a class="nav__link" href="root.html">Root Schema</a>
+                <div class="nav__group nav__group--open">
+                    <button
+                        class="nav__group-toggle"
+                        aria-expanded="true"
+                        onclick="
+                            this.parentElement.classList.toggle(
+                                'nav__group--open',
+                            );
+                            this.setAttribute(
+                                'aria-expanded',
+                                this.parentElement.classList.contains(
+                                    'nav__group--open',
+                                ),
+                            );
+                        "
+                    >
+                        <span class="nav__group-label">Common</span
+                        ><span class="nav__group-arrow">›</span>
+                    </button>
+                    <div class="nav__group-children">
+                        <a
+                            class="nav__link nav__link--child"
+                            href="common-example.html"
+                            >example</a
+                        >
+                        <a
+                            class="nav__link nav__link--child"
+                            href="common-extensions.html"
+                            >extensions</a
+                        >
+                        <a
+                            class="nav__link nav__link--child"
+                            href="common-link.html"
+                            >link</a
+                        >
+                        <a
+                            class="nav__link nav__link--child"
+                            href="common-metadata.html"
+                            >metadata</a
+                        >
+                        <a
+                            class="nav__link nav__link--child"
+                            href="common-rich-text.html"
+                            >rich-text</a
+                        >
+                        <a
+                            class="nav__link nav__link--child nav__link--active"
+                            href="common-status.html"
+                            >status</a
+                        >
+                        <a
+                            class="nav__link nav__link--child"
+                            href="common-usecase.html"
+                            >usecase</a
+                        >
+                    </div>
+                </div>
+                <div class="nav__group">
+                    <button
+                        class="nav__group-toggle"
+                        aria-expanded="false"
+                        onclick="
+                            this.parentElement.classList.toggle(
+                                'nav__group--open',
+                            );
+                            this.setAttribute(
+                                'aria-expanded',
+                                this.parentElement.classList.contains(
+                                    'nav__group--open',
+                                ),
+                            );
+                        "
+                    >
+                        <span class="nav__group-label">Entities</span
+                        ><span class="nav__group-arrow">›</span>
+                    </button>
+                    <div class="nav__group-children">
+                        <a
+                            class="nav__link nav__link--child"
+                            href="entities-component.html"
+                            >component</a
+                        >
+                        <a
+                            class="nav__link nav__link--child"
+                            href="entities-pattern.html"
+                            >pattern</a
+                        >
+                        <a
+                            class="nav__link nav__link--child"
+                            href="entities-style.html"
+                            >style</a
+                        >
+                        <a
+                            class="nav__link nav__link--child"
+                            href="entities-theme.html"
+                            >theme</a
+                        >
+                        <a
+                            class="nav__link nav__link--child"
+                            href="entities-token.html"
+                            >token</a
+                        >
+                    </div>
+                </div>
+                <div class="nav__group">
+                    <button
+                        class="nav__group-toggle"
+                        aria-expanded="false"
+                        onclick="
+                            this.parentElement.classList.toggle(
+                                'nav__group--open',
+                            );
+                            this.setAttribute(
+                                'aria-expanded',
+                                this.parentElement.classList.contains(
+                                    'nav__group--open',
+                                ),
+                            );
+                        "
+                    >
+                        <span class="nav__group-label">Guidelines</span
+                        ><span class="nav__group-arrow">›</span>
+                    </button>
+                    <div class="nav__group-children">
+                        <a
+                            class="nav__link nav__link--child"
+                            href="guidelines-accessibility.html"
+                            >accessibility</a
+                        >
+                        <a
+                            class="nav__link nav__link--child"
+                            href="guidelines-anatomy.html"
+                            >anatomy</a
+                        >
+                        <a
+                            class="nav__link nav__link--child"
+                            href="guidelines-api.html"
+                            >api</a
+                        >
+                        <a
+                            class="nav__link nav__link--child"
+                            href="guidelines-artifact-reference.html"
+                            >artifact-reference</a
+                        >
+                        <a
+                            class="nav__link nav__link--child"
+                            href="guidelines-best-practice.html"
+                            >best-practice</a
+                        >
+                        <a
+                            class="nav__link nav__link--child"
+                            href="guidelines-design-specifications.html"
+                            >design-specifications</a
+                        >
+                        <a
+                            class="nav__link nav__link--child"
+                            href="guidelines-guideline.html"
+                            >guideline</a
+                        >
+                        <a
+                            class="nav__link nav__link--child"
+                            href="guidelines-interaction.html"
+                            >interaction</a
+                        >
+                        <a
+                            class="nav__link nav__link--child"
+                            href="guidelines-principle.html"
+                            >principle</a
+                        >
+                        <a
+                            class="nav__link nav__link--child"
+                            href="guidelines-purpose.html"
+                            >purpose</a
+                        >
+                        <a
+                            class="nav__link nav__link--child"
+                            href="guidelines-scale.html"
+                            >scale</a
+                        >
+                        <a
+                            class="nav__link nav__link--child"
+                            href="guidelines-state.html"
+                            >state</a
+                        >
+                        <a
+                            class="nav__link nav__link--child"
+                            href="guidelines-variant.html"
+                            >variant</a
+                        >
+                    </div>
+                </div>
+            </div>
+        </nav>
+        <div class="content content--with-toc">
+            <main class="content__main" role="main">
+                <div class="content__inner">
+                    <h1>DSDS Status Definition</h1>
+                    <p class="schema-description">
+                        The lifecycle status of a design system artifact and
+                        optional platform-specific readiness tracking. Used
+                        across all DSDS document types to indicate maturity and
+                        readiness. The statusObject consolidates status,
+                        platformStatus, and deprecationNotice into a single
+                        reusable object with a built-in conditional requiring
+                        deprecationNotice when status is 'deprecated'.
+                    </p>
+                    <p class="schema-source">
+                        Source: <code>common/status.schema.json</code>
+                    </p>
+                    <nav class="page-def-index">
+                        <p><strong>3 definitions</strong> in this file:</p>
+                        <ul>
+                            <li>
+                                <a href="#statusvalue"
+                                    ><code>statusValue</code></a
+                                >
+                            </li>
+                            <li>
+                                <a href="#platformstatusentry"
+                                    ><code>platformStatusEntry</code></a
+                                >
+                            </li>
+                            <li>
+                                <a href="#statusobject"
+                                    ><code>statusObject</code></a
+                                >
+                            </li>
+                        </ul>
+                    </nav>
+                    <section class="def-section" id="statusvalue">
+                        <h3 id="statusvalue">statusValue</h3>
+                        <p class="def-description">
+                            A lifecycle status value. Standard values: 'draft'
+                            (under development, not ready for use),
+                            'experimental' (available but API may change without
+                            notice), 'stable' (production-ready, changes follow
+                            semver), 'deprecated' (scheduled for removal).
+                            Custom values are permitted and SHOULD be lowercase
+                            kebab-case (e.g., 'sunset', 'archived', 'beta').
+                        </p>
+                        <p class="def-type">
+                            <span class="type-badge">string</span>
+                        </p>
+                    </section>
+                    <section class="def-section" id="platformstatusentry">
+                        <h3 id="platformstatusentry">platformStatusEntry</h3>
+                        <p class="def-description">
+                            The readiness status of an artifact on a specific
+                            platform. Tracks lifecycle stage, version
+                            availability, and optional deprecation notices
+                            independently per platform.
+                        </p>
+                        <p class="def-type">
+                            <span class="type-badge">object</span>
+                        </p>
+                        <table class="prop-table">
+                            <thead>
+                                <tr>
+                                    <th>Property</th>
+                                    <th>Type</th>
+                                    <th>Required</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><code>status</code></td>
+                                    <td>
+                                        <a
+                                            href="common-status.html#statusvalue"
+                                            class="type-ref"
+                                            >statusValue</a
+                                        >
+                                    </td>
+                                    <td>
+                                        <span class="required-badge"
+                                            >required</span
+                                        >
+                                    </td>
+                                    <td>
+                                        The lifecycle status of the artifact on
+                                        this platform. Uses the same vocabulary
+                                        as the top-level status: 'draft',
+                                        'experimental', 'stable', 'deprecated'.
+                                        Custom values are permitted.
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><code>since</code></td>
+                                    <td>string</td>
+                                    <td>optional</td>
+                                    <td>
+                                        The version in which this artifact
+                                        became available on this platform.
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><code>deprecationNotice</code></td>
+                                    <td>string</td>
+                                    <td>optional</td>
+                                    <td>
+                                        Required when status is 'deprecated'.
+                                        Explains what to use instead on this
+                                        platform.
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><code>description</code></td>
+                                    <td>string</td>
+                                    <td>optional</td>
+                                    <td>
+                                        Optional notes about the artifact's
+                                        status on this platform (e.g.,
+                                        'Available as a Web Component wrapper;
+                                        native implementation planned for v4').
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <p class="conditional-note">
+                            <strong>Conditional:</strong> When
+                            <code>status</code> is <code>"deprecated"</code>,
+                            then <code>deprecationNotice</code> is required.
+                        </p>
+                        <p class="cross-refs">
+                            <strong>References:</strong>
+                            <a href="common-status.html#statusvalue"
+                                >statusValue</a
+                            >
+                        </p>
+                        <div class="def-example">
+                            <p class="def-example__title">
+                                <strong>Example</strong>
+                            </p>
+                            <pre><code class="language-json">[
   {
     &quot;status&quot;: &quot;stable&quot;,
     &quot;since&quot;: &quot;1.0.0&quot;
@@ -108,22 +379,116 @@
     &quot;deprecationNotice&quot;: &quot;The Vue wrapper is deprecated. Use the Web Component directly in Vue applications.&quot;
   }
 ]</code></pre>
-</div>
-</section>
-<section class="def-section" id="statusobject">
-<h3 id="statusobject">statusObject</h3>
-<p class="def-description">The consolidated lifecycle status of an artifact. Contains the overall status value, optional per-platform readiness tracking, and a conditional deprecation notice. Every artifact that carries status uses this single object rather than spreading status, platformStatus, and deprecationNotice as separate sibling properties. When the overall status is 'deprecated', the deprecationNotice property becomes required.</p>
-<p class="def-type"><span class="type-badge">object</span></p>
-<table class="prop-table"><thead><tr><th>Property</th><th>Type</th><th>Required</th><th>Description</th></tr></thead><tbody><tr><td><code>status</code></td><td><a href="common-status.html#statusvalue" class="type-ref">statusValue</a></td><td><span class="required-badge">required</span></td><td>The overall lifecycle status of the artifact. Represents an editorial judgment about the artifact's maturity — it is not required to be the most or least advanced of the platform statuses. Tools SHOULD display this as the primary status indicator.</td></tr>
-<tr><td><code>platformStatus</code></td><td>map&lt;string, <a href="common-status.html#platformstatusentry" class="type-ref">platformStatusEntry</a>&gt;</td><td>optional</td><td>Platform-specific readiness or availability status. Keys are platform identifiers (freeform strings — common values include 'react', 'web-component', 'ios', 'android', 'flutter', 'figma', 'sketch', and 'compose'). Values describe the artifact's status on that platform independently. An artifact MAY be 'stable' overall while individual platforms are still 'experimental' or 'draft'.</td></tr>
-<tr><td><code>deprecationNotice</code></td><td>string</td><td>optional</td><td>Required when status is 'deprecated'. MUST explain what to use instead and provide a migration path. When present, tools SHOULD display this prominently alongside the status indicator.</td></tr></tbody></table>
-<p class="conditional-note"><strong>Conditional:</strong> When <code>status</code> is <code>"deprecated"</code>, then <code>deprecationNotice</code> is required.</p>
-<p class="cross-refs"><strong>References:</strong> 
-<a href="common-status.html#statusvalue">statusValue</a>, <a href="common-status.html#platformstatusentry">platformStatusEntry</a>
-</p>
-<div class="def-example">
-<p class="def-example__title"><strong>Example</strong></p>
-<pre><code class="language-json">[
+                        </div>
+                    </section>
+                    <section class="def-section" id="statusobject">
+                        <h3 id="statusobject">statusObject</h3>
+                        <p class="def-description">
+                            The consolidated lifecycle status of an artifact.
+                            Contains the overall status value, optional
+                            per-platform readiness tracking, and a conditional
+                            deprecation notice. Every artifact that carries
+                            status uses this single object rather than spreading
+                            status, platformStatus, and deprecationNotice as
+                            separate sibling properties. When the overall status
+                            is 'deprecated', the deprecationNotice property
+                            becomes required.
+                        </p>
+                        <p class="def-type">
+                            <span class="type-badge">object</span>
+                        </p>
+                        <table class="prop-table">
+                            <thead>
+                                <tr>
+                                    <th>Property</th>
+                                    <th>Type</th>
+                                    <th>Required</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><code>status</code></td>
+                                    <td>
+                                        <a
+                                            href="common-status.html#statusvalue"
+                                            class="type-ref"
+                                            >statusValue</a
+                                        >
+                                    </td>
+                                    <td>
+                                        <span class="required-badge"
+                                            >required</span
+                                        >
+                                    </td>
+                                    <td>
+                                        The overall lifecycle status of the
+                                        artifact. Represents an editorial
+                                        judgment about the artifact's maturity —
+                                        it is not required to be the most or
+                                        least advanced of the platform statuses.
+                                        Tools SHOULD display this as the primary
+                                        status indicator.
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><code>platformStatus</code></td>
+                                    <td>
+                                        map&lt;string,
+                                        <a
+                                            href="common-status.html#platformstatusentry"
+                                            class="type-ref"
+                                            >platformStatusEntry</a
+                                        >&gt;
+                                    </td>
+                                    <td>optional</td>
+                                    <td>
+                                        Platform-specific readiness or
+                                        availability status. Keys are platform
+                                        identifiers (freeform strings — common
+                                        values include 'react', 'web-component',
+                                        'ios', 'android', 'flutter', 'figma',
+                                        'sketch', and 'compose'). Values
+                                        describe the artifact's status on that
+                                        platform independently. An artifact MAY
+                                        be 'stable' overall while individual
+                                        platforms are still 'experimental' or
+                                        'draft'.
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><code>deprecationNotice</code></td>
+                                    <td>string</td>
+                                    <td>optional</td>
+                                    <td>
+                                        Required when status is 'deprecated'.
+                                        MUST explain what to use instead and
+                                        provide a migration path. When present,
+                                        tools SHOULD display this prominently
+                                        alongside the status indicator.
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <p class="conditional-note">
+                            <strong>Conditional:</strong> When
+                            <code>status</code> is <code>"deprecated"</code>,
+                            then <code>deprecationNotice</code> is required.
+                        </p>
+                        <p class="cross-refs">
+                            <strong>References:</strong>
+                            <a href="common-status.html#statusvalue"
+                                >statusValue</a
+                            >,
+                            <a href="common-status.html#platformstatusentry"
+                                >platformStatusEntry</a
+                            >
+                        </p>
+                        <div class="def-example">
+                            <p class="def-example__title">
+                                <strong>Example</strong>
+                            </p>
+                            <pre><code class="language-json">[
   {
     &quot;status&quot;: &quot;stable&quot;
   },
@@ -184,25 +549,47 @@
     }
   }
 ]</code></pre>
-</div>
-</section>
+                        </div>
+                    </section>
 
-        <a href="#" class="back-to-top">↑ Back to top</a>
+                    <a href="#" class="back-to-top">↑ Back to top</a>
 
-        <div class="footer">
-          <p>Design System Documentation Standard (DSDS) 0.1 — Draft Specification</p>
-          <p><a href="https://github.com/pjonori/design-system-documentation-schema">GitHub</a></p>
+                    <div class="footer">
+                        <p>
+                            Design System Documentation Standard (DSDS) 0.1 —
+                            Draft Specification
+                        </p>
+                        <p>
+                            <a
+                                href="https://github.com/somerandomdude/design-system-documentation-schema"
+                                >GitHub</a
+                            >
+                        </p>
+                    </div>
+                </div>
+            </main>
+            <nav class="toc" aria-label="On this page">
+                <p class="toc__title">On this page</p>
+                <ul class="toc__list">
+                    <li>
+                        <a class="toc__link toc__link--sub" href="#statusvalue"
+                            >statusValue</a
+                        >
+                    </li>
+                    <li>
+                        <a
+                            class="toc__link toc__link--sub"
+                            href="#platformstatusentry"
+                            >platformStatusEntry</a
+                        >
+                    </li>
+                    <li>
+                        <a class="toc__link toc__link--sub" href="#statusobject"
+                            >statusObject</a
+                        >
+                    </li>
+                </ul>
+            </nav>
         </div>
-      </div>
-    </main>
-    <nav class="toc" aria-label="On this page">
-<p class="toc__title">On this page</p>
-<ul class="toc__list">
-<li><a class="toc__link toc__link--sub" href="#statusvalue">statusValue</a></li>
-<li><a class="toc__link toc__link--sub" href="#platformstatusentry">platformStatusEntry</a></li>
-<li><a class="toc__link toc__link--sub" href="#statusobject">statusObject</a></li>
-</ul>
-</nav>
-  </div>
-</body>
+    </body>
 </html>
