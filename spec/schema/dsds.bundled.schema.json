@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://designsystemdocspec.org/v1/dsds.bundled.schema.json",
-  "title": "Design System Documentation Standard (DSDS) v1.0 — Bundled",
-  "description": "Single-file bundled version of the DSDS schema. Auto-generated from the split schema files by scripts/bundle_schema.py. Use the split files for development; use this file for tools that require a single schema document.",
+  "$id": "https://designsystemdocspec.org/v0.1/dsds.bundled.schema.json",
+  "title": "Design System Documentation Standard (DSDS) v0.1 — Bundled",
+  "description": "Single-file bundled version of the DSDS schema. Auto-generated from the split schema files by scripts/bundle.js. Use the split files for development; use this file for tools that require a single schema document.",
   "type": "object",
   "required": [
     "dsdsVersion",
@@ -375,40 +375,25 @@
       },
       "additionalProperties": false
     },
-    "presentationStory": {
+    "presentationUrl": {
       "type": "object",
-      "description": "A Storybook presentation — a reference to an interactive component story hosted in Storybook or a compatible tool.",
+      "description": "A URL presentation — a link to any web resource such as a live demo, interactive example, documentation page, or hosted component story. Use for Storybook stories, CodeSandbox embeds, StackBlitz projects, or any other addressable web content.",
       "required": [
-        "type"
+        "type",
+        "url"
       ],
       "properties": {
         "type": {
           "type": "string",
-          "const": "storybook",
-          "description": "Identifies this presentation as a Storybook story."
+          "const": "url",
+          "description": "Identifies this presentation as a URL reference to a web resource."
         },
         "url": {
           "type": "string",
           "format": "uri",
-          "description": "URL to the Storybook story or docs page."
-        },
-        "storyId": {
-          "type": "string",
-          "description": "The Storybook story identifier (e.g., 'components-button--primary')."
+          "description": "URL to the web resource (e.g., 'https://storybook.acme.com/?path=/story/components-button--primary', 'https://codesandbox.io/s/button-example')."
         }
       },
-      "anyOf": [
-        {
-          "required": [
-            "url"
-          ]
-        },
-        {
-          "required": [
-            "storyId"
-          ]
-        }
-      ],
       "additionalProperties": false
     },
     "example": {
@@ -442,7 +427,7 @@
               "$ref": "#/$defs/presentationCode"
             },
             {
-              "$ref": "#/$defs/presentationStory"
+              "$ref": "#/$defs/presentationUrl"
             }
           ]
         }
@@ -693,6 +678,13 @@
             "type": "string"
           },
           "description": "Names of design tokens applied to this part."
+        },
+        "links": {
+          "type": "array",
+          "description": "Links to resources that represent this anatomy part — design tool nodes, source code blocks, documentation sections, or any other addressable reference. Uses the standard link type.",
+          "items": {
+            "$ref": "#/$defs/link"
+          }
         }
       },
       "additionalProperties": false

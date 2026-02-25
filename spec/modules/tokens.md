@@ -122,6 +122,7 @@ Custom keys _SHOULD_ use camelCase and follow the `<platform><Concept>` naming p
       "guidance": "Use for all body text, headings, and labels on default background surfaces.",
       "rationale": "A single primary text color ensures visual consistency and meets WCAG 2.1 AA contrast requirements against the system's default background.",
       "category": "visual-design"
+    },
     {
       "guidance": "Do not use on colored or dark background surfaces. Use color-text-on-primary or color-text-inverse instead.",
       "rationale": "The primary text color is optimized for contrast against light surfaces. Using it on dark surfaces will fail contrast requirements.",

@@ -1,8 +1,8 @@
 # Design System Documentation Standard (DSDS) 0.1
 
-**Draft Specification — June 2025**
+**Draft Specification — February 2026**
 
-**Latest version:** https://github.com/pjonori/design-system-documentation-schema
+**Latest version:** https://github.com/somerandomdude/design-system-documentation-schema
 
 **Editors:**
 - PJ Onori

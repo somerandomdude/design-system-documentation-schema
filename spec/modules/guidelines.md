@@ -105,7 +105,7 @@ All three formats _MAY_ be mixed within the same array. This allows a guideline 
       {
         "guidance": "Place the primary button on the right side of a button group in left-to-right layouts.",
         "rationale": "Users scan left-to-right. Placing the primary action on the right aligns with the natural completion point of reading and mirrors the convention established by operating system dialogs.",
-        "severity": "encouraged",
+        "type": "encouraged",
         "examples": {
           "encouraged": [
             {
@@ -124,12 +124,12 @@ All three formats _MAY_ be mixed within the same array. This allows a guideline 
       {
         "guidance": "Limit each surface to one primary button.",
         "rationale": "Multiple primary buttons dilute visual hierarchy. When everything is emphasized, nothing is. A single primary button draws the user toward the most important action.",
-        "severity": "required"
+        "type": "required"
       },
       {
         "guidance": "Do not use a button when the action navigates the user to a different page or URL. Use a link instead.",
         "rationale": "Buttons and links have different semantic meaning. Buttons perform actions. Links navigate. Conflating the two creates confusion for screen reader users who rely on element role to understand behavior.",
-        "severity": "prohibited"
+        "type": "prohibited"
       }
     ]
   }

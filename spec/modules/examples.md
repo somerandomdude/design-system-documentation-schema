@@ -228,30 +228,35 @@ See [§10.2 Examples in Guidelines](#102-examples-in-guidelines) for the full sp
 {
   "guidance": "Limit each surface to one primary button.",
   "rationale": "Multiple primary buttons dilute visual hierarchy. When everything is emphasized, nothing is.",
-  "examples": {
-    "encouraged": [
-      {
+  "type": "required",
+  "category": "visual-design",
+  "examples": [
+    {
+      "title": "One primary action per surface",
+      "presentation": {
         "type": "image",
         "url": "https://design.acme.com/assets/guideline-single-primary.png",
-        "alt": "A dialog with a secondary 'Cancel' button on the left and a primary 'Save' button on the right. Only the primary button has a filled background.",
-        "label": "One primary action per surface"
-      },
-      {
+        "alt": "A dialog with a secondary Cancel button on the left and a primary Save button on the right. Only the primary button has a filled background."
+      }
+    },
+    {
+      "title": "JSX — correct button group",
+      "presentation": {
         "type": "code",
         "language": "jsx",
-        "code": "<ButtonGroup>\n  <Button variant=\"secondary\">Cancel</Button>\n  <Button variant=\"primary\">Save</Button>\n</ButtonGroup>",
-        "label": "Code example"
+        "code": "<ButtonGroup>\n  <Button variant=\"secondary\">Cancel</Button>\n  <Button variant=\"primary\">Save</Button>\n</ButtonGroup>"
       }
-    ],
-    "discouraged": [
-      {
+    },
+    {
+      "title": "Multiple primary buttons competing for attention",
+      "description": "Avoid placing two primary buttons on the same surface.",
+      "presentation": {
         "type": "image",
         "url": "https://design.acme.com/assets/guideline-multiple-primary.png",
-        "alt": "A dialog with two primary buttons, both with filled blue backgrounds. 'Cancel' and 'Save' compete for visual attention.",
-        "label": "Multiple primary buttons create competing focal points"
+        "alt": "A dialog with two primary buttons, both with filled blue backgrounds. Cancel and Save compete for visual attention."
       }
-    ]
-  }
+    }
+  ]
 }
 ```
 
