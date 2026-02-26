@@ -2,33 +2,26 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://designsystemdocspec.org/v0.1/guidelines/variant.schema.json",
   "title": "DSDS Variants Guideline",
-  "description": "Documents all dimensions of visual or behavioral variation on a component. Each item in the variants array represents a single axis of configuration (e.g., 'size', 'emphasis', 'selected') and contains one or more values describing the options within that axis. A variant dimension with a single value represents a boolean/toggle configuration (e.g., 'full-width', 'icon-only'). A variant dimension with multiple values represents an enumerated set (e.g., size: small/medium/large). Optional exclusions document invalid combinations across dimensions.",
+  "description": "Documents all dimensions of visual or behavioral variation on a component. Each item in the variants array is either a flag variant (a boolean toggle such as 'disabled' or 'full-width') or an enum variant (a set of mutually exclusive options such as size: sm | md | lg). Every variant carries a purpose field explaining why the variation exists in the design system.",
   "$defs": {
     "variantValue": {
       "type": "object",
-      "description": "A single option within a variant dimension.",
+      "description": "A single option within an enum variant dimension.",
       "required": ["name", "description"],
       "properties": {
         "name": {
           "type": "string",
-          "description": "Machine-readable value name (e.g., 'small', 'primary', 'selected', 'full-width')."
+          "description": "Machine-readable value name (e.g., 'sm', 'md', 'lg', 'primary', 'secondary')."
         },
         "displayName": {
           "type": "string",
-          "description": "Human-readable name (e.g., 'Small', 'Primary', 'Selected', 'Full Width')."
+          "description": "Human-readable name (e.g., 'Small', 'Medium', 'Large', 'Primary', 'Secondary')."
         },
         "description": {
           "$ref": "../common/rich-text.schema.json#/$defs/richText",
           "description": "What this value looks like, when to use it, and how it differs from the other values in this dimension."
         },
-        "tokens": {
-          "type": "object",
-          "description": "Design token overrides applied when this value is active. Keys are token-purpose names scoped to the component (e.g., 'button-background', 'button-text-color'). Values are the token names or resolved values that apply for this variant value.",
-          "additionalProperties": {
-            "type": "string"
-          }
-        },
-        "preview": {
+        "example": {
           "type": "array",
           "description": "Visual previews showing this variant value in isolation or in context.",
           "items": {
@@ -36,24 +29,72 @@
           }
         },
         "useCases": {
-          "$ref": "../common/usecase.schema.json#/$defs/useCases",
-          "description": "When to choose this value over the other values in this dimension."
+          "type": "array",
+          "description": "Scenario-driven guidance describing when this artifact is or is not the right choice. ",
+          "items": {
+            "$ref": "../common/usecase.schema.json#/$defs/useCase"
+          }
         }
       },
       "additionalProperties": false
     },
-    "variantEntry": {
+    "flagVariant": {
       "type": "object",
-      "description": "A single dimension of variation on a component. The name identifies the axis (e.g., 'size', 'emphasis') and the values array enumerates the options along that axis.",
-      "required": ["name", "description", "values"],
+      "description": "A boolean/toggle variant that is either on or off. Use for binary capabilities such as 'disabled', 'full-width', 'icon-only', or 'loading'. Flag variants have no values array — the component either has the flag active or it does not.",
+      "required": ["type", "name", "description"],
       "properties": {
+        "type": {
+          "type": "string",
+          "const": "flag",
+          "description": "Identifies this variant as a boolean flag."
+        },
         "name": {
           "type": "string",
-          "description": "Machine-readable name of the variant dimension (e.g., 'size', 'emphasis', 'selected', 'full-width'). This is the axis name, not a value within the axis."
+          "description": "Machine-readable name of the flag (e.g., 'disabled', 'full-width', 'icon-only', 'loading')."
         },
         "displayName": {
           "type": "string",
-          "description": "Human-readable name of the variant dimension (e.g., 'Size', 'Emphasis', 'Selected')."
+          "description": "Human-readable name of the flag (e.g., 'Disabled', 'Full Width', 'Icon Only', 'Loading')."
+        },
+        "description": {
+          "$ref": "../common/rich-text.schema.json#/$defs/richText",
+          "description": "What this flag controls and how it affects the component's appearance or behavior when active."
+        },
+        "purpose": {
+          "$ref": "../common/rich-text.schema.json#/$defs/richText",
+          "description": "Why this flag exists in the design system — the user need or design rationale it addresses (e.g., 'Prevents user interaction during form submission to avoid duplicate requests')."
+        },
+        "example": {
+          "$ref": "../common/example.schema.json#/$defs/example",
+          "description": "Visual previews showing the component with this flag active."
+        },
+        "useCases": {
+          "type": "array",
+          "description": "Scenario-driven guidance describing when this artifact is or is not the right choice. ",
+          "items": {
+            "$ref": "../common/usecase.schema.json#/$defs/useCase"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "enumVariant": {
+      "type": "object",
+      "description": "An enumerated variant with multiple mutually exclusive values. Use for dimensions of variation where the user selects one option from a set, such as 'size' (sm | md | lg), 'emphasis' (primary | secondary | ghost), or 'shape' (rounded | pill | square).",
+      "required": ["type", "name", "description", "values"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "enum",
+          "description": "Identifies this variant as an enumerated set of values."
+        },
+        "name": {
+          "type": "string",
+          "description": "Machine-readable name of the variant dimension (e.g., 'size', 'emphasis', 'shape'). This is the axis name, not a value within the axis."
+        },
+        "displayName": {
+          "type": "string",
+          "description": "Human-readable name of the variant dimension (e.g., 'Size', 'Emphasis', 'Shape')."
         },
         "description": {
           "$ref": "../common/rich-text.schema.json#/$defs/richText",
@@ -61,58 +102,18 @@
         },
         "values": {
           "type": "array",
-          "description": "The possible values for this variant. A single-entry array indicates a boolean/toggle variant. Multiple entries indicate an enumerated variant. The ordering is significant — tools SHOULD preserve it for display.",
+          "description": "The possible values for this variant. Must contain at least two entries — a single-value dimension should be modeled as a flag variant instead. The ordering is significant — tools SHOULD preserve it for display.",
           "items": {
             "$ref": "#/$defs/variantValue"
           },
-          "minItems": 1
-        },
-        "useCases": {
-          "$ref": "../common/usecase.schema.json#/$defs/useCases",
-          "description": "When to use this variant dimension at all (as opposed to use cases on individual values, which address choosing between options within the dimension)."
-        }
-      },
-      "additionalProperties": false
-    },
-    "variantExclusionCondition": {
-      "type": "object",
-      "description": "A single condition in a variant exclusion — identifies a specific value on a specific dimension. When all conditions in an exclusion are active simultaneously, the combination is invalid.",
-      "required": ["dimension", "value"],
-      "properties": {
-        "dimension": {
-          "type": "string",
-          "description": "The name of the variant dimension (must match a variantEntry name in the items array)."
-        },
-        "value": {
-          "type": "string",
-          "description": "The name of the variant value within that dimension (must match a variantValue name)."
-        }
-      },
-      "additionalProperties": false
-    },
-    "variantExclusion": {
-      "type": "object",
-      "description": "An invalid combination of variant values. When ALL conditions are active simultaneously, the combination is not supported. For example, an exclusion with conditions [{dimension: 'emphasis', value: 'ghost'}, {dimension: 'size', value: 'sm'}] means that ghost emphasis at small size is not a valid configuration. Exclusions with more than two conditions express higher-order constraints (e.g., 'ghost + small + icon-only is invalid').",
-      "required": ["conditions"],
-      "properties": {
-        "conditions": {
-          "type": "array",
-          "description": "The set of dimension-value pairs that, when all active at the same time, represent an invalid configuration. Must contain at least two conditions (a single condition would exclude an entire value, which should be removed from the dimension's values array instead).",
-          "items": {
-            "$ref": "#/$defs/variantExclusionCondition"
-          },
           "minItems": 2
-        },
-        "description": {
-          "$ref": "../common/rich-text.schema.json#/$defs/richText",
-          "description": "A human-readable explanation of why this combination is invalid and what the user should choose instead (e.g., 'Ghost emphasis requires at least medium size for adequate touch target area. Use secondary emphasis for small buttons instead.'). CommonMark supported."
         }
       },
       "additionalProperties": false
     },
     "variants": {
       "type": "object",
-      "description": "Documents all dimensions of visual or behavioral variation on a component. Each item represents a single axis of configuration — a Button might have an 'emphasis' axis (primary/secondary/ghost/danger), a 'size' axis (small/medium/large), and a 'full-width' axis (a single boolean value). Multiple axes document orthogonal dimensions that can be combined independently. Optional exclusions document combinations across dimensions that are not valid.",
+      "description": "Documents all dimensions of visual or behavioral variation on a component. Each item is either a flag variant (a boolean toggle like 'disabled' or 'full-width') or an enum variant (a set of mutually exclusive options like size: sm | md | lg). Multiple items document orthogonal dimensions that can be combined independently.",
       "required": ["type", "items"],
       "properties": {
         "type": {
@@ -122,18 +123,18 @@
         },
         "items": {
           "type": "array",
-          "description": "The variant dimensions. Each item documents a single axis of variation with its enumerated values. The ordering is significant — tools SHOULD display dimensions in this order.",
+          "description": "The variant dimensions. Each item is either a flag (boolean toggle) or an enum (set of values). The ordering is significant — tools SHOULD display dimensions in this order.",
           "items": {
-            "$ref": "#/$defs/variantEntry"
+            "oneOf": [
+              {
+                "$ref": "#/$defs/flagVariant"
+              },
+              {
+                "$ref": "#/$defs/enumVariant"
+              }
+            ]
           },
           "minItems": 1
-        },
-        "exclusions": {
-          "type": "array",
-          "description": "Invalid combinations across variant dimensions. Each exclusion describes a set of dimension-value pairs that cannot be active simultaneously. Tools SHOULD use exclusions to disable invalid options in component configurators, generate warnings in code review, or display 'not available' badges in documentation. When no exclusions are present, all value combinations across all dimensions are assumed to be valid.",
-          "items": {
-            "$ref": "#/$defs/variantExclusion"
-          }
         }
       },
       "additionalProperties": false

@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://designsystemdocspec.org/v0.1/example.schema.json",
-  "title": "DSDS Example Definitions",
-  "description": "A unified example model used across DSDS. Each example provides a visual or interactive demonstration via a presentation, a literal value, or both. Optional title, description, and value properties provide context. Presentations are independent typed objects for images, videos, code snippets, and URLs. The `examples` container def adds a `type` discriminator for use as a guideline type in the unified guidelines array, while the `example` def is used for nesting within other guideline items (best-practice examples, variant previews, state previews, interaction illustrations).",
+  "$id": "https://designsystemdocspec.org/v0.1/presentation.schema.json",
+  "title": "DSDS Presentation Definitions",
+  "description": "Presentation types used across DSDS for visual and interactive demonstrations. Each presentation is an independent typed object representing a specific media format: images, videos, code snippets, or URLs. These definitions are referenced by the example schema and any other schema that needs to embed a visual or interactive presentation.",
   "$defs": {
     "presentationImage": {
       "type": "object",
@@ -83,63 +83,6 @@
           "type": "string",
           "format": "uri",
           "description": "URL to the web resource (e.g., 'https://storybook.acme.com/?path=/story/components-button--primary', 'https://codesandbox.io/s/button-example')."
-        }
-      },
-      "additionalProperties": false
-    },
-    "example": {
-      "type": "object",
-      "description": "A single example. Every example requires at least a presentation or a value (or both). The presentation provides a visual or interactive demonstration. The value carries a literal value for API property examples. The optional title and description provide context. When only a value is provided without a presentation, the example represents a concrete data point (e.g., a prop value of 'primary' or a token value of 44) — tools SHOULD render these as table rows or inline displays rather than visual demonstrations.",
-      "anyOf": [{ "required": ["presentation"] }, { "required": ["value"] }],
-      "properties": {
-        "title": {
-          "type": "string",
-          "description": "A human-readable caption or title for the example. This is a display label (e.g., 'Primary button in default state'). For API property examples, use `value` for the literal content and `title` for the human-readable label."
-        },
-        "description": {
-          "type": "string",
-          "description": "An explanation of the example — why it is encouraged, discouraged, or notable."
-        },
-        "value": {
-          "description": "A literal value carried by the example. Used for API property examples where the content is a concrete value rather than a visual demonstration. Accepts any JSON type: string (e.g., 'primary'), number (e.g., 44), boolean (e.g., true), object, array, or null. When provided without a presentation, this value alone constitutes the example. Do not use `value` for display text — use `title` for captions and `description` for explanations."
-        },
-        "presentation": {
-          "description": "The visual or interactive presentation for the example. Required when `value` is not provided. Optional when `value` is provided — value-only examples represent concrete data points (prop values, token values) that tools render as table rows or inline displays.",
-          "oneOf": [
-            {
-              "$ref": "#/$defs/presentationImage"
-            },
-            {
-              "$ref": "#/$defs/presentationVideo"
-            },
-            {
-              "$ref": "#/$defs/presentationCode"
-            },
-            {
-              "$ref": "#/$defs/presentationUrl"
-            }
-          ]
-        }
-      },
-      "additionalProperties": false
-    },
-    "examples": {
-      "type": "object",
-      "description": "A guideline container of visual or interactive demonstrations of an artifact. Each item is a single example — a static image, a video recording, a code snippet, a URL to a live demo, or a literal value. Multiple items allow different representations of the same artifact: a static screenshot alongside an interactive Storybook embed, code examples in multiple frameworks, or a sequence of annotated diagrams. This container unifies what was previously split across 'preview' (on components, variants, states) and 'examples' (on patterns) into a single guideline type that can appear on any artifact.",
-      "required": ["type", "items"],
-      "properties": {
-        "type": {
-          "type": "string",
-          "const": "examples",
-          "description": "Identifies this guideline as an examples specification."
-        },
-        "items": {
-          "type": "array",
-          "description": "The individual examples. Each item is a single demonstration with a required presentation or value (or both) and optional title and description. The ordering is significant — tools SHOULD display examples in this order. Authors typically place the most representative or hero example first.",
-          "items": {
-            "$ref": "#/$defs/example"
-          },
-          "minItems": 1
         }
       },
       "additionalProperties": false

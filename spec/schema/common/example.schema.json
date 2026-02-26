@@ -2,91 +2,8 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://designsystemdocspec.org/v0.1/example.schema.json",
   "title": "DSDS Example Definitions",
-  "description": "A unified example model used across DSDS. Each example provides a visual or interactive demonstration via a presentation, a literal value, or both. Optional title, description, and value properties provide context. Presentations are independent typed objects for images, videos, code snippets, and URLs. The `examples` container def adds a `type` discriminator for use as a guideline type in the unified guidelines array, while the `example` def is used for nesting within other guideline items (best-practice examples, variant previews, state previews, interaction illustrations).",
+  "description": "A unified example model used across DSDS. Each example provides a visual or interactive demonstration via a presentation, a literal value, or both. Optional title, description, and value properties provide context. Presentations are independent typed objects defined in presentation.schema.json for images, videos, code snippets, and URLs. The `examples` container def adds a `type` discriminator for use as a guideline type in the unified guidelines array, while the `example` def is used for nesting within other guideline items (best-practice examples, variant previews, state previews, interaction illustrations).",
   "$defs": {
-    "presentationImage": {
-      "type": "object",
-      "description": "An image presentation — a screenshot, diagram, annotated mockup, or exported design frame.",
-      "required": ["type", "url", "alt"],
-      "properties": {
-        "type": {
-          "type": "string",
-          "const": "image",
-          "description": "Identifies this presentation as an image."
-        },
-        "url": {
-          "type": "string",
-          "format": "uri",
-          "description": "URL or relative path to the image file."
-        },
-        "alt": {
-          "type": "string",
-          "description": "Alternative text describing the content of the image. MUST be provided for accessibility."
-        }
-      },
-      "additionalProperties": false
-    },
-    "presentationVideo": {
-      "type": "object",
-      "description": "A video presentation — a screen recording, animated transition, or interaction walkthrough.",
-      "required": ["type", "url", "alt"],
-      "properties": {
-        "type": {
-          "type": "string",
-          "const": "video",
-          "description": "Identifies this presentation as a video."
-        },
-        "url": {
-          "type": "string",
-          "format": "uri",
-          "description": "URL or relative path to the video file."
-        },
-        "alt": {
-          "type": "string",
-          "description": "Alternative text describing the content of the video. MUST be provided for accessibility."
-        }
-      },
-      "additionalProperties": false
-    },
-    "presentationCode": {
-      "type": "object",
-      "description": "A code presentation — a source code snippet showing how to use the artifact.",
-      "required": ["type", "code", "language"],
-      "properties": {
-        "type": {
-          "type": "string",
-          "const": "code",
-          "description": "Identifies this presentation as a code snippet."
-        },
-        "code": {
-          "type": "string",
-          "description": "The source code of the example."
-        },
-        "language": {
-          "type": "string",
-          "description": "The programming language or syntax (e.g., 'jsx', 'tsx', 'html', 'css', 'vue', 'svelte', 'swift', 'kotlin')."
-        }
-      },
-      "additionalProperties": false
-    },
-    "presentationUrl": {
-      "type": "object",
-      "description": "A URL presentation — a link to any web resource such as a live demo, interactive example, documentation page, or hosted component story. Use for Storybook stories, CodeSandbox embeds, StackBlitz projects, or any other addressable web content.",
-      "required": ["type", "url"],
-      "properties": {
-        "type": {
-          "type": "string",
-          "const": "url",
-          "description": "Identifies this presentation as a URL reference to a web resource."
-        },
-        "url": {
-          "type": "string",
-          "format": "uri",
-          "description": "URL to the web resource (e.g., 'https://storybook.acme.com/?path=/story/components-button--primary', 'https://codesandbox.io/s/button-example')."
-        }
-      },
-      "additionalProperties": false
-    },
     "example": {
       "type": "object",
       "description": "A single example. Every example requires at least a presentation or a value (or both). The presentation provides a visual or interactive demonstration. The value carries a literal value for API property examples. The optional title and description provide context. When only a value is provided without a presentation, the example represents a concrete data point (e.g., a prop value of 'primary' or a token value of 44) — tools SHOULD render these as table rows or inline displays rather than visual demonstrations.",
@@ -107,16 +24,16 @@
           "description": "The visual or interactive presentation for the example. Required when `value` is not provided. Optional when `value` is provided — value-only examples represent concrete data points (prop values, token values) that tools render as table rows or inline displays.",
           "oneOf": [
             {
-              "$ref": "#/$defs/presentationImage"
+              "$ref": "presentation.schema.json#/$defs/presentationImage"
             },
             {
-              "$ref": "#/$defs/presentationVideo"
+              "$ref": "presentation.schema.json#/$defs/presentationVideo"
             },
             {
-              "$ref": "#/$defs/presentationCode"
+              "$ref": "presentation.schema.json#/$defs/presentationCode"
             },
             {
-              "$ref": "#/$defs/presentationUrl"
+              "$ref": "presentation.schema.json#/$defs/presentationUrl"
             }
           ]
         }
