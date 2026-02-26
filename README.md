@@ -61,7 +61,7 @@ spec/
 │   │   ├── metadata.schema.json                        # metadata
 │   │   ├── rich-text.schema.json                       # richText
 │   │   ├── presentation.schema.json                    # presentationImage, presentationVideo, presentationCode, presentationUrl
-│   │   ├── status.schema.json                          # statusObject, statusValue, platformStatusEntry
+│   │   ├── status.schema.json                          # statusObject, statusValue, platformStatus
 │   │   └── usecase.schema.json                         # useCase
 │   ├── entities/                                       # Entity types
 │   │   ├── component.schema.json                       # component

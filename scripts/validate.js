@@ -3,9 +3,11 @@
  * validate.js — Validate DSDS example files against the bundled schema.
  *
  * Validates:
- *   1. All .dsds.json files in spec/examples/ against the bundled schema
+ *   1. All .dsds.json files in spec/examples/ (recursively) against the bundled schema
  *   2. All per-definition example files in spec/examples/{common,guidelines,entities}/
  *      against their matching $defs in the bundled schema
+ *   3. Bare entity files (e.g. spec/examples/minimal/*.json) against their
+ *      entity $def, detected via the top-level `type` property
  *
  * Usage:
  *   node scripts/validate.js
@@ -31,8 +33,11 @@ const BUNDLED_SCHEMA_PATH = path.join(
 const EXAMPLES_DIR = path.join(ROOT, "spec/examples");
 const SCHEMA_DIR = path.join(ROOT, "spec/schema");
 
-// Schema directories that have matching example directories
-const SCHEMA_EXAMPLE_DIRS = ["common", "guidelines", "entities"];
+// Directories containing keyed per-definition example files ({ defName: value })
+const KEYED_EXAMPLE_DIRS = ["common", "guidelines", "entities"];
+
+// Directories containing bare entity example files ({ type: "component", ... })
+const BARE_ENTITY_DIRS = ["minimal"];
 
 // ---------------------------------------------------------------------------
 // Setup Ajv
@@ -52,6 +57,23 @@ function createValidator() {
 // Part 1: Validate example .dsds.json files against the bundled schema
 // ---------------------------------------------------------------------------
 
+/**
+ * Recursively find all files matching a suffix under a directory.
+ */
+function findFilesRecursive(dir, suffix) {
+  const results = [];
+  if (!fs.existsSync(dir)) return results;
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    const fullPath = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      results.push(...findFilesRecursive(fullPath, suffix));
+    } else if (entry.name.endsWith(suffix)) {
+      results.push(fullPath);
+    }
+  }
+  return results.sort();
+}
+
 function validateExamples(ajv) {
   console.log("━━━ Validating example files ━━━\n");
 
@@ -66,17 +88,14 @@ function validateExamples(ajv) {
 
   const validate = ajv.compile(schema);
 
-  const files = fs
-    .readdirSync(EXAMPLES_DIR)
-    .filter((f) => f.endsWith(".dsds.json"))
-    .sort();
+  const files = findFilesRecursive(EXAMPLES_DIR, ".dsds.json");
 
   let passed = 0;
   let failed = 0;
   const errors = [];
 
-  for (const file of files) {
-    const filePath = path.join(EXAMPLES_DIR, file);
+  for (const filePath of files) {
+    const file = path.relative(EXAMPLES_DIR, filePath);
     let data;
     try {
       data = JSON.parse(fs.readFileSync(filePath, "utf-8"));
@@ -137,7 +156,9 @@ function validateDefinitionExamples(ajv) {
   let skipped = 0;
   const errors = [];
 
-  for (const dir of SCHEMA_EXAMPLE_DIRS) {
+  // --- Keyed example files: { defName: value | value[] } ---
+
+  for (const dir of KEYED_EXAMPLE_DIRS) {
     const exampleDir = path.join(EXAMPLES_DIR, dir);
     if (!fs.existsSync(exampleDir)) continue;
 
@@ -213,6 +234,68 @@ function validateDefinitionExamples(ajv) {
         console.log(
           `  ✓ ${dir}/${file} (${defNames.length} definition${defNames.length === 1 ? "" : "s"})`,
         );
+      }
+    }
+  }
+
+  // --- Bare entity files: { type: "component", name: "...", ... } ---
+  // Detected by a top-level `type` property whose value matches a known $def.
+
+  for (const dir of BARE_ENTITY_DIRS) {
+    const exampleDir = path.join(EXAMPLES_DIR, dir);
+    if (!fs.existsSync(exampleDir)) continue;
+
+    const files = fs
+      .readdirSync(exampleDir)
+      .filter((f) => f.endsWith(".json") && !f.endsWith(".dsds.json"))
+      .sort();
+
+    for (const file of files) {
+      const filePath = path.join(exampleDir, file);
+      let data;
+      try {
+        data = JSON.parse(fs.readFileSync(filePath, "utf-8"));
+      } catch (e) {
+        console.error(`  ✗ ${dir}/${file}: Invalid JSON — ${e.message}`);
+        failed++;
+        errors.push({
+          file: `${dir}/${file}`,
+          error: `Invalid JSON: ${e.message}`,
+        });
+        continue;
+      }
+
+      // Determine the def name from the type property
+      const typeName = data.type;
+      const defName = typeName === "token-group" ? "tokenGroup" : typeName;
+      const validator = defValidators[defName];
+
+      if (!validator) {
+        console.log(
+          `  ~ ${dir}/${file}: type "${typeName}" has no standalone validator (skipped)`,
+        );
+        skipped++;
+        continue;
+      }
+
+      const valid = validator(data);
+      if (valid) {
+        console.log(`  ✓ ${dir}/${file} (${defName})`);
+        passed++;
+      } else {
+        console.error(`  ✗ ${dir}/${file} → ${defName}`);
+        for (const err of validator.errors.slice(0, 3)) {
+          const loc = err.instancePath || "(root)";
+          const msg = err.message || JSON.stringify(err.params);
+          console.error(`      ${loc}: ${msg}`);
+          errors.push({
+            file: `${dir}/${file}`,
+            def: defName,
+            path: loc,
+            message: msg,
+          });
+        }
+        failed++;
       }
     }
   }

@@ -61,14 +61,15 @@
     <main class="content__main" role="main">
       <div class="content__inner">
         <h1>DSDS Status Definition</h1>
-<p class="schema-description">The lifecycle status of a design system artifact and optional platform-specific readiness tracking. Used across all DSDS document types to indicate maturity and readiness. The statusObject consolidates status, platformStatus, and deprecationNotice into a single reusable object with a built-in conditional requiring deprecationNotice when status is 'deprecated'.</p>
+<p class="schema-description">The lifecycle status of a design system artifact and optional platform-specific readiness tracking. Used across all DSDS document types to indicate maturity and readiness. The `status` union def accepts either a plain statusValue string (e.g., &quot;stable&quot;) for the common case, or a full statusObject when platform-specific tracking or deprecation notices are needed. The statusObject consolidates overall status, per-platform readiness, and deprecationNotice into a single reusable object with a built-in conditional requiring deprecationNotice when status is 'deprecated'.</p>
 <p class="schema-source">Source: <code>common/status.schema.json</code></p>
 <nav class="page-def-index">
-<p><strong>3 definitions</strong> in this file:</p>
+<p><strong>4 definitions</strong> in this file:</p>
 <ul>
 <li><a href="#statusvalue"><code>statusValue</code></a></li>
-<li><a href="#platformstatusentry"><code>platformStatusEntry</code></a></li>
+<li><a href="#platformstatus"><code>platformStatus</code></a></li>
 <li><a href="#statusobject"><code>statusObject</code></a></li>
+<li><a href="#status"><code>status</code></a></li>
 </ul>
 </nav>
 <section class="def-section" id="statusvalue">
@@ -76,8 +77,8 @@
 <p class="def-description">A lifecycle status value. MUST be lowercase kebab-case. Standard values: 'draft' (under development, not ready for use), 'experimental' (available but API may change without notice), 'stable' (production-ready, changes follow semver), 'deprecated' (scheduled for removal). Custom values are permitted (e.g., 'sunset', 'archived', 'beta') and MUST follow the same pattern.</p>
 <p class="def-type"><span class="type-badge">string</span></p>
 </section>
-<section class="def-section" id="platformstatusentry">
-<h3 id="platformstatusentry">platformStatusEntry</h3>
+<section class="def-section" id="platformstatus">
+<h3 id="platformstatus">platformStatus</h3>
 <p class="def-description">The readiness status of an artifact on a specific platform. Tracks lifecycle stage, version availability, and optional deprecation notices independently per platform.</p>
 <p class="def-type"><span class="type-badge">object</span></p>
 <table class="prop-table"><thead><tr><th>Property</th><th>Type</th><th>Required</th><th>Description</th></tr></thead><tbody><tr><td><code>status</code></td><td><a href="common-status.html#statusvalue" class="type-ref">statusValue</a></td><td><span class="required-badge">required</span></td><td>The lifecycle status of the artifact on this platform. Uses the same vocabulary as the top-level status: 'draft', 'experimental', 'stable', 'deprecated'. Custom values are permitted.</td></tr>
@@ -116,22 +117,19 @@
 <h3 id="statusobject">statusObject</h3>
 <p class="def-description">The consolidated lifecycle status of an artifact. Contains the overall status value, optional per-platform readiness tracking, and a conditional deprecation notice. Every artifact that carries status uses this single object rather than spreading status, platformStatus, and deprecationNotice as separate sibling properties. When the overall status is 'deprecated', the deprecationNotice property becomes required.</p>
 <p class="def-type"><span class="type-badge">object</span></p>
-<table class="prop-table"><thead><tr><th>Property</th><th>Type</th><th>Required</th><th>Description</th></tr></thead><tbody><tr><td><code>status</code></td><td><a href="common-status.html#statusvalue" class="type-ref">statusValue</a></td><td><span class="required-badge">required</span></td><td>The overall lifecycle status of the artifact. Represents an editorial judgment about the artifact's maturity — it is not required to be the most or least advanced of the platform statuses. Tools SHOULD display this as the primary status indicator.</td></tr>
-<tr><td><code>platformStatus</code></td><td>map&lt;string, <a href="common-status.html#platformstatusentry" class="type-ref">platformStatusEntry</a>&gt;</td><td>optional</td><td>Platform-specific readiness or availability status. Keys are platform identifiers (freeform strings — common values include 'react', 'web-component', 'ios', 'android', 'flutter', 'figma', 'sketch', and 'compose'). Values describe the artifact's status on that platform independently. An artifact MAY be 'stable' overall while individual platforms are still 'experimental' or 'draft'.</td></tr>
+<table class="prop-table"><thead><tr><th>Property</th><th>Type</th><th>Required</th><th>Description</th></tr></thead><tbody><tr><td><code>overall</code></td><td><a href="common-status.html#statusvalue" class="type-ref">statusValue</a></td><td><span class="required-badge">required</span></td><td>The overall lifecycle status of the artifact. Represents an editorial judgment about the artifact's maturity — it is not required to be the most or least advanced of the platform statuses. Tools SHOULD display this as the primary status indicator.</td></tr>
+<tr><td><code>platforms</code></td><td>map&lt;string, <a href="common-status.html#platformstatus" class="type-ref">platformStatus</a>&gt;</td><td><span class="required-badge">required</span></td><td>Platform-specific readiness or availability status. Keys are platform identifiers (freeform strings — common values include 'react', 'web-component', 'ios', 'android', 'flutter', 'figma', 'sketch', and 'compose'). Values describe the artifact's status on that platform independently. An artifact MAY be 'stable' overall while individual platforms are still 'experimental' or 'draft'.</td></tr>
 <tr><td><code>deprecationNotice</code></td><td>string</td><td>optional</td><td>Required when status is 'deprecated'. MUST explain what to use instead and provide a migration path. When present, tools SHOULD display this prominently alongside the status indicator.</td></tr></tbody></table>
-<p class="conditional-note"><strong>Conditional:</strong> When <code>status</code> is <code>"deprecated"</code>, then <code>deprecationNotice</code> is required.</p>
+<p class="conditional-note"><strong>Conditional:</strong> When <code>overall</code> is <code>"deprecated"</code>, then <code>deprecationNotice</code> is required.</p>
 <p class="cross-refs"><strong>References:</strong> 
-<a href="common-status.html#statusvalue">statusValue</a>, <a href="common-status.html#platformstatusentry">platformStatusEntry</a>
+<a href="common-status.html#statusvalue">statusValue</a>, <a href="common-status.html#platformstatus">platformStatus</a>
 </p>
 <div class="def-example">
 <p class="def-example__title"><strong>Example</strong></p>
 <pre><code class="language-json">[
   {
-    &quot;status&quot;: &quot;stable&quot;
-  },
-  {
-    &quot;status&quot;: &quot;stable&quot;,
-    &quot;platformStatus&quot;: {
+    &quot;overall&quot;: &quot;stable&quot;,
+    &quot;platforms&quot;: {
       &quot;react&quot;: {
         &quot;status&quot;: &quot;stable&quot;,
         &quot;since&quot;: &quot;1.0.0&quot;
@@ -161,12 +159,24 @@
     }
   },
   {
-    &quot;status&quot;: &quot;deprecated&quot;,
+    &quot;overall&quot;: &quot;deprecated&quot;,
+    &quot;platforms&quot;: {
+      &quot;react&quot;: {
+        &quot;status&quot;: &quot;deprecated&quot;,
+        &quot;since&quot;: &quot;3.0.0&quot;,
+        &quot;deprecationNotice&quot;: &quot;Use NewComponent from @acme/components instead.&quot;
+      },
+      &quot;figma&quot;: {
+        &quot;status&quot;: &quot;deprecated&quot;,
+        &quot;since&quot;: &quot;3.0.0&quot;,
+        &quot;deprecationNotice&quot;: &quot;Removed from the Figma library. Use the NewComponent frame.&quot;
+      }
+    },
     &quot;deprecationNotice&quot;: &quot;This component is deprecated. Use NewComponent instead. See the migration guide at https://design.acme.com/migrations/old-to-new.&quot;
   },
   {
-    &quot;status&quot;: &quot;experimental&quot;,
-    &quot;platformStatus&quot;: {
+    &quot;overall&quot;: &quot;experimental&quot;,
+    &quot;platforms&quot;: {
       &quot;react&quot;: {
         &quot;status&quot;: &quot;experimental&quot;,
         &quot;since&quot;: &quot;4.0.0-beta.1&quot;
@@ -188,6 +198,36 @@
 ]</code></pre>
 </div>
 </section>
+<section class="def-section" id="status">
+<h3 id="status">status</h3>
+<p class="def-description">The lifecycle status of an artifact. Accepts either a plain status string (e.g., &quot;stable&quot;, &quot;deprecated&quot;) for the simple case, or a full status object with per-platform tracking and deprecation notices for the detailed case. Tools that consume this property SHOULD normalize the string form to { &quot;overall&quot;: value } internally for consistent processing.</p>
+<p><strong>Accepts one of:</strong></p>
+<ul class="oneof-list">
+<li><a href="undefined.html#statusvalue">statusValue</a></li>
+<li><a href="undefined.html#statusobject">statusObject</a></li>
+</ul>
+<p class="cross-refs"><strong>References:</strong> 
+<a href="common-status.html#statusvalue">statusValue</a>, <a href="common-status.html#statusobject">statusObject</a>
+</p>
+<div class="def-example">
+<p class="def-example__title"><strong>Example</strong></p>
+<pre><code class="language-json">[
+  {
+    &quot;overall&quot;: &quot;stable&quot;,
+    &quot;platforms&quot;: {
+      &quot;react&quot;: {
+        &quot;status&quot;: &quot;stable&quot;,
+        &quot;since&quot;: &quot;1.0.0&quot;
+      },
+      &quot;ios&quot;: {
+        &quot;status&quot;: &quot;experimental&quot;,
+        &quot;since&quot;: &quot;3.0.0&quot;
+      }
+    }
+  }
+]</code></pre>
+</div>
+</section>
 
         <a href="#" class="back-to-top">↑ Back to top</a>
 
@@ -201,8 +241,9 @@
 <p class="toc__title">On this page</p>
 <ul class="toc__list">
 <li><a class="toc__link toc__link--sub" href="#statusvalue">statusValue</a></li>
-<li><a class="toc__link toc__link--sub" href="#platformstatusentry">platformStatusEntry</a></li>
+<li><a class="toc__link toc__link--sub" href="#platformstatus">platformStatus</a></li>
 <li><a class="toc__link toc__link--sub" href="#statusobject">statusObject</a></li>
+<li><a class="toc__link toc__link--sub" href="#status">status</a></li>
 </ul>
 </nav>
   </div>
