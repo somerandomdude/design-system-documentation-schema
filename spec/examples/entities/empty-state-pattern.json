@@ -24,28 +24,6 @@
     "aliases": ["blank-state", "zero-state", "no-data"],
     "guidelines": [
       {
-        "type": "examples",
-        "items": [
-          {
-            "title": "Empty state in a data table",
-            "description": "The empty state replaces the table body — column headers and footer are not rendered.",
-            "presentation": {
-              "type": "image",
-              "url": "https://design.acme.com/assets/patterns/empty-state/hero-data-table.png",
-              "alt": "A data table container showing an illustration of a clipboard, a heading reading 'No reports yet', body text explaining how to create a report, and a primary action button labeled 'Create report'."
-            }
-          },
-          {
-            "title": "Empty state in a small tile",
-            "presentation": {
-              "type": "image",
-              "url": "https://design.acme.com/assets/patterns/empty-state/hero-small-tile.png",
-              "alt": "A small card with a centered illustration above left-aligned text reading 'No activity' and a tertiary button labeled 'View all activity'."
-            }
-          }
-        ]
-      },
-      {
         "type": "anatomy",
         "description": "The empty state is composed of an optional illustration, a title, body copy explaining the next action, and optional primary and secondary calls to action. Elements are left-aligned as a block, with the exception of small tiles where the image is centered above left-aligned text.",
         "parts": [
@@ -109,6 +87,7 @@
         "type": "variants",
         "items": [
           {
+            "type": "enum",
             "name": "type",
             "displayName": "Type",
             "description": "The category of empty state, determined by the reason the space is empty. Each type has different content guidelines and levels of detail.",
@@ -117,53 +96,55 @@
                 "name": "no-data",
                 "displayName": "No Data",
                 "description": "The most common first-use empty state. Explains what will be available in the space when data has been added, and provides guidance for the next step the user can take to populate it.",
-                "useCases": {
-                  "whenToUse": [
-                    {
-                      "description": "When the user has not yet created or added any data to this area of the product."
-                    },
-                    {
-                      "description": "When the user has cleared or deleted all data from a previously populated space."
-                    }
-                  ]
-                }
+                "useCases": [
+                  {
+                    "description": "When the user has not yet created or added any data to this area of the product.",
+                    "kind": "positive"
+                  },
+                  {
+                    "description": "When the user has cleared or deleted all data from a previously populated space.",
+                    "kind": "positive"
+                  }
+                ]
               },
               {
                 "name": "user-action",
                 "displayName": "User Action",
                 "description": "Occurs as a result of a user action — for example, a search with no results or a success confirmation after completing a process. Explains the reason for the empty state and provides follow-up steps.",
-                "useCases": {
-                  "whenToUse": [
-                    {
-                      "description": "When a search or filter returns no matching results."
-                    },
-                    {
-                      "description": "When a user has successfully completed a process and there is nothing further to act on (e.g., all alerts resolved, inbox empty)."
-                    }
-                  ]
-                }
+                "useCases": [
+                  {
+                    "description": "When a search or filter returns no matching results.",
+                    "kind": "positive"
+                  },
+                  {
+                    "description": "When a user has successfully completed a process and there is nothing further to act on (e.g., all alerts resolved, inbox empty).",
+                    "kind": "positive"
+                  }
+                ]
               },
               {
                 "name": "error-management",
                 "displayName": "Error Management",
                 "description": "Occurs when data exists but cannot be surfaced — permissions issues, system failures, or missing configuration. A higher level of specificity is needed so the user can address the issue themselves. Express error messages in plain language, precisely indicate the problem, and constructively suggest a solution.",
-                "useCases": {
-                  "whenToUse": [
-                    {
-                      "description": "When the user does not have permission to view the data."
-                    },
-                    {
-                      "description": "When a connected system or service is preventing data from loading."
-                    },
-                    {
-                      "description": "When further configuration is required before data can appear."
-                    }
-                  ]
-                }
+                "useCases": [
+                  {
+                    "description": "When the user does not have permission to view the data.",
+                    "kind": "positive"
+                  },
+                  {
+                    "description": "When a connected system or service is preventing data from loading.",
+                    "kind": "positive"
+                  },
+                  {
+                    "description": "When further configuration is required before data can appear.",
+                    "kind": "positive"
+                  }
+                ]
               }
             ]
           },
           {
+            "type": "enum",
             "name": "size",
             "displayName": "Size",
             "description": "The visual treatment adapts to the available space. Larger spaces allow illustration and more detail. Smaller spaces use text-only treatments to conserve space.",
@@ -184,15 +165,6 @@
                 "description": "For full-page empty states and large content areas. Image appears above the text block. Two positioning options: use a wider left margin or center the block in the empty space."
               }
             ]
-          }
-        ],
-        "exclusions": [
-          {
-            "conditions": [
-              { "dimension": "type", "value": "error-management" },
-              { "dimension": "size", "value": "small" }
-            ],
-            "description": "Error management empty states require enough space to explain the problem and suggest corrective action. Small tiles cannot accommodate this level of detail. Use a medium or large container, or show a simplified error indicator that links to a detailed error view."
           }
         ]
       },
@@ -260,39 +232,40 @@
       },
       {
         "type": "purpose",
-        "useCases": {
-          "whenToUse": [
-            {
-              "description": "When a page, tile, data table, side panel, or other content area has no data to display — whether because the user hasn't added any yet, a search returned no results, or a system issue is preventing data from appearing."
-            },
-            {
-              "description": "When a user has successfully completed all tasks in a queue or resolved all items in a list, and the space is now intentionally empty (e.g., 'All caught up — no new notifications')."
+        "useCases": [
+          {
+            "description": "When a page, tile, data table, side panel, or other content area has no data to display — whether because the user hasn't added any yet, a search returned no results, or a system issue is preventing data from appearing.",
+            "kind": "positive"
+          },
+          {
+            "description": "When a user has successfully completed all tasks in a queue or resolved all items in a list, and the space is now intentionally empty (e.g., 'All caught up — no new notifications').",
+            "kind": "positive"
+          },
+          {
+            "description": "When the feedback is a successful outcome of a specific action (e.g., 'Changes saved', 'Account created').",
+            "kind": "negative",
+            "alternative": {
+              "name": "success-messaging",
+              "rationale": "Success feedback uses success colors and icons. Reusing the empty state pattern for positive outcomes confuses the visual language."
             }
-          ],
-          "whenNotToUse": [
-            {
-              "description": "When the feedback is a successful outcome of a specific action (e.g., 'Changes saved', 'Account created').",
-              "alternative": {
-                "name": "success-messaging",
-                "rationale": "Success feedback uses success colors and icons. Reusing the empty state pattern for positive outcomes confuses the visual language."
-              }
-            },
-            {
-              "description": "When the entire page fails to load due to a critical system error (e.g., 404, 503).",
-              "alternative": {
-                "name": "error-page",
-                "rationale": "Full-page failures should replace the entire page shell with a dedicated error page that provides navigation back to a working area, rather than rendering an empty state inside a broken layout."
-              }
-            },
-            {
-              "description": "When data is loading and will arrive shortly.",
-              "alternative": {
-                "name": "loading-skeleton",
-                "rationale": "Show a skeleton or loading indicator while data is being fetched. Never show 'no data' before the system has finished checking."
-              }
+          },
+          {
+            "description": "When the entire page fails to load due to a critical system error (e.g., 404, 503).",
+            "kind": "negative",
+            "alternative": {
+              "name": "error-page",
+              "rationale": "Full-page failures should replace the entire page shell with a dedicated error page that provides navigation back to a working area, rather than rendering an empty state inside a broken layout."
             }
-          ]
-        }
+          },
+          {
+            "description": "When data is loading and will arrive shortly.",
+            "kind": "negative",
+            "alternative": {
+              "name": "loading-skeleton",
+              "rationale": "Show a skeleton or loading indicator while data is being fetched. Never show 'no data' before the system has finished checking."
+            }
+          }
+        ]
       },
       {
         "type": "best-practices",
@@ -300,53 +273,51 @@
           {
             "guidance": "The empty state MUST replace the element that would ordinarily show. For example, an empty state for a table replaces the table — column headers and footer should not be present.",
             "rationale": "This avoids having a screen reader read the entire table structure before reaching the message that there is no content. It also prevents the visual awkwardness of an empty table with headers but no rows.",
-            "level": "required",
+            "kind": "required",
             "category": "visual-design"
           },
           {
             "guidance": "Be specific about what will be available in the space when data is there.",
             "rationale": "Users need to understand what they're missing and what to expect. 'No reports yet' is better than 'Nothing here' because it tells the user what kind of content this area holds.",
-            "level": "required",
+            "kind": "required",
             "category": "content"
           },
           {
             "guidance": "If there is an actionable next step, include a direct link in the message copy or a primary action button to make that action fast.",
             "rationale": "As a general rule, don't lead the user into a dead end. If there are useful next steps, include them. An empty state without an action forces the user to figure out what to do next on their own.",
-            "level": "encouraged",
+            "kind": "encouraged",
             "category": "interaction"
           },
           {
             "guidance": "Do not cover multiple options in one empty state. If there are multiple things a user can do, pick the most important and keep the focus on that.",
             "rationale": "Too many choices create decision paralysis. A single clear call to action gets the user moving faster than a menu of options.",
-            "level": "discouraged",
+            "kind": "discouraged",
             "category": "content"
           },
           {
             "guidance": "When multiple empty states may appear simultaneously (e.g., multiple dashboard widgets failing to load), use tertiary buttons for calls to action instead of primary buttons.",
             "rationale": "Multiple primary buttons on a single page compete for attention and violate the one-primary-action-per-surface principle.",
-            "level": "required",
+            "kind": "required",
             "category": "visual-design"
           },
           {
             "guidance": "Error messages MUST be expressed in plain language, precisely indicate the problem, and constructively suggest a solution. Do not use error codes as the primary message.",
             "rationale": "Users need to understand what went wrong and what they can do about it. 'Error 403' means nothing to most users. 'You don't have permission to view this data — contact your admin to request access' is actionable.",
-            "level": "required",
+            "kind": "required",
             "category": "content"
           },
           {
             "guidance": "Do not show the empty state while data is loading. Show a skeleton or loading indicator until the system has confirmed there is no data to display.",
             "rationale": "Showing 'no data' before the fetch completes creates a flash of incorrect content that erodes trust. Users may think their data is missing when it simply hasn't arrived yet.",
-            "level": "prohibited",
+            "kind": "prohibited",
             "category": "interaction"
           },
           {
             "guidance": "Empty state illustrations MUST be given an empty `alt` attribute or `role=\"presentation\"` so screen readers skip them.",
             "rationale": "Empty state illustrations are decorative — they do not convey information that isn't already present in the title and body text. Announcing them wastes screen reader users' time.",
-            "level": "required",
+            "kind": "required",
             "category": "accessibility",
-            "criteria": [
-              "https://www.w3.org/TR/WCAG22/#non-text-content"
-            ]
+            "criteria": ["https://www.w3.org/TR/WCAG22/#non-text-content"]
           }
         ]
       },

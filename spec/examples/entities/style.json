@@ -248,50 +248,50 @@
           {
             "guidance": "Use the spacing scale tokens for all padding, margin, and gap properties. Do not use hard-coded values.",
             "rationale": "Hard-coded values create visual inconsistency and are not responsive to system-wide spacing changes. Tokens enable global adjustment of spatial density from a single source of truth.",
-            "level": "required",
+            "kind": "required",
             "category": "visual-design"
           },
           {
             "guidance": "Components must not apply external margin. Margin between components is the responsibility of the parent layout.",
             "rationale": "Components that own their margins create unpredictable spacing when composed. A button with built-in margin-bottom behaves differently depending on what follows it. Delegating margin to layout makes spacing composable and predictable.",
-            "level": "required",
+            "kind": "required",
             "category": "visual-design"
           },
           {
             "guidance": "Select spacing based on the relationship between elements, not their size. Related elements use smaller spacing. Unrelated elements use larger spacing.",
             "rationale": "Gestalt proximity principle: objects that are closer together are perceived as related. Spacing encodes information hierarchy. A label 4px from its input is clearly associated with it. A label 32px from an input appears disconnected.",
-            "level": "encouraged",
+            "kind": "encouraged",
             "category": "visual-design"
           },
           {
             "guidance": "Do not use spacing tokens for non-spatial properties such as border-width, font-size, or icon-size. Use the tokens designated for those properties.",
             "rationale": "Spacing tokens are tuned for whitespace. A spacing scale step that works well as padding produces incorrect results as a border-width or icon-size. Using the wrong token category couples unrelated visual properties.",
-            "level": "prohibited",
+            "kind": "prohibited",
             "category": "development"
           },
           {
             "guidance": "Use CSS gap (in Flexbox or Grid) as the primary mechanism for spacing between sibling elements. Reserve margin for spacing between non-sibling elements or layout-level offset.",
             "rationale": "Gap applies spacing uniformly between children without affecting the first or last child. Margin requires :first-child/:last-child overrides to prevent unwanted space at container edges.",
-            "level": "encouraged",
+            "kind": "encouraged",
             "category": "development"
           },
           {
             "guidance": "For responsive layouts, reduce spacing density at smaller breakpoints by stepping down the scale. Do not introduce arbitrary breakpoint-specific values.",
             "rationale": "Stepping down the scale (e.g., space-7 at desktop becoming space-5 at mobile) maintains proportional relationships while conserving space. Arbitrary values break out of the scale and undermine system consistency.",
-            "level": "encouraged",
+            "kind": "encouraged",
             "category": "visual-design"
           },
           {
             "guidance": "Ensure all interactive elements maintain a minimum 44x44 CSS pixel touch target, inclusive of padding.",
             "rationale": "Users with motor impairments and touch device users require a minimum target size to interact reliably. WCAG 2.5.8 requires 24x24px minimum and recommends 44x44px. The spacing system's role is to ensure padding contributes to meeting this target.",
-            "level": "required",
+            "kind": "required",
             "category": "accessibility",
             "criteria": ["https://www.w3.org/TR/WCAG22/#target-size-minimum"]
           },
           {
             "guidance": "When users increase text size to 200% via browser settings, spacing must not collapse to zero or cause content to overlap.",
             "rationale": "Users with low vision enlarge text. If spacing is defined in fixed pixel units that do not scale, text enlargement causes overlap and loss of content. Use rem-based spacing tokens where possible, and test all layouts at 200% text zoom.",
-            "level": "required",
+            "kind": "required",
             "category": "accessibility",
             "criteria": ["https://www.w3.org/TR/WCAG22/#resize-text"]
           }
@@ -299,45 +299,48 @@
       },
       {
         "type": "purpose",
-        "useCases": {
-          "whenToUse": [
-            {
-              "description": "When defining padding, margin, or gap values for any layout or component. All spatial values in production code must reference the spacing scale."
-            },
-            {
-              "description": "When establishing vertical rhythm between content sections, form groups, or card layouts."
-            },
-            {
-              "description": "When setting internal padding for containers such as cards, dialogs, panels, and page regions."
-            },
-            {
-              "description": "When controlling the gap between sibling elements in Flexbox or Grid layouts."
+        "useCases": [
+          {
+            "description": "When defining padding, margin, or gap values for any layout or component. All spatial values in production code must reference the spacing scale.",
+            "kind": "positive"
+          },
+          {
+            "description": "When establishing vertical rhythm between content sections, form groups, or card layouts.",
+            "kind": "positive"
+          },
+          {
+            "description": "When setting internal padding for containers such as cards, dialogs, panels, and page regions.",
+            "kind": "positive"
+          },
+          {
+            "description": "When controlling the gap between sibling elements in Flexbox or Grid layouts.",
+            "kind": "positive"
+          },
+          {
+            "description": "When defining border widths, outline offsets, or stroke values.",
+            "kind": "negative",
+            "alternative": {
+              "name": "border-width",
+              "rationale": "Border tokens are tuned for visual weight at sub-pixel and single-pixel sizes. Spacing tokens start at 0px and jump to values optimized for whitespace, which produce incorrect visual results when applied to borders."
             }
-          ],
-          "whenNotToUse": [
-            {
-              "description": "When defining border widths, outline offsets, or stroke values.",
-              "alternative": {
-                "name": "border-width",
-                "rationale": "Border tokens are tuned for visual weight at sub-pixel and single-pixel sizes. Spacing tokens start at 0px and jump to values optimized for whitespace, which produce incorrect visual results when applied to borders."
-              }
-            },
-            {
-              "description": "When setting font sizes or line heights.",
-              "alternative": {
-                "name": "typography",
-                "rationale": "Typographic tokens follow a modular scale designed for readability and vertical rhythm. Spacing tokens follow a geometric scale designed for whitespace. The two scales serve different purposes and should not be interchanged."
-              }
-            },
-            {
-              "description": "When sizing icons or illustration containers.",
-              "alternative": {
-                "name": "icon-size",
-                "rationale": "Icon size tokens are calibrated to optical alignment with adjacent text at each type scale step. Spacing tokens do not account for optical sizing and produce misaligned icons."
-              }
+          },
+          {
+            "description": "When setting font sizes or line heights.",
+            "kind": "negative",
+            "alternative": {
+              "name": "typography",
+              "rationale": "Typographic tokens follow a modular scale designed for readability and vertical rhythm. Spacing tokens follow a geometric scale designed for whitespace. The two scales serve different purposes and should not be interchanged."
             }
-          ]
-        }
+          },
+          {
+            "description": "When sizing icons or illustration containers.",
+            "kind": "negative",
+            "alternative": {
+              "name": "icon-size",
+              "rationale": "Icon size tokens are calibrated to optical alignment with adjacent text at each type scale step. Spacing tokens do not account for optical sizing and produce misaligned icons."
+            }
+          }
+        ]
       }
     ],
     "links": [

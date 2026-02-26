@@ -75,35 +75,6 @@
     "category": "feedback",
     "guidelines": [
       {
-        "type": "examples",
-        "items": [
-          {
-            "title": "Complete form validation flow",
-            "description": "Demonstrates the full error messaging pattern from form submission through error correction and re-submission.",
-            "presentation": {
-              "type": "video",
-              "url": "https://design.acme.com/assets/patterns/error-messaging-full-flow.mp4",
-              "alt": "A user fills out a registration form and clicks Submit. Three fields highlight in red with inline error messages. An error summary appears at the top listing all three errors. The user clicks the first error link and focus moves to the email field. They correct the value, the inline error disappears, and the summary updates to show two remaining errors. After correcting all fields, the summary disappears and the form submits successfully."
-            }
-          },
-          {
-            "title": "Error summary with anchor links",
-            "presentation": {
-              "type": "url",
-              "url": "https://storybook.acme.com/?path=/story/patterns-error-messaging--summary"
-            }
-          },
-          {
-            "title": "Inline validation on blur",
-            "presentation": {
-              "type": "url",
-              "url": "https://storybook.acme.com/?path=/story/patterns-error-messaging--inline-validation"
-            }
-          }
-        ]
-      },
-
-      {
         "type": "interactions",
         "items": [
           {
@@ -173,42 +144,44 @@
       },
       {
         "type": "purpose",
-        "useCases": {
-          "whenToUse": [
-            {
-              "description": "When a user submits a form and one or more fields fail validation — whether client-side or server-side."
-            },
-            {
-              "description": "When an asynchronous operation fails and the user needs to be informed (e.g., save failed, API error, network timeout)."
-            },
-            {
-              "description": "When the user needs to correct input before proceeding, such as during account creation, checkout, or settings changes."
+        "useCases": [
+          {
+            "description": "When a user submits a form and one or more fields fail validation — whether client-side or server-side.",
+            "kind": "positive"
+          },
+          {
+            "description": "When an asynchronous operation fails and the user needs to be informed (e.g., save failed, API error, network timeout).",
+            "kind": "positive"
+          },
+          {
+            "description": "When the user needs to correct input before proceeding, such as during account creation, checkout, or settings changes.",
+            "kind": "positive"
+          },
+          {
+            "description": "When the feedback is a successful outcome (e.g., 'Changes saved', 'Account created').",
+            "kind": "negative",
+            "alternative": {
+              "name": "success-messaging",
+              "rationale": "Success feedback uses the success color and icon. Reusing the error pattern for positive outcomes confuses the visual language and dilutes the urgency of actual errors."
             }
-          ],
-          "whenNotToUse": [
-            {
-              "description": "When the feedback is a successful outcome (e.g., 'Changes saved', 'Account created').",
-              "alternative": {
-                "name": "success-messaging",
-                "rationale": "Success feedback uses the success color and icon. Reusing the error pattern for positive outcomes confuses the visual language and dilutes the urgency of actual errors."
-              }
-            },
-            {
-              "description": "When the feedback is an informational or warning message that does not block the user from proceeding.",
-              "alternative": {
-                "name": "notification-messaging",
-                "rationale": "Informational messages use a neutral or warning color. Treating them as errors creates false urgency and trains users to ignore error styling."
-              }
-            },
-            {
-              "description": "When the entire page or view fails to load (e.g., 404, 503).",
-              "alternative": {
-                "name": "empty-state",
-                "rationale": "Full-page failures are better handled by empty state patterns that replace the entire content area with an explanation and recovery action, rather than overlaying error messages on a non-functional page."
-              }
+          },
+          {
+            "description": "When the feedback is an informational or warning message that does not block the user from proceeding.",
+            "kind": "negative",
+            "alternative": {
+              "name": "notification-messaging",
+              "rationale": "Informational messages use a neutral or warning color. Treating them as errors creates false urgency and trains users to ignore error styling."
             }
-          ]
-        }
+          },
+          {
+            "description": "When the entire page or view fails to load (e.g., 404, 503).",
+            "kind": "negative",
+            "alternative": {
+              "name": "empty-state",
+              "rationale": "Full-page failures are better handled by empty state patterns that replace the entire content area with an explanation and recovery action, rather than overlaying error messages on a non-functional page."
+            }
+          }
+        ]
       },
       {
         "type": "best-practices",
@@ -216,57 +189,57 @@
           {
             "guidance": "Always display inline errors directly below the invalid field, not in a separate location or only in the summary.",
             "rationale": "Users scan forms top-to-bottom. An error placed away from its field forces the user to map the message to the field mentally. Proximity eliminates that cognitive load.",
-            "level": "required",
+            "kind": "required",
             "category": "visual-design"
           },
           {
             "guidance": "Error messages must describe the problem and, when possible, suggest how to fix it.",
             "rationale": "A message like 'Invalid input' forces the user to guess what went wrong. A message like 'Enter a date in MM/DD/YYYY format' removes ambiguity and speeds correction.",
-            "level": "required",
+            "kind": "required",
             "category": "content"
           },
           {
             "guidance": "When two or more fields have errors, display an error summary at the top of the form in addition to inline messages.",
             "rationale": "Users on long forms may not see all inline errors, especially those below the fold. The summary provides a single scannable list of everything that needs attention.",
-            "level": "required",
+            "kind": "required",
             "category": "visual-design"
           },
           {
             "guidance": "Each entry in the error summary must link to the corresponding invalid field.",
             "rationale": "Keyboard and screen reader users need a way to navigate directly from the summary to the problematic field without tabbing through the entire form.",
-            "level": "required",
+            "kind": "required",
             "category": "interaction"
           },
           {
             "guidance": "Move focus to the error summary when it appears.",
-            "rationale": "Screen reader users will not discover the summary unless focus is moved to it. Sighted keyboard users benefit from the same behavior \u2014 their next Tab press lands them in the summary's link list.",
-            "level": "required",
+            "rationale": "Screen reader users will not discover the summary unless focus is moved to it. Sighted keyboard users benefit from the same behavior — their next Tab press lands them in the summary's link list.",
+            "kind": "required",
             "category": "accessibility",
             "criteria": ["https://www.w3.org/TR/WCAG22/#error-identification"]
           },
           {
             "guidance": "Do not clear the form or reset field values when validation fails.",
             "rationale": "Clearing the form destroys the user's work. They must re-enter all data, including fields that were valid. This is hostile to all users and catastrophic for users with motor impairments who rely on slow, deliberate input.",
-            "level": "prohibited",
+            "kind": "prohibited",
             "category": "interaction"
           },
           {
             "guidance": "Use real-time inline validation only for fields where the constraint is unambiguous and immediate feedback is helpful (e.g., password strength, email format). Do not validate on every keystroke for fields that require the user to finish typing.",
             "rationale": "Premature validation interrupts the user. Showing 'Invalid email' while the user is still typing 'j' is noise. Wait for a blur event or a pause in typing.",
-            "level": "encouraged",
+            "kind": "encouraged",
             "category": "interaction"
           },
           {
             "guidance": "Pair every inline error message with an error icon. Do not rely on color alone.",
             "rationale": "Approximately 8% of men have some form of color vision deficiency. An icon provides a second, non-color signal that the field is in an error state. WCAG 1.4.1 requires that color is not the sole means of conveying information.",
-            "level": "required",
+            "kind": "required",
             "category": "accessibility",
             "criteria": ["https://www.w3.org/TR/WCAG22/#use-of-color"]
           },
           {
             "guidance": "Each inline error message must be programmatically associated with its field using aria-describedby.",
             "rationale": "Screen readers announce aria-describedby content when the field receives focus. Without it, the user hears the field label but not the error, and has no way to know the field is invalid.",
-            "level": "required",
+            "kind": "required",
             "category": "accessibility",
             "criteria": [
               "https://www.w3.org/TR/WCAG22/#error-identification",
@@ -276,28 +249,28 @@
           {
             "guidance": "Invalid fields must be marked with aria-invalid=\"true\".",
             "rationale": "The aria-invalid attribute allows screen readers to announce that a field's value is not accepted. It is the standard mechanism for communicating validation state in ARIA.",
-            "level": "required",
+            "kind": "required",
             "category": "accessibility",
             "criteria": ["https://www.w3.org/TR/WCAG22/#error-identification"]
           },
           {
             "guidance": "The error summary must use role=\"alert\" or be injected into an aria-live=\"assertive\" region so that screen readers announce it immediately when it appears.",
             "rationale": "Without a live region, screen readers will not announce dynamically injected content. The user will not know the summary exists unless they navigate to it manually.",
-            "level": "required",
+            "kind": "required",
             "category": "accessibility",
             "criteria": ["https://www.w3.org/TR/WCAG22/#status-messages"]
           },
           {
             "guidance": "Error summary anchor links must move focus to the corresponding field, not just scroll to it.",
             "rationale": "Keyboard users rely on focus position to interact. Scrolling without moving focus leaves the keyboard cursor at the summary, requiring the user to Tab through potentially many elements to reach the field.",
-            "level": "required",
+            "kind": "required",
             "category": "accessibility",
             "criteria": ["https://www.w3.org/TR/WCAG22/#focus-order"]
           },
           {
             "guidance": "Toast notifications for errors must persist until the user dismisses them or the error is resolved. Do not auto-dismiss error toasts.",
             "rationale": "Users with cognitive disabilities or screen reader users may need more time to read and understand the error. Auto-dismissing the toast removes the information before they can act on it.",
-            "level": "required",
+            "kind": "required",
             "category": "accessibility",
             "criteria": ["https://www.w3.org/TR/WCAG22/#timing-adjustable"]
           }
