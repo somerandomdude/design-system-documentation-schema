@@ -27,38 +27,27 @@
               "type": "variants",
               "items": [
                 {
+                  "type": "enum",
                   "name": "emphasis",
                   "displayName": "Emphasis",
                   "description": "The visual weight of the button, indicating the relative importance of the action.",
                   "values": [
                     {
                       "name": "primary",
-                      "description": "The highest-emphasis button. Used for the single most important action on the surface.",
-                      "tokens": {
-                        "button-background": "color-action-primary",
-                        "button-text-color": "color-text-inverse"
-                      }
+                      "description": "The highest-emphasis button. Used for the single most important action on the surface."
                     },
                     {
                       "name": "secondary",
-                      "description": "A medium-emphasis button with a visible border. Used alongside a primary button for secondary actions.",
-                      "tokens": {
-                        "button-background": "color-transparent",
-                        "button-text-color": "color-action-primary",
-                        "button-border-color": "color-action-primary"
-                      }
+                      "description": "A medium-emphasis button with a visible border. Used alongside a primary button for secondary actions."
                     },
                     {
                       "name": "ghost",
-                      "description": "A low-emphasis button with no border or background. Used for tertiary actions in dense layouts.",
-                      "tokens": {
-                        "button-background": "color-transparent",
-                        "button-text-color": "color-action-primary"
-                      }
+                      "description": "A low-emphasis button with no border or background. Used for tertiary actions in dense layouts."
                     }
                   ]
                 },
                 {
+                  "type": "enum",
                   "name": "size",
                   "displayName": "Size",
                   "description": "Controls padding, font size, and minimum touch target area.",
@@ -109,25 +98,24 @@
             },
             {
               "type": "purpose",
-              "useCases": {
-                "whenToUse": [
-                  {
-                    "description": "When the user needs to trigger an action such as submitting a form, saving data, or opening a dialog."
-                  },
-                  {
-                    "description": "When a destructive action needs to be initiated, such as deleting a record. Pair with a confirmation dialog."
+              "useCases": [
+                {
+                  "description": "When the user needs to trigger an action such as submitting a form, saving data, or opening a dialog.",
+                  "kind": "positive"
+                },
+                {
+                  "description": "When a destructive action needs to be initiated, such as deleting a record. Pair with a confirmation dialog.",
+                  "kind": "positive"
+                },
+                {
+                  "description": "When the action navigates to a different page or URL.",
+                  "kind": "negative",
+                  "alternative": {
+                    "name": "link",
+                    "rationale": "Links carry native navigation semantics. Screen readers announce them as links, and browsers support open-in-new-tab."
                   }
-                ],
-                "whenNotToUse": [
-                  {
-                    "description": "When the action navigates to a different page or URL.",
-                    "alternative": {
-                      "name": "link",
-                      "rationale": "Links carry native navigation semantics. Screen readers announce them as links, and browsers support open-in-new-tab."
-                    }
-                  }
-                ]
-              }
+                }
+              ]
             },
             {
               "type": "best-practices",
@@ -135,19 +123,19 @@
                 {
                   "guidance": "Limit each surface to one primary button.",
                   "rationale": "Multiple primary buttons dilute visual hierarchy.",
-                  "level": "required",
+                  "kind": "required",
                   "category": "visual-design"
                 },
                 {
                   "guidance": "Use the loading state instead of disabling the button during async operations.",
                   "rationale": "A disabled button gives no feedback that an action is in progress.",
-                  "level": "encouraged",
+                  "kind": "encouraged",
                   "category": "interaction"
                 },
                 {
                   "guidance": "When using an icon-only button, provide an aria-label.",
                   "rationale": "Screen readers need a text equivalent for every interactive control.",
-                  "level": "required",
+                  "kind": "required",
                   "category": "accessibility",
                   "criteria": ["https://www.w3.org/TR/WCAG22/#name-role-value"]
                 }
@@ -194,22 +182,20 @@
           "guidelines": [
             {
               "type": "purpose",
-              "useCases": {
-                "whenToUse": [
-                  {
-                    "description": "When the action navigates the user to a different page, section, or external resource."
+              "useCases": [
+                {
+                  "description": "When the action navigates the user to a different page, section, or external resource.",
+                  "kind": "positive"
+                },
+                {
+                  "description": "When the action triggers a state change or submits data without navigation.",
+                  "kind": "negative",
+                  "alternative": {
+                    "name": "button",
+                    "rationale": "Buttons have action semantics. Using a link for non-navigation actions creates a mismatch between role and behavior."
                   }
-                ],
-                "whenNotToUse": [
-                  {
-                    "description": "When the action triggers a state change or submits data without navigation.",
-                    "alternative": {
-                      "name": "button",
-                      "rationale": "Buttons have action semantics. Using a link for non-navigation actions creates a mismatch between role and behavior."
-                    }
-                  }
-                ]
-              }
+                }
+              ]
             },
             {
               "type": "best-practices",
@@ -217,7 +203,7 @@
                 {
                   "guidance": "Always pair link color with an underline for inline links within body text.",
                   "rationale": "Color alone is insufficient to distinguish links for users with color vision deficiency.",
-                  "level": "required",
+                  "kind": "required",
                   "category": "accessibility",
                   "criteria": ["https://www.w3.org/TR/WCAG22/#use-of-color"]
                 }
@@ -247,6 +233,7 @@
               "type": "variants",
               "items": [
                 {
+                  "type": "enum",
                   "name": "severity",
                   "displayName": "Severity",
                   "description": "The visual treatment and semantic meaning of the alert.",
@@ -277,7 +264,7 @@
                 {
                   "guidance": "Use role='alert' or aria-live='assertive' for error alerts so screen readers announce them immediately.",
                   "rationale": "Without a live region, dynamically injected error messages are invisible to assistive technology.",
-                  "level": "required",
+                  "kind": "required",
                   "category": "accessibility",
                   "criteria": ["https://www.w3.org/TR/WCAG22/#status-messages"]
                 }
@@ -428,13 +415,13 @@
                 {
                   "guidance": "Components must not apply external margin. Margin between components is the responsibility of the parent layout.",
                   "rationale": "Components that own their margins create unpredictable spacing when composed.",
-                  "level": "required",
+                  "kind": "required",
                   "category": "visual-design"
                 },
                 {
                   "guidance": "Use CSS gap as the primary mechanism for spacing between sibling elements.",
                   "rationale": "Gap applies spacing uniformly without affecting the first or last child.",
-                  "level": "encouraged",
+                  "kind": "encouraged",
                   "category": "development"
                 }
               ]
@@ -477,22 +464,20 @@
             },
             {
               "type": "purpose",
-              "useCases": {
-                "whenToUse": [
-                  {
-                    "description": "When a form submission fails validation and the user needs to correct one or more fields."
+              "useCases": [
+                {
+                  "description": "When a form submission fails validation and the user needs to correct one or more fields.",
+                  "kind": "positive"
+                },
+                {
+                  "description": "When the feedback is a successful outcome.",
+                  "kind": "negative",
+                  "alternative": {
+                    "name": "success-messaging",
+                    "rationale": "Success feedback uses success colors and icons. Reusing the error pattern for positive outcomes confuses the visual language."
                   }
-                ],
-                "whenNotToUse": [
-                  {
-                    "description": "When the feedback is a successful outcome.",
-                    "alternative": {
-                      "name": "success-messaging",
-                      "rationale": "Success feedback uses success colors and icons. Reusing the error pattern for positive outcomes confuses the visual language."
-                    }
-                  }
-                ]
-              }
+                }
+              ]
             },
             {
               "type": "best-practices",
@@ -500,13 +485,13 @@
                 {
                   "guidance": "Always display inline errors directly below the invalid field.",
                   "rationale": "Proximity eliminates the cognitive load of mapping an error message to its field.",
-                  "level": "required",
+                  "kind": "required",
                   "category": "interaction"
                 },
                 {
                   "guidance": "Move focus to the error summary when it appears.",
                   "rationale": "Screen reader users will not discover the summary unless focus is moved to it.",
-                  "level": "required",
+                  "kind": "required",
                   "category": "accessibility",
                   "criteria": [
                     "https://www.w3.org/TR/WCAG22/#error-identification"
@@ -515,7 +500,7 @@
                 {
                   "guidance": "Do not clear the form or reset field values when validation fails.",
                   "rationale": "Clearing the form destroys the user's work.",
-                  "level": "prohibited",
+                  "kind": "prohibited",
                   "category": "interaction"
                 }
               ]

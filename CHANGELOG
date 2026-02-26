@@ -4,7 +4,253 @@ All notable changes to the DSDS specification are documented in this file.
 
 ---
 
-## [0.1.2] — 2025-02-28
+## [0.1.3] — 2026-02-26
+
+### Breaking Changes
+
+#### 1. Variant schema redesign — flag and enum types replace variantEntry
+
+The `variants` guideline has been redesigned around two discriminated variant types:
+
+- **`flagVariant`** (`type: "flag"`) — A boolean toggle that is either on or off (e.g.,
+  `disabled`, `full-width`, `icon-only`). No `values` array.
+- **`enumVariant`** (`type: "enum"`) — A set of mutually exclusive values (e.g.,
+  size: sm | md | lg). Requires a `values` array with at least 2 entries.
+
+**Before:**
+```json
+{
+  "type": "variants",
+  "items": [
+    {
+      "name": "size",
+      "description": "Controls the physical dimensions.",
+      "values": [
+        { "name": "small", "description": "Compact." },
+        { "name": "medium", "description": "Default." },
+        { "name": "large", "description": "Touch-optimized." }
+      ]
+    },
+    {
+      "name": "full-width",
+      "description": "Stretches to fill the container.",
+      "values": [
+        { "name": "full-width", "description": "100% width." }
+      ]
+    }
+  ]
+}
+```
+
+**After:**
+```json
+{
+  "type": "variants",
+  "items": [
+    {
+      "type": "enum",
+      "name": "size",
+      "description": "Controls the physical dimensions.",
+      "values": [
+        { "name": "small", "description": "Compact." },
+        { "name": "medium", "description": "Default." },
+        { "name": "large", "description": "Touch-optimized." }
+      ]
+    },
+    {
+      "type": "flag",
+      "name": "full-width",
+      "description": "Stretches to fill the container.",
+      "purpose": "Provides a prominent call to action in narrow layouts."
+    }
+  ]
+}
+```
+
+**Removed definitions:** `variantEntry`, `variantExclusionCondition`, `variantExclusion`
+**New definitions:** `flagVariant`, `enumVariant`
+**Files changed:** `guidelines/variant.schema.json`
+
+---
+
+#### 2. Variant exclusions removed
+
+The `exclusions` property has been removed from the `variants` guideline entirely.
+Invalid combinations across variant dimensions are no longer modeled in the schema.
+
+**Files changed:** `guidelines/variant.schema.json`
+
+---
+
+#### 3. Best practice `level` renamed to `kind`
+
+The enforcement level property on `bestPracticeEntry` was renamed from `level` to
+`kind` to use consistent terminology across the schema (use cases also use `kind`).
+
+**Before:** `"level": "required"`
+**After:** `"kind": "required"`
+
+Valid values are unchanged: `required`, `encouraged`, `informational`, `discouraged`,
+`prohibited`.
+
+**Files changed:** `guidelines/best-practice.schema.json`
+
+---
+
+#### 4. Use cases flattened from object to array
+
+The `useCases` property on `purpose` guidelines, `stateEntry`, and `variantValue` has
+changed from a `{ whenToUse, whenNotToUse }` object to a flat array of `useCase` items.
+Each use case now carries a `kind` discriminator (`"positive"` or `"negative"`) instead
+of being bucketed into separate arrays.
+
+**Before:**
+```json
+{
+  "type": "purpose",
+  "useCases": {
+    "whenToUse": [
+      { "description": "When the user needs to trigger an action." }
+    ],
+    "whenNotToUse": [
+      {
+        "description": "When the action navigates to a different page.",
+        "alternative": { "name": "link", "rationale": "..." }
+      }
+    ]
+  }
+}
+```
+
+**After:**
+```json
+{
+  "type": "purpose",
+  "useCases": [
+    {
+      "description": "When the user needs to trigger an action.",
+      "kind": "positive"
+    },
+    {
+      "description": "When the action navigates to a different page.",
+      "kind": "negative",
+      "alternative": { "name": "link", "rationale": "..." }
+    }
+  ]
+}
+```
+
+**Files changed:** `guidelines/purpose.schema.json`, `guidelines/state.schema.json`,
+`guidelines/variant.schema.json`, `common/usecase.schema.json`
+
+---
+
+#### 5. `tokens` property removed from `variantValue`
+
+The `tokens` object map on `variantValue` has been removed. Token associations for
+variant values should be documented in the anatomy or design-specifications guidelines
+rather than inline on each value.
+
+**Files changed:** `guidelines/variant.schema.json`
+
+---
+
+#### 6. `examples` guideline removed from pattern scope
+
+The `examples` guideline type (`type: "examples"`) is no longer accepted on pattern
+entities. Patterns should use presentations within their interaction steps, anatomy
+previews, or variant previews instead of standalone example guidelines.
+
+**Files changed:** `guidelines/guideline.schema.json`
+
+---
+
+### New Features
+
+#### 7. Presentation schema extracted
+
+Presentation types (`presentationImage`, `presentationVideo`, `presentationCode`,
+`presentationUrl`) have been extracted into a dedicated `presentation.schema.json` file.
+The `example.schema.json` now references these types via `$ref` rather than defining
+them inline. This allows presentations to be reused independently of the example model.
+
+**Files created:** `common/presentation.schema.json`
+**Files changed:** `common/example.schema.json`
+
+---
+
+#### 8. Component `preview` property
+
+Components now accept an optional `preview` property at the top level — a single
+presentation (image, video, code, or URL) providing a hero visual for the component.
+Accepts any presentation type from `presentation.schema.json`.
+
+**Files changed:** `entities/component.schema.json`
+
+---
+
+#### 9. `variantValue.preview` renamed to `example`
+
+The `preview` property on `variantValue` has been renamed to `example` and now accepts
+an array of example objects (consistent with the example model used elsewhere).
+
+**Files changed:** `guidelines/variant.schema.json`
+
+---
+
+### Tooling
+
+- **Bundle error messages now include file paths.** The `readJSON` function in
+  `scripts/bundle.js` now wraps `JSON.parse` in a try/catch and reports the relative
+  file path in the error message, replacing the unhelpful `<anonymous_script>` output.
+
+---
+
+### Migration Guide
+
+To update documents from 0.1.2 to 0.1.3:
+
+1. **Best practice entries:** Rename `"level"` → `"kind"` in every `bestPracticeEntry`.
+
+2. **Use cases:** Convert every `useCases` object to a flat array. Move `whenToUse`
+   entries into the array with `"kind": "positive"`. Move `whenNotToUse` entries into
+   the array with `"kind": "negative"`.
+
+3. **Variant items:** Add `"type": "enum"` to multi-value variants. Convert
+   single-value (boolean) variants to `"type": "flag"` and remove the `values` array.
+   Add an optional `purpose` field to each variant.
+
+4. **Variant exclusions:** Remove `exclusions` from all `variants` guidelines.
+
+5. **Variant value tokens:** Remove `tokens` from all `variantValue` objects.
+
+6. **Pattern examples guideline:** Remove any `type: "examples"` guideline from
+   pattern entities. Move example content into interaction step `examples`, anatomy
+   `preview`, or variant value `example` arrays as appropriate.
+
+**Automated migration (sed, one-liners):**
+
+```sh
+# Rename level to kind in best practice entries
+sed -i 's/"level":\s*"required"/"kind": "required"/g' *.json
+sed -i 's/"level":\s*"encouraged"/"kind": "encouraged"/g' *.json
+sed -i 's/"level":\s*"informational"/"kind": "informational"/g' *.json
+sed -i 's/"level":\s*"discouraged"/"kind": "discouraged"/g' *.json
+sed -i 's/"level":\s*"prohibited"/"kind": "prohibited"/g' *.json
+```
+
+---
+
+### Internal
+
+- Bundled schema now contains 70 definitions from 28 files (was 72/27).
+- All example files updated to match schema changes.
+- README updated to reflect new variant model, use case format, best practice
+  `kind` property, presentation schema, and corrected guideline scope tables.
+
+---
+
+## [0.1.2] — 2026-02-25
 
 ### New Features
 
@@ -182,7 +428,7 @@ otherwise it is explicit.
 
 ---
 
-## [0.1.1] — 2025-02-28
+## [0.1.1] — 2026-02-24
 
 ### Breaking Changes
 

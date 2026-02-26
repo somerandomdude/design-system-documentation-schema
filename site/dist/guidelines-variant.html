@@ -20,6 +20,7 @@
 <a class="nav__link nav__link--child" href="common-extensions.html">extensions</a>
 <a class="nav__link nav__link--child" href="common-link.html">link</a>
 <a class="nav__link nav__link--child" href="common-metadata.html">metadata</a>
+<a class="nav__link nav__link--child" href="common-presentation.html">presentation</a>
 <a class="nav__link nav__link--child" href="common-rich-text.html">rich-text</a>
 <a class="nav__link nav__link--child" href="common-status.html">status</a>
 <a class="nav__link nav__link--child" href="common-usecase.html">usecase</a>
@@ -60,30 +61,28 @@
     <main class="content__main" role="main">
       <div class="content__inner">
         <h1>DSDS Variants Guideline</h1>
-<p class="schema-description">Documents all dimensions of visual or behavioral variation on a component. Each item in the variants array represents a single axis of configuration (e.g., 'size', 'emphasis', 'selected') and contains one or more values describing the options within that axis. A variant dimension with a single value represents a boolean/toggle configuration (e.g., 'full-width', 'icon-only'). A variant dimension with multiple values represents an enumerated set (e.g., size: small/medium/large). Optional exclusions document invalid combinations across dimensions.</p>
+<p class="schema-description">Documents all dimensions of visual or behavioral variation on a component. Each item in the variants array is either a flag variant (a boolean toggle such as 'disabled' or 'full-width') or an enum variant (a set of mutually exclusive options such as size: sm | md | lg). Every variant carries a purpose field explaining why the variation exists in the design system.</p>
 <p class="schema-source">Source: <code>guidelines/variant.schema.json</code></p>
 <nav class="page-def-index">
-<p><strong>5 definitions</strong> in this file:</p>
+<p><strong>4 definitions</strong> in this file:</p>
 <ul>
 <li><a href="#variantvalue"><code>variantValue</code></a></li>
-<li><a href="#variantentry"><code>variantEntry</code></a></li>
-<li><a href="#variantexclusioncondition"><code>variantExclusionCondition</code></a></li>
-<li><a href="#variantexclusion"><code>variantExclusion</code></a></li>
+<li><a href="#flagvariant"><code>flagVariant</code></a></li>
+<li><a href="#enumvariant"><code>enumVariant</code></a></li>
 <li><a href="#variants"><code>variants</code></a></li>
 </ul>
 </nav>
 <section class="def-section" id="variantvalue">
 <h3 id="variantvalue">variantValue</h3>
-<p class="def-description">A single option within a variant dimension.</p>
+<p class="def-description">A single option within an enum variant dimension.</p>
 <p class="def-type"><span class="type-badge">object</span></p>
-<table class="prop-table"><thead><tr><th>Property</th><th>Type</th><th>Required</th><th>Description</th></tr></thead><tbody><tr><td><code>name</code></td><td>string</td><td><span class="required-badge">required</span></td><td>Machine-readable value name (e.g., 'small', 'primary', 'selected', 'full-width').</td></tr>
+<table class="prop-table"><thead><tr><th>Property</th><th>Type</th><th>Required</th><th>Description</th></tr></thead><tbody><tr><td><code>name</code></td><td>string</td><td><span class="required-badge">required</span></td><td>Machine-readable value name (e.g., 'sm', 'md', 'lg', 'primary', 'secondary').</td></tr>
 <tr><td><code>description</code></td><td><a href="common-rich-text.html#richtext" class="type-ref">richText</a></td><td><span class="required-badge">required</span></td><td>What this value looks like, when to use it, and how it differs from the other values in this dimension.</td></tr>
-<tr><td><code>displayName</code></td><td>string</td><td>optional</td><td>Human-readable name (e.g., 'Small', 'Primary', 'Selected', 'Full Width').</td></tr>
-<tr><td><code>tokens</code></td><td>map&lt;string, string&gt;</td><td>optional</td><td>Design token overrides applied when this value is active. Keys are token-purpose names scoped to the component (e.g., 'button-background', 'button-text-color'). Values are the token names or resolved values that apply for this variant value.</td></tr>
-<tr><td><code>preview</code></td><td><a href="common-example.html#example" class="type-ref">example</a>[]</td><td>optional</td><td>Visual previews showing this variant value in isolation or in context.</td></tr>
-<tr><td><code>useCases</code></td><td><a href="common-usecase.html#usecases" class="type-ref">useCases</a></td><td>optional</td><td>When to choose this value over the other values in this dimension.</td></tr></tbody></table>
+<tr><td><code>displayName</code></td><td>string</td><td>optional</td><td>Human-readable name (e.g., 'Small', 'Medium', 'Large', 'Primary', 'Secondary').</td></tr>
+<tr><td><code>example</code></td><td><a href="common-example.html#example" class="type-ref">example</a>[]</td><td>optional</td><td>Visual previews showing this variant value in isolation or in context.</td></tr>
+<tr><td><code>useCases</code></td><td><a href="common-usecase.html#usecase" class="type-ref">useCase</a>[]</td><td>optional</td><td>Scenario-driven guidance describing when this artifact is or is not the right choice. </td></tr></tbody></table>
 <p class="cross-refs"><strong>References:</strong> 
-<a href="common-rich-text.html#richtext">richText</a>, <a href="common-example.html#example">example</a>, <a href="common-usecase.html#usecases">useCases</a>
+<a href="common-rich-text.html#richtext">richText</a>, <a href="common-example.html#example">example</a>, <a href="common-usecase.html#usecase">useCase</a>
 </p>
 <div class="def-example">
 <p class="def-example__title"><strong>Example</strong></p>
@@ -92,133 +91,142 @@
     &quot;name&quot;: &quot;primary&quot;,
     &quot;displayName&quot;: &quot;Primary&quot;,
     &quot;description&quot;: &quot;High-emphasis — the main action on the surface. Uses a solid, filled background. Limit to one primary button per surface.&quot;,
-    &quot;tokens&quot;: {
-      &quot;button-background&quot;: &quot;color-action-primary&quot;,
-      &quot;button-text-color&quot;: &quot;color-text-on-action&quot;,
-      &quot;button-border-color&quot;: &quot;transparent&quot;
-    },
-    &quot;useCases&quot;: {
-      &quot;whenToUse&quot;: [
-        {
-          &quot;description&quot;: &quot;When the action is the most important on the surface — the one the user is most likely to take (e.g., Save, Submit, Confirm).&quot;
+    &quot;useCases&quot;: [
+      {
+        &quot;description&quot;: &quot;When the action is the most important on the surface — the one the user is most likely to take (e.g., Save, Submit, Confirm).&quot;,
+        &quot;kind&quot;: &quot;positive&quot;
+      },
+      {
+        &quot;description&quot;: &quot;When a surface already has a primary button. Adding a second dilutes visual hierarchy.&quot;,
+        &quot;kind&quot;: &quot;negative&quot;,
+        &quot;alternative&quot;: {
+          &quot;name&quot;: &quot;secondary&quot;,
+          &quot;rationale&quot;: &quot;Secondary emphasis maintains importance without competing with the existing primary action.&quot;
         }
-      ],
-      &quot;whenNotToUse&quot;: [
-        {
-          &quot;description&quot;: &quot;When a surface already has a primary button. Adding a second dilutes visual hierarchy.&quot;,
-          &quot;alternative&quot;: {
-            &quot;name&quot;: &quot;secondary&quot;,
-            &quot;rationale&quot;: &quot;Secondary emphasis maintains importance without competing with the existing primary action.&quot;
-          }
-        }
-      ]
-    }
+      }
+    ]
   },
   {
     &quot;name&quot;: &quot;secondary&quot;,
     &quot;displayName&quot;: &quot;Secondary&quot;,
-    &quot;description&quot;: &quot;Medium-emphasis — important but not the primary action. Uses a visible border and transparent background.&quot;,
-    &quot;tokens&quot;: {
-      &quot;button-background&quot;: &quot;transparent&quot;,
-      &quot;button-text-color&quot;: &quot;color-action-primary&quot;,
-      &quot;button-border-color&quot;: &quot;color-action-primary&quot;
-    }
+    &quot;description&quot;: &quot;Medium-emphasis — important but not the primary action. Uses a visible border and transparent background.&quot;
   },
   {
     &quot;name&quot;: &quot;ghost&quot;,
     &quot;displayName&quot;: &quot;Ghost&quot;,
-    &quot;description&quot;: &quot;Low-emphasis — for tertiary actions, toolbar actions, or dense layouts where visual weight must be minimized.&quot;,
-    &quot;tokens&quot;: {
-      &quot;button-background&quot;: &quot;transparent&quot;,
-      &quot;button-text-color&quot;: &quot;color-action-primary&quot;,
-      &quot;button-border-color&quot;: &quot;transparent&quot;
-    }
+    &quot;description&quot;: &quot;Low-emphasis — for tertiary actions, toolbar actions, or dense layouts where visual weight must be minimized.&quot;
   },
   {
     &quot;name&quot;: &quot;danger&quot;,
     &quot;displayName&quot;: &quot;Danger&quot;,
     &quot;description&quot;: &quot;Signals a destructive or irreversible action. Use for delete, remove, or disconnect actions.&quot;,
-    &quot;tokens&quot;: {
-      &quot;button-background&quot;: &quot;color-action-danger&quot;,
-      &quot;button-text-color&quot;: &quot;color-text-on-action&quot;,
-      &quot;button-border-color&quot;: &quot;transparent&quot;
-    },
-    &quot;useCases&quot;: {
-      &quot;whenToUse&quot;: [
-        {
-          &quot;description&quot;: &quot;When the action is destructive or irreversible — deleting a record, revoking access, removing a team member.&quot;
+    &quot;useCases&quot;: [
+      {
+        &quot;description&quot;: &quot;When the action is destructive or irreversible — deleting a record, revoking access, removing a team member.&quot;,
+        &quot;kind&quot;: &quot;positive&quot;
+      },
+      {
+        &quot;description&quot;: &quot;When the action is not destructive, even if it feels important or urgent.&quot;,
+        &quot;kind&quot;: &quot;negative&quot;,
+        &quot;alternative&quot;: {
+          &quot;name&quot;: &quot;primary&quot;,
+          &quot;rationale&quot;: &quot;The danger color is a strong signal reserved for destruction. Using it for non-destructive actions dilutes its meaning.&quot;
         }
-      ],
-      &quot;whenNotToUse&quot;: [
-        {
-          &quot;description&quot;: &quot;When the action is not destructive, even if it feels important or urgent.&quot;,
-          &quot;alternative&quot;: {
-            &quot;name&quot;: &quot;primary&quot;,
-            &quot;rationale&quot;: &quot;The danger color is a strong signal reserved for destruction. Using it for non-destructive actions dilutes its meaning.&quot;
-          }
-        }
-      ]
-    }
+      }
+    ]
   }
 ]</code></pre>
 </div>
 </section>
-<section class="def-section" id="variantentry">
-<h3 id="variantentry">variantEntry</h3>
-<p class="def-description">A single dimension of variation on a component. The name identifies the axis (e.g., 'size', 'emphasis') and the values array enumerates the options along that axis.</p>
+<section class="def-section" id="flagvariant">
+<h3 id="flagvariant">flagVariant</h3>
+<p class="def-description">A boolean/toggle variant that is either on or off. Use for binary capabilities such as 'disabled', 'full-width', 'icon-only', or 'loading'. Flag variants have no values array — the component either has the flag active or it does not.</p>
 <p class="def-type"><span class="type-badge">object</span></p>
-<table class="prop-table"><thead><tr><th>Property</th><th>Type</th><th>Required</th><th>Description</th></tr></thead><tbody><tr><td><code>name</code></td><td>string</td><td><span class="required-badge">required</span></td><td>Machine-readable name of the variant dimension (e.g., 'size', 'emphasis', 'selected', 'full-width'). This is the axis name, not a value within the axis.</td></tr>
-<tr><td><code>description</code></td><td><a href="common-rich-text.html#richtext" class="type-ref">richText</a></td><td><span class="required-badge">required</span></td><td>What this dimension of variation controls and how its values affect the component's appearance or behavior.</td></tr>
-<tr><td><code>values</code></td><td><a href="guidelines-variant.html#variantvalue" class="type-ref">variantValue</a>[]</td><td><span class="required-badge">required</span></td><td>The possible values for this variant. A single-entry array indicates a boolean/toggle variant. Multiple entries indicate an enumerated variant. The ordering is significant — tools SHOULD preserve it for display.<br><small>Min items: 1</small></td></tr>
-<tr><td><code>displayName</code></td><td>string</td><td>optional</td><td>Human-readable name of the variant dimension (e.g., 'Size', 'Emphasis', 'Selected').</td></tr>
-<tr><td><code>useCases</code></td><td><a href="common-usecase.html#usecases" class="type-ref">useCases</a></td><td>optional</td><td>When to use this variant dimension at all (as opposed to use cases on individual values, which address choosing between options within the dimension).</td></tr></tbody></table>
+<table class="prop-table"><thead><tr><th>Property</th><th>Type</th><th>Required</th><th>Description</th></tr></thead><tbody><tr><td><code>type</code></td><td><code>"flag"</code></td><td><span class="required-badge">required</span></td><td>Identifies this variant as a boolean flag.</td></tr>
+<tr><td><code>name</code></td><td>string</td><td><span class="required-badge">required</span></td><td>Machine-readable name of the flag (e.g., 'disabled', 'full-width', 'icon-only', 'loading').</td></tr>
+<tr><td><code>description</code></td><td><a href="common-rich-text.html#richtext" class="type-ref">richText</a></td><td><span class="required-badge">required</span></td><td>What this flag controls and how it affects the component's appearance or behavior when active.</td></tr>
+<tr><td><code>displayName</code></td><td>string</td><td>optional</td><td>Human-readable name of the flag (e.g., 'Disabled', 'Full Width', 'Icon Only', 'Loading').</td></tr>
+<tr><td><code>purpose</code></td><td><a href="common-rich-text.html#richtext" class="type-ref">richText</a></td><td>optional</td><td>Why this flag exists in the design system — the user need or design rationale it addresses (e.g., 'Prevents user interaction during form submission to avoid duplicate requests').</td></tr>
+<tr><td><code>example</code></td><td><a href="common-example.html#example" class="type-ref">example</a></td><td>optional</td><td>Visual previews showing the component with this flag active.</td></tr>
+<tr><td><code>useCases</code></td><td><a href="common-usecase.html#usecase" class="type-ref">useCase</a>[]</td><td>optional</td><td>Scenario-driven guidance describing when this artifact is or is not the right choice. </td></tr></tbody></table>
 <p class="cross-refs"><strong>References:</strong> 
-<a href="common-rich-text.html#richtext">richText</a>, <a href="guidelines-variant.html#variantvalue">variantValue</a>, <a href="common-usecase.html#usecases">useCases</a>
+<a href="common-rich-text.html#richtext">richText</a>, <a href="common-example.html#example">example</a>, <a href="common-usecase.html#usecase">useCase</a>
 </p>
 <div class="def-example">
 <p class="def-example__title"><strong>Example</strong></p>
 <pre><code class="language-json">[
   {
+    &quot;type&quot;: &quot;flag&quot;,
+    &quot;name&quot;: &quot;full-width&quot;,
+    &quot;displayName&quot;: &quot;Full Width&quot;,
+    &quot;description&quot;: &quot;When active, the button stretches to fill the full width of its parent container. Label text is centered.&quot;,
+    &quot;purpose&quot;: &quot;Provides a prominent, easy-to-tap call to action in narrow or single-column layouts where the button should span the full container width.&quot;,
+    &quot;useCases&quot;: [
+      {
+        &quot;description&quot;: &quot;When the button is the sole action in a narrow container such as a mobile sheet, a card footer, or a single-column form.&quot;,
+        &quot;kind&quot;: &quot;positive&quot;
+      },
+      {
+        &quot;description&quot;: &quot;When multiple buttons appear side by side in a button group or dialog footer.&quot;,
+        &quot;kind&quot;: &quot;negative&quot;,
+        &quot;alternative&quot;: {
+          &quot;name&quot;: &quot;default width&quot;,
+          &quot;rationale&quot;: &quot;Full-width buttons in a horizontal group force a stacked layout, which breaks the expected left-to-right reading order for action groups.&quot;
+        }
+      }
+    ]
+  },
+  {
+    &quot;type&quot;: &quot;flag&quot;,
+    &quot;name&quot;: &quot;icon-only&quot;,
+    &quot;displayName&quot;: &quot;Icon Only&quot;,
+    &quot;description&quot;: &quot;When active, the button renders a single icon with no visible label. An aria-label is required.&quot;,
+    &quot;purpose&quot;: &quot;Enables compact, space-efficient actions in toolbars and dense layouts where the icon alone is universally understood.&quot;
+  }
+]</code></pre>
+</div>
+</section>
+<section class="def-section" id="enumvariant">
+<h3 id="enumvariant">enumVariant</h3>
+<p class="def-description">An enumerated variant with multiple mutually exclusive values. Use for dimensions of variation where the user selects one option from a set, such as 'size' (sm | md | lg), 'emphasis' (primary | secondary | ghost), or 'shape' (rounded | pill | square).</p>
+<p class="def-type"><span class="type-badge">object</span></p>
+<table class="prop-table"><thead><tr><th>Property</th><th>Type</th><th>Required</th><th>Description</th></tr></thead><tbody><tr><td><code>type</code></td><td><code>"enum"</code></td><td><span class="required-badge">required</span></td><td>Identifies this variant as an enumerated set of values.</td></tr>
+<tr><td><code>name</code></td><td>string</td><td><span class="required-badge">required</span></td><td>Machine-readable name of the variant dimension (e.g., 'size', 'emphasis', 'shape'). This is the axis name, not a value within the axis.</td></tr>
+<tr><td><code>description</code></td><td><a href="common-rich-text.html#richtext" class="type-ref">richText</a></td><td><span class="required-badge">required</span></td><td>What this dimension of variation controls and how its values affect the component's appearance or behavior.</td></tr>
+<tr><td><code>values</code></td><td><a href="guidelines-variant.html#variantvalue" class="type-ref">variantValue</a>[]</td><td><span class="required-badge">required</span></td><td>The possible values for this variant. Must contain at least two entries — a single-value dimension should be modeled as a flag variant instead. The ordering is significant — tools SHOULD preserve it for display.<br><small>Min items: 2</small></td></tr>
+<tr><td><code>displayName</code></td><td>string</td><td>optional</td><td>Human-readable name of the variant dimension (e.g., 'Size', 'Emphasis', 'Shape').</td></tr></tbody></table>
+<p class="cross-refs"><strong>References:</strong> 
+<a href="common-rich-text.html#richtext">richText</a>, <a href="guidelines-variant.html#variantvalue">variantValue</a>
+</p>
+<div class="def-example">
+<p class="def-example__title"><strong>Example</strong></p>
+<pre><code class="language-json">[
+  {
+    &quot;type&quot;: &quot;enum&quot;,
     &quot;name&quot;: &quot;emphasis&quot;,
     &quot;displayName&quot;: &quot;Emphasis&quot;,
     &quot;description&quot;: &quot;Controls the visual weight of the button. Determines background fill, border treatment, and text color to establish a visual hierarchy among actions on a surface.&quot;,
     &quot;values&quot;: [
       {
         &quot;name&quot;: &quot;primary&quot;,
-        &quot;description&quot;: &quot;High-emphasis — the main action on the surface.&quot;,
-        &quot;tokens&quot;: {
-          &quot;button-background&quot;: &quot;color-action-primary&quot;,
-          &quot;button-text-color&quot;: &quot;color-text-on-action&quot;
-        }
+        &quot;description&quot;: &quot;High-emphasis — the main action on the surface.&quot;
       },
       {
         &quot;name&quot;: &quot;secondary&quot;,
-        &quot;description&quot;: &quot;Medium-emphasis — important but not primary.&quot;,
-        &quot;tokens&quot;: {
-          &quot;button-background&quot;: &quot;transparent&quot;,
-          &quot;button-text-color&quot;: &quot;color-action-primary&quot;,
-          &quot;button-border-color&quot;: &quot;color-action-primary&quot;
-        }
+        &quot;description&quot;: &quot;Medium-emphasis — important but not primary.&quot;
       },
       {
         &quot;name&quot;: &quot;ghost&quot;,
-        &quot;description&quot;: &quot;Low-emphasis — tertiary actions and dense layouts.&quot;,
-        &quot;tokens&quot;: {
-          &quot;button-background&quot;: &quot;transparent&quot;,
-          &quot;button-text-color&quot;: &quot;color-action-primary&quot;
-        }
+        &quot;description&quot;: &quot;Low-emphasis — tertiary actions and dense layouts.&quot;
       },
       {
         &quot;name&quot;: &quot;danger&quot;,
-        &quot;description&quot;: &quot;Signals a destructive or irreversible action.&quot;,
-        &quot;tokens&quot;: {
-          &quot;button-background&quot;: &quot;color-action-danger&quot;,
-          &quot;button-text-color&quot;: &quot;color-text-on-action&quot;
-        }
+        &quot;description&quot;: &quot;Signals a destructive or irreversible action.&quot;
       }
     ]
   },
   {
+    &quot;type&quot;: &quot;enum&quot;,
     &quot;name&quot;: &quot;size&quot;,
     &quot;displayName&quot;: &quot;Size&quot;,
     &quot;description&quot;: &quot;Controls the physical dimensions and internal padding of the button. All sizes maintain a minimum 44×44 CSS pixel tap target.&quot;,
@@ -236,65 +244,88 @@
         &quot;description&quot;: &quot;Touch-optimized size for mobile-first surfaces and marketing pages.&quot;
       }
     ]
-  },
-  {
-    &quot;name&quot;: &quot;full-width&quot;,
-    &quot;displayName&quot;: &quot;Full Width&quot;,
-    &quot;description&quot;: &quot;When active, the button stretches to fill the full width of its parent container. A single-value variant — the button is either full-width or it is not.&quot;,
-    &quot;values&quot;: [
-      {
-        &quot;name&quot;: &quot;full-width&quot;,
-        &quot;displayName&quot;: &quot;Full Width&quot;,
-        &quot;description&quot;: &quot;The button expands to 100% of its container width. Label text is centered.&quot;,
-        &quot;useCases&quot;: {
-          &quot;whenToUse&quot;: [
-            {
-              &quot;description&quot;: &quot;When the button is the sole action in a narrow container such as a mobile sheet, a card footer, or a single-column form.&quot;
-            }
-          ],
-          &quot;whenNotToUse&quot;: [
-            {
-              &quot;description&quot;: &quot;When multiple buttons appear side by side in a button group or dialog footer.&quot;,
-              &quot;alternative&quot;: {
-                &quot;name&quot;: &quot;default width&quot;,
-                &quot;rationale&quot;: &quot;Full-width buttons in a horizontal group force a stacked layout, which breaks the expected left-to-right reading order for action groups.&quot;
-              }
-            }
-          ]
-        }
-      }
-    ]
   }
 ]</code></pre>
 </div>
 </section>
-<section class="def-section" id="variantexclusioncondition">
-<h3 id="variantexclusioncondition">variantExclusionCondition</h3>
-<p class="def-description">A single condition in a variant exclusion — identifies a specific value on a specific dimension. When all conditions in an exclusion are active simultaneously, the combination is invalid.</p>
-<p class="def-type"><span class="type-badge">object</span></p>
-<table class="prop-table"><thead><tr><th>Property</th><th>Type</th><th>Required</th><th>Description</th></tr></thead><tbody><tr><td><code>dimension</code></td><td>string</td><td><span class="required-badge">required</span></td><td>The name of the variant dimension (must match a variantEntry name in the items array).</td></tr>
-<tr><td><code>value</code></td><td>string</td><td><span class="required-badge">required</span></td><td>The name of the variant value within that dimension (must match a variantValue name).</td></tr></tbody></table>
-</section>
-<section class="def-section" id="variantexclusion">
-<h3 id="variantexclusion">variantExclusion</h3>
-<p class="def-description">An invalid combination of variant values. When ALL conditions are active simultaneously, the combination is not supported. For example, an exclusion with conditions [{dimension: 'emphasis', value: 'ghost'}, {dimension: 'size', value: 'sm'}] means that ghost emphasis at small size is not a valid configuration. Exclusions with more than two conditions express higher-order constraints (e.g., 'ghost + small + icon-only is invalid').</p>
-<p class="def-type"><span class="type-badge">object</span></p>
-<table class="prop-table"><thead><tr><th>Property</th><th>Type</th><th>Required</th><th>Description</th></tr></thead><tbody><tr><td><code>conditions</code></td><td><a href="guidelines-variant.html#variantexclusioncondition" class="type-ref">variantExclusionCondition</a>[]</td><td><span class="required-badge">required</span></td><td>The set of dimension-value pairs that, when all active at the same time, represent an invalid configuration. Must contain at least two conditions (a single condition would exclude an entire value, which should be removed from the dimension's values array instead).<br><small>Min items: 2</small></td></tr>
-<tr><td><code>description</code></td><td><a href="common-rich-text.html#richtext" class="type-ref">richText</a></td><td>optional</td><td>A human-readable explanation of why this combination is invalid and what the user should choose instead (e.g., 'Ghost emphasis requires at least medium size for adequate touch target area. Use secondary emphasis for small buttons instead.'). CommonMark supported.</td></tr></tbody></table>
-<p class="cross-refs"><strong>References:</strong> 
-<a href="guidelines-variant.html#variantexclusioncondition">variantExclusionCondition</a>, <a href="common-rich-text.html#richtext">richText</a>
-</p>
-</section>
 <section class="def-section" id="variants">
 <h3 id="variants">variants</h3>
-<p class="def-description">Documents all dimensions of visual or behavioral variation on a component. Each item represents a single axis of configuration — a Button might have an 'emphasis' axis (primary/secondary/ghost/danger), a 'size' axis (small/medium/large), and a 'full-width' axis (a single boolean value). Multiple axes document orthogonal dimensions that can be combined independently. Optional exclusions document combinations across dimensions that are not valid.</p>
+<p class="def-description">Documents all dimensions of visual or behavioral variation on a component. Each item is either a flag variant (a boolean toggle like 'disabled' or 'full-width') or an enum variant (a set of mutually exclusive options like size: sm | md | lg). Multiple items document orthogonal dimensions that can be combined independently.</p>
 <p class="def-type"><span class="type-badge">object</span></p>
 <table class="prop-table"><thead><tr><th>Property</th><th>Type</th><th>Required</th><th>Description</th></tr></thead><tbody><tr><td><code>type</code></td><td><code>"variants"</code></td><td><span class="required-badge">required</span></td><td>Identifies this guideline as a variants specification.</td></tr>
-<tr><td><code>items</code></td><td><a href="guidelines-variant.html#variantentry" class="type-ref">variantEntry</a>[]</td><td><span class="required-badge">required</span></td><td>The variant dimensions. Each item documents a single axis of variation with its enumerated values. The ordering is significant — tools SHOULD display dimensions in this order.<br><small>Min items: 1</small></td></tr>
-<tr><td><code>exclusions</code></td><td><a href="guidelines-variant.html#variantexclusion" class="type-ref">variantExclusion</a>[]</td><td>optional</td><td>Invalid combinations across variant dimensions. Each exclusion describes a set of dimension-value pairs that cannot be active simultaneously. Tools SHOULD use exclusions to disable invalid options in component configurators, generate warnings in code review, or display 'not available' badges in documentation. When no exclusions are present, all value combinations across all dimensions are assumed to be valid.</td></tr></tbody></table>
+<tr><td><code>items</code></td><td><a href="guidelines-variant.html#flagvariant" class="type-ref">flagVariant</a> | <a href="guidelines-variant.html#enumvariant" class="type-ref">enumVariant</a>[]</td><td><span class="required-badge">required</span></td><td>The variant dimensions. Each item is either a flag (boolean toggle) or an enum (set of values). The ordering is significant — tools SHOULD display dimensions in this order.<br><small>Min items: 1</small></td></tr></tbody></table>
 <p class="cross-refs"><strong>References:</strong> 
-<a href="guidelines-variant.html#variantentry">variantEntry</a>, <a href="guidelines-variant.html#variantexclusion">variantExclusion</a>
+<a href="guidelines-variant.html#flagvariant">flagVariant</a>, <a href="guidelines-variant.html#enumvariant">enumVariant</a>
 </p>
+<div class="def-example">
+<p class="def-example__title"><strong>Example</strong></p>
+<pre><code class="language-json">{
+  &quot;type&quot;: &quot;variants&quot;,
+  &quot;items&quot;: [
+    {
+      &quot;type&quot;: &quot;enum&quot;,
+      &quot;name&quot;: &quot;emphasis&quot;,
+      &quot;displayName&quot;: &quot;Emphasis&quot;,
+      &quot;description&quot;: &quot;Controls the visual weight of the button to establish a visual hierarchy among actions on a surface.&quot;,
+      &quot;values&quot;: [
+        {
+          &quot;name&quot;: &quot;primary&quot;,
+          &quot;description&quot;: &quot;High-emphasis — the main action on the surface.&quot;
+        },
+        {
+          &quot;name&quot;: &quot;secondary&quot;,
+          &quot;description&quot;: &quot;Medium-emphasis — important but not primary.&quot;
+        },
+        {
+          &quot;name&quot;: &quot;ghost&quot;,
+          &quot;description&quot;: &quot;Low-emphasis — tertiary actions and dense layouts.&quot;
+        },
+        {
+          &quot;name&quot;: &quot;danger&quot;,
+          &quot;description&quot;: &quot;Signals a destructive or irreversible action.&quot;
+        }
+      ]
+    },
+    {
+      &quot;type&quot;: &quot;enum&quot;,
+      &quot;name&quot;: &quot;size&quot;,
+      &quot;displayName&quot;: &quot;Size&quot;,
+      &quot;description&quot;: &quot;Controls the physical dimensions and internal padding of the button.&quot;,
+      &quot;values&quot;: [
+        {
+          &quot;name&quot;: &quot;sm&quot;,
+          &quot;displayName&quot;: &quot;Small&quot;,
+          &quot;description&quot;: &quot;Compact size for toolbars, table rows, and dense layouts. 32px height.&quot;
+        },
+        {
+          &quot;name&quot;: &quot;md&quot;,
+          &quot;displayName&quot;: &quot;Medium&quot;,
+          &quot;description&quot;: &quot;Default size for most contexts. 40px height.&quot;
+        },
+        {
+          &quot;name&quot;: &quot;lg&quot;,
+          &quot;displayName&quot;: &quot;Large&quot;,
+          &quot;description&quot;: &quot;Touch-optimized size for mobile-first surfaces. 48px height.&quot;
+        }
+      ]
+    },
+    {
+      &quot;type&quot;: &quot;flag&quot;,
+      &quot;name&quot;: &quot;full-width&quot;,
+      &quot;displayName&quot;: &quot;Full Width&quot;,
+      &quot;description&quot;: &quot;The button stretches to fill the full width of its parent container.&quot;,
+      &quot;purpose&quot;: &quot;Provides a prominent call to action in narrow or single-column layouts.&quot;
+    },
+    {
+      &quot;type&quot;: &quot;flag&quot;,
+      &quot;name&quot;: &quot;icon-only&quot;,
+      &quot;displayName&quot;: &quot;Icon Only&quot;,
+      &quot;description&quot;: &quot;The button renders a single icon with no visible label. An aria-label is required.&quot;,
+      &quot;purpose&quot;: &quot;Enables compact actions in toolbars and dense layouts where the icon alone is universally understood.&quot;
+    }
+  ]
+}</code></pre>
+</div>
 </section>
 
         <a href="#" class="back-to-top">↑ Back to top</a>
@@ -309,9 +340,8 @@
 <p class="toc__title">On this page</p>
 <ul class="toc__list">
 <li><a class="toc__link toc__link--sub" href="#variantvalue">variantValue</a></li>
-<li><a class="toc__link toc__link--sub" href="#variantentry">variantEntry</a></li>
-<li><a class="toc__link toc__link--sub" href="#variantexclusioncondition">variantExclusionCondition</a></li>
-<li><a class="toc__link toc__link--sub" href="#variantexclusion">variantExclusion</a></li>
+<li><a class="toc__link toc__link--sub" href="#flagvariant">flagVariant</a></li>
+<li><a class="toc__link toc__link--sub" href="#enumvariant">enumVariant</a></li>
 <li><a class="toc__link toc__link--sub" href="#variants">variants</a></li>
 </ul>
 </nav>

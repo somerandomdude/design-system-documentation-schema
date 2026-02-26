@@ -55,13 +55,14 @@ spec/
 │   ├── dsds.schema.json                                # Root JSON Schema
 │   ├── dsds.bundled.schema.json                        # Auto-generated single-file bundle
 │   ├── common/                                         # Shared primitives
-│   │   ├── example.schema.json                         # example, examples, presentations
+│   │   ├── example.schema.json                         # example, examples
 │   │   ├── extensions.schema.json                      # $extensions
 │   │   ├── link.schema.json                            # link
 │   │   ├── metadata.schema.json                        # metadata
 │   │   ├── rich-text.schema.json                       # richText
+│   │   ├── presentation.schema.json                    # presentationImage, presentationVideo, presentationCode, presentationUrl
 │   │   ├── status.schema.json                          # statusObject, statusValue, platformStatusEntry
-│   │   └── usecase.schema.json                         # useCase, useCases
+│   │   └── usecase.schema.json                         # useCase
 │   ├── entities/                                       # Entity types
 │   │   ├── component.schema.json                       # component
 │   │   ├── pattern.schema.json                         # pattern
@@ -82,7 +83,7 @@ spec/
 │       ├── purpose.schema.json                         # purpose (wraps useCases)
 │       ├── scale.schema.json                           # scale, scaleStep
 │       ├── state.schema.json                           # states, stateEntry
-│       └── variant.schema.json                         # variants, variantEntry, variantValue, variantExclusion
+│       └── variant.schema.json                         # variants, flagVariant, enumVariant, variantValue
 └── examples/
     ├── starter-kit.dsds.json                           # Complete document with components, tokens, styles, patterns
     ├── minimal/                                        # Lightweight examples showing the floor of documentation
@@ -113,7 +114,7 @@ The [`spec/examples/`](spec/examples/) directory contains validated example file
 
 - **[`starter-kit.dsds.json`](spec/examples/starter-kit.dsds.json)** — A complete document with components, tokens, a style, and a pattern, showing the full architecture.
 - **[`minimal/`](spec/examples/minimal/)** — Lightweight examples (8–30 lines each) showing the floor of documentation for each entity type.
-- **[`entities/component.json`](spec/examples/entities/component.json)** — A full Button component with anatomy, API, variants (with exclusions), states, design specs, best practices, purpose, and accessibility.
+- **[`entities/component.json`](spec/examples/entities/component.json)** — A full Button component with anatomy, API, variants (flag and enum types), states, design specs, best practices, purpose, and accessibility.
 - **[`entities/empty-state-pattern.json`](spec/examples/entities/empty-state-pattern.json)** — An Empty State pattern demonstrating anatomy, variants, states, interactions, content guidelines, and localization on a pattern entity.
 - **[`entities/style.json`](spec/examples/entities/style.json)** — A Spacing style with principles, scale, motion definitions, and best practices.
 - **[`entities/token.json`](spec/examples/entities/token.json)** — A semantic color token with value, resolution, API mappings, and guidelines.
@@ -237,9 +238,9 @@ All structured documentation lives in the `guidelines` array on each entity. Eac
 
 | Scope | Used by | Specific types | General types (all entities) |
 |---|---|---|---|
-| **Component** | component | anatomy, api, variants, states, design-specifications | best-practices, purpose, accessibility, examples, artifact-references |
-| **Style** | style | principles, scale | *(same)* |
-| **Pattern** | pattern | interactions | *(same)* |
+| **Component** | component | anatomy, api, variants, states, design-specifications | best-practices, purpose, accessibility, content |
+| **Style** | style | principles, scale, motion | *(same)* |
+| **Pattern** | pattern | interactions, anatomy, variants, states | *(same)* |
 | **Token** | token, token-group, theme | *(none)* | *(same)* |
 
 ### Guideline Types
@@ -247,31 +248,31 @@ All structured documentation lives in the `guidelines` array on each entity. Eac
 | Type value | Container | Items | Description |
 |---|---|---|---|
 | `"best-practices"` | `items` | bestPracticeEntry | Actionable usage rules with rationale and enforcement levels |
-| `"purpose"` | `whenToUse`, `whenNotToUse` | useCase | When to use and when not to use the entity |
+| `"purpose"` | `useCases` | useCase | When to use and when not to use the entity |
 | `"accessibility"` | Named arrays | various | Keyboard, ARIA, screen reader, contrast, motion specs |
-| `"examples"` | `items` | example | Images, videos, code snippets, URLs to demos |
-| `"artifact-reference"` | `references` | artifactReferenceEntry | Named references to other entities with roles |
+| `"content"` | `labels`, `localization` | contentLabelEntry, localizationEntry | Content guidelines and i18n considerations |
 | `"anatomy"` | `parts` | anatomyEntry | Component visual structure with token references |
 | `"api"` | Named arrays | various | Props, events, slots, CSS hooks, methods |
-| `"variants"` | `items` | variantEntry | Dimensions of visual/behavioral variation |
+| `"variants"` | `items` | flagVariant \| enumVariant | Dimensions of visual/behavioral variation |
 | `"states"` | `items` | stateEntry | Interactive states with token overrides |
 | `"design-specifications"` | Named properties | various | Tokens, spacing, sizing, typography, responsive |
 | `"principles"` | `items` | principleEntry | High-level guiding beliefs |
 | `"scale"` | `steps` | scaleStep | Ordered token value progressions |
+| `"motion"` | `items` | motionEntry | Named easing curves with durations and usage |
 | `"interactions"` | `items` | interactionEntry | Pattern flow steps |
 
 ### Naming Convention
 
 Guideline types follow two naming patterns:
 
-- **Plural names** for homogeneous lists: `"best-practices"`, `"variants"`, `"states"`, `"principles"`, `"interactions"`, `"examples"`
-- **Singular names** for self-contained structures: `"scale"`, `"anatomy"`, `"api"`, `"accessibility"`, `"design-specifications"`, `"artifact-reference"`, `"purpose"`
+- **Plural names** for homogeneous lists: `"best-practices"`, `"variants"`, `"states"`, `"principles"`, `"interactions"`
+- **Singular names** for self-contained structures: `"scale"`, `"anatomy"`, `"api"`, `"accessibility"`, `"design-specifications"`, `"purpose"`, `"content"`, `"motion"`
 
 ### Purpose tells you *when*. Best practices tell you *how*.
 
 DSDS separates two kinds of guidance:
 
-- **Purpose** provides concrete scenarios for when to use and when *not* to use an entity. Each `whenNotToUse` entry recommends an alternative with a rationale.
+- **Purpose** provides concrete scenarios for when to use and when *not* to use an entity. Each use case carries a `kind` (`"positive"` or `"negative"`) and negative entries recommend an alternative with a rationale.
 - **Best practices** provide concrete rules for using an entity correctly *after* you've chosen it. Each rule pairs an actionable `guidance` statement with a `rationale` explaining why.
 
 ```json
@@ -279,12 +280,14 @@ DSDS separates two kinds of guidance:
   "guidelines": [
     {
       "type": "purpose",
-      "whenToUse": [
-        { "description": "When the user needs to trigger an action such as submitting a form." }
-      ],
-      "whenNotToUse": [
+      "useCases": [
+        {
+          "description": "When the user needs to trigger an action such as submitting a form.",
+          "kind": "positive"
+        },
         {
           "description": "When the action navigates to a different page.",
+          "kind": "negative",
           "alternative": {
             "name": "link",
             "rationale": "Links carry native navigation semantics."
@@ -298,7 +301,7 @@ DSDS separates two kinds of guidance:
         {
           "guidance": "Limit each surface to one primary button.",
           "rationale": "Multiple primary buttons dilute visual hierarchy.",
-          "entryType": "required",
+          "kind": "required",
           "category": "visual-design"
         }
       ]
@@ -309,7 +312,7 @@ DSDS separates two kinds of guidance:
 
 ### Best Practice Enforcement Levels
 
-The `entryType` property on each best practice entry classifies how strictly it should be followed:
+The `kind` property on each best practice entry classifies how strictly it should be followed:
 
 | Value | RFC 2119 | Meaning |
 |---|---|---|
@@ -327,7 +330,7 @@ Any best practice can reference external standards via the `criteria` property:
 {
   "guidance": "Button label text must meet a minimum 4.5:1 contrast ratio.",
   "rationale": "Text contrast ensures readability for users with low vision.",
-  "entryType": "required",
+  "kind": "required",
   "category": "accessibility",
   "criteria": [
     "https://www.w3.org/TR/WCAG22/#contrast-minimum"
@@ -335,15 +338,16 @@ Any best practice can reference external standards via the `criteria` property:
 }
 ```
 
-### Variants Model Dimensions
+### Variants Use Flag and Enum Types
 
-Component variants are modeled as dimensions of variation inside a `"variants"` guideline, each dimension with one or more values:
+Component variants are modeled as dimensions of variation inside a `"variants"` guideline. Each dimension is either a **flag** (a boolean toggle that is on or off) or an **enum** (a set of mutually exclusive values):
 
 ```json
 {
   "type": "variants",
   "items": [
     {
+      "type": "enum",
       "name": "emphasis",
       "displayName": "Emphasis",
       "description": "Controls the visual weight of the button.",
@@ -354,22 +358,21 @@ Component variants are modeled as dimensions of variation inside a `"variants"` 
       ]
     },
     {
+      "type": "flag",
       "name": "full-width",
       "displayName": "Full Width",
       "description": "Stretches the button to fill its container.",
-      "values": [
-        { "name": "full-width", "description": "The button expands to 100% width." }
-      ]
+      "purpose": "Provides a prominent call to action in narrow or single-column layouts."
     }
   ]
 }
 ```
 
-A dimension with multiple values is an enumerated set (like size: small/medium/large). A dimension with a single value is a boolean toggle (like full-width or icon-only).
+An **enum variant** (`type: "enum"`) has a `values` array with at least two entries — use it for dimensions like size (sm/md/lg) or emphasis (primary/secondary/ghost). A **flag variant** (`type: "flag"`) has no values array — the component either has the flag active or it doesn't. Use it for binary capabilities like `disabled`, `full-width`, or `icon-only`. Both types accept an optional `purpose` field explaining why the variation exists.
 
 ### Examples Use Presentations
 
-Every example requires a `presentation` — a visual or interactive demonstration. Four media types are supported:
+Every example requires a `presentation` or a `value` (or both). Presentations are visual or interactive demonstrations. Four media types are supported:
 
 | `type` | What it shows |
 |---|---|

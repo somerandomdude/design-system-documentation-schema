@@ -52,7 +52,13 @@ function listSchemaFiles(dir) {
  * Read and parse a JSON file.
  */
 function readJSON(filePath) {
-  return JSON.parse(fs.readFileSync(filePath, "utf-8"));
+  const content = fs.readFileSync(filePath, "utf-8");
+  try {
+    return JSON.parse(content);
+  } catch (err) {
+    const relPath = path.relative(ROOT, filePath);
+    throw new SyntaxError(`Failed to parse ${relPath}: ${err.message}`);
+  }
 }
 
 // ---------------------------------------------------------------------------
