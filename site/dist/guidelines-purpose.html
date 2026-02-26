@@ -20,6 +20,7 @@
 <a class="nav__link nav__link--child" href="common-extensions.html">extensions</a>
 <a class="nav__link nav__link--child" href="common-link.html">link</a>
 <a class="nav__link nav__link--child" href="common-metadata.html">metadata</a>
+<a class="nav__link nav__link--child" href="common-presentation.html">presentation</a>
 <a class="nav__link nav__link--child" href="common-rich-text.html">rich-text</a>
 <a class="nav__link nav__link--child" href="common-status.html">status</a>
 <a class="nav__link nav__link--child" href="common-usecase.html">usecase</a>
@@ -67,57 +68,60 @@
 <p class="def-description">Documents the purpose of an artifact — when to reach for it and when to choose something else. Contains a `useCases` object with whenToUse and whenNotToUse arrays of scenario-driven use case entries drawn from the common useCases schema. This follows the same pattern used by variant values and state entries. Purpose guidelines help the reader decide whether this is the right artifact *before* they start implementing it. For guidance on *how* to use the artifact correctly after choosing it, see best-practices. For guidance on *what* the artifact looks like and how it behaves, see variants, states, and anatomy.</p>
 <p class="def-type"><span class="type-badge">object</span></p>
 <table class="prop-table"><thead><tr><th>Property</th><th>Type</th><th>Required</th><th>Description</th></tr></thead><tbody><tr><td><code>type</code></td><td><code>"purpose"</code></td><td><span class="required-badge">required</span></td><td>Identifies this guideline as a purpose specification.</td></tr>
-<tr><td><code>useCases</code></td><td><a href="common-usecase.html#usecases" class="type-ref">useCases</a></td><td>optional</td><td>Scenario-driven guidance describing when this artifact is and is not the right choice. Contains whenToUse and whenNotToUse arrays of use case entries. Each 'when not to use' entry SHOULD include an alternative pointing to a more appropriate artifact along with a rationale explaining why. Follows the same shape used by variant values and state entries.</td></tr></tbody></table>
+<tr><td><code>useCases</code></td><td><a href="common-usecase.html#usecase" class="type-ref">useCase</a>[]</td><td>optional</td><td>Scenario-driven guidance describing when this artifact is or is not the right choice. </td></tr></tbody></table>
 <p class="cross-refs"><strong>References:</strong> 
-<a href="common-usecase.html#usecases">useCases</a>
+<a href="common-usecase.html#usecase">useCase</a>
 </p>
 <div class="def-example">
 <p class="def-example__title"><strong>Example</strong></p>
 <pre><code class="language-json">{
   &quot;type&quot;: &quot;purpose&quot;,
-  &quot;useCases&quot;: {
-    &quot;whenToUse&quot;: [
-      {
-        &quot;description&quot;: &quot;When the user needs to trigger an action such as submitting a form, saving data, opening a dialog, or confirming a decision.&quot;
-      },
-      {
-        &quot;description&quot;: &quot;When the user needs to dismiss or cancel an in-progress workflow, such as closing a modal or discarding unsaved changes.&quot;
-      },
-      {
-        &quot;description&quot;: &quot;When a destructive or irreversible action needs to be initiated, such as deleting a record or revoking access. Pair with a confirmation dialog.&quot;
+  &quot;useCases&quot;: [
+    {
+      &quot;description&quot;: &quot;When the user needs to trigger an action such as submitting a form, saving data, opening a dialog, or confirming a decision.&quot;,
+      &quot;kind&quot;: &quot;positive&quot;
+    },
+    {
+      &quot;description&quot;: &quot;When the user needs to dismiss or cancel an in-progress workflow, such as closing a modal or discarding unsaved changes.&quot;,
+      &quot;kind&quot;: &quot;positive&quot;
+    },
+    {
+      &quot;description&quot;: &quot;When a destructive or irreversible action needs to be initiated, such as deleting a record or revoking access. Pair with a confirmation dialog.&quot;,
+      &quot;kind&quot;: &quot;positive&quot;
+    },
+    {
+      &quot;description&quot;: &quot;When the action navigates the user to a different page or URL.&quot;,
+      &quot;kind&quot;: &quot;negative&quot;,
+      &quot;alternative&quot;: {
+        &quot;name&quot;: &quot;link&quot;,
+        &quot;rationale&quot;: &quot;Links carry native navigation semantics. Screen readers announce them as links, and browsers support standard navigation behaviors such as open-in-new-tab. Using a button for navigation creates a mismatch between the announced role and the actual behavior.&quot;
       }
-    ],
-    &quot;whenNotToUse&quot;: [
-      {
-        &quot;description&quot;: &quot;When the action navigates the user to a different page or URL.&quot;,
-        &quot;alternative&quot;: {
-          &quot;name&quot;: &quot;link&quot;,
-          &quot;rationale&quot;: &quot;Links carry native navigation semantics. Screen readers announce them as links, and browsers support standard navigation behaviors such as open-in-new-tab. Using a button for navigation creates a mismatch between the announced role and the actual behavior.&quot;
-        }
-      },
-      {
-        &quot;description&quot;: &quot;When the user needs to select one option from a set of mutually exclusive choices.&quot;,
-        &quot;alternative&quot;: {
-          &quot;name&quot;: &quot;radio-group&quot;,
-          &quot;rationale&quot;: &quot;Radio groups communicate exclusivity through their semantic role. A set of buttons styled to look like a selector does not convey mutual exclusivity to assistive technology.&quot;
-        }
-      },
-      {
-        &quot;description&quot;: &quot;When the action reveals a list of additional actions or navigation items.&quot;,
-        &quot;alternative&quot;: {
-          &quot;name&quot;: &quot;menu-button&quot;,
-          &quot;rationale&quot;: &quot;Menu buttons combine a trigger with a disclosure pattern. They manage focus into the opened menu and announce the expanded state. A plain button requires manual implementation of these behaviors.&quot;
-        }
-      },
-      {
-        &quot;description&quot;: &quot;When the only content is an icon with no visible text label.&quot;,
-        &quot;alternative&quot;: {
-          &quot;name&quot;: &quot;icon-button&quot;,
-          &quot;rationale&quot;: &quot;Icon buttons enforce an aria-label requirement and apply size adjustments for icon-only touch targets. A standard button with its label removed may fail accessibility requirements silently.&quot;
-        }
+    },
+    {
+      &quot;description&quot;: &quot;When the user needs to select one option from a set of mutually exclusive choices.&quot;,
+      &quot;kind&quot;: &quot;negative&quot;,
+      &quot;alternative&quot;: {
+        &quot;name&quot;: &quot;radio-group&quot;,
+        &quot;rationale&quot;: &quot;Radio groups communicate exclusivity through their semantic role. A set of buttons styled to look like a selector does not convey mutual exclusivity to assistive technology.&quot;
       }
-    ]
-  }
+    },
+    {
+      &quot;description&quot;: &quot;When the action reveals a list of additional actions or navigation items.&quot;,
+      &quot;kind&quot;: &quot;negative&quot;,
+      &quot;alternative&quot;: {
+        &quot;name&quot;: &quot;menu-button&quot;,
+        &quot;rationale&quot;: &quot;Menu buttons combine a trigger with a disclosure pattern. They manage focus into the opened menu and announce the expanded state. A plain button requires manual implementation of these behaviors.&quot;
+      }
+    },
+    {
+      &quot;description&quot;: &quot;When the only content is an icon with no visible text label.&quot;,
+      &quot;kind&quot;: &quot;negative&quot;,
+      &quot;alternative&quot;: {
+        &quot;name&quot;: &quot;icon-button&quot;,
+        &quot;rationale&quot;: &quot;Icon buttons enforce an aria-label requirement and apply size adjustments for icon-only touch targets. A standard button with its label removed may fail accessibility requirements silently.&quot;
+      }
+    }
+  ]
 }</code></pre>
 </div>
 </section>

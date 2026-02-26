@@ -20,6 +20,7 @@
 <a class="nav__link nav__link--child" href="common-extensions.html">extensions</a>
 <a class="nav__link nav__link--child" href="common-link.html">link</a>
 <a class="nav__link nav__link--child" href="common-metadata.html">metadata</a>
+<a class="nav__link nav__link--child" href="common-presentation.html">presentation</a>
 <a class="nav__link nav__link--child" href="common-rich-text.html">rich-text</a>
 <a class="nav__link nav__link--child" href="common-status.html">status</a>
 <a class="nav__link nav__link--child" href="common-usecase.html">usecase</a>
@@ -152,7 +153,9 @@
 <tr><td><code>tokenType</code></td><td>string</td><td><span class="required-badge">required</span></td><td>The type of token aligned with the DTCG spec (e.g., 'color', 'dimension', 'fontFamily', 'fontWeight', 'duration', 'cubicBezier', 'shadow').</td></tr>
 <tr><td><code>aliases</code></td><td>string[]</td><td>optional</td><td>Alternative names this token is known by across teams, tools, or legacy systems. Useful for search, migration mapping, and cross-referencing.</td></tr>
 <tr><td><code>summary</code></td><td>string</td><td>optional</td><td>A one-line, plain-text summary. MUST NOT contain markup.</td></tr>
+<tr><td><code>thumbnail</code></td><td><a href="common-presentation.html#presentationimage" class="type-ref">presentationImage</a></td><td>optional</td><td>A visual for compact display contexts such as list views, tooltips, search results, and card layouts.</td></tr>
 <tr><td><code>description</code></td><td><a href="common-rich-text.html#richtext" class="type-ref">richText</a></td><td>optional</td><td>A description of the token — what it represents, where it should be used, and any constraints. Optional; when omitted, tools MAY generate a description from the token name and type.</td></tr>
+<tr><td><code>preview</code></td><td><a href="common-presentation.html#presentationimage" class="type-ref">presentationImage</a> | <a href="common-presentation.html#presentationvideo" class="type-ref">presentationVideo</a> | <a href="common-presentation.html#presentationcode" class="type-ref">presentationCode</a> | <a href="common-presentation.html#presentationurl" class="type-ref">presentationUrl</a></td><td>optional</td><td>A visual or interactive preview of the component — a hero image, video walkthrough, code snippet, or link to a live demo. Accepts any presentation type defined in the presentation schema.</td></tr>
 <tr><td><code>status</code></td><td><a href="common-status.html#statusobject" class="type-ref">statusObject</a></td><td>optional</td><td>Lifecycle status of the token. Optional; when omitted inside a token group, the status is inherited from the parent group. When omitted at the top level (not inside a group), tools SHOULD treat the token as having no declared status.</td></tr>
 <tr><td><code>since</code></td><td>string</td><td>optional</td><td>The version in which this token was introduced.</td></tr>
 <tr><td><code>tags</code></td><td>string[]</td><td>optional</td><td>Freeform keywords to relate guidelines across categories/disciplines (e.g., 'rtl', 'localization', 'validation').</td></tr>
@@ -163,7 +166,7 @@
 <tr><td><code>links</code></td><td><a href="common-link.html#link" class="type-ref">link</a>[]</td><td>optional</td><td>External resource links, related artifact references, and internal relationships. Each link is a typed reference that can point to an external URL, an internal DSDS artifact by name, or both.</td></tr>
 <tr><td><code>$extensions</code></td><td><a href="common-extensions.html#extensions" class="type-ref">extensions</a></td><td>optional</td><td></td></tr></tbody></table>
 <p class="cross-refs"><strong>References:</strong> 
-<a href="common-rich-text.html#richtext">richText</a>, <a href="common-status.html#statusobject">statusObject</a>, <a href="entities-token.html#tokenvalue">tokenValue</a>, <a href="entities-token.html#tokenapi">tokenApi</a>, <a href="guidelines-guideline.html#tokenguideline">tokenGuideline</a>, <a href="common-link.html#link">link</a>, <a href="common-extensions.html#extensions">extensions</a>
+<a href="common-presentation.html#presentationimage">presentationImage</a>, <a href="common-rich-text.html#richtext">richText</a>, <a href="common-presentation.html#presentationvideo">presentationVideo</a>, <a href="common-presentation.html#presentationcode">presentationCode</a>, <a href="common-presentation.html#presentationurl">presentationUrl</a>, <a href="common-status.html#statusobject">statusObject</a>, <a href="entities-token.html#tokenvalue">tokenValue</a>, <a href="entities-token.html#tokenapi">tokenApi</a>, <a href="guidelines-guideline.html#tokenguideline">tokenGuideline</a>, <a href="common-link.html#link">link</a>, <a href="common-extensions.html#extensions">extensions</a>
 </p>
 <div class="def-example">
 <p class="def-example__title"><strong>Example</strong></p>
@@ -222,32 +225,32 @@
   &quot;guidelines&quot;: [
     {
       &quot;type&quot;: &quot;purpose&quot;,
-      &quot;useCases&quot;: {
-        &quot;whenToUse&quot;: [
-          {
-            &quot;description&quot;: &quot;When applying color to body text, headings, and form labels on default background surfaces.&quot;
-          },
-          {
-            &quot;description&quot;: &quot;When building components that display primary reading content that must adapt across color modes.&quot;
+      &quot;useCases&quot;: [
+        {
+          &quot;description&quot;: &quot;When applying color to body text, headings, and form labels on default background surfaces.&quot;,
+          &quot;kind&quot;: &quot;positive&quot;
+        },
+        {
+          &quot;description&quot;: &quot;When building components that display primary reading content that must adapt across color modes.&quot;,
+          &quot;kind&quot;: &quot;positive&quot;
+        },
+        {
+          &quot;description&quot;: &quot;When placing text on dark or colored background surfaces.&quot;,
+          &quot;kind&quot;: &quot;negative&quot;,
+          &quot;alternative&quot;: {
+            &quot;name&quot;: &quot;color-text-inverse&quot;,
+            &quot;rationale&quot;: &quot;This token is optimized for contrast against light backgrounds. Using it on dark or saturated surfaces will fail contrast requirements.&quot;
           }
-        ],
-        &quot;whenNotToUse&quot;: [
-          {
-            &quot;description&quot;: &quot;When placing text on dark or colored background surfaces.&quot;,
-            &quot;alternative&quot;: {
-              &quot;name&quot;: &quot;color-text-inverse&quot;,
-              &quot;rationale&quot;: &quot;This token is optimized for contrast against light backgrounds. Using it on dark or saturated surfaces will fail contrast requirements.&quot;
-            }
-          },
-          {
-            &quot;description&quot;: &quot;When the text is inside a component that supplies its own scoped color tokens (e.g., text on a filled button).&quot;,
-            &quot;alternative&quot;: {
-              &quot;name&quot;: &quot;color-text-on-action&quot;,
-              &quot;rationale&quot;: &quot;Component-scoped tokens account for the specific background they sit on. Applying a general text token to a scoped context risks contrast failures.&quot;
-            }
+        },
+        {
+          &quot;description&quot;: &quot;When the text is inside a component that supplies its own scoped color tokens (e.g., text on a filled button).&quot;,
+          &quot;kind&quot;: &quot;negative&quot;,
+          &quot;alternative&quot;: {
+            &quot;name&quot;: &quot;color-text-on-action&quot;,
+            &quot;rationale&quot;: &quot;Component-scoped tokens account for the specific background they sit on. Applying a general text token to a scoped context risks contrast failures.&quot;
           }
-        ]
-      }
+        }
+      ]
     },
     {
       &quot;type&quot;: &quot;best-practices&quot;,
@@ -255,19 +258,19 @@
         {
           &quot;guidance&quot;: &quot;Use for all body text, headings, and form labels on default background surfaces.&quot;,
           &quot;rationale&quot;: &quot;A single primary text color ensures visual consistency and meets WCAG 2.1 AA contrast requirements against the system's default background.&quot;,
-          &quot;level&quot;: &quot;encouraged&quot;,
+          &quot;kind&quot;: &quot;encouraged&quot;,
           &quot;category&quot;: &quot;visual-design&quot;
         },
         {
           &quot;guidance&quot;: &quot;Do not override this token's value at the component level. Use color-text-secondary or color-text-tertiary for reduced emphasis.&quot;,
           &quot;rationale&quot;: &quot;Overriding the primary text color creates inconsistency. The system provides lower-emphasis text tokens for visual hierarchy.&quot;,
-          &quot;level&quot;: &quot;prohibited&quot;,
+          &quot;kind&quot;: &quot;prohibited&quot;,
           &quot;category&quot;: &quot;visual-design&quot;
         },
         {
           &quot;guidance&quot;: &quot;This color meets a 15.3:1 contrast ratio against color-background-default in light mode.&quot;,
           &quot;rationale&quot;: &quot;Exceeds WCAG 2.1 AAA requirements (7:1 for normal text), ensuring readability for users with low vision.&quot;,
-          &quot;level&quot;: &quot;informational&quot;,
+          &quot;kind&quot;: &quot;informational&quot;,
           &quot;category&quot;: &quot;accessibility&quot;,
           &quot;criteria&quot;: [
             &quot;https://www.w3.org/TR/WCAG22/#contrast-minimum&quot;,
@@ -330,7 +333,9 @@
 <tr><td><code>name</code></td><td>string</td><td><span class="required-badge">required</span></td><td>The token group name. Token group names are intentionally unconstrained by a pattern to accommodate DTCG and design tool naming conventions (e.g., 'color-text', 'color.text', 'color/text'). The token group name also serves as the human-readable display name.</td></tr>
 <tr><td><code>aliases</code></td><td>string[]</td><td>optional</td><td>Alternative names this token group is known by across teams, tools, or legacy systems. Useful for search, migration mapping, and cross-referencing.</td></tr>
 <tr><td><code>summary</code></td><td>string</td><td>optional</td><td>A one-line, plain-text summary. MUST NOT contain markup.</td></tr>
+<tr><td><code>thumbnail</code></td><td><a href="common-presentation.html#presentationimage" class="type-ref">presentationImage</a></td><td>optional</td><td>A visual for compact display contexts such as list views, tooltips, search results, and card layouts.</td></tr>
 <tr><td><code>description</code></td><td><a href="common-rich-text.html#richtext" class="type-ref">richText</a></td><td>optional</td><td>A description of the group's purpose, the tokens it contains, and how they relate to each other. Optional; when omitted, tools MAY generate a description from the group name and children.</td></tr>
+<tr><td><code>preview</code></td><td><a href="common-presentation.html#presentationimage" class="type-ref">presentationImage</a> | <a href="common-presentation.html#presentationvideo" class="type-ref">presentationVideo</a> | <a href="common-presentation.html#presentationcode" class="type-ref">presentationCode</a> | <a href="common-presentation.html#presentationurl" class="type-ref">presentationUrl</a></td><td>optional</td><td>A visual or interactive preview of the component — a hero image, video walkthrough, code snippet, or link to a live demo. Accepts any presentation type defined in the presentation schema.</td></tr>
 <tr><td><code>status</code></td><td><a href="common-status.html#statusobject" class="type-ref">statusObject</a></td><td>optional</td><td>Lifecycle status of the token group. Optional; when omitted inside a parent token group, the status is inherited from the parent. Children of this group that omit their own status inherit this group's status.</td></tr>
 <tr><td><code>since</code></td><td>string</td><td>optional</td><td>The version in which this group was introduced.</td></tr>
 <tr><td><code>tags</code></td><td>string[]</td><td>optional</td><td>Freeform keywords for categorization and search (e.g., 'color', 'palette', 'semantic').</td></tr>
@@ -341,7 +346,7 @@
 <tr><td><code>links</code></td><td><a href="common-link.html#link" class="type-ref">link</a>[]</td><td>optional</td><td>External resource links, related artifact references, and internal relationships.</td></tr>
 <tr><td><code>$extensions</code></td><td><a href="common-extensions.html#extensions" class="type-ref">extensions</a></td><td>optional</td><td></td></tr></tbody></table>
 <p class="cross-refs"><strong>References:</strong> 
-<a href="common-rich-text.html#richtext">richText</a>, <a href="common-status.html#statusobject">statusObject</a>, <a href="entities-token.html#token">token</a>, <a href="entities-token.html#tokengroup">tokenGroup</a>, <a href="guidelines-guideline.html#tokenguideline">tokenGuideline</a>, <a href="common-link.html#link">link</a>, <a href="common-extensions.html#extensions">extensions</a>
+<a href="common-presentation.html#presentationimage">presentationImage</a>, <a href="common-rich-text.html#richtext">richText</a>, <a href="common-presentation.html#presentationvideo">presentationVideo</a>, <a href="common-presentation.html#presentationcode">presentationCode</a>, <a href="common-presentation.html#presentationurl">presentationUrl</a>, <a href="common-status.html#statusobject">statusObject</a>, <a href="entities-token.html#token">token</a>, <a href="entities-token.html#tokengroup">tokenGroup</a>, <a href="guidelines-guideline.html#tokenguideline">tokenGuideline</a>, <a href="common-link.html#link">link</a>, <a href="common-extensions.html#extensions">extensions</a>
 </p>
 </section>
 
