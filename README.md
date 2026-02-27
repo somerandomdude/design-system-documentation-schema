@@ -55,13 +55,13 @@ spec/
 │   ├── dsds.schema.json                                # Root JSON Schema
 │   ├── dsds.bundled.schema.json                        # Auto-generated single-file bundle
 │   ├── common/                                         # Shared primitives
-│   │   ├── example.schema.json                         # example, examples
+│   │   ├── example.schema.json                         # example
 │   │   ├── extensions.schema.json                      # $extensions
 │   │   ├── link.schema.json                            # link
 │   │   ├── metadata.schema.json                        # metadata
 │   │   ├── rich-text.schema.json                       # richText
 │   │   ├── presentation.schema.json                    # presentationImage, presentationVideo, presentationCode, presentationUrl
-│   │   ├── status.schema.json                          # statusObject, statusValue, platformStatus
+│   │   ├── status.schema.json                          # status, statusObject, statusValue, platformStatus
 │   │   └── usecase.schema.json                         # useCase
 │   ├── entities/                                       # Entity types
 │   │   ├── component.schema.json                       # component
@@ -217,13 +217,19 @@ Every entity carries a `type` discriminator, common identity properties (`name`,
 
 ### Status
 
-Every entity carries status as an object with the overall lifecycle stage and optional per-platform readiness:
+Every entity carries a `status` property that accepts either a plain string for the common case or a full object when platform-specific tracking is needed:
+
+```json
+{ "status": "stable" }
+```
+
+When per-platform readiness is needed, use the object form with `overall` and `platforms`:
 
 ```json
 {
   "status": {
-    "status": "stable",
-    "platformStatus": {
+    "overall": "stable",
+    "platforms": {
       "react": { "status": "stable", "since": "1.0.0" },
       "ios": { "status": "experimental", "since": "3.0.0" },
       "figma": { "status": "stable", "since": "1.0.0" }
@@ -231,6 +237,8 @@ Every entity carries status as an object with the overall lifecycle stage and op
   }
 }
 ```
+
+The object form requires `platforms` — if you don't need platform-specific tracking, use the string form. When `overall` is `"deprecated"`, a `deprecationNotice` is required.
 
 ## Guidelines System
 

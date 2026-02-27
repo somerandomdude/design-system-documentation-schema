@@ -155,19 +155,67 @@ rather than inline on each value.
 
 ---
 
-#### 6. `examples` guideline removed from pattern scope
+#### 6. `examples` guideline type and container removed
 
-The `examples` guideline type (`type: "examples"`) is no longer accepted on pattern
-entities. Patterns should use presentations within their interaction steps, anatomy
-previews, or variant previews instead of standalone example guidelines.
+The `examples` guideline type (`type: "examples"`) has been removed entirely. The
+`examples` container def has been deleted from `example.schema.json`. Individual schemas
+that need examples already accept `example[]` arrays directly on their items (e.g.,
+`variantValue.example`, `stateEntry.preview`, `interactionEntry.examples`,
+`bestPracticeEntry.examples`). The standalone container added no value on top of this.
 
-**Files changed:** `guidelines/guideline.schema.json`
+**Files changed:** `common/example.schema.json`, `guidelines/guideline.schema.json`
+
+---
+
+#### 7. Status schema renames
+
+The `statusObject` properties have been renamed for clarity:
+
+- `statusObject.status` → `statusObject.overall`
+- `statusObject.platformStatus` → `statusObject.platforms`
+- `platformStatusEntry` def → `platformStatus` def
+
+**Before:**
+```json
+{
+  "status": {
+    "status": "stable",
+    "platformStatus": {
+      "react": { "status": "stable", "since": "1.0.0" }
+    }
+  }
+}
+```
+
+**After:**
+```json
+{
+  "status": {
+    "overall": "stable",
+    "platforms": {
+      "react": { "status": "stable", "since": "1.0.0" }
+    }
+  }
+}
+```
+
+**Files changed:** `common/status.schema.json`
+
+---
+
+#### 8. `statusObject` now requires `platforms`
+
+The `statusObject` now requires both `overall` and `platforms`. The object form exists
+specifically for platform-specific tracking — if you only need a simple status value,
+use the string form (see §10 below).
+
+**Files changed:** `common/status.schema.json`
 
 ---
 
 ### New Features
 
-#### 7. Presentation schema extracted
+#### 9. Presentation schema extracted
 
 Presentation types (`presentationImage`, `presentationVideo`, `presentationCode`,
 `presentationUrl`) have been extracted into a dedicated `presentation.schema.json` file.
@@ -179,7 +227,41 @@ them inline. This allows presentations to be reused independently of the example
 
 ---
 
-#### 8. Component `preview` property
+#### 10. Status accepts string or object
+
+The `status` property on all entities now accepts either a plain `statusValue` string
+or a full `statusObject`. This eliminates ceremony for the common case where no
+platform-specific tracking is needed.
+
+**Simple:**
+```json
+{ "status": "stable" }
+```
+
+**Detailed:**
+```json
+{
+  "status": {
+    "overall": "stable",
+    "platforms": {
+      "react": { "status": "stable", "since": "1.0.0" },
+      "ios": { "status": "experimental", "since": "3.0.0" }
+    }
+  }
+}
+```
+
+A new `status` union def (`oneOf: [statusValue, statusObject]`) is defined in
+`status.schema.json`. All entity schemas now reference this union instead of
+`statusObject` directly.
+
+**Files created:** `common/status.schema.json` (`status` def)
+**Files changed:** `entities/component.schema.json`, `entities/pattern.schema.json`,
+`entities/style.schema.json`, `entities/theme.schema.json`, `entities/token.schema.json`
+
+---
+
+#### 11. Component `preview` property
 
 Components now accept an optional `preview` property at the top level — a single
 presentation (image, video, code, or URL) providing a hero visual for the component.
@@ -189,7 +271,7 @@ Accepts any presentation type from `presentation.schema.json`.
 
 ---
 
-#### 9. `variantValue.preview` renamed to `example`
+#### 12. `variantValue.preview` renamed to `example`
 
 The `preview` property on `variantValue` has been renamed to `example` and now accepts
 an array of example objects (consistent with the example model used elsewhere).
@@ -203,6 +285,12 @@ an array of example objects (consistent with the example model used elsewhere).
 - **Bundle error messages now include file paths.** The `readJSON` function in
   `scripts/bundle.js` now wraps `JSON.parse` in a try/catch and reports the relative
   file path in the error message, replacing the unhelpful `<anonymous_script>` output.
+
+- **Validator now covers `minimal/` directory.** The document validator recursively
+  finds `.dsds.json` files in subdirectories (picks up `minimal/minimal.dsds.json`).
+  A new bare-entity validation mode detects files with a top-level `type` property
+  and validates them against the matching def (picks up `minimal/component.json`,
+  `minimal/token.json`, etc.).
 
 ---
 
@@ -228,6 +316,13 @@ To update documents from 0.1.2 to 0.1.3:
    pattern entities. Move example content into interaction step `examples`, anatomy
    `preview`, or variant value `example` arrays as appropriate.
 
+7. **Status renames:** Inside every `status` object, rename `"status"` → `"overall"`
+   and `"platformStatus"` → `"platforms"`.
+
+8. **Status simplification:** Any `"status": { "overall": "stable" }` without
+   `platforms` can be simplified to `"status": "stable"`. Status objects that have
+   `platforms` must keep the object form.
+
 **Automated migration (sed, one-liners):**
 
 ```sh
@@ -237,16 +332,22 @@ sed -i 's/"level":\s*"encouraged"/"kind": "encouraged"/g' *.json
 sed -i 's/"level":\s*"informational"/"kind": "informational"/g' *.json
 sed -i 's/"level":\s*"discouraged"/"kind": "discouraged"/g' *.json
 sed -i 's/"level":\s*"prohibited"/"kind": "prohibited"/g' *.json
+
+# Rename status properties inside status objects
+sed -i 's/"platformStatus"/"platforms"/g' *.json
 ```
 
 ---
 
 ### Internal
 
-- Bundled schema now contains 70 definitions from 28 files (was 72/27).
-- All example files updated to match schema changes.
-- README updated to reflect new variant model, use case format, best practice
-  `kind` property, presentation schema, and corrected guideline scope tables.
+- Bundled schema now contains 70 definitions from 28 files.
+- All example files updated to match schema changes. Simple status objects
+  collapsed to plain strings where no platform tracking is needed.
+- Validator now covers 172 validations across 2 documents, 164 keyed defs,
+  and 6 bare entity files in `minimal/`.
+- README updated to reflect status union, variant model, use case format, best
+  practice `kind` property, presentation schema, and corrected guideline scope tables.
 
 ---
 
