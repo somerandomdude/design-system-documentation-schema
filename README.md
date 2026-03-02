@@ -320,13 +320,13 @@ DSDS separates two kinds of guidance:
 
 ### Best Practice Enforcement Levels
 
-The `kind` property on each best practice entry classifies how strictly it should be followed:
+The `kind` property on each best practice entry classifies how strictly it should be followed. Defaults to `"informational"` when omitted.
 
 | Value | RFC 2119 | Meaning |
 |---|---|---|
 | `"required"` | MUST | Non-compliance is a defect. |
 | `"encouraged"` | SHOULD | Follow in most cases; exceptions need justification. |
-| `"informational"` | MAY | Advisory context with no enforcement. |
+| `"informational"` | MAY | Advisory context with no enforcement. **(default)** |
 | `"discouraged"` | SHOULD NOT | Avoid unless justified. |
 | `"prohibited"` | MUST NOT | Violations are defects. |
 
@@ -341,7 +341,10 @@ Any best practice can reference external standards via the `criteria` property:
   "kind": "required",
   "category": "accessibility",
   "criteria": [
-    "https://www.w3.org/TR/WCAG22/#contrast-minimum"
+    {
+      "url": "https://www.w3.org/TR/WCAG22/#contrast-minimum",
+      "label": "1.4.3 Contrast (Minimum)"
+    }
   ]
 }
 ```
@@ -462,6 +465,20 @@ Tool-specific internal identifiers go in `$extensions` using namespaced keys. Ex
 ```
 
 **Rule of thumb:** If it's a URL a human would click, it belongs in `links`. If it's an internal identifier consumed programmatically by a specific tool, it belongs in `$extensions`.
+
+## Default Values
+
+Several optional properties declare default values via the JSON Schema `default` keyword. Validators do not inject these — they are advisory hints for tools and consumers that indicate what value to assume when the property is omitted.
+
+| Property | Schema | Default | Meaning when omitted |
+|---|---|---|---|
+| `bestPracticeEntry.kind` | `best-practice.schema.json` | `"informational"` | The best practice is advisory context with no enforcement expectation. |
+| `link.required` | `link.schema.json` | `false` | The linked artifact is an optional enhancement, not a dependency. |
+| `anatomyEntry.required` | `anatomy.schema.json` | `false` | The anatomy part is conditionally rendered, not always present. |
+| `apiProperty.required` | `api.schema.json` | `false` | The property does not need to be provided by the consumer. |
+| `apiProperty.deprecated` | `api.schema.json` | `false` | The property is not deprecated. |
+| `ariaAttribute.required` | `accessibility.schema.json` | `false` | The ARIA attribute is conditionally required or optional. |
+| `richText.format` | `rich-text.schema.json` | `"markdown"` | Text content is interpreted as CommonMark. |
 
 ## Schema Architecture
 

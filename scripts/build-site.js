@@ -303,6 +303,16 @@ function renderPropertyTable(defSchema) {
       minNote = `<br><small>Min items: ${propSchema.minItems}</small>`;
     }
 
+    // Check for default value
+    let defaultNote = "";
+    if (propSchema.default !== undefined) {
+      const defaultVal =
+        typeof propSchema.default === "string"
+          ? `"${esc(propSchema.default)}"`
+          : String(propSchema.default);
+      defaultNote = `<br><small>Default: <code>${defaultVal}</code></small>`;
+    }
+
     // Check for format on items
     let formatNote = "";
     if (
@@ -333,7 +343,7 @@ function renderPropertyTable(defSchema) {
         `<td><code>${esc(propName)}</code></td>` +
         `<td>${typeStr}</td>` +
         `<td>${statusCell}</td>` +
-        `<td>${esc(desc)}${enumNote}${patternNote}${minNote}${formatNote}</td>` +
+        `<td>${esc(desc)}${enumNote}${patternNote}${minNote}${formatNote}${defaultNote}</td>` +
         `</tr>`,
     });
   }

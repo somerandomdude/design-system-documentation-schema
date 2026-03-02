@@ -67,7 +67,7 @@
 <h3 id="style">style</h3>
 <p class="def-description">Documentation for a macro-level visual style — the principles, guidelines, scales, and token references that govern a visual attribute such as color, typography, spacing, or elevation across the entire system. The style's identity (name, description, status, category) lives at the top level. All structured documentation lives in the `guidelines` array — each entry is a typed guideline object (principle, scale, artifact-reference, best-practice, accessibility, use-cases, example, etc.). This unified model replaces the previous architecture where principles, tokenGroups, scales, useCases, guidelines, and accessibility were separate top-level properties.</p>
 <p class="def-type"><span class="type-badge">object</span></p>
-<table class="prop-table"><thead><tr><th>Property</th><th>Type</th><th>Required</th><th>Description</th></tr></thead><tbody><tr><td><code>type</code></td><td><code>"style"</code></td><td><span class="required-badge">required</span></td><td>Identifies this entity as a style.</td></tr>
+<table class="prop-table"><thead><tr><th>Property</th><th>Type</th><th>Required</th><th>Description</th></tr></thead><tbody><tr><td><code>kind</code></td><td><code>"style"</code></td><td><span class="required-badge">required</span></td><td>Identifies this entity as a style.</td></tr>
 <tr><td><code>name</code></td><td>string</td><td><span class="required-badge">required</span></td><td>Machine-readable identifier for the style (e.g., 'color', 'typography', 'spacing', 'elevation', 'motion', 'shape'). MUST be unique within the documentation group.<br><small>Pattern: <code>^[a-z][a-z0-9-]*$</code></small></td></tr>
 <tr><td><code>displayName</code></td><td>string</td><td><span class="required-badge">required</span></td><td>Human-readable name for display in documentation (e.g., 'Color', 'Typography', 'Spacing', 'Elevation', 'Motion', 'Shape').</td></tr>
 <tr><td><code>description</code></td><td><a href="common-rich-text.html#richtext" class="type-ref">richText</a></td><td><span class="required-badge">required</span></td><td>A description of the style — what visual attribute it governs, how the system approaches it, and its role in the overall design language. CommonMark supported.</td></tr>
@@ -88,7 +88,7 @@
 <div class="def-example">
 <p class="def-example__title"><strong>Example</strong></p>
 <pre><code class="language-json">{
-  &quot;type&quot;: &quot;style&quot;,
+  &quot;kind&quot;: &quot;style&quot;,
   &quot;name&quot;: &quot;spacing&quot;,
   &quot;displayName&quot;: &quot;Spacing&quot;,
   &quot;description&quot;: &quot;A spatial system built on a 4px base unit. Defines the scale and rules for all whitespace, padding, margin, and gap values across the system. Eliminates ad hoc pixel values and reduces visual inconsistency caused by individual interpretation of spatial relationships.&quot;,
@@ -106,7 +106,7 @@
   ],
   &quot;guidelines&quot;: [
     {
-      &quot;type&quot;: &quot;principles&quot;,
+      &quot;kind&quot;: &quot;principles&quot;,
       &quot;items&quot;: [
         {
           &quot;title&quot;: &quot;Use the scale&quot;,
@@ -123,7 +123,7 @@
       ]
     },
     {
-      &quot;type&quot;: &quot;scale&quot;,
+      &quot;kind&quot;: &quot;scale&quot;,
       &quot;name&quot;: &quot;spacing-scale&quot;,
       &quot;displayName&quot;: &quot;Spacing Scale&quot;,
       &quot;description&quot;: &quot;A geometric spacing scale based on a 4px unit.&quot;,
@@ -176,7 +176,7 @@
       ]
     },
     {
-      &quot;type&quot;: &quot;motion&quot;,
+      &quot;kind&quot;: &quot;motion&quot;,
       &quot;description&quot;: &quot;Easing curves used when spacing values are animated — for example, when a container expands from space-0 to space-6 or when layout gaps transition between density settings.&quot;,
       &quot;items&quot;: [
         {
@@ -218,7 +218,7 @@
       ]
     },
     {
-      &quot;type&quot;: &quot;best-practices&quot;,
+      &quot;kind&quot;: &quot;best-practices&quot;,
       &quot;items&quot;: [
         {
           &quot;guidance&quot;: &quot;Use the spacing scale tokens for all padding, margin, and gap properties. Do not use hard-coded values.&quot;,
@@ -262,7 +262,9 @@
           &quot;kind&quot;: &quot;required&quot;,
           &quot;category&quot;: &quot;accessibility&quot;,
           &quot;criteria&quot;: [
-            &quot;https://www.w3.org/TR/WCAG22/#target-size-minimum&quot;
+            {
+              &quot;url&quot;: &quot;https://www.w3.org/TR/WCAG22/#target-size-minimum&quot;
+            }
           ]
         },
         {
@@ -271,13 +273,15 @@
           &quot;kind&quot;: &quot;required&quot;,
           &quot;category&quot;: &quot;accessibility&quot;,
           &quot;criteria&quot;: [
-            &quot;https://www.w3.org/TR/WCAG22/#resize-text&quot;
+            {
+              &quot;url&quot;: &quot;https://www.w3.org/TR/WCAG22/#resize-text&quot;
+            }
           ]
         }
       ]
     },
     {
-      &quot;type&quot;: &quot;purpose&quot;,
+      &quot;kind&quot;: &quot;purpose&quot;,
       &quot;useCases&quot;: [
         {
           &quot;description&quot;: &quot;When defining padding, margin, or gap values for any layout or component. All spatial values in production code must reference the spacing scale.&quot;,
@@ -324,32 +328,32 @@
   ],
   &quot;links&quot;: [
     {
-      &quot;type&quot;: &quot;token-group&quot;,
+      &quot;kind&quot;: &quot;token-group&quot;,
       &quot;name&quot;: &quot;spacing&quot;,
       &quot;role&quot;: &quot;Provides all spatial tokens from space-0 (0px) through space-8 (48px), built on a 4px base unit.&quot;
     },
     {
-      &quot;type&quot;: &quot;source&quot;,
+      &quot;kind&quot;: &quot;source&quot;,
       &quot;url&quot;: &quot;https://code.acme.com/design-system/src/tokens/spacing.tokens.json&quot;,
       &quot;label&quot;: &quot;Token source file&quot;
     },
     {
-      &quot;type&quot;: &quot;design&quot;,
+      &quot;kind&quot;: &quot;design&quot;,
       &quot;url&quot;: &quot;https://design-tool.acme.com/file/abc123?node-id=200:1&quot;,
       &quot;label&quot;: &quot;Design file — spacing variables&quot;
     },
     {
-      &quot;type&quot;: &quot;documentation&quot;,
+      &quot;kind&quot;: &quot;documentation&quot;,
       &quot;url&quot;: &quot;https://design.acme.com/style/spacing&quot;,
       &quot;label&quot;: &quot;Documentation site&quot;
     },
     {
-      &quot;type&quot;: &quot;related&quot;,
+      &quot;kind&quot;: &quot;related&quot;,
       &quot;url&quot;: &quot;https://design.acme.com/style/typography&quot;,
       &quot;label&quot;: &quot;Typography style&quot;
     },
     {
-      &quot;type&quot;: &quot;related&quot;,
+      &quot;kind&quot;: &quot;related&quot;,
       &quot;url&quot;: &quot;https://design.acme.com/components/stack&quot;,
       &quot;label&quot;: &quot;Stack component&quot;
     }

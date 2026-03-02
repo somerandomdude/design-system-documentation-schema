@@ -148,7 +148,7 @@
 <h3 id="token">token</h3>
 <p class="def-description">Documentation for a single design token — its name, type, value, platform API mappings, use cases, guidelines, and accessibility considerations. The displayName property is intentionally absent — the token name itself is the display name. Description and status are optional; when a token appears inside a token group, an omitted status is inherited from the parent group.</p>
 <p class="def-type"><span class="type-badge">object</span></p>
-<table class="prop-table"><thead><tr><th>Property</th><th>Type</th><th>Required</th><th>Description</th></tr></thead><tbody><tr><td><code>type</code></td><td><code>"token"</code></td><td><span class="required-badge">required</span></td><td>Identifies this entity as a token.</td></tr>
+<table class="prop-table"><thead><tr><th>Property</th><th>Type</th><th>Required</th><th>Description</th></tr></thead><tbody><tr><td><code>kind</code></td><td><code>"token"</code></td><td><span class="required-badge">required</span></td><td>Identifies this entity as a token.</td></tr>
 <tr><td><code>name</code></td><td>string</td><td><span class="required-badge">required</span></td><td>The token name. Token names are intentionally unconstrained by a pattern to accommodate DTCG and design tool naming conventions that use dots, slashes, or other separators (e.g., 'color-text-primary', 'color.text.primary', 'color/text/primary'). The token name also serves as the human-readable display name.</td></tr>
 <tr><td><code>tokenType</code></td><td>string</td><td><span class="required-badge">required</span></td><td>The type of token aligned with the DTCG spec (e.g., 'color', 'dimension', 'fontFamily', 'fontWeight', 'duration', 'cubicBezier', 'shadow').</td></tr>
 <tr><td><code>aliases</code></td><td>string[]</td><td>optional</td><td>Alternative names this token is known by across teams, tools, or legacy systems. Useful for search, migration mapping, and cross-referencing.</td></tr>
@@ -171,7 +171,7 @@
 <div class="def-example">
 <p class="def-example__title"><strong>Example</strong></p>
 <pre><code class="language-json">{
-  &quot;type&quot;: &quot;token&quot;,
+  &quot;kind&quot;: &quot;token&quot;,
   &quot;name&quot;: &quot;color-text-primary&quot;,
   &quot;summary&quot;: &quot;Default body text color for light and dark surfaces.&quot;,
   &quot;description&quot;: &quot;The default color for body text, headings, and labels. Provides the highest-contrast text color for standard reading content on default background surfaces.&quot;,
@@ -224,7 +224,7 @@
   },
   &quot;guidelines&quot;: [
     {
-      &quot;type&quot;: &quot;purpose&quot;,
+      &quot;kind&quot;: &quot;purpose&quot;,
       &quot;useCases&quot;: [
         {
           &quot;description&quot;: &quot;When applying color to body text, headings, and form labels on default background surfaces.&quot;,
@@ -253,7 +253,7 @@
       ]
     },
     {
-      &quot;type&quot;: &quot;best-practices&quot;,
+      &quot;kind&quot;: &quot;best-practices&quot;,
       &quot;items&quot;: [
         {
           &quot;guidance&quot;: &quot;Use for all body text, headings, and form labels on default background surfaces.&quot;,
@@ -273,14 +273,18 @@
           &quot;kind&quot;: &quot;informational&quot;,
           &quot;category&quot;: &quot;accessibility&quot;,
           &quot;criteria&quot;: [
-            &quot;https://www.w3.org/TR/WCAG22/#contrast-minimum&quot;,
-            &quot;https://www.w3.org/TR/WCAG22/#contrast-enhanced&quot;
+            {
+              &quot;url&quot;: &quot;https://www.w3.org/TR/WCAG22/#contrast-minimum&quot;
+            },
+            {
+              &quot;url&quot;: &quot;https://www.w3.org/TR/WCAG22/#contrast-enhanced&quot;
+            }
           ]
         }
       ]
     },
     {
-      &quot;type&quot;: &quot;accessibility&quot;,
+      &quot;kind&quot;: &quot;accessibility&quot;,
       &quot;wcagLevel&quot;: &quot;AAA&quot;,
       &quot;colorContrast&quot;: [
         {
@@ -302,22 +306,22 @@
   ],
   &quot;links&quot;: [
     {
-      &quot;type&quot;: &quot;source&quot;,
+      &quot;kind&quot;: &quot;source&quot;,
       &quot;url&quot;: &quot;https://code.acme.com/design-system/src/tokens/color/text.tokens.json&quot;,
       &quot;label&quot;: &quot;Token source file&quot;
     },
     {
-      &quot;type&quot;: &quot;documentation&quot;,
+      &quot;kind&quot;: &quot;documentation&quot;,
       &quot;url&quot;: &quot;https://design.acme.com/tokens/color-text-primary&quot;,
       &quot;label&quot;: &quot;Token documentation&quot;
     },
     {
-      &quot;type&quot;: &quot;related&quot;,
+      &quot;kind&quot;: &quot;related&quot;,
       &quot;url&quot;: &quot;https://design.acme.com/tokens/color-text-secondary&quot;,
       &quot;label&quot;: &quot;color-text-secondary&quot;
     },
     {
-      &quot;type&quot;: &quot;related&quot;,
+      &quot;kind&quot;: &quot;related&quot;,
       &quot;url&quot;: &quot;https://design.acme.com/tokens/color-text-tertiary&quot;,
       &quot;label&quot;: &quot;color-text-tertiary&quot;
     }
@@ -329,7 +333,7 @@
 <h3 id="tokengroup">tokenGroup</h3>
 <p class="def-description">Documentation for a group of related design tokens. Token groups are flexible organizational units that can represent a full token collection, a token family (e.g., all color tokens), a token sub-family (e.g., a single color hue with its grade scale), or any other logical grouping. Groups can be nested to form an arbitrarily deep hierarchy — a top-level group might represent 'color', containing child groups for 'color-text', 'color-background', and 'color-border', each of which contains individual tokens. This recursive structure mirrors the way real design systems organize tokens into families and sub-families. The displayName property is intentionally absent — the token group name itself is the display name. Description and status are optional; children inherit the parent group's status when they omit their own.</p>
 <p class="def-type"><span class="type-badge">object</span></p>
-<table class="prop-table"><thead><tr><th>Property</th><th>Type</th><th>Required</th><th>Description</th></tr></thead><tbody><tr><td><code>type</code></td><td><code>"token-group"</code></td><td><span class="required-badge">required</span></td><td>Identifies this entity as a token-group.</td></tr>
+<table class="prop-table"><thead><tr><th>Property</th><th>Type</th><th>Required</th><th>Description</th></tr></thead><tbody><tr><td><code>kind</code></td><td><code>"token-group"</code></td><td><span class="required-badge">required</span></td><td>Identifies this entity as a token-group.</td></tr>
 <tr><td><code>name</code></td><td>string</td><td><span class="required-badge">required</span></td><td>The token group name. Token group names are intentionally unconstrained by a pattern to accommodate DTCG and design tool naming conventions (e.g., 'color-text', 'color.text', 'color/text'). The token group name also serves as the human-readable display name.</td></tr>
 <tr><td><code>aliases</code></td><td>string[]</td><td>optional</td><td>Alternative names this token group is known by across teams, tools, or legacy systems. Useful for search, migration mapping, and cross-referencing.</td></tr>
 <tr><td><code>summary</code></td><td>string</td><td>optional</td><td>A one-line, plain-text summary. MUST NOT contain markup.</td></tr>
