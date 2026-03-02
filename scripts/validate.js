@@ -265,14 +265,14 @@ function validateDefinitionExamples(ajv) {
         continue;
       }
 
-      // Determine the def name from the type property
-      const typeName = data.type;
+      // Determine the def name from the kind property
+      const typeName = data.kind;
       const defName = typeName === "token-group" ? "tokenGroup" : typeName;
       const validator = defValidators[defName];
 
       if (!validator) {
         console.log(
-          `  ~ ${dir}/${file}: type "${typeName}" has no standalone validator (skipped)`,
+          `  ~ ${dir}/${file}: kind "${typeName}" has no standalone validator (skipped)`,
         );
         skipped++;
         continue;

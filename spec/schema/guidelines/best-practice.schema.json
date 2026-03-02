@@ -7,7 +7,7 @@
     "bestPracticeEntry": {
       "type": "object",
       "description": "A single, self-contained piece of usage guidance. Every best practice pairs an actionable statement with a rationale explaining why. The optional level classifies enforcement level. The optional category groups by discipline. The optional target identifies which anatomy part or content area the guidance applies to. The optional criteria links to external standards (WCAG, platform guidelines, etc.).",
-      "required": ["guidance", "rationale"],
+      "required": ["guidance", "kind"],
       "properties": {
         "guidance": {
           "$ref": "../common/rich-text.schema.json#/$defs/richText",
@@ -38,11 +38,23 @@
         },
         "criteria": {
           "type": "array",
+          "description": "References to external functional requirements or standards that this best practice addresses. Each entry carries a URL to the standard and a human-readable label. For WCAG criteria, use the direct URL to the success criterion (e.g., 'https://www.w3.org/TR/WCAG22/#contrast-minimum') and a descriptive label (e.g., '1.4.3 Contrast (Minimum)').",
           "items": {
-            "type": "string",
-            "format": "uri"
-          },
-          "description": "URLs to external functional requirements or standards that this best practice addresses. For WCAG criteria, use the direct URL to the success criterion (e.g., 'https://www.w3.org/TR/WCAG22/#contrast-minimum'). For platform guidelines, link to the specific section."
+            "type": "object",
+            "required": ["url"],
+            "properties": {
+              "url": {
+                "type": "string",
+                "format": "uri",
+                "description": "URL to the external standard or requirement (e.g., 'https://www.w3.org/TR/WCAG22/#contrast-minimum')."
+              },
+              "label": {
+                "type": "string",
+                "description": "A human-readable label for the criterion (e.g., '1.4.3 Contrast (Minimum)', 'WCAG 2.5.8 Target Size'). When omitted, tools MAY derive a label from the URL."
+              }
+            },
+            "additionalProperties": false
+          }
         },
         "examples": {
           "type": "array",
@@ -64,7 +76,7 @@
     "bestPractices": {
       "type": "object",
       "description": "Documents actionable usage rules for an artifact. Each item is a self-contained best practice pairing an actionable guidance statement with a rationale. Best practices can be categorized by discipline (visual-design, accessibility, content, etc.), targeted to specific anatomy parts, and linked to external standards like WCAG. They complement other guideline types — use-cases tell the reader *when* to use the artifact, best practices tell the reader *how* to use it correctly.",
-      "required": ["type", "items"],
+      "required": ["kind", "items"],
       "properties": {
         "items": {
           "type": "array",
@@ -74,7 +86,7 @@
           },
           "minItems": 1
         },
-        "type": {
+        "kind": {
           "type": "string",
           "const": "best-practices",
           "description": "Identifies this guideline as a best practices specification."

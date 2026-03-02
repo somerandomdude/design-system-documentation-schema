@@ -59,7 +59,7 @@
           "description": "An explanation of the example — why it is encouraged, discouraged, or notable."
         },
         "value": {
-          "description": "A literal value carried by the example. Used for API property examples where the content is a concrete value rather than a visual demonstration. Accepts any JSON type: string (e.g., 'primary'), number (e.g., 44), boolean (e.g., true), object, array, or null. When provided without a presentation, this value alone constitutes the example. Do not use `value` for display text — use `title` for captions and `description` for explanations."
+          "description": "A literal value carried by the example. Used for API property examples where the content is a concrete value rather than a visual demonstration. Can be used to display the code that reflects the example.  Accepts any JSON type: string (e.g., 'primary'), number (e.g., 44), boolean (e.g., true), object, array, or null. When provided without a presentation, this value alone constitutes the example. Do not use `value` for display text — use `title` for captions and `description` for explanations."
         },
         "presentation": {
           "description": "The visual or interactive presentation for the example. Required when `value` is not provided. Optional when `value` is provided — value-only examples represent concrete data points (prop values, token values) that tools render as table rows or inline displays.",
@@ -88,9 +88,9 @@
     },
     "link": {
       "type": "object",
-      "description": "A typed reference to an external resource or an internal DSDS artifact. Links serve three purposes: pointing to external resources (source code, design files, documentation, packages), expressing relationships to other DSDS artifacts by name (components in a pattern, token groups in a style), and combining both when an internal artifact also has an addressable URL. The `type` property classifies the reference. Standard external types: 'source', 'design', 'storybook', 'documentation', 'package', 'repository'. Standard relationship types: 'alternative', 'parent', 'child', 'related'. Standard artifact types: 'component', 'token', 'token-group', 'style', 'pattern', 'theme'. Custom values are permitted.",
+      "description": "A typed reference to an external resource or an internal DSDS artifact. Links serve three purposes: pointing to external resources (source code, design files, documentation, packages), expressing relationships to other DSDS artifacts by name (components in a pattern, token groups in a style), and combining both when an internal artifact also has an addressable URL. The `kind` property classifies the reference. Standard external types: 'source', 'design', 'storybook', 'documentation', 'package', 'repository'. Standard relationship types: 'alternative', 'parent', 'child', 'related'. Standard artifact types: 'component', 'token', 'token-group', 'style', 'pattern', 'theme'. Custom values are permitted.",
       "required": [
-        "type"
+        "kind"
       ],
       "anyOf": [
         {
@@ -105,7 +105,7 @@
         }
       ],
       "properties": {
-        "type": {
+        "kind": {
           "type": "string",
           "description": "The category of the linked resource or relationship. Standard external types: 'source', 'design', 'storybook', 'documentation', 'package', 'repository'. Standard relationship types: 'alternative', 'parent', 'child', 'related'. Standard artifact types (for internal references): 'component', 'token', 'token-group', 'style', 'pattern', 'theme'. Custom values are permitted and SHOULD be lowercase strings matching ^[a-z][a-z0-9-]*$."
         },
@@ -168,12 +168,12 @@
       "type": "object",
       "description": "An image presentation — a screenshot, diagram, annotated mockup, or exported design frame.",
       "required": [
-        "type",
+        "kind",
         "url",
         "alt"
       ],
       "properties": {
-        "type": {
+        "kind": {
           "type": "string",
           "const": "image",
           "description": "Identifies this presentation as an image."
@@ -194,12 +194,12 @@
       "type": "object",
       "description": "A video presentation — a screen recording, animated transition, or interaction walkthrough.",
       "required": [
-        "type",
+        "kind",
         "url",
         "alt"
       ],
       "properties": {
-        "type": {
+        "kind": {
           "type": "string",
           "const": "video",
           "description": "Identifies this presentation as a video."
@@ -220,12 +220,12 @@
       "type": "object",
       "description": "A code presentation — a source code snippet showing how to use the artifact.",
       "required": [
-        "type",
+        "kind",
         "code",
         "language"
       ],
       "properties": {
-        "type": {
+        "kind": {
           "type": "string",
           "const": "code",
           "description": "Identifies this presentation as a code snippet."
@@ -245,11 +245,11 @@
       "type": "object",
       "description": "A URL presentation — a link to any web resource such as a live demo, interactive example, documentation page, or hosted component story. Use for Storybook stories, CodeSandbox embeds, StackBlitz projects, or any other addressable web content.",
       "required": [
-        "type",
+        "kind",
         "url"
       ],
       "properties": {
-        "type": {
+        "kind": {
           "type": "string",
           "const": "url",
           "description": "Identifies this presentation as a URL reference to a web resource."
@@ -520,10 +520,10 @@
       "type": "object",
       "description": "Structured accessibility specifications for an artifact. Documents keyboard behavior, ARIA attributes, screen reader announcements, focus management, color contrast pairs, and motion considerations. This is distinct from best-practice guidelines — accessibility guidelines capture machine-readable specifications, while best practices capture actionable rules with rationale. Both can coexist in the same guidelines array.",
       "required": [
-        "type"
+        "kind"
       ],
       "properties": {
-        "type": {
+        "kind": {
           "type": "string",
           "const": "accessibility",
           "description": "Identifies this guideline as an accessibility specification."
@@ -619,11 +619,11 @@
       "type": "object",
       "description": "Documents the visual structure of a component or pattern by enumerating its named sub-elements (parts). Each part can reference the design tokens that style it, creating a bridge between the artifact's visual design and its token architecture. An optional preview provides an annotated diagram of the assembled structure. For components, parts are rendered UI sub-elements (e.g., container, label, icon, focus-ring). For patterns, parts are the structural sections of the pattern's layout (e.g., image, title, body, primary action, secondary CTA).",
       "required": [
-        "type",
+        "kind",
         "parts"
       ],
       "properties": {
-        "type": {
+        "kind": {
           "type": "string",
           "const": "anatomy",
           "description": "Identifies this guideline as an anatomy specification."
@@ -880,10 +880,10 @@
       "type": "object",
       "description": "Documents the code-level interface of a component on a single platform. Lists the configurable properties, emitted events, content slots, CSS hooks, data attributes, and public methods that consumers interact with. For multi-platform components (e.g., React + Web Component + Vue), create one API guideline per platform and use the `platform` property to distinguish them.",
       "required": [
-        "type"
+        "kind"
       ],
       "properties": {
-        "type": {
+        "kind": {
           "type": "string",
           "const": "api",
           "description": "Identifies this guideline as an API specification."
@@ -949,7 +949,7 @@
       "description": "A single, self-contained piece of usage guidance. Every best practice pairs an actionable statement with a rationale explaining why. The optional level classifies enforcement level. The optional category groups by discipline. The optional target identifies which anatomy part or content area the guidance applies to. The optional criteria links to external standards (WCAG, platform guidelines, etc.).",
       "required": [
         "guidance",
-        "rationale"
+        "kind"
       ],
       "properties": {
         "guidance": {
@@ -981,11 +981,25 @@
         },
         "criteria": {
           "type": "array",
+          "description": "References to external functional requirements or standards that this best practice addresses. Each entry carries a URL to the standard and a human-readable label. For WCAG criteria, use the direct URL to the success criterion (e.g., 'https://www.w3.org/TR/WCAG22/#contrast-minimum') and a descriptive label (e.g., '1.4.3 Contrast (Minimum)').",
           "items": {
-            "type": "string",
-            "format": "uri"
-          },
-          "description": "URLs to external functional requirements or standards that this best practice addresses. For WCAG criteria, use the direct URL to the success criterion (e.g., 'https://www.w3.org/TR/WCAG22/#contrast-minimum'). For platform guidelines, link to the specific section."
+            "type": "object",
+            "required": [
+              "url"
+            ],
+            "properties": {
+              "url": {
+                "type": "string",
+                "format": "uri",
+                "description": "URL to the external standard or requirement (e.g., 'https://www.w3.org/TR/WCAG22/#contrast-minimum')."
+              },
+              "label": {
+                "type": "string",
+                "description": "A human-readable label for the criterion (e.g., '1.4.3 Contrast (Minimum)', 'WCAG 2.5.8 Target Size'). When omitted, tools MAY derive a label from the URL."
+              }
+            },
+            "additionalProperties": false
+          }
         },
         "examples": {
           "type": "array",
@@ -1008,7 +1022,7 @@
       "type": "object",
       "description": "Documents actionable usage rules for an artifact. Each item is a self-contained best practice pairing an actionable guidance statement with a rationale. Best practices can be categorized by discipline (visual-design, accessibility, content, etc.), targeted to specific anatomy parts, and linked to external standards like WCAG. They complement other guideline types — use-cases tell the reader *when* to use the artifact, best practices tell the reader *how* to use it correctly.",
       "required": [
-        "type",
+        "kind",
         "items"
       ],
       "properties": {
@@ -1020,7 +1034,7 @@
           },
           "minItems": 1
         },
-        "type": {
+        "kind": {
           "type": "string",
           "const": "best-practices",
           "description": "Identifies this guideline as a best practices specification."
@@ -1099,7 +1113,7 @@
       "type": "object",
       "description": "Documents structured content guidelines — recommended action labels and localization considerations. The labels array provides a terminology dictionary of standard UI labels with definitions, usage context, and cross-references (following the pattern established by Carbon's action labels and Gestalt's writing guidelines). The localization array documents internationalization concerns like RTL behavior, text expansion, and pluralization. At least one of `labels` or `localization` must be present. Content guidelines complement best-practice guidelines — best practices say 'Use sentence case' (a rule), content guidelines say 'Add: Takes an existing object and uses it in a new context' (a reference).",
       "required": [
-        "type"
+        "kind"
       ],
       "anyOf": [
         {
@@ -1114,7 +1128,7 @@
         }
       ],
       "properties": {
-        "type": {
+        "kind": {
           "type": "string",
           "const": "content",
           "description": "Identifies this guideline as a content specification."
@@ -1255,10 +1269,10 @@
       "type": "object",
       "description": "Documents the measurable visual specifications of a component — every token reference, spacing relationship, dimension constraint, typographic setting, and responsive adaptation. This guideline type makes design decisions explicit so that engineers can implement them precisely and reviewers can verify them against the design.",
       "required": [
-        "type"
+        "kind"
       ],
       "properties": {
-        "type": {
+        "kind": {
           "type": "string",
           "const": "design-specifications",
           "description": "Identifies this guideline as a design specifications document."
@@ -1489,11 +1503,11 @@
       "type": "object",
       "description": "Documents the interaction flow of a pattern as an ordered sequence of steps. Each item describes a single step — what triggers it, what the system does in response, which components are involved, and optional examples. The ordering of items is critical: it represents the chronological flow of the user journey. Authors SHOULD include steps for the initial trigger, the system's response, recovery or correction steps, and completion. Multiple interaction guidelines on the same pattern can document alternative flows (e.g., a happy path and an error path).",
       "required": [
-        "type",
+        "kind",
         "items"
       ],
       "properties": {
-        "type": {
+        "kind": {
           "type": "string",
           "const": "interactions",
           "description": "Identifies this guideline as an interactions specification."
@@ -1583,11 +1597,11 @@
       "type": "object",
       "description": "Documents the motion system for a visual style — the named easing curves, their timing functions, recommended durations, and usage guidance. Each item represents a single easing definition that designers and engineers select from when adding animation or transitions. The ordering is significant — tools SHOULD display easings in this order. A typical motion guideline lists easings from most commonly used to most specialized (e.g., expressive first, then enter, exit, lateral, bounce, linear). This guideline type is scoped to style entities and complements the scale guideline (which documents duration token progressions) and best-practice guidelines (which document motion rules like reduced-motion handling).",
       "required": [
-        "type",
+        "kind",
         "items"
       ],
       "properties": {
-        "type": {
+        "kind": {
           "type": "string",
           "const": "motion",
           "description": "Identifies this guideline as a motion specification."
@@ -1630,11 +1644,11 @@
       "type": "object",
       "description": "Documents the guiding principles for a visual style or design domain. Each item is a high-level belief or constraint that shapes how decisions are made within this domain. Principles sit above individual best practices — they inform the philosophy, while best practices encode the specific rules. A spacing style might have principles like 'Use the scale' and 'Density over decoration'; a color style might have 'Functional first' and 'Accessible by default'.",
       "required": [
-        "type",
+        "kind",
         "items"
       ],
       "properties": {
-        "type": {
+        "kind": {
           "type": "string",
           "const": "principles",
           "description": "Identifies this guideline as a principles specification."
@@ -1654,10 +1668,10 @@
       "type": "object",
       "description": "Documents the purpose of an artifact — when to reach for it and when to choose something else. Contains a `useCases` object with whenToUse and whenNotToUse arrays of scenario-driven use case entries drawn from the common useCases schema. This follows the same pattern used by variant values and state entries. Purpose guidelines help the reader decide whether this is the right artifact *before* they start implementing it. For guidance on *how* to use the artifact correctly after choosing it, see best-practices. For guidance on *what* the artifact looks like and how it behaves, see variants, states, and anatomy.",
       "required": [
-        "type"
+        "kind"
       ],
       "properties": {
-        "type": {
+        "kind": {
           "type": "string",
           "const": "purpose",
           "description": "Identifies this guideline as a purpose specification."
@@ -1702,13 +1716,13 @@
       "type": "object",
       "description": "Documents an ordered scale — a deliberate progression of values that constrains design decisions to a harmonious, consistent set. Scales are the primary mechanism for spacing systems, type hierarchies, elevation levels, and other graduated visual attributes. The steps array is ordered from smallest/lowest to largest/highest, and tools SHOULD preserve this ordering for display.",
       "required": [
-        "type",
+        "kind",
         "name",
         "description",
         "steps"
       ],
       "properties": {
-        "type": {
+        "kind": {
           "type": "string",
           "const": "scale",
           "description": "Identifies this guideline as a scale specification."
@@ -1784,11 +1798,11 @@
       "type": "object",
       "description": "Documents all interactive states of a component. Each item describes a single state the component can enter — what triggers it, how appearance and behavior change, which tokens are overridden, and how it looks visually. States are listed in a meaningful order — typically default first, then hover, focus, active, followed by disabled, loading, and other special states.",
       "required": [
-        "type",
+        "kind",
         "items"
       ],
       "properties": {
-        "type": {
+        "kind": {
           "type": "string",
           "const": "states",
           "description": "Identifies this guideline as a states specification."
@@ -1824,6 +1838,10 @@
           "$ref": "#/$defs/richText",
           "description": "What this value looks like, when to use it, and how it differs from the other values in this dimension."
         },
+        "purpose": {
+          "$ref": "#/$defs/richText",
+          "description": "Why this flag exists in the design system — the user need or design rationale it addresses (e.g., 'Prevents user interaction during form submission to avoid duplicate requests')."
+        },
         "example": {
           "type": "array",
           "description": "Visual previews showing this variant value in isolation or in context.",
@@ -1845,12 +1863,12 @@
       "type": "object",
       "description": "A boolean/toggle variant that is either on or off. Use for binary capabilities such as 'disabled', 'full-width', 'icon-only', or 'loading'. Flag variants have no values array — the component either has the flag active or it does not.",
       "required": [
-        "type",
+        "kind",
         "name",
         "description"
       ],
       "properties": {
-        "type": {
+        "kind": {
           "type": "string",
           "const": "flag",
           "description": "Identifies this variant as a boolean flag."
@@ -1889,13 +1907,13 @@
       "type": "object",
       "description": "An enumerated variant with multiple mutually exclusive values. Use for dimensions of variation where the user selects one option from a set, such as 'size' (sm | md | lg), 'emphasis' (primary | secondary | ghost), or 'shape' (rounded | pill | square).",
       "required": [
-        "type",
+        "kind",
         "name",
         "description",
         "values"
       ],
       "properties": {
-        "type": {
+        "kind": {
           "type": "string",
           "const": "enum",
           "description": "Identifies this variant as an enumerated set of values."
@@ -1927,11 +1945,11 @@
       "type": "object",
       "description": "Documents all dimensions of visual or behavioral variation on a component. Each item is either a flag variant (a boolean toggle like 'disabled' or 'full-width') or an enum variant (a set of mutually exclusive options like size: sm | md | lg). Multiple items document orthogonal dimensions that can be combined independently.",
       "required": [
-        "type",
+        "kind",
         "items"
       ],
       "properties": {
-        "type": {
+        "kind": {
           "type": "string",
           "const": "variants",
           "description": "Identifies this guideline as a variants specification."
@@ -1958,13 +1976,13 @@
       "type": "object",
       "description": "Documentation for a single reusable UI component. The component's identity (name, description, status, category) lives at the top level. All structured documentation lives in the `guidelines` array — each entry is a typed guideline object (anatomy, api, variant, state, design-specifications, best-practice, accessibility, use-cases, example, etc.). This unified model replaces the previous architecture where each documentation concern was a separate top-level property.",
       "required": [
-        "type",
+        "kind",
         "name",
         "displayName",
         "description"
       ],
       "properties": {
-        "type": {
+        "kind": {
           "type": "string",
           "const": "component",
           "description": "Identifies this entity as a component."
@@ -2057,13 +2075,13 @@
       "type": "object",
       "description": "Documentation for a broad interaction pattern — a recurring, multi-component solution to a common UX problem. Patterns sit above individual components and describe how they are composed to address a user need. The pattern's identity (name, description, status, category) lives at the top level. All structured documentation lives in the `guidelines` array — each entry is a typed guideline object (artifact-reference for participating components, interaction for flow steps, best-practice for rules, accessibility for a11y specs, use-cases for scenario guidance, example for demonstrations, etc.). This unified model replaces the previous architecture where components, interactions, useCases, guidelines, accessibility, and examples were separate top-level properties.",
       "required": [
-        "type",
+        "kind",
         "name",
         "displayName",
         "description"
       ],
       "properties": {
-        "type": {
+        "kind": {
           "type": "string",
           "const": "pattern",
           "description": "Identifies this entity as a pattern."
@@ -2155,13 +2173,13 @@
       "type": "object",
       "description": "Documentation for a macro-level visual style — the principles, guidelines, scales, and token references that govern a visual attribute such as color, typography, spacing, or elevation across the entire system. The style's identity (name, description, status, category) lives at the top level. All structured documentation lives in the `guidelines` array — each entry is a typed guideline object (principle, scale, artifact-reference, best-practice, accessibility, use-cases, example, etc.). This unified model replaces the previous architecture where principles, tokenGroups, scales, useCases, guidelines, and accessibility were separate top-level properties.",
       "required": [
-        "type",
+        "kind",
         "name",
         "displayName",
         "description"
       ],
       "properties": {
-        "type": {
+        "kind": {
           "type": "string",
           "const": "style",
           "description": "Identifies this entity as a style."
@@ -2272,14 +2290,14 @@
       "type": "object",
       "description": "Documentation for a theme — a named set of token value overrides that adapt the design system to a specific context. Themes are commonly used for color modes (light, dark, high-contrast), density settings (compact, comfortable), brand variants, or product-specific customizations. A theme does not redefine tokens; it references existing tokens and provides alternative values for them. The token catalog remains the authoritative source for token identity, type, documentation, and API mappings.",
       "required": [
-        "type",
+        "kind",
         "name",
         "displayName",
         "description",
         "overrides"
       ],
       "properties": {
-        "type": {
+        "kind": {
           "type": "string",
           "const": "theme",
           "description": "Identifies this entity as a theme."
@@ -2413,12 +2431,12 @@
       "type": "object",
       "description": "Documentation for a single design token — its name, type, value, platform API mappings, use cases, guidelines, and accessibility considerations. The displayName property is intentionally absent — the token name itself is the display name. Description and status are optional; when a token appears inside a token group, an omitted status is inherited from the parent group.",
       "required": [
-        "type",
+        "kind",
         "name",
         "tokenType"
       ],
       "properties": {
-        "type": {
+        "kind": {
           "type": "string",
           "const": "token",
           "description": "Identifies this entity as a token."
@@ -2516,11 +2534,11 @@
       "type": "object",
       "description": "Documentation for a group of related design tokens. Token groups are flexible organizational units that can represent a full token collection, a token family (e.g., all color tokens), a token sub-family (e.g., a single color hue with its grade scale), or any other logical grouping. Groups can be nested to form an arbitrarily deep hierarchy — a top-level group might represent 'color', containing child groups for 'color-text', 'color-background', and 'color-border', each of which contains individual tokens. This recursive structure mirrors the way real design systems organize tokens into families and sub-families. The displayName property is intentionally absent — the token group name itself is the display name. Description and status are optional; children inherit the parent group's status when they omit their own.",
       "required": [
-        "type",
+        "kind",
         "name"
       ],
       "properties": {
-        "type": {
+        "kind": {
           "type": "string",
           "const": "token-group",
           "description": "Identifies this entity as a token-group."
@@ -2625,7 +2643,7 @@
     },
     "documentationGroup": {
       "type": "object",
-      "description": "A named collection of design system documentation entities. Contains a single `items` array of typed entities — components, tokens, token groups, themes, styles, and/or patterns mixed freely in any order. Each entity is identified by its `type` discriminator property. At least one entity must be present.",
+      "description": "A named collection of design system documentation entities. Contains a single `items` array of typed entities — components, tokens, token groups, themes, styles, and/or patterns mixed freely in any order. Each entity is identified by its `kind` discriminator property. At least one entity must be present.",
       "required": [
         "name",
         "items"
@@ -2640,7 +2658,7 @@
         },
         "items": {
           "type": "array",
-          "description": "The entities in this documentation group. Each item is a typed entity — its `type` property determines which schema applies. Entities of different types can be mixed freely in the same array. The ordering is significant: tools SHOULD preserve it for display. Authors MAY organize entities in whatever order best serves their documentation (e.g., tokens before components, or grouped by domain).",
+          "description": "The entities in this documentation group. Each item is a typed entity — its `kind` property determines which schema applies. Entities of different types can be mixed freely in the same array. The ordering is significant: tools SHOULD preserve it for display. Authors MAY organize entities in whatever order best serves their documentation (e.g., tokens before components, or grouped by domain).",
           "items": {
             "oneOf": [
               {

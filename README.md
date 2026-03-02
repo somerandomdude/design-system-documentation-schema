@@ -15,7 +15,7 @@ DSDS defines a JSON-based format for documenting the six entity types of a desig
 - **Styles** — Foundations for color, typography, spacing, elevation, motion, and content — with principles, scales, motion definitions, and best practices
 - **Patterns** — Broad interaction patterns like navigation, error messaging, and empty states — with anatomy, variants, states, interactions, and content
 
-All structured documentation — best practices, anatomy, API specs, variants, states, accessibility, examples, design specifications, principles, scales, motion definitions, content guidelines, and interactions — lives in a unified **guidelines** system. Each guideline is a typed container identified by a `type` discriminator.
+All structured documentation — best practices, anatomy, API specs, variants, states, accessibility, examples, design specifications, principles, scales, motion definitions, content guidelines, and interactions — lives in a unified **guidelines** system. Each guideline is a typed container identified by a `kind` discriminator.
 
 The goal is simple: make design system documentation structured, portable, and consumable by tools — whether that tool is a documentation site, a linter, a code assistant, or a human reading JSON.
 
@@ -150,7 +150,7 @@ Reference the schema in your DSDS files for editor support:
       "name": "My Design System",
       "items": [
         {
-          "type": "component",
+          "kind": "component",
           "name": "my-component",
           "displayName": "My Component",
           "description": "A brief description.",
@@ -190,12 +190,12 @@ A DSDS file has a `dsdsVersion` and a `documentation` array. Each entry in `docu
     {
       "name": "Acme Design System",
       "items": [
-        { "type": "token", "name": "color-text-primary", "..." },
-        { "type": "token-group", "name": "color-palette", "..." },
-        { "type": "theme", "name": "dark", "..." },
-        { "type": "style", "name": "spacing", "..." },
-        { "type": "component", "name": "button", "..." },
-        { "type": "pattern", "name": "error-messaging", "..." }
+        { "kind": "token", "name": "color-text-primary", "..." },
+        { "kind": "token-group", "name": "color-palette", "..." },
+        { "kind": "theme", "name": "dark", "..." },
+        { "kind": "style", "name": "spacing", "..." },
+        { "kind": "component", "name": "button", "..." },
+        { "kind": "pattern", "name": "error-messaging", "..." }
       ]
     }
   ]
@@ -204,7 +204,7 @@ A DSDS file has a `dsdsVersion` and a `documentation` array. Each entry in `docu
 
 ### Entity Types
 
-Every entity carries a `type` discriminator, common identity properties (`name`, `displayName`, `description`, `status`), and a `guidelines` array for all structured documentation.
+Every entity carries a `kind` discriminator, common identity properties (`name`, `displayName`, `description`, `status`), and a `guidelines` array for all structured documentation.
 
 | `type` value | Entity | Description |
 |---|---|---|
@@ -242,7 +242,7 @@ The object form requires `platforms` — if you don't need platform-specific tra
 
 ## Guidelines System
 
-All structured documentation lives in the `guidelines` array on each entity. Each guideline is a typed container with a `type` discriminator. Entity types accept only the guideline types relevant to them through scoped unions:
+All structured documentation lives in the `guidelines` array on each entity. Each guideline is a typed container with a `kind` discriminator. Entity types accept only the guideline types relevant to them through scoped unions:
 
 | Scope | Used by | Specific types | General types (all entities) |
 |---|---|---|---|
@@ -253,7 +253,7 @@ All structured documentation lives in the `guidelines` array on each entity. Eac
 
 ### Guideline Types
 
-| Type value | Container | Items | Description |
+| Kind value | Container | Items | Description |
 |---|---|---|---|
 | `"best-practices"` | `items` | bestPracticeEntry | Actionable usage rules with rationale and enforcement levels |
 | `"purpose"` | `useCases` | useCase | When to use and when not to use the entity |
@@ -287,7 +287,7 @@ DSDS separates two kinds of guidance:
 {
   "guidelines": [
     {
-      "type": "purpose",
+      "kind": "purpose",
       "useCases": [
         {
           "description": "When the user needs to trigger an action such as submitting a form.",
@@ -304,7 +304,7 @@ DSDS separates two kinds of guidance:
       ]
     },
     {
-      "type": "best-practices",
+      "kind": "best-practices",
       "items": [
         {
           "guidance": "Limit each surface to one primary button.",
@@ -352,10 +352,10 @@ Component variants are modeled as dimensions of variation inside a `"variants"` 
 
 ```json
 {
-  "type": "variants",
+  "kind": "variants",
   "items": [
     {
-      "type": "enum",
+      "kind": "enum",
       "name": "emphasis",
       "displayName": "Emphasis",
       "description": "Controls the visual weight of the button.",
@@ -366,7 +366,7 @@ Component variants are modeled as dimensions of variation inside a `"variants"` 
       ]
     },
     {
-      "type": "flag",
+      "kind": "flag",
       "name": "full-width",
       "displayName": "Full Width",
       "description": "Stretches the button to fill its container.",
@@ -396,7 +396,7 @@ Every example requires a `presentation` or a `value` (or both). Presentations ar
     {
       "title": "Primary button in default state",
       "presentation": {
-        "type": "image",
+        "kind": "image",
         "url": "https://design.acme.com/assets/button-primary.png",
         "alt": "A primary button with a blue background and white label text 'Save'."
       }
@@ -427,18 +427,18 @@ Most entity types enforce `^[a-z][a-z0-9-]*$` on the `name` property. Tokens and
 
 ### Links Handle Both Resources and Relationships
 
-The `links` array on each entity handles both external resources and entity relationships via a `type` discriminator:
+The `links` array on each entity handles both external resources and entity relationships via a `kind` discriminator:
 
 ```json
 {
   "links": [
     {
-      "type": "source",
+      "kind": "source",
       "url": "https://code.acme.com/design-system/src/button/button.tsx",
       "label": "React component source"
     },
     {
-      "type": "alternative",
+      "kind": "alternative",
       "url": "https://design.acme.com/components/link",
       "label": "Link component (alternative)"
     }

@@ -4,6 +4,142 @@ All notable changes to the DSDS specification are documented in this file.
 
 ---
 
+## [0.1.4] — 2026-02-26
+
+### Breaking Changes
+
+#### 1. `type` discriminator renamed to `kind` across the entire schema
+
+Every discriminator property previously named `type` has been renamed to `kind`. This
+affects entities, guidelines, presentations, links, and variant items. The rename
+eliminates confusion between the JSON Schema `type` keyword (which describes data types)
+and the DSDS discriminator property (which classifies instances).
+
+**Before:**
+```json
+{
+  "type": "component",
+  "name": "button",
+  "guidelines": [
+    {
+      "type": "best-practices",
+      "items": [...]
+    }
+  ],
+  "links": [
+    { "type": "source", "url": "..." }
+  ]
+}
+```
+
+**After:**
+```json
+{
+  "kind": "component",
+  "name": "button",
+  "guidelines": [
+    {
+      "kind": "best-practices",
+      "items": [...]
+    }
+  ],
+  "links": [
+    { "kind": "source", "url": "..." }
+  ]
+}
+```
+
+Affected schemas:
+- **Entities:** component, token, token-group, theme, style, pattern
+- **Guidelines:** best-practices, purpose, accessibility, variants, states, anatomy,
+  api, design-specifications, principles, scale, motion, interactions, content
+- **Presentations:** image, video, code, url
+- **Links:** all link types (source, design, documentation, related, etc.)
+- **Variants:** flag, enum
+
+**Note:** The `type` property on `apiProperty` and `apiMethod` is unchanged — it
+describes a data type (e.g., `"string"`, `"boolean"`), not a DSDS discriminator.
+
+**Files changed:** All schema files in `common/`, `guidelines/`, `entities/`, and
+`dsds.schema.json`.
+
+---
+
+#### 2. Best practice `criteria` changed from string array to object array
+
+The `criteria` property on `bestPracticeEntry` has changed from an array of URI strings
+to an array of objects, each carrying a `url` and an optional `label`.
+
+**Before:**
+```json
+{
+  "criteria": [
+    "https://www.w3.org/TR/WCAG22/#contrast-minimum"
+  ]
+}
+```
+
+**After:**
+```json
+{
+  "criteria": [
+    {
+      "url": "https://www.w3.org/TR/WCAG22/#contrast-minimum",
+      "label": "1.4.3 Contrast (Minimum)"
+    }
+  ]
+}
+```
+
+Each criteria entry supports:
+
+| Property | Type     | Required | Description                                    |
+|----------|----------|----------|------------------------------------------------|
+| `url`    | `string` | Yes      | URL to the external standard or requirement    |
+| `label`  | `string` | No       | Human-readable label for the criterion         |
+
+**Files changed:** `guidelines/best-practice.schema.json`
+
+---
+
+### Tooling
+
+- **Validator bare-entity detection** updated to use `data.kind` instead of `data.type`
+  for matching minimal example files to their schema definitions.
+
+---
+
+### Migration Guide
+
+To update documents from 0.1.3 to 0.1.4:
+
+1. **Discriminator rename:** Replace `"type"` with `"kind"` on every entity, guideline,
+   presentation, link, and variant item. Do NOT rename `"type"` on `apiProperty` or
+   `apiMethod` — those describe data types, not DSDS discriminators.
+
+2. **Criteria objects:** Convert every `criteria` string to an object with a `url`
+   property. Optionally add a `label` for human-readable display.
+
+**Automated migration:**
+
+```sh
+# Rename type to kind for known discriminator values
+sed -i 's/"type": "component"/"kind": "component"/g' *.json
+sed -i 's/"type": "best-practices"/"kind": "best-practices"/g' *.json
+# ... repeat for all discriminator values
+```
+
+---
+
+### Internal
+
+- Bundled schema now contains 70 definitions from 28 files.
+- All example files updated to match schema changes.
+- Validator updated for `kind`-based bare entity detection.
+- README updated: all JSON examples, prose references, and tables reflect `kind`.
+
+---
+
 ## [0.1.3] — 2026-02-26
 
 ### Breaking Changes
