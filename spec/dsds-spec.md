@@ -45,8 +45,8 @@ spec/schema/
 │   ├── link.schema.json                # link (external resources + internal artifact references)
 │   ├── metadata.schema.json            # metadata
 │   ├── rich-text.schema.json           # richText
-│   ├── status.schema.json              # statusValue, statusObject, platformStatus
-│   └── usecase.schema.json             # useCase, useCases
+│   ├── purpose.schema.json             # purpose, useCase
+│   └── status.schema.json              # statusValue, statusObject, platformStatus
 ├── entities/                           # Artifact types
 │   ├── component.schema.json           # component
 │   ├── pattern.schema.json             # pattern
@@ -64,7 +64,6 @@ spec/schema/
     ├── interaction.schema.json         # interactions, interactionEntry
     ├── motion.schema.json              # motion, motionEntry, motionDuration
     ├── principle.schema.json           # principles, principleEntry
-    ├── purpose.schema.json             # purpose (wraps useCases)
     ├── scale.schema.json               # scale, scaleStep
     ├── state.schema.json               # states, stateEntry
     └── variant.schema.json             # variants, variantEntry, variantValue, variantExclusion

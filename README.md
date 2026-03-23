@@ -62,7 +62,7 @@ spec/
 │   │   ├── rich-text.schema.json                       # richText
 │   │   ├── presentation.schema.json                    # presentationImage, presentationVideo, presentationCode, presentationUrl
 │   │   ├── status.schema.json                          # status, statusObject, statusValue, platformStatus
-│   │   └── usecase.schema.json                         # useCase
+│   │   └── purpose.schema.json                         # purpose, useCase
 │   ├── entities/                                       # Entity types
 │   │   ├── component.schema.json                       # component
 │   │   ├── pattern.schema.json                         # pattern
@@ -80,7 +80,6 @@ spec/
 │       ├── interaction.schema.json                     # interactions, interactionEntry
 │       ├── motion.schema.json                          # motion, motionEntry, motionDuration
 │       ├── principle.schema.json                       # principles, principleEntry
-│       ├── purpose.schema.json                         # purpose (wraps useCases)
 │       ├── scale.schema.json                           # scale, scaleStep
 │       ├── state.schema.json                           # states, stateEntry
 │       └── variant.schema.json                         # variants, flagVariant, enumVariant, variantValue
