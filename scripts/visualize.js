@@ -15,8 +15,9 @@
  *   node scripts/visualize.js --format=mmd     # Mermaid source only
  *   node scripts/visualize.js --format=svg     # SVG only
  *   node scripts/visualize.js --format=all     # All formats (default)
- *   node scripts/visualize.js --layout=root,entities,guidelines,common
+ *   node scripts/visualize.js --layout=root+common,entities,guidelines
  *                                              # Custom column order (left → right)
+ *                                              # Use + to stack groups in one column
  *   node scripts/visualize.js --no-edges       # Hide dependency edges
  *   node scripts/visualize.js --help           # Show usage
  *
@@ -87,7 +88,7 @@ const GROUP_LABEL_FONT_SIZE = 13;
 const GROUP_RADIUS = 10;
 const GROUP_STROKE_WIDTH = 1;
 
-const COLUMN_GAP = 100;
+const COLUMN_GAP = 200;
 const CANVAS_PAD = 40;
 
 const ARROW_SIZE = 6;
@@ -328,16 +329,16 @@ function measureNode(info) {
 }
 
 /**
- * Layout all nodes in a left-to-right column arrangement:
- *   Column 0: root
- *   Column 1: entities
- *   Column 2: guidelines
- *   Column 3: common
+ * Layout all nodes in a left-to-right column arrangement.
  *
- * Within each column, nodes are stacked vertically inside a group box.
+ * Each entry in `columnOrder` is an array of group keys that share one column.
+ * Groups within the same column are stacked vertically with GROUP_GAP between
+ * them. This lets you write `--layout=root+common,entities,guidelines` to put
+ * root and common in the first column.
+ *
  * Returns positioned node map + group boxes + canvas size.
  */
-const DEFAULT_COLUMN_ORDER = ["root", "entities", "guidelines", "common"];
+const DEFAULT_COLUMN_ORDER = [["root"], ["entities", "common"], ["guidelines"]];
 
 function layoutGraph(options = {}) {
   const columnOrder = options.columnOrder || DEFAULT_COLUMN_ORDER;
@@ -362,71 +363,103 @@ function layoutGraph(options = {}) {
 
   let cursorX = CANVAS_PAD;
 
-  for (const groupKey of columnOrder) {
-    const items = groups[groupKey];
-    if (items.length === 0) continue;
+  for (const columnGroups of columnOrder) {
+    // Collect all segments (one per group key) that will share this column
+    const segments = []; // { groupKey, items[], padX, padY, maxNodeW, totalH }
 
-    const isRoot = groupKey === "root";
-    const padX = isRoot ? 0 : GROUP_PAD_X;
-    const padY = isRoot ? 0 : GROUP_PAD_Y;
+    for (const groupKey of columnGroups) {
+      const items = groups[groupKey];
+      if (items.length === 0) continue;
 
-    // Stack nodes vertically, measure column width
-    let maxNodeW = 0;
-    let totalH = 0;
-    for (let i = 0; i < items.length; i++) {
-      const nm = nodeMeasures.get(items[i].id);
-      if (nm.w > maxNodeW) maxNodeW = nm.w;
-      totalH += nm.h;
-      if (i > 0) totalH += NODE_GAP_Y;
+      const isRoot = groupKey === "root";
+      const padX = isRoot ? 0 : GROUP_PAD_X;
+      const padY = isRoot ? 0 : GROUP_PAD_Y;
+
+      let maxNodeW = 0;
+      let totalH = 0;
+      for (let i = 0; i < items.length; i++) {
+        const nm = nodeMeasures.get(items[i].id);
+        if (nm.w > maxNodeW) maxNodeW = nm.w;
+        totalH += nm.h;
+        if (i > 0) totalH += NODE_GAP_Y;
+      }
+
+      segments.push({ groupKey, items, padX, padY, maxNodeW, totalH });
     }
 
-    // Uniform width for all nodes in column
-    const uniformW = maxNodeW;
+    if (segments.length === 0) continue;
 
-    const groupW = uniformW + padX * 2;
-    const groupH = totalH + padY * 2;
+    // The column is as wide as the widest segment (including its padding)
+    let colInnerW = 0;
+    for (const seg of segments) {
+      const segW = seg.maxNodeW + seg.padX * 2;
+      if (segW > colInnerW) colInnerW = segW;
+    }
 
+    // Position each segment vertically within the column
     const groupX = cursorX;
-    const groupY = CANVAS_PAD;
+    let cursorY = CANVAS_PAD;
 
-    // Position nodes inside group
-    let nodeY = groupY + padY;
-    for (const info of items) {
-      const nm = nodeMeasures.get(info.id);
-      const nodeX = groupX + padX;
-      nm.x = nodeX;
-      nm.y = nodeY;
-      nm.w = uniformW; // normalize width
-      nm.cx = nodeX + uniformW / 2;
-      nm.cy = nodeY + nm.h / 2;
-      nodeY += nm.h + NODE_GAP_Y;
+    for (let si = 0; si < segments.length; si++) {
+      const seg = segments[si];
+      const uniformW = colInnerW - seg.padX * 2;
+      const groupH = seg.totalH + seg.padY * 2;
+      const groupY = cursorY;
+
+      let nodeY = groupY + seg.padY;
+      for (const info of seg.items) {
+        const nm = nodeMeasures.get(info.id);
+        const nodeX = groupX + seg.padX;
+        nm.x = nodeX;
+        nm.y = nodeY;
+        nm.w = uniformW;
+        nm.cx = nodeX + uniformW / 2;
+        nm.cy = nodeY + nm.h / 2;
+        nodeY += nm.h + NODE_GAP_Y;
+      }
+
+      columnData.push({
+        group: seg.groupKey,
+        x: groupX,
+        y: groupY,
+        w: colInnerW,
+        h: groupH,
+        nodes: seg.items.map((i) => nodeMeasures.get(i.id)),
+      });
+
+      cursorY += groupH + GROUP_GAP;
     }
 
-    columnData.push({
-      group: groupKey,
-      x: groupX,
-      y: groupY,
-      w: groupW,
-      h: groupH,
-      nodes: items.map((i) => nodeMeasures.get(i.id)),
-    });
-
-    cursorX += groupW + COLUMN_GAP;
+    cursorX += colInnerW + COLUMN_GAP;
   }
 
-  // Vertically center columns relative to the tallest one
+  // Vertically center columns relative to the tallest one.
+  // Columns that share the same x are part of the same visual column —
+  // group them and center them together.
+  const columnsByX = new Map();
+  for (const col of columnData) {
+    if (!columnsByX.has(col.x)) columnsByX.set(col.x, []);
+    columnsByX.get(col.x).push(col);
+  }
+
   let maxColH = 0;
-  for (const col of columnData) {
-    if (col.h > maxColH) maxColH = col.h;
+  for (const [, cols] of columnsByX) {
+    const last = cols[cols.length - 1];
+    const h = last.y + last.h - cols[0].y;
+    if (h > maxColH) maxColH = h;
   }
 
-  for (const col of columnData) {
-    const offsetY = (maxColH - col.h) / 2;
+  for (const [, cols] of columnsByX) {
+    const last = cols[cols.length - 1];
+    const h = last.y + last.h - cols[0].y;
+    const offsetY = (maxColH - h) / 2;
     if (offsetY > 0) {
-      col.y += offsetY;
-      for (const nm of col.nodes) {
-        nm.y += offsetY;
-        nm.cy += offsetY;
+      for (const col of cols) {
+        col.y += offsetY;
+        for (const nm of col.nodes) {
+          nm.y += offsetY;
+          nm.cy += offsetY;
+        }
       }
     }
   }
@@ -484,31 +517,49 @@ function renderSvg(options = {}) {
   parts.push(`  <g>`);
 
   for (const { src, tgt } of edgeList) {
-    // Connect right side of source to left side of target
-    const x1 = src.x + src.w;
-    const y1 = src.cy;
-    const x2 = tgt.x;
-    const y2 = tgt.cy;
+    // Candidate anchors — left and right sides only
+    const srcAnchors = [
+      { x: src.x + src.w, y: src.cy, sign: 1 }, // right
+      { x: src.x, y: src.cy, sign: -1 }, // left
+    ];
+    const tgtAnchors = [
+      { x: tgt.x + tgt.w, y: tgt.cy, sign: 1 }, // right
+      { x: tgt.x, y: tgt.cy, sign: -1 }, // left
+    ];
 
-    // If target is to the left (e.g. theme→token within entities), use bottom→top
-    if (x2 <= x1 + 10 && src.group === tgt.group) {
-      // Same-group internal edge: go down from source bottom, curve to target bottom
-      const sx = src.cx;
-      const sy = src.y + src.h;
-      const tx = tgt.cx;
-      const ty = tgt.y + tgt.h;
-      const bulge = 24;
-      parts.push(
-        `    <path d="M ${sx} ${sy} C ${sx} ${sy + bulge}, ${tx} ${ty + bulge}, ${tx} ${ty}" fill="none" stroke="${EDGE_COLOR}" stroke-width="1" opacity="0.5" marker-end="url(#arrowhead)" />`,
-      );
-    } else {
-      // Normal left-to-right edge with a cubic bezier
-      const dx = Math.abs(x2 - x1);
-      const cpOffset = Math.max(40, dx * 0.35);
-      parts.push(
-        `    <path d="M ${x1} ${y1} C ${x1 + cpOffset} ${y1}, ${x2 - cpOffset} ${y2}, ${x2} ${y2}" fill="none" stroke="${EDGE_COLOR}" stroke-width="1" opacity="0.35" marker-end="url(#arrowhead)" />`,
-      );
+    // Pick the pair with the shortest distance
+    let bestDist = Infinity;
+    let bestSrc = srcAnchors[0];
+    let bestTgt = tgtAnchors[1];
+    for (const sa of srcAnchors) {
+      for (const ta of tgtAnchors) {
+        const dx = ta.x - sa.x;
+        const dy = ta.y - sa.y;
+        const d = dx * dx + dy * dy;
+        if (d < bestDist) {
+          bestDist = d;
+          bestSrc = sa;
+          bestTgt = ta;
+        }
+      }
     }
+
+    const x1 = bestSrc.x;
+    const y1 = bestSrc.y;
+    const x2 = bestTgt.x;
+    const y2 = bestTgt.y;
+
+    // Control points extend horizontally outward from the chosen side
+    const dist = Math.sqrt(bestDist);
+    const cpLen = Math.max(20, Math.min(dist * 0.4, 80));
+    const cx1 = x1 + bestSrc.sign * cpLen;
+    const cy1 = y1;
+    const cx2 = x2 + bestTgt.sign * cpLen;
+    const cy2 = y2;
+
+    parts.push(
+      `    <path d="M ${x1} ${y1} C ${cx1} ${cy1}, ${cx2} ${cy2}, ${x2} ${y2}" fill="none" stroke="${EDGE_COLOR}" stroke-width="1" opacity="0.4" marker-end="url(#arrowhead)" />`,
+    );
   }
   parts.push("  </g>");
 
@@ -571,8 +622,9 @@ Usage: node scripts/visualize.js [options]
 Options:
   --format=FORMAT   Output format(s): mmd, svg, or all (default: all)
   --layout=ORDER    Comma-separated column order, left to right.
+                    Use + to stack groups in the same column.
                     Valid groups: root, entities, guidelines, common
-                    (default: root,entities,guidelines,common)
+                    (default: root+common,entities,guidelines)
   --no-edges        Hide dependency edges (show only nodes and groups)
   --output=DIR      Output directory (default: site/dist)
   --help            Show this help message
@@ -581,8 +633,9 @@ Examples:
   node scripts/visualize.js                  # Generate .mmd and .svg
   node scripts/visualize.js --format=svg     # SVG only
   node scripts/visualize.js --format=mmd     # Mermaid source only
-  node scripts/visualize.js --layout=root,common,guidelines,entities
+  node scripts/visualize.js --layout=root+common,entities,guidelines
   node scripts/visualize.js --layout=entities,guidelines,common --no-edges
+  node scripts/visualize.js --layout=root,entities,guidelines,common
 `);
 }
 
@@ -606,20 +659,22 @@ function parseArgs(argv) {
       args.outputDir = path.resolve(ROOT, arg.split("=")[1]);
     }
     if (arg.startsWith("--layout=")) {
-      const groups = arg
+      const validGroups = new Set(["root", "entities", "guidelines", "common"]);
+      const columns = arg
         .split("=")[1]
         .split(",")
-        .map((s) => s.trim().toLowerCase());
-      const validGroups = new Set(["root", "entities", "guidelines", "common"]);
-      for (const g of groups) {
-        if (!validGroups.has(g)) {
-          console.error(
-            `Unknown group "${g}" in --layout. Valid groups: ${[...validGroups].join(", ")}`,
-          );
-          process.exit(1);
+        .map((col) => col.split("+").map((s) => s.trim().toLowerCase()));
+      for (const col of columns) {
+        for (const g of col) {
+          if (!validGroups.has(g)) {
+            console.error(
+              `Unknown group "${g}" in --layout. Valid groups: ${[...validGroups].join(", ")}`,
+            );
+            process.exit(1);
+          }
         }
       }
-      args.columnOrder = groups;
+      args.columnOrder = columns;
     }
     if (arg === "--no-edges") {
       args.showEdges = false;
