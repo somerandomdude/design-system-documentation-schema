@@ -279,11 +279,56 @@ The examples are read from disk at build time, so the guide automatically reflec
 
 ## Document Structure
 
-A DSDS file has a `dsdsVersion` and a `documentation` array. Each entry in `documentation` is a named group containing an `items` array of typed entities. Entities of different types can be mixed freely:
+A DSDS file has a `dsdsVersion` and a `documentation` array. Each entry in `documentation` is a named group containing an `items` array of typed entities. Entities of different types can be mixed freely.
+
+Two optional top-level properties describe the design system as a whole:
+
+**`purpose`** (optional) — describes what the design system is for, who it serves, and when teams should or should not adopt it. Contains a `description` and an array of `useCases` with positive and negative scenarios.
+
+**`bestPractices`** (optional) — system-level best practices that apply across the entire design system. These are cross-cutting rules like "always use semantic tokens" or "test all components at 200% zoom" — not component-specific guidance (which lives in each entity's `guidelines` array). Each entry pairs an actionable `guidance` statement with a `rationale` and an enforcement `kind`.
+
+> **System-level vs. entity-level:** The root `purpose` and `bestPractices` apply to the design system as a whole. They are distinct from the entity-level `purpose` and `best-practices` guideline types that appear inside each entity's `guidelines` array.
 
 ```json
 {
   "dsdsVersion": "0.1",
+  "purpose": {
+    "description": "A unified component library for all Acme product teams.",
+    "useCases": [
+      { "description": "Building new product UIs on the Acme platform.", "kind": "positive" },
+      {
+        "description": "One-off marketing landing pages with heavy custom art direction.",
+        "kind": "negative",
+        "alternative": {
+          "name": "marketing-toolkit",
+          "rationale": "The marketing toolkit provides art-direction-first primitives."
+        }
+      }
+    ]
+  },
+  "bestPractices": [
+    {
+      "guidance": "Always use semantic tokens instead of raw color values.",
+      "rationale": "Semantic tokens ensure themes apply correctly across all surfaces.",
+      "kind": "required",
+      "category": "development"
+    },
+    {
+      "guidance": "Test all components at 200% browser zoom.",
+      "rationale": "WCAG 1.4.4 requires content to be functional at 200% zoom.",
+      "kind": "required",
+      "category": "accessibility",
+      "criteria": [
+        { "url": "https://www.w3.org/TR/WCAG22/#resize-text", "label": "1.4.4 Resize Text" }
+      ]
+    },
+    {
+      "guidance": "Do not override token values at the component level.",
+      "rationale": "Overrides break theme consistency and make audits unreliable.",
+      "kind": "prohibited",
+      "category": "development"
+    }
+  ],
   "documentation": [
     {
       "name": "Acme Design System",
@@ -361,7 +406,7 @@ All structured documentation lives in the `guidelines` array on each entity. Eac
 | `"api"` | Named arrays | various | Props, events, slots, CSS hooks, methods |
 | `"variants"` | `items` | flagVariant \| enumVariant | Dimensions of visual/behavioral variation |
 | `"states"` | `items` | stateEntry | Interactive states with token overrides |
-| `"design-specifications"` | Named properties | various | Tokens, spacing, sizing, typography, responsive |
+| `"design-specifications"` | `properties` + `variants` / `sizes` / `states` | various | Design properties, spacing, sizing, typography, responsive — grouped by variant, size, and state |
 | `"principles"` | `items` | principleEntry | High-level guiding beliefs |
 | `"scale"` | `steps` | scaleStep | Ordered token value progressions |
 | `"motion"` | `items` | motionEntry | Named easing curves with durations and usage |
@@ -500,6 +545,48 @@ Every example requires a `presentation` or a `value` (or both). Presentations ar
         "kind": "image",
         "url": "https://design.acme.com/assets/button-primary.png",
         "alt": "A primary button with a blue background and white label text 'Save'."
+      }
+    }
+  ]
+}
+```
+
+### Design Specifications Group Properties by Variant, Size, and State
+
+The `"design-specifications"` guideline documents measurable visual specs — design properties, spacing, sizing, typography, and responsive behavior. The base `properties` map defines the default configuration — an open map of design property names to values. Values are always strings: either design token names (e.g., `"button-primary-bg"`, `"space-4"`) or raw CSS values (e.g., `"#0055b3"`, `"16px"`, `"transparent"`). Systems that do not use tokens simply provide raw values directly.
+
+The `variants`, `sizes`, and `states` arrays each contain named entries with their own `properties` maps. Each entry is self-contained — it represents that condition's complete set of values, not an override of the base. For example, a `"danger"` variant entry carries its own token names (like `"button-danger-bg"`) or raw values, independent of the base `properties`. The `variantStates` array handles variant×state combinations (e.g., primary+hover) where the visual treatment differs across variants, with each entry specifying both a `variant` and a `state` alongside its `properties`.
+
+```json
+{
+  "kind": "design-specifications",
+  "properties": {
+    "background": "button-primary-bg",
+    "color": "button-primary-text",
+    "border-radius": "4px",
+    "border-color": "transparent"
+  },
+  "spacing": {
+    "internal": { "icon-to-label": "space-2", "container-horizontal": "space-4" }
+  },
+  "variants": [
+    {
+      "name": "danger",
+      "properties": {
+        "background": "button-danger-bg",
+        "color": "#ffffff",
+        "border-color": "transparent"
+      }
+    }
+  ],
+  "sizes": [
+    {
+      "name": "small",
+      "properties": {
+        "font-size": "14px"
+      },
+      "spacing": {
+        "internal": { "icon-to-label": "4px", "container-horizontal": "space-3" }
       }
     }
   ]
