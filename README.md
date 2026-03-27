@@ -94,10 +94,41 @@ scripts/
 ├── bundle.js                                           # Generates dsds.bundled.schema.json from split schemas
 ├── validate.js                                         # Validates all example files against the bundled schema
 ├── sync-examples.js                                    # Syncs markdown dsds:include directives with example JSON
-└── build-site.js                                       # Generates the static specification site
+├── build-site.js                                       # Generates the static specification site
+├── build-samples.js                                    # Generates the interactive sample viewer from example JSON
+├── build-quickstart.js                                 # Generates the quick start guide from minimal examples
+└── visualize.js                                        # Generates schema architecture diagram (SVG + Mermaid)
 
 site/
-├── style.css                                           # Site stylesheet
+├── tokens.css                                          # Centralized design tokens (colors, fonts, spacing, radii, etc.)
+├── style.css                                           # Core site stylesheet (layout, nav, typography — imports tokens.css)
+├── pages.css                                           # Shared styles for standalone pages (samples, quickstart)
+├── components/                                         # Reusable HTML web components (ES modules)
+│   ├── index.js                                        # Barrel file — imports all components, registers custom elements
+│   ├── _shared.js                                      # Shared utilities (createShadow, esc, BASE_RESET, FONT)
+│   ├── badge.js                                        # <ds-badge> — status/category badges
+│   ├── back-to-top.js                                  # <ds-back-to-top> — scroll-to-top link
+│   ├── button.js                                       # <ds-button> — button with variants and sizes
+│   ├── card.js                                         # <ds-card> — bordered content card
+│   ├── code.js                                         # <ds-code> — syntax-highlighted code (block + inline)
+│   ├── cross-refs.js                                   # <ds-cross-refs> — cross-reference links
+│   ├── def-example.js                                  # <ds-def-example> — definition example block
+│   ├── def-index.js                                    # <ds-def-index> — page-level definition index
+│   ├── def-section.js                                  # <ds-def-section> — definition section container
+│   ├── footer.js                                       # <ds-footer> — page footer
+│   ├── heading.js                                      # <ds-heading> — section heading (h1–h6) with anchor
+│   ├── note.js                                         # <ds-note> — callout/warning box
+│   ├── prop-table.js                                   # <ds-prop-table> + <ds-prop> — schema property table
+│   ├── schema-header.js                                # <ds-schema-header> — schema page header
+│   ├── scrollspy.js                                    # <ds-scrollspy> — scroll position tracker
+│   ├── sidebar.js                                      # <ds-sidebar> — collapsible sidebar panel
+│   ├── sidenav.js                                      # <ds-sidenav> + <ds-nav-group> + <ds-nav-link>
+│   ├── table.js                                        # <ds-table> — styled table wrapper
+│   ├── tabs.js                                         # <ds-tabs> + <ds-tab> — tabbed content
+│   ├── toc.js                                          # <ds-toc> — auto-built table of contents
+│   ├── toolbar.js                                      # <ds-toolbar> — sticky top toolbar
+│   └── type-ref.js                                     # <ds-type-ref> — type reference link
+├── samples-template.html                               # Template for the interactive sample viewer
 └── dist/                                               # Generated HTML site (auto-generated)
 ```
 
@@ -177,6 +208,74 @@ After changing any schema file, regenerate the bundled version:
 ```bash
 npm run bundle
 ```
+
+### 6. Visualize the schema architecture
+
+Generate a diagram showing how all schema files relate to each other:
+
+```bash
+npm run visualize
+```
+
+This produces:
+
+- `site/dist/schema-architecture.mmd` — Mermaid source (renders natively on GitHub)
+- `site/dist/schema-architecture.svg` — Clean SVG with no CSS, compatible with Figma
+
+Options:
+
+```bash
+node scripts/visualize.js --format=svg               # SVG only
+node scripts/visualize.js --format=mmd               # Mermaid source only
+node scripts/visualize.js --layout=root,entities,guidelines,common  # Custom column order
+node scripts/visualize.js --layout=root+common,entities,guidelines  # Stack groups with +
+node scripts/visualize.js --no-edges                  # Hide dependency edges
+```
+
+### 7. Build the interactive sample viewer
+
+Generate a side-by-side documentation page that shows how DSDS JSON maps to rendered output:
+
+```bash
+npm run build-samples
+```
+
+This reads example JSON files from `spec/examples/` and produces `site/dist/samples.html` — a self-contained page with:
+
+- **Tabs** for each entity type: Button Component, Color Token, Error Messaging Pattern, Spacing Style, Dark Theme
+- **Side-by-side layout**: raw JSON on the left, rendered documentation on the right
+- **Element-level highlighting**: hover over any rendered element to see its corresponding JSON, and vice versa
+- **Color-coded section bars** mapping JSON sections to their visual output
+- **Off-screen indicators** when highlighted code is scrolled out of view
+
+To add a new example tab, add an entry to the `SAMPLES` array in `scripts/build-samples.js`:
+
+```js
+{
+  file: "entities/component.json",  // path relative to spec/examples/
+  key: "component",                 // top-level key to extract
+  id: "component",                  // unique tab identifier
+  label: "Button Component",        // human-readable tab label
+}
+```
+
+### 8. Build the quick start guide
+
+Generate a concise, standalone introduction to DSDS from the minimal example files:
+
+```bash
+npm run build-quickstart
+```
+
+This reads `spec/examples/minimal/` and produces `site/dist/quickstart.html` — a single-page guide covering:
+
+- **Document structure** — `dsdsVersion`, documentation groups, and the items array
+- **Entity types** — all six kinds with descriptions and common properties
+- **Guidelines system** — the 13 guideline types, which entities support them, and how purpose and best-practices work
+- **Minimal examples** — copy-pasteable starting points for every entity type, pulled live from the validated examples
+- **Validation** — how to use the JSON Schema and CLI to validate your documents
+
+The examples are read from disk at build time, so the guide automatically reflects any changes to `spec/examples/minimal/`.
 
 ## Document Structure
 

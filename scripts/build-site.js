@@ -175,11 +175,11 @@ function describeType(prop) {
     if (defName) {
       const target = DEF_INDEX[defName];
       if (target) {
-        return `<a href="${target.pageSlug}.html#${slug(defName)}" class="type-ref">${esc(defName)}</a>`;
+        return `<ds-type-ref href="${target.pageSlug}.html#${slug(defName)}">${esc(defName)}</ds-type-ref>`;
       }
-      return `<code>${esc(defName)}</code>`;
+      return `<ds-code inline>${esc(defName)}</ds-code>`;
     }
-    return `<code>$ref</code>`;
+    return `<ds-code inline>$ref</ds-code>`;
   }
 
   // oneOf
@@ -219,12 +219,14 @@ function describeType(prop) {
 
   // const
   if (prop.const !== undefined) {
-    return `<code>"${esc(String(prop.const))}"</code>`;
+    return `<ds-code inline>"${esc(String(prop.const))}"</ds-code>`;
   }
 
   // enum
   if (prop.enum) {
-    return prop.enum.map((v) => `<code>"${esc(String(v))}"</code>`).join(" | ");
+    return prop.enum
+      .map((v) => `<ds-code inline>"${esc(String(v))}"</ds-code>`)
+      .join(" | ");
   }
 
   // string with format
@@ -275,88 +277,70 @@ function renderPropertyTable(defSchema) {
     }
   }
 
-  // Build row objects so we can sort them: required first, then at-least-one, then optional
-  const rowObjects = [];
+  // Build <ds-prop> children for <ds-prop-table>
+  const propElements = [];
   for (const [propName, propSchema] of Object.entries(properties)) {
     const isRequired = required.has(propName);
     const isAnyOf = anyOfProps.has(propName);
     const typeStr = describeType(propSchema);
     const desc = propSchema.description || "";
 
-    // Check for enum values to show
-    let enumNote = "";
-    if (propSchema.enum && propSchema.enum.length <= 8) {
-      // Already shown in type for small enums
-    } else if (propSchema.enum) {
-      enumNote = `<br><small>Values: ${propSchema.enum.map((v) => `<code>${esc(String(v))}</code>`).join(", ")}</small>`;
-    }
+    // Build description with supplementary notes
+    let descHtml = esc(desc);
 
-    // Check for pattern
-    let patternNote = "";
+    if (propSchema.enum && propSchema.enum.length > 8) {
+      descHtml += `<br><small>Values: ${propSchema.enum.map((v) => `<ds-code inline>${esc(String(v))}</ds-code>`).join(", ")}</small>`;
+    }
     if (propSchema.pattern) {
-      patternNote = `<br><small>Pattern: <code>${esc(propSchema.pattern)}</code></small>`;
+      descHtml += `<br><small>Pattern: <ds-code inline>${esc(propSchema.pattern)}</ds-code></small>`;
     }
-
-    // Check for minItems
-    let minNote = "";
     if (propSchema.minItems) {
-      minNote = `<br><small>Min items: ${propSchema.minItems}</small>`;
+      descHtml += `<br><small>Min items: ${propSchema.minItems}</small>`;
     }
-
-    // Check for default value
-    let defaultNote = "";
     if (propSchema.default !== undefined) {
       const defaultVal =
         typeof propSchema.default === "string"
           ? `"${esc(propSchema.default)}"`
           : String(propSchema.default);
-      defaultNote = `<br><small>Default: <code>${defaultVal}</code></small>`;
+      descHtml += `<br><small>Default: <ds-code inline>${defaultVal}</ds-code></small>`;
     }
-
-    // Check for format on items
-    let formatNote = "";
     if (
       propSchema.type === "array" &&
       propSchema.items &&
       propSchema.items.format
     ) {
-      formatNote = `<br><small>Format: ${esc(propSchema.items.format)}</small>`;
+      descHtml += `<br><small>Format: ${esc(propSchema.items.format)}</small>`;
     }
 
-    let statusCell;
+    // Determine sort order and status attribute
     let sortOrder;
+    let statusAttr = "";
     if (isRequired) {
-      statusCell = '<span class="required-badge">required</span>';
+      statusAttr = " required";
       sortOrder = 0;
     } else if (isAnyOf) {
-      statusCell = '<span class="conditional-badge">at least one</span>';
+      statusAttr = " conditional";
       sortOrder = 1;
     } else {
-      statusCell = "optional";
       sortOrder = 2;
     }
 
-    rowObjects.push({
+    propElements.push({
       sortOrder,
       html:
-        `<tr>` +
-        `<td><code>${esc(propName)}</code></td>` +
-        `<td>${typeStr}</td>` +
-        `<td>${statusCell}</td>` +
-        `<td>${esc(desc)}${enumNote}${patternNote}${minNote}${formatNote}${defaultNote}</td>` +
-        `</tr>`,
+        `<ds-prop name="${esc(propName)}" type="${esc(typeStr)}"${statusAttr}>` +
+        descHtml +
+        `</ds-prop>`,
     });
   }
 
-  // Stable sort: required → at least one → optional, preserving original order within each group
-  rowObjects.sort((a, b) => a.sortOrder - b.sortOrder);
-  const rows = rowObjects.map((r) => r.html);
+  // Stable sort: required → conditional → optional, preserving original order within each group
+  propElements.sort((a, b) => a.sortOrder - b.sortOrder);
 
   return (
-    `<table class="prop-table">` +
-    `<thead><tr><th>Property</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>` +
-    `<tbody>${rows.join("\n")}</tbody>` +
-    `</table>`
+    `<ds-prop-table>\n` +
+    propElements.map((p) => `  ${p.html}`).join("\n") +
+    `\n</ds-prop-table>`
   );
 }
 
@@ -372,21 +356,14 @@ function renderDefinition(defName, defSchema, exampleData) {
   const parts = [];
   const hid = slug(defName);
 
-  // Heading
-  parts.push(`<section class="def-section" id="${hid}">`);
-  parts.push(`<h3 id="${hid}">${esc(defName)}</h3>`);
-
-  // Description
-  if (defSchema.description) {
-    parts.push(`<p class="def-description">${esc(defSchema.description)}</p>`);
-  }
-
-  // Type badge
-  if (defSchema.type) {
-    parts.push(
-      `<p class="def-type"><span class="type-badge">${esc(defSchema.type)}</span></p>`,
-    );
-  }
+  // Definition section wrapper — handles heading, description, type badge
+  const descAttr = defSchema.description
+    ? ` description="${esc(defSchema.description)}"`
+    : "";
+  const typeAttr = defSchema.type ? ` type="${esc(defSchema.type)}"` : "";
+  parts.push(
+    `<ds-def-section name="${esc(defName)}" anchor="${hid}"${descAttr}${typeAttr}>`,
+  );
 
   // If it's a simple string (like status), show that
   if (defSchema.type === "string" && !defSchema.properties) {
@@ -394,18 +371,18 @@ function renderDefinition(defName, defSchema, exampleData) {
       parts.push(`<p><strong>Allowed values:</strong></p>`);
       parts.push(`<ul class="enum-list">`);
       for (const val of defSchema.enum) {
-        parts.push(`<li><code>${esc(String(val))}</code></li>`);
+        parts.push(`<li><ds-code inline>${esc(String(val))}</ds-code></li>`);
       }
       parts.push(`</ul>`);
     }
-    parts.push(`</section>`);
+    parts.push(`</ds-def-section>`);
     return parts.join("\n");
   }
 
   // If it's a oneOf (like richText), show the alternatives
   if (defSchema.oneOf) {
     parts.push(`<p><strong>Accepts one of:</strong></p>`);
-    parts.push(`<ul class="oneof-list">`);
+    parts.push(`<ul>`);
     for (const alt of defSchema.oneOf) {
       if (alt.$ref) {
         const refName = linkToRef(alt.$ref);
@@ -416,7 +393,7 @@ function renderDefinition(defName, defSchema, exampleData) {
               `<li><a href="${target.slug}.html#${slug(refName)}">${esc(refName)}</a></li>`,
             );
           } else {
-            parts.push(`<li><code>${esc(refName)}</code></li>`);
+            parts.push(`<li><ds-code inline>${esc(refName)}</ds-code></li>`);
           }
         }
       } else if (alt.type === "string") {
@@ -450,7 +427,7 @@ function renderDefinition(defName, defSchema, exampleData) {
     !defSchema.properties
   ) {
     parts.push(
-      `<p><strong>Open map:</strong> keys are strings, values are <code>${esc(defSchema.additionalProperties.type || "any")}</code></p>`,
+      `<p><strong>Open map:</strong> keys are strings, values are <ds-code inline>${esc(defSchema.additionalProperties.type || "any")}</ds-code></p>`,
     );
   }
 
@@ -468,10 +445,12 @@ function renderDefinition(defName, defSchema, exampleData) {
     if (allSimpleRequired && defSchema.anyOf.length > 1) {
       // "At least one of" pattern — already shown via conditional-badge in the table
       const propNames = defSchema.anyOf.map((alt) =>
-        alt.required.map((r) => `<code>${esc(r)}</code>`).join(", "),
+        alt.required
+          .map((r) => `<ds-code inline>${esc(r)}</ds-code>`)
+          .join(", "),
       );
       parts.push(
-        `<p class="conditional-note"><strong>Constraint:</strong> At least one of ${propNames.join(", ")} must be present.</p>`,
+        `<ds-note variant="warning"><strong>Constraint:</strong> At least one of ${propNames.join(", ")} must be present.</ds-note>`,
       );
     } else {
       // Mixed anyOf — show each branch
@@ -480,7 +459,7 @@ function renderDefinition(defName, defSchema, exampleData) {
       for (const alt of defSchema.anyOf) {
         if (alt.required) {
           parts.push(
-            `<li>${alt.required.map((r) => `<code>${esc(r)}</code>`).join(", ")} must be present</li>`,
+            `<li>${alt.required.map((r) => `<ds-code inline>${esc(r)}</ds-code>`).join(", ")} must be present</li>`,
           );
         }
       }
@@ -495,15 +474,15 @@ function renderDefinition(defName, defSchema, exampleData) {
     const conditions = Object.entries(ifProps)
       .map(
         ([k, v]) =>
-          `<code>${esc(k)}</code> is <code>"${esc(String(v.const || ""))}"</code>`,
+          `<ds-code inline>${esc(k)}</ds-code> is <ds-code inline>"${esc(String(v.const || ""))}"</ds-code>`,
       )
       .join(" and ");
     const requirements = thenReq
-      .map((r) => `<code>${esc(r)}</code>`)
+      .map((r) => `<ds-code inline>${esc(r)}</ds-code>`)
       .join(", ");
     if (conditions && requirements) {
       parts.push(
-        `<p class="conditional-note"><strong>Conditional:</strong> When ${conditions}, then ${requirements} is required.</p>`,
+        `<ds-note variant="warning"><strong>Conditional:</strong> When ${conditions}, then ${requirements} is required.</ds-note>`,
       );
     }
   }
@@ -511,28 +490,29 @@ function renderDefinition(defName, defSchema, exampleData) {
   // Cross-references: list all $ref targets in this definition
   const refs = collectRefs(defSchema);
   if (refs.length > 0) {
-    parts.push(`<p class="cross-refs"><strong>References:</strong> `);
+    parts.push(`<ds-cross-refs><strong>References:</strong> `);
     const refLinks = refs.map((refName) => {
       const target = DEF_INDEX[refName];
       if (target) {
-        return `<a href="${target.pageSlug}.html#${slug(refName)}">${esc(refName)}</a>`;
+        return `<ds-type-ref href="${target.pageSlug}.html#${slug(refName)}">${esc(refName)}</ds-type-ref>`;
       }
-      return `<code>${esc(refName)}</code>`;
+      return `<ds-code inline>${esc(refName)}</ds-code>`;
     });
     parts.push(refLinks.join(", "));
-    parts.push(`</p>`);
+    parts.push(`</ds-cross-refs>`);
   }
 
   // Example — render the matching example if one was provided
   if (exampleData !== undefined && exampleData !== null) {
-    parts.push(`<div class="def-example">`);
-    parts.push(`<p class="def-example__title"><strong>Example</strong></p>`);
+    parts.push(`<ds-def-example>`);
     const jsonStr = JSON.stringify(exampleData, null, 2);
-    parts.push(`<pre><code class="language-json">${esc(jsonStr)}</code></pre>`);
-    parts.push(`</div>`);
+    parts.push(
+      `<ds-code language="json" label="example">${esc(jsonStr)}</ds-code>`,
+    );
+    parts.push(`</ds-def-example>`);
   }
 
-  parts.push(`</section>`);
+  parts.push(`</ds-def-section>`);
   return parts.join("\n");
 }
 
@@ -568,26 +548,21 @@ function renderSchemaPage(page) {
   const defNames = Object.keys(defs);
   const examples = page.examples || {};
 
-  // Page title
-  parts.push(`<h1>${esc(page.title)}</h1>`);
-
-  // Schema description
-  if (page.data.description) {
-    parts.push(
-      `<p class="schema-description">${esc(page.data.description)}</p>`,
-    );
-  }
-
-  // Source file
+  // Page header — title, description, source
   const relPath = page.group ? `${page.group}/${page.filename}` : page.filename;
+  const descAttr = page.data.description
+    ? ` description="${esc(page.data.description)}"`
+    : "";
   parts.push(
-    `<p class="schema-source">Source: <code>${esc(relPath)}</code></p>`,
+    `<ds-schema-header title="${esc(page.title)}"${descAttr} source="${esc(relPath)}"></ds-schema-header>`,
   );
 
   // Always render top-level properties when they exist (e.g., the root schema
   // has both its own properties AND $defs like documentationGroup)
   if (page.data.properties) {
-    parts.push(`<h2 id="properties-heading">Root Properties</h2>`);
+    parts.push(
+      `<ds-heading level="2" anchor="properties-heading">Root Properties</ds-heading>`,
+    );
     parts.push(renderPropertyTable(page.data));
   }
 
@@ -597,18 +572,18 @@ function renderSchemaPage(page) {
 
   // Definition index (if more than one definition)
   if (defNames.length > 1) {
-    parts.push(`<nav class="page-def-index">`);
+    parts.push(`<ds-def-index>`);
     parts.push(
       `<p><strong>${defNames.length} definitions</strong> in this file:</p>`,
     );
     parts.push(`<ul>`);
     for (const defName of defNames) {
       parts.push(
-        `<li><a href="#${slug(defName)}"><code>${esc(defName)}</code></a></li>`,
+        `<li><a href="#${slug(defName)}"><ds-code inline>${esc(defName)}</ds-code></a></li>`,
       );
     }
     parts.push(`</ul>`);
-    parts.push(`</nav>`);
+    parts.push(`</ds-def-index>`);
   }
 
   // Render each definition with its matching example (if any)
@@ -635,10 +610,13 @@ function renderOverviewPage() {
   let body = mdToHtml(mdText);
 
   body = body.replace(
-    "<h1",
-    '<div class="spec-header"><h1 class="spec-header__title"',
+    "<ds-heading",
+    '<div class="spec-header"><ds-heading class="spec-header__title"',
   );
-  body = body.replace("</h1>", ' <span class="badge">Draft</span></h1>');
+  body = body.replace(
+    "</ds-heading>",
+    " <ds-badge>Draft</ds-badge></ds-heading>",
+  );
 
   // Rewrite .md links to page slugs
   body = body.replace(/href="modules\/(\w+)\.md"/g, (match, name) => {
@@ -662,7 +640,7 @@ function processInline(text) {
   text = text.replace(/___(.+?)___/g, "<strong><em>$1</em></strong>");
   text = text.replace(/__(.+?)__/g, "<strong>$1</strong>");
   text = text.replace(/(?<!_)_(?!_)(.+?)(?<!_)_(?!_)/g, "<em>$1</em>");
-  text = text.replace(/`([^`]+)`/g, "<code>$1</code>");
+  text = text.replace(/`([^`]+)`/g, "<ds-code inline>$1</ds-code>");
   return text;
 }
 
@@ -702,8 +680,8 @@ function mdToHtml(mdText) {
       }
       i++;
       const codeText = esc(codeLines.join("\n"));
-      const langAttr = lang ? ` class="language-${lang}"` : "";
-      out.push(`<pre><code${langAttr}>${codeText}</code></pre>`);
+      const langAttr = lang ? ` language="${lang}"` : "";
+      out.push(`<ds-code${langAttr}>${codeText}</ds-code>`);
       continue;
     }
 
@@ -712,7 +690,9 @@ function mdToHtml(mdText) {
       const level = headingMatch[1].length;
       const text = processInline(headingMatch[2]);
       const hid = mdHeadingId(text);
-      out.push(`<h${level} id="${hid}">${text}</h${level}>`);
+      out.push(
+        `<ds-heading level="${level}" anchor="${hid}">${text}</ds-heading>`,
+      );
       i++;
       continue;
     }
@@ -743,7 +723,7 @@ function mdToHtml(mdText) {
         );
         i++;
       }
-      out.push("<table><thead><tr>");
+      out.push("<ds-table><table><thead><tr>");
       for (const h of headers) out.push(`<th>${processInline(h)}</th>`);
       out.push("</tr></thead><tbody>");
       for (const row of rows) {
@@ -752,7 +732,7 @@ function mdToHtml(mdText) {
         for (let j = row.length; j < headers.length; j++) out.push("<td></td>");
         out.push("</tr>");
       }
-      out.push("</tbody></table>");
+      out.push("</tbody></table></ds-table>");
       continue;
     }
 
@@ -835,61 +815,23 @@ function mdToHtml(mdText) {
 // Extract page headings for TOC
 // ---------------------------------------------------------------------------
 
-function extractToc(bodyHtml) {
-  const toc = [];
-  const re = /<h([23])\s+id="([^"]+)">(.+?)<\/h\1>/g;
-  let m;
-  while ((m = re.exec(bodyHtml)) !== null) {
-    toc.push({
-      id: m[2],
-      text: m[3].replace(/<[^>]+>/g, ""),
-      level: parseInt(m[1], 10),
-    });
-  }
-  return toc;
-}
-
-function renderToc(toc) {
-  if (toc.length === 0) return "";
-  const parts = [
-    '<nav class="toc" aria-label="On this page">',
-    '<p class="toc__title">On this page</p>',
-    '<ul class="toc__list">',
-  ];
-  for (const entry of toc) {
-    let cls = "toc__link";
-    if (entry.level === 3) cls += " toc__link--sub";
-    parts.push(
-      `<li><a class="${cls}" href="#${entry.id}">${esc(entry.text)}</a></li>`,
-    );
-  }
-  parts.push("</ul>", "</nav>");
-  return parts.join("\n");
-}
-
 // ---------------------------------------------------------------------------
-// Navigation builder — one link per schema file, grouped by directory
+// Navigation builder — produces a JSON items array for <ds-spec-nav>
 // ---------------------------------------------------------------------------
 
-function buildNav(activeSlug, pages) {
-  const parts = [];
+function buildNavItems(activeSlug, pages) {
+  const items = [];
 
-  // Overview link
-  const overviewActive = activeSlug === "index" ? " nav__link--active" : "";
-  parts.push(
-    `<a class="nav__link${overviewActive}" href="index.html">Overview</a>`,
-  );
-
-  // Root schema link
-  const rootActive = activeSlug === "root" ? " nav__link--active" : "";
-  parts.push(
-    `<a class="nav__link${rootActive}" href="root.html">Root Schema</a>`,
-  );
+  // Top-level links
+  items.push({ label: "Overview", href: "index.html", slug: "index" });
+  items.push({ label: "Quick Start", href: "quickstart.html" });
+  items.push({ label: "Interactive Samples", href: "samples.html" });
+  items.push({ label: "Root Schema", href: "root.html", slug: "root" });
 
   // Group pages by directory
   const groups = new Map();
   for (const page of pages) {
-    if (!page.group) continue; // root is handled above
+    if (!page.group) continue;
     if (!groups.has(page.group)) {
       groups.set(page.group, { label: page.groupLabel, pages: [] });
     }
@@ -897,43 +839,24 @@ function buildNav(activeSlug, pages) {
   }
 
   for (const [, group] of groups) {
-    const hasActive = group.pages.some((p) => p.slug === activeSlug);
-    const openCls = hasActive ? " nav__group--open" : "";
-    const ariaExpanded = hasActive ? "true" : "false";
-
-    parts.push(`<div class="nav__group${openCls}">`);
-    parts.push(
-      `<button class="nav__group-toggle" aria-expanded="${ariaExpanded}"` +
-        ` onclick="this.parentElement.classList.toggle('nav__group--open');` +
-        `this.setAttribute('aria-expanded', this.parentElement.classList.contains('nav__group--open'))">` +
-        `<span class="nav__group-label">${esc(group.label)}</span>` +
-        `<span class="nav__group-arrow">›</span>` +
-        `</button>`,
-    );
-    parts.push('<div class="nav__group-children">');
-
-    for (const page of group.pages) {
-      const activeCls = page.slug === activeSlug ? " nav__link--active" : "";
-      // Use the schema file basename as the nav label (without .schema.json)
-      const navLabel = page.filename.replace(".schema.json", "");
-      parts.push(
-        `<a class="nav__link nav__link--child${activeCls}" href="${page.slug}.html">${esc(navLabel)}</a>`,
-      );
-    }
-
-    parts.push("</div>", "</div>");
+    const children = group.pages.map((page) => ({
+      label: page.filename.replace(".schema.json", ""),
+      href: `${page.slug}.html`,
+      slug: page.slug,
+    }));
+    items.push({ label: group.label, children });
   }
 
-  return parts.join("\n");
+  return items;
 }
 
 // ---------------------------------------------------------------------------
 // Page template
 // ---------------------------------------------------------------------------
 
-function pageHtml(title, activeSlug, bodyHtml, tocHtml, pages) {
-  const nav = buildNav(activeSlug, pages);
-  const hasToc = tocHtml.trim().length > 0;
+function pageHtml(title, activeSlug, bodyHtml, hasToc, pages) {
+  const navItems = buildNavItems(activeSlug, pages);
+  const navItemsJson = JSON.stringify(navItems);
   const contentCls = hasToc ? "content content--with-toc" : "content";
 
   return `<!DOCTYPE html>
@@ -942,30 +865,27 @@ function pageHtml(title, activeSlug, bodyHtml, tocHtml, pages) {
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>${esc(title)} — DSDS 0.1</title>
+  <link rel="stylesheet" href="tokens.css">
   <link rel="stylesheet" href="style.css">
+  <script src="components.js"></script>
 </head>
 <body>
-  <button class="nav-toggle" onclick="document.querySelector('.nav').classList.toggle('nav--open')" aria-label="Toggle navigation">☰ Menu</button>
-  <nav class="nav" role="navigation" aria-label="Specification navigation">
-    <div class="nav__title"><a href="index.html">DSDS 0.1</a></div>
-    <div class="nav__items">
-      ${nav}
-    </div>
-  </nav>
+  <ds-nav-toggle target="ds-spec-nav"></ds-nav-toggle>
+  <ds-spec-nav title="DSDS 0.1" title-href="index.html" active="${esc(activeSlug)}" items='${esc(navItemsJson)}'></ds-spec-nav>
   <div class="${contentCls}">
     <main class="content__main" role="main">
       <div class="content__inner">
         ${bodyHtml}
 
-        <a href="#" class="back-to-top">↑ Back to top</a>
+        <ds-back-to-top></ds-back-to-top>
 
-        <div class="footer">
+        <ds-footer>
           <p>Design System Documentation Standard (DSDS) 0.1 — Draft Specification</p>
           <p><a href="https://github.com/somerandomdude/design-system-documentation-schema">GitHub</a></p>
-        </div>
+        </ds-footer>
       </div>
     </main>
-    ${tocHtml}
+    ${hasToc ? '<ds-toc target=".content__inner" selector="h2[id], h3[id]"></ds-toc>' : ""}
   </div>
 </body>
 </html>
@@ -999,30 +919,128 @@ function build() {
     `  Indexed ${Object.keys(DEF_INDEX).length} definitions for cross-referencing.\n`,
   );
 
+  // Copy tokens
+  fs.copyFileSync(
+    path.join(SITE_DIR, "tokens.css"),
+    path.join(DIST_DIR, "tokens.css"),
+  );
+
   // Copy stylesheet
   fs.copyFileSync(
     path.join(SITE_DIR, "style.css"),
     path.join(DIST_DIR, "style.css"),
   );
 
+  // Bundle web components into a single IIFE for file:// compatibility.
+  // Reads _shared.js first, then all component files, strips import/export
+  // statements, and wraps everything in an IIFE.
+  bundleComponents(SITE_DIR, DIST_DIR);
+
+  /**
+   * Bundle all component ES modules from site/components/ into a single
+   * components.js IIFE that works from file:// protocol.
+   *
+   * Strategy:
+   *   1. Read _shared.js — extract its exported symbols as local variables
+   *   2. Read each component file — strip `import` and `export` statements
+   *   3. Read index.js — extract the registry array and registration loop
+   *   4. Wrap everything in an IIFE
+   */
+  function bundleComponents(siteDir, distDir) {
+    const componentsDir = path.join(siteDir, "components");
+    const indexSrc = fs.readFileSync(
+      path.join(componentsDir, "index.js"),
+      "utf-8",
+    );
+
+    // Parse the barrel file to find all imported file names (in dependency order)
+    const importRe = /from\s+["']\.\/([^"']+)["']/g;
+    const fileOrder = ["_shared.js"]; // _shared.js MUST come first
+    const seen = new Set(["_shared.js"]);
+    let m;
+    while ((m = importRe.exec(indexSrc)) !== null) {
+      if (!seen.has(m[1])) {
+        seen.add(m[1]);
+        fileOrder.push(m[1]);
+      }
+    }
+
+    // Extract the registry and registration code from index.js
+    const registryMatch = indexSrc.match(
+      /const registry = \[[\s\S]*?\];\s*\n\s*for \([\s\S]*?\{[\s\S]*?\}\s*\}/,
+    );
+    const registrationCode = registryMatch ? registryMatch[0] : "";
+
+    // Build the bundle
+    const parts = [];
+    parts.push("(function () {");
+    parts.push('  "use strict";');
+    parts.push("");
+
+    for (const file of fileOrder) {
+      const filePath = path.join(componentsDir, file);
+      if (!fs.existsSync(filePath)) continue;
+
+      let code = fs.readFileSync(filePath, "utf-8");
+
+      // Strip import statements
+      code = code.replace(
+        /^import\s+\{[^}]*\}\s+from\s+['"][^'"]+['"];\s*$/gm,
+        "",
+      );
+
+      // Strip 'export ' keyword from declarations (export class, export function, export const)
+      code = code.replace(
+        /^export\s+(class|function|const|let|var)\s/gm,
+        "$1 ",
+      );
+
+      // Remove blank lines left by stripping
+      code = code.replace(/\n{3,}/g, "\n\n");
+
+      parts.push(`  // ── ${file} ──`);
+      // Indent the code
+      const indented = code
+        .trim()
+        .split("\n")
+        .map((line) => (line ? "  " + line : ""))
+        .join("\n");
+      parts.push(indented);
+      parts.push("");
+    }
+
+    // Add registration code (strip imports already handled)
+    if (registrationCode) {
+      parts.push("  // ── Registration ──");
+      const indented = registrationCode
+        .trim()
+        .split("\n")
+        .map((line) => (line ? "  " + line : ""))
+        .join("\n");
+      parts.push(indented);
+    }
+
+    parts.push("})();");
+
+    const bundle = parts.join("\n") + "\n";
+    fs.writeFileSync(path.join(distDir, "components.js"), bundle, "utf-8");
+
+    const kb = (Buffer.byteLength(bundle, "utf-8") / 1024).toFixed(1);
+    console.log(
+      `  Bundled ${fileOrder.length} component files → components.js (${kb} KB)`,
+    );
+  }
+
   // 1. Build the overview page (from markdown)
   const overviewBody = renderOverviewPage();
-  const overviewToc = extractToc(overviewBody);
-  const overviewHtml = pageHtml(
-    "Overview",
-    "index",
-    overviewBody,
-    renderToc(overviewToc),
-    pages,
-  );
+  const overviewHtml = pageHtml("Overview", "index", overviewBody, true, pages);
   fs.writeFileSync(path.join(DIST_DIR, "index.html"), overviewHtml, "utf-8");
   console.log("  ✓  site/dist/index.html (from markdown)");
 
   // 2. Build one page per schema file
   for (const page of pages) {
     const body = renderSchemaPage(page);
-    const toc = extractToc(body);
-    const html = pageHtml(page.title, page.slug, body, renderToc(toc), pages);
+    const html = pageHtml(page.title, page.slug, body, true, pages);
 
     const outPath = path.join(DIST_DIR, `${page.slug}.html`);
     fs.writeFileSync(outPath, html, "utf-8");
