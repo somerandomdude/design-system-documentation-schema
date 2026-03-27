@@ -21,6 +21,31 @@
     "metadata": {
       "$ref": "#/$defs/metadata"
     },
+    "purpose": {
+      "type": "object",
+      "description": "The purpose of the design system as a whole — why it exists, what problems it solves, who it serves, and when teams should or should not adopt it. Helps stakeholders, new team members, and external consumers understand the system's intent before exploring individual components or tokens.",
+      "properties": {
+        "description": {
+          "$ref": "#/$defs/richText",
+          "description": "A high-level description of the design system's purpose and the problems it solves."
+        },
+        "useCases": {
+          "type": "array",
+          "description": "Scenario-driven guidance describing when this design system is or is not the right choice. Positive cases describe situations where the system should be adopted. Negative cases describe situations where a different approach is more appropriate, with an explanation of why.",
+          "items": {
+            "$ref": "#/$defs/useCase"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "bestPractices": {
+      "type": "array",
+      "description": "System-level best practices that apply across the entire design system — high-altitude guidance for teams adopting, contributing to, or consuming the system. These are not component-specific rules (those live in each entity's guidelines array) but cross-cutting principles like 'always use semantic tokens instead of raw values', 'test all components at 200% zoom', or 'do not modify token values at the component level'. Each entry is a self-contained rule paired with a rationale.",
+      "items": {
+        "$ref": "#/$defs/bestPracticeEntry"
+      }
+    },
     "documentation": {
       "type": "array",
       "description": "One or more documentation groups. Each group is a named collection of typed entities — components, tokens, token groups, themes, styles, and/or patterns. Multiple groups allow a single DSDS file to organize artifacts into logical sections (e.g., one group for foundations, another for components).",
@@ -1185,22 +1210,53 @@
       },
       "additionalProperties": false
     },
+    "designValue": {
+      "description": "A design value — either a design token name (e.g., 'color-action-primary', 'space-4') or a raw CSS value (e.g., '#0055b3', '16px', '0.4'). Systems with tokens reference token names; systems without tokens use raw values directly. Both are valid.",
+      "type": "string"
+    },
+    "designProperties": {
+      "type": "object",
+      "description": "A map of design property names to their values. Keys are component-scoped property names describing what the value controls (e.g., 'background', 'border-color', 'min-height', 'font-size', 'opacity'). Values are either design token names or raw CSS values. Systems that use tokens will have values like 'color-action-primary' or 'button-primary-bg'. Systems without tokens will have values like '#0055b3' or '16px'. Both approaches — and mixing them — are fully supported.",
+      "additionalProperties": {
+        "$ref": "#/$defs/designValue"
+      },
+      "examples": [
+        {
+          "background": "color-action-primary",
+          "text-color": "color-text-on-action",
+          "border-color": "transparent",
+          "border-width": "0px",
+          "border-radius": "radius-medium"
+        },
+        {
+          "background": "#0055b3",
+          "text-color": "#ffffff",
+          "border-radius": "8px",
+          "min-height": "40px"
+        },
+        {
+          "background": "button-primary-bg",
+          "text-color": "button-primary-text",
+          "border-color": "button-primary-border"
+        }
+      ]
+    },
     "spacingSpec": {
       "type": "object",
-      "description": "Spacing specifications documenting the spatial relationships within and around the component. Separates internal spacing (owned by the component) from external spacing (recommended by the component but controlled by the parent layout).",
+      "description": "Spacing specifications documenting the spatial relationships within and around the component. Separates internal spacing (owned by the component) from external spacing (recommended by the component but controlled by the parent layout). Values are design token names or raw CSS values.",
       "properties": {
         "internal": {
           "type": "object",
-          "description": "Padding and internal gaps within the component. Keys are named spatial relationships between anatomy parts or edges (e.g., 'container-horizontal', 'container-vertical', 'icon-to-label', 'label-to-description'). Values are token names or resolved values (e.g., 'space-4', '8px'). Internal spacing is owned by the component and does not change based on context.",
+          "description": "Padding and internal gaps within the component. Keys are named spatial relationships between anatomy parts or edges (e.g., 'container-horizontal', 'container-vertical', 'icon-to-label', 'label-to-description'). Values are token names or raw CSS values (e.g., 'space-4', '8px', '1rem').",
           "additionalProperties": {
-            "type": "string"
+            "$ref": "#/$defs/designValue"
           }
         },
         "external": {
           "type": "object",
-          "description": "Recommended margins and gaps between this component and its siblings or container edges. Keys are named spatial relationships to surrounding elements (e.g., 'button-to-button', 'button-group-gap', 'stack-gap'). Values are token names or resolved values. External spacing is a recommendation — the parent layout ultimately controls the space between components.",
+          "description": "Recommended margins and gaps between this component and its siblings or container edges. Keys are named spatial relationships to surrounding elements (e.g., 'button-to-button', 'button-group-gap', 'stack-gap'). Values are token names or raw CSS values. External spacing is a recommendation — the parent layout ultimately controls the space between components.",
           "additionalProperties": {
-            "type": "string"
+            "$ref": "#/$defs/designValue"
           }
         }
       },
@@ -1208,23 +1264,23 @@
     },
     "sizingSpec": {
       "type": "object",
-      "description": "Dimension constraints defining the minimum and maximum bounds of the component and any aspect ratio requirements. All values are token names or resolved CSS values.",
+      "description": "Dimension constraints defining the minimum and maximum bounds of the component and any aspect ratio requirements. All values are token names or raw CSS values.",
       "properties": {
         "minWidth": {
-          "type": "string",
-          "description": "Minimum width as a token name or resolved value (e.g., 'size-button-min-width', '64px')."
+          "$ref": "#/$defs/designValue",
+          "description": "Minimum width as a token name or raw value (e.g., 'size-button-min-width', '64px')."
         },
         "maxWidth": {
-          "type": "string",
-          "description": "Maximum width as a token name or resolved value (e.g., 'size-dialog-max-width', '600px')."
+          "$ref": "#/$defs/designValue",
+          "description": "Maximum width as a token name or raw value (e.g., 'size-dialog-max-width', '600px', 'none')."
         },
         "minHeight": {
-          "type": "string",
-          "description": "Minimum height as a token name or resolved value (e.g., 'size-button-min-height', '44px')."
+          "$ref": "#/$defs/designValue",
+          "description": "Minimum height as a token name or raw value (e.g., 'size-button-min-height', '44px')."
         },
         "maxHeight": {
-          "type": "string",
-          "description": "Maximum height as a token name or resolved value."
+          "$ref": "#/$defs/designValue",
+          "description": "Maximum height as a token name or raw value."
         },
         "aspectRatio": {
           "type": "string",
@@ -1235,27 +1291,27 @@
     },
     "typographyEntrySpec": {
       "type": "object",
-      "description": "Typographic settings for a single text element within the component. Maps CSS typographic properties to token names or resolved values. When a composite typeToken is provided, the individual properties (fontSize, fontWeight, etc.) serve as documentation of what the token resolves to.",
+      "description": "Typographic settings for a single text element within the component. Maps CSS typographic properties to token names or raw values. When a composite typeToken is provided, the individual properties (fontSize, fontWeight, etc.) serve as documentation of what the token resolves to.",
       "properties": {
         "fontFamily": {
-          "type": "string",
-          "description": "Font family token name or resolved value (e.g., 'font-family-body', 'Inter, sans-serif')."
+          "$ref": "#/$defs/designValue",
+          "description": "Font family as a token name or raw value (e.g., 'font-family-body', 'Inter, sans-serif')."
         },
         "fontSize": {
-          "type": "string",
-          "description": "Font size token name or resolved value (e.g., 'font-size-body', '14px', '0.875rem')."
+          "$ref": "#/$defs/designValue",
+          "description": "Font size as a token name or raw value (e.g., 'font-size-body', '14px', '0.875rem')."
         },
         "fontWeight": {
-          "type": "string",
-          "description": "Font weight token name or resolved value (e.g., 'font-weight-regular', '400', 'bold')."
+          "$ref": "#/$defs/designValue",
+          "description": "Font weight as a token name or raw value (e.g., 'font-weight-regular', '400', 'bold')."
         },
         "lineHeight": {
-          "type": "string",
-          "description": "Line height token name or resolved value (e.g., 'line-height-body', '1.5', '20px')."
+          "$ref": "#/$defs/designValue",
+          "description": "Line height as a token name or raw value (e.g., 'line-height-body', '1.5', '20px')."
         },
         "letterSpacing": {
-          "type": "string",
-          "description": "Letter spacing token name or resolved value (e.g., 'letter-spacing-body', '0.01em')."
+          "$ref": "#/$defs/designValue",
+          "description": "Letter spacing as a token name or raw value (e.g., 'letter-spacing-body', '0.01em')."
         },
         "textTransform": {
           "type": "string",
@@ -1270,7 +1326,7 @@
     },
     "typographySpec": {
       "type": "object",
-      "description": "Typographic specifications for text content within the component. Keys are named text elements that correspond to anatomy parts (e.g., 'label', 'helper-text', 'heading', 'body'). Values are typographyEntrySpec objects mapping CSS typographic properties to token names or resolved values.",
+      "description": "Typographic specifications for text content within the component. Keys are named text elements that correspond to anatomy parts (e.g., 'label', 'helper-text', 'heading', 'body'). Values are typographyEntrySpec objects.",
       "additionalProperties": {
         "$ref": "#/$defs/typographyEntrySpec"
       }
@@ -1294,9 +1350,138 @@
       },
       "additionalProperties": false
     },
+    "specVariant": {
+      "type": "object",
+      "description": "The complete set of design properties for a single variant of the component (e.g., 'primary', 'secondary', 'ghost', 'danger'). Each variant defines its own set of property-to-value mappings. Values are design token names (e.g., 'button-primary-bg', 'color-action-primary') or raw CSS values (e.g., '#0055b3', 'transparent'). Systems with variant-specific tokens (like 'button-primary-background') use those directly — this is not an override of a base token, it is the variant's own token set.",
+      "required": [
+        "name"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "The variant name. Must match a value defined in the component's variants guideline (e.g., 'primary', 'secondary', 'ghost', 'danger')."
+        },
+        "description": {
+          "$ref": "#/$defs/richText",
+          "description": "Optional description of how this variant's visual treatment differs."
+        },
+        "properties": {
+          "$ref": "#/$defs/designProperties",
+          "description": "Design properties for this variant. Keys are property names (e.g., 'background', 'text-color', 'border-color', 'border-width'). Values are token names or raw CSS values."
+        },
+        "spacing": {
+          "$ref": "#/$defs/spacingSpec",
+          "description": "Spacing adjustments specific to this variant, if any."
+        },
+        "sizing": {
+          "$ref": "#/$defs/sizingSpec",
+          "description": "Sizing adjustments specific to this variant, if any."
+        },
+        "typography": {
+          "$ref": "#/$defs/typographySpec",
+          "description": "Typography adjustments specific to this variant, if any."
+        }
+      },
+      "additionalProperties": false
+    },
+    "specSize": {
+      "type": "object",
+      "description": "The complete set of design properties for a single size of the component (e.g., 'small', 'medium', 'large'). Each size defines its own property-to-value mappings for dimensions, spacing, typography, and any other properties that scale with size.",
+      "required": [
+        "name"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "The size name. Must match a value defined in the component's variants guideline (e.g., 'small', 'medium', 'large', 'sm', 'md', 'lg')."
+        },
+        "description": {
+          "$ref": "#/$defs/richText",
+          "description": "Optional description of this size's intended use."
+        },
+        "properties": {
+          "$ref": "#/$defs/designProperties",
+          "description": "Design properties for this size. Keys are property names (e.g., 'min-height', 'font-size', 'icon-size', 'padding-horizontal'). Values are token names or raw CSS values."
+        },
+        "spacing": {
+          "$ref": "#/$defs/spacingSpec",
+          "description": "Spacing for this size."
+        },
+        "sizing": {
+          "$ref": "#/$defs/sizingSpec",
+          "description": "Dimension constraints for this size."
+        },
+        "typography": {
+          "$ref": "#/$defs/typographySpec",
+          "description": "Typography settings for this size."
+        }
+      },
+      "additionalProperties": false
+    },
+    "specState": {
+      "type": "object",
+      "description": "The complete set of design properties for a single interactive state of the component (e.g., 'hover', 'focus', 'disabled'). Each state defines its own property-to-value mappings. Values may reference state-specific tokens (e.g., 'button-hover-bg') or raw values (e.g., 'rgba(0,0,0,0.08)').",
+      "required": [
+        "name"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "The state name. Must match a value defined in the component's states guideline (e.g., 'hover', 'active', 'focus', 'disabled', 'loading')."
+        },
+        "description": {
+          "$ref": "#/$defs/richText",
+          "description": "Optional description of how the component changes in this state."
+        },
+        "properties": {
+          "$ref": "#/$defs/designProperties",
+          "description": "Design properties for this state. Only properties that change from the default state need to be listed. Keys are property names (e.g., 'background', 'opacity', 'focus-ring-color'). Values are token names or raw CSS values."
+        },
+        "spacing": {
+          "$ref": "#/$defs/spacingSpec",
+          "description": "Spacing adjustments for this state, if any."
+        },
+        "sizing": {
+          "$ref": "#/$defs/sizingSpec",
+          "description": "Sizing adjustments for this state, if any."
+        },
+        "typography": {
+          "$ref": "#/$defs/typographySpec",
+          "description": "Typography adjustments for this state, if any."
+        }
+      },
+      "additionalProperties": false
+    },
+    "specVariantState": {
+      "type": "object",
+      "description": "Design properties for a specific variant-state combination (e.g., 'primary' + 'hover', 'danger' + 'active'). Used when a state's visual treatment differs across variants — for example, a primary button darkens its fill on hover while a ghost button gains a subtle background. Values may reference variant-state-specific tokens (e.g., 'button-primary-hover-bg') or raw values.",
+      "required": [
+        "variant",
+        "state"
+      ],
+      "properties": {
+        "variant": {
+          "type": "string",
+          "description": "The variant name (e.g., 'primary', 'danger')."
+        },
+        "state": {
+          "type": "string",
+          "description": "The state name (e.g., 'hover', 'active', 'focus')."
+        },
+        "description": {
+          "$ref": "#/$defs/richText",
+          "description": "Optional description of how this variant behaves in this state."
+        },
+        "properties": {
+          "$ref": "#/$defs/designProperties",
+          "description": "Design properties for this variant-state combination."
+        }
+      },
+      "additionalProperties": false
+    },
     "designSpecifications": {
       "type": "object",
-      "description": "Documents the measurable visual specifications of a component — every token reference, spacing relationship, dimension constraint, typographic setting, and responsive adaptation. This guideline type makes design decisions explicit so that engineers can implement them precisely and reviewers can verify them against the design.",
+      "description": "Documents the measurable visual specifications of a component — every design property, spacing relationship, dimension constraint, typographic setting, and responsive adaptation. The base-level `properties` map defines the default specification. The `variants`, `sizes`, and `states` arrays group design properties by the condition they apply to. Each group entry is a self-contained set of property-to-value mappings — not an override of a base value. Values throughout are either design token names or raw CSS values.",
       "required": [
         "kind"
       ],
@@ -1306,21 +1491,21 @@
           "const": "design-specifications",
           "description": "Identifies this guideline as a design specifications document."
         },
-        "tokens": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "description": "All design token names consumed by this component, across all variants and states. Provides a flat inventory of every token the component depends on. Individual variant and state guidelines document which tokens apply in specific configurations."
+        "properties": {
+          "$ref": "#/$defs/designProperties",
+          "description": "Base design properties for the component's default configuration. Keys are property names describing what each value controls (e.g., 'background', 'text-color', 'border-radius', 'font-family'). Values are design token names or raw CSS values. In systems with tokens, these are the default/base tokens. In systems without tokens, these are the raw values."
         },
         "spacing": {
-          "$ref": "#/$defs/spacingSpec"
+          "$ref": "#/$defs/spacingSpec",
+          "description": "Base spacing specification for the default configuration."
         },
         "sizing": {
-          "$ref": "#/$defs/sizingSpec"
+          "$ref": "#/$defs/sizingSpec",
+          "description": "Base sizing specification for the default configuration."
         },
         "typography": {
-          "$ref": "#/$defs/typographySpec"
+          "$ref": "#/$defs/typographySpec",
+          "description": "Base typography specification for the default configuration."
         },
         "responsive": {
           "type": "array",
@@ -1328,12 +1513,40 @@
           "items": {
             "$ref": "#/$defs/responsiveEntry"
           }
+        },
+        "variants": {
+          "type": "array",
+          "description": "Design properties grouped by variant. Each entry is a complete set of property-to-value mappings for one variant of the component. Values are the variant's own tokens (e.g., 'button-primary-bg') or raw values — not overrides of base tokens.",
+          "items": {
+            "$ref": "#/$defs/specVariant"
+          }
+        },
+        "sizes": {
+          "type": "array",
+          "description": "Design properties grouped by size. Each entry defines the dimensions, spacing, typography, and other properties that change at each size step.",
+          "items": {
+            "$ref": "#/$defs/specSize"
+          }
+        },
+        "states": {
+          "type": "array",
+          "description": "Design properties grouped by interactive state. Each entry defines the properties that change when the component enters a given state. Only properties that differ from the default need to be listed.",
+          "items": {
+            "$ref": "#/$defs/specState"
+          }
+        },
+        "variantStates": {
+          "type": "array",
+          "description": "Design properties for specific variant-state combinations where the state's visual treatment differs across variants. For example, a primary button's hover background differs from a ghost button's hover background. Only needed when a single state entry cannot describe the behavior across all variants.",
+          "items": {
+            "$ref": "#/$defs/specVariantState"
+          }
         }
       },
       "anyOf": [
         {
           "required": [
-            "tokens"
+            "properties"
           ]
         },
         {
@@ -1354,6 +1567,26 @@
         {
           "required": [
             "responsive"
+          ]
+        },
+        {
+          "required": [
+            "variants"
+          ]
+        },
+        {
+          "required": [
+            "sizes"
+          ]
+        },
+        {
+          "required": [
+            "states"
+          ]
+        },
+        {
+          "required": [
+            "variantStates"
           ]
         }
       ],
@@ -1779,7 +2012,7 @@
         },
         "tokens": {
           "type": "object",
-          "description": "Design token overrides applied when this state is active. Keys are token property names scoped to the component (e.g., 'button-background', 'button-border-color'). Values are the token names or resolved values used in this state. Only tokens that change from the default state need to be listed.",
+          "description": "Design token overrides applied when this state is active. Keys are token property names scoped to the component (e.g., 'button-background', 'button-border-color'). Values are the token names or resolved values used in this state. Only tokens that change from the default state need to be listed. Note: these token references are descriptive summaries for designers. The authoritative resolved values for each variant × state combination live in the design-specifications guideline's overrides array.",
           "additionalProperties": {
             "type": "string"
           }

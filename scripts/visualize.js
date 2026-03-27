@@ -92,6 +92,8 @@ const COLUMN_GAP = 200;
 const CANVAS_PAD = 40;
 
 const ARROW_SIZE = 6;
+const EDGE_CORNER_RADIUS = 8;
+const EDGE_CHANNEL_SPACING = 4;
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -480,7 +482,13 @@ function layoutGraph(options = {}) {
     }
   }
 
-  return { columnData, edgeList, canvasW, canvasH, nodeMeasures };
+  // Build sorted list of node x-ranges for channel exclusion
+  const nodeXRanges = [];
+  for (const [, nm] of nodeMeasures) {
+    nodeXRanges.push({ left: nm.x, right: nm.x + nm.w });
+  }
+
+  return { columnData, edgeList, canvasW, canvasH, nodeMeasures, nodeXRanges };
 }
 
 // ---------------------------------------------------------------------------
@@ -488,7 +496,8 @@ function layoutGraph(options = {}) {
 // ---------------------------------------------------------------------------
 
 function renderSvg(options = {}) {
-  const { columnData, edgeList, canvasW, canvasH } = layoutGraph(options);
+  const { columnData, edgeList, canvasW, canvasH, nodeXRanges } =
+    layoutGraph(options);
 
   const parts = [];
 
@@ -513,21 +522,81 @@ function renderSvg(options = {}) {
   parts.push("  </defs>");
 
   // -- Edges (drawn first, behind nodes) ------------------------------------
-  parts.push("  <!-- Edges -->");
-  parts.push(`  <g>`);
+  //
+  // Each edge is an orthogonal path matching the reference pattern:
+  //   H out from source → rounded corner → V at unique channel → rounded corner → H into target
+  //
+  // The vertical channel for each edge is placed in the clear gap between
+  // node columns (never under a node). Within each gap the channels are
+  // spaced EDGE_CHANNEL_SPACING apart so every line is individually visible.
 
+  // 1. Merge node x-ranges and find clear gaps
+  const merged = [];
+  const sortedRanges = [...nodeXRanges].sort((a, b) => a.left - b.left);
+  for (const rng of sortedRanges) {
+    if (merged.length > 0 && rng.left <= merged[merged.length - 1].right) {
+      merged[merged.length - 1].right = Math.max(
+        merged[merged.length - 1].right,
+        rng.right,
+      );
+    } else {
+      merged.push({ left: rng.left, right: rng.right });
+    }
+  }
+  const gaps = [];
+  if (merged.length > 0 && merged[0].left > 0) {
+    gaps.push({ left: 0, right: merged[0].left });
+  }
+  for (let i = 0; i < merged.length - 1; i++) {
+    gaps.push({ left: merged[i].right, right: merged[i + 1].left });
+  }
+  if (merged.length > 0) {
+    gaps.push({ left: merged[merged.length - 1].right, right: canvasW });
+  }
+
+  // 2. For each gap, find its center x (used as default channel position)
+  //    Index gaps for lookup by position.
+  function findGapBetween(srcX, tgtX) {
+    const lo = Math.min(srcX, tgtX);
+    const hi = Math.max(srcX, tgtX);
+    // Prefer the gap whose center is between src and tgt
+    let best = null;
+    let bestDist = Infinity;
+    for (const g of gaps) {
+      const mid = (g.left + g.right) / 2;
+      if (mid >= lo && mid <= hi) {
+        const d = Math.abs(mid - (srcX + tgtX) / 2);
+        if (d < bestDist) {
+          bestDist = d;
+          best = g;
+        }
+      }
+    }
+    // Fallback: closest gap overall
+    if (!best) {
+      const target = (srcX + tgtX) / 2;
+      for (const g of gaps) {
+        const d = Math.abs((g.left + g.right) / 2 - target);
+        if (d < bestDist) {
+          bestDist = d;
+          best = g;
+        }
+      }
+    }
+    return best;
+  }
+
+  // 3. Compute anchor sides and assign each edge to a gap
+  const edgeRoutes = [];
   for (const { src, tgt } of edgeList) {
-    // Candidate anchors — left and right sides only
     const srcAnchors = [
-      { x: src.x + src.w, y: src.cy, sign: 1 }, // right
-      { x: src.x, y: src.cy, sign: -1 }, // left
+      { x: src.x + src.w, y: src.cy, sign: 1 },
+      { x: src.x, y: src.cy, sign: -1 },
     ];
     const tgtAnchors = [
-      { x: tgt.x + tgt.w, y: tgt.cy, sign: 1 }, // right
-      { x: tgt.x, y: tgt.cy, sign: -1 }, // left
+      { x: tgt.x + tgt.w, y: tgt.cy, sign: 1 },
+      { x: tgt.x, y: tgt.cy, sign: -1 },
     ];
-
-    // Pick the pair with the shortest distance
     let bestDist = Infinity;
     let bestSrc = srcAnchors[0];
     let bestTgt = tgtAnchors[1];
@@ -543,22 +612,65 @@ function renderSvg(options = {}) {
         }
       }
     }
+    const gap = findGapBetween(bestSrc.x, bestTgt.x);
+    edgeRoutes.push({
+      x1: bestSrc.x,
+      y1: bestSrc.y,
+      x2: bestTgt.x,
+      y2: bestTgt.y,
+      srcSign: bestSrc.sign,
+      tgtSign: bestTgt.sign,
+      gap,
+    });
+  }
 
-    const x1 = bestSrc.x;
-    const y1 = bestSrc.y;
-    const x2 = bestTgt.x;
-    const y2 = bestTgt.y;
+  // 4. Within each gap, assign unique channel x positions.
+  //    Sort edges within a gap by their vertical midpoint so nearby edges
+  //    get adjacent channels (reduces crossings).
+  const gapBuckets = new Map();
+  for (let i = 0; i < edgeRoutes.length; i++) {
+    const g = edgeRoutes[i].gap;
+    if (!g) continue;
+    const key = g.left;
+    if (!gapBuckets.has(key)) gapBuckets.set(key, { gap: g, indices: [] });
+    gapBuckets.get(key).indices.push(i);
+  }
+  for (const [, bucket] of gapBuckets) {
+    const { gap, indices } = bucket;
+    // Sort by vertical midpoint of each edge
+    indices.sort((a, b) => {
+      const midA = (edgeRoutes[a].y1 + edgeRoutes[a].y2) / 2;
+      const midB = (edgeRoutes[b].y1 + edgeRoutes[b].y2) / 2;
+      return midA - midB;
+    });
+    const gapCenter = (gap.left + gap.right) / 2;
+    const count = indices.length;
+    const totalSpan = (count - 1) * EDGE_CHANNEL_SPACING;
+    const startX = gapCenter - totalSpan / 2;
+    for (let j = 0; j < count; j++) {
+      edgeRoutes[indices[j]].channelX = startX + j * EDGE_CHANNEL_SPACING;
+    }
+  }
+  // Fallback
+  for (const route of edgeRoutes) {
+    if (route.channelX === undefined) {
+      route.channelX = (route.x1 + route.x2) / 2;
+    }
+  }
 
-    // Control points extend horizontally outward from the chosen side
-    const dist = Math.sqrt(bestDist);
-    const cpLen = Math.max(20, Math.min(dist * 0.4, 80));
-    const cx1 = x1 + bestSrc.sign * cpLen;
-    const cy1 = y1;
-    const cx2 = x2 + bestTgt.sign * cpLen;
-    const cy2 = y2;
+  // 5. Render bezier curves using channel x as control-point x-coordinates.
+  //    Each edge becomes a cubic bezier where the two control points share
+  //    the edge's unique channelX, keeping curves visually separated.
+  parts.push("  <!-- Edges -->");
+  parts.push(`  <g>`);
+
+  for (const route of edgeRoutes) {
+    const { x1, y1, x2, y2, channelX: mx } = route;
+
+    const d = `M${x1} ${y1}C${mx} ${y1} ${mx} ${y2} ${x2} ${y2}`;
 
     parts.push(
-      `    <path d="M ${x1} ${y1} C ${cx1} ${cy1}, ${cx2} ${cy2}, ${x2} ${y2}" fill="none" stroke="${EDGE_COLOR}" stroke-width="1" opacity="0.4" marker-end="url(#arrowhead)" />`,
+      `    <path opacity="0.4" d="${d}" fill="none" stroke="${EDGE_COLOR}" />`,
     );
   }
   parts.push("  </g>");
@@ -659,7 +771,11 @@ function parseArgs(argv) {
       args.outputDir = path.resolve(ROOT, arg.split("=")[1]);
     }
     if (arg.startsWith("--layout=")) {
-      const validGroups = new Set(["root", "entities", "guidelines", "common"]);
+      const validGroups = new Set(
+        ["root"],
+        ["entities", "common"],
+        ["guidelines"],
+      );
       const columns = arg
         .split("=")[1]
         .split(",")

@@ -1,224 +1,928 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>DSDS Design Specifications Guideline — DSDS 0.1</title>
-  <link rel="stylesheet" href="style.css">
-</head>
-<body>
-  <button class="nav-toggle" onclick="document.querySelector('.nav').classList.toggle('nav--open')" aria-label="Toggle navigation">☰ Menu</button>
-  <nav class="nav" role="navigation" aria-label="Specification navigation">
-    <div class="nav__title"><a href="index.html">DSDS 0.1</a></div>
-    <div class="nav__items">
-      <a class="nav__link" href="index.html">Overview</a>
-<a class="nav__link" href="root.html">Root Schema</a>
-<div class="nav__group">
-<button class="nav__group-toggle" aria-expanded="false" onclick="this.parentElement.classList.toggle('nav__group--open');this.setAttribute('aria-expanded', this.parentElement.classList.contains('nav__group--open'))"><span class="nav__group-label">Common</span><span class="nav__group-arrow">›</span></button>
-<div class="nav__group-children">
-<a class="nav__link nav__link--child" href="common-example.html">example</a>
-<a class="nav__link nav__link--child" href="common-extensions.html">extensions</a>
-<a class="nav__link nav__link--child" href="common-link.html">link</a>
-<a class="nav__link nav__link--child" href="common-metadata.html">metadata</a>
-<a class="nav__link nav__link--child" href="common-presentation.html">presentation</a>
-<a class="nav__link nav__link--child" href="common-purpose.html">purpose</a>
-<a class="nav__link nav__link--child" href="common-rich-text.html">rich-text</a>
-<a class="nav__link nav__link--child" href="common-status.html">status</a>
-</div>
-</div>
-<div class="nav__group">
-<button class="nav__group-toggle" aria-expanded="false" onclick="this.parentElement.classList.toggle('nav__group--open');this.setAttribute('aria-expanded', this.parentElement.classList.contains('nav__group--open'))"><span class="nav__group-label">Entities</span><span class="nav__group-arrow">›</span></button>
-<div class="nav__group-children">
-<a class="nav__link nav__link--child" href="entities-component.html">component</a>
-<a class="nav__link nav__link--child" href="entities-pattern.html">pattern</a>
-<a class="nav__link nav__link--child" href="entities-style.html">style</a>
-<a class="nav__link nav__link--child" href="entities-theme.html">theme</a>
-<a class="nav__link nav__link--child" href="entities-token.html">token</a>
-</div>
-</div>
-<div class="nav__group nav__group--open">
-<button class="nav__group-toggle" aria-expanded="true" onclick="this.parentElement.classList.toggle('nav__group--open');this.setAttribute('aria-expanded', this.parentElement.classList.contains('nav__group--open'))"><span class="nav__group-label">Guidelines</span><span class="nav__group-arrow">›</span></button>
-<div class="nav__group-children">
-<a class="nav__link nav__link--child" href="guidelines-accessibility.html">accessibility</a>
-<a class="nav__link nav__link--child" href="guidelines-anatomy.html">anatomy</a>
-<a class="nav__link nav__link--child" href="guidelines-api.html">api</a>
-<a class="nav__link nav__link--child" href="guidelines-best-practice.html">best-practice</a>
-<a class="nav__link nav__link--child" href="guidelines-content.html">content</a>
-<a class="nav__link nav__link--child nav__link--active" href="guidelines-design-specifications.html">design-specifications</a>
-<a class="nav__link nav__link--child" href="guidelines-guideline.html">guideline</a>
-<a class="nav__link nav__link--child" href="guidelines-interaction.html">interaction</a>
-<a class="nav__link nav__link--child" href="guidelines-motion.html">motion</a>
-<a class="nav__link nav__link--child" href="guidelines-principle.html">principle</a>
-<a class="nav__link nav__link--child" href="guidelines-scale.html">scale</a>
-<a class="nav__link nav__link--child" href="guidelines-state.html">state</a>
-<a class="nav__link nav__link--child" href="guidelines-variant.html">variant</a>
-</div>
-</div>
-    </div>
-  </nav>
-  <div class="content content--with-toc">
-    <main class="content__main" role="main">
-      <div class="content__inner">
-        <h1>DSDS Design Specifications Guideline</h1>
-<p class="schema-description">Documents the visual design specifications of a component — the design tokens it consumes, its internal and external spacing relationships, dimension constraints, typography settings, and responsive behavior. Design specifications bridge the gap between design intent and engineering implementation by making every visual decision explicit, measurable, and tied to the token architecture.</p>
-<p class="schema-source">Source: <code>guidelines/design-specifications.schema.json</code></p>
-<nav class="page-def-index">
-<p><strong>6 definitions</strong> in this file:</p>
-<ul>
-<li><a href="#spacingspec"><code>spacingSpec</code></a></li>
-<li><a href="#sizingspec"><code>sizingSpec</code></a></li>
-<li><a href="#typographyentryspec"><code>typographyEntrySpec</code></a></li>
-<li><a href="#typographyspec"><code>typographySpec</code></a></li>
-<li><a href="#responsiveentry"><code>responsiveEntry</code></a></li>
-<li><a href="#designspecifications"><code>designSpecifications</code></a></li>
-</ul>
-</nav>
-<section class="def-section" id="spacingspec">
-<h3 id="spacingspec">spacingSpec</h3>
-<p class="def-description">Spacing specifications documenting the spatial relationships within and around the component. Separates internal spacing (owned by the component) from external spacing (recommended by the component but controlled by the parent layout).</p>
-<p class="def-type"><span class="type-badge">object</span></p>
-<table class="prop-table"><thead><tr><th>Property</th><th>Type</th><th>Required</th><th>Description</th></tr></thead><tbody><tr><td><code>internal</code></td><td>map&lt;string, string&gt;</td><td>optional</td><td>Padding and internal gaps within the component. Keys are named spatial relationships between anatomy parts or edges (e.g., 'container-horizontal', 'container-vertical', 'icon-to-label', 'label-to-description'). Values are token names or resolved values (e.g., 'space-4', '8px'). Internal spacing is owned by the component and does not change based on context.</td></tr>
-<tr><td><code>external</code></td><td>map&lt;string, string&gt;</td><td>optional</td><td>Recommended margins and gaps between this component and its siblings or container edges. Keys are named spatial relationships to surrounding elements (e.g., 'button-to-button', 'button-group-gap', 'stack-gap'). Values are token names or resolved values. External spacing is a recommendation — the parent layout ultimately controls the space between components.</td></tr></tbody></table>
-</section>
-<section class="def-section" id="sizingspec">
-<h3 id="sizingspec">sizingSpec</h3>
-<p class="def-description">Dimension constraints defining the minimum and maximum bounds of the component and any aspect ratio requirements. All values are token names or resolved CSS values.</p>
-<p class="def-type"><span class="type-badge">object</span></p>
-<table class="prop-table"><thead><tr><th>Property</th><th>Type</th><th>Required</th><th>Description</th></tr></thead><tbody><tr><td><code>minWidth</code></td><td>string</td><td>optional</td><td>Minimum width as a token name or resolved value (e.g., 'size-button-min-width', '64px').</td></tr>
-<tr><td><code>maxWidth</code></td><td>string</td><td>optional</td><td>Maximum width as a token name or resolved value (e.g., 'size-dialog-max-width', '600px').</td></tr>
-<tr><td><code>minHeight</code></td><td>string</td><td>optional</td><td>Minimum height as a token name or resolved value (e.g., 'size-button-min-height', '44px').</td></tr>
-<tr><td><code>maxHeight</code></td><td>string</td><td>optional</td><td>Maximum height as a token name or resolved value.</td></tr>
-<tr><td><code>aspectRatio</code></td><td>string</td><td>optional</td><td>Aspect ratio constraint as a ratio string (e.g., '16/9', '1/1', '4/3').</td></tr></tbody></table>
-</section>
-<section class="def-section" id="typographyentryspec">
-<h3 id="typographyentryspec">typographyEntrySpec</h3>
-<p class="def-description">Typographic settings for a single text element within the component. Maps CSS typographic properties to token names or resolved values. When a composite typeToken is provided, the individual properties (fontSize, fontWeight, etc.) serve as documentation of what the token resolves to.</p>
-<p class="def-type"><span class="type-badge">object</span></p>
-<table class="prop-table"><thead><tr><th>Property</th><th>Type</th><th>Required</th><th>Description</th></tr></thead><tbody><tr><td><code>fontFamily</code></td><td>string</td><td>optional</td><td>Font family token name or resolved value (e.g., 'font-family-body', 'Inter, sans-serif').</td></tr>
-<tr><td><code>fontSize</code></td><td>string</td><td>optional</td><td>Font size token name or resolved value (e.g., 'font-size-body', '14px', '0.875rem').</td></tr>
-<tr><td><code>fontWeight</code></td><td>string</td><td>optional</td><td>Font weight token name or resolved value (e.g., 'font-weight-regular', '400', 'bold').</td></tr>
-<tr><td><code>lineHeight</code></td><td>string</td><td>optional</td><td>Line height token name or resolved value (e.g., 'line-height-body', '1.5', '20px').</td></tr>
-<tr><td><code>letterSpacing</code></td><td>string</td><td>optional</td><td>Letter spacing token name or resolved value (e.g., 'letter-spacing-body', '0.01em').</td></tr>
-<tr><td><code>textTransform</code></td><td>string</td><td>optional</td><td>Text transform value (e.g., 'uppercase', 'capitalize', 'none').</td></tr>
-<tr><td><code>typeToken</code></td><td>string</td><td>optional</td><td>A composite typography token that encapsulates multiple typographic properties (e.g., '$body-compact-01', 'type-scale-body-sm'). When a type token is provided, individual properties (fontSize, fontWeight, etc.) serve as documentation of what the token resolves to.</td></tr></tbody></table>
-</section>
-<section class="def-section" id="typographyspec">
-<h3 id="typographyspec">typographySpec</h3>
-<p class="def-description">Typographic specifications for text content within the component. Keys are named text elements that correspond to anatomy parts (e.g., 'label', 'helper-text', 'heading', 'body'). Values are typographyEntrySpec objects mapping CSS typographic properties to token names or resolved values.</p>
-<p class="def-type"><span class="type-badge">object</span></p>
-<p><strong>Open map:</strong> keys are strings, values are <code>any</code></p>
-<p class="cross-refs"><strong>References:</strong> 
-<a href="guidelines-design-specifications.html#typographyentryspec">typographyEntrySpec</a>
-</p>
-</section>
-<section class="def-section" id="responsiveentry">
-<h3 id="responsiveentry">responsiveEntry</h3>
-<p class="def-description">A responsive behavior specification describing how the component adapts at a specific breakpoint or viewport condition.</p>
-<p class="def-type"><span class="type-badge">object</span></p>
-<table class="prop-table"><thead><tr><th>Property</th><th>Type</th><th>Required</th><th>Description</th></tr></thead><tbody><tr><td><code>breakpoint</code></td><td>string</td><td><span class="required-badge">required</span></td><td>The breakpoint name or value at which this behavior applies (e.g., 'small', 'medium', 'large', '768px', 'min-width: 1024px').</td></tr>
-<tr><td><code>description</code></td><td><a href="common-rich-text.html#richtext" class="type-ref">richText</a></td><td><span class="required-badge">required</span></td><td>How the component's layout, sizing, or behavior changes at this breakpoint.</td></tr></tbody></table>
-<p class="cross-refs"><strong>References:</strong> 
-<a href="common-rich-text.html#richtext">richText</a>
-</p>
-<div class="def-example">
-<p class="def-example__title"><strong>Example</strong></p>
-<pre><code class="language-json">[
-  {
-    &quot;breakpoint&quot;: &quot;768px&quot;,
-    &quot;description&quot;: &quot;Below 768px, buttons in a button group stack vertically and expand to full width.&quot;
-  },
-  {
-    &quot;breakpoint&quot;: &quot;1024px&quot;,
-    &quot;description&quot;: &quot;Above 1024px, the minimum button width increases from 44px to 64px to provide a more comfortable click target on desktop.&quot;
-  }
-]</code></pre>
-</div>
-</section>
-<section class="def-section" id="designspecifications">
-<h3 id="designspecifications">designSpecifications</h3>
-<p class="def-description">Documents the measurable visual specifications of a component — every token reference, spacing relationship, dimension constraint, typographic setting, and responsive adaptation. This guideline type makes design decisions explicit so that engineers can implement them precisely and reviewers can verify them against the design.</p>
-<p class="def-type"><span class="type-badge">object</span></p>
-<table class="prop-table"><thead><tr><th>Property</th><th>Type</th><th>Required</th><th>Description</th></tr></thead><tbody><tr><td><code>kind</code></td><td><code>"design-specifications"</code></td><td><span class="required-badge">required</span></td><td>Identifies this guideline as a design specifications document.</td></tr>
-<tr><td><code>tokens</code></td><td>string[]</td><td><span class="conditional-badge">at least one</span></td><td>All design token names consumed by this component, across all variants and states. Provides a flat inventory of every token the component depends on. Individual variant and state guidelines document which tokens apply in specific configurations.</td></tr>
-<tr><td><code>spacing</code></td><td><a href="guidelines-design-specifications.html#spacingspec" class="type-ref">spacingSpec</a></td><td><span class="conditional-badge">at least one</span></td><td></td></tr>
-<tr><td><code>sizing</code></td><td><a href="guidelines-design-specifications.html#sizingspec" class="type-ref">sizingSpec</a></td><td><span class="conditional-badge">at least one</span></td><td></td></tr>
-<tr><td><code>typography</code></td><td><a href="guidelines-design-specifications.html#typographyspec" class="type-ref">typographySpec</a></td><td><span class="conditional-badge">at least one</span></td><td></td></tr>
-<tr><td><code>responsive</code></td><td><a href="guidelines-design-specifications.html#responsiveentry" class="type-ref">responsiveEntry</a>[]</td><td><span class="conditional-badge">at least one</span></td><td>Responsive behavior documentation describing how the component adapts across breakpoints. Entries are ordered from smallest to largest breakpoint.</td></tr></tbody></table>
-<p class="conditional-note"><strong>Constraint:</strong> At least one of <code>tokens</code>, <code>spacing</code>, <code>sizing</code>, <code>typography</code>, <code>responsive</code> must be present.</p>
-<p class="cross-refs"><strong>References:</strong> 
-<a href="guidelines-design-specifications.html#spacingspec">spacingSpec</a>, <a href="guidelines-design-specifications.html#sizingspec">sizingSpec</a>, <a href="guidelines-design-specifications.html#typographyspec">typographySpec</a>, <a href="guidelines-design-specifications.html#responsiveentry">responsiveEntry</a>
-</p>
-<div class="def-example">
-<p class="def-example__title"><strong>Example</strong></p>
-<pre><code class="language-json">{
-  &quot;tokens&quot;: [
-    &quot;button-background&quot;,
-    &quot;button-text-color&quot;,
-    &quot;button-border-color&quot;,
-    &quot;button-border-radius&quot;,
-    &quot;button-padding-horizontal&quot;,
-    &quot;button-padding-vertical&quot;,
-    &quot;button-font-size&quot;,
-    &quot;button-font-weight&quot;,
-    &quot;button-line-height&quot;,
-    &quot;button-icon-size&quot;,
-    &quot;button-icon-color&quot;,
-    &quot;button-icon-gap&quot;,
-    &quot;button-focus-ring-color&quot;,
-    &quot;button-focus-ring-width&quot;,
-    &quot;button-focus-ring-offset&quot;
-  ],
-  &quot;spacing&quot;: {
-    &quot;internal&quot;: {
-      &quot;container-horizontal&quot;: &quot;space-4&quot;,
-      &quot;container-vertical&quot;: &quot;space-2&quot;,
-      &quot;icon-to-label&quot;: &quot;space-2&quot;
-    },
-    &quot;external&quot;: {
-      &quot;button-to-button&quot;: &quot;space-2&quot;,
-      &quot;button-group-gap&quot;: &quot;space-3&quot;
-    }
-  },
-  &quot;sizing&quot;: {
-    &quot;minWidth&quot;: &quot;44px&quot;,
-    &quot;minHeight&quot;: &quot;44px&quot;,
-    &quot;maxWidth&quot;: &quot;none&quot;,
-    &quot;aspectRatio&quot;: &quot;auto&quot;
-  },
-  &quot;responsive&quot;: [
-    {
-      &quot;breakpoint&quot;: &quot;768px&quot;,
-      &quot;description&quot;: &quot;Below 768px, buttons in a button group stack vertically and expand to full width.&quot;
-    },
-    {
-      &quot;breakpoint&quot;: &quot;1024px&quot;,
-      &quot;description&quot;: &quot;Above 1024px, the minimum button width increases from 44px to 64px.&quot;
-    }
-  ],
-  &quot;kind&quot;: &quot;design-specifications&quot;
-}</code></pre>
-</div>
-</section>
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>DSDS Design Specifications Guideline — DSDS 0.1</title>
+        <link rel="stylesheet" href="tokens.css" />
+        <link rel="stylesheet" href="style.css" />
+        <script src="components.js?v=2"></script>
+    </head>
+    <body>
+        <ds-nav-toggle target="ds-spec-nav"></ds-nav-toggle>
+        <ds-spec-nav
+            title="DSDS 0.1"
+            title-href="index.html"
+            active="guidelines-design-specifications"
+        >
+            <a href="index.html" slug="index">Overview</a>
+            <a href="quickstart.html" slug="quickstart">Quick Start</a>
+            <a href="samples.html" slug="samples">Interactive Samples</a>
+            <a href="root.html" slug="root">Root Schema</a>
+            <ds-nav-group label="Common">
+                <a href="common-example.html" slug="common-example">example</a>
+                <a href="common-extensions.html" slug="common-extensions"
+                    >extensions</a
+                >
+                <a href="common-link.html" slug="common-link">link</a>
+                <a href="common-metadata.html" slug="common-metadata"
+                    >metadata</a
+                >
+                <a href="common-presentation.html" slug="common-presentation"
+                    >presentation</a
+                >
+                <a href="common-purpose.html" slug="common-purpose">purpose</a>
+                <a href="common-rich-text.html" slug="common-rich-text"
+                    >rich-text</a
+                >
+                <a href="common-status.html" slug="common-status">status</a>
+            </ds-nav-group>
+            <ds-nav-group label="Entities">
+                <a href="entities-component.html" slug="entities-component"
+                    >component</a
+                >
+                <a href="entities-pattern.html" slug="entities-pattern"
+                    >pattern</a
+                >
+                <a href="entities-style.html" slug="entities-style">style</a>
+                <a href="entities-theme.html" slug="entities-theme">theme</a>
+                <a href="entities-token.html" slug="entities-token">token</a>
+            </ds-nav-group>
+            <ds-nav-group label="Guidelines">
+                <a
+                    href="guidelines-accessibility.html"
+                    slug="guidelines-accessibility"
+                    >accessibility</a
+                >
+                <a href="guidelines-anatomy.html" slug="guidelines-anatomy"
+                    >anatomy</a
+                >
+                <a href="guidelines-api.html" slug="guidelines-api">api</a>
+                <a
+                    href="guidelines-best-practice.html"
+                    slug="guidelines-best-practice"
+                    >best-practice</a
+                >
+                <a href="guidelines-content.html" slug="guidelines-content"
+                    >content</a
+                >
+                <a
+                    href="guidelines-design-specifications.html"
+                    slug="guidelines-design-specifications"
+                    >design-specifications</a
+                >
+                <a href="guidelines-guideline.html" slug="guidelines-guideline"
+                    >guideline</a
+                >
+                <a
+                    href="guidelines-interaction.html"
+                    slug="guidelines-interaction"
+                    >interaction</a
+                >
+                <a href="guidelines-motion.html" slug="guidelines-motion"
+                    >motion</a
+                >
+                <a href="guidelines-principle.html" slug="guidelines-principle"
+                    >principle</a
+                >
+                <a href="guidelines-scale.html" slug="guidelines-scale"
+                    >scale</a
+                >
+                <a href="guidelines-state.html" slug="guidelines-state"
+                    >state</a
+                >
+                <a href="guidelines-variant.html" slug="guidelines-variant"
+                    >variant</a
+                >
+            </ds-nav-group>
+        </ds-spec-nav>
+        <div class="content content--with-toc">
+            <main class="content__main" role="main">
+                <div class="content__inner">
+                    <ds-schema-header
+                        title="DSDS Design Specifications Guideline"
+                        description="Documents the visual design specifications of a component — the design tokens it consumes, its internal and external spacing relationships, dimension constraints, typography settings, and responsive behavior. Design specifications bridge the gap between design intent and engineering implementation by making every visual decision explicit, measurable, and tied to the token architecture."
+                        source="guidelines/design-specifications.schema.json"
+                    ></ds-schema-header>
+                    <ds-def-index>
+                        <p><strong>10 definitions</strong> in this file:</p>
+                        <ul>
+                            <li>
+                                <a href="#spacingspec"
+                                    ><ds-code inline>spacingSpec</ds-code></a
+                                >
+                            </li>
+                            <li>
+                                <a href="#sizingspec"
+                                    ><ds-code inline>sizingSpec</ds-code></a
+                                >
+                            </li>
+                            <li>
+                                <a href="#typographyentryspec"
+                                    ><ds-code inline
+                                        >typographyEntrySpec</ds-code
+                                    ></a
+                                >
+                            </li>
+                            <li>
+                                <a href="#typographyspec"
+                                    ><ds-code inline>typographySpec</ds-code></a
+                                >
+                            </li>
+                            <li>
+                                <a href="#responsiveentry"
+                                    ><ds-code inline
+                                        >responsiveEntry</ds-code
+                                    ></a
+                                >
+                            </li>
+                            <li>
+                                <a href="#designvalue"
+                                    ><ds-code inline>designValue</ds-code></a
+                                >
+                            </li>
+                            <li>
+                                <a href="#designproperties"
+                                    ><ds-code inline
+                                        >designProperties</ds-code
+                                    ></a
+                                >
+                            </li>
+                            <li>
+                                <a href="#specvariant"
+                                    ><ds-code inline>specVariant</ds-code></a
+                                >
+                            </li>
+                            <li>
+                                <a href="#specsize"
+                                    ><ds-code inline>specSize</ds-code></a
+                                >
+                            </li>
+                            <li>
+                                <a href="#specstate"
+                                    ><ds-code inline>specState</ds-code></a
+                                >
+                            </li>
+                            <li>
+                                <a href="#specvariantstate"
+                                    ><ds-code inline
+                                        >specVariantState</ds-code
+                                    ></a
+                                >
+                            </li>
+                            <li>
+                                <a href="#designspecifications"
+                                    ><ds-code inline
+                                        >designSpecifications</ds-code
+                                    ></a
+                                >
+                            </li>
+                        </ul>
+                    </ds-def-index>
+                    <ds-def-section
+                        name="spacingSpec"
+                        anchor="spacingspec"
+                        description="Spacing specifications documenting the spatial relationships within and around the component. Separates internal spacing (owned by the component) from external spacing (recommended by the component but controlled by the parent layout)."
+                        type="object"
+                    >
+                        <ds-prop-table>
+                            <ds-prop
+                                name="internal"
+                                type="map&amp;lt;string, string&amp;gt;"
+                                >Padding and internal gaps within the component.
+                                Keys are named spatial relationships between
+                                anatomy parts or edges (e.g.,
+                                'container-horizontal', 'container-vertical',
+                                'icon-to-label', 'label-to-description'). Values
+                                are token names or resolved values (e.g.,
+                                'space-4', '8px'). Internal spacing is owned by
+                                the component and does not change based on
+                                context.</ds-prop
+                            >
+                            <ds-prop
+                                name="external"
+                                type="map&amp;lt;string, string&amp;gt;"
+                                >Recommended margins and gaps between this
+                                component and its siblings or container edges.
+                                Keys are named spatial relationships to
+                                surrounding elements (e.g., 'button-to-button',
+                                'button-group-gap', 'stack-gap'). Values are
+                                token names or resolved values. External spacing
+                                is a recommendation — the parent layout
+                                ultimately controls the space between
+                                components.</ds-prop
+                            >
+                        </ds-prop-table>
+                    </ds-def-section>
+                    <ds-def-section
+                        name="sizingSpec"
+                        anchor="sizingspec"
+                        description="Dimension constraints defining the minimum and maximum bounds of the component and any aspect ratio requirements. All values are token names or resolved CSS values."
+                        type="object"
+                    >
+                        <ds-prop-table>
+                            <ds-prop name="minWidth" type="string"
+                                >Minimum width as a token name or resolved value
+                                (e.g., 'size-button-min-width',
+                                '64px').</ds-prop
+                            >
+                            <ds-prop name="maxWidth" type="string"
+                                >Maximum width as a token name or resolved value
+                                (e.g., 'size-dialog-max-width',
+                                '600px').</ds-prop
+                            >
+                            <ds-prop name="minHeight" type="string"
+                                >Minimum height as a token name or resolved
+                                value (e.g., 'size-button-min-height',
+                                '44px').</ds-prop
+                            >
+                            <ds-prop name="maxHeight" type="string"
+                                >Maximum height as a token name or resolved
+                                value.</ds-prop
+                            >
+                            <ds-prop name="aspectRatio" type="string"
+                                >Aspect ratio constraint as a ratio string
+                                (e.g., '16/9', '1/1', '4/3').</ds-prop
+                            >
+                        </ds-prop-table>
+                    </ds-def-section>
+                    <ds-def-section
+                        name="typographyEntrySpec"
+                        anchor="typographyentryspec"
+                        description="Typographic settings for a single text element within the component. Maps CSS typographic properties to token names or resolved values. When a composite typeToken is provided, the individual properties (fontSize, fontWeight, etc.) serve as documentation of what the token resolves to."
+                        type="object"
+                    >
+                        <ds-prop-table>
+                            <ds-prop name="fontFamily" type="string"
+                                >Font family token name or resolved value (e.g.,
+                                'font-family-body', 'Inter,
+                                sans-serif').</ds-prop
+                            >
+                            <ds-prop name="fontSize" type="string"
+                                >Font size token name or resolved value (e.g.,
+                                'font-size-body', '14px', '0.875rem').</ds-prop
+                            >
+                            <ds-prop name="fontWeight" type="string"
+                                >Font weight token name or resolved value (e.g.,
+                                'font-weight-regular', '400', 'bold').</ds-prop
+                            >
+                            <ds-prop name="lineHeight" type="string"
+                                >Line height token name or resolved value (e.g.,
+                                'line-height-body', '1.5', '20px').</ds-prop
+                            >
+                            <ds-prop name="letterSpacing" type="string"
+                                >Letter spacing token name or resolved value
+                                (e.g., 'letter-spacing-body',
+                                '0.01em').</ds-prop
+                            >
+                            <ds-prop name="textTransform" type="string"
+                                >Text transform value (e.g., 'uppercase',
+                                'capitalize', 'none').</ds-prop
+                            >
+                            <ds-prop name="typeToken" type="string"
+                                >A composite typography token that encapsulates
+                                multiple typographic properties (e.g.,
+                                '$body-compact-01', 'type-scale-body-sm'). When
+                                a type token is provided, individual properties
+                                (fontSize, fontWeight, etc.) serve as
+                                documentation of what the token resolves
+                                to.</ds-prop
+                            >
+                        </ds-prop-table>
+                    </ds-def-section>
+                    <ds-def-section
+                        name="typographySpec"
+                        anchor="typographyspec"
+                        description="Typographic specifications for text content within the component. Keys are named text elements that correspond to anatomy parts (e.g., 'label', 'helper-text', 'heading', 'body'). Values are typographyEntrySpec objects mapping CSS typographic properties to token names or resolved values."
+                        type="object"
+                    >
+                        <p>
+                            <strong>Open map:</strong> keys are strings, values
+                            are <ds-code inline>any</ds-code>
+                        </p>
+                        <ds-cross-refs
+                            ><strong>References:</strong>
+                            <ds-type-ref
+                                href="guidelines-design-specifications.html#typographyentryspec"
+                                >typographyEntrySpec</ds-type-ref
+                            >
+                        </ds-cross-refs>
+                    </ds-def-section>
+                    <ds-def-section
+                        name="responsiveEntry"
+                        anchor="responsiveentry"
+                        description="A responsive behavior specification describing how the component adapts at a specific breakpoint or viewport condition."
+                        type="object"
+                    >
+                        <ds-prop-table>
+                            <ds-prop name="breakpoint" type="string" required
+                                >The breakpoint name or value at which this
+                                behavior applies (e.g., 'small', 'medium',
+                                'large', '768px', 'min-width: 1024px').</ds-prop
+                            >
+                            <ds-prop
+                                name="description"
+                                type='&lt;ds-type-ref href="common-rich-text.html#richtext"&gt;richText&lt;/ds-type-ref&gt;'
+                                required
+                                >How the component's layout, sizing, or behavior
+                                changes at this breakpoint.</ds-prop
+                            >
+                        </ds-prop-table>
+                        <ds-cross-refs
+                            ><strong>References:</strong>
+                            <ds-type-ref href="common-rich-text.html#richtext"
+                                >richText</ds-type-ref
+                            >
+                        </ds-cross-refs>
+                        <ds-def-example>
+                            <ds-code language="json" label="example"
+                                >[ { &quot;breakpoint&quot;: &quot;768px&quot;,
+                                &quot;description&quot;: &quot;Below 768px,
+                                buttons in a button group stack vertically and
+                                expand to full width.&quot; }, {
+                                &quot;breakpoint&quot;: &quot;1024px&quot;,
+                                &quot;description&quot;: &quot;Above 1024px, the
+                                minimum button width increases from 44px to 64px
+                                to provide a more comfortable click target on
+                                desktop.&quot; } ]</ds-code
+                            >
+                        </ds-def-example>
+                    </ds-def-section>
+                    <ds-def-section
+                        name="designValue"
+                        anchor="designvalue"
+                        description="A string representing either a design token name (e.g., 'color-action-primary', 'space-4') or a raw CSS value (e.g., '#0055b3', '8px', '0.875rem'). Used as the value type within designProperties maps."
+                        type="string"
+                    >
+                    </ds-def-section>
+                    <ds-def-section
+                        name="designProperties"
+                        anchor="designproperties"
+                        description="An open map of CSS property names or semantic property names to designValue values. Keys are property names (e.g., 'background', 'border-color', 'padding-horizontal', 'icon-size') and values are token names or raw CSS values."
+                        type="object"
+                    >
+                        <p>
+                            <strong>Open map:</strong> keys are strings, values
+                            are
+                            <ds-type-ref
+                                href="guidelines-design-specifications.html#designvalue"
+                                >designValue</ds-type-ref
+                            >
+                        </p>
+                        <ds-cross-refs
+                            ><strong>References:</strong>
+                            <ds-type-ref
+                                href="guidelines-design-specifications.html#designvalue"
+                                >designValue</ds-type-ref
+                            >
+                        </ds-cross-refs>
+                    </ds-def-section>
+                    <ds-def-section
+                        name="specVariant"
+                        anchor="specvariant"
+                        description="Design specifications for a specific component variant. Documents how the visual properties differ from the base specification for a named variant (e.g., 'primary', 'secondary', 'ghost', 'danger')."
+                        type="object"
+                    >
+                        <ds-prop-table>
+                            <ds-prop name="name" type="string" required
+                                >The variant name (e.g., 'primary', 'secondary',
+                                'ghost', 'danger'). Matches values defined in
+                                the component's variants guideline.</ds-prop
+                            >
+                            <ds-prop
+                                name="description"
+                                type='&lt;ds-type-ref href="common-rich-text.html#richtext"&gt;richText&lt;/ds-type-ref&gt;'
+                                >Optional description explaining how the variant
+                                differs visually from the base
+                                specification.</ds-prop
+                            >
+                            <ds-prop
+                                name="properties"
+                                type='&lt;ds-type-ref href="guidelines-design-specifications.html#designproperties"&gt;designProperties&lt;/ds-type-ref&gt;'
+                                >Property values that differ from the base
+                                specification for this variant. Only properties
+                                that change need to be listed.</ds-prop
+                            >
+                            <ds-prop
+                                name="spacing"
+                                type='&lt;ds-type-ref href="guidelines-design-specifications.html#spacingspec"&gt;spacingSpec&lt;/ds-type-ref&gt;'
+                                >Spacing overrides for this variant. Only
+                                relationships that change need to be
+                                specified.</ds-prop
+                            >
+                            <ds-prop
+                                name="sizing"
+                                type='&lt;ds-type-ref href="guidelines-design-specifications.html#sizingspec"&gt;sizingSpec&lt;/ds-type-ref&gt;'
+                                >Sizing overrides for this variant. Only
+                                constraints that change need to be
+                                specified.</ds-prop
+                            >
+                            <ds-prop
+                                name="typography"
+                                type='&lt;ds-type-ref href="guidelines-design-specifications.html#typographyspec"&gt;typographySpec&lt;/ds-type-ref&gt;'
+                                >Typography overrides for this variant. Only
+                                text elements that change need to be
+                                specified.</ds-prop
+                            >
+                        </ds-prop-table>
+                        <ds-cross-refs
+                            ><strong>References:</strong>
+                            <ds-type-ref
+                                href="guidelines-design-specifications.html#designproperties"
+                                >designProperties</ds-type-ref
+                            >,
+                            <ds-type-ref
+                                href="guidelines-design-specifications.html#spacingspec"
+                                >spacingSpec</ds-type-ref
+                            >,
+                            <ds-type-ref
+                                href="guidelines-design-specifications.html#sizingspec"
+                                >sizingSpec</ds-type-ref
+                            >,
+                            <ds-type-ref
+                                href="guidelines-design-specifications.html#typographyspec"
+                                >typographySpec</ds-type-ref
+                            >,
+                            <ds-type-ref href="common-rich-text.html#richtext"
+                                >richText</ds-type-ref
+                            >
+                        </ds-cross-refs>
+                    </ds-def-section>
+                    <ds-def-section
+                        name="specSize"
+                        anchor="specsize"
+                        description="Design specifications for a specific component size. Documents how the visual properties differ from the base specification for a named size (e.g., 'small', 'medium', 'large')."
+                        type="object"
+                    >
+                        <ds-prop-table>
+                            <ds-prop name="name" type="string" required
+                                >The size name (e.g., 'small', 'medium',
+                                'large'). Matches values defined in the
+                                component's variants guideline.</ds-prop
+                            >
+                            <ds-prop
+                                name="description"
+                                type='&lt;ds-type-ref href="common-rich-text.html#richtext"&gt;richText&lt;/ds-type-ref&gt;'
+                                >Optional description explaining how the size
+                                differs visually from the base
+                                specification.</ds-prop
+                            >
+                            <ds-prop
+                                name="properties"
+                                type='&lt;ds-type-ref href="guidelines-design-specifications.html#designproperties"&gt;designProperties&lt;/ds-type-ref&gt;'
+                                >Property values that differ from the base
+                                specification for this size. Only properties
+                                that change need to be listed.</ds-prop
+                            >
+                            <ds-prop
+                                name="spacing"
+                                type='&lt;ds-type-ref href="guidelines-design-specifications.html#spacingspec"&gt;spacingSpec&lt;/ds-type-ref&gt;'
+                                >Spacing overrides for this size. Only
+                                relationships that change need to be
+                                specified.</ds-prop
+                            >
+                            <ds-prop
+                                name="sizing"
+                                type='&lt;ds-type-ref href="guidelines-design-specifications.html#sizingspec"&gt;sizingSpec&lt;/ds-type-ref&gt;'
+                                >Sizing overrides for this size. Only
+                                constraints that change need to be
+                                specified.</ds-prop
+                            >
+                            <ds-prop
+                                name="typography"
+                                type='&lt;ds-type-ref href="guidelines-design-specifications.html#typographyspec"&gt;typographySpec&lt;/ds-type-ref&gt;'
+                                >Typography overrides for this size. Only text
+                                elements that change need to be
+                                specified.</ds-prop
+                            >
+                        </ds-prop-table>
+                        <ds-cross-refs
+                            ><strong>References:</strong>
+                            <ds-type-ref
+                                href="guidelines-design-specifications.html#designproperties"
+                                >designProperties</ds-type-ref
+                            >,
+                            <ds-type-ref
+                                href="guidelines-design-specifications.html#spacingspec"
+                                >spacingSpec</ds-type-ref
+                            >,
+                            <ds-type-ref
+                                href="guidelines-design-specifications.html#sizingspec"
+                                >sizingSpec</ds-type-ref
+                            >,
+                            <ds-type-ref
+                                href="guidelines-design-specifications.html#typographyspec"
+                                >typographySpec</ds-type-ref
+                            >,
+                            <ds-type-ref href="common-rich-text.html#richtext"
+                                >richText</ds-type-ref
+                            >
+                        </ds-cross-refs>
+                    </ds-def-section>
+                    <ds-def-section
+                        name="specState"
+                        anchor="specstate"
+                        description="Design specifications for a specific interactive state. Documents how the visual properties differ from the base specification for a named state (e.g., 'hover', 'active', 'focus', 'disabled', 'loading')."
+                        type="object"
+                    >
+                        <ds-prop-table>
+                            <ds-prop name="name" type="string" required
+                                >The state name (e.g., 'hover', 'active',
+                                'focus', 'disabled', 'loading'). Matches values
+                                defined in the component's states
+                                guideline.</ds-prop
+                            >
+                            <ds-prop
+                                name="description"
+                                type='&lt;ds-type-ref href="common-rich-text.html#richtext"&gt;richText&lt;/ds-type-ref&gt;'
+                                >Optional description explaining how the state
+                                differs visually from the base
+                                specification.</ds-prop
+                            >
+                            <ds-prop
+                                name="properties"
+                                type='&lt;ds-type-ref href="guidelines-design-specifications.html#designproperties"&gt;designProperties&lt;/ds-type-ref&gt;'
+                                >Property values that differ from the base
+                                specification for this state. Only properties
+                                that change need to be listed.</ds-prop
+                            >
+                            <ds-prop
+                                name="spacing"
+                                type='&lt;ds-type-ref href="guidelines-design-specifications.html#spacingspec"&gt;spacingSpec&lt;/ds-type-ref&gt;'
+                                >Spacing overrides for this state. Only
+                                relationships that change need to be
+                                specified.</ds-prop
+                            >
+                            <ds-prop
+                                name="sizing"
+                                type='&lt;ds-type-ref href="guidelines-design-specifications.html#sizingspec"&gt;sizingSpec&lt;/ds-type-ref&gt;'
+                                >Sizing overrides for this state. Only
+                                constraints that change need to be
+                                specified.</ds-prop
+                            >
+                            <ds-prop
+                                name="typography"
+                                type='&lt;ds-type-ref href="guidelines-design-specifications.html#typographyspec"&gt;typographySpec&lt;/ds-type-ref&gt;'
+                                >Typography overrides for this state. Only text
+                                elements that change need to be
+                                specified.</ds-prop
+                            >
+                        </ds-prop-table>
+                        <ds-cross-refs
+                            ><strong>References:</strong>
+                            <ds-type-ref
+                                href="guidelines-design-specifications.html#designproperties"
+                                >designProperties</ds-type-ref
+                            >,
+                            <ds-type-ref
+                                href="guidelines-design-specifications.html#spacingspec"
+                                >spacingSpec</ds-type-ref
+                            >,
+                            <ds-type-ref
+                                href="guidelines-design-specifications.html#sizingspec"
+                                >sizingSpec</ds-type-ref
+                            >,
+                            <ds-type-ref
+                                href="guidelines-design-specifications.html#typographyspec"
+                                >typographySpec</ds-type-ref
+                            >,
+                            <ds-type-ref href="common-rich-text.html#richtext"
+                                >richText</ds-type-ref
+                            >
+                        </ds-cross-refs>
+                    </ds-def-section>
+                    <ds-def-section
+                        name="specVariantState"
+                        anchor="specvariantstate"
+                        description="Design specifications for a specific combination of variant and interactive state. Documents how the visual properties differ from both the base specification and the individual variant/state specifications when a particular variant is in a particular state (e.g., 'primary' variant in 'hover' state)."
+                        type="object"
+                    >
+                        <ds-prop-table>
+                            <ds-prop name="variant" type="string" required
+                                >The variant name (e.g., 'primary', 'secondary',
+                                'ghost'). Must match a name defined in the
+                                variants array.</ds-prop
+                            >
+                            <ds-prop name="state" type="string" required
+                                >The state name (e.g., 'hover', 'active',
+                                'focus', 'disabled'). Must match a name defined
+                                in the states array.</ds-prop
+                            >
+                            <ds-prop
+                                name="description"
+                                type='&lt;ds-type-ref href="common-rich-text.html#richtext"&gt;richText&lt;/ds-type-ref&gt;'
+                                >Optional description explaining how this
+                                variant+state combination differs
+                                visually.</ds-prop
+                            >
+                            <ds-prop
+                                name="properties"
+                                type='&lt;ds-type-ref href="guidelines-design-specifications.html#designproperties"&gt;designProperties&lt;/ds-type-ref&gt;'
+                                >Property values that differ from the base,
+                                variant, and state specifications for this
+                                combination. Only properties that change need to
+                                be listed.</ds-prop
+                            >
+                        </ds-prop-table>
+                        <ds-cross-refs
+                            ><strong>References:</strong>
+                            <ds-type-ref
+                                href="guidelines-design-specifications.html#designproperties"
+                                >designProperties</ds-type-ref
+                            >,
+                            <ds-type-ref href="common-rich-text.html#richtext"
+                                >richText</ds-type-ref
+                            >
+                        </ds-cross-refs>
+                    </ds-def-section>
+                    <ds-def-section
+                        name="designSpecifications"
+                        anchor="designspecifications"
+                        description="Documents the measurable visual specifications of a component — every design property, spacing relationship, dimension constraint, typographic setting, and responsive adaptation. The base-level properties define the default specification (typically the primary variant at medium size in the default state). The variants, sizes, states, and variantStates arrays document how specifications change for specific conditions."
+                        type="object"
+                    >
+                        <ds-prop-table>
+                            <ds-prop
+                                name="kind"
+                                type='&lt;ds-code inline&gt;"design-specifications"&lt;/ds-code&gt;'
+                                required
+                                >Identifies this guideline as a design
+                                specifications document.</ds-prop
+                            >
+                            <ds-prop
+                                name="properties"
+                                type='&lt;ds-type-ref href="guidelines-design-specifications.html#designproperties"&gt;designProperties&lt;/ds-type-ref&gt;'
+                                conditional
+                                >Base design properties for the default
+                                configuration. Maps property names to token
+                                names or raw CSS values. Use the variants,
+                                sizes, and states arrays to document how
+                                property values change per condition.</ds-prop
+                            >
+                            <ds-prop
+                                name="spacing"
+                                type='&lt;ds-type-ref href="guidelines-design-specifications.html#spacingspec"&gt;spacingSpec&lt;/ds-type-ref&gt;'
+                                conditional
+                                >Base spacing specification for the default
+                                configuration. Override per variant, size, or
+                                state using their respective arrays.</ds-prop
+                            >
+                            <ds-prop
+                                name="sizing"
+                                type='&lt;ds-type-ref href="guidelines-design-specifications.html#sizingspec"&gt;sizingSpec&lt;/ds-type-ref&gt;'
+                                conditional
+                                >Base sizing specification for the default
+                                configuration. Override per size using the sizes
+                                array.</ds-prop
+                            >
+                            <ds-prop
+                                name="typography"
+                                type='&lt;ds-type-ref href="guidelines-design-specifications.html#typographyspec"&gt;typographySpec&lt;/ds-type-ref&gt;'
+                                conditional
+                                >Base typography specification for the default
+                                configuration. Override per size using the sizes
+                                array.</ds-prop
+                            >
+                            <ds-prop
+                                name="responsive"
+                                type='&lt;ds-type-ref href="guidelines-design-specifications.html#responsiveentry"&gt;responsiveEntry&lt;/ds-type-ref&gt;[]'
+                                conditional
+                                >Responsive behavior documentation describing
+                                how the component adapts across breakpoints.
+                                Entries are ordered from smallest to largest
+                                breakpoint.</ds-prop
+                            >
+                            <ds-prop
+                                name="variants"
+                                type='&lt;ds-type-ref href="guidelines-design-specifications.html#specvariant"&gt;specVariant&lt;/ds-type-ref&gt;[]'
+                                conditional
+                                >Variant-specific specifications documenting how
+                                design properties change for each variant (e.g.,
+                                'primary', 'secondary'). Each entry lists only
+                                the values that differ from the base
+                                specification.</ds-prop
+                            >
+                            <ds-prop
+                                name="sizes"
+                                type='&lt;ds-type-ref href="guidelines-design-specifications.html#specsize"&gt;specSize&lt;/ds-type-ref&gt;[]'
+                                conditional
+                                >Size-specific specifications documenting how
+                                design properties change for each size (e.g.,
+                                'small', 'large'). Each entry lists only the
+                                values that differ from the base
+                                specification.</ds-prop
+                            >
+                            <ds-prop
+                                name="states"
+                                type='&lt;ds-type-ref href="guidelines-design-specifications.html#specstate"&gt;specState&lt;/ds-type-ref&gt;[]'
+                                conditional
+                                >State-specific specifications documenting how
+                                design properties change for each interactive
+                                state (e.g., 'hover', 'focus', 'disabled'). Each
+                                entry lists only the values that differ from the
+                                base specification.</ds-prop
+                            >
+                            <ds-prop
+                                name="variantStates"
+                                type='&lt;ds-type-ref href="guidelines-design-specifications.html#specvariantstate"&gt;specVariantState&lt;/ds-type-ref&gt;[]'
+                                conditional
+                                >Variant+state combination specifications
+                                documenting how design properties change when a
+                                specific variant is in a specific state (e.g.,
+                                'primary' + 'hover'). Each entry lists only the
+                                values that differ from the base, variant, and
+                                state specifications.</ds-prop
+                            >
+                        </ds-prop-table>
+                        <ds-note variant="warning"
+                            ><strong>Constraint:</strong> At least one of
+                            <ds-code inline>properties</ds-code>,
+                            <ds-code inline>spacing</ds-code>,
+                            <ds-code inline>sizing</ds-code>,
+                            <ds-code inline>typography</ds-code>,
+                            <ds-code inline>responsive</ds-code>,
+                            <ds-code inline>variants</ds-code>,
+                            <ds-code inline>sizes</ds-code>,
+                            <ds-code inline>states</ds-code>,
+                            <ds-code inline>variantStates</ds-code> must be
+                            present.</ds-note
+                        >
+                        <ds-cross-refs
+                            ><strong>References:</strong>
+                            <ds-type-ref
+                                href="guidelines-design-specifications.html#designproperties"
+                                >designProperties</ds-type-ref
+                            >,
+                            <ds-type-ref
+                                href="guidelines-design-specifications.html#spacingspec"
+                                >spacingSpec</ds-type-ref
+                            >,
+                            <ds-type-ref
+                                href="guidelines-design-specifications.html#sizingspec"
+                                >sizingSpec</ds-type-ref
+                            >,
+                            <ds-type-ref
+                                href="guidelines-design-specifications.html#typographyspec"
+                                >typographySpec</ds-type-ref
+                            >,
+                            <ds-type-ref
+                                href="guidelines-design-specifications.html#responsiveentry"
+                                >responsiveEntry</ds-type-ref
+                            >,
+                            <ds-type-ref
+                                href="guidelines-design-specifications.html#specvariant"
+                                >specVariant</ds-type-ref
+                            >,
+                            <ds-type-ref
+                                href="guidelines-design-specifications.html#specsize"
+                                >specSize</ds-type-ref
+                            >,
+                            <ds-type-ref
+                                href="guidelines-design-specifications.html#specstate"
+                                >specState</ds-type-ref
+                            >,
+                            <ds-type-ref
+                                href="guidelines-design-specifications.html#specvariantstate"
+                                >specVariantState</ds-type-ref
+                            >
+                        </ds-cross-refs>
+                        <ds-def-example>
+                            <ds-code
+                                language="json"
+                                label="example — base specification with variants, sizes, states, and variantStates"
+                                >{ &quot;kind&quot;:
+                                &quot;design-specifications&quot;,
+                                &quot;properties&quot;: {
+                                &quot;background&quot;:
+                                &quot;color-surface-default&quot;,
+                                &quot;text-color&quot;:
+                                &quot;color-text-default&quot;,
+                                &quot;border-color&quot;:
+                                &quot;color-border-default&quot;,
+                                &quot;border-width&quot;: &quot;1px&quot;,
+                                &quot;border-radius&quot;:
+                                &quot;radius-medium&quot;,
+                                &quot;padding-horizontal&quot;:
+                                &quot;space-4&quot;,
+                                &quot;padding-vertical&quot;:
+                                &quot;space-2&quot;, &quot;font-size&quot;:
+                                &quot;14px&quot;, &quot;font-weight&quot;:
+                                &quot;500&quot;, &quot;line-height&quot;:
+                                &quot;20px&quot;, &quot;icon-size&quot;:
+                                &quot;16px&quot;, &quot;icon-color&quot;:
+                                &quot;color-icon-default&quot;,
+                                &quot;icon-gap&quot;: &quot;space-2&quot;,
+                                &quot;focus-ring-color&quot;:
+                                &quot;color-focus-ring&quot;,
+                                &quot;focus-ring-width&quot;: &quot;2px&quot;,
+                                &quot;focus-ring-offset&quot;: &quot;2px&quot;,
+                                &quot;min-height&quot;: &quot;40px&quot;,
+                                &quot;opacity&quot;: &quot;1&quot; },
+                                &quot;spacing&quot;: { &quot;internal&quot;: {
+                                &quot;container-horizontal&quot;:
+                                &quot;space-4&quot;,
+                                &quot;container-vertical&quot;:
+                                &quot;space-2&quot;, &quot;icon-to-label&quot;:
+                                &quot;space-2&quot; }, &quot;external&quot;: {
+                                &quot;button-to-button&quot;:
+                                &quot;space-2&quot;,
+                                &quot;button-group-gap&quot;:
+                                &quot;space-3&quot; } }, &quot;sizing&quot;: {
+                                &quot;minWidth&quot;: &quot;64px&quot;,
+                                &quot;minHeight&quot;: &quot;40px&quot; },
+                                &quot;typography&quot;: { &quot;label&quot;: {
+                                &quot;fontSize&quot;: &quot;14px&quot;,
+                                &quot;fontWeight&quot;: &quot;500&quot;,
+                                &quot;lineHeight&quot;: &quot;20px&quot;,
+                                &quot;typeToken&quot;:
+                                &quot;$body-compact-01&quot; } },
+                                &quot;responsive&quot;: [ {
+                                &quot;breakpoint&quot;: &quot;320px&quot;,
+                                &quot;description&quot;: &quot;Below 320px,
+                                buttons expand to full width.&quot; }, {
+                                &quot;breakpoint&quot;: &quot;768px&quot;,
+                                &quot;description&quot;: &quot;Below 768px,
+                                button groups stack vertically.&quot; } ],
+                                &quot;variants&quot;: [ { &quot;name&quot;:
+                                &quot;primary&quot;, &quot;description&quot;:
+                                &quot;Solid background with light text.&quot;,
+                                &quot;properties&quot;: {
+                                &quot;background&quot;:
+                                &quot;color-action-primary&quot;,
+                                &quot;text-color&quot;:
+                                &quot;color-text-on-action&quot;,
+                                &quot;border-width&quot;: &quot;0px&quot; } }, {
+                                &quot;name&quot;: &quot;secondary&quot;,
+                                &quot;properties&quot;: {
+                                &quot;background&quot;: &quot;transparent&quot;,
+                                &quot;text-color&quot;:
+                                &quot;color-action-primary&quot;,
+                                &quot;border-color&quot;:
+                                &quot;color-action-primary&quot;,
+                                &quot;border-width&quot;: &quot;1px&quot; } } ],
+                                &quot;sizes&quot;: [ { &quot;name&quot;:
+                                &quot;small&quot;, &quot;description&quot;:
+                                &quot;Compact — 32px height.&quot;,
+                                &quot;properties&quot;: {
+                                &quot;min-height&quot;: &quot;32px&quot;,
+                                &quot;font-size&quot;: &quot;12px&quot; },
+                                &quot;spacing&quot;: { &quot;internal&quot;: {
+                                &quot;container-horizontal&quot;:
+                                &quot;space-3&quot;,
+                                &quot;container-vertical&quot;:
+                                &quot;space-1&quot; } }, &quot;sizing&quot;: {
+                                &quot;minHeight&quot;: &quot;32px&quot; } }, {
+                                &quot;name&quot;: &quot;large&quot;,
+                                &quot;description&quot;: &quot;Touch-optimized —
+                                48px height.&quot;, &quot;properties&quot;: {
+                                &quot;min-height&quot;: &quot;48px&quot;,
+                                &quot;font-size&quot;: &quot;16px&quot; },
+                                &quot;sizing&quot;: { &quot;minHeight&quot;:
+                                &quot;48px&quot; }, &quot;typography&quot;: {
+                                &quot;label&quot;: { &quot;fontSize&quot;:
+                                &quot;16px&quot;, &quot;lineHeight&quot;:
+                                &quot;24px&quot; } } } ], &quot;states&quot;: [
+                                { &quot;name&quot;: &quot;focus&quot;,
+                                &quot;description&quot;: &quot;2px ring, 2px
+                                offset. All variants.&quot;,
+                                &quot;properties&quot;: {
+                                &quot;focus-ring-color&quot;:
+                                &quot;color-focus-ring&quot;,
+                                &quot;focus-ring-width&quot;: &quot;2px&quot;,
+                                &quot;focus-ring-offset&quot;: &quot;2px&quot; }
+                                }, { &quot;name&quot;: &quot;disabled&quot;,
+                                &quot;description&quot;: &quot;Opacity 0.4,
+                                pointer-events none.&quot;,
+                                &quot;properties&quot;: { &quot;opacity&quot;:
+                                &quot;0.4&quot; } } ],
+                                &quot;variantStates&quot;: [ {
+                                &quot;variant&quot;: &quot;primary&quot;,
+                                &quot;state&quot;: &quot;hover&quot;,
+                                &quot;properties&quot;: {
+                                &quot;background&quot;:
+                                &quot;color-action-primary-hover&quot; } } ]
+                                }</ds-code
+                            >
+                        </ds-def-example>
+                    </ds-def-section>
 
-        <a href="#" class="back-to-top">↑ Back to top</a>
+                    <ds-back-to-top></ds-back-to-top>
 
-        <div class="footer">
-          <p>Design System Documentation Standard (DSDS) 0.1 — Draft Specification</p>
-          <p><a href="https://github.com/somerandomdude/design-system-documentation-schema">GitHub</a></p>
+                    <ds-footer>
+                        <p>
+                            Design System Documentation Standard (DSDS) 0.1 —
+                            Draft Specification
+                        </p>
+                        <p>
+                            <a
+                                href="https://github.com/somerandomdude/design-system-documentation-schema"
+                                >GitHub</a
+                            >
+                        </p>
+                    </ds-footer>
+                </div>
+            </main>
+            <ds-toc target=".content__inner" selector="h2[id], h3[id]"></ds-toc>
         </div>
-      </div>
-    </main>
-    <nav class="toc" aria-label="On this page">
-<p class="toc__title">On this page</p>
-<ul class="toc__list">
-<li><a class="toc__link toc__link--sub" href="#spacingspec">spacingSpec</a></li>
-<li><a class="toc__link toc__link--sub" href="#sizingspec">sizingSpec</a></li>
-<li><a class="toc__link toc__link--sub" href="#typographyentryspec">typographyEntrySpec</a></li>
-<li><a class="toc__link toc__link--sub" href="#typographyspec">typographySpec</a></li>
-<li><a class="toc__link toc__link--sub" href="#responsiveentry">responsiveEntry</a></li>
-<li><a class="toc__link toc__link--sub" href="#designspecifications">designSpecifications</a></li>
-</ul>
-</nav>
-  </div>
-</body>
+    </body>
 </html>

@@ -82,6 +82,8 @@ A DSDS file is a JSON object with a `dsdsVersion` string and a `documentation` a
 | `$schema` | `string` | No | URI reference to the DSDS JSON Schema for validation. |
 | `dsdsVersion` | `string` | Yes | The version of this specification the document conforms to. _MUST_ be `"0.1"` for this version. |
 | `metadata` | `object` | No | System-level metadata about the design system. See [Metadata](#metadata). |
+| `purpose` | `object` | No | System-level purpose describing what the design system is for and when to adopt it. See [Root Purpose](#root-purpose). |
+| `bestPractices` | `array` | No | System-level best practices that apply across the entire design system. See [Root Best Practices](#root-best-practices). |
 | `documentation` | `array` | Yes | One or more documentation groups. See [Documentation Groups](#documentation-groups). |
 | `$extensions` | `object` | No | Vendor-specific extensions. See [Extensions](#extensions). |
 
@@ -134,6 +136,92 @@ This discriminated union model means a documentation group can contain any mix o
 | `organization` | `string` | No | The organization that maintains the system. |
 | `url` | `string` | No | URL to the system's documentation site. |
 | `license` | `string` | No | SPDX license identifier or license URL. |
+
+### Root Purpose
+
+The optional `purpose` property on the root document describes what the design system is for, who it serves, and when teams should or should not adopt it. This is a **system-level** property — it applies to the design system as a whole, not to individual entities.
+
+| Property | Type | Required | Description |
+|---|---|---|---|
+| `description` | `richText` | No | A high-level description of the design system's purpose and goals. |
+| `useCases` | `array` | No | An array of use-case entries describing positive and negative adoption scenarios. |
+
+Each use-case entry has the following shape:
+
+| Property | Type | Required | Description |
+|---|---|---|---|
+| `description` | `richText` | Yes | The scenario being described. |
+| `kind` | `string` | Yes | `"positive"` (when the system is the right choice) or `"negative"` (when it is not). |
+| `alternative` | `object` | No | For negative entries, a recommended alternative with `name` and `rationale`. |
+
+```json
+{
+  "purpose": {
+    "description": "Acme DS provides a unified component library for all customer-facing web products.",
+    "useCases": [
+      {
+        "description": "Building a new customer-facing web application on the Acme platform.",
+        "kind": "positive"
+      },
+      {
+        "description": "Building internal tooling with specialized data-heavy dashboards.",
+        "kind": "negative",
+        "alternative": {
+          "name": "Acme Admin Kit",
+          "rationale": "Admin Kit is optimized for data-dense internal interfaces."
+        }
+      }
+    ]
+  }
+}
+```
+
+### Root Best Practices
+
+The optional `bestPractices` property on the root document defines cross-cutting rules that apply to the entire design system — not to any single entity. These are system-wide conventions like "always use semantic tokens" or "test all components at 200% zoom."
+
+Each entry in the `bestPractices` array has the following shape:
+
+| Property | Type | Required | Description |
+|---|---|---|---|
+| `guidance` | `richText` | Yes | The actionable guidance statement. MUST be concrete and unambiguous. |
+| `rationale` | `richText` | Yes | Why this guidance exists. MUST NOT be a restatement of the guidance. |
+| `kind` | `string` | No | Enforcement level: `"required"`, `"encouraged"`, `"informational"`, `"discouraged"`, `"prohibited"`. Uses the same RFC 2119 alignment as entity-level best practice entries. |
+| `category` | `string` | No | Discipline grouping (e.g., `"visual-design"`, `"accessibility"`, `"development"`). |
+| `criteria` | `array` | No | URLs to external standards. Each entry has `url` and `label`. |
+
+```json
+{
+  "bestPractices": [
+    {
+      "guidance": "Always use semantic tokens instead of raw color values.",
+      "rationale": "Semantic tokens ensure consistent theming and make future design changes non-breaking.",
+      "kind": "required",
+      "category": "development"
+    },
+    {
+      "guidance": "Test all components at 200% browser zoom.",
+      "rationale": "WCAG 1.4.4 requires content to remain functional at 200% zoom.",
+      "kind": "required",
+      "category": "accessibility",
+      "criteria": [
+        {
+          "url": "https://www.w3.org/TR/WCAG22/#resize-text",
+          "label": "WCAG 1.4.4 Resize Text"
+        }
+      ]
+    },
+    {
+      "guidance": "Do not override token values at the component level.",
+      "rationale": "Component-level overrides break theme consistency and make system-wide updates unreliable.",
+      "kind": "prohibited",
+      "category": "development"
+    }
+  ]
+}
+```
+
+> **System-level vs. entity-level:** The root `purpose` and `bestPractices` properties describe the design system _as a whole_. They are distinct from the entity-level `purpose` and `best-practices` guideline types that live inside each entity's `guidelines` array. Entity-level guidelines describe when and how to use a specific component, token, or pattern; system-level properties describe when and how to use the design system itself. Both levels follow the same structural conventions but serve different audiences and scopes.
 
 ---
 
@@ -526,11 +614,27 @@ Documents measurable visual specifications — token inventory, spacing relation
 
 | Section | Type | Description |
 |---|---|---|
-| `tokens` | `string[]` | Flat inventory of all token names consumed by the component. |
+| `properties` | `Record<string, string>` | Open map of design property names to values. Values are token names (e.g., `"button-background"`) or raw CSS values (e.g., `"#0055b3"`, `"16px"`). |
 | `spacing` | `spacingSpec` | Internal padding/gaps and external recommended margins. Keys are named relationships (e.g., `"container-horizontal"`, `"icon-to-label"`), values are token names or resolved values. |
 | `sizing` | `sizingSpec` | Dimension constraints: `minWidth`, `maxWidth`, `minHeight`, `maxHeight`, `aspectRatio`. |
 | `typography` | `typographySpec` | Per-element typographic settings. Keys are anatomy part names, values are objects with `fontFamily`, `fontSize`, `fontWeight`, `lineHeight`, `letterSpacing`, `textTransform`, `typeToken`. |
 | `responsive` | `responsiveEntry[]` | Breakpoint-specific behavior. Each entry has `breakpoint` and `description`. |
+| `variants` | `specVariant[]` | Design properties grouped by variant. Each entry has `name`, `properties`, and optional `spacing`, `sizing`, `typography`. |
+| `sizes` | `specSize[]` | Design properties grouped by size. Each entry has `name`, `properties`, and optional `spacing`, `sizing`, `typography`. |
+| `states` | `specState[]` | Design properties grouped by interactive state. Each entry has `name`, `properties`, and optional `spacing`, `sizing`, `typography`. |
+| `variantStates` | `specVariantState[]` | Design properties for variant×state combinations. Each entry has `variant`, `state`, and `properties`. |
+
+#### Variants, Sizes, and States
+
+The base-level `properties` map defines the default specification — typically the primary variant at medium size in the default state. Values are always strings: either design token names (e.g., `"button-background"`, `"space-4"`) or raw CSS values (e.g., `"#0055b3"`, `"16px"`, `"transparent"`). Systems that do not use tokens simply provide raw values directly.
+
+The `variants` array groups design properties by variant — each entry has a `name` and its own `properties` map, plus optional `spacing`, `sizing`, and `typography` sections. The `sizes` array groups properties by size, including size-specific spacing, sizing, and typography. The `states` array groups properties by interactive state (e.g., hover, focus, disabled).
+
+The `variantStates` array handles variant×state combinations where the state's visual treatment differs across variants. Each entry specifies both a `variant` and a `state` along with the `properties` map for that combination.
+
+Each entry is self-contained — it represents the complete set of values for that condition, not an override of the base properties. For example, a `"danger"` variant entry carries its own token names (like `"button-danger-bg"`) or raw values, independent of the base `properties`.
+
+Note: the `tokens` field on state entries (in the states guideline) serves as a descriptive summary for designers — identifying *which* tokens change in a given state. The authoritative resolved values for each variant × state combination live in the `design-specifications` guideline's `variants`, `states`, and `variantStates` arrays.
 
 ---
 
