@@ -17,6 +17,7 @@ const SCHEMA_DIR = path.join(ROOT, "spec", "schema");
 
 // Subdirectories of spec/schema/ that become nav groups.
 const DIR_GROUPS = [
+  { dir: "documentation", label: "Documentation" },
   { dir: "common", label: "Common" },
   { dir: "entities", label: "Entities" },
   { dir: "guidelines", label: "Guidelines" },
@@ -25,9 +26,13 @@ const DIR_GROUPS = [
 // Top-level (non-schema-driven) links that always appear first.
 const TOP_LINKS = [
   { label: "Overview", href: "index.html", slug: "index" },
-  { label: "Quick Start", href: "quickstart.html", slug: "quickstart" },
-  { label: "Interactive Samples", href: "samples.html", slug: "samples" },
-  { label: "Root Schema", href: "root.html", slug: "root" },
+  { label: "Quick start", href: "quickstart.html", slug: "quickstart" },
+  {
+    label: "Schema architecture",
+    href: "schema-architecture.html",
+    slug: "schema-architecture",
+  },
+  { label: "Interactive samples", href: "samples.html", slug: "samples" },
 ];
 
 function esc(text) {
@@ -46,7 +51,22 @@ function esc(text) {
 function discoverNavPages() {
   const pages = [];
 
+  // Root schema goes into the "documentation" group
+  const rootPath = path.join(SCHEMA_DIR, "dsds.schema.json");
+  if (fs.existsSync(rootPath)) {
+    pages.push({
+      slug: "root",
+      group: "documentation",
+      groupLabel: "Documentation",
+      filename: "dsds.schema.json",
+      navLabel: "Root schema",
+    });
+  }
+
   for (const group of DIR_GROUPS) {
+    // "documentation" group is populated above, not from a directory
+    if (group.dir === "documentation") continue;
+
     const dirPath = path.join(SCHEMA_DIR, group.dir);
     if (!fs.existsSync(dirPath)) continue;
 
@@ -100,7 +120,7 @@ function buildNavChildren(activeSlug, pages) {
   for (const [, group] of groups) {
     lines.push(`    <ds-nav-group label="${esc(group.label)}">`);
     for (const page of group.pages) {
-      const label = page.filename.replace(".schema.json", "");
+      const label = page.navLabel || page.filename.replace(".schema.json", "");
       lines.push(
         `      <a href="${esc(page.slug)}.html" slug="${esc(page.slug)}">${esc(label)}</a>`,
       );

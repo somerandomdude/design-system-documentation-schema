@@ -100,9 +100,10 @@ function discoverPages() {
     pages.unshift({
       slug: "root",
       title: rootData.title || "Root Schema",
-      group: null,
-      groupLabel: null,
+      group: "documentation",
+      groupLabel: "Documentation",
       filename: "dsds.schema.json",
+      navLabel: "Root schema",
       filePath: rootPath,
       data: rootData,
       examples: null,
