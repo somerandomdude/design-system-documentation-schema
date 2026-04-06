@@ -47,20 +47,11 @@ const CODE_CSS = `
   .wrapper--dark .hl-n { color: var(--ds-syntax-dark-number); }
   .wrapper--dark .hl-b { color: var(--ds-syntax-dark-bool); }
 
-  .label {
+  ds-badge[part="label"] {
     position: absolute;
     top: var(--ds-space-2);
     right: var(--ds-space-3);
-    font-family: ${FONT.mono};
-    font-size: 0.65rem;
-    font-weight: var(--ds-font-weight-bold);
-    text-transform: uppercase;
-    letter-spacing: var(--ds-tracking-wider);
-    padding: 2px var(--ds-space-2);
-    border-radius: var(--ds-radius-md);
   }
-  .wrapper--light .label { color: var(--ds-color-text-muted); background: var(--ds-color-bg-muted); }
-  .wrapper--dark .label  { color: var(--ds-syntax-dark-label); background: rgba(255,255,255, var(--ds-opacity-overlay)); }
 
   pre {
     margin: 0;
@@ -150,7 +141,9 @@ export class DsCode extends HTMLElement {
       );
     }
 
-    const labelHtml = label ? `<span class="label">${esc(label)}</span>` : "";
+    const labelHtml = label
+      ? `<ds-badge size="sm" part="label">${esc(label)}</ds-badge>`
+      : "";
 
     this._shadow.innerHTML = `
       <div class="wrapper wrapper--${esc(theme)}" part="wrapper">

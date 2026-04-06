@@ -1,11 +1,13 @@
-import { createShadow, esc, BASE_RESET, FONT } from './_shared.js';
+import { createShadow, esc, BASE_RESET, FONT } from "./_shared.js";
 
 const PROP_TABLE_CSS = `
   ${BASE_RESET}
-  :host { display: block; }
+  :host { display: block; margin: var(--ds-space-4) 0; max-width: 100%; overflow: hidden; }
 
   table {
     width: 100%;
+    max-width: 100%;
+    table-layout: fixed;
     border-collapse: collapse;
     margin-bottom: var(--ds-space-6);
     font-family: ${FONT.body};
@@ -16,12 +18,12 @@ const PROP_TABLE_CSS = `
     text-align: left;
     font-weight: 600;
     font-size: var(--ds-font-size-sm);
-    text-transform: uppercase;
+    text-transform: none;
     letter-spacing: var(--ds-tracking-wide);
     color: var(--ds-color-text-secondary);
     padding: var(--ds-space-2) var(--ds-space-4);
     border-bottom: 2px solid var(--ds-color-border);
-    background: var(--ds-color-bg-subtle);
+    background: transparent;
     white-space: nowrap;
   }
 
@@ -35,6 +37,12 @@ const PROP_TABLE_CSS = `
   tr:last-child td {
     border-bottom: none;
   }
+
+  /* Column sizing: cols 1-3 fixed narrow, col 4 (Description) gets remaining space */
+  th:nth-child(1), td:nth-child(1) { width: 120px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  th:nth-child(2), td:nth-child(2) { width: 140px; overflow: hidden; text-overflow: ellipsis; }
+  th:nth-child(3), td:nth-child(3) { width: 70px; white-space: nowrap; }
+  th:nth-child(4), td:nth-child(4) { width: auto; overflow-wrap: break-word; word-break: break-word; }
 
   /* Column 1: Property name — monospace, bold */
   td:nth-child(1) code {
@@ -56,15 +64,13 @@ const PROP_TABLE_CSS = `
 
   /* Column 3: Required — narrow */
   td:nth-child(3) {
-    white-space: nowrap;
     font-size: var(--ds-font-size-sm);
   }
 
-  /* Column 4: Description — max width, secondary color */
+  /* Column 4: Description — gets all remaining space */
   td:nth-child(4) {
     font-size: var(--ds-font-size-base);
     color: var(--ds-color-text-secondary);
-    max-width: 420px;
   }
 
   td:nth-child(4) small {

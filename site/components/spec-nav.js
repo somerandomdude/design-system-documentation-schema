@@ -63,8 +63,8 @@ const SPEC_NAV_CSS = `
   .nav__title {
     font-size: var(--ds-font-size-base, 0.8125rem);
     font-weight: var(--ds-font-weight-bold, 700);
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
+    letter-spacing: 0;
+    text-transform: none;
     color: var(--ds-color-text-on-dark-heading, #ffffff);
     padding: 0 var(--ds-space-4, 16px);
     margin-bottom: var(--ds-space-6, 24px);
@@ -107,7 +107,7 @@ const SPEC_NAV_CSS = `
 
   /* ── Group toggle ───────────────────────────────────── */
   .nav__group {
-    margin-top: var(--ds-space-1, 4px);
+    margin-top: var(--ds-space-4, 16px);
   }
 
   .nav__group-toggle {
@@ -123,43 +123,25 @@ const SPEC_NAV_CSS = `
     font-family: ${FONT.body};
     font-size: var(--ds-font-size-xs, 0.6875rem);
     font-weight: var(--ds-font-weight-semibold, 600);
-    letter-spacing: var(--ds-tracking-widest, 0.08em);
-    text-transform: uppercase;
-    cursor: pointer;
+    letter-spacing: 0;
+    text-transform: none;
+    cursor: default;
     text-align: left;
     transition: color var(--ds-transition-fast, 0.1s ease);
   }
 
-  .nav__group-toggle:hover {
-    color: var(--ds-color-text-on-dark, #c9cdd3);
-  }
-
-  .nav__group--open > .nav__group-toggle {
-    color: var(--ds-color-text-on-dark, #c9cdd3);
-  }
-
   .nav__group-arrow {
-    font-size: var(--ds-font-size-sm, 0.75rem);
-    transition: transform var(--ds-transition-normal, 0.15s ease);
-    line-height: 1;
-  }
-
-  .nav__group--open > .nav__group-toggle .nav__group-arrow {
-    transform: rotate(90deg);
-  }
-
-  /* ── Group children — collapsed by default ──────────── */
-  .nav__group-children {
     display: none;
+  }
+
+  /* ── Group children — always visible ────────────────── */
+  .nav__group-children {
+    display: block;
     padding-bottom: var(--ds-space-1, 4px);
   }
 
-  .nav__group--open > .nav__group-children {
-    display: block;
-  }
-
   .nav__link--child {
-    padding-left: calc(var(--ds-space-4, 16px) + 10px);
+    padding-left: var(--ds-space-4, 16px);
     font-size: var(--ds-font-size-base, 0.8125rem);
   }
 
@@ -242,18 +224,6 @@ export class DsSpecNav extends HTMLElement {
       itemsHtml +
       "</div>" +
       "</nav>";
-
-    // Attach group toggle listeners
-    this._shadow.querySelectorAll(".nav__group-toggle").forEach(function (btn) {
-      btn.addEventListener("click", function () {
-        const group = btn.closest(".nav__group");
-        if (group) {
-          group.classList.toggle("nav__group--open");
-          const expanded = group.classList.contains("nav__group--open");
-          btn.setAttribute("aria-expanded", String(expanded));
-        }
-      });
-    });
   }
 
   /**
@@ -300,16 +270,13 @@ export class DsSpecNav extends HTMLElement {
   _buildGroup(groupEl, active) {
     const label = groupEl.getAttribute("label") || "";
     const childLinks = groupEl.querySelectorAll(":scope > a");
-    let hasActive = false;
 
     const childHtml = Array.from(childLinks)
       .map(function (a) {
         const slug = a.getAttribute("slug") || "";
         const href = a.getAttribute("href") || "#";
         const text = a.textContent.trim();
-        const isActive = slug && slug === active;
-        if (isActive) hasActive = true;
-        const activeCls = isActive ? " nav__link--active" : "";
+        const activeCls = slug && slug === active ? " nav__link--active" : "";
         return (
           '<a class="nav__link nav__link--child' +
           activeCls +
@@ -322,21 +289,13 @@ export class DsSpecNav extends HTMLElement {
       })
       .join("\n");
 
-    const openCls = hasActive ? " nav__group--open" : "";
-    const ariaExpanded = hasActive ? "true" : "false";
-
     return (
-      '<div class="nav__group' +
-      openCls +
-      '">' +
-      '<button class="nav__group-toggle" aria-expanded="' +
-      ariaExpanded +
-      '">' +
+      '<div class="nav__group">' +
+      '<div class="nav__group-toggle">' +
       "<span>" +
       esc(label) +
       "</span>" +
-      '<span class="nav__group-arrow">\u203A</span>' +
-      "</button>" +
+      "</div>" +
       '<div class="nav__group-children">' +
       childHtml +
       "</div>" +

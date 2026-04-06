@@ -1,14 +1,14 @@
-import { createShadow, esc, BASE_RESET, FONT } from './_shared.js';
+import { createShadow, esc, BASE_RESET, FONT } from "./_shared.js";
 
 const DEF_SECTION_CSS = `
   ${BASE_RESET}
   :host {
     display: block;
-    margin-bottom: var(--ds-space-12);
-    padding-bottom: var(--ds-space-8);
-    border-bottom: 1px solid var(--ds-color-border-light);
+    margin: var(--ds-space-10) 0 var(--ds-space-12);
   }
-  :host(:last-child) { border-bottom: none; }
+  :host(:first-of-type) {
+    margin-top: 0;
+  }
   h3 {
     font-family: ${FONT.mono};
     font-size: var(--ds-font-size-2xl);

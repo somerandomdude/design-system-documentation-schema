@@ -1,14 +1,15 @@
-import { createShadow, esc, BASE_RESET, FONT } from './_shared.js';
+import { createShadow, esc, BASE_RESET, FONT } from "./_shared.js";
 
 const DEF_INDEX_CSS = `
   ${BASE_RESET}
   :host {
     display: block;
+    margin-bottom: var(--ds-space-8);
+  }
+  nav {
     background: var(--ds-color-bg-subtle);
-    border: 1px solid var(--ds-color-border-light);
     border-radius: var(--ds-radius-lg);
-    padding: var(--ds-space-4) var(--ds-space-6);
-    margin-bottom: var(--ds-space-12);
+    padding: var(--ds-space-4) var(--ds-space-5);
   }
   ::slotted(p) {
     margin-bottom: var(--ds-space-2);
@@ -16,6 +17,7 @@ const DEF_INDEX_CSS = `
   }
   ::slotted(ul) {
     list-style: none;
+    list-style-type: none;
     padding: 0;
     margin: 0;
     column-count: 2;
@@ -37,7 +39,8 @@ export function ensureDefIndexLightStyles() {
   var s = document.createElement("style");
   s.id = DEF_INDEX_LIGHT_ID;
   s.textContent = [
-    "ds-def-index li { margin-bottom: var(--ds-space-1); font-size: var(--ds-font-size-base); break-inside: avoid; }",
+    "ds-def-index ul { padding-left: 0 !important; margin-left: 0 !important; list-style: none !important; }",
+    "ds-def-index li { margin-bottom: var(--ds-space-1); font-size: var(--ds-font-size-base); break-inside: avoid; padding-left: 0; }",
     "ds-def-index li a { font-family: var(--ds-font-mono); }",
   ].join("\n");
   document.head.appendChild(s);

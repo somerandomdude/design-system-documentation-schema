@@ -21,7 +21,7 @@ const BADGE_CSS = `
     display: inline-block;
     font-family: ${FONT.body};
     font-weight: var(--ds-font-weight-semibold);
-    text-transform: uppercase;
+    text-transform: none;
     letter-spacing: var(--ds-tracking-normal);
     border-radius: var(--ds-radius-md);
     white-space: nowrap;

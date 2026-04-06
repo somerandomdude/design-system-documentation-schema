@@ -22,7 +22,7 @@ const CARD_GRID_CSS = `
 
   .grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(var(--_min-width, 240px), 1fr));
+    grid-template-columns: repeat(2, 1fr);
     gap: var(--_gap, var(--ds-space-2));
   }
 
@@ -41,7 +41,8 @@ export class DsCardGrid extends HTMLElement {
   constructor() {
     super();
     this._shadow = createShadow(this, CARD_GRID_CSS);
-    this._shadow.innerHTML = '<div class="grid" part="grid"><slot></slot></div>';
+    this._shadow.innerHTML =
+      '<div class="grid" part="grid"><slot></slot></div>';
   }
 
   connectedCallback() {
