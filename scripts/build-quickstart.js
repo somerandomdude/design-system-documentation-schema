@@ -15,6 +15,7 @@
 
 const fs = require("fs");
 const path = require("path");
+const { buildSpecNav } = require("./nav");
 
 // ---------------------------------------------------------------------------
 // Paths
@@ -380,12 +381,16 @@ function buildPage() {
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>DSDS Quick Start Guide</title>
+<title>DSDS Quick Start Guide — DSDS 0.1</title>
 <link rel="stylesheet" href="tokens.css">
 <link rel="stylesheet" href="style.css">
 <script src="components.js"></script>
 </head>
-<body class="page-standalone">
+<body>
+${buildSpecNav("quickstart")}
+  <div class="content">
+    <main class="content__main" role="main">
+      <div class="content__inner">
 
 <ds-toolbar sticky>
   <span slot="start" style="font-weight: 700; font-size: 1.1rem">DSDS Quick Start Guide</span>
@@ -612,11 +617,15 @@ npx ajv validate -s spec/schema/dsds.bundled.schema.json -d my-system.dsds.json`
 
 </div>
 
-<div class="page-footer">
-  <p>Design System Documentation Standard (DSDS) 0.1 — Quick Start Guide</p>
-  <p><a href="https://github.com/somerandomdude/design-system-documentation-schema">GitHub</a> · <a href="index.html">Full Spec</a> · <a href="samples.html">Interactive Samples</a></p>
-</div>
+        <ds-back-to-top></ds-back-to-top>
 
+        <ds-footer>
+          <p>Design System Documentation Standard (DSDS) 0.1 — Quick Start Guide</p>
+          <p><a href="https://github.com/somerandomdude/design-system-documentation-schema">GitHub</a> · <a href="index.html">Full Spec</a> · <a href="samples.html">Interactive Samples</a></p>
+        </ds-footer>
+      </div>
+    </main>
+  </div>
 </body>
 </html>`;
 }

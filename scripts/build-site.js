@@ -17,6 +17,16 @@
 
 const fs = require("fs");
 const path = require("path");
+const { buildSpecNav, DIR_GROUPS } = require("./nav");
+
+// MDX compiler (ESM) — loaded dynamically in build()
+let compileMdxModule = null;
+async function loadMdxCompiler() {
+  if (!compileMdxModule) {
+    compileMdxModule = await import("./compile-mdx.mjs");
+  }
+  return compileMdxModule;
+}
 
 // ---------------------------------------------------------------------------
 // Paths
@@ -28,19 +38,6 @@ const SCHEMA_DIR = path.join(SPEC_DIR, "schema");
 const SITE_DIR = path.join(ROOT, "site");
 const DIST_DIR = path.join(SITE_DIR, "dist");
 const EXAMPLES_DIR = path.join(SPEC_DIR, "examples");
-
-// ---------------------------------------------------------------------------
-// Schema directory groups — defines the nav hierarchy
-//
-// Each group corresponds to a subdirectory under spec/schema/.
-// Schema files within each directory are auto-discovered.
-// ---------------------------------------------------------------------------
-
-const DIR_GROUPS = [
-  { dir: "common", label: "Common" },
-  { dir: "entities", label: "Entities" },
-  { dir: "guidelines", label: "Guidelines" },
-];
 
 /**
  * Auto-discover schema files and build the full page registry.
@@ -601,35 +598,134 @@ function renderSchemaPage(page) {
 // Overview page — rendered from markdown
 // ---------------------------------------------------------------------------
 
-function renderOverviewPage() {
-  const overviewPath = path.join(SPEC_DIR, "dsds-spec.md");
-  if (!fs.existsSync(overviewPath)) {
-    return "<h1>DSDS Specification</h1><p>Overview not found.</p>";
-  }
-  const mdText = fs.readFileSync(overviewPath, "utf-8");
-  let body = mdToHtml(mdText);
+function pageHtml(title, activeSlug, bodyHtml, hasToc, pages, layout) {
+  const layoutCls = layout === "full" ? " content--full" : "";
+  const tocCls = hasToc ? " content--with-toc" : "";
+  const contentCls = "content" + layoutCls + tocCls;
 
-  body = body.replace(
-    "<ds-heading",
-    '<div class="spec-header"><ds-heading class="spec-header__title"',
-  );
-  body = body.replace(
-    "</ds-heading>",
-    " <ds-badge>Draft</ds-badge></ds-heading>",
-  );
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>${esc(title)} — DSDS 0.1</title>
+  <link rel="stylesheet" href="tokens.css">
+  <link rel="stylesheet" href="style.css">
+  <script src="components.js"></script>
+</head>
+<body>
+${buildSpecNav(activeSlug, pages)}
+  <div class="${contentCls}">
+    <main class="content__main" role="main">
+      <div class="content__inner">
+        ${bodyHtml}
 
-  // Rewrite .md links to page slugs
-  body = body.replace(/href="modules\/(\w+)\.md"/g, (match, name) => {
-    // Map old module names to new schema-driven page slugs
-    return `href="index.html"`;
-  });
+        <ds-back-to-top></ds-back-to-top>
 
-  return body;
+        <ds-footer>
+          <p>Design System Documentation Standard (DSDS) 0.1 — Draft Specification</p>
+          <p><a href="https://github.com/somerandomdude/design-system-documentation-schema">GitHub</a></p>
+        </ds-footer>
+      </div>
+    </main>
+    ${hasToc && layout !== "full" ? '<ds-toc target=".content__inner" selector="h2[id], h3[id]"></ds-toc>' : ""}
+  </div>
+</body>
+</html>
+`;
 }
 
 // ---------------------------------------------------------------------------
-// Minimal Markdown → HTML converter (for overview page only)
+// Main build
 // ---------------------------------------------------------------------------
+
+async function build() {
+  console.log("Building DSDS specification site (schema-driven)...\n");
+
+  // Clean and create dist
+  if (fs.existsSync(DIST_DIR)) {
+    fs.rmSync(DIST_DIR, { recursive: true, force: true });
+  }
+  fs.mkdirSync(DIST_DIR, { recursive: true });
+
+  // Discover all schema pages (with examples attached)
+  const pages = discoverPages();
+  const withExamples = pages.filter((p) => p.examples !== null).length;
+  console.log(
+    `  Discovered ${pages.length} schema files across ${DIR_GROUPS.length} directories.`,
+  );
+  console.log(`  Found ${withExamples} matching example files.\n`);
+
+  // Build the global definition index for cross-references
+  DEF_INDEX = buildDefIndex(pages);
+  console.log(
+    `  Indexed ${Object.keys(DEF_INDEX).length} definitions for cross-referencing.\n`,
+  );
+
+  // Copy tokens
+  fs.copyFileSync(
+    path.join(SITE_DIR, "tokens.css"),
+    path.join(DIST_DIR, "tokens.css"),
+  );
+
+  // Copy stylesheet
+  fs.copyFileSync(
+    path.join(SITE_DIR, "style.css"),
+    path.join(DIST_DIR, "style.css"),
+  );
+
+  // Bundle web components into a single IIFE for file:// compatibility.
+  bundleComponents(SITE_DIR, DIST_DIR);
+
+  // ── MDX content pages ─────────────────────────────────────────────────
+  const { compileAllMdx } = await loadMdxCompiler();
+  console.log("  Compiling MDX content…");
+  const mdxPages = await compileAllMdx();
+  for (const mdxPage of mdxPages) {
+    const slug = mdxPage.meta.slug || mdxPage.file.replace(".mdx", "");
+    const title = mdxPage.meta.title || slug;
+    const layout = mdxPage.meta.layout || null;
+    const badge = mdxPage.meta.badge || null;
+
+    let body = mdxPage.html;
+
+    // Inject badge into the first heading if specified in frontmatter
+    if (badge) {
+      body = body.replace(
+        "<ds-heading",
+        '<div class="spec-header"><ds-heading class="spec-header__title"',
+      );
+      body = body.replace(
+        "</ds-heading>",
+        ` <ds-badge>${esc(badge)}</ds-badge></ds-heading>`,
+      );
+    }
+
+    const html = pageHtml(title, slug, body, true, pages, layout);
+    fs.writeFileSync(path.join(DIST_DIR, `${slug}.html`), html, "utf-8");
+  }
+  console.log(`  ${mdxPages.length} MDX page(s) compiled.\n`);
+
+  // ── Schema-driven pages ───────────────────────────────────────────────
+  for (const page of pages) {
+    const body = renderSchemaPage(page);
+    const html = pageHtml(page.title, page.slug, body, true, pages);
+
+    const outPath = path.join(DIST_DIR, `${page.slug}.html`);
+    fs.writeFileSync(outPath, html, "utf-8");
+
+    const relSource = page.group
+      ? `${page.group}/${page.filename}`
+      : page.filename;
+    console.log(`  ✓  site/dist/${page.slug}.html  ← ${relSource}`);
+  }
+
+  console.log(
+    `\nDone. ${mdxPages.length + pages.length} pages built to site/dist/\n`,
+  );
+}
+
+// ── bundleComponents (unchanged) ──────────────────────────────────────────
 
 function processInline(text) {
   text = text.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1">');
@@ -816,242 +912,102 @@ function mdToHtml(mdText) {
 // ---------------------------------------------------------------------------
 
 // ---------------------------------------------------------------------------
-// Navigation builder — produces a JSON items array for <ds-spec-nav>
+// Component bundler
 // ---------------------------------------------------------------------------
 
-function buildNavItems(activeSlug, pages) {
-  const items = [];
+/**
+ * Bundle all component ES modules from site/components/ into a single
+ * components.js IIFE that works from file:// protocol.
+ *
+ * Strategy:
+ *   1. Read _shared.js — extract its exported symbols as local variables
+ *   2. Read each component file — strip `import` and `export` statements
+ *   3. Read index.js — extract the registry array and registration loop
+ *   4. Wrap everything in an IIFE
+ */
+function bundleComponents(siteDir, distDir) {
+  const componentsDir = path.join(siteDir, "components");
+  const indexSrc = fs.readFileSync(
+    path.join(componentsDir, "index.js"),
+    "utf-8",
+  );
 
-  // Top-level links
-  items.push({ label: "Overview", href: "index.html", slug: "index" });
-  items.push({ label: "Quick Start", href: "quickstart.html" });
-  items.push({ label: "Interactive Samples", href: "samples.html" });
-  items.push({ label: "Root Schema", href: "root.html", slug: "root" });
-
-  // Group pages by directory
-  const groups = new Map();
-  for (const page of pages) {
-    if (!page.group) continue;
-    if (!groups.has(page.group)) {
-      groups.set(page.group, { label: page.groupLabel, pages: [] });
+  // Parse the barrel file to find all imported file names (in dependency order)
+  const importRe = /from\s+["']\.\/([^"']+)["']/g;
+  const fileOrder = ["_shared.js"]; // _shared.js MUST come first
+  const seen = new Set(["_shared.js"]);
+  let m;
+  while ((m = importRe.exec(indexSrc)) !== null) {
+    if (!seen.has(m[1])) {
+      seen.add(m[1]);
+      fileOrder.push(m[1]);
     }
-    groups.get(page.group).pages.push(page);
   }
 
-  for (const [, group] of groups) {
-    const children = group.pages.map((page) => ({
-      label: page.filename.replace(".schema.json", ""),
-      href: `${page.slug}.html`,
-      slug: page.slug,
-    }));
-    items.push({ label: group.label, children });
-  }
-
-  return items;
-}
-
-// ---------------------------------------------------------------------------
-// Page template
-// ---------------------------------------------------------------------------
-
-function pageHtml(title, activeSlug, bodyHtml, hasToc, pages) {
-  const navItems = buildNavItems(activeSlug, pages);
-  const navItemsJson = JSON.stringify(navItems);
-  const contentCls = hasToc ? "content content--with-toc" : "content";
-
-  return `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>${esc(title)} — DSDS 0.1</title>
-  <link rel="stylesheet" href="tokens.css">
-  <link rel="stylesheet" href="style.css">
-  <script src="components.js"></script>
-</head>
-<body>
-  <ds-nav-toggle target="ds-spec-nav"></ds-nav-toggle>
-  <ds-spec-nav title="DSDS 0.1" title-href="index.html" active="${esc(activeSlug)}" items='${esc(navItemsJson)}'></ds-spec-nav>
-  <div class="${contentCls}">
-    <main class="content__main" role="main">
-      <div class="content__inner">
-        ${bodyHtml}
-
-        <ds-back-to-top></ds-back-to-top>
-
-        <ds-footer>
-          <p>Design System Documentation Standard (DSDS) 0.1 — Draft Specification</p>
-          <p><a href="https://github.com/somerandomdude/design-system-documentation-schema">GitHub</a></p>
-        </ds-footer>
-      </div>
-    </main>
-    ${hasToc ? '<ds-toc target=".content__inner" selector="h2[id], h3[id]"></ds-toc>' : ""}
-  </div>
-</body>
-</html>
-`;
-}
-
-// ---------------------------------------------------------------------------
-// Main build
-// ---------------------------------------------------------------------------
-
-function build() {
-  console.log("Building DSDS specification site (schema-driven)...\n");
-
-  // Clean and create dist
-  if (fs.existsSync(DIST_DIR)) {
-    fs.rmSync(DIST_DIR, { recursive: true, force: true });
-  }
-  fs.mkdirSync(DIST_DIR, { recursive: true });
-
-  // Discover all schema pages (with examples attached)
-  const pages = discoverPages();
-  const withExamples = pages.filter((p) => p.examples !== null).length;
-  console.log(
-    `  Discovered ${pages.length} schema files across ${DIR_GROUPS.length} directories.`,
+  // Extract the registry and registration code from index.js
+  const registryMatch = indexSrc.match(
+    /const registry = \[[\s\S]*?\];\s*\n\s*for \([\s\S]*?\{[\s\S]*?\}\s*\}/,
   );
-  console.log(`  Found ${withExamples} matching example files.\n`);
+  const registrationCode = registryMatch ? registryMatch[0] : "";
 
-  // Build the global definition index for cross-references
-  DEF_INDEX = buildDefIndex(pages);
-  console.log(
-    `  Indexed ${Object.keys(DEF_INDEX).length} definitions for cross-referencing.\n`,
-  );
+  // Build the bundle
+  const parts = [];
+  parts.push("(function () {");
+  parts.push('  "use strict";');
+  parts.push("");
 
-  // Copy tokens
-  fs.copyFileSync(
-    path.join(SITE_DIR, "tokens.css"),
-    path.join(DIST_DIR, "tokens.css"),
-  );
+  for (const file of fileOrder) {
+    const filePath = path.join(componentsDir, file);
+    if (!fs.existsSync(filePath)) continue;
 
-  // Copy stylesheet
-  fs.copyFileSync(
-    path.join(SITE_DIR, "style.css"),
-    path.join(DIST_DIR, "style.css"),
-  );
+    let code = fs.readFileSync(filePath, "utf-8");
 
-  // Bundle web components into a single IIFE for file:// compatibility.
-  // Reads _shared.js first, then all component files, strips import/export
-  // statements, and wraps everything in an IIFE.
-  bundleComponents(SITE_DIR, DIST_DIR);
-
-  /**
-   * Bundle all component ES modules from site/components/ into a single
-   * components.js IIFE that works from file:// protocol.
-   *
-   * Strategy:
-   *   1. Read _shared.js — extract its exported symbols as local variables
-   *   2. Read each component file — strip `import` and `export` statements
-   *   3. Read index.js — extract the registry array and registration loop
-   *   4. Wrap everything in an IIFE
-   */
-  function bundleComponents(siteDir, distDir) {
-    const componentsDir = path.join(siteDir, "components");
-    const indexSrc = fs.readFileSync(
-      path.join(componentsDir, "index.js"),
-      "utf-8",
+    // Strip import statements
+    code = code.replace(
+      /^import\s+\{[^}]*\}\s+from\s+['"][^'"]+['"];\s*$/gm,
+      "",
     );
 
-    // Parse the barrel file to find all imported file names (in dependency order)
-    const importRe = /from\s+["']\.\/([^"']+)["']/g;
-    const fileOrder = ["_shared.js"]; // _shared.js MUST come first
-    const seen = new Set(["_shared.js"]);
-    let m;
-    while ((m = importRe.exec(indexSrc)) !== null) {
-      if (!seen.has(m[1])) {
-        seen.add(m[1]);
-        fileOrder.push(m[1]);
-      }
-    }
+    // Strip 'export ' keyword from declarations (export class, export function, export const)
+    code = code.replace(/^export\s+(class|function|const|let|var)\s/gm, "$1 ");
 
-    // Extract the registry and registration code from index.js
-    const registryMatch = indexSrc.match(
-      /const registry = \[[\s\S]*?\];\s*\n\s*for \([\s\S]*?\{[\s\S]*?\}\s*\}/,
-    );
-    const registrationCode = registryMatch ? registryMatch[0] : "";
+    // Remove blank lines left by stripping
+    code = code.replace(/\n{3,}/g, "\n\n");
 
-    // Build the bundle
-    const parts = [];
-    parts.push("(function () {");
-    parts.push('  "use strict";');
+    parts.push(`  // ── ${file} ──`);
+    // Indent the code
+    const indented = code
+      .trim()
+      .split("\n")
+      .map((line) => (line ? "  " + line : ""))
+      .join("\n");
+    parts.push(indented);
     parts.push("");
-
-    for (const file of fileOrder) {
-      const filePath = path.join(componentsDir, file);
-      if (!fs.existsSync(filePath)) continue;
-
-      let code = fs.readFileSync(filePath, "utf-8");
-
-      // Strip import statements
-      code = code.replace(
-        /^import\s+\{[^}]*\}\s+from\s+['"][^'"]+['"];\s*$/gm,
-        "",
-      );
-
-      // Strip 'export ' keyword from declarations (export class, export function, export const)
-      code = code.replace(
-        /^export\s+(class|function|const|let|var)\s/gm,
-        "$1 ",
-      );
-
-      // Remove blank lines left by stripping
-      code = code.replace(/\n{3,}/g, "\n\n");
-
-      parts.push(`  // ── ${file} ──`);
-      // Indent the code
-      const indented = code
-        .trim()
-        .split("\n")
-        .map((line) => (line ? "  " + line : ""))
-        .join("\n");
-      parts.push(indented);
-      parts.push("");
-    }
-
-    // Add registration code (strip imports already handled)
-    if (registrationCode) {
-      parts.push("  // ── Registration ──");
-      const indented = registrationCode
-        .trim()
-        .split("\n")
-        .map((line) => (line ? "  " + line : ""))
-        .join("\n");
-      parts.push(indented);
-    }
-
-    parts.push("})();");
-
-    const bundle = parts.join("\n") + "\n";
-    fs.writeFileSync(path.join(distDir, "components.js"), bundle, "utf-8");
-
-    const kb = (Buffer.byteLength(bundle, "utf-8") / 1024).toFixed(1);
-    console.log(
-      `  Bundled ${fileOrder.length} component files → components.js (${kb} KB)`,
-    );
   }
 
-  // 1. Build the overview page (from markdown)
-  const overviewBody = renderOverviewPage();
-  const overviewHtml = pageHtml("Overview", "index", overviewBody, true, pages);
-  fs.writeFileSync(path.join(DIST_DIR, "index.html"), overviewHtml, "utf-8");
-  console.log("  ✓  site/dist/index.html (from markdown)");
-
-  // 2. Build one page per schema file
-  for (const page of pages) {
-    const body = renderSchemaPage(page);
-    const html = pageHtml(page.title, page.slug, body, true, pages);
-
-    const outPath = path.join(DIST_DIR, `${page.slug}.html`);
-    fs.writeFileSync(outPath, html, "utf-8");
-
-    const relSource = page.group
-      ? `${page.group}/${page.filename}`
-      : page.filename;
-    console.log(`  ✓  site/dist/${page.slug}.html  ← ${relSource}`);
+  // Add registration code (strip imports already handled)
+  if (registrationCode) {
+    parts.push("  // ── Registration ──");
+    const indented = registrationCode
+      .trim()
+      .split("\n")
+      .map((line) => (line ? "  " + line : ""))
+      .join("\n");
+    parts.push(indented);
   }
 
-  console.log(`\nDone. ${pages.length + 1} pages built to site/dist/\n`);
+  parts.push("})();");
+
+  const bundle = parts.join("\n") + "\n";
+  fs.writeFileSync(path.join(distDir, "components.js"), bundle, "utf-8");
+
+  const kb = (Buffer.byteLength(bundle, "utf-8") / 1024).toFixed(1);
+  console.log(
+    `  Bundled ${fileOrder.length} component files → components.js (${kb} KB)`,
+  );
 }
 
-build();
+build().catch((err) => {
+  console.error("\n✗ Build failed:", err.message);
+  process.exit(1);
+});

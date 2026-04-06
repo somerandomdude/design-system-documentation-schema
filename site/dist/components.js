@@ -12,11 +12,7 @@
 
   function esc(s) {
     if (s == null) return "";
-    return String(s)
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;");
+    return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
   }
 
   const BASE_RESET = `
@@ -26,8 +22,8 @@
   `;
 
   const FONT = {
-    body: "var(--ds-font-body)",
-    mono: "var(--ds-font-mono)",
+    body: 'var(--ds-font-body)',
+    mono: 'var(--ds-font-mono)',
   };
 
   // ── button.js ──
@@ -450,7 +446,7 @@
     style.id = TABLE_LIGHT_DOM_ID;
     style.textContent = [
       "ds-table table { width: 100%; border-collapse: collapse; font-size: var(--ds-font-size-md); }",
-      "ds-table thead { }",
+      "ds-table thead { background: transparent; }",
       "ds-table th {",
       "  text-align: left; font-weight: var(--ds-font-weight-semibold); font-size: var(--ds-font-size-sm);",
       "  text-transform: none; letter-spacing: var(--ds-tracking-wide);",
@@ -522,11 +518,12 @@
     .heading--6 { font-size: var(--ds-font-size-md); font-weight: var(--ds-font-weight-semibold); margin: var(--ds-space-3) 0 var(--ds-space-2); color: var(--ds-color-text-secondary); }
 
     .anchor-link {
+      display: inline;
       opacity: 0;
+      margin-left: var(--ds-space-2);
       color: var(--ds-color-text-secondary);
       text-decoration: none;
       font-size: 0.75em;
-      margin-left: var(--ds-space-2);
       vertical-align: baseline;
       transition: opacity var(--ds-transition-normal);
     }
@@ -535,6 +532,7 @@
 
     .badge {
       display: inline-block;
+      margin-left: var(--ds-space-2);
       font-size: var(--ds-font-size-xs);
       font-weight: var(--ds-font-weight-semibold);
       letter-spacing: var(--ds-tracking-normal);
@@ -544,7 +542,6 @@
       background: var(--ds-color-accent-subtle);
       color: var(--ds-color-accent);
       vertical-align: middle;
-      margin-left: var(--ds-space-2);
     }
   `;
 
@@ -1777,7 +1774,6 @@
     }
     .source {
       font-size: var(--ds-font-size-sm);
-      color: var(--ds-color-text-faint);
       margin: 0 0 var(--ds-space-6);
     }
   `;
@@ -1801,12 +1797,13 @@
       var d = this.getAttribute("description") || "";
       var s = this.getAttribute("source") || "";
       var html = "<h1>" + esc(t) + " <slot></slot></h1>";
-      if (d) html += '<p class="desc">' + esc(d) + "</p>";
       if (s)
         html +=
           '<p class="source">Source: <ds-code inline>' +
           esc(s) +
           "</ds-code></p>";
+      if (d) html += '<p class="desc">' + esc(d) + "</p>";
+
       this._shadow.innerHTML = html;
     }
   }
@@ -1818,7 +1815,9 @@
       display: block;
       margin: var(--ds-space-10) 0 var(--ds-space-12);
     }
-    :host(:first-of-type) { margin-top: 0; }
+    :host(:first-of-type) {
+      margin-top: 0;
+    }
     h3 {
       font-family: ${FONT.mono};
       font-size: var(--ds-font-size-2xl);
@@ -2442,50 +2441,41 @@
   }
 
   // ── spec-nav.js ──
-  /**
-   * <ds-spec-nav>
-   *
-   * The specification site's left sidebar navigation. Encapsulates all
-   * navigation styling (previously .nav, .nav__title, .nav__link,
-   * .nav__group, etc.) into a single web component with shadow DOM.
-   *
-   * Attributes:
-   *   title       — title text shown at the top (e.g. "DSDS 0.1")
-   *   title-href  — link for the title (default: "index.html")
-   *   active      — slug of the currently active page
-   *   open        — boolean, reflects mobile open/closed state
-   *
-   * Content model:
-   *   The navigation structure is provided via a JSON `items` attribute
-   *   OR via slotted light-DOM content.
-   *
-   *   JSON items format:
-   *     [
-   *       { "label": "Overview", "href": "index.html", "slug": "index" },
-   *       { "label": "Quick Start", "href": "quickstart.html" },
-   *       {
-   *         "label": "Common",
-   *         "children": [
-   *           { "label": "example", "href": "common-example.html", "slug": "common-example" },
-   *           { "label": "link", "href": "common-link.html", "slug": "common-link" }
-   *         ]
-   *       }
-   *     ]
-   *
-   * Mobile behavior:
-   *   At ≤900px the nav is off-screen by default (translateX(-100%)).
-   *   Setting the `open` attribute slides it into view.
-   *   <ds-nav-toggle> controls the `open` attribute externally by
-   *   targeting this element with its `target` attribute.
-   *
-   * Usage:
-   *   <ds-spec-nav
-   *     title="DSDS 0.1"
-   *     title-href="index.html"
-   *     active="entities-component"
-   *     items='[...]'>
-   *   </ds-spec-nav>
-   */
+  // ═══════════════════════════════════════════════════════════════════════════
+  // <ds-spec-nav>
+  //
+  // The specification site's left sidebar navigation. Reads its structure
+  // from declarative light-DOM children instead of a JSON attribute.
+  //
+  // Attributes:
+  //   title       — title text shown at the top (e.g. "DSDS 0.1")
+  //   title-href  — link for the title (default: "index.html")
+  //   active      — slug of the currently active page
+  //   open        — boolean, reflects mobile open/closed state
+  //
+  // Content model (light DOM):
+  //   Top-level <a> elements become nav links.
+  //   <ds-nav-group label="…"> elements become collapsible groups.
+  //   Inside a group, <a> elements become child links.
+  //
+  //   Every <a> may carry a `slug` attribute used to match against the
+  //   `active` attribute for highlighting.
+  //
+  // Mobile behavior:
+  //   At ≤900px the nav is off-screen by default (translateX(-100%)).
+  //   Setting the `open` attribute slides it into view.
+  //   <ds-nav-toggle> controls the `open` attribute externally.
+  //
+  // Usage:
+  //   <ds-spec-nav title="DSDS 0.1" title-href="index.html" active="index">
+  //     <a href="index.html" slug="index">Overview</a>
+  //     <a href="quickstart.html" slug="quickstart">Quick Start</a>
+  //     <ds-nav-group label="Entities">
+  //       <a href="entities-component.html" slug="entities-component">component</a>
+  //       <a href="entities-pattern.html" slug="entities-pattern">pattern</a>
+  //     </ds-nav-group>
+  //   </ds-spec-nav>
+  // ═══════════════════════════════════════════════════════════════════════════
 
   const SPEC_NAV_CSS = `
     ${BASE_RESET}
@@ -2635,15 +2625,10 @@
       // We must wait for DOMContentLoaded to guarantee ALL children have
       // been parsed.  A MutationObserver fires too early (after the first
       // child, before the rest are added).
-      var self = this;
       if (document.readyState === "loading") {
-        document.addEventListener(
-          "DOMContentLoaded",
-          function () {
-            self._render();
-          },
-          { once: true },
-        );
+        document.addEventListener("DOMContentLoaded", () => this._render(), {
+          once: true,
+        });
       } else {
         // Document already parsed (dynamic insertion, deferred script, etc.)
         this._render();
@@ -2659,11 +2644,11 @@
 
     _render() {
       this._rendered = true;
-      var title = this.getAttribute("title") || "";
-      var titleHref = this.getAttribute("title-href") || "index.html";
-      var active = this.getAttribute("active") || "";
+      const title = this.getAttribute("title") || "";
+      const titleHref = this.getAttribute("title-href") || "index.html";
+      const active = this.getAttribute("active") || "";
 
-      var titleHtml = title
+      const titleHtml = title
         ? '<div class="nav__title"><a href="' +
           esc(titleHref) +
           '">' +
@@ -2671,7 +2656,7 @@
           "</a></div>"
         : "";
 
-      var itemsHtml = this._buildFromChildren(active);
+      const itemsHtml = this._buildFromChildren(active);
 
       this._shadow.innerHTML =
         '<nav class="nav" role="navigation" aria-label="Specification navigation" part="nav">' +
@@ -2683,27 +2668,25 @@
     }
 
     /**
-     * Walk light-DOM children and build shadow-DOM navigation HTML.
+     * Walk the light-DOM children and build shadow-DOM navigation HTML.
      *
      * Recognised children:
-     *   <a href="…" slug="…">Label</a>         → top-level link
-     *   <ds-nav-group label="…">                → collapsible group
-     *     <a href="…" slug="…">Label</a>        → child link
+     *   <a href="…" slug="…">Label</a>           → top-level link
+     *   <ds-nav-group label="…">                  → collapsible group
+     *     <a href="…" slug="…">Label</a>          → child link
      *   </ds-nav-group>
      */
     _buildFromChildren(active) {
-      var parts = [];
-      var children = this.children;
+      const parts = [];
 
-      for (var i = 0; i < children.length; i++) {
-        var child = children[i];
-        var tag = child.tagName.toLowerCase();
+      for (const child of this.children) {
+        const tag = child.tagName.toLowerCase();
 
         if (tag === "a") {
-          var slug = child.getAttribute("slug") || "";
-          var href = child.getAttribute("href") || "#";
-          var label = child.textContent.trim();
-          var activeCls = slug && slug === active ? " nav__link--active" : "";
+          const slug = child.getAttribute("slug") || "";
+          const href = child.getAttribute("href") || "#";
+          const label = child.textContent.trim();
+          const activeCls = slug && slug === active ? " nav__link--active" : "";
           parts.push(
             '<a class="nav__link' +
               activeCls +
@@ -2716,6 +2699,7 @@
         } else if (tag === "ds-nav-group") {
           parts.push(this._buildGroup(child, active));
         }
+        // Silently skip unrecognised elements
       }
 
       return parts.join("\n");
@@ -2725,15 +2709,15 @@
      * Build shadow HTML for a single <ds-nav-group>.
      */
     _buildGroup(groupEl, active) {
-      var label = groupEl.getAttribute("label") || "";
-      var childLinks = groupEl.querySelectorAll(":scope > a");
+      const label = groupEl.getAttribute("label") || "";
+      const childLinks = groupEl.querySelectorAll(":scope > a");
 
-      var childHtml = Array.prototype.map
-        .call(childLinks, function (a) {
-          var slug = a.getAttribute("slug") || "";
-          var href = a.getAttribute("href") || "#";
-          var text = a.textContent.trim();
-          var activeCls = slug && slug === active ? " nav__link--active" : "";
+      const childHtml = Array.from(childLinks)
+        .map(function (a) {
+          const slug = a.getAttribute("slug") || "";
+          const href = a.getAttribute("href") || "#";
+          const text = a.textContent.trim();
+          const activeCls = slug && slug === active ? " nav__link--active" : "";
           return (
             '<a class="nav__link nav__link--child' +
             activeCls +
@@ -2761,8 +2745,20 @@
     }
   }
 
+  // ── step-number.js ──
   // ═══════════════════════════════════════════════════════════════════════════
-  // <ds-step-number> — Numbered step circle for quickstart headings
+  // <ds-step-number>
+  //
+  // A numbered step circle used in quickstart-style section headings.
+  //
+  // Attributes:
+  //   (none — uses slotted text content for the number)
+  //
+  // Content:
+  //   The step number (e.g., "1", "2", "3")
+  //
+  // Usage:
+  //   <ds-step-number>1</ds-step-number> What is DSDS?
   // ═══════════════════════════════════════════════════════════════════════════
 
   const STEP_NUMBER_CSS = `
@@ -2776,15 +2772,15 @@
       top: -1px;
       width: 28px;
       height: 28px;
-      border-radius: 50%;
-      background: var(--color-accent, var(--ds-color-accent));
+      border-radius: var(--ds-radius-full);
+      background: var(--ds-color-accent);
       color: #fff;
       font-family: ${FONT.body};
-      font-size: 0.82rem;
-      font-weight: 700;
+      font-size: var(--ds-font-size-base);
+      font-weight: var(--ds-font-weight-bold);
       line-height: 28px;
       text-align: center;
-      margin-right: 10px;
+      margin-right: var(--ds-space-2);
       flex-shrink: 0;
     }
   `;
@@ -2793,12 +2789,31 @@
     constructor() {
       super();
       this._shadow = createShadow(this, STEP_NUMBER_CSS);
-      this._shadow.innerHTML = "<slot></slot>";
+      this._shadow.innerHTML = '<slot></slot>';
     }
   }
 
+  // ── callout.js ──
   // ═══════════════════════════════════════════════════════════════════════════
-  // <ds-callout> — Callout / info box with accent left border
+  // <ds-callout>
+  //
+  // A callout / info box with an accent left border and subtle background.
+  // Replaces the `.callout` CSS class with an encapsulated web component.
+  //
+  // Attributes:
+  //   variant — "info" | "tip" | "warning" (default: "info")
+  //
+  // Slots:
+  //   (default) — callout content (may include <strong>, links, lists, etc.)
+  //
+  // Usage:
+  //   <ds-callout>
+  //     <strong>Key idea:</strong> Some important information here.
+  //   </ds-callout>
+  //
+  //   <ds-callout variant="tip">
+  //     <strong>Tip:</strong> A helpful suggestion.
+  //   </ds-callout>
   // ═══════════════════════════════════════════════════════════════════════════
 
   const CALLOUT_CSS = `
@@ -2806,47 +2821,47 @@
     :host { display: block; }
 
     .callout {
-      border-left: 4px solid var(--color-accent, var(--ds-color-accent));
-      background: var(--color-accent-subtle, var(--ds-color-accent-subtle));
-      padding: var(--spacing-sm, 8px) var(--spacing-md, 16px);
-      border-radius: 0 6px 6px 0;
-      margin: var(--spacing-sm, 8px) 0 var(--spacing-lg, 24px);
+      border-left: var(--ds-border-width-xl) solid var(--ds-color-accent);
+      background: var(--ds-color-accent-subtle);
+      padding: var(--ds-space-2) var(--ds-space-4);
+      border-radius: 0 var(--ds-radius-lg) var(--ds-radius-lg) 0;
+      margin: var(--ds-space-2) 0 var(--ds-space-6);
       font-family: ${FONT.body};
-      font-size: 0.88rem;
-      line-height: 1.6;
-      color: var(--color-text, var(--ds-color-text));
+      font-size: var(--ds-font-size-md);
+      line-height: var(--ds-line-height-loose);
+      color: var(--ds-color-text);
     }
 
     .callout--warning {
-      border-left-color: var(--ds-color-warning-text, #f57f17);
-      background: var(--ds-color-note-warning-bg, #fffbeb);
+      border-left-color: var(--ds-color-warning-text);
+      background: var(--ds-color-note-warning-bg);
     }
 
     .callout--tip {
-      border-left-color: var(--ds-color-encouraged-text, #1b5e20);
-      background: var(--ds-color-encouraged-bg, #c8e6c9);
+      border-left-color: var(--ds-color-encouraged-text);
+      background: var(--ds-color-encouraged-bg);
     }
 
     ::slotted(strong) {
-      color: var(--color-accent, var(--ds-color-accent));
+      color: var(--ds-color-accent);
     }
 
     :host([variant="warning"]) ::slotted(strong) {
-      color: var(--ds-color-warning-text, #f57f17);
+      color: var(--ds-color-warning-text);
     }
 
     :host([variant="tip"]) ::slotted(strong) {
-      color: var(--ds-color-encouraged-text, #1b5e20);
+      color: var(--ds-color-encouraged-text);
     }
 
     ::slotted(ol),
     ::slotted(ul) {
-      margin: 8px 0 0;
-      padding-left: 20px;
+      margin: var(--ds-space-2) 0 0;
+      padding-left: var(--ds-space-5);
     }
 
     ::slotted(a) {
-      color: var(--color-link, var(--ds-color-accent));
+      color: var(--ds-color-accent);
       text-decoration-thickness: 1px;
       text-underline-offset: 2px;
     }
@@ -2873,27 +2888,39 @@
     }
 
     _updateVariant() {
-      var v = this.getAttribute("variant") || "info";
-      var el = this._shadow.querySelector(".callout");
-      if (el) el.className = "callout callout--" + v;
+      const variant = this.getAttribute("variant") || "info";
+      const el = this._shadow.querySelector(".callout");
+      if (el) {
+        el.className = "callout callout--" + variant;
+      }
     }
   }
 
+  // ── card-grid.js ──
   // ═══════════════════════════════════════════════════════════════════════════
-  // <ds-card-grid> — Responsive grid layout for cards
+  // <ds-card-grid>
+  //
+  // A responsive grid layout for cards. Replaces the `.card-grid` CSS class.
+  //
+  // Attributes:
+  //   min-width — minimum column width for auto-fill (default: "240px")
+  //   gap       — gap between grid items (default: uses --ds-space-2)
+  //
+  // Slots:
+  //   (default) — card elements to lay out in the grid
   // ═══════════════════════════════════════════════════════════════════════════
 
   const CARD_GRID_CSS = `
     ${BASE_RESET}
     :host {
       display: block;
-      margin: var(--spacing-sm, 8px) 0 var(--spacing-lg, 24px);
+      margin: var(--ds-space-2) 0 var(--ds-space-6);
     }
 
     .grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
-      gap: var(--_gap, var(--spacing-sm, 8px));
+      gap: var(--_gap, var(--ds-space-2));
     }
 
     @media (max-width: 640px) {
@@ -2924,9 +2951,16 @@
     }
 
     _applyCustomProps() {
-      var gap = this.getAttribute("gap");
-      var grid = this._shadow.querySelector(".grid");
+      const minWidth = this.getAttribute("min-width");
+      const gap = this.getAttribute("gap");
+      const grid = this._shadow.querySelector(".grid");
       if (!grid) return;
+
+      if (minWidth) {
+        grid.style.setProperty("--_min-width", minWidth);
+      } else {
+        grid.style.removeProperty("--_min-width");
+      }
 
       if (gap) {
         grid.style.setProperty("--_gap", gap);
@@ -2936,8 +2970,21 @@
     }
   }
 
+  // ── page-footer.js ──
   // ═══════════════════════════════════════════════════════════════════════════
-  // <ds-page-footer> — Footer bar for standalone pages
+  // <ds-page-footer>
+  //
+  // A footer bar for standalone pages (quickstart, samples, etc.).
+  // Renders a top-bordered, centered footer with muted text and styled links.
+  //
+  // Slots:
+  //   (default) — footer content (paragraphs, links, etc.)
+  //
+  // Usage:
+  //   <ds-page-footer>
+  //     <p>Design System Documentation Standard (DSDS) 0.1</p>
+  //     <p><a href="https://github.com/...">GitHub</a> · <a href="index.html">Full Spec</a></p>
+  //   </ds-page-footer>
   // ═══════════════════════════════════════════════════════════════════════════
 
   const PAGE_FOOTER_CSS = `
@@ -2945,21 +2992,21 @@
     :host { display: block; }
 
     .page-footer {
-      border-top: 1px solid var(--color-border, var(--ds-color-border));
-      padding: var(--spacing-lg, 24px);
+      border-top: var(--ds-border-width-sm) solid var(--ds-color-border);
+      padding: var(--ds-space-6);
       text-align: center;
-      color: #999;
+      color: var(--ds-color-text-faint);
       font-family: ${FONT.body};
-      font-size: 0.82rem;
-      margin-top: var(--spacing-2xl, 48px);
+      font-size: var(--ds-font-size-sm);
+      margin-top: var(--ds-space-12);
     }
 
     ::slotted(p) {
-      margin: 0 0 4px;
+      margin: 0 0 var(--ds-space-1);
     }
 
     ::slotted(a) {
-      color: var(--color-link, var(--ds-color-accent));
+      color: var(--ds-color-accent);
     }
   `;
 

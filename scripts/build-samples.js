@@ -23,6 +23,7 @@
 
 const fs = require("fs");
 const path = require("path");
+const { buildSpecNav } = require("./nav");
 
 // ---------------------------------------------------------------------------
 // Paths
@@ -183,6 +184,7 @@ function main() {
 
   // 4. Substitute placeholders in the template
   let html = template;
+  html = html.replace("{{NAV}}", buildSpecNav("samples"));
   html = html.replace("{{TAB_BUTTONS}}", tabButtons.join("\n            "));
   html = html.replace("{{TAB_CONTENTS}}", tabContents.join("\n        "));
   html = html.replace("{{DATA_SCRIPTS}}", dataScripts.join("\n\n        "));
