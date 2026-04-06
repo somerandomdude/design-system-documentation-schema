@@ -21,6 +21,10 @@
     "metadata": {
       "$ref": "#/$defs/metadata"
     },
+    "extends": {
+      "$ref": "#/$defs/documentExtends",
+      "description": "Declares that this DSDS document extends (inherits from) another DSDS document — typically a core design system. The base document provides the foundational set of entities. This document layers on top, adding new entities or providing extended versions of base entities. Enables systems-of-systems architectures where product-specific or brand-specific extension systems inherit from a shared core."
+    },
     "purpose": {
       "type": "object",
       "description": "The purpose of the design system as a whole — why it exists, what problems it solves, who it serves, and when teams should or should not adopt it. Helps stakeholders, new team members, and external consumers understand the system's intent before exploring individual components or tokens.",
@@ -102,6 +106,96 @@
               "$ref": "#/$defs/presentationUrl"
             }
           ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "documentExtends": {
+      "type": "object",
+      "description": "Declares that this DSDS document extends (inherits from) another DSDS document. The base document provides the core set of entities — components, tokens, themes, styles, and patterns. This document layers on top of it, adding new entities or providing extended versions of base entities. The extends declaration establishes the relationship; merge and resolution semantics are the responsibility of consuming tooling. A typical use case is a product-specific extension system that inherits from an organization's core design system.",
+      "required": [
+        "system"
+      ],
+      "properties": {
+        "system": {
+          "type": "string",
+          "description": "The name or identifier of the base design system being extended (e.g., 'Acme Core Design System', 'acme-core', '@acme/design-system'). This is the human-readable or package-level identifier — not necessarily a URL. Used by tooling to resolve the base system from a registry, file system, or package manager."
+        },
+        "url": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL to the base DSDS document (e.g., 'https://design.acme.com/v2/core.dsds.json', './core.dsds.json'). When provided, tooling MAY fetch and resolve the base document for merge operations, validation, or documentation generation."
+        },
+        "version": {
+          "type": "string",
+          "description": "The version of the base system this document extends (e.g., '2.0.0', '>=2.0.0', '^3.1.0'). Follows semver conventions. When omitted, tooling SHOULD resolve to the latest available version."
+        },
+        "description": {
+          "$ref": "#/$defs/richText",
+          "description": "Optional description of the relationship — what this extension adds, changes, or specializes relative to the base system."
+        }
+      },
+      "additionalProperties": false
+    },
+    "entityExtends": {
+      "type": "object",
+      "description": "Declares that this entity extends (inherits from) a base entity in a parent design system. The base entity provides the foundational definition — identity, anatomy, API, variants, states, guidelines, etc. This entity layers on top of it, adding new properties, guidelines, or providing specialized behavior. For example, an enterprise Button might extend the core Button to add new variants, additional accessibility requirements, or extra API props while inheriting the core's anatomy, states, and base guidelines. The extends declaration establishes the relationship; merge and resolution semantics (which guidelines are inherited, which are overridden, which are appended) are the responsibility of consuming tooling.",
+      "required": [
+        "name"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "The name of the base entity being extended (e.g., 'button', 'color-text-primary', 'form-validation'). MUST match the `name` property of the base entity in the parent system."
+        },
+        "system": {
+          "type": "string",
+          "description": "The name or identifier of the system that owns the base entity (e.g., 'Acme Core Design System', 'acme-core'). When omitted, the base entity is resolved from the system declared in the root document's `extends` property. When provided, it allows an entity to extend from a system other than the document's default base."
+        },
+        "url": {
+          "type": "string",
+          "format": "uri",
+          "description": "Direct URL to the base entity's documentation or DSDS definition. Useful for cross-linking in documentation sites."
+        },
+        "version": {
+          "type": "string",
+          "description": "The version of the base entity or base system this entity extends (e.g., '2.0.0'). When omitted, inherits the version from the document-level extends declaration."
+        },
+        "description": {
+          "$ref": "#/$defs/richText",
+          "description": "Optional description of what this entity adds or changes relative to the base entity — new variants, additional props, overridden guidelines, etc."
+        },
+        "modifications": {
+          "type": "array",
+          "description": "An optional summary of what this entity modifies relative to the base. Each entry is a human-readable description of a specific change. Tooling MAY use these for changelog generation, diff views, or migration guides. When omitted, consuming tools must diff the entities to determine changes.",
+          "items": {
+            "type": "object",
+            "required": [
+              "type",
+              "description"
+            ],
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "added",
+                  "modified",
+                  "removed",
+                  "inherited"
+                ],
+                "description": "The type of modification: 'added' (new property, variant, guideline not in base), 'modified' (changed from base), 'removed' (present in base but explicitly removed), 'inherited' (carried forward from base without changes — typically omitted since inheritance is the default, but useful for documentation)."
+              },
+              "target": {
+                "type": "string",
+                "description": "What was modified — a property name, guideline kind, variant name, or other identifier (e.g., 'variant:enterprise', 'prop:theme', 'guideline:accessibility', 'state:read-only')."
+              },
+              "description": {
+                "$ref": "#/$defs/richText",
+                "description": "A human-readable description of the modification."
+              }
+            },
+            "additionalProperties": false
+          }
         }
       },
       "additionalProperties": false
@@ -2215,6 +2309,10 @@
           "pattern": "^[a-z][a-z0-9-]*$",
           "description": "Machine-readable identifier (e.g., 'button', 'dialog', 'form-field', 'data-table'). MUST be unique within the documentation group."
         },
+        "extends": {
+          "$ref": "#/$defs/entityExtends",
+          "description": "Declares that this component extends (inherits from) a base component in a parent design system. The base component provides the foundational anatomy, API, variants, states, and guidelines. This component layers on top — adding new variants, props, guidelines, or specialized behavior while inheriting everything else. For example, an enterprise Button might extend the core Button to add an 'enterprise' variant and stricter accessibility requirements."
+        },
         "aliases": {
           "type": "array",
           "items": {
@@ -2667,6 +2765,10 @@
         "name": {
           "type": "string",
           "description": "The token name. Token names are intentionally unconstrained by a pattern to accommodate DTCG and design tool naming conventions that use dots, slashes, or other separators (e.g., 'color-text-primary', 'color.text.primary', 'color/text/primary'). The token name also serves as the human-readable display name."
+        },
+        "extends": {
+          "$ref": "#/$defs/entityExtends",
+          "description": "Declares that this token extends (inherits from) a base token in a parent design system. The base token provides the foundational value, type, API mappings, and guidelines. This token layers on top — overriding the value, adding platform API mappings, or providing additional guidelines while inheriting everything else. For example, a product-specific 'color-text-primary' might extend the core system's 'color-text-primary' to override the resolved value while inheriting the token type, category, and usage guidelines."
         },
         "aliases": {
           "type": "array",

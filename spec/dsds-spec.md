@@ -85,6 +85,7 @@ A DSDS file is a JSON object with a `dsdsVersion` string and a `documentation` a
 | `purpose` | `object` | No | System-level purpose describing what the design system is for and when to adopt it. See [Root Purpose](#root-purpose). |
 | `bestPractices` | `array` | No | System-level best practices that apply across the entire design system. See [Root Best Practices](#root-best-practices). |
 | `documentation` | `array` | Yes | One or more documentation groups. See [Documentation Groups](#documentation-groups). |
+| `extends` | `object` | No | Declares that this document extends another DSDS document — typically a core design system. See [Extends](#extends). |
 | `$extensions` | `object` | No | Vendor-specific extensions. See [Extensions](#extensions). |
 
 ### Documentation Groups
@@ -247,6 +248,7 @@ The following properties are available on all entity types. **Required** fields 
 | `category` | `string` | No | Classification within the system's taxonomy. |
 | `guidelines` | `array` | No | Typed guideline objects. See [Guidelines](#guidelines). |
 | `links` | `array` | No | Typed references to external resources and internal artifacts. See [Links](#links). |
+| `extends` | `entityExtends` | No | Declares that this entity extends a base entity in a parent system. Available on component and token entities. See [Extends](#extends). |
 | `$extensions` | `object` | No | Vendor-specific extensions. See [Extensions](#extensions). |
 
 ### Component
@@ -761,6 +763,80 @@ Each `whenNotToUse` entry SHOULD include an `alternative` pointing to a more app
 
 ---
 
+## Extends
+
+The `extends` mechanism enables **systems-of-systems** architectures — where an extension design system inherits from a core system. It operates at two levels:
+
+### Document-Level Extends (`documentExtends`)
+
+The root `extends` property declares that the entire DSDS document inherits from another DSDS document. This establishes the parent–child relationship between systems.
+
+| Property | Type | Required | Description |
+|---|---|---|---|
+| `system` | `string` | Yes | The name or identifier of the base design system being extended (e.g., `"Acme Core Design System"`). |
+| `url` | `string` (URI) | No | URL to the base DSDS document. Tooling MAY fetch and resolve the base document for merge operations. |
+| `version` | `string` | No | Semver version of the base system this document extends. When omitted, tooling SHOULD resolve to the latest available version. |
+| `description` | `richText` | No | Description of the relationship — what this extension adds, changes, or specializes. |
+
+```json
+{
+  "extends": {
+    "system": "Acme Core Design System",
+    "url": "https://design.acme.com/v2/core.dsds.json",
+    "version": "2.0.0",
+    "description": "Adds enterprise-specific components, stricter accessibility requirements, and product-specific token overrides."
+  }
+}
+```
+
+### Entity-Level Extends (`entityExtends`)
+
+Individual entities (components, tokens) can declare that they extend a base entity from a parent system. This is available on the `component` and `token` entity types.
+
+| Property | Type | Required | Description |
+|---|---|---|---|
+| `name` | `string` | Yes | The name of the base entity being extended. MUST match the `name` property of the base entity in the parent system. |
+| `system` | `string` | No | The owning system of the base entity. When omitted, resolved from the document-level `extends.system`. |
+| `url` | `string` (URI) | No | Direct URL to the base entity's documentation or DSDS definition. |
+| `version` | `string` | No | Version of the base entity or system. When omitted, inherits from the document-level `extends.version`. |
+| `description` | `richText` | No | Description of what this entity adds or changes relative to the base. |
+| `modifications` | `array` | No | A human-readable changelog of modifications relative to the base entity. |
+
+Each entry in `modifications` has the following shape:
+
+| Property | Type | Required | Description |
+|---|---|---|---|
+| `type` | `string` | Yes | `"added"`, `"modified"`, `"removed"`, or `"inherited"`. |
+| `target` | `string` | No | What was modified — a property name, guideline kind, variant name, etc. (e.g., `"variant:enterprise"`, `"prop:theme"`, `"guideline:accessibility"`). |
+| `description` | `richText` | Yes | A human-readable description of the modification. |
+
+```json
+{
+  "kind": "component",
+  "name": "button",
+  "extends": {
+    "name": "button",
+    "system": "Acme Core Design System",
+    "version": "2.0.0",
+    "description": "Adds an 'enterprise' variant and a 'theme' prop for sub-brand theming.",
+    "modifications": [
+      { "type": "added", "target": "variant:enterprise", "description": "High-emphasis variant using enterprise brand color." },
+      { "type": "added", "target": "prop:theme", "description": "Prop accepting 'default' or 'admin' for sub-brand palette switching." },
+      { "type": "inherited", "target": "guideline:anatomy", "description": "Anatomy inherited from core without changes." }
+    ]
+  },
+  "displayName": "Button",
+  "description": "Enterprise Button extends core Button with additional variants and props.",
+  "status": "stable"
+}
+```
+
+> **Merge semantics are tooling's responsibility.** The `extends` declaration establishes the _relationship_ between systems and entities. How properties, guidelines, and tokens are merged, overridden, or inherited is determined by consuming tooling — the schema does not prescribe resolution rules. The `modifications` array provides a human-readable changelog that tooling MAY use for diff views, migration guides, or documentation generation.
+
+See [`examples/extension-system.dsds.json`](examples/extension-system.dsds.json) for a complete enterprise extension system demonstrating both document-level and entity-level extends with modifications.
+
+---
+
 ## Extensions
 
 The `$extensions` property is available on the root document, on each documentation group, and on each entity. Keys MUST use vendor-specific namespaces (reverse domain name notation recommended). Tools that do not recognize an extension MUST preserve it. Extension data SHOULD NOT duplicate information available in core schema fields.
@@ -812,6 +888,7 @@ The distinction: plural types are containers of interchangeable items where the 
 | [`examples/entities/style.json`](examples/entities/style.json) | Style documentation (Spacing) with scale, motion, and best practices. |
 | [`examples/entities/pattern.json`](examples/entities/pattern.json) | Pattern documentation (Error Messaging). |
 | [`examples/entities/empty-state-pattern.json`](examples/entities/empty-state-pattern.json) | Pattern documentation (Empty State) with anatomy, variants, states, interactions, and content. |
+| [`examples/extension-system.dsds.json`](examples/extension-system.dsds.json) | Enterprise extension system demonstrating document-level and entity-level `extends` with modifications. |
 
 ---
 

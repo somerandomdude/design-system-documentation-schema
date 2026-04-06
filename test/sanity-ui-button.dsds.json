@@ -1,0 +1,879 @@
+{
+  "$schema": "../spec/schema/dsds.bundled.schema.json",
+  "dsdsVersion": "0.1",
+  "metadata": {
+    "systemName": "Sanity UI",
+    "systemVersion": "2.x",
+    "organization": "Sanity",
+    "url": "https://www.sanity.io/ui"
+  },
+  "documentation": [
+    {
+      "name": "Sanity UI — Button Design Spec Test",
+      "description": "A test harness that validates the DSDS design-specifications schema against a real-world component: the Sanity UI Button. This component uses a mode×tone variant model rather than a single 'variant' dimension, plus numeric spacing/radius/fontSize scales instead of named sizes — testing the schema's flexibility against a non-trivial real component.",
+      "items": [
+        {
+          "kind": "component",
+          "name": "button",
+          "displayName": "Button",
+          "summary": "An interactive element that triggers an action when activated.",
+          "description": "An interactive element that triggers an action when activated. Buttons communicate what will happen when the user interacts with them. Sanity UI's Button uses a two-dimensional variant model: `mode` controls the visual treatment (filled, ghost, bleed) while `tone` controls the color intent (default, positive, caution, critical, etc.). Sizing is controlled via numeric scale props (`fontSize`, `padding`, `space`, `radius`) rather than named size presets.",
+          "status": "stable",
+          "since": "1.0.0",
+          "category": "action",
+          "tags": ["action", "form", "interactive", "primitive"],
+          "aliases": ["btn"],
+          "guidelines": [
+            {
+              "kind": "anatomy",
+              "description": "The Button is composed of a styled button element containing an optional leading icon, a text label, an optional trailing icon, and a loading overlay with a spinner.",
+              "parts": [
+                {
+                  "name": "root",
+                  "displayName": "Root",
+                  "description": "The outer <button> element. Receives background color, border, border-radius, and the focus ring. Defines the clickable area. Rendered as a styled-components element with data-ui='Button'.",
+                  "required": true
+                },
+                {
+                  "name": "content-box",
+                  "displayName": "Content Box",
+                  "description": "A Box wrapping the inner Flex layout. Receives all padding props. Rendered as a <span>.",
+                  "required": true
+                },
+                {
+                  "name": "inner-flex",
+                  "displayName": "Inner Flex",
+                  "description": "A Flex container that lays out icon, text, and iconRight horizontally with configurable gap (space prop) and justify alignment.",
+                  "required": true
+                },
+                {
+                  "name": "icon",
+                  "displayName": "Icon (leading)",
+                  "description": "An optional icon rendered before the text label. Accepts a React element or a component type. Wrapped in a Text primitive at the button's fontSize.",
+                  "required": false
+                },
+                {
+                  "name": "text",
+                  "displayName": "Text Label",
+                  "description": "The button's text content. Rendered inside a Text primitive with configurable size, weight, alignment, and text-overflow ellipsis.",
+                  "required": false
+                },
+                {
+                  "name": "icon-right",
+                  "displayName": "Icon (trailing)",
+                  "description": "An optional icon rendered after the text label. Same behavior as the leading icon.",
+                  "required": false
+                },
+                {
+                  "name": "loading-overlay",
+                  "displayName": "Loading Overlay",
+                  "description": "An absolutely-positioned overlay containing a Spinner. Covers the entire button surface when loading=true. Uses the card background color and inherits border-radius.",
+                  "required": false
+                }
+              ]
+            },
+            {
+              "kind": "api",
+              "properties": [
+                {
+                  "name": "mode",
+                  "type": "'default' | 'ghost' | 'bleed'",
+                  "description": "Controls the button's visual treatment — filled background (default), transparent with border (ghost), or fully transparent with no border (bleed).",
+                  "required": false,
+                  "defaultValue": "default",
+                  "since": "1.0.0"
+                },
+                {
+                  "name": "tone",
+                  "type": "'default' | 'neutral' | 'primary' | 'suggest' | 'positive' | 'caution' | 'critical'",
+                  "description": "Controls the button's color intent. Each tone maps to a set of enabled/hovered/pressed/selected/disabled color states resolved from the theme.",
+                  "required": false,
+                  "defaultValue": "default",
+                  "since": "1.0.0"
+                },
+                {
+                  "name": "text",
+                  "type": "React.ReactNode",
+                  "description": "The button's text label. Rendered inside a Text primitive.",
+                  "required": false,
+                  "since": "1.0.0"
+                },
+                {
+                  "name": "icon",
+                  "type": "React.ElementType | React.ReactNode",
+                  "description": "A leading icon. Accepts a component type (rendered as <Icon />) or a React element.",
+                  "required": false,
+                  "since": "1.0.0"
+                },
+                {
+                  "name": "iconRight",
+                  "type": "React.ElementType | React.ReactNode",
+                  "description": "A trailing icon. Same behavior as icon.",
+                  "required": false,
+                  "since": "1.0.0"
+                },
+                {
+                  "name": "fontSize",
+                  "type": "number | number[]",
+                  "description": "Font size scale index (0–4). Supports responsive arrays. Controls the Text primitive size for both the label and icons.",
+                  "required": false,
+                  "defaultValue": 1,
+                  "since": "1.0.0"
+                },
+                {
+                  "name": "padding",
+                  "type": "number | number[]",
+                  "description": "Padding scale index. Supports responsive arrays and directional variants (paddingX, paddingY, paddingTop, etc.).",
+                  "required": false,
+                  "defaultValue": 3,
+                  "since": "1.0.0"
+                },
+                {
+                  "name": "space",
+                  "type": "number | number[]",
+                  "description": "Gap between icon, text, and iconRight inside the inner Flex. Scale index, supports responsive arrays.",
+                  "required": false,
+                  "defaultValue": 3,
+                  "since": "1.0.0"
+                },
+                {
+                  "name": "radius",
+                  "type": "number | number[]",
+                  "description": "Border radius scale index. Supports responsive arrays.",
+                  "required": false,
+                  "defaultValue": 2,
+                  "since": "1.0.0"
+                },
+                {
+                  "name": "loading",
+                  "type": "boolean",
+                  "description": "When true, a loading overlay with a Spinner covers the button. The button becomes disabled.",
+                  "required": false,
+                  "defaultValue": false,
+                  "since": "2.0.0"
+                },
+                {
+                  "name": "disabled",
+                  "type": "boolean",
+                  "description": "When true, the button is non-interactive. Sets the HTML disabled attribute and data-disabled='true'.",
+                  "required": false,
+                  "defaultValue": false,
+                  "since": "1.0.0"
+                },
+                {
+                  "name": "selected",
+                  "type": "boolean",
+                  "description": "When true, the button renders in its 'pressed' color state to indicate selection. Sets data-selected.",
+                  "required": false,
+                  "defaultValue": false,
+                  "since": "1.0.0"
+                },
+                {
+                  "name": "muted",
+                  "type": "boolean",
+                  "description": "When true, the text label renders with muted styling.",
+                  "required": false,
+                  "defaultValue": false,
+                  "since": "1.0.0"
+                },
+                {
+                  "name": "justify",
+                  "type": "FlexJustify | FlexJustify[]",
+                  "description": "Horizontal alignment of button content. Supports responsive arrays.",
+                  "required": false,
+                  "defaultValue": "center",
+                  "since": "1.0.0"
+                },
+                {
+                  "name": "textAlign",
+                  "type": "'left' | 'right' | 'center'",
+                  "description": "Text alignment within the text label.",
+                  "required": false,
+                  "since": "1.0.0"
+                },
+                {
+                  "name": "textWeight",
+                  "type": "ThemeFontWeightKey",
+                  "description": "Font weight override for the text label. Falls back to the theme's button.textWeight.",
+                  "required": false,
+                  "since": "1.0.0"
+                },
+                {
+                  "name": "type",
+                  "type": "'button' | 'submit' | 'reset'",
+                  "description": "The HTML button type attribute.",
+                  "required": false,
+                  "defaultValue": "button",
+                  "since": "1.0.0"
+                },
+                {
+                  "name": "width",
+                  "type": "'fill'",
+                  "description": "When set to 'fill', the button stretches to fill its parent container width.",
+                  "required": false,
+                  "since": "1.0.0"
+                },
+                {
+                  "name": "as",
+                  "type": "React.ElementType | keyof JSX.IntrinsicElements",
+                  "description": "Polymorphic 'as' prop to render the button as a different element or component (e.g., an anchor tag).",
+                  "required": false,
+                  "since": "1.0.0"
+                }
+              ],
+              "slots": [
+                {
+                  "name": "default",
+                  "description": "Children rendered inside a Box wrapper. Used when the 'text' prop is not provided. Allows full custom content inside the button.",
+                  "acceptedContent": "Any React node. When using children instead of text, the consumer is responsible for layout."
+                }
+              ],
+              "dataAttributes": [
+                {
+                  "name": "data-ui",
+                  "description": "Always set to 'Button'. Identifies this element as a Sanity UI Button for testing and styling hooks.",
+                  "values": ["Button"]
+                },
+                {
+                  "name": "data-disabled",
+                  "description": "Set to 'true' when the button is disabled or loading.",
+                  "values": ["true", "false"]
+                },
+                {
+                  "name": "data-selected",
+                  "description": "Present (empty string) when the button is in the selected state.",
+                  "values": [""]
+                },
+                {
+                  "name": "data-hovered",
+                  "description": "Can be set programmatically to trigger hover styles without actual pointer hover.",
+                  "values": [""]
+                }
+              ]
+            },
+            {
+              "kind": "variants",
+              "items": [
+                {
+                  "kind": "enum",
+                  "name": "mode",
+                  "displayName": "Mode",
+                  "description": "Controls the button's visual treatment — the relationship between fill, border, and background. This is the structural axis of the button's appearance, independent of color.",
+                  "values": [
+                    {
+                      "name": "default",
+                      "displayName": "Default (Filled)",
+                      "description": "A filled button with a solid background color derived from the tone. The highest-emphasis treatment. The border is derived from the card color system."
+                    },
+                    {
+                      "name": "ghost",
+                      "displayName": "Ghost",
+                      "description": "A transparent button with a visible border. Medium emphasis. The background becomes transparent and the border is visible. Hover and press states add a subtle background fill."
+                    },
+                    {
+                      "name": "bleed",
+                      "displayName": "Bleed",
+                      "description": "A fully transparent button with no border and no background in the default state. Lowest emphasis. Used for inline actions, toolbar items, and contexts where the button should visually 'bleed' into its surroundings. Hover adds a subtle fill."
+                    }
+                  ]
+                },
+                {
+                  "kind": "enum",
+                  "name": "tone",
+                  "displayName": "Tone",
+                  "description": "Controls the button's color intent — the semantic meaning communicated through color. Each tone resolves to a full set of state colors (enabled, hovered, pressed, selected, disabled) from the theme. This is the color axis, independent of structure.",
+                  "values": [
+                    {
+                      "name": "default",
+                      "displayName": "Default",
+                      "description": "The standard, non-semantic tone. Uses the theme's default action colors."
+                    },
+                    {
+                      "name": "neutral",
+                      "displayName": "Neutral",
+                      "description": "A muted, low-emphasis tone. Used when the action should be visually quiet."
+                    },
+                    {
+                      "name": "primary",
+                      "displayName": "Primary (deprecated)",
+                      "description": "The primary brand tone. Deprecated in favor of using 'default' tone with 'default' mode for primary actions."
+                    },
+                    {
+                      "name": "suggest",
+                      "displayName": "Suggest",
+                      "description": "An informational/suggestion tone. Uses blue-leaning colors."
+                    },
+                    {
+                      "name": "positive",
+                      "displayName": "Positive",
+                      "description": "A success/confirmation tone. Uses green-leaning colors. Used for 'Save', 'Publish', 'Confirm' actions."
+                    },
+                    {
+                      "name": "caution",
+                      "displayName": "Caution",
+                      "description": "A warning tone. Uses yellow/amber-leaning colors. Used for actions that need attention but are not destructive."
+                    },
+                    {
+                      "name": "critical",
+                      "displayName": "Critical",
+                      "description": "A destructive/danger tone. Uses red-leaning colors. Used for 'Delete', 'Remove', 'Revoke' actions."
+                    }
+                  ]
+                },
+                {
+                  "kind": "flag",
+                  "name": "width",
+                  "displayName": "Full Width",
+                  "description": "When the width prop is set to 'fill', the button stretches to fill its parent container. Otherwise the button is intrinsically sized."
+                }
+              ]
+            },
+            {
+              "kind": "states",
+              "items": [
+                {
+                  "name": "enabled",
+                  "displayName": "Enabled (Default)",
+                  "description": "The button's resting state. Background, text, and border colors are resolved from the theme's mode×tone matrix for the 'enabled' state key."
+                },
+                {
+                  "name": "hovered",
+                  "displayName": "Hovered",
+                  "description": "Triggered when the pointer moves over the button (on devices with hover capability). Colors shift to the 'hovered' state key from the mode×tone matrix. For ghost and bleed modes, a subtle background fill appears.",
+                  "tokens": {
+                    "card-bg-color": "theme.button[mode][tone].hovered.bg",
+                    "card-fg-color": "theme.button[mode][tone].hovered.fg"
+                  }
+                },
+                {
+                  "name": "pressed",
+                  "displayName": "Pressed / Active",
+                  "description": "Triggered while the button is being pressed (mousedown/touchstart). Colors shift to the 'pressed' state key.",
+                  "tokens": {
+                    "card-bg-color": "theme.button[mode][tone].pressed.bg",
+                    "card-fg-color": "theme.button[mode][tone].pressed.fg"
+                  }
+                },
+                {
+                  "name": "selected",
+                  "displayName": "Selected",
+                  "description": "When the selected prop is true, the button renders in its 'pressed' color state permanently to indicate toggle-on or active selection. Uses the same colors as the pressed state.",
+                  "tokens": {
+                    "card-bg-color": "theme.button[mode][tone].pressed.bg",
+                    "card-fg-color": "theme.button[mode][tone].pressed.fg"
+                  }
+                },
+                {
+                  "name": "disabled",
+                  "displayName": "Disabled",
+                  "description": "The button is non-interactive. Uses the HTML disabled attribute. Colors shift to the 'disabled' state key. The cursor changes to default. Unlike many systems that use opacity, Sanity UI uses a dedicated disabled color set from the theme.",
+                  "tokens": {
+                    "card-bg-color": "theme.button[mode][tone].disabled.bg",
+                    "card-fg-color": "theme.button[mode][tone].disabled.fg"
+                  }
+                },
+                {
+                  "name": "loading",
+                  "displayName": "Loading",
+                  "description": "When loading=true, the button is disabled and a loading overlay with a Spinner covers the content. The button's dimensions are preserved because the overlay is absolutely positioned over the existing content."
+                },
+                {
+                  "name": "focused",
+                  "displayName": "Focused",
+                  "description": "When the button receives keyboard focus. A focus ring appears using the theme's button.focusRing configuration. The ring disappears on :focus:not(:focus-visible) to avoid showing it on mouse clicks."
+                }
+              ]
+            },
+            {
+              "kind": "design-specifications",
+              "properties": {
+                "display": "inline-flex",
+                "align-items": "center",
+                "box-sizing": "border-box",
+                "appearance": "none",
+                "border": "0",
+                "outline": "none",
+                "user-select": "none",
+                "white-space": "nowrap",
+                "text-align": "left",
+                "text-decoration": "none",
+                "position": "relative",
+                "vertical-align": "top",
+                "padding": "0",
+                "margin": "0",
+                "font": "inherit",
+                "font-smoothing": "inherit",
+                "cursor": "pointer (browser default for <button>)",
+                "background-color": "var(--card-bg-color)",
+                "color": "var(--card-fg-color)",
+                "border-color": "var(--card-border-color)",
+                "transition": "background-color 100ms, border-color 100ms, color 100ms",
+                "inner-span-flex": "1",
+                "inner-span-min-width": "0",
+                "inner-span-display": "block",
+                "inner-span-border-radius": "inherit",
+                "moz-focus-inner-border": "0",
+                "moz-focus-inner-padding": "0"
+              },
+              "spacing": {
+                "internal": {
+                  "content-padding": "theme.space[padding]",
+                  "icon-to-text-gap": "theme.space[space]"
+                },
+                "external": {
+                  "button-to-button": "determined by parent layout"
+                }
+              },
+              "sizing": {
+                "minWidth": "intrinsic (no minimum enforced)",
+                "minHeight": "intrinsic (determined by padding + fontSize)"
+              },
+              "typography": {
+                "label": {
+                  "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Helvetica Neue\", \"Liberation Sans\", Helvetica, Arial, system-ui, sans-serif",
+                  "fontSize": "theme.font.text.sizes[fontSize].fontSize",
+                  "lineHeight": "theme.font.text.sizes[fontSize].lineHeight",
+                  "fontWeight": "theme.button.textWeight (default: medium / 500)",
+                  "letterSpacing": "0"
+                }
+              },
+              "responsive": [
+                {
+                  "breakpoint": "all",
+                  "description": "All dimension props (fontSize, padding, space, radius) accept responsive arrays that map to the theme's media breakpoints [360, 600, 900, 1200, 1800, 2400]px. For example, padding={[2, 3, 4]} applies padding scale 2 on small screens, 3 on medium, 4 on large."
+                },
+                {
+                  "breakpoint": "hover",
+                  "description": "Hover styles are guarded by @media (hover: hover) to prevent sticky hover states on touch devices. On devices without hover capability, the hovered state is never applied."
+                }
+              ],
+              "variants": [
+                {
+                  "name": "default",
+                  "description": "Filled mode — solid background, border derived from card system.",
+                  "properties": {
+                    "background-color": "var(--card-bg-color) from theme.button.default[tone].enabled",
+                    "border-width": "1px (theme.button.border.width)",
+                    "border-style": "solid",
+                    "box-shadow": "inset 0 0 0 1px var(--card-border-color)"
+                  }
+                },
+                {
+                  "name": "ghost",
+                  "description": "Transparent background with visible border. Gets an additional default box-shadow treatment.",
+                  "properties": {
+                    "background-color": "transparent (from theme.button.ghost[tone].enabled)",
+                    "border-width": "1px (theme.button.border.width)",
+                    "border-style": "solid",
+                    "border-color": "var(--card-border-color)",
+                    "box-shadow": "inset 0 0 0 1px var(--card-border-color)"
+                  }
+                },
+                {
+                  "name": "bleed",
+                  "description": "Fully transparent — no background, no border, no visual boundary in the enabled state.",
+                  "properties": {
+                    "background-color": "transparent",
+                    "border-width": "0",
+                    "border-color": "transparent"
+                  }
+                }
+              ],
+              "sizes": [
+                {
+                  "name": "compact",
+                  "description": "A common compact configuration using fontSize=1, padding=2, space=2, radius=2. Not a named size in the API — composed from numeric scale props.",
+                  "properties": {
+                    "font-size": "13px (theme.font.text.sizes[1].fontSize)",
+                    "line-height": "19px (theme.font.text.sizes[1].lineHeight)",
+                    "icon-size": "21px (theme.font.text.sizes[1].iconSize)",
+                    "ascender-height": "5px (theme.font.text.sizes[1].ascenderHeight)",
+                    "descender-height": "5px (theme.font.text.sizes[1].descenderHeight)",
+                    "padding": "8px (theme.space[2])",
+                    "gap": "8px (theme.space[2])",
+                    "border-radius": "3px (theme.radius[2])",
+                    "text-overflow": "ellipsis"
+                  },
+                  "spacing": {
+                    "internal": {
+                      "content-padding": "theme.space[2]",
+                      "icon-to-text-gap": "theme.space[2]"
+                    }
+                  }
+                },
+                {
+                  "name": "default",
+                  "description": "The default configuration: fontSize=1, padding=3, space=3, radius=2.",
+                  "properties": {
+                    "font-size": "13px (theme.font.text.sizes[1].fontSize)",
+                    "line-height": "19px (theme.font.text.sizes[1].lineHeight)",
+                    "icon-size": "21px (theme.font.text.sizes[1].iconSize)",
+                    "ascender-height": "5px (theme.font.text.sizes[1].ascenderHeight)",
+                    "descender-height": "5px (theme.font.text.sizes[1].descenderHeight)",
+                    "padding": "12px (theme.space[3])",
+                    "gap": "12px (theme.space[3])",
+                    "border-radius": "3px (theme.radius[2])",
+                    "text-overflow": "ellipsis"
+                  },
+                  "spacing": {
+                    "internal": {
+                      "content-padding": "theme.space[3]",
+                      "icon-to-text-gap": "theme.space[3]"
+                    }
+                  }
+                },
+                {
+                  "name": "large",
+                  "description": "A common large configuration: fontSize=2, padding=4, space=3, radius=3.",
+                  "properties": {
+                    "font-size": "15px (theme.font.text.sizes[2].fontSize)",
+                    "line-height": "23px (theme.font.text.sizes[2].lineHeight)",
+                    "icon-size": "25px (theme.font.text.sizes[2].iconSize)",
+                    "ascender-height": "6px (theme.font.text.sizes[2].ascenderHeight)",
+                    "descender-height": "6px (theme.font.text.sizes[2].descenderHeight)",
+                    "padding": "20px (theme.space[4])",
+                    "gap": "12px (theme.space[3])",
+                    "border-radius": "6px (theme.radius[3])",
+                    "text-overflow": "ellipsis"
+                  },
+                  "spacing": {
+                    "internal": {
+                      "content-padding": "theme.space[4]",
+                      "icon-to-text-gap": "theme.space[3]"
+                    }
+                  }
+                }
+              ],
+              "states": [
+                {
+                  "name": "hovered",
+                  "description": "Background and foreground shift to the hovered state colors from the mode×tone matrix. Applied via @media (hover: hover) to avoid sticky hover on touch devices. Also triggered programmatically via data-hovered attribute.",
+                  "properties": {
+                    "background-color": "var(--card-bg-color) from theme.button[mode][tone].hovered.bg",
+                    "color": "var(--card-fg-color) from theme.button[mode][tone].hovered.fg",
+                    "border-color": "var(--card-border-color) from theme.button[mode][tone].hovered.border",
+                    "icon-color": "var(--card-icon-color) from theme.button[mode][tone].hovered.icon",
+                    "media-query": "@media (hover: hover)"
+                  }
+                },
+                {
+                  "name": "pressed",
+                  "description": "Background darkens further for the pressed/active state. Also applied when data-selected is present.",
+                  "properties": {
+                    "background-color": "var(--card-bg-color) from theme.button[mode][tone].pressed.bg",
+                    "color": "var(--card-fg-color) from theme.button[mode][tone].pressed.fg",
+                    "border-color": "var(--card-border-color) from theme.button[mode][tone].pressed.border",
+                    "icon-color": "var(--card-icon-color) from theme.button[mode][tone].pressed.icon"
+                  }
+                },
+                {
+                  "name": "focused",
+                  "description": "A focus ring appears around the button. Implemented as a composite box-shadow using the theme's focusRing config (offset: -1, width: 1). The ring is inset because offset is negative. Hidden on :focus:not(:focus-visible) to only show for keyboard navigation — mouse clicks reset to the normal box-shadow.",
+                  "properties": {
+                    "box-shadow": "focusRingStyle({ base, border: { width: 2, color: baseColor.bg }, focusRing: { offset: -1, width: 1 } })",
+                    "focus-ring-offset": "-1px (inset — theme.button.focusRing.offset)",
+                    "focus-ring-width": "1px (theme.button.focusRing.width)",
+                    "focus-ring-color": "var(--card-focus-ring-color)",
+                    "focus-visible-only": "true (:focus:not(:focus-visible) resets box-shadow to border-only)"
+                  }
+                },
+                {
+                  "name": "disabled",
+                  "description": "Colors shift to the disabled state set via CSS selector &:disabled, &[data-disabled='true']. Unlike opacity-based disabling, Sanity UI uses distinct disabled colors from the theme. The HTML disabled attribute is set, removing the element from tab order.",
+                  "properties": {
+                    "background-color": "var(--card-bg-color) from theme.button[mode][tone].disabled.bg",
+                    "color": "var(--card-fg-color) from theme.button[mode][tone].disabled.fg",
+                    "border-color": "var(--card-border-color) from theme.button[mode][tone].disabled.border",
+                    "icon-color": "var(--card-icon-color) from theme.button[mode][tone].disabled.icon",
+                    "muted-bg-color": "var(--card-muted-bg-color) from theme.button[mode][tone].disabled.muted.bg",
+                    "muted-fg-color": "var(--card-muted-fg-color) from theme.button[mode][tone].disabled.muted.fg",
+                    "cursor": "default (browser default for disabled button)",
+                    "pointer-events": "none (via HTML disabled attribute)"
+                  }
+                },
+                {
+                  "name": "loading",
+                  "description": "An absolutely-positioned overlay covers the button with a Spinner centered inside. The overlay uses var(--card-bg-color) as background, inherits border-radius, and has z-index: 1.",
+                  "properties": {
+                    "overlay-position": "absolute",
+                    "overlay-inset": "0",
+                    "overlay-background": "var(--card-bg-color)",
+                    "overlay-display": "flex",
+                    "overlay-align-items": "center",
+                    "overlay-justify-content": "center",
+                    "overlay-border-radius": "inherit",
+                    "overlay-z-index": "1"
+                  }
+                }
+              ],
+              "variantStates": [
+                {
+                  "variant": "default",
+                  "state": "hovered",
+                  "description": "Default mode hover: the filled background shifts to the hovered color from the tone's color set. All CSS custom properties from _cardColorStyle are updated.",
+                  "properties": {
+                    "background-color": "theme.button.default[tone].hovered.bg",
+                    "color": "theme.button.default[tone].hovered.fg",
+                    "border-color": "theme.button.default[tone].hovered.border",
+                    "icon-color": "theme.button.default[tone].hovered.icon",
+                    "accent-fg-color": "theme.button.default[tone].hovered.accent.fg",
+                    "link-fg-color": "theme.button.default[tone].hovered.link.fg",
+                    "muted-bg-color": "theme.button.default[tone].hovered.muted.bg",
+                    "muted-fg-color": "theme.button.default[tone].hovered.muted.fg"
+                  }
+                },
+                {
+                  "variant": "ghost",
+                  "state": "hovered",
+                  "description": "Ghost mode hover: a subtle background fill appears where there was previously only a border. The box-shadow retains the border inset.",
+                  "properties": {
+                    "background-color": "theme.button.ghost[tone].hovered.bg",
+                    "color": "theme.button.ghost[tone].hovered.fg",
+                    "border-color": "theme.button.ghost[tone].hovered.border",
+                    "icon-color": "theme.button.ghost[tone].hovered.icon"
+                  }
+                },
+                {
+                  "variant": "bleed",
+                  "state": "hovered",
+                  "description": "Bleed mode hover: a subtle background fill appears where there was previously nothing — the button becomes 'visible' on hover. No box-shadow or border.",
+                  "properties": {
+                    "background-color": "theme.button.bleed[tone].hovered.bg",
+                    "color": "theme.button.bleed[tone].hovered.fg",
+                    "icon-color": "theme.button.bleed[tone].hovered.icon"
+                  }
+                },
+                {
+                  "variant": "default",
+                  "state": "pressed",
+                  "properties": {
+                    "background-color": "theme.button.default[tone].pressed.bg",
+                    "color": "theme.button.default[tone].pressed.fg",
+                    "border-color": "theme.button.default[tone].pressed.border"
+                  }
+                },
+                {
+                  "variant": "ghost",
+                  "state": "pressed",
+                  "properties": {
+                    "background-color": "theme.button.ghost[tone].pressed.bg",
+                    "color": "theme.button.ghost[tone].pressed.fg",
+                    "border-color": "theme.button.ghost[tone].pressed.border"
+                  }
+                },
+                {
+                  "variant": "bleed",
+                  "state": "pressed",
+                  "properties": {
+                    "background-color": "theme.button.bleed[tone].pressed.bg",
+                    "color": "theme.button.bleed[tone].pressed.fg"
+                  }
+                },
+                {
+                  "variant": "default",
+                  "state": "focused",
+                  "description": "Default mode focus: focus ring as composite box-shadow with inset border retained.",
+                  "properties": {
+                    "box-shadow": "inset 0 0 0 1px var(--card-border-color), focusRingStyle"
+                  }
+                },
+                {
+                  "variant": "ghost",
+                  "state": "focused",
+                  "description": "Ghost mode focus: focus ring with the ghost border shadow retained underneath.",
+                  "properties": {
+                    "box-shadow": "inset 0 0 0 1px var(--card-border-color), focusRingStyle"
+                  }
+                },
+                {
+                  "variant": "bleed",
+                  "state": "focused",
+                  "description": "Bleed mode focus: focus ring only — no border shadow since bleed has no border.",
+                  "properties": {
+                    "box-shadow": "focusRingStyle (no inset border)"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "purpose",
+              "useCases": [
+                {
+                  "description": "When the user needs to trigger an action such as saving, publishing, submitting a form, or confirming a decision.",
+                  "kind": "positive"
+                },
+                {
+                  "description": "When a destructive action needs to be initiated. Use tone='critical' to communicate danger.",
+                  "kind": "positive"
+                },
+                {
+                  "description": "When the action is part of a toolbar or dense UI. Use mode='bleed' for minimal visual footprint.",
+                  "kind": "positive"
+                },
+                {
+                  "description": "When the action navigates the user to a different page or URL.",
+                  "kind": "negative",
+                  "alternative": {
+                    "name": "anchor or link component",
+                    "rationale": "Use the Button's 'as' prop to render as an <a> tag, or use a dedicated link component. Buttons and links have different semantic roles."
+                  }
+                },
+                {
+                  "description": "When you need an icon-only button with proper accessible labeling.",
+                  "kind": "negative",
+                  "alternative": {
+                    "name": "Button with aria-label",
+                    "rationale": "The Button component works for icon-only use cases, but the consumer must provide an aria-label. There is no built-in enforcement — consider wrapping in a Tooltip for visual and accessible labeling."
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "best-practices",
+              "items": [
+                {
+                  "guidance": "Use mode='default' with an appropriate tone for the primary action on a surface. Limit to one filled button per surface.",
+                  "rationale": "Multiple filled buttons dilute visual hierarchy. The default mode provides the highest emphasis.",
+                  "kind": "encouraged",
+                  "category": "visual-design"
+                },
+                {
+                  "guidance": "Use mode='ghost' for secondary actions alongside a default-mode primary button.",
+                  "rationale": "Ghost mode provides enough visual presence to be discoverable without competing with the primary action.",
+                  "kind": "encouraged",
+                  "category": "visual-design"
+                },
+                {
+                  "guidance": "Use mode='bleed' for toolbar actions, inline actions, and dense layouts where buttons should not introduce visual boundaries.",
+                  "rationale": "Bleed buttons are invisible until interacted with, which is appropriate in contexts where the surrounding UI already provides structure.",
+                  "kind": "encouraged",
+                  "category": "visual-design"
+                },
+                {
+                  "guidance": "Use tone='critical' exclusively for destructive or irreversible actions.",
+                  "rationale": "The critical tone uses red, a strong signal. Using it for non-destructive actions dilutes its meaning.",
+                  "kind": "required",
+                  "category": "visual-design"
+                },
+                {
+                  "guidance": "Provide an aria-label when using icon-only buttons (no text prop, no children).",
+                  "rationale": "Without visible text, there is no accessible name. Screen readers will announce the button without context.",
+                  "kind": "required",
+                  "category": "accessibility",
+                  "criteria": [
+                    {
+                      "url": "https://www.w3.org/TR/WCAG22/#name-role-value",
+                      "label": "4.1.2 Name, Role, Value"
+                    }
+                  ]
+                },
+                {
+                  "guidance": "Prefer the 'text' prop over children for simple text labels.",
+                  "rationale": "The text prop renders through Sanity UI's Text primitive, which provides consistent font sizing, weight, text-overflow, and alignment. Children bypass this.",
+                  "kind": "encouraged",
+                  "category": "development"
+                },
+                {
+                  "guidance": "Use responsive arrays for fontSize, padding, space, and radius to adapt button sizing across breakpoints.",
+                  "rationale": "Sanity UI's responsive prop system maps array values to the theme's media breakpoints, providing a consistent responsive API without custom media queries.",
+                  "kind": "encouraged",
+                  "category": "development"
+                }
+              ]
+            },
+            {
+              "kind": "accessibility",
+              "wcagLevel": "AA",
+              "keyboardInteraction": [
+                {
+                  "key": "Enter",
+                  "action": "Activates the button."
+                },
+                {
+                  "key": "Space",
+                  "action": "Activates the button."
+                },
+                {
+                  "key": "Tab",
+                  "action": "Moves focus to the next focusable element."
+                },
+                {
+                  "key": "Shift+Tab",
+                  "action": "Moves focus to the previous focusable element."
+                }
+              ],
+              "ariaAttributes": [
+                {
+                  "attribute": "role",
+                  "value": "button",
+                  "description": "Applied automatically by the native <button> element. When using 'as' to render a different element, the role may need to be set explicitly.",
+                  "required": false
+                },
+                {
+                  "attribute": "aria-label",
+                  "value": "string",
+                  "description": "Required for icon-only buttons that lack visible text. Provides the accessible name.",
+                  "required": false
+                },
+                {
+                  "attribute": "disabled",
+                  "value": "boolean",
+                  "description": "Set when disabled=true or loading=true. Uses the HTML disabled attribute, which removes the button from the tab order.",
+                  "required": false
+                }
+              ],
+              "screenReaderBehavior": "Announced as '[text], button'. When disabled, announced as '[text], button, dimmed' (VoiceOver) or '[text], button, unavailable' (NVDA/JAWS).",
+              "focusManagement": "The button participates in the normal tab order. When disabled, it is removed from the tab order via the HTML disabled attribute (unlike the DSDS example component which uses aria-disabled). The focus ring is implemented as a composite box-shadow and only appears on :focus-visible. On :focus:not(:focus-visible), the box-shadow resets to the normal border-only shadow, hiding the ring for mouse interactions.",
+              "motionConsiderations": "The button root has a CSS transition of 'background-color 100ms, border-color 100ms, color 100ms' for smooth state changes. The loading spinner uses CSS animation. Sanity UI provides a usePrefersReducedMotion hook, but the spinner does not currently auto-disable animation based on this preference."
+            }
+          ],
+          "links": [
+            {
+              "kind": "source",
+              "url": "https://github.com/sanity-io/ui/blob/main/src/core/primitives/button/button.tsx",
+              "label": "Button component source"
+            },
+            {
+              "kind": "source",
+              "url": "https://github.com/sanity-io/ui/blob/main/src/core/primitives/button/styles.ts",
+              "label": "Button styles source"
+            },
+            {
+              "kind": "source",
+              "url": "https://github.com/sanity-io/ui/blob/main/src/theme/system/color/button.ts",
+              "label": "Button color system"
+            },
+            {
+              "kind": "design",
+              "url": "https://www.figma.com/design/5mhVqXlldJEEB2VWZeKQ4i/%F0%9F%A7%AC-Sanity-UI?node-id=25-769",
+              "label": "Figma component — Button"
+            },
+            {
+              "kind": "storybook",
+              "url": "https://storybook.sanity.build/?path=/docs/primitives-button--docs",
+              "label": "Storybook documentation"
+            },
+            {
+              "kind": "documentation",
+              "url": "https://www.sanity.io/ui/docs/component/button",
+              "label": "Sanity UI documentation"
+            },
+            {
+              "kind": "package",
+              "url": "https://www.npmjs.com/package/@sanity/ui",
+              "label": "npm package"
+            }
+          ],
+          "$extensions": {
+            "com.sanity.ui": {
+              "primitiveType": "button",
+              "styledComponent": true,
+              "themeColorPath": "theme.color.button[mode][tone][state]",
+              "dataUi": "Button"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

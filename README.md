@@ -281,7 +281,9 @@ The examples are read from disk at build time, so the guide automatically reflec
 
 A DSDS file has a `dsdsVersion` and a `documentation` array. Each entry in `documentation` is a named group containing an `items` array of typed entities. Entities of different types can be mixed freely.
 
-Two optional top-level properties describe the design system as a whole:
+Three optional top-level properties describe the design system as a whole:
+
+**`extends`** (optional) — declares that this document extends another DSDS document — typically a core design system. Identifies the base system by name, optional URL, and optional version. See [Systems of Systems: Extends](#systems-of-systems-extends).
 
 **`purpose`** (optional) — describes what the design system is for, who it serves, and when teams should or should not adopt it. Contains a `description` and an array of `useCases` with positive and negative scenarios.
 
@@ -650,6 +652,57 @@ Tool-specific internal identifiers go in `$extensions` using namespaced keys. Ex
 ```
 
 **Rule of thumb:** If it's a URL a human would click, it belongs in `links`. If it's an internal identifier consumed programmatically by a specific tool, it belongs in `$extensions`.
+
+## Systems of Systems: Extends
+
+Large organizations often maintain a **core design system** shared across the company and one or more **extension systems** that layer product-specific components, tokens, and guidelines on top of it. The `extends` mechanism makes this relationship explicit at two levels.
+
+### Document-level extends
+
+The root `extends` property declares that the entire document inherits from a base DSDS document. It names the core system, optionally provides a URL to the base document, and records the version being extended:
+
+```json
+{
+  "dsdsVersion": "0.1",
+  "extends": {
+    "system": "Acme Core Design System",
+    "url": "https://design.acme.com/v2/core.dsds.json",
+    "version": "2.0.0",
+    "description": "Enterprise extension layering admin components and stricter a11y rules on the core system."
+  },
+  "documentation": [ "..." ]
+}
+```
+
+### Entity-level extends
+
+Individual components and tokens can declare that they extend a specific base entity from the parent system. The entity-level `extends` includes a `name` (matching the base entity), an optional `system` override, and an optional `modifications` array that serves as a human-readable changelog:
+
+```json
+{
+  "kind": "component",
+  "name": "button",
+  "extends": {
+    "name": "button",
+    "description": "Adds an 'enterprise' variant and a 'theme' prop.",
+    "modifications": [
+      { "type": "added",     "target": "variant:enterprise", "description": "High-emphasis enterprise brand variant." },
+      { "type": "added",     "target": "prop:theme",         "description": "'default' | 'admin' sub-brand switcher." },
+      { "type": "inherited", "target": "guideline:anatomy",  "description": "Anatomy inherited from core without changes." }
+    ]
+  },
+  "displayName": "Button",
+  "description": "Enterprise Button — extends core with an enterprise variant and theme prop.",
+  "status": "stable",
+  "guidelines": [ "..." ]
+}
+```
+
+### What the schema does — and does not — do
+
+The `extends` declarations establish the *relationship* between a base system and its extensions. **Merge and resolution semantics — which guidelines are inherited, which are overridden, which are appended — are the responsibility of consuming tooling**, not the schema. DSDS provides a portable, machine-readable way to declare these relationships; tools decide how to resolve them.
+
+> **Example file:** See [`examples/extension-system.dsds.json`](examples/extension-system.dsds.json) for a complete enterprise extension system demonstrating document-level extends, entity-level extends on both components and tokens, the `modifications` changelog, and net-new entities that exist only in the extension.
 
 ## Default Values
 

@@ -1,0 +1,571 @@
+{
+  "$schema": "../schema/dsds.bundled.schema.json",
+  "dsdsVersion": "0.1",
+  "metadata": {
+    "systemName": "Acme Enterprise Extension",
+    "systemVersion": "1.0.0",
+    "organization": "Acme Corp — Enterprise Division",
+    "url": "https://enterprise.design.acme.com"
+  },
+  "extends": {
+    "system": "Acme Core Design System",
+    "url": "https://design.acme.com/v2/core.dsds.json",
+    "version": "2.0.0",
+    "description": "The Acme Enterprise Extension builds on the core Acme Design System, adding enterprise-specific components, stricter accessibility requirements, and product-specific token overrides for the enterprise product suite."
+  },
+  "purpose": {
+    "description": "The Enterprise Extension provides additional components, tokens, and guidelines required by Acme's enterprise product line — admin dashboards, data-heavy workflows, and compliance-sensitive interfaces. It inherits the full core system and layers enterprise-specific concerns on top.",
+    "useCases": [
+      {
+        "description": "When building an enterprise product within the Acme suite that requires data tables, advanced form patterns, or admin-specific UI.",
+        "kind": "positive"
+      },
+      {
+        "description": "When building a consumer-facing product that does not need enterprise-specific components or compliance constraints.",
+        "kind": "negative",
+        "alternative": {
+          "name": "Acme Core Design System",
+          "rationale": "The core system provides everything needed for consumer products. The enterprise extension adds weight and complexity (additional tokens, stricter rules) that are unnecessary outside the enterprise product line."
+        }
+      }
+    ]
+  },
+  "bestPractices": [
+    {
+      "guidance": "Always install the core design system as a peer dependency alongside the enterprise extension. Do not use the extension without the core.",
+      "rationale": "The extension inherits components, tokens, and guidelines from the core. Without the core installed, token references will be unresolved and inherited components will be missing.",
+      "kind": "required",
+      "category": "development"
+    },
+    {
+      "guidance": "When the enterprise extension provides an extended version of a core component (e.g., enterprise Button), use the extension's version. Do not import both the core and extension versions of the same component.",
+      "rationale": "Extended components are designed to be drop-in replacements. Importing both creates ambiguity about which version is in use and can cause style conflicts.",
+      "kind": "required",
+      "category": "development"
+    },
+    {
+      "guidance": "Enterprise products must meet WCAG 2.2 AA as a minimum. Components inherited from the core already meet this bar — do not weaken their accessibility behavior.",
+      "rationale": "Enterprise customers include government agencies and regulated industries that contractually require AA compliance. Weakening inherited accessibility behavior (e.g., removing aria attributes, reducing contrast) violates these contracts.",
+      "kind": "required",
+      "category": "accessibility",
+      "criteria": [
+        {
+          "url": "https://www.w3.org/TR/WCAG22/",
+          "label": "WCAG 2.2"
+        }
+      ]
+    }
+  ],
+  "documentation": [
+    {
+      "name": "Enterprise Components",
+      "description": "Components that extend or specialize core components for enterprise use cases, plus net-new enterprise-only components.",
+      "items": [
+        {
+          "kind": "component",
+          "name": "button",
+          "extends": {
+            "name": "button",
+            "system": "Acme Core Design System",
+            "version": "2.0.0",
+            "url": "https://design.acme.com/components/button",
+            "description": "Extends the core Button with an 'enterprise' variant, a 'theme' prop for sub-brand theming, and stricter content guidelines for enterprise compliance.",
+            "modifications": [
+              {
+                "type": "added",
+                "target": "variant:enterprise",
+                "description": "A new high-emphasis variant using the enterprise brand color. Used for primary actions in admin interfaces where the standard primary blue conflicts with status indicators."
+              },
+              {
+                "type": "added",
+                "target": "prop:theme",
+                "description": "A 'theme' prop accepting 'default' or 'admin' that switches the button's token set to the admin sub-brand palette."
+              },
+              {
+                "type": "modified",
+                "target": "guideline:best-practices",
+                "description": "Added enterprise-specific content guidelines requiring action verbs from an approved terminology list for compliance with enterprise UX writing standards."
+              },
+              {
+                "type": "inherited",
+                "target": "guideline:anatomy",
+                "description": "Anatomy (container, label, icon, focus-ring) inherited from core without changes."
+              },
+              {
+                "type": "inherited",
+                "target": "guideline:accessibility",
+                "description": "All accessibility requirements inherited from core. The enterprise extension does not weaken any WCAG compliance behavior."
+              }
+            ]
+          },
+          "displayName": "Button",
+          "description": "The enterprise Button extends the core Button with an additional 'enterprise' variant for admin interfaces, a 'theme' prop for sub-brand switching, and stricter content guidelines. All core anatomy, states, accessibility behavior, and base variants (primary, secondary, ghost, danger) are inherited without modification.",
+          "status": "stable",
+          "since": "1.0.0",
+          "category": "action",
+          "guidelines": [
+            {
+              "kind": "variants",
+              "items": [
+                {
+                  "kind": "enum",
+                  "name": "emphasis",
+                  "displayName": "Emphasis (extended)",
+                  "description": "Extends the core emphasis variants with an enterprise-specific option.",
+                  "values": [
+                    {
+                      "name": "primary",
+                      "displayName": "Primary",
+                      "description": "Inherited from core. High-emphasis — the main action on the surface. Uses a solid, filled background."
+                    },
+                    {
+                      "name": "secondary",
+                      "displayName": "Secondary",
+                      "description": "Inherited from core. Medium-emphasis — important but not the primary action. Uses a visible border and transparent background."
+                    },
+                    {
+                      "name": "ghost",
+                      "displayName": "Ghost",
+                      "description": "Inherited from core. Low-emphasis — tertiary actions, toolbar actions, or dense layouts. No background or border in the default state."
+                    },
+                    {
+                      "name": "danger",
+                      "displayName": "Danger",
+                      "description": "Inherited from core. High-emphasis destructive — signals an irreversible action."
+                    },
+                    {
+                      "name": "enterprise",
+                      "displayName": "Enterprise",
+                      "description": "Added by extension. A high-emphasis variant using the enterprise teal palette. Used for primary actions in admin dashboards where the standard primary blue conflicts with informational status indicators.",
+                      "purpose": {
+                        "kind": "purpose",
+                        "useCases": [
+                          {
+                            "description": "When the primary action sits alongside blue informational badges or status indicators in admin interfaces, and the standard primary blue would not be visually distinct.",
+                            "kind": "positive"
+                          },
+                          {
+                            "description": "When building consumer-facing UI that uses the standard Acme brand palette.",
+                            "kind": "negative",
+                            "alternative": {
+                              "name": "primary",
+                              "rationale": "The enterprise variant's teal color is specific to the admin sub-brand. Consumer products use the standard primary blue."
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "kind": "api",
+              "properties": [
+                {
+                  "name": "theme",
+                  "type": "'default' | 'admin'",
+                  "schema": {
+                    "type": "string",
+                    "enum": ["default", "admin"],
+                    "default": "default"
+                  },
+                  "description": "Switches the button's token set to the admin sub-brand palette. When set to 'admin', the button uses enterprise-specific color tokens for all variants. This prop is additive — it does not change the core API surface.",
+                  "required": false,
+                  "defaultValue": "default",
+                  "since": "1.0.0"
+                }
+              ]
+            },
+            {
+              "kind": "design-specifications",
+              "properties": {
+                "background": "button-enterprise-bg",
+                "text-color": "button-enterprise-text",
+                "border-color": "transparent",
+                "border-width": "0px",
+                "border-radius": "button-radius",
+                "icon-color": "button-enterprise-text"
+              },
+              "variants": [
+                {
+                  "name": "enterprise",
+                  "description": "Enterprise teal variant — used in admin interfaces.",
+                  "properties": {
+                    "background": "button-enterprise-bg",
+                    "text-color": "button-enterprise-text",
+                    "border-color": "transparent",
+                    "border-width": "0px",
+                    "icon-color": "button-enterprise-text"
+                  }
+                }
+              ],
+              "variantStates": [
+                {
+                  "variant": "enterprise",
+                  "state": "hover",
+                  "properties": {
+                    "background": "button-enterprise-hover-bg"
+                  }
+                },
+                {
+                  "variant": "enterprise",
+                  "state": "active",
+                  "properties": {
+                    "background": "button-enterprise-active-bg"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "best-practices",
+              "items": [
+                {
+                  "guidance": "Use action verbs from the enterprise approved terminology list for all button labels in admin interfaces.",
+                  "rationale": "Enterprise products are subject to UX writing reviews. Approved terminology ensures consistency across the admin suite and reduces review cycles.",
+                  "kind": "required",
+                  "category": "content",
+                  "target": "label"
+                },
+                {
+                  "guidance": "Do not use the enterprise variant outside of admin interfaces. Use the standard primary variant for all other contexts.",
+                  "rationale": "The enterprise teal color is tied to the admin sub-brand. Using it in consumer or marketing contexts violates the brand guidelines and creates visual inconsistency.",
+                  "kind": "prohibited",
+                  "category": "visual-design"
+                }
+              ]
+            }
+          ],
+          "links": [
+            {
+              "kind": "parent",
+              "url": "https://design.acme.com/components/button",
+              "label": "Core Button (base component)"
+            },
+            {
+              "kind": "source",
+              "url": "https://code.acme.com/enterprise-ds/src/components/button/button.tsx",
+              "label": "Enterprise Button source"
+            },
+            {
+              "kind": "storybook",
+              "url": "https://enterprise-storybook.acme.com/?path=/docs/components-button--docs",
+              "label": "Enterprise Storybook"
+            }
+          ]
+        },
+        {
+          "kind": "component",
+          "name": "data-grid",
+          "displayName": "Data Grid",
+          "description": "A high-performance, virtualized data grid for displaying and interacting with large tabular datasets. This component is enterprise-only — it has no equivalent in the core design system. It composes core components (Button, Checkbox, Badge, Tooltip) for its internal UI.",
+          "status": "stable",
+          "since": "1.0.0",
+          "category": "data-display",
+          "tags": ["table", "data", "enterprise", "admin", "virtualized"],
+          "guidelines": [
+            {
+              "kind": "purpose",
+              "useCases": [
+                {
+                  "description": "When displaying datasets with more than 50 rows that require sorting, filtering, pagination, or inline editing.",
+                  "kind": "positive"
+                },
+                {
+                  "description": "When displaying a simple list of fewer than 20 items without sorting or filtering needs.",
+                  "kind": "negative",
+                  "alternative": {
+                    "name": "data-table",
+                    "rationale": "The core data-table component is lighter weight and more appropriate for simple tabular displays. The data grid's virtualization and advanced features add unnecessary complexity for small datasets."
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "api",
+              "properties": [
+                {
+                  "name": "columns",
+                  "type": "ColumnDef[]",
+                  "description": "Column definitions specifying header labels, data accessors, sort behavior, filter type, and cell renderers.",
+                  "required": true,
+                  "since": "1.0.0"
+                },
+                {
+                  "name": "data",
+                  "type": "T[]",
+                  "description": "The dataset to display. Accepts an array of objects where each object represents a row. The grid virtualizes rendering — only visible rows are in the DOM.",
+                  "required": true,
+                  "since": "1.0.0"
+                },
+                {
+                  "name": "pageSize",
+                  "type": "number",
+                  "description": "Number of rows per page. When set, the grid displays pagination controls.",
+                  "required": false,
+                  "defaultValue": 50,
+                  "since": "1.0.0"
+                },
+                {
+                  "name": "selectable",
+                  "type": "boolean",
+                  "description": "When true, each row displays a checkbox for selection. A header checkbox toggles select-all.",
+                  "required": false,
+                  "defaultValue": false,
+                  "since": "1.0.0"
+                }
+              ],
+              "events": [
+                {
+                  "name": "onSort",
+                  "description": "Fires when a column header is clicked to change sort order.",
+                  "payload": "(column: string, direction: 'asc' | 'desc') => void",
+                  "since": "1.0.0"
+                },
+                {
+                  "name": "onSelectionChange",
+                  "description": "Fires when the row selection changes.",
+                  "payload": "(selectedRows: T[]) => void",
+                  "since": "1.0.0"
+                }
+              ]
+            }
+          ],
+          "links": [
+            {
+              "kind": "source",
+              "url": "https://code.acme.com/enterprise-ds/src/components/data-grid/data-grid.tsx",
+              "label": "Data Grid source"
+            },
+            {
+              "kind": "related",
+              "url": "https://design.acme.com/components/data-table",
+              "label": "Core Data Table (simpler alternative)"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Enterprise Tokens",
+      "description": "Tokens that extend or override core tokens for the enterprise product line.",
+      "items": [
+        {
+          "kind": "token",
+          "name": "color-action-enterprise",
+          "extends": {
+            "name": "color-action-primary",
+            "system": "Acme Core Design System",
+            "version": "2.0.0",
+            "url": "https://design.acme.com/tokens/color-action-primary",
+            "description": "The enterprise action color replaces the core primary blue with enterprise teal in admin interfaces. The core token's type, category, usage guidelines, and platform API mappings are inherited — only the resolved value changes.",
+            "modifications": [
+              {
+                "type": "modified",
+                "target": "value.resolved",
+                "description": "Changed from '#0055b3' (core primary blue) to '#00796b' (enterprise teal)."
+              },
+              {
+                "type": "modified",
+                "target": "value.reference",
+                "description": "Changed from 'color.blue.600' to 'color.teal.700'."
+              },
+              {
+                "type": "inherited",
+                "target": "tokenType",
+                "description": "Token type 'color' inherited from core."
+              },
+              {
+                "type": "inherited",
+                "target": "api",
+                "description": "All platform API mappings (CSS custom property, SCSS variable, JS constant, iOS/Android tokens) inherited from core."
+              }
+            ]
+          },
+          "tokenType": "color",
+          "category": "semantic",
+          "summary": "The enterprise primary action color — teal, replacing core blue for admin interfaces.",
+          "description": "The enterprise action color used for primary interactive elements in admin dashboards. Replaces the core primary blue (#0055b3) with enterprise teal (#00796b) to avoid conflict with informational blue indicators common in data-heavy admin UI.",
+          "value": {
+            "resolved": "#00796b",
+            "reference": "color.teal.700",
+            "resolution": "alias"
+          },
+          "api": {
+            "cssCustomProperty": "--color-action-enterprise",
+            "scssVariable": "$color-action-enterprise",
+            "jsConstant": "colorActionEnterprise"
+          },
+          "guidelines": [
+            {
+              "kind": "purpose",
+              "useCases": [
+                {
+                  "description": "When applying the primary action color to buttons, links, and interactive controls in enterprise admin interfaces.",
+                  "kind": "positive"
+                },
+                {
+                  "description": "When building consumer-facing Acme products.",
+                  "kind": "negative",
+                  "alternative": {
+                    "name": "color-action-primary",
+                    "rationale": "Consumer products use the core primary blue. The enterprise teal is specific to the admin sub-brand."
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "token",
+          "name": "color-action-enterprise-hover",
+          "tokenType": "color",
+          "category": "semantic",
+          "summary": "Hover state for the enterprise action color.",
+          "value": {
+            "resolved": "#00695c",
+            "reference": "color.teal.800",
+            "resolution": "alias"
+          },
+          "api": {
+            "cssCustomProperty": "--color-action-enterprise-hover"
+          }
+        },
+        {
+          "kind": "token",
+          "name": "color-action-enterprise-active",
+          "tokenType": "color",
+          "category": "semantic",
+          "summary": "Active/pressed state for the enterprise action color.",
+          "value": {
+            "resolved": "#004d40",
+            "reference": "color.teal.900",
+            "resolution": "alias"
+          },
+          "api": {
+            "cssCustomProperty": "--color-action-enterprise-active"
+          }
+        },
+        {
+          "kind": "token",
+          "name": "button-enterprise-bg",
+          "extends": {
+            "name": "button-primary-bg",
+            "system": "Acme Core Design System",
+            "description": "Replaces the core primary button background with the enterprise teal action color.",
+            "modifications": [
+              {
+                "type": "modified",
+                "target": "value.resolved",
+                "description": "Changed from core primary blue to enterprise teal."
+              }
+            ]
+          },
+          "tokenType": "color",
+          "category": "component",
+          "summary": "Background color for the enterprise button variant.",
+          "value": {
+            "resolved": "#00796b",
+            "reference": "color-action-enterprise",
+            "resolution": "alias"
+          },
+          "api": {
+            "cssCustomProperty": "--button-enterprise-bg"
+          }
+        },
+        {
+          "kind": "token",
+          "name": "button-enterprise-text",
+          "tokenType": "color",
+          "category": "component",
+          "summary": "Text color for the enterprise button variant.",
+          "value": {
+            "resolved": "#ffffff",
+            "reference": "color.white",
+            "resolution": "alias"
+          },
+          "api": {
+            "cssCustomProperty": "--button-enterprise-text"
+          }
+        },
+        {
+          "kind": "token",
+          "name": "button-enterprise-hover-bg",
+          "tokenType": "color",
+          "category": "component",
+          "summary": "Hover background for the enterprise button variant.",
+          "value": {
+            "resolved": "#00695c",
+            "reference": "color-action-enterprise-hover",
+            "resolution": "alias"
+          },
+          "api": {
+            "cssCustomProperty": "--button-enterprise-hover-bg"
+          }
+        },
+        {
+          "kind": "token",
+          "name": "button-enterprise-active-bg",
+          "tokenType": "color",
+          "category": "component",
+          "summary": "Active/pressed background for the enterprise button variant.",
+          "value": {
+            "resolved": "#004d40",
+            "reference": "color-action-enterprise-active",
+            "resolution": "alias"
+          },
+          "api": {
+            "cssCustomProperty": "--button-enterprise-active-bg"
+          }
+        },
+        {
+          "kind": "token",
+          "name": "color-data-grid-header-bg",
+          "tokenType": "color",
+          "category": "component",
+          "summary": "Background color for data grid column headers.",
+          "description": "A subtle background color that distinguishes the header row from data rows. Enterprise-only token — no core equivalent.",
+          "value": {
+            "resolved": "#f5f5f5",
+            "reference": "color.gray.50",
+            "resolution": "alias"
+          },
+          "api": {
+            "cssCustomProperty": "--color-data-grid-header-bg",
+            "scssVariable": "$color-data-grid-header-bg"
+          }
+        },
+        {
+          "kind": "token",
+          "name": "color-data-grid-row-hover",
+          "tokenType": "color",
+          "category": "component",
+          "summary": "Hover background for data grid rows.",
+          "value": {
+            "resolved": "#e8f5e9",
+            "reference": "color.green.50",
+            "resolution": "alias"
+          },
+          "api": {
+            "cssCustomProperty": "--color-data-grid-row-hover"
+          }
+        },
+        {
+          "kind": "token",
+          "name": "color-data-grid-row-selected",
+          "tokenType": "color",
+          "category": "component",
+          "summary": "Background for selected data grid rows.",
+          "value": {
+            "resolved": "#e0f2f1",
+            "reference": "color.teal.50",
+            "resolution": "alias"
+          },
+          "api": {
+            "cssCustomProperty": "--color-data-grid-row-selected"
+          }
+        }
+      ]
+    }
+  ]
+}
