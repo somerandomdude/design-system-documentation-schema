@@ -144,7 +144,7 @@ function buildSpecNav(activeSlug, pages) {
 
   return (
     `  <ds-nav-toggle target="ds-spec-nav"></ds-nav-toggle>\n` +
-    `  <ds-spec-nav title="DSDS 0.1" title-href="index.html" active="${esc(activeSlug)}">\n` +
+    `  <ds-spec-nav title="Design system documentation standard 0.1" title-href="index.html" active="${esc(activeSlug)}">\n` +
     children +
     `\n  </ds-spec-nav>`
   );
