@@ -52,7 +52,7 @@
   <div class="content content--with-toc">
     <main class="content__main" role="main">
       <div class="content__inner">
-        <ds-schema-header title="DSDS Status Definition" description="The lifecycle status of a design system artifact and optional platform-specific readiness tracking. Used across all DSDS document types to indicate maturity and readiness. The `status` union def accepts either a plain statusValue string (e.g., &quot;stable&quot;) for the common case, or a full statusObject when platform-specific tracking or deprecation notices are needed. The statusObject consolidates overall status, per-platform readiness, and deprecationNotice into a single reusable object with a built-in conditional requiring deprecationNotice when status is 'deprecated'." source="common/status.schema.json"></ds-schema-header>
+        <ds-schema-header title="DSDS Status Definition" description="Lifecycle status of a design system artifact with optional per-platform readiness tracking. The `status` union def accepts a plain statusValue string (e.g., &quot;stable&quot;) or a full statusObject when platform-specific tracking or deprecation notices are needed. The statusObject holds overall status, per-platform readiness, and deprecationNotice in one reusable object; deprecationNotice is required when status is 'deprecated'." source="common/status.schema.json"></ds-schema-header>
 <ds-def-index>
 <p><strong>4 definitions</strong> in this file:</p>
 <ul>
@@ -64,12 +64,12 @@
 </ds-def-index>
 <ds-def-section name="statusValue" anchor="statusvalue" description="A lifecycle status value. MUST be lowercase kebab-case. Standard values: 'draft' (under development, not ready for use), 'experimental' (available but API may change without notice), 'stable' (production-ready, changes follow semver), 'deprecated' (scheduled for removal). Custom values are permitted (e.g., 'sunset', 'archived', 'beta') and MUST follow the same pattern." type="string">
 </ds-def-section>
-<ds-def-section name="platformStatus" anchor="platformstatus" description="The readiness status of an artifact on a specific platform. Tracks lifecycle stage, version availability, and optional deprecation notices independently per platform." type="object">
+<ds-def-section name="platformStatus" anchor="platformstatus" description="Readiness status of an artifact on a specific platform. Tracks lifecycle stage, version availability, and optional deprecation notices per platform." type="object">
 <ds-prop-table>
-  <ds-prop name="status" type="&lt;ds-type-ref href=&quot;common-status.html#statusvalue&quot;&gt;statusValue&lt;/ds-type-ref&gt;" required>The lifecycle status of the artifact on this platform. Uses the same vocabulary as the top-level status: 'draft', 'experimental', 'stable', 'deprecated'. Custom values are permitted.</ds-prop>
+  <ds-prop name="status" type="&lt;ds-type-ref href=&quot;common-status.html#statusvalue&quot;&gt;statusValue&lt;/ds-type-ref&gt;" required>Lifecycle status of the artifact on this platform. Uses the same vocabulary as the top-level status: 'draft', 'experimental', 'stable', 'deprecated'. Custom values are permitted.</ds-prop>
   <ds-prop name="since" type="string">The version in which this artifact became available on this platform.</ds-prop>
   <ds-prop name="deprecationNotice" type="string">Required when status is 'deprecated'. Explains what to use instead on this platform.</ds-prop>
-  <ds-prop name="description" type="string">Optional notes about the artifact's status on this platform (e.g., 'Available as a Web Component wrapper; native implementation planned for v4').</ds-prop>
+  <ds-prop name="description" type="string">Notes about the artifact's status on this platform (e.g., 'Available as a Web Component wrapper; native implementation planned for v4').</ds-prop>
 </ds-prop-table>
 <ds-note variant="warning"><strong>Conditional:</strong> When <ds-code inline>status</ds-code> is <ds-code inline>"deprecated"</ds-code>, then <ds-code inline>deprecationNotice</ds-code> is required.</ds-note>
 <ds-cross-refs><strong>References:</strong> 
@@ -98,11 +98,11 @@
 ]</ds-code>
 </ds-def-example>
 </ds-def-section>
-<ds-def-section name="statusObject" anchor="statusobject" description="The consolidated lifecycle status of an artifact. Contains the overall status value, optional per-platform readiness tracking, and a conditional deprecation notice. Every artifact that carries status uses this single object rather than spreading status, platformStatus, and deprecationNotice as separate sibling properties. When the overall status is 'deprecated', the deprecationNotice property becomes required." type="object">
+<ds-def-section name="statusObject" anchor="statusobject" description="Consolidated lifecycle status of an artifact. Holds the overall status value, optional per-platform readiness tracking, and a conditional deprecation notice. All status-bearing artifacts use this single object instead of separate status, platformStatus, and deprecationNotice siblings. When overall status is 'deprecated', deprecationNotice becomes required." type="object">
 <ds-prop-table>
-  <ds-prop name="overall" type="&lt;ds-type-ref href=&quot;common-status.html#statusvalue&quot;&gt;statusValue&lt;/ds-type-ref&gt;" required>The overall lifecycle status of the artifact. Represents an editorial judgment about the artifact's maturity — it is not required to be the most or least advanced of the platform statuses. Tools SHOULD display this as the primary status indicator.</ds-prop>
-  <ds-prop name="platforms" type="map&amp;lt;string, &lt;ds-type-ref href=&quot;common-status.html#platformstatus&quot;&gt;platformStatus&lt;/ds-type-ref&gt;&amp;gt;" required>Platform-specific readiness or availability status. Keys are platform identifiers (freeform strings — common values include 'react', 'web-component', 'ios', 'android', 'flutter', 'figma', 'sketch', and 'compose'). Values describe the artifact's status on that platform independently. An artifact MAY be 'stable' overall while individual platforms are still 'experimental' or 'draft'.</ds-prop>
-  <ds-prop name="deprecationNotice" type="string">Required when status is 'deprecated'. MUST explain what to use instead and provide a migration path. When present, tools SHOULD display this prominently alongside the status indicator.</ds-prop>
+  <ds-prop name="overall" type="&lt;ds-type-ref href=&quot;common-status.html#statusvalue&quot;&gt;statusValue&lt;/ds-type-ref&gt;" required>Overall lifecycle status of the artifact. Represents an editorial judgment about maturity — not required to match the most or least advanced platform status. Tools SHOULD display this as the primary status indicator.</ds-prop>
+  <ds-prop name="platforms" type="map&amp;lt;string, &lt;ds-type-ref href=&quot;common-status.html#platformstatus&quot;&gt;platformStatus&lt;/ds-type-ref&gt;&amp;gt;" required>Per-platform readiness or availability status. Keys are platform identifiers (freeform strings — common values include 'react', 'web-component', 'ios', 'android', 'flutter', 'figma', 'sketch', and 'compose'). Values describe the artifact's status on that platform. An artifact MAY be 'stable' overall while individual platforms are still 'experimental' or 'draft'.</ds-prop>
+  <ds-prop name="deprecationNotice" type="string">Required when status is 'deprecated'. MUST explain what to use instead and provide a migration path. Tools SHOULD display this prominently alongside the status indicator.</ds-prop>
 </ds-prop-table>
 <ds-note variant="warning"><strong>Conditional:</strong> When <ds-code inline>overall</ds-code> is <ds-code inline>"deprecated"</ds-code>, then <ds-code inline>deprecationNotice</ds-code> is required.</ds-note>
 <ds-cross-refs><strong>References:</strong> 
@@ -181,7 +181,7 @@
 ]</ds-code>
 </ds-def-example>
 </ds-def-section>
-<ds-def-section name="status" anchor="status" description="The lifecycle status of an artifact. Accepts either a plain status string (e.g., &quot;stable&quot;, &quot;deprecated&quot;) for the simple case, or a full status object with per-platform tracking and deprecation notices for the detailed case. Tools that consume this property SHOULD normalize the string form to { &quot;overall&quot;: value } internally for consistent processing.">
+<ds-def-section name="status" anchor="status" description="Lifecycle status of an artifact. Accepts a plain status string (e.g., &quot;stable&quot;, &quot;deprecated&quot;) for the simple case, or a full status object with per-platform tracking and deprecation notices. Tools SHOULD normalize the string form to { &quot;overall&quot;: value } for consistent processing.">
 <p><strong>Accepts one of:</strong></p>
 <ul>
 <li><a href="undefined.html#statusvalue">statusValue</a></li>

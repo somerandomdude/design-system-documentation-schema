@@ -2,31 +2,31 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://designsystemdocspec.org/v0.1/guidelines/interaction.schema.json",
   "title": "DSDS Interactions Guideline",
-  "description": "Documents the interaction flow of a pattern — the ordered sequence of steps describing triggers, system responses, and component behavior. Each item in the interactions array is a single step or event in the flow, describing what triggers it, what happens, which components are involved, and optional visual examples. Multiple items in sequence describe the chronological flow of a user journey from trigger through resolution.",
+  "description": "Documents the interaction flow of a pattern — an ordered sequence of steps describing triggers, system responses, and component behavior. Each item is a single step in the flow, describing what triggers it, what happens, which components are involved, and optional visual examples. Multiple items in sequence describe the chronological flow of a user journey from trigger through resolution.",
   "$defs": {
     "interactionEntry": {
       "type": "object",
-      "description": "A single step in an interaction flow. Each interaction describes a trigger (what initiates the step), a description (what happens), the components involved, and optional examples illustrating the step.",
+      "description": "A single step in an interaction flow. Each interaction describes a trigger (what starts the step), a description (what happens), the components involved, and optional examples.",
       "required": ["description"],
       "properties": {
         "trigger": {
           "type": "string",
-          "description": "What initiates this interaction step. Describes the user action, system event, or condition that causes this step to occur (e.g., 'User submits the form by activating the submit button', 'API returns a 422 response', 'Client-side validation detects one or more invalid fields'). When omitted, the step is a continuation of the previous step's flow without a new trigger."
+          "description": "What starts this interaction step — a user action, system event, or condition (e.g., 'User submits the form by activating the submit button', 'API returns a 422 response'). When omitted, the step continues the previous step's flow without a new trigger."
         },
         "description": {
           "$ref": "../common/rich-text.schema.json#/$defs/richText",
-          "description": "What happens during this step — the system's response, visual changes, state transitions, and any user-facing feedback. CommonMark supported."
+          "description": "What happens during this step — the system's response, visual changes, state transitions, and user-facing feedback. CommonMark supported."
         },
         "components": {
           "type": "array",
-          "description": "The names of the components involved in this interaction step. Each name MUST match the `name` of a component documented elsewhere in the system. This creates a cross-reference between the pattern's interaction flow and the individual component documentation.",
+          "description": "Names of the components involved in this step. Each name MUST match the `name` of a component documented elsewhere in the system. Creates a cross-reference between the pattern's interaction flow and individual component docs.",
           "items": {
             "type": "string"
           }
         },
         "examples": {
           "type": "array",
-          "description": "Visual or interactive examples illustrating this specific interaction step — screenshots of the state after this step, screen recordings of the transition, or code snippets showing the implementation.",
+          "description": "Visual or interactive examples for this step — screenshots of the resulting state, screen recordings of the transition, or code snippets showing the implementation.",
           "items": {
             "$ref": "../common/example.schema.json#/$defs/example"
           }
@@ -36,17 +36,17 @@
     },
     "interactions": {
       "type": "object",
-      "description": "Documents the interaction flow of a pattern as an ordered sequence of steps. Each item describes a single step — what triggers it, what the system does in response, which components are involved, and optional examples. The ordering of items is critical: it represents the chronological flow of the user journey. Authors SHOULD include steps for the initial trigger, the system's response, recovery or correction steps, and completion. Multiple interaction guidelines on the same pattern can document alternative flows (e.g., a happy path and an error path).",
+      "description": "Documents the interaction flow of a pattern as an ordered sequence of steps. Each item describes a single step — what triggers it, what the system does in response, which components are involved, and optional examples. Item ordering is critical: it represents the chronological flow of the user journey. Authors SHOULD include steps for the initial trigger, the system's response, recovery or correction steps, and completion. Multiple interaction guidelines on the same pattern can document alternative flows (e.g., a happy path and an error path).",
       "required": ["kind", "items"],
       "properties": {
         "kind": {
           "type": "string",
           "const": "interactions",
-          "description": "Identifies this guideline as an interactions specification."
+          "description": "Identifies this guideline as an interactions spec."
         },
         "items": {
           "type": "array",
-          "description": "The interaction steps in chronological order. Each item documents a single step in the flow with its trigger, description, involved components, and optional examples. The ordering is significant — tools SHOULD preserve and display steps in this order to represent the temporal sequence of the interaction.",
+          "description": "The interaction steps in chronological order. Each item documents a single step with its trigger, description, involved components, and optional examples. Ordering is significant — tools SHOULD preserve and display steps in this order to represent the temporal sequence.",
           "items": {
             "$ref": "#/$defs/interactionEntry"
           },

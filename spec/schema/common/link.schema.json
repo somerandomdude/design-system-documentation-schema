@@ -2,39 +2,39 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://designsystemdocspec.org/v0.1/link.schema.json",
   "title": "DSDS Link Definition",
-  "description": "A typed reference to an external resource, a related artifact, or an internal DSDS entity. Used across all DSDS document types for source code, design files, documentation, packages, artifact relationships, and internal cross-references. Links unify what was previously split between the `links` array (external URLs) and the `artifact-reference` guideline type (internal entity references) into a single relationship model. Every link requires a `kind` and at least one of `url` (for external resources) or `name` (for internal DSDS artifact references). Both can be present when an internal artifact also has an addressable URL.",
+  "description": "A typed reference to an external resource, a related artifact, or an internal DSDS entity. Used across all DSDS document types for source code, design files, docs, packages, artifact relationships, and internal cross-references. Every link requires a `kind` and at least one of `url` (for external resources) or `name` (for internal DSDS artifact references). Both can be present when an internal artifact also has an addressable URL.",
   "$defs": {
     "link": {
       "type": "object",
-      "description": "A typed reference to an external resource or an internal DSDS artifact. Links serve three purposes: pointing to external resources (source code, design files, documentation, packages), expressing relationships to other DSDS artifacts by name (components in a pattern, token groups in a style), and combining both when an internal artifact also has an addressable URL. The `kind` property classifies the reference. Standard external types: 'source', 'design', 'storybook', 'documentation', 'package', 'repository'. Standard relationship types: 'alternative', 'parent', 'child', 'related'. Standard artifact types: 'component', 'token', 'token-group', 'style', 'pattern', 'theme'. Custom values are permitted.",
+      "description": "A typed reference to an external resource or an internal DSDS artifact. Links point to external resources (source code, design files, docs, packages), express relationships to other DSDS artifacts by name, or combine both when an internal artifact also has an addressable URL. The `kind` property classifies the reference. Standard external types: 'source', 'design', 'storybook', 'documentation', 'package', 'repository'. Standard relationship types: 'alternative', 'parent', 'child', 'related'. Standard artifact types (for internal references): 'component', 'token', 'token-group', 'style', 'pattern', 'theme'. Custom values are permitted.",
       "required": ["kind"],
       "anyOf": [{ "required": ["url"] }, { "required": ["name"] }],
       "properties": {
         "kind": {
           "type": "string",
-          "description": "The category of the linked resource or relationship. Standard external types: 'source', 'design', 'storybook', 'documentation', 'package', 'repository'. Standard relationship types: 'alternative', 'parent', 'child', 'related'. Standard artifact types (for internal references): 'component', 'token', 'token-group', 'style', 'pattern', 'theme'. Custom values are permitted and SHOULD be lowercase strings matching ^[a-z][a-z0-9-]*$."
+          "description": "The category of the linked resource or relationship. Standard external types: 'source', 'design', 'storybook', 'documentation', 'package', 'repository'. Standard relationship types: 'alternative', 'parent', 'child', 'related'. Standard artifact types (for internal references): 'component', 'token', 'token-group', 'style', 'pattern', 'theme'. Custom values are permitted and SHOULD match ^[a-z][a-z0-9-]*$."
         },
         "url": {
           "type": "string",
           "format": "uri",
-          "description": "The URL of the linked resource. MUST be a valid absolute URI. Required for external resource links. Optional for internal artifact references (where `name` identifies the artifact). When both `url` and `name` are present, `url` points to the artifact's documentation page or canonical location while `name` provides the machine-readable cross-reference."
+          "description": "The URL of the linked resource. MUST be a valid absolute URI. Required for external resource links. Optional for internal artifact references (where `name` identifies the artifact). When both `url` and `name` are present, `url` points to the artifact's docs page and `name` is the machine-readable cross-reference."
         },
         "name": {
           "type": "string",
-          "description": "The name of a referenced DSDS artifact (e.g., 'button', 'form-field', 'color-text', 'spacing'). MUST match the `name` property of a documented DSDS artifact. Required for internal artifact references. Optional for external resource links. When present, tools SHOULD resolve this name against the artifact catalog to create navigable cross-references."
+          "description": "The name of a referenced DSDS artifact (e.g., 'button', 'form-field', 'color-text'). MUST match the `name` property of a documented DSDS artifact. Required for internal artifact references. Optional for external resource links. When present, tools SHOULD resolve this name against the artifact catalog to create navigable cross-references."
         },
         "label": {
           "type": "string",
-          "description": "The display text for this link — what a user sees when the link is rendered in documentation (e.g., 'React component source', 'Design file — variants', 'Button component'). Use label for the human-readable name of the resource. For describing the functional relationship an internal artifact has to the current entity, use `role` instead."
+          "description": "Display text for this link — what a user sees when the link renders (e.g., 'React component source', 'Design file — variants', 'Button component'). Use for the human-readable resource name. To describe an internal artifact's functional relationship, use `role` instead."
         },
         "role": {
           "type": "string",
-          "description": "The functional relationship this artifact has to the current entity — what part it plays in the current context (e.g., 'Primary action trigger', 'Error summary container', 'Provides semantic text color tokens'). Distinct from `label`, which is display text for the link itself. Use role for internal artifact references to explain *why* this artifact is referenced, not just *what* it is. When omitted, the relationship is a general association without a specific role."
+          "description": "The functional relationship this artifact has to the current entity — what part it plays (e.g., 'Primary action trigger', 'Error summary container', 'Provides semantic text color tokens'). Distinct from `label`, which is display text for the link itself. Use for internal artifact references to explain *why* this artifact is linked. When omitted, the link is a general association."
         },
         "required": {
           "type": "boolean",
           "default": false,
-          "description": "Whether this linked artifact is required for the parent entity to function correctly. Primarily used for internal artifact references — for example, a form-validation pattern might mark 'form-field' as required and 'toast' as optional. Defaults to false when omitted. Not applicable to external resource links."
+          "description": "Whether this linked artifact is required for the parent entity to function. Used for internal artifact references — for example, a form-validation pattern might mark 'form-field' as required and 'toast' as optional. Defaults to false. Not applicable to external resource links."
         }
       },
       "additionalProperties": false

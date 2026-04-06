@@ -17,8 +17,8 @@ DSDS (Design System Documentation Standard) is a JSON-based format for documenti
 
 - **Structured** — every section has a defined shape, no guessing
 - **Machine-readable** — tools can parse, generate, validate, and transform it
-- **Portable** — not locked to any documentation tool or platform
-- **Extensible** — add vendor metadata without breaking interoperability
+- **Portable** — not locked to any docs tool or platform
+- **Extensible** — add vendor metadata without breaking compatibility
 - **Validatable** — JSON Schema catches errors before they reach consumers
 
 ---
@@ -43,7 +43,7 @@ A DSDS file is a JSON document with a version and one or more documentation grou
 }
 ```
 
-That's the entire top-level structure:
+That's the full top-level structure:
 
 - `dsdsVersion` — always `"0.1"` for this version
 - `documentation` — array of named groups, each with an `items` array
@@ -51,7 +51,7 @@ That's the entire top-level structure:
 
 <ds-callout variant="tip">
 
-**Tip:** You can organize entities into multiple groups — one for foundations, one for components, etc. — or put everything in a single group. The schema allows both.
+**Tip:** You can split entities into groups — one for base styles, one for components, one for tokens. Or put them all in one group. The schema allows both.
 
 </ds-callout>
 
@@ -59,16 +59,16 @@ That's the entire top-level structure:
 
 ## Entity Types
 
-Every entity has a `kind` discriminator that tells tools what type of thing it is. There are six kinds.
+Every entity has a `kind` field that tells tools what type of thing it is. There are six kinds.
 
 | Kind | Code | Description |
 |------|------|-------------|
 | component | `"component"` | A reusable UI element — buttons, inputs, modals. Supports anatomy, API, variants, states, and design specs. |
 | token | `"token"` | A single design token — color, spacing, typography. Carries a resolved value, platform API mappings, and usage rules. |
-| token-group | `"token-group"` | A hierarchical group of related tokens. Recursive — groups can contain groups. |
+| token-group | `"token-group"` | A nested group of related tokens. Recursive — groups can contain groups. |
 | theme | `"theme"` | A named set of token value overrides — dark mode, high-contrast, compact density, brand variants. |
-| style | `"style"` | A macro-level visual foundation — color, typography, spacing, elevation. Carries principles, scales, and motion definitions. |
-| pattern | `"pattern"` | A broad interaction pattern — navigation, error messaging, empty states. Describes how components compose to solve a user need. |
+| style | `"style"` | A design base — color, typography, spacing, elevation. Carries principles, scales, and motion definitions. |
+| pattern | `"pattern"` | A broad action pattern — nav, error messaging, empty states. Describes how components compose to solve a user need. |
 
 ### Common properties
 
@@ -76,12 +76,12 @@ Every entity shares these fields:
 
 | Property | Required | Description |
 |----------|----------|-------------|
-| `kind` | Yes | Entity type discriminator |
-| `name` | Yes\* | Machine-readable identifier (`^[a-z][a-z0-9-]*$`, except tokens) |
+| `kind` | Yes | Entity type |
+| `name` | Yes\* | Machine-readable ID (`^[a-z][a-z0-9-]*$`, except tokens) |
 | `displayName` | Yes\* | Human-readable label |
 | `description` | Yes\* | What this entity is and does (CommonMark supported) |
 | `status` | No | `"stable"`, `"experimental"`, `"draft"`, `"deprecated"` — or an object with per-platform status |
-| `since` | No | Version when this entity was introduced |
+| `since` | No | Version when this entity first shipped |
 | `tags` | No | Array of freeform category tags |
 | `guidelines` | No | Array of typed guideline objects |
 
@@ -89,7 +89,7 @@ Every entity shares these fields:
 
 ### Status: string or object
 
-For the simple case, status is just a string:
+For the simple case, status is a string:
 
 ```json
 { "status": "stable" }
@@ -113,19 +113,19 @@ When you need per-platform tracking:
 
 ## The Guidelines System
 
-All structured documentation lives in the `guidelines` array on each entity. Each guideline is a typed container identified by `kind`.
+Structured docs live in the `guidelines` array on each entity. Each guideline is typed by its `kind` field.
 
-| Kind | Available On | Description |
+| Kind | Applies To | Description |
 |------|-------------|-------------|
 | `anatomy` | component, pattern | Named parts that make up the entity, with optional design-token mapping per part |
 | `api` | component | Properties, events, slots, and CSS custom properties |
 | `variants` | component, pattern | Named variant axes (e.g. size, color) with discrete values |
 | `states` | component, pattern | Interactive states (hover, disabled, …) with per-state token overrides |
-| `purpose` | all | When to use / when not to use, with alternatives for negative cases |
+| `purpose` | all | When to use / when not to use, with options for negative cases |
 | `best-practices` | all | Actionable guidance paired with rationale and enforcement level |
 | `accessibility` | component, pattern | WCAG level, keyboard interactions, ARIA attributes, screen-reader behavior |
 | `content` | component, pattern | Writing and labelling guidelines for UI text |
-| `interaction` | component, pattern | Step-by-step interaction flows with optional wireframes |
+| `interaction` | component, pattern | Step-by-step action flows with optional wireframes |
 | `design-specifications` | component, pattern | Concrete measurements, spacing, and sizing values for implementors |
 | `scale` | style | Named stops along a design scale (e.g. spacing-100…spacing-900) |
 | `motion` | style | Named animation/transition presets with duration, easing, and purpose |
@@ -133,7 +133,7 @@ All structured documentation lives in the `guidelines` array on each entity. Eac
 
 ### Purpose: when to use it
 
-The `purpose` guideline provides concrete scenarios. Each use case is `"positive"` (do use) or `"negative"` (don't use, with an alternative):
+The `purpose` guideline lists scenarios. Each use case is `"positive"` (do use) or `"negative"` (don't use, with an option):
 
 ```json
 {
@@ -179,7 +179,7 @@ Enforcement levels: <ds-badge>required</ds-badge> (MUST), <ds-badge>encouraged</
 
 ## Minimal Examples
 
-These are the smallest valid entities — the floor of documentation. Copy one, fill in your content, and add guidelines as you go.
+These are the smallest valid entities — the bare minimum. Copy one, fill in your content, and add guidelines as you go.
 
 ### Component
 
@@ -195,7 +195,7 @@ A token needs `kind`, `name`, `tokenType`, and a `value` with at least `resolved
 
 ### Token Group
 
-Groups organize tokens into hierarchies. The `children` array can contain tokens or nested groups.
+Groups arrange tokens in a tree. The `children` array can contain tokens or nested groups.
 
 <ds-example file="token-group.json" label="minimal token-group" />
 
@@ -207,7 +207,7 @@ A theme provides `overrides` — an array of token + value pairs that replace th
 
 ### Style
 
-A style documents a visual foundation. Guidelines like `principles`, `scale`, and `motion` are specific to styles.
+A style documents a design base. Guidelines like `principles`, `scale`, and `motion` are specific to styles.
 
 <ds-example file="style.json" label="minimal style" />
 
@@ -227,11 +227,11 @@ Here's a complete, minimal DSDS file with one of each entity type:
 
 ## Validate Your Document
 
-DSDS includes a JSON Schema you can use to validate any document.
+DSDS ships with a JSON Schema for validating your documents.
 
 ### Using the bundled schema
 
-Point your `$schema` at the bundled schema for editor autocompletion and inline validation:
+Add `$schema` to get editor autocompletion and inline validation:
 
 ```json
 {
@@ -264,10 +264,10 @@ You've seen the basics. Here's where to go deeper.
 
 | Resource | Description |
 |----------|-------------|
-| [Full Specification](index.html) | Complete schema reference for every field and constraint |
+| [Full Spec](index.html) | Complete schema reference for every field and constraint |
 | [Interactive Samples](samples.html) | Side-by-side JSON ↔ rendered documentation for real-world entities |
 | [JSON Schema](https://github.com/somerandomdude/design-system-documentation-schema/tree/main/spec/schema) | The raw `.schema.json` files — use for editor autocompletion |
-| [Example Files](https://github.com/somerandomdude/design-system-documentation-schema/tree/main/spec/examples) | Complete, validated example documents for every entity and guideline type |
+| [Example Files](https://github.com/somerandomdude/design-system-documentation-schema/tree/main/spec/examples) | Complete, valid example documents for every entity and guideline type |
 | [GitHub Discussions](https://github.com/somerandomdude/design-system-documentation-schema/discussions) | Ask questions, share ideas, propose changes |
 
 <ds-callout variant="tip">
@@ -276,7 +276,7 @@ You've seen the basics. Here's where to go deeper.
 
 1. Copy the [minimal document](#minimal) above
 2. Replace the example entities with your own design system's components and tokens
-3. Add `guidelines` to each entity as your documentation matures
-4. Validate with `npm run validate` to catch structural errors early
+3. Add `guidelines` to each entity as your docs grow
+4. Validate with `npm run validate` to catch schema errors early
 
 </ds-callout>

@@ -19,11 +19,24 @@ badge: Draft
 
 ## Abstract
 
-This document defines a standard, machine-readable format for design system documentation. The format covers six entity types: **components**, **design tokens** (including hierarchical token groups), **themes**, **styles**, and **patterns**. Its purpose is to establish a portable, tool-agnostic structure that enables software to create, edit, validate, and display design system documentation consistently.
+This document defines a standard, machine-readable format for design system docs. The format covers six entity types: **components**, **design tokens** (including nested token groups), **themes**, **styles**, and **patterns**. It defines a portable, tool-agnostic structure. Software can create, edit, validate, and display design system docs using this structure.
 
-All structured documentation — best practices, anatomy, API specifications, variants, states, accessibility specs, use cases, examples, design specifications, principles, scales, motion definitions, content guidelines, and interactions — is expressed through a unified **guidelines** system. Each guideline is a typed container with a `type` discriminator. Artifact types accept only the guideline types relevant to them: component guidelines accept component-specific and general types, pattern guidelines accept pattern-specific and general types, and so on.
+All structured docs use a unified **guidelines** system. The guideline types are:
 
-This specification is complementary to the [W3C Design Tokens Format Module](https://www.w3.org/community/reports/design-tokens/CG-FINAL-format-20251028/). Where the Design Tokens Format Module defines the interchange format for token _values_, DSDS defines the interchange format for the _documentation_ that surrounds components, tokens, styles, and patterns.
+- best practices
+- anatomy
+- API specs
+- variants and states
+- accessibility specs
+- use cases and examples
+- design specifications
+- principles, scales, and motion definitions
+- content guidelines
+- interactions
+
+Each guideline is a typed container with a `type` discriminator. Entity types accept only the guideline types relevant to them. Components accept component-scoped and general types. Patterns accept pattern-scoped and general types. Styles and tokens each accept their own scoped types plus general types.
+
+This specification is a companion to the [W3C Design Tokens Format Module](https://www.w3.org/community/reports/design-tokens/CG-FINAL-format-20251028/). The Design Tokens Format Module defines the interchange format for token _values_. DSDS defines the interchange format for the _docs_ that surround components, tokens, styles, and patterns.
 
 ## Status of This Document
 
@@ -33,12 +46,12 @@ This is a draft specification and is subject to change. It has not been endorsed
 
 ## Schema Architecture
 
-The DSDS schema is organized into three directories plus a root schema:
+The DSDS schema uses three directories plus a root schema:
 
 | Directory | Contents |
 |---|---|
 | `common/` | Shared primitives used across all schemas — richText, statusObject, link, example, extensions, metadata, useCases |
-| `entities/` | Artifact type schemas — component, token (including tokenGroup), theme, style, pattern |
+| `entities/` | Entity type schemas — component, token (including tokenGroup), theme, style, pattern |
 | `guidelines/` | Guideline type schemas — best-practice, anatomy, api, variant, state, design-specifications, accessibility, purpose, scale, principle, motion, content, interaction, plus the scoped union (guideline.schema.json) |
 
 ```
@@ -79,7 +92,7 @@ spec/schema/
 
 ## Document Structure
 
-A DSDS file is a JSON object with a `dsdsVersion` string and a `documentation` array. Each documentation group is a named collection containing one or more typed artifacts.
+A DSDS file is a JSON object with a `dsdsVersion` string and a `documentation` array. Each documentation group is a named collection of one or more typed entities.
 
 ### Root Properties
 
@@ -89,14 +102,14 @@ A DSDS file is a JSON object with a `dsdsVersion` string and a `documentation` a
 | `dsdsVersion` | `string` | Yes | The version of this specification the document conforms to. _MUST_ be `"0.1"` for this version. |
 | `metadata` | `object` | No | System-level metadata about the design system. See [Metadata](#metadata). |
 | `purpose` | `object` | No | System-level purpose describing what the design system is for and when to adopt it. See [Root Purpose](#root-purpose). |
-| `bestPractices` | `array` | No | System-level best practices that apply across the entire design system. See [Root Best Practices](#root-best-practices). |
+| `bestPractices` | `array` | No | System-level best practices that apply across the whole design system. See [Root Best Practices](#root-best-practices). |
 | `documentation` | `array` | Yes | One or more documentation groups. See [Documentation Groups](#documentation-groups). |
 | `extends` | `object` | No | Declares that this document extends another DSDS document — typically a core design system. See [Extends](#extends). |
 | `$extensions` | `object` | No | Vendor-specific extensions. See [Extensions](#extensions). |
 
 ### Documentation Groups
 
-Each entry in `documentation` is a named collection of typed entities. Entities of different types can be mixed freely in a single `items` array — there is no need to separate components from tokens from styles. Each entity identifies itself via a `type` discriminator property.
+Each entry in `documentation` is a named collection of typed entities. Different entity types can mix freely in a single `items` array — no need to separate components from tokens from styles. Each entity identifies itself with a `type` discriminator property.
 
 | Property | Type | Required | Description |
 |---|---|---|---|
@@ -107,18 +120,18 @@ Each entry in `documentation` is a named collection of typed entities. Entities 
 
 ### Entity Type Discriminators
 
-Every entity in the `items` array carries a `type` property that identifies what kind of entity it is. The `type` is a required string const on every entity schema.
+Every entity in the `items` array carries a `type` property that identifies its kind. The `type` is a required string const on every entity schema.
 
 | `type` value | Entity | Defined in |
 |---|---|---|
 | `"component"` | A reusable UI component | `entities/component.schema.json` |
 | `"token"` | A single design token | `entities/token.schema.json` |
-| `"token-group"` | A hierarchical group of related tokens (recursive) | `entities/token.schema.json` |
+| `"token-group"` | A nested group of related tokens (recursive) | `entities/token.schema.json` |
 | `"theme"` | A named set of token value overrides | `entities/theme.schema.json` |
 | `"style"` | A macro-level visual style (foundation) | `entities/style.schema.json` |
 | `"pattern"` | A broad interaction pattern | `entities/pattern.schema.json` |
 
-This discriminated union model means a documentation group can contain any mix of entity types in a single flat array:
+This discriminated union model means a documentation group can hold any mix of entity types in a single flat array:
 
 ```json
 {
@@ -146,14 +159,14 @@ This discriminated union model means a documentation group can contain any mix o
 
 ### Root Purpose
 
-The optional `purpose` property on the root document describes what the design system is for, who it serves, and when teams should or should not adopt it. This is a **system-level** property — it applies to the design system as a whole, not to individual entities.
+The optional `purpose` property on the root document describes what the design system is for, who it serves, and when teams should or should not adopt it. This is a **system-level** property — it applies to the design system as a whole, not to each entity.
 
 | Property | Type | Required | Description |
 |---|---|---|---|
 | `description` | `richText` | No | A high-level description of the design system's purpose and goals. |
 | `useCases` | `array` | No | An array of use-case entries describing positive and negative adoption scenarios. |
 
-Each use-case entry has the following shape:
+Each use-case entry has this shape:
 
 | Property | Type | Required | Description |
 |---|---|---|---|
@@ -185,9 +198,9 @@ Each use-case entry has the following shape:
 
 ### Root Best Practices
 
-The optional `bestPractices` property on the root document defines cross-cutting rules that apply to the entire design system — not to any single entity. These are system-wide conventions like "always use semantic tokens" or "test all components at 200% zoom."
+The optional `bestPractices` property on the root document defines cross-cutting rules for the whole design system — not for any single entity. These are system-wide conventions like "always use semantic tokens" or "test all components at 200% zoom."
 
-Each entry in the `bestPractices` array has the following shape:
+Each `bestPractices` entry has this shape:
 
 | Property | Type | Required | Description |
 |---|---|---|---|
@@ -228,27 +241,27 @@ Each entry in the `bestPractices` array has the following shape:
 }
 ```
 
-> **System-level vs. entity-level:** The root `purpose` and `bestPractices` properties describe the design system _as a whole_. They are distinct from the entity-level `purpose` and `best-practices` guideline types that live inside each entity's `guidelines` array. Entity-level guidelines describe when and how to use a specific component, token, or pattern; system-level properties describe when and how to use the design system itself. Both levels follow the same structural conventions but serve different audiences and scopes.
+> **System-level vs. entity-level:** The root `purpose` and `bestPractices` properties describe the design system _as a whole_. They differ from the entity-level `purpose` and `best-practices` guideline types inside each entity's `guidelines` array. Entity-level guidelines describe when and how to use a specific component, token, or pattern. System-level properties describe when and how to use the design system itself. Both levels follow the same structure but serve different audiences and scopes.
 
 ---
 
 ## Entity Types
 
-Every entity shares a common set of identity and metadata properties, plus a `guidelines` array for all structured documentation. The `guidelines` array accepts only the guideline types appropriate for that entity type. Every entity also carries a required `type` discriminator (see [Entity Type Discriminators](#entity-type-discriminators) above).
+Every entity shares a common set of identity and metadata properties, plus a `guidelines` array for all structured docs. The `guidelines` array accepts only the guideline types suited to that entity type. Every entity also carries a required `type` discriminator (see [Entity Type Discriminators](#entity-type-discriminators)).
 
 ### Common Entity Properties
 
-The following properties are available on all entity types. **Required** fields differ by entity type — see the notes column and the individual entity sections below.
+These properties are on all entity types. **Required** fields differ by entity type — see the notes column and each entity section.
 
 | Property | Type | Required | Notes |
 |---|---|---|---|
 | `type` | `string` | Yes | Entity type discriminator. |
-| `name` | `string` | Yes | Machine-readable identifier. Components, styles, patterns, and themes enforce `^[a-z][a-z0-9-]*$`. Token and token group names are intentionally unconstrained (see [Token Name Exception](#token-name-exception)). |
+| `name` | `string` | Yes | Machine-readable identifier. Components, styles, patterns, and themes enforce `^[a-z][a-z0-9-]*$`. Token and token group names are unconstrained by design (see [Token Name Exception](#token-name-exception)). |
 | `displayName` | `string` | Varies | Human-readable name. Required on component, style, pattern, theme. **Not present** on token or token-group — the token name serves as the display name. |
 | `summary` | `string` | No | One-line plain-text summary for compact display. MUST NOT contain markup. |
 | `description` | `richText` | Varies | Description with CommonMark support. Required on component, style, pattern, theme. **Optional** on token and token-group. |
 | `status` | `statusObject` | Varies | Lifecycle status with optional per-platform readiness. Required on component, style, pattern, theme. **Optional** on token and token-group — when omitted inside a group, inherited from the parent. |
-| `since` | `string` | No | The version in which this artifact was introduced. |
+| `since` | `string` | No | The version in which this entity was introduced. |
 | `tags` | `string[]` | No | Freeform keywords for categorization and search. |
 | `aliases` | `string[]` | No | Alternative names for search, migration mapping, and cross-referencing. |
 | `category` | `string` | No | Classification within the system's taxonomy. |
@@ -269,26 +282,26 @@ A single design token. Accepts **general guidelines** only.
 
 Required properties: `type`, `name`, `tokenType`.
 
-Additional properties:
+More properties:
 
 | Property | Type | Required | Description |
 |---|---|---|---|
 | `tokenType` | `string` | Yes | DTCG-aligned token type (e.g., `"color"`, `"dimension"`, `"fontFamily"`, `"fontWeight"`, `"duration"`, `"cubicBezier"`, `"shadow"`). |
-| `value` | `tokenValue` | No | Displayable representation of the token's value. See [Token Value](#token-value). |
+| `value` | `tokenValue` | No | Display form of the token's value. See [Token Value](#token-value). |
 | `api` | `tokenApi` | No | Platform-specific identifiers. See [Token API](#token-api). |
 | `category` | `string` | No | Semantic category: `"base"`, `"semantic"`, `"component"`. Custom values permitted. |
 
-The `displayName` property is intentionally absent from tokens. The token name itself serves as the human-readable display name, since token naming conventions (dots, slashes, kebab-case) are already human-readable in their native format.
+Tokens have no `displayName` property by design. The token name itself serves as the human-readable display name. Token naming conventions (dots, slashes, kebab-case) are already human-readable in their native format.
 
-The `description` and `status` properties are optional on tokens to reduce verbosity at scale. When omitted inside a token group, `status` is inherited from the parent group.
+The `description` and `status` properties are optional on tokens to reduce verbosity at scale. When omitted inside a token group, `status` inherits from the parent group.
 
 ### Token Group
 
-A hierarchical group of related tokens. The `children` array can contain token objects, nested token group objects, or a mix of both — forming an arbitrarily deep recursive hierarchy. Accepts **general guidelines** only.
+A nested group of related tokens. The `children` array can hold token objects, nested token group objects, or a mix of both — forming a recursive hierarchy of any depth. Accepts **general guidelines** only.
 
 Required properties: `type`, `name`.
 
-Additional properties:
+More properties:
 
 | Property | Type | Required | Description |
 |---|---|---|---|
@@ -304,7 +317,7 @@ A named set of token value overrides that adapt the system to a specific context
 
 Required properties: `type`, `name`, `displayName`, `description`, `status`, `overrides`.
 
-Additional properties:
+More properties:
 
 | Property | Type | Required | Description |
 |---|---|---|---|
@@ -318,7 +331,7 @@ A macro-level visual style (foundation) governing a domain like color, typograph
 
 Required properties: `type`, `name`, `displayName`, `description`, `status`.
 
-Styles are the entity type for documenting foundations — not just visual attributes like color and spacing, but also cross-cutting concerns like accessibility guidelines, motion systems, and content rules. The `category` property classifies the domain (e.g., `"color"`, `"typography"`, `"spacing"`, `"motion"`, `"accessibility"`, `"content"`).
+Styles document foundations — visual attributes like color and spacing, plus cross-cutting concerns like accessibility, motion systems, and content rules. The `category` property classifies the domain (e.g., `"color"`, `"typography"`, `"spacing"`, `"motion"`, `"accessibility"`, `"content"`).
 
 ### Pattern
 
@@ -326,30 +339,36 @@ A broad interaction pattern — a recurring, multi-component solution to a commo
 
 Required properties: `type`, `name`, `displayName`, `description`, `status`.
 
-Patterns reference their participating components through the `links` array (with `type: "component"`, `name`, and `role`) rather than through a dedicated guideline type.
+Patterns reference their participating components through the `links` array (with `type: "component"`, `name`, and `role`) instead of through a dedicated guideline type.
 
 ---
 
 ## Token Value
 
-The `tokenValue` object is a displayable representation of a token's value for documentation tools. It is **not** the authoritative source of truth — the W3C Design Tokens Format file is.
+The `tokenValue` object holds a display form of a token's value for documentation tools. It is **not** the source of truth — the W3C Design Tokens Format file is.
 
 | Property | Type | Required | Description |
 |---|---|---|---|
 | `resolved` | `string` | No | The resolved value as a human-readable string (e.g., `"#1a1a1a"`, `"16px"`, `"400"`). |
 | `reference` | `string` | No | If this token is an alias, the name of the referenced token (e.g., `"color.neutral.900"`). Corresponds to the W3C DTCG concept of an alias/reference (§3.8, §7). |
-| `resolution` | `string` | No | How the value was derived: `"explicit"` (direct value, not an alias) or `"alias"` (value references another token). When omitted, tools SHOULD infer: if `reference` is present, the token is an alias; otherwise it is explicit. Terminology is aligned with the W3C Design Tokens Format Module (§3.8 "Alias/Reference", §7 "Aliases/References"). |
+| `resolution` | `string` | No | How the value was derived: `"explicit"` (direct value, not an alias) or `"alias"` (value references another token). When omitted, tools SHOULD infer: if `reference` is present, the token is an alias; otherwise it is explicit. Aligns with the W3C Design Tokens Format Module (§3.8 "Alias/Reference", §7 "Aliases/References"). |
 | `dtcgFile` | `string` | No | URI or relative path to the DTCG file containing the authoritative value. |
 
 ## Token API
 
-The `tokenApi` object maps platform names to identifier strings. Keys are platform names (e.g., `"cssCustomProperty"`, `"scssVariable"`, `"jsConstant"`, `"iosToken"`, `"androidToken"`, `"designToolVariable"`). Values are the identifier strings for that platform. Additional platforms can be added without schema changes.
+The `tokenApi` object maps platform names to identifier strings. You can add more platforms without schema changes. Keys are platform names; values are the identifier strings for that platform. Built-in examples:
+
+- `"cssCustomProperty"`
+- `"scssVariable"`
+- `"jsConstant"`
+- `"iosToken"`, `"androidToken"`
+- `"designToolVariable"`
 
 ---
 
 ## Status
 
-The `statusObject` consolidates lifecycle status, per-platform readiness, and deprecation notices into a single object. Every entity that carries status uses this object rather than a bare string.
+The `statusObject` groups lifecycle status, per-platform readiness, and deprecation notices into a single object. Every entity that carries status uses this object instead of a bare string.
 
 | Property | Type | Required | Description |
 |---|---|---|---|
@@ -383,15 +402,20 @@ Custom values are permitted (e.g., `"sunset"`, `"archived"`, `"beta"`) and MUST 
 
 ## Guidelines
 
-Guidelines are the fundamental unit of structured documentation in DSDS. Every piece of documentation attached to an entity — best practices, anatomy breakdowns, API specifications, variant definitions, state descriptions, accessibility specs, use cases, examples, design specifications, principles, scales, motion definitions, content guidelines, and interactions — is a guideline object with a `type` discriminator.
+Guidelines are the core unit of structured docs in DSDS. Every piece of documentation on an entity is a guideline object with a `type` discriminator. Guideline types cover:
+
+- best practices, purpose, accessibility, examples, and content (general — all entity types)
+- anatomy, API specs, variants, states, and design specifications (component-scoped)
+- principles, scales, and motion definitions (style-scoped)
+- interactions (pattern-scoped)
 
 ### Scoped Guideline Unions
 
-Each entity type accepts only the guideline types relevant to it. The scoping follows this rationale:
+Each entity type accepts only the guideline types relevant to it. The scoping rationale:
 
-- **Components** get full structural documentation — they are rendered UI elements with code-level interfaces, visual anatomy, configurable dimensions, interactive states, and measurable design specifications.
-- **Patterns** get structural documentation without code-level details — they have visual layouts (anatomy), sub-types (variants), and states, but they are not single-component code interfaces. They do not accept `api` or `design-specifications`.
-- **Styles** get domain-level documentation — they govern a visual or cross-cutting domain through guiding principles, constrained value progressions (scales), and motion definitions.
+- **Components** get full structural docs. They are rendered UI elements with code-level interfaces, visual anatomy, configurable dimensions, interactive states, and measurable design specifications.
+- **Patterns** get structural docs without code-level details — they have visual layouts (anatomy), sub-types (variants), and states, but they are not single-component code interfaces. They do not accept `api` or `design-specifications`.
+- **Styles** get domain-level docs — they govern a visual or cross-cutting domain through guiding principles, constrained value progressions (scales), and motion definitions.
 - **Tokens** get only general guidelines — they are atomic values with usage guidance but no visual structure or interaction behavior.
 
 | Scope | Used by | Accepts |
@@ -408,16 +432,16 @@ Each entity type accepts only the guideline types relevant to it. The scoping fo
 | Type value | Container property | Item type | Scope | Description |
 |---|---|---|---|---|
 | `"best-practices"` | `items` | bestPracticeEntry | General | Actionable usage rules with rationale and enforcement levels. |
-| `"purpose"` | `useCases` | useCases (whenToUse/whenNotToUse) | General | Scenario-driven guidance for when to use and when not to use an artifact. |
+| `"purpose"` | `useCases` | useCases (whenToUse/whenNotToUse) | General | Scenario-driven guidance for when to use and when not to use an entity. |
 | `"accessibility"` | Named properties | various | General | Structured a11y specs — keyboard, ARIA, screen reader, contrast, motion. |
-| `"examples"` | `items` | example | General | Visual/interactive demonstrations — images, videos, code, URLs, values. |
-| `"content"` | `labels`, `localization` | contentLabelEntry, localizationEntry | General | Recommended action labels and localization/i18n considerations. |
-| `"anatomy"` | `parts` | anatomyEntry | Component, Pattern | Visual structure decomposed into named parts with token references. |
+| `"examples"` | `items` | example | General | Visual/interactive demos — images, videos, code, URLs, values. |
+| `"content"` | `labels`, `localization` | contentLabelEntry, localizationEntry | General | Recommended action labels and localization/i18n notes. |
+| `"anatomy"` | `parts` | anatomyEntry | Component, Pattern | Visual structure broken into named parts with token references. |
 | `"api"` | Named arrays | various | Component | Code-level interface — props, events, slots, CSS hooks, methods. |
 | `"variants"` | `items` | variantEntry | Component, Pattern | Dimensions of variation with enumerated values. Optional exclusions. |
 | `"states"` | `items` | stateEntry | Component, Pattern | Interactive states with triggers, token overrides, and previews. |
 | `"design-specifications"` | Named properties | various | Component | Token inventory, spacing, sizing, typography, responsive behavior. |
-| `"principles"` | `items` | principleEntry | Style | High-level guiding beliefs that shape decision-making. |
+| `"principles"` | `items` | principleEntry | Style | High-level guiding beliefs that shape decisions. |
 | `"scale"` | `steps` | scaleStep | Style | Ordered progression of token values (spacing scale, type scale, etc.). |
 | `"motion"` | `items` | motionEntry | Style | Named easing curves with cubic-bezier functions and recommended durations. |
 | `"interactions"` | `items` | interactionEntry | Pattern | Ordered steps in a pattern's interaction flow. |
@@ -430,7 +454,7 @@ These guideline types are available on **all** entity types.
 
 ### Best Practices (`best-practices`)
 
-Documents actionable usage rules for an artifact. Each item is a self-contained rule pairing an actionable guidance statement with a rationale explaining why. Best practices tell the reader _how_ to use the artifact correctly after they have chosen it. For guidance on _whether_ to use the artifact at all, see [Purpose](#purpose-purpose).
+Documents actionable usage rules for an entity. Each item is a self-contained rule pairing guidance with a rationale. Best practices tell the reader _how_ to use the entity correctly after choosing it. For guidance on _whether_ to use it at all, see [Purpose](#purpose-purpose).
 
 #### Best Practice Entry
 
@@ -440,9 +464,9 @@ Documents actionable usage rules for an artifact. Each item is a self-contained 
 | `rationale` | `richText` | Yes | Why this guidance exists. MUST NOT be a restatement of the guidance. |
 | `level` | `string` | No | Enforcement level: `"required"`, `"encouraged"`, `"informational"`, `"discouraged"`, `"prohibited"`. When omitted, consumers MAY treat as `"encouraged"`. |
 | `category` | `string` | No | Discipline grouping (e.g., `"visual-design"`, `"accessibility"`, `"content"`, `"interaction"`, `"motion"`, `"development"`). |
-| `target` | `string` | No | Anatomy part this applies to (e.g., `"label"`, `"icon"`). When omitted, applies to the artifact as a whole. |
+| `target` | `string` | No | Anatomy part this applies to (e.g., `"label"`, `"icon"`). When omitted, applies to the entity as a whole. |
 | `criteria` | `string[]` | No | URLs to external standards (e.g., WCAG success criteria). |
-| `examples` | `example[]` | No | Examples illustrating encouraged and discouraged approaches. |
+| `examples` | `example[]` | No | Examples showing encouraged and discouraged approaches. |
 | `tags` | `string[]` | No | Freeform keywords. |
 
 Enforcement levels align with RFC 2119 requirement levels:
@@ -457,7 +481,7 @@ Enforcement levels align with RFC 2119 requirement levels:
 
 ### Purpose (`purpose`)
 
-Documents what an artifact is used for — the concrete scenarios in which it is the right choice and the scenarios in which a different artifact would be more appropriate. Purpose guidelines help the reader decide _whether_ to reach for this artifact before they start implementing it.
+Documents what an entity is for — the concrete scenarios where it is the right choice and where a different entity fits better. Purpose guidelines help the reader decide _whether_ to reach for this entity before they start using it.
 
 The purpose guideline wraps the common `useCases` data model with a `type` discriminator:
 
@@ -481,11 +505,20 @@ The purpose guideline wraps the common `useCases` data model with a `type` discr
 }
 ```
 
-This follows the same `useCases` shape used by variant values and state entries (see [Use Cases](#use-cases)).
+This uses the same `useCases` shape as variant values and state entries (full model in [Use Cases](#use-cases)).
 
 ### Accessibility (`accessibility`)
 
-Documents structured accessibility specifications — keyboard interactions, ARIA attributes, screen reader behavior, focus management, color contrast pairs, and motion considerations. This guideline type captures _machine-readable specifications_. For actionable accessibility _rules_ with rationale (e.g., "Provide an aria-label for icon-only buttons"), use a best-practice entry with `category: "accessibility"` instead.
+Documents structured accessibility specs. It captures _machine-readable specs_ for:
+
+- keyboard interactions
+- ARIA attributes
+- screen reader behavior
+- focus management
+- color contrast pairs
+- motion concerns
+
+For actionable accessibility _rules_ with rationale (e.g., "Provide an aria-label for icon-only buttons"), use a best-practice entry with `category: "accessibility"` instead.
 
 | Property | Type | Required | Description |
 |---|---|---|---|
@@ -493,25 +526,25 @@ Documents structured accessibility specifications — keyboard interactions, ARI
 | `wcagLevel` | `string` | No | Minimum WCAG conformance level: `"A"`, `"AA"`, `"AAA"`. |
 | `keyboardInteraction` | `keyboardInteraction[]` | No | Key/action pairs. Each entry has `key`, `action`, and optional `context`. |
 | `ariaAttributes` | `ariaAttribute[]` | No | ARIA attribute documentation. Each entry has `attribute`, `value`, `description`, `required`. |
-| `screenReaderBehavior` | `richText` | No | How the artifact is announced by screen readers. |
-| `focusManagement` | `richText` | No | How focus moves into, within, and out of the artifact. |
+| `screenReaderBehavior` | `richText` | No | How the entity is announced by screen readers. |
+| `focusManagement` | `richText` | No | How focus moves into, within, and out of the entity. |
 | `colorContrast` | `colorContrast[]` | No | Measured contrast ratios for foreground/background pairs. Each entry has `foreground`, `background`, `contrastRatio`, `level`, and optional `context`. |
-| `motionConsiderations` | `richText` | No | How the artifact respects `prefers-reduced-motion`. |
+| `motionConsiderations` | `richText` | No | How the entity respects `prefers-reduced-motion`. |
 
 ### Examples (`examples`)
 
-Documents visual or interactive demonstrations of an artifact. Each item is a single demonstration — a static image, a video recording, a code snippet, a URL to a live demo, or a literal value.
+Documents visual or interactive demos of an entity. Each item is a single demo — a static image, a video, a code snippet, a URL to a live demo, or a literal value.
 
 Each `example` requires at least a `presentation` or a `value` (or both):
 
-- **Presentation**: A visual or interactive demonstration — one of `presentationImage`, `presentationVideo`, `presentationCode`, or `presentationUrl`.
-- **Value**: A literal value for API property examples (e.g., `"primary"`, `44`, `true`). When provided without a presentation, the example represents a concrete data point.
+- **Presentation**: A visual or interactive demo — one of `presentationImage`, `presentationVideo`, `presentationCode`, or `presentationUrl`.
+- **Value**: A literal value for API property examples (e.g., `"primary"`, `44`, `true`). When given without a presentation, the example is a concrete data point.
 
 Optional `title` and `description` provide context.
 
 ### Content (`content`)
 
-Documents structured content guidelines — recommended action labels and localization/internationalization considerations. Content guidelines complement best-practice guidelines: best practices say "Use sentence case" (a _rule_), content guidelines say "Add: Takes an existing object and uses it in a new context" (a _reference_).
+Documents structured content guidelines — recommended action labels and localization/i18n concerns. Content guidelines complement best-practice guidelines: best practices say "Use sentence case" (a _rule_), content guidelines say "Add: Takes an existing object and uses it in a new context" (a _reference_).
 
 At least one of `labels` or `localization` must be present.
 
@@ -532,7 +565,7 @@ At least one of `labels` or `localization` must be present.
 |---|---|---|---|
 | `concern` | `string` | Yes | The i18n concern: `"rtl"`, `"text-expansion"`, `"pluralization"`, `"concatenation"`, `"date-format"`, `"number-format"`, `"currency"`, `"icon-direction"`, `"truncation"`, `"sorting"`. Custom values permitted. |
 | `description` | `richText` | Yes | Actionable guidance for this concern. |
-| `examples` | `example[]` | No | Visual examples illustrating the concern. |
+| `examples` | `example[]` | No | Visual examples showing the concern. |
 
 ---
 
@@ -542,7 +575,7 @@ These guideline types are only accepted on **component** entities.
 
 ### Anatomy (`anatomy`)
 
-Documents the visual structure of a component or pattern by enumerating its named sub-elements (parts). Each part can reference the design tokens that style it, creating a bridge between the artifact's visual design and its token architecture.
+Documents the visual structure of a component or pattern by listing its named sub-elements (parts). Each part can reference the design tokens that style it, bridging the entity's visual design and its token architecture.
 
 For components, parts represent rendered UI sub-elements (container, label, icon, focus-ring). For patterns, parts represent the structural sections of the pattern's visual layout (image, title, body, primary action).
 
@@ -561,11 +594,19 @@ For components, parts represent rendered UI sub-elements (container, label, icon
 
 Documents the code-level interface of a component on a single platform. For multi-platform components, create one API guideline per platform using the `platform` property.
 
-Sections: `properties` (apiProperty[]), `events` (apiEvent[]), `slots` (apiSlot[]), `cssCustomProperties` (apiCssCustomProperty[]), `cssParts` (apiCssPart[]), `dataAttributes` (apiDataAttribute[]), `methods` (apiMethod[]).
+Sections:
+
+- `properties` (apiProperty[])
+- `events` (apiEvent[])
+- `slots` (apiSlot[])
+- `cssCustomProperties` (apiCssCustomProperty[])
+- `cssParts` (apiCssPart[])
+- `dataAttributes` (apiDataAttribute[])
+- `methods` (apiMethod[])
 
 ### Variants (`variants`)
 
-Documents all dimensions of visual or behavioral variation. Each item represents a single axis of configuration (e.g., `"size"`, `"emphasis"`, `"full-width"`). Multiple axes document orthogonal dimensions that can be combined independently.
+Documents all dimensions of visual or behavioral variation. Each item is a single axis of configuration (e.g., `"size"`, `"emphasis"`, `"full-width"`). Multiple axes document orthogonal dimensions that combine independently.
 
 The optional `exclusions` array documents invalid combinations across dimensions:
 
@@ -588,7 +629,7 @@ The optional `exclusions` array documents invalid combinations across dimensions
 }
 ```
 
-Each exclusion requires at least two conditions (a single condition would exclude an entire value, which should be removed from the dimension's values array instead).
+Each exclusion requires at least two conditions. A single condition would exclude a whole value, which should be removed from the dimension's values array instead.
 
 #### Variant Value
 
@@ -618,7 +659,7 @@ Documents all interactive states — hover, focus, active, disabled, loading, se
 
 ### Design Specifications (`design-specifications`)
 
-Documents measurable visual specifications — token inventory, spacing relationships, dimension constraints, typography settings, and responsive behavior. At least one section must be present.
+Documents measurable visual specs — token inventory, spacing relationships, dimension constraints, typography settings, and responsive behavior. At least one section must be present.
 
 | Section | Type | Description |
 |---|---|---|
@@ -634,15 +675,19 @@ Documents measurable visual specifications — token inventory, spacing relation
 
 #### Variants, Sizes, and States
 
-The base-level `properties` map defines the default specification — typically the primary variant at medium size in the default state. Values are always strings: either design token names (e.g., `"button-background"`, `"space-4"`) or raw CSS values (e.g., `"#0055b3"`, `"16px"`, `"transparent"`). Systems that do not use tokens simply provide raw values directly.
+The base-level `properties` map defines the default spec — typically the primary variant at medium size in the default state. Values are always strings: either design token names (e.g., `"button-background"`, `"space-4"`) or raw CSS values (e.g., `"#0055b3"`, `"16px"`, `"transparent"`). Systems that do not use tokens provide raw values directly.
 
-The `variants` array groups design properties by variant — each entry has a `name` and its own `properties` map, plus optional `spacing`, `sizing`, and `typography` sections. The `sizes` array groups properties by size, including size-specific spacing, sizing, and typography. The `states` array groups properties by interactive state (e.g., hover, focus, disabled).
+The remaining arrays group design properties by condition:
+
+- **`variants`** — by variant. Each entry has a `name` and its own `properties` map, plus optional `spacing`, `sizing`, and `typography` sections.
+- **`sizes`** — by size, including size-specific spacing, sizing, and typography.
+- **`states`** — by interactive state (e.g., hover, focus, disabled).
 
 The `variantStates` array handles variant×state combinations where the state's visual treatment differs across variants. Each entry specifies both a `variant` and a `state` along with the `properties` map for that combination.
 
-Each entry is self-contained — it represents the complete set of values for that condition, not an override of the base properties. For example, a `"danger"` variant entry carries its own token names (like `"button-danger-bg"`) or raw values, independent of the base `properties`.
+Each entry is self-contained — it holds the complete set of values for that condition, not a diff of the base properties. For example, a `"danger"` variant entry carries its own token names (like `"button-danger-bg"`) or raw values, independent of the base `properties`.
 
-Note: the `tokens` field on state entries (in the states guideline) serves as a descriptive summary for designers — identifying *which* tokens change in a given state. The authoritative resolved values for each variant × state combination live in the `design-specifications` guideline's `variants`, `states`, and `variantStates` arrays.
+Note: the `tokens` field on state entries (in the states guideline) is a descriptive summary for designers — it shows *which* tokens change in a given state. The authoritative resolved values for each variant × state combination live in the `design-specifications` guideline's `variants`, `states`, and `variantStates` arrays.
 
 ---
 
@@ -652,13 +697,13 @@ These guideline types are only accepted on **style** entities.
 
 ### Principles (`principles`)
 
-Documents high-level guiding principles that shape decision-making for a domain. Principles answer "what do we believe?" and "what constraints do we accept?" — they sit above individual best practices.
+Documents high-level guiding principles that shape decisions for a domain. Principles answer "what do we believe?" and "what constraints do we accept?" — they sit above specific best practices.
 
 Each `principleEntry` has a `title` (short, memorable name) and a `description` (what it means in practice).
 
 ### Scale (`scale`)
 
-Documents an ordered sequence of values forming a visual scale — a type scale, spacing scale, elevation scale, or any other progression of design token values.
+Documents an ordered progression of values forming a visual scale (type scale, spacing scale, elevation scale, or similar).
 
 Each `scaleStep` references a design token and optionally provides a `label`, `value` (display convenience), and `description` (usage notes). Steps are ordered from smallest/lowest to largest/highest.
 
@@ -666,7 +711,7 @@ The scale guideline requires a `name`, `description`, and `steps` array.
 
 ### Motion (`motion`)
 
-Documents the motion system — named easing curves, their cubic-bezier timing functions, recommended durations, and usage guidance. Each item represents a single easing definition that designers and engineers select from when adding animation or transitions.
+Documents the motion system — named easing curves, their cubic-bezier timing functions, recommended durations, and usage guidance. Each item is a single easing definition that designers and engineers select from when adding animation or transitions.
 
 #### Motion Entry
 
@@ -679,7 +724,7 @@ Documents the motion system — named easing curves, their cubic-bezier timing f
 | `token` | `string` | No | Reference to a DTCG cubicBezier or transition token. |
 | `duration` | `motionDuration` | No | Recommended duration range: `min`, `max`, and/or `description`. |
 | `usage` | `string` | No | Comma-separated usage contexts (e.g., `"entering elements, snap-to-position"`). |
-| `examples` | `example[]` | No | Visual demonstrations. |
+| `examples` | `example[]` | No | Visual demos. |
 
 ---
 
@@ -695,7 +740,7 @@ Documents the interaction flow of a pattern as an ordered sequence of steps. The
 
 | Property | Type | Required | Description |
 |---|---|---|---|
-| `trigger` | `string` | No | What initiates this step. When omitted, the step continues the previous flow. |
+| `trigger` | `string` | No | What starts this step. When omitted, the step continues the previous flow. |
 | `description` | `richText` | Yes | What happens — system response, visual changes, state transitions. |
 | `components` | `string[]` | No | Names of components involved. MUST match documented component names. |
 | `examples` | `example[]` | No | Visual/interactive illustrations of this step. |
@@ -704,18 +749,18 @@ Documents the interaction flow of a pattern as an ordered sequence of steps. The
 
 ## Links
 
-The `links` array provides typed references to external resources and internal DSDS artifact relationships. Links unify what was previously split between external URL references and internal artifact references into a single relationship model.
+The `links` array provides typed references to external resources and internal DSDS entity relationships. Links combine external URL references and internal entity references into a single model.
 
-Every link requires a `type` and at least one of `url` (for external resources) or `name` (for internal DSDS artifact references). Both can be present when an internal artifact also has an addressable URL.
+Every link requires a `type` and at least one of `url` (for external resources) or `name` (for internal DSDS entity references). Both can be present when an internal entity also has an addressable URL.
 
 | Property | Type | Required | Description |
 |---|---|---|---|
-| `type` | `string` | Yes | Category of the link. See below. |
+| `type` | `string` | Yes | Category of the link. See [Standard Link Types](#standard-link-types). |
 | `url` | `string` | Conditional | URL of the external resource. Required when `name` is not provided. |
-| `name` | `string` | Conditional | Name of a referenced DSDS artifact. Required when `url` is not provided. |
-| `label` | `string` | No | Display text for the link — what a user sees when it is rendered in documentation. |
-| `role` | `string` | No | The functional relationship this artifact has to the current entity — what part it plays in the current context. Distinct from `label`: label names the thing, role describes its function here. |
-| `required` | `boolean` | No | Whether this linked artifact is required for the parent entity to function correctly. |
+| `name` | `string` | Conditional | Name of a referenced DSDS entity. Required when `url` is not provided. |
+| `label` | `string` | No | Display text for the link — what a user sees when it renders in docs. |
+| `role` | `string` | No | The functional relationship this entity has to the current entity — what part it plays here. Distinct from `label`: label names the thing, role describes its function. |
+| `required` | `boolean` | No | Whether this linked entity is required for the parent entity to work. |
 
 ### Standard Link Types
 
@@ -740,7 +785,7 @@ Fields that contain human-written prose use the `richText` type:
 
 ## Use Cases
 
-The `useCases` data model provides scenario-driven guidance for when an artifact or option is and is not the right choice. It appears in three contexts:
+The `useCases` data model provides scenario-driven guidance for when an entity or option is — and is not — the right choice. It appears in three places:
 
 1. **Purpose guideline** — wrapped with a `type: "purpose"` discriminator to appear in the guidelines array.
 2. **Variant values** — inline `useCases` property on each variant value for "when to choose this value."
@@ -765,7 +810,7 @@ In all three contexts, the shape is identical:
 }
 ```
 
-Each `whenNotToUse` entry SHOULD include an `alternative` pointing to a more appropriate artifact.
+Each `whenNotToUse` entry SHOULD include an `alternative` pointing to a more fitting entity.
 
 ---
 
@@ -775,7 +820,7 @@ The `extends` mechanism enables **systems-of-systems** architectures — where a
 
 ### Document-Level Extends (`documentExtends`)
 
-The root `extends` property declares that the entire DSDS document inherits from another DSDS document. This establishes the parent–child relationship between systems.
+The root `extends` property declares that the whole DSDS document inherits from another DSDS document. This sets up the parent–child relationship between systems.
 
 | Property | Type | Required | Description |
 |---|---|---|---|
@@ -797,18 +842,18 @@ The root `extends` property declares that the entire DSDS document inherits from
 
 ### Entity-Level Extends (`entityExtends`)
 
-Individual entities (components, tokens) can declare that they extend a base entity from a parent system. This is available on the `component` and `token` entity types.
+Components and tokens can declare that they extend a base entity from a parent system.
 
 | Property | Type | Required | Description |
 |---|---|---|---|
 | `name` | `string` | Yes | The name of the base entity being extended. MUST match the `name` property of the base entity in the parent system. |
 | `system` | `string` | No | The owning system of the base entity. When omitted, resolved from the document-level `extends.system`. |
-| `url` | `string` (URI) | No | Direct URL to the base entity's documentation or DSDS definition. |
+| `url` | `string` (URI) | No | Direct URL to the base entity's docs or DSDS definition. |
 | `version` | `string` | No | Version of the base entity or system. When omitted, inherits from the document-level `extends.version`. |
 | `description` | `richText` | No | Description of what this entity adds or changes relative to the base. |
-| `modifications` | `array` | No | A human-readable changelog of modifications relative to the base entity. |
+| `modifications` | `array` | No | A human-readable changelog of changes relative to the base entity. |
 
-Each entry in `modifications` has the following shape:
+Each `modifications` entry has this shape:
 
 | Property | Type | Required | Description |
 |---|---|---|---|
@@ -837,15 +882,15 @@ Each entry in `modifications` has the following shape:
 }
 ```
 
-> **Merge semantics are tooling's responsibility.** The `extends` declaration establishes the _relationship_ between systems and entities. How properties, guidelines, and tokens are merged, overridden, or inherited is determined by consuming tooling — the schema does not prescribe resolution rules. The `modifications` array provides a human-readable changelog that tooling MAY use for diff views, migration guides, or documentation generation.
+> **Merge semantics are tooling's responsibility.** The `extends` declaration defines the _relationship_ between systems and entities. How properties, guidelines, and tokens are merged, overridden, or inherited is up to consuming tooling — the schema does not prescribe resolution rules. The `modifications` array provides a human-readable changelog that tooling MAY use for diff views, migration guides, or docs generation.
 
-See [`examples/extension-system.dsds.json`](examples/extension-system.dsds.json) for a complete enterprise extension system demonstrating both document-level and entity-level extends with modifications.
+See [`examples/extension-system.dsds.json`](examples/extension-system.dsds.json) for a complete enterprise extension system showing both document-level and entity-level extends with modifications.
 
 ---
 
 ## Extensions
 
-The `$extensions` property is available on the root document, on each documentation group, and on each entity. Keys MUST use vendor-specific namespaces (reverse domain name notation recommended). Tools that do not recognize an extension MUST preserve it. Extension data SHOULD NOT duplicate information available in core schema fields.
+The root document, each documentation group, and each entity can carry a `$extensions` property. Keys MUST use vendor-specific namespaces (reverse domain name notation recommended). Tools that do not recognize an extension MUST preserve it. Extension data SHOULD NOT duplicate info already in core schema fields.
 
 ```json
 {
@@ -866,16 +911,22 @@ The `$extensions` property is available on the root document, on each documentat
 
 ### Token Name Exception
 
-Most entity types enforce a strict `^[a-z][a-z0-9-]*$` pattern on the `name` property. Tokens and token groups are the intentional exception — their names are unconstrained to accommodate the naming conventions used by the W3C Design Tokens Format Module, design tool variable systems, and existing token architectures that use dots (`color.text.primary`), slashes (`color/text/primary`), or other separators. Token names _SHOULD_ still be lowercase and human-readable, but the schema does not enforce a pattern.
+Most entity types enforce a strict `^[a-z][a-z0-9-]*$` pattern on the `name` property. Tokens and token groups are the exception by design. Their names are unconstrained to fit the W3C Design Tokens Format Module, design tool variable systems, and existing token setups. These setups may use dots (`color.text.primary`), slashes (`color/text/primary`), or other separators. Token names _SHOULD_ still be lowercase and human-readable, but the schema does not enforce a pattern.
 
 ### Guideline Type Naming
 
 Guideline type values follow two naming patterns based on their structural role:
 
-- **Plural names** for guideline types that wrap a homogeneous list of items in an `items` array: `"best-practices"`, `"variants"`, `"states"`, `"principles"`, `"interactions"`, `"examples"`, `"motion"`, `"content"`.
-- **Singular names** for guideline types that are self-contained entities with their own internal structure: `"scale"` (has `name`, `steps`), `"anatomy"` (has `parts`), `"api"` (has `properties`, `events`, etc.), `"accessibility"` (has `keyboardInteraction`, `ariaAttributes`, etc.), `"design-specifications"` (has `tokens`, `spacing`, etc.), `"purpose"` (has `useCases`).
+- **Plural names** for guideline types that wrap a list of like items in an `items` array: `"best-practices"`, `"variants"`, `"states"`, `"principles"`, `"interactions"`, `"examples"`, `"motion"`, `"content"`.
+- **Singular names** for guideline types that are self-contained with their own internal structure:
+  - `"scale"` (has `name`, `steps`)
+  - `"anatomy"` (has `parts`)
+  - `"api"` (has `properties`, `events`, etc.)
+  - `"accessibility"` (has `keyboardInteraction`, `ariaAttributes`, etc.)
+  - `"design-specifications"` (has `tokens`, `spacing`, etc.)
+  - `"purpose"` (has `useCases`)
 
-The distinction: plural types are containers of interchangeable items where the container itself has no identity beyond its type. Singular types have meaningful internal structure where the properties are named and semantically distinct.
+The distinction: plural types are containers of interchangeable items where the container has no identity beyond its type. Singular types have meaningful internal structure where properties are named and semantically distinct.
 
 ---
 
@@ -886,15 +937,15 @@ The distinction: plural types are containers of interchangeable items where the 
 | [`schema/dsds.schema.json`](schema/dsds.schema.json) | JSON Schema for validating DSDS documents. |
 | [`schema/dsds.bundled.schema.json`](schema/dsds.bundled.schema.json) | Single-file bundled version (auto-generated). |
 | [`examples/starter-kit.dsds.json`](examples/starter-kit.dsds.json) | Starter kit with components, tokens, a style, and a pattern. |
-| [`examples/minimal/`](examples/minimal/) | Minimal examples showing the floor of documentation for each entity type. |
-| [`examples/entities/component.json`](examples/entities/component.json) | Complete component documentation (Button). |
-| [`examples/entities/token.json`](examples/entities/token.json) | Token documentation with value, API, and resolution examples. |
-| [`examples/entities/token-group.json`](examples/entities/token-group.json) | Hierarchical token group (color palette). |
+| [`examples/minimal/`](examples/minimal/) | Minimal examples showing the floor of docs for each entity type. |
+| [`examples/entities/component.json`](examples/entities/component.json) | Complete component docs (Button). |
+| [`examples/entities/token.json`](examples/entities/token.json) | Token docs with value, API, and resolution examples. |
+| [`examples/entities/token-group.json`](examples/entities/token-group.json) | Nested token group (color palette). |
 | [`examples/entities/theme.json`](examples/entities/theme.json) | Dark mode theme with token overrides. |
-| [`examples/entities/style.json`](examples/entities/style.json) | Style documentation (Spacing) with scale, motion, and best practices. |
-| [`examples/entities/pattern.json`](examples/entities/pattern.json) | Pattern documentation (Error Messaging). |
-| [`examples/entities/empty-state-pattern.json`](examples/entities/empty-state-pattern.json) | Pattern documentation (Empty State) with anatomy, variants, states, interactions, and content. |
-| [`examples/extension-system.dsds.json`](examples/extension-system.dsds.json) | Enterprise extension system demonstrating document-level and entity-level `extends` with modifications. |
+| [`examples/entities/style.json`](examples/entities/style.json) | Style docs (Spacing) with scale, motion, and best practices. |
+| [`examples/entities/pattern.json`](examples/entities/pattern.json) | Pattern docs (Error Messaging). |
+| [`examples/entities/empty-state-pattern.json`](examples/entities/empty-state-pattern.json) | Pattern docs (Empty State) with anatomy, variants, states, interactions, and content. |
+| [`examples/extension-system.dsds.json`](examples/extension-system.dsds.json) | Enterprise extension system showing document-level and entity-level `extends` with modifications. |
 
 ---
 
@@ -920,4 +971,4 @@ _This section is non-normative._
 
 ---
 
-*End of specification. See the schema files in `spec/schema/` for the normative JSON Schema definitions and the examples in `spec/examples/` for complete, validated demonstrations of each entity and guideline type.*
+*End of specification. See the schema files in `spec/schema/` for the normative JSON Schema definitions and the examples in `spec/examples/` for complete, validated demos of each entity and guideline type.*

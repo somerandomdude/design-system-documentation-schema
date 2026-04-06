@@ -2,30 +2,30 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://designsystemdocspec.org/v0.1/guidelines/motion.schema.json",
   "title": "DSDS Motion Guideline",
-  "description": "Documents the motion system for a style — named easing curves, recommended durations, and usage guidance. Each item in the motion guideline represents a single named easing definition with its cubic-bezier function (aligned with the W3C Design Tokens Format Module cubicBezier type), recommended duration range, usage context, and optional examples. Motion guidelines capture the structured data that tools need to generate CSS transitions, validate animation implementations, and display interactive easing curve previews.",
+  "description": "Documents the motion system for a style — named easing curves, recommended durations, and usage guidance. Each item defines an easing with its cubic-bezier function (aligned with the W3C Design Tokens Format Module cubicBezier type), recommended duration range, usage context, and optional examples. Motion guidelines capture structured data that tools need to generate CSS transitions, validate animation implementations, and display interactive easing curve previews.",
   "$defs": {
     "motionDuration": {
       "type": "object",
-      "description": "A recommended duration range for an easing curve. Duration values are strings representing time values (e.g., '200ms', '0.3s') or token references (e.g., 'duration-quick'). When both min and max are provided, they define a range. When only one is provided, it serves as a point recommendation. When neither is provided, the description field should explain the guidance (e.g., 'depends on element size').",
+      "description": "A recommended duration range for an easing curve. Duration values are strings representing time values (e.g., '200ms', '0.3s') or token references (e.g., 'duration-quick'). When both min and max are provided, they define a range. When only one is provided, it serves as a point recommendation. When neither is provided, the description field should explain the guidance.",
       "properties": {
         "min": {
           "type": "string",
-          "description": "The minimum recommended duration as a time value or token reference (e.g., '200ms', '0.3s', 'duration-quick'). When omitted, there is no minimum recommendation."
+          "description": "Minimum recommended duration as a time value or token reference (e.g., '200ms', '0.3s', 'duration-quick'). When omitted, there is no minimum recommendation."
         },
         "max": {
           "type": "string",
-          "description": "The maximum recommended duration as a time value or token reference (e.g., '500ms', '0.5s', 'duration-slow'). When omitted, there is no maximum recommendation."
+          "description": "Maximum recommended duration as a time value or token reference (e.g., '500ms', '0.5s', 'duration-slow'). When omitted, there is no maximum recommendation."
         },
         "description": {
           "$ref": "../common/rich-text.schema.json#/$defs/richText",
-          "description": "Freeform duration guidance. Use when the recommendation cannot be expressed as a simple min/max range (e.g., 'Depends on element size — use shorter durations for small elements and longer durations for full-screen transitions'). Also useful for supplementary notes when min/max are provided."
+          "description": "Freeform duration guidance. Use when the recommendation cannot be expressed as a min/max range (e.g., 'Depends on element size — use shorter durations for small elements and longer durations for full-screen transitions'). Also useful for supplementary notes when min/max are provided."
         }
       },
       "additionalProperties": false
     },
     "motionEntry": {
       "type": "object",
-      "description": "A single named easing definition in the motion system. Each entry documents a cubic-bezier timing function with its recommended usage and duration. The `function` property uses the same four-number array format as the W3C Design Tokens Format Module cubicBezier type: [P1x, P1y, P2x, P2y] where P1x and P2x are in the range [0, 1] and P1y and P2y can be any real number.",
+      "description": "A single named easing in the motion system. Documents a cubic-bezier timing function with its recommended usage and duration. The `function` property uses the same four-number array format as the W3C Design Tokens Format Module cubicBezier type: [P1x, P1y, P2x, P2y] where P1x and P2x are in [0, 1] and P1y and P2y can be any real number.",
       "required": ["name", "description"],
       "properties": {
         "name": {
@@ -34,15 +34,15 @@
         },
         "displayName": {
           "type": "string",
-          "description": "Human-readable name of the easing (e.g., 'Expressive Ease', 'Enter Ease', 'Exit Ease', 'Bounce Ease')."
+          "description": "Human-readable name of the easing (e.g., 'Expressive Ease', 'Enter Ease', 'Exit Ease')."
         },
         "description": {
           "$ref": "../common/rich-text.schema.json#/$defs/richText",
-          "description": "What this easing is for, when to use it, and how it affects the user experience. Should explain the visual character of the curve (e.g., 'elements accelerate quickly and decelerate into their final position') and the types of transitions it suits."
+          "description": "What this easing is for, when to use it, and how it affects the user experience. Explain the visual character of the curve and the types of transitions it suits."
         },
         "function": {
           "type": "array",
-          "description": "The cubic-bezier control points as a four-number array [P1x, P1y, P2x, P2y], aligned with the W3C Design Tokens Format Module cubicBezier type (§8.6). P1x and P2x MUST be in the range [0, 1]. P1y and P2y can be any real number (values outside [0, 1] produce bounce/overshoot effects). Maps directly to CSS cubic-bezier() and DTCG cubicBezier token values. When omitted, the easing is described qualitatively in the description field or references a token via the `token` property.",
+          "description": "Cubic-bezier control points as a four-number array [P1x, P1y, P2x, P2y], aligned with the W3C Design Tokens Format Module cubicBezier type (§8.6). P1x and P2x MUST be in [0, 1]. P1y and P2y can be any real number (values outside [0, 1] produce bounce/overshoot effects). Maps to CSS cubic-bezier() and DTCG cubicBezier token values. When omitted, the easing is described in the description field or references a token via `token`.",
           "items": {
             "type": "number"
           },
@@ -55,15 +55,15 @@
         },
         "duration": {
           "$ref": "#/$defs/motionDuration",
-          "description": "The recommended duration range when using this easing. Different easings suit different durations — enter transitions are typically longer (300-500ms) to draw attention, while exit transitions are shorter (200-300ms) to feel responsive."
+          "description": "Recommended duration range when using this easing. Different easings suit different durations — enter transitions are typically longer (300–500ms) to draw attention, while exit transitions are shorter (200–300ms) to feel responsive."
         },
         "usage": {
           "type": "string",
-          "description": "A short, comma-separated list of usage contexts for this easing (e.g., 'entering elements', 'exiting elements', 'moving, pushing', 'lateral navigation', 'micro-interactions'). Provides a scannable summary — use description for detailed guidance."
+          "description": "A short, comma-separated list of usage contexts (e.g., 'entering elements', 'exiting elements', 'lateral navigation', 'micro-interactions'). Provides a scannable summary — use description for detailed guidance."
         },
         "examples": {
           "type": "array",
-          "description": "Visual or interactive examples showing this easing in action — screen recordings of transitions, interactive curve visualizations, or code snippets demonstrating CSS usage.",
+          "description": "Visual or interactive examples showing this easing in action — screen recordings, interactive curve visualizations, or CSS code snippets.",
           "items": {
             "$ref": "../common/example.schema.json#/$defs/example"
           }
@@ -73,21 +73,21 @@
     },
     "motion": {
       "type": "object",
-      "description": "Documents the motion system for a visual style — the named easing curves, their timing functions, recommended durations, and usage guidance. Each item represents a single easing definition that designers and engineers select from when adding animation or transitions. The ordering is significant — tools SHOULD display easings in this order. A typical motion guideline lists easings from most commonly used to most specialized (e.g., expressive first, then enter, exit, lateral, bounce, linear). This guideline type is scoped to style entities and complements the scale guideline (which documents duration token progressions) and best-practice guidelines (which document motion rules like reduced-motion handling).",
+      "description": "Documents the motion system for a visual style — named easing curves, timing functions, recommended durations, and usage guidance. Each item defines an easing that designers and engineers select when adding animation or transitions. Ordering is significant — tools SHOULD display easings in this order. A typical motion guideline lists easings from most common to most specialized. Scoped to style entities; complements the scale guideline (for duration token progressions) and best-practice guidelines (for motion rules like reduced-motion handling).",
       "required": ["kind", "items"],
       "properties": {
         "kind": {
           "type": "string",
           "const": "motion",
-          "description": "Identifies this guideline as a motion specification."
+          "description": "Identifies this guideline as a motion spec."
         },
         "description": {
           "$ref": "../common/rich-text.schema.json#/$defs/richText",
-          "description": "An overview of the motion system — the philosophy behind the easing choices, how duration and easing interact, and any system-wide motion principles not covered by individual easing entries."
+          "description": "An overview of the motion system — the philosophy behind easing choices, how duration and easing interact, and system-wide motion principles not covered by individual easing entries."
         },
         "items": {
           "type": "array",
-          "description": "The named easing definitions in the motion system. Each item documents a single easing curve with its cubic-bezier function, recommended duration, and usage guidance. The ordering is significant — tools SHOULD display easings in this order.",
+          "description": "Named easing definitions in the motion system. Each item documents a single easing curve with its cubic-bezier function, recommended duration, and usage guidance. Ordering is significant — tools SHOULD display easings in this order.",
           "items": {
             "$ref": "#/$defs/motionEntry"
           },
