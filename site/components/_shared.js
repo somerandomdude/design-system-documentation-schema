@@ -8,7 +8,11 @@ export function createShadow(el, css, mode) {
 
 export function esc(s) {
   if (s == null) return "";
-  return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  return String(s)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
 }
 
 export const BASE_RESET = `
@@ -18,6 +22,6 @@ export const BASE_RESET = `
 `;
 
 export const FONT = {
-  body: 'var(--ds-font-body)',
-  mono: 'var(--ds-font-mono)',
+  body: "var(--ds-font-body)",
+  mono: "var(--ds-font-mono)",
 };
