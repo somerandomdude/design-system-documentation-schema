@@ -105,7 +105,7 @@ function escHtml(s) {
 // Main
 // ---------------------------------------------------------------------------
 
-function main() {
+function buildSamples() {
   console.log("Building samples page...\n");
 
   // 1. Read the template
@@ -195,25 +195,6 @@ function main() {
     fs.mkdirSync(OUTPUT_DIR, { recursive: true });
   }
 
-  // Copy shared assets
-  fs.copyFileSync(
-    path.join(ROOT, "site", "tokens.css"),
-    path.join(OUTPUT_DIR, "tokens.css"),
-  );
-  fs.copyFileSync(
-    path.join(ROOT, "site", "style.css"),
-    path.join(OUTPUT_DIR, "style.css"),
-  );
-  // Copy bundled web components
-  const bundledComponents = path.join(ROOT, "site", "dist", "components.js");
-  if (fs.existsSync(bundledComponents)) {
-    fs.copyFileSync(bundledComponents, path.join(OUTPUT_DIR, "components.js"));
-  } else {
-    console.error(
-      "  ⚠  Warning: components.js not found in site/dist/. Run build-site.js first.",
-    );
-  }
-
   fs.writeFileSync(OUTPUT_PATH, html, "utf-8");
 
   const kb = (Buffer.byteLength(html, "utf-8") / 1024).toFixed(1);
@@ -221,4 +202,9 @@ function main() {
   console.log("Done.");
 }
 
-main();
+module.exports = { buildSamples };
+
+// Run standalone when invoked directly
+if (require.main === module) {
+  buildSamples();
+}

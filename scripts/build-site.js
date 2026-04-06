@@ -18,6 +18,7 @@
 const fs = require("fs");
 const path = require("path");
 const { buildSpecNav, DIR_GROUPS } = require("./nav");
+const { buildSamples } = require("./build-samples");
 
 // MDX compiler (ESM) — loaded dynamically in build()
 let compileMdxModule = null;
@@ -720,8 +721,11 @@ async function build() {
     console.log(`  ✓  site/dist/${page.slug}.html  ← ${relSource}`);
   }
 
+  // ── Samples page ────────────────────────────────────────────────────
+  buildSamples();
+
   console.log(
-    `\nDone. ${mdxPages.length + pages.length} pages built to site/dist/\n`,
+    `\nDone. ${mdxPages.length + pages.length + 1} pages built to site/dist/\n`,
   );
 }
 
