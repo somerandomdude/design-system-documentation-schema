@@ -17,6 +17,7 @@
 
 const fs = require("fs");
 const path = require("path");
+const { execSync } = require("child_process");
 const { buildSpecNav, DIR_GROUPS } = require("./nav");
 const { buildSamples } = require("./build-samples");
 
@@ -632,6 +633,7 @@ ${buildSpecNav(activeSlug, pages)}
     </main>
     ${hasToc && layout !== "full" ? '<ds-toc target=".content__inner" selector="h2[id], h3[id]"></ds-toc>' : ""}
   </div>
+  <script src="agentation-bundle.js"></script>
 </body>
 </html>
 `;
@@ -675,6 +677,17 @@ async function build() {
     path.join(SITE_DIR, "style.css"),
     path.join(DIST_DIR, "style.css"),
   );
+
+  // Build agentation bundle
+  try {
+    execSync("node build-agentation.mjs", { cwd: SITE_DIR, stdio: "pipe" });
+    console.log("  Bundled agentation → agentation-bundle.js");
+  } catch (err) {
+    console.error(
+      "  ⚠  Agentation bundle failed:",
+      err.stderr?.toString().trim() || err.message,
+    );
+  }
 
   // Bundle web components into a single IIFE for file:// compatibility.
   bundleComponents(SITE_DIR, DIST_DIR);
