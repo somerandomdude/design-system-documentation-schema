@@ -165,8 +165,8 @@ function sectionPair(sectionName, label, codeHTML, renderedHTML) {
 function renderComponent(data) {
   var html = "";
   var gMap = {};
-  if (data.guidelines)
-    data.guidelines.forEach(function (g) {
+  if (data.documentBlocks)
+    data.documentBlocks.forEach(function (g) {
       gMap[g.kind] = g;
     });
 
@@ -386,7 +386,9 @@ function renderComponent(data) {
               esc(p.type) +
               "</ds-code></td><td>" +
               (p.defaultValue !== undefined
-                ? "<ds-code inline>" + esc(String(p.defaultValue)) + "</ds-code>"
+                ? "<ds-code inline>" +
+                  esc(String(p.defaultValue)) +
+                  "</ds-code>"
                 : "\u2014") +
               "</td><td>" +
               esc(p.description) +
@@ -632,10 +634,10 @@ function renderComponent(data) {
       html += sectionPair("purpose", "Purpose", codeLines.join("\n"), r);
     })();
 
-  /* ── Best Practices ───────────────────────────────── */
-  if (gMap["best-practices"])
+  /* ── Guidelines ────────────────────────────────────── */
+  if (gMap["guideline"])
     (function () {
-      var bp = gMap["best-practices"];
+      var bp = gMap["guideline"];
       var codeLines = [synHL('"items": [')];
       var rCards = "";
       (bp.items || []).forEach(function (item, i) {
@@ -682,10 +684,10 @@ function renderComponent(data) {
       });
       codeLines.push(synHL("]"));
       html += sectionPair(
-        "best-practices",
-        "Best Practices",
+        "guideline",
+        "Guidelines",
         codeLines.join("\n"),
-        "<h2>Best Practices</h2>" + rCards,
+        "<h2>Guidelines</h2>" + rCards,
       );
     })();
 
@@ -882,8 +884,8 @@ function renderComponent(data) {
 function renderToken(data) {
   var html = "";
   var gMap = {};
-  if (data.guidelines)
-    data.guidelines.forEach(function (g) {
+  if (data.documentBlocks)
+    data.documentBlocks.forEach(function (g) {
       gMap[g.kind] = g;
     });
 
@@ -996,7 +998,11 @@ function renderToken(data) {
             '"></div>',
         );
       r +=
-        "<div>" + rfDiv(f_resolved, "<ds-code inline>" + esc(val.resolved) + "</ds-code>");
+        "<div>" +
+        rfDiv(
+          f_resolved,
+          "<ds-code inline>" + esc(val.resolved) + "</ds-code>",
+        );
       if (val.reference)
         r += rfDiv(
           f_ref,
@@ -1101,10 +1107,10 @@ function renderToken(data) {
       );
     })();
 
-  /* ── Best Practices ───────────────────────────────── */
-  if (gMap["best-practices"])
+  /* ── Guidelines ────────────────────────────────────── */
+  if (gMap["guideline"])
     (function () {
-      var bp = gMap["best-practices"];
+      var bp = gMap["guideline"];
       var codeLines = [synHL('"items": [')];
       var rCards = "";
       (bp.items || []).forEach(function (item, i) {
@@ -1131,10 +1137,10 @@ function renderToken(data) {
       });
       codeLines.push(synHL("]"));
       html += sectionPair(
-        "best-practices",
-        "Best Practices",
+        "guideline",
+        "Guidelines",
         codeLines.join("\n"),
-        "<h2>Best Practices</h2>" + rCards,
+        "<h2>Guidelines</h2>" + rCards,
       );
     })();
 

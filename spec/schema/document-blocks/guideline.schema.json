@@ -1,0 +1,99 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://designsystemdocspec.org/v0.1/document-blocks/guideline.schema.json",
+  "title": "DSDS Guideline",
+  "description": "Documents actionable usage guidance for an artifact. Each item is a self-contained rule paired with a rationale explaining why. Guidelines tell the reader what to do (or not do) and why. They appear alongside other document block types in the unified document block array on any artifact.",
+  "$defs": {
+    "guidelineEntry": {
+      "type": "object",
+      "description": "A single, self-contained piece of usage guidance. Every guideline pairs an actionable statement with a rationale. `kind` classifies enforcement. `category` groups by discipline. `target` identifies which anatomy part or content area the guidance applies to. `criteria` links to external standards (WCAG, platform guidelines, etc.).",
+      "required": ["guidance", "kind"],
+      "properties": {
+        "guidance": {
+          "$ref": "../common/rich-text.schema.json#/$defs/richText",
+          "description": "The actionable guidance statement. MUST be concrete and unambiguous. Avoid subjective language like 'use sparingly' or 'when possible'."
+        },
+        "rationale": {
+          "$ref": "../common/rich-text.schema.json#/$defs/richText",
+          "description": "Why this guidance exists. Cite evidence, accessibility standards, or user research when available. MUST NOT restate the guidance."
+        },
+        "kind": {
+          "type": "string",
+          "enum": [
+            "required",
+            "encouraged",
+            "informational",
+            "discouraged",
+            "prohibited"
+          ],
+          "default": "informational",
+          "description": "The enforcement level, classifying how strictly the guideline should be followed. Values align with RFC 2119: 'required' (MUST — non-compliance is a defect), 'encouraged' (SHOULD — follow in most cases; exceptions need justification), 'informational' (MAY — advisory with no enforcement expectation), 'discouraged' (SHOULD NOT — avoid unless justified), 'prohibited' (MUST NOT — violations are defects). Defaults to 'informational'."
+        },
+        "category": {
+          "type": "string",
+          "description": "The discipline or domain this guideline belongs to. Used to group guidelines by concern. Standard values: 'visual-design' (color, typography, spacing, layout), 'interaction' (behavior, animation, transitions, gestures), 'accessibility' (inclusive design, assistive technology, WCAG compliance), 'content' (text, imagery, tone, voice, labeling), 'motion' (animation timing, easing, reduced-motion), 'development' (implementation patterns, performance, code conventions). Custom values are permitted and SHOULD be lowercase kebab-case."
+        },
+        "target": {
+          "type": "string",
+          "description": "The anatomy part or content area this guideline applies to (e.g., 'label', 'icon', 'helper-text'). When omitted, the guideline applies to the artifact as a whole."
+        },
+        "criteria": {
+          "type": "array",
+          "description": "References to external standards that this guideline addresses. Each entry carries a URL and a human-readable label. For WCAG criteria, use the direct URL to the success criterion and a descriptive label (e.g., '1.4.3 Contrast (Minimum)').",
+          "items": {
+            "type": "object",
+            "required": ["url"],
+            "properties": {
+              "url": {
+                "type": "string",
+                "format": "uri",
+                "description": "URL to the external standard or requirement (e.g., 'https://www.w3.org/TR/WCAG22/#contrast-minimum')."
+              },
+              "label": {
+                "type": "string",
+                "description": "A human-readable label for the criterion (e.g., '1.4.3 Contrast (Minimum)', 'WCAG 2.5.8 Target Size'). When omitted, tools MAY derive a label from the URL."
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "examples": {
+          "type": "array",
+          "description": "Examples showing encouraged and discouraged approaches.",
+          "items": {
+            "$ref": "../common/example.schema.json#/$defs/example"
+          }
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Freeform keywords to relate guidelines across categories and disciplines (e.g., 'rtl', 'localization', 'validation', 'contrast')."
+        }
+      },
+      "additionalProperties": false
+    },
+    "guideline": {
+      "type": "object",
+      "description": "Documents actionable usage rules for an artifact. Each item pairs a guidance statement with a rationale. Categorize by discipline, target specific anatomy parts, and link to external standards like WCAG. Guidelines complement other document block types — use-cases tell the reader *when* to use the artifact, guidelines tell the reader *how* to use it correctly.",
+      "required": ["kind", "items"],
+      "properties": {
+        "items": {
+          "type": "array",
+          "description": "The guideline rules. Each item is a guidance statement paired with a rationale. Ordering is significant — tools SHOULD display guidelines in this order. Authors SHOULD order by importance or group by category.",
+          "items": {
+            "$ref": "#/$defs/guidelineEntry"
+          },
+          "minItems": 1
+        },
+        "kind": {
+          "type": "string",
+          "const": "guideline",
+          "description": "Identifies this as a guideline spec."
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

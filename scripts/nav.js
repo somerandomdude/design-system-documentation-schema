@@ -20,7 +20,7 @@ const DIR_GROUPS = [
   { dir: "documentation", label: "Documentation" },
   { dir: "common", label: "Common" },
   { dir: "entities", label: "Entities" },
-  { dir: "guidelines", label: "Guidelines" },
+  { dir: "document-blocks", label: "Document block" },
 ];
 
 // Top-level (non-schema-driven) links that always appear first.

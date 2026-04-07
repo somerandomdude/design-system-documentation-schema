@@ -47,7 +47,7 @@
       "type": "array",
       "description": "System-level best practices that apply across the entire design system — broad guidance for teams adopting, contributing to, or consuming the system. These are not component-specific rules (those live in each entity's guidelines array) but cross-cutting principles like 'always use semantic tokens instead of raw values' or 'test all components at 200% zoom'. Each entry is a self-contained rule paired with a rationale.",
       "items": {
-        "$ref": "#/$defs/bestPracticeEntry"
+        "$ref": "#/$defs/guidelineEntry"
       }
     },
     "documentation": {
@@ -1091,105 +1091,6 @@
       },
       "additionalProperties": false
     },
-    "bestPracticeEntry": {
-      "type": "object",
-      "description": "A single, self-contained piece of usage guidance. Every best practice pairs an actionable statement with a rationale. `kind` classifies enforcement. `category` groups by discipline. `target` identifies which anatomy part or content area the guidance applies to. `criteria` links to external standards (WCAG, platform guidelines, etc.).",
-      "required": [
-        "guidance",
-        "kind"
-      ],
-      "properties": {
-        "guidance": {
-          "$ref": "#/$defs/richText",
-          "description": "The actionable guidance statement. MUST be concrete and unambiguous. Avoid subjective language like 'use sparingly' or 'when possible'."
-        },
-        "rationale": {
-          "$ref": "#/$defs/richText",
-          "description": "Why this guidance exists. Cite evidence, accessibility standards, or user research when available. MUST NOT restate the guidance."
-        },
-        "kind": {
-          "type": "string",
-          "enum": [
-            "required",
-            "encouraged",
-            "informational",
-            "discouraged",
-            "prohibited"
-          ],
-          "default": "informational",
-          "description": "The enforcement level, classifying how strictly the best practice should be followed. Values align with RFC 2119: 'required' (MUST — non-compliance is a defect), 'encouraged' (SHOULD — follow in most cases; exceptions need justification), 'informational' (MAY — advisory with no enforcement expectation), 'discouraged' (SHOULD NOT — avoid unless justified), 'prohibited' (MUST NOT — violations are defects). Defaults to 'informational'."
-        },
-        "category": {
-          "type": "string",
-          "description": "The discipline or domain this best practice belongs to. Used to group best practices by concern. Standard values: 'visual-design' (color, typography, spacing, layout), 'interaction' (behavior, animation, transitions, gestures), 'accessibility' (inclusive design, assistive technology, WCAG compliance), 'content' (text, imagery, tone, voice, labeling), 'motion' (animation timing, easing, reduced-motion), 'development' (implementation patterns, performance, code conventions). Custom values are permitted and SHOULD be lowercase kebab-case."
-        },
-        "target": {
-          "type": "string",
-          "description": "The anatomy part or content area this best practice applies to (e.g., 'label', 'icon', 'helper-text'). When omitted, the best practice applies to the artifact as a whole."
-        },
-        "criteria": {
-          "type": "array",
-          "description": "References to external standards that this best practice addresses. Each entry carries a URL and a human-readable label. For WCAG criteria, use the direct URL to the success criterion and a descriptive label (e.g., '1.4.3 Contrast (Minimum)').",
-          "items": {
-            "type": "object",
-            "required": [
-              "url"
-            ],
-            "properties": {
-              "url": {
-                "type": "string",
-                "format": "uri",
-                "description": "URL to the external standard or requirement (e.g., 'https://www.w3.org/TR/WCAG22/#contrast-minimum')."
-              },
-              "label": {
-                "type": "string",
-                "description": "A human-readable label for the criterion (e.g., '1.4.3 Contrast (Minimum)', 'WCAG 2.5.8 Target Size'). When omitted, tools MAY derive a label from the URL."
-              }
-            },
-            "additionalProperties": false
-          }
-        },
-        "examples": {
-          "type": "array",
-          "description": "Examples showing encouraged and discouraged approaches.",
-          "items": {
-            "$ref": "#/$defs/example"
-          }
-        },
-        "tags": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "description": "Freeform keywords to relate best practices across categories and disciplines (e.g., 'rtl', 'localization', 'validation', 'contrast')."
-        }
-      },
-      "additionalProperties": false
-    },
-    "bestPractices": {
-      "type": "object",
-      "description": "Documents actionable usage rules for an artifact. Each item pairs a guidance statement with a rationale. Categorize by discipline, target specific anatomy parts, and link to external standards like WCAG. Best practices complement other guideline types — use-cases tell the reader *when* to use the artifact, best practices tell the reader *how* to use it correctly.",
-      "required": [
-        "kind",
-        "items"
-      ],
-      "properties": {
-        "items": {
-          "type": "array",
-          "description": "The best practice rules. Each item is a guidance statement paired with a rationale. Ordering is significant — tools SHOULD display best practices in this order. Authors SHOULD order by importance or group by category.",
-          "items": {
-            "$ref": "#/$defs/bestPracticeEntry"
-          },
-          "minItems": 1
-        },
-        "kind": {
-          "type": "string",
-          "const": "best-practices",
-          "description": "Identifies this guideline as a best practices spec."
-        }
-      },
-      "additionalProperties": false
-    },
     "contentLabelEntry": {
       "type": "object",
       "description": "A single recommended action label or term in the content dictionary. Each entry defines a standard label with its meaning, usage guidance, and cross-references to related or alternative terms. Entries follow the {verb} + {noun} content formula established by systems like Carbon and Gestalt.",
@@ -1686,11 +1587,11 @@
       ],
       "additionalProperties": false
     },
-    "generalGuideline": {
-      "description": "A guideline type available on all artifact types. General guidelines cover cross-cutting concerns that apply regardless of artifact kind.",
+    "generalDocumentBlock": {
+      "description": "A document block type available on all artifact types. General document blocks cover cross-cutting concerns that apply regardless of artifact kind.",
       "oneOf": [
         {
-          "$ref": "#/$defs/bestPractices",
+          "$ref": "#/$defs/guideline",
           "description": "Actionable usage rules paired with rationale. Tells the reader what to do (or not do) and why."
         },
         {
@@ -1707,8 +1608,8 @@
         }
       ]
     },
-    "componentGuideline": {
-      "description": "A guideline type accepted on component artifacts. Includes component-specific types (anatomy, API, variants, states, design specs) and all general types.",
+    "componentDocumentBlock": {
+      "description": "A document block type accepted on component artifacts. Includes component-specific types (anatomy, API, variants, states, design specs) and all general types.",
       "oneOf": [
         {
           "$ref": "#/$defs/anatomy",
@@ -1716,7 +1617,7 @@
         },
         {
           "$ref": "#/$defs/api",
-          "description": "The code-level interface — configurable properties, emitted events, content slots, CSS custom properties, CSS shadow parts, data attributes, and public methods. For multi-platform components, include one API guideline per platform."
+          "description": "The code-level interface — configurable properties, emitted events, content slots, CSS custom properties, CSS shadow parts, data attributes, and public methods. For multi-platform components, include one API document block per platform."
         },
         {
           "$ref": "#/$defs/variants",
@@ -1731,7 +1632,7 @@
           "description": "Measurable visual specs — token inventory, spacing relationships, dimension constraints, typography settings, and responsive behavior."
         },
         {
-          "$ref": "#/$defs/bestPractices"
+          "$ref": "#/$defs/guideline"
         },
         {
           "$ref": "#/$defs/purpose"
@@ -1744,8 +1645,8 @@
         }
       ]
     },
-    "styleGuideline": {
-      "description": "A guideline type accepted on style artifacts. Includes style-specific types (principles, scales, motion) and all general types.",
+    "styleDocumentBlock": {
+      "description": "A document block type accepted on style artifacts. Includes style-specific types (principles, scales, motion) and all general types.",
       "oneOf": [
         {
           "$ref": "#/$defs/principles",
@@ -1760,7 +1661,7 @@
           "description": "Named easing curves with cubic-bezier functions (aligned with DTCG cubicBezier type), recommended durations, and usage guidance for the motion system."
         },
         {
-          "$ref": "#/$defs/bestPractices"
+          "$ref": "#/$defs/guideline"
         },
         {
           "$ref": "#/$defs/purpose"
@@ -1773,8 +1674,8 @@
         }
       ]
     },
-    "patternGuideline": {
-      "description": "A guideline type accepted on pattern artifacts. Includes pattern-specific types (interactions) and shared structural types (anatomy, variants, states). Also includes all general types.",
+    "patternDocumentBlock": {
+      "description": "A document block type accepted on pattern artifacts. Includes pattern-specific types (interactions) and shared structural types (anatomy, variants, states). Also includes all general types.",
       "oneOf": [
         {
           "$ref": "#/$defs/interactions",
@@ -1793,7 +1694,7 @@
           "description": "States the pattern can enter — populated, empty, loading, error, etc. — with triggers, visual changes, and optional previews."
         },
         {
-          "$ref": "#/$defs/bestPractices"
+          "$ref": "#/$defs/guideline"
         },
         {
           "$ref": "#/$defs/purpose"
@@ -1806,11 +1707,11 @@
         }
       ]
     },
-    "tokenGuideline": {
-      "description": "A guideline type accepted on token and token group artifacts. Tokens use only general guideline types — they do not have component-specific, style-specific, or pattern-specific docs.",
+    "tokenDocumentBlock": {
+      "description": "A document block type accepted on token and token group artifacts. Tokens use only general document block types — they do not have component-specific, style-specific, or pattern-specific docs.",
       "oneOf": [
         {
-          "$ref": "#/$defs/bestPractices"
+          "$ref": "#/$defs/guideline"
         },
         {
           "$ref": "#/$defs/purpose"
@@ -1822,6 +1723,105 @@
           "$ref": "#/$defs/content"
         }
       ]
+    },
+    "guidelineEntry": {
+      "type": "object",
+      "description": "A single, self-contained piece of usage guidance. Every guideline pairs an actionable statement with a rationale. `kind` classifies enforcement. `category` groups by discipline. `target` identifies which anatomy part or content area the guidance applies to. `criteria` links to external standards (WCAG, platform guidelines, etc.).",
+      "required": [
+        "guidance",
+        "kind"
+      ],
+      "properties": {
+        "guidance": {
+          "$ref": "#/$defs/richText",
+          "description": "The actionable guidance statement. MUST be concrete and unambiguous. Avoid subjective language like 'use sparingly' or 'when possible'."
+        },
+        "rationale": {
+          "$ref": "#/$defs/richText",
+          "description": "Why this guidance exists. Cite evidence, accessibility standards, or user research when available. MUST NOT restate the guidance."
+        },
+        "kind": {
+          "type": "string",
+          "enum": [
+            "required",
+            "encouraged",
+            "informational",
+            "discouraged",
+            "prohibited"
+          ],
+          "default": "informational",
+          "description": "The enforcement level, classifying how strictly the guideline should be followed. Values align with RFC 2119: 'required' (MUST — non-compliance is a defect), 'encouraged' (SHOULD — follow in most cases; exceptions need justification), 'informational' (MAY — advisory with no enforcement expectation), 'discouraged' (SHOULD NOT — avoid unless justified), 'prohibited' (MUST NOT — violations are defects). Defaults to 'informational'."
+        },
+        "category": {
+          "type": "string",
+          "description": "The discipline or domain this guideline belongs to. Used to group guidelines by concern. Standard values: 'visual-design' (color, typography, spacing, layout), 'interaction' (behavior, animation, transitions, gestures), 'accessibility' (inclusive design, assistive technology, WCAG compliance), 'content' (text, imagery, tone, voice, labeling), 'motion' (animation timing, easing, reduced-motion), 'development' (implementation patterns, performance, code conventions). Custom values are permitted and SHOULD be lowercase kebab-case."
+        },
+        "target": {
+          "type": "string",
+          "description": "The anatomy part or content area this guideline applies to (e.g., 'label', 'icon', 'helper-text'). When omitted, the guideline applies to the artifact as a whole."
+        },
+        "criteria": {
+          "type": "array",
+          "description": "References to external standards that this guideline addresses. Each entry carries a URL and a human-readable label. For WCAG criteria, use the direct URL to the success criterion and a descriptive label (e.g., '1.4.3 Contrast (Minimum)').",
+          "items": {
+            "type": "object",
+            "required": [
+              "url"
+            ],
+            "properties": {
+              "url": {
+                "type": "string",
+                "format": "uri",
+                "description": "URL to the external standard or requirement (e.g., 'https://www.w3.org/TR/WCAG22/#contrast-minimum')."
+              },
+              "label": {
+                "type": "string",
+                "description": "A human-readable label for the criterion (e.g., '1.4.3 Contrast (Minimum)', 'WCAG 2.5.8 Target Size'). When omitted, tools MAY derive a label from the URL."
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "examples": {
+          "type": "array",
+          "description": "Examples showing encouraged and discouraged approaches.",
+          "items": {
+            "$ref": "#/$defs/example"
+          }
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Freeform keywords to relate guidelines across categories and disciplines (e.g., 'rtl', 'localization', 'validation', 'contrast')."
+        }
+      },
+      "additionalProperties": false
+    },
+    "guideline": {
+      "type": "object",
+      "description": "Documents actionable usage rules for an artifact. Each item pairs a guidance statement with a rationale. Categorize by discipline, target specific anatomy parts, and link to external standards like WCAG. Guidelines complement other document block types — use-cases tell the reader *when* to use the artifact, guidelines tell the reader *how* to use it correctly.",
+      "required": [
+        "kind",
+        "items"
+      ],
+      "properties": {
+        "items": {
+          "type": "array",
+          "description": "The guideline rules. Each item is a guidance statement paired with a rationale. Ordering is significant — tools SHOULD display guidelines in this order. Authors SHOULD order by importance or group by category.",
+          "items": {
+            "$ref": "#/$defs/guidelineEntry"
+          },
+          "minItems": 1
+        },
+        "kind": {
+          "type": "string",
+          "const": "guideline",
+          "description": "Identifies this as a guideline spec."
+        }
+      },
+      "additionalProperties": false
     },
     "interactionEntry": {
       "type": "object",
@@ -2291,7 +2291,7 @@
     },
     "component": {
       "type": "object",
-      "description": "A single reusable UI component. Identity (name, description, status, category) lives at the top level. All structured docs live in the `guidelines` array — each entry is a typed guideline object (anatomy, api, variant, state, design-specifications, best-practice, accessibility, etc.). This unified model replaces separate top-level properties for each concern.",
+      "description": "A single reusable UI component. Identity (name, description, status, category) lives at the top level. All structured docs live in the `documentBlock` array — each entry is a typed document block object (anatomy, api, variant, state, design-specifications, guideline, accessibility, etc.). This unified model replaces separate top-level properties for each concern.",
       "required": [
         "kind",
         "name",
@@ -2372,11 +2372,11 @@
           "pattern": "^[a-z][a-z0-9-]*$",
           "description": "Component classification within the design system's taxonomy (e.g., 'action', 'navigation', 'feedback', 'data-display', 'layout', 'form', 'overlay'). Used for organizing components into sections in documentation sites and component libraries."
         },
-        "guidelines": {
+        "documentBlocks": {
           "type": "array",
-          "description": "All structured docs for this component as an ordered array of typed guideline objects. Accepts component-specific types (anatomy, api, variants, states, design-specifications) and general types (best-practices, purpose, accessibility, examples). Each guideline has a `type` property that determines its shape. Ordering is significant: tools SHOULD preserve it for display. Express internal artifact relationships through the `links` array rather than as guidelines.",
+          "description": "All structured docs for this component as an ordered array of typed document block objects. Accepts component-specific types (anatomy, api, variants, states, design-specifications) and general types (guideline, purpose, accessibility, examples). Each document block entry has a `type` property that determines its shape. Ordering is significant: tools SHOULD preserve it for display. Express internal artifact relationships through the `links` array rather than as document block entries.",
           "items": {
-            "$ref": "#/$defs/componentGuideline"
+            "$ref": "#/$defs/componentDocumentBlock"
           }
         },
         "links": {
@@ -2394,7 +2394,7 @@
     },
     "pattern": {
       "type": "object",
-      "description": "Documentation for an interaction pattern — a recurring, multi-component solution to a common UX problem. Patterns sit above individual components and describe how they compose to address a user need. The pattern's identity (name, description, status, category) lives at the top level. All structured docs live in the `guidelines` array — each entry is a typed guideline object (interaction for flow steps, best-practice for rules, accessibility for a11y specs, etc.). This unified model replaces the previous architecture where components, interactions, useCases, guidelines, accessibility, and examples were separate top-level properties.",
+      "description": "Documentation for an interaction pattern — a recurring, multi-component solution to a common UX problem. Patterns sit above individual components and describe how they compose to address a user need. The pattern's identity (name, description, status, category) lives at the top level. All structured docs live in the `documentBlock` array — each entry is a typed document block object (interaction for flow steps, guideline for rules, accessibility for a11y specs, etc.). This unified model replaces the previous architecture where components, interactions, useCases, guidelines, accessibility, and examples were separate top-level properties.",
       "required": [
         "kind",
         "name",
@@ -2470,11 +2470,11 @@
           "type": "string",
           "description": "The interaction problem this pattern solves. Common values: 'feedback' (communicating system status, errors, success, and warnings), 'navigation' (moving between views, sections, or pages), 'data-entry' (collecting input — forms, search, filters, inline editing), 'disclosure' (revealing and hiding content — accordions, drawers, modals, tooltips), 'onboarding' (introducing features, flows, or concepts), 'layout' (organizing content across screen sizes), 'selection' (choosing items from a set), 'loading' (communicating progress during async operations). Custom values are permitted and SHOULD be lowercase kebab-case."
         },
-        "guidelines": {
+        "documentBlocks": {
           "type": "array",
-          "description": "All structured docs for this pattern as an ordered array of typed guideline objects. Patterns accept pattern-specific guideline types (interactions) and general types (best-practices, use-cases, accessibility, examples). Each guideline has a `type` property that determines its shape. Ordering is significant: tools SHOULD preserve it for display. Interaction guidelines rely on ordering to represent chronological flow. Reference participating components through the `links` array (with type 'component', name, and role) rather than a dedicated guideline type.",
+          "description": "All structured docs for this pattern as an ordered array of typed document block objects. Patterns accept pattern-specific document block types (interactions) and general types (guidelines, use-cases, accessibility, examples). Each document block entry has a `type` property that determines its shape. Ordering is significant: tools SHOULD preserve it for display. Interaction document block entries rely on ordering to represent chronological flow. Reference participating components through the `links` array (with type 'component', name, and role) rather than a dedicated document block type.",
           "items": {
-            "$ref": "#/$defs/patternGuideline"
+            "$ref": "#/$defs/patternDocumentBlock"
           }
         },
         "links": {
@@ -2492,7 +2492,7 @@
     },
     "style": {
       "type": "object",
-      "description": "Documentation for a visual style — the principles, guidelines, scales, and token references that govern a visual attribute such as color, typography, spacing, or elevation across the system. Identity (name, description, status, category) lives at the top level. All structured docs live in the `guidelines` array — each entry is a typed guideline object (principle, scale, best-practice, accessibility, etc.). This unified model replaces the previous architecture where principles, tokenGroups, scales, useCases, guidelines, and accessibility were separate top-level properties.",
+      "description": "Documentation for a visual style — the principles, guidelines, scales, and token references that govern a visual attribute such as color, typography, spacing, or elevation across the system. Identity (name, description, status, category) lives at the top level. All structured docs live in the `documentBlock` array — each entry is a typed document block object (principle, scale, guideline, accessibility, etc.). This unified model replaces the previous architecture where principles, tokenGroups, scales, useCases, guidelines, and accessibility were separate top-level properties.",
       "required": [
         "kind",
         "name",
@@ -2568,11 +2568,11 @@
           "type": "string",
           "description": "The visual attribute category this style governs. Common values: 'color' (color system, palettes, semantic color usage, and color modes), 'typography' (type hierarchy, font families, type scales, and typographic rules), 'spacing' (spatial system, spacing scale, and layout rhythm), 'elevation' (shadows, layering, z-index strategy, and depth), 'motion' (animation timing, easing curves, transition patterns, and reduced-motion), 'shape' (border radius, corner treatments, and geometric conventions). Custom values are permitted and SHOULD be lowercase kebab-case."
         },
-        "guidelines": {
+        "documentBlocks": {
           "type": "array",
-          "description": "All structured docs for this style as an ordered array of typed guideline objects. Accepts style-specific types (principles, scale) and general types (best-practices, use-cases, accessibility, examples). Each guideline has a `type` property that determines its shape. Ordering is significant: tools SHOULD preserve it for display. Express internal artifact relationships (e.g., token group references) through the `links` array, not as guidelines.",
+          "description": "All structured docs for this style as an ordered array of typed document block objects. Accepts style-specific types (principles, scale) and general types (guideline, use-cases, accessibility, examples). Each document block entry has a `type` property that determines its shape. Ordering is significant: tools SHOULD preserve it for display. Express internal artifact relationships (e.g., token group references) through the `links` array, not as document block entries.",
           "items": {
-            "$ref": "#/$defs/styleGuideline"
+            "$ref": "#/$defs/styleDocumentBlock"
           }
         },
         "links": {
@@ -2608,7 +2608,7 @@
     },
     "theme": {
       "type": "object",
-      "description": "Documents a theme — a named context that adapts the design system's token values. DSDS captures the purpose, usage guidelines, accessibility considerations, and the list of affected tokens. The actual override values live in the DTCG file referenced by the source property. Use themes for color modes (light, dark, high-contrast), density settings (compact, comfortable), brand variants, or product-specific customizations. The token catalog remains the authoritative source for token identity, type, and documentation.",
+      "description": "Documents a theme — a named context that adapts the design system's token values. DSDS captures the purpose, usage document blocks, accessibility considerations, and the list of affected tokens. The actual override values live in the DTCG file referenced by the source property. Use themes for color modes (light, dark, high-contrast), density settings (compact, comfortable), brand variants, or product-specific customizations. The token catalog remains the authoritative source for token identity, type, and documentation.",
       "required": [
         "kind",
         "name",
@@ -2707,11 +2707,11 @@
           },
           "minItems": 1
         },
-        "guidelines": {
+        "documentBlocks": {
           "type": "array",
-          "description": "All structured docs for this theme as an ordered array of typed guideline objects. Themes accept general guideline types only (best-practices, use-cases, accessibility, examples). Each guideline has a `type` property that determines its shape. Ordering is significant: tools SHOULD preserve it for display.",
+          "description": "All structured docs for this theme as an ordered array of typed document block objects. Themes accept general document block types only (guideline, use-cases, accessibility, examples). Each document block entry has a `type` property that determines its shape. Ordering is significant: tools SHOULD preserve it for display.",
           "items": {
-            "$ref": "#/$defs/tokenGuideline"
+            "$ref": "#/$defs/tokenDocumentBlock"
           }
         },
         "links": {
@@ -2823,11 +2823,11 @@
           },
           "additionalProperties": false
         },
-        "guidelines": {
+        "documentBlocks": {
           "type": "array",
-          "description": "All structured docs for this token as an ordered array of typed guideline objects. Tokens accept general guideline types only (best-practices, use-cases, accessibility, examples). Each guideline has a `type` property that determines its shape. Ordering is significant: tools SHOULD preserve it for display.",
+          "description": "All structured docs for this token as an ordered array of typed document block objects. Tokens accept general document block types only (guideline, use-cases, accessibility, examples). Each document block entry has a `type` property that determines its shape. Ordering is significant: tools SHOULD preserve it for display.",
           "items": {
-            "$ref": "#/$defs/tokenGuideline"
+            "$ref": "#/$defs/tokenDocumentBlock"
           }
         },
         "links": {
@@ -2949,11 +2949,11 @@
           },
           "minItems": 1
         },
-        "guidelines": {
+        "documentBlocks": {
           "type": "array",
-          "description": "All structured docs for this token group as an ordered array of typed guideline objects. Accepts general guideline types only (best-practices, use-cases, accessibility, examples). Guidelines for the group as a whole live here. Guidelines for individual tokens SHOULD be placed on the token within children.",
+          "description": "All structured docs for this token group as an ordered array of typed document block objects. Accepts general document block types only (guideline, use-cases, accessibility, examples). Document blocks for the group as a whole live here. Document blocks for individual tokens SHOULD be placed on the token within children.",
           "items": {
-            "$ref": "#/$defs/tokenGuideline"
+            "$ref": "#/$defs/tokenDocumentBlock"
           }
         },
         "links": {

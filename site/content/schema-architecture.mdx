@@ -11,7 +11,7 @@ The DSDS schema uses three directories plus a root schema:
 |---|---|
 | `common/` | Shared primitives used across all schemas — richText, statusObject, link, example, extensions, metadata, useCases |
 | `entities/` | Entity type schemas — component, token (including tokenGroup), theme, style, pattern |
-| `guidelines/` | Guideline type schemas — best-practice, anatomy, api, variant, state, design-specifications, accessibility, purpose, scale, principle, motion, content, interaction, plus the scoped union (guideline.schema.json) |
+| `document-blocks/` | Document block type schemas — guideline, anatomy, api, variant, state, design-specifications, accessibility, purpose, scale, principle, motion, content, interaction, plus the scoped union (document-blocks.schema.json) |
 
 ```
 spec/schema/
@@ -31,12 +31,12 @@ spec/schema/
 │   ├── style.schema.json               # style
 │   ├── theme.schema.json               # theme, tokenOverride
 │   └── token.schema.json               # token, tokenGroup
-└── guidelines/                         # Guideline types
-    ├── guideline.schema.json           # Scoped unions: componentGuideline, styleGuideline, etc.
+└── document-blocks/                     # Document block types
+    ├── document-blocks.schema.json      # Scoped unions: componentDocumentBlock, styleDocumentBlock, etc.
     ├── accessibility.schema.json       # accessibility, keyboardInteraction, ariaAttribute, colorContrast
     ├── anatomy.schema.json             # anatomy, anatomyEntry
     ├── api.schema.json                 # api, apiProperty, apiEvent, apiSlot, etc.
-    ├── best-practice.schema.json       # bestPractices, bestPracticeEntry
+    ├── guideline.schema.json           # guideline, guidelineEntry
     ├── content.schema.json             # content, contentLabelEntry, localizationEntry
     ├── design-specifications.schema.json # designSpecifications, spacingSpec, sizingSpec, etc.
     ├── interaction.schema.json         # interactions, interactionEntry
@@ -211,13 +211,13 @@ Each `bestPractices` entry has this shape:
 }
 ```
 
-> **System-level vs. entity-level:** The root `purpose` and `bestPractices` properties describe the design system _as a whole_. They differ from the entity-level `purpose` and `best-practices` guideline types inside each entity's `guidelines` array. Entity-level guidelines describe when and how to use a specific component, token, or pattern. System-level properties describe when and how to use the design system itself. Both levels follow the same structure but serve different audiences and scopes.
+> **System-level vs. entity-level:** The root `purpose` and `bestPractices` properties describe the design system _as a whole_. They differ from the entity-level `purpose` and `guideline` document block types inside each entity's `documentBlocks` array. Entity-level document block entries describe when and how to use a specific component, token, or pattern. System-level properties describe when and how to use the design system itself. Both levels follow the same structure but serve different audiences and scopes.
 
 ---
 
 ## Entity types
 
-Every entity shares a common set of identity and metadata properties, plus a `guidelines` array for all structured docs. The `guidelines` array accepts only the guideline types suited to that entity type. Every entity also carries a required `type` discriminator (see [Entity Type Discriminators](#entity-type-discriminators)).
+Every entity shares a common set of identity and metadata properties, plus a `documentBlocks` array for all structured docs. The `documentBlocks` array accepts only the document block types suited to that entity type. Every entity also carries a required `type` discriminator (see [Entity Type Discriminators](#entity-type-discriminators)).
 
 ### Common entity properties
 
@@ -235,20 +235,20 @@ These properties are on all entity types. **Required** fields differ by entity t
 | `tags` | `string[]` | No | Freeform keywords for categorization and search. |
 | `aliases` | `string[]` | No | Other names for search, migration mapping, and cross-referencing. |
 | `category` | `string` | No | Classification within the system's taxonomy. |
-| `guidelines` | `array` | No | Typed guideline objects. See [Guidelines](#guidelines). |
+| `documentBlocks` | `array` | No | Typed document block objects. See [Document block](#document-block). |
 | `links` | `array` | No | Typed references to external resources and internal entities. See [Links](#links). |
 | `extends` | `entityExtends` | No | Declares that this entity extends a base entity in a parent system. Available on component and token entities. See [Extends](#extends). |
 | `$extensions` | `object` | No | Vendor-specific extensions. See [Extensions](#extensions). |
 
 ### Component
 
-A reusable UI element. Accepts **component-scoped guidelines** (anatomy, api, variants, states, design-specifications) and all general guidelines.
+A reusable UI element. Accepts **component-scoped document block types** (anatomy, api, variants, states, design-specifications) and all general document block types.
 
 Required properties: `type`, `name`, `displayName`, `description`, `status`.
 
 ### Token
 
-A single design token. Accepts **general guidelines** only.
+A single design token. Accepts **general document block types** only.
 
 Required properties: `type`, `name`, `tokenType`.
 
@@ -268,7 +268,7 @@ The `description` and `status` properties are optional on tokens to reduce verbo
 
 ### Token group
 
-A nested group of related tokens. The `children` array can hold token objects, nested token group objects, or a mix of both — forming a recursive tree of any depth. Accepts **general guidelines** only.
+A nested group of related tokens. The `children` array can hold token objects, nested token group objects, or a mix of both — forming a recursive tree of any depth. Accepts **general document block types** only.
 
 Required properties: `type`, `name`.
 
@@ -284,7 +284,7 @@ Like tokens, `displayName`, `description`, and `status` are optional. Children i
 
 ### Theme
 
-A named set of token overrides that adapt the system to a specific context (color mode, density, brand variant). Accepts **general guidelines**.
+A named set of token overrides that adapt the system to a specific context (color mode, density, brand variant). Accepts **general document block types**.
 
 Required properties: `type`, `name`, `displayName`, `description`, `status`, `overrides`.
 
@@ -299,7 +299,7 @@ Each `tokenOverride` identifies a token by `token` (the token name). Override va
 
 ### Style
 
-A macro-level visual style (foundation) governing a domain like color, typography, spacing, elevation, motion, or content. Accepts **style-scoped guidelines** (principles, scale, motion) and all general guidelines.
+A macro-level visual style (foundation) governing a domain like color, typography, spacing, elevation, motion, or content. Accepts **style-scoped document block types** (principles, scale, motion) and all general document block types.
 
 Required properties: `type`, `name`, `displayName`, `description`, `status`.
 
@@ -307,7 +307,7 @@ Styles document base visual attributes like color and spacing, plus cross-cuttin
 
 ### Pattern
 
-A broad interaction pattern — a recurring, multi-component solution to a common UX problem. Accepts **pattern-scoped guidelines** (interactions) and **shared structural guidelines** (anatomy, variants, states) as well as all general guidelines.
+A broad interaction pattern — a recurring, multi-component solution to a common UX problem. Accepts **pattern-scoped document block types** (interactions) and **shared structural document block types** (anatomy, variants, states) as well as all general document block types.
 
 Required properties: `type`, `name`, `displayName`, `description`, `status`.
 
@@ -349,23 +349,23 @@ Custom values are permitted (e.g., `"sunset"`, `"archived"`, `"beta"`) and MUST 
 
 ---
 
-## Guidelines
+## Document block
 
-Guidelines are the core unit of structured docs in DSDS. Every piece of docs on an entity is a guideline object with a `type` discriminator. Guideline types cover:
+Document block entries are the core unit of structured docs in DSDS. Every piece of docs on an entity is a document block object with a `type` discriminator. Document block types cover:
 
-- best practices, purpose, accessibility, examples, and content (general — all entity types)
+- guidelines, purpose, accessibility, examples, and content (general — all entity types)
 - anatomy, API specs, variants, states, and design specifications (component-scoped)
 - principles, scales, and motion definitions (style-scoped)
 - interactions (pattern-scoped)
 
-### Scoped guideline unions
+### Scoped document block unions
 
-Each entity type accepts only the guideline types relevant to it. The scoping rationale:
+Each entity type accepts only the document block types relevant to it. The scoping rationale:
 
 - **Components** get full structural docs. They are rendered UI elements with code-level interfaces, visual anatomy, configurable dimensions, interactive states, and measurable design specs.
 - **Patterns** get structural docs without code-level details — they have visual layouts (anatomy), sub-types (variants), and states, but they are not single-component code interfaces. They do not accept `api` or `design-specifications`.
 - **Styles** get domain-level docs — they govern a visual or cross-cutting domain through guiding principles, constrained value progressions (scales), and motion definitions.
-- **Tokens** get only general guidelines — they are atomic values with usage guidance but no visual structure or interaction behavior.
+- **Tokens** get only general document block types — they are atomic values with usage guidance but no visual structure or interaction behavior.
 
 | Scope | Used by | Accepts |
 |---|---|---|
@@ -374,13 +374,13 @@ Each entity type accepts only the guideline types relevant to it. The scoping ra
 | **Style** | style | principles, scale, motion + general |
 | **Token** | token, token-group, theme | general only |
 
-**General** (available on all entity types): best-practices, purpose, accessibility, examples, content.
+**General** (available on all entity types): guideline, purpose, accessibility, examples, content.
 
-### Guideline types
+### Document block types
 
 | Type value | Container property | Item type | Scope | Description |
 |---|---|---|---|---|
-| `"best-practices"` | `items` | bestPracticeEntry | General | Actionable usage rules with rationale and enforcement levels. |
+| `"guideline"` | `items` | guidelineEntry | General | Actionable usage rules with rationale and enforcement levels. |
 | `"purpose"` | `useCases` | useCases (whenToUse/whenNotToUse) | General | Scenario-driven guidance for when to use and when not to use an entity. |
 | `"accessibility"` | Named properties | various | General | Structured a11y specs — keyboard, ARIA, screen reader, contrast, motion. |
 | `"examples"` | `items` | example | General | Visual/interactive demos — images, videos, code, URLs, values. |
@@ -397,15 +397,15 @@ Each entity type accepts only the guideline types relevant to it. The scoping ra
 
 ---
 
-## General guidelines
+## General document block types
 
-These guideline types are available on **all** entity types.
+These document block types are available on **all** entity types.
 
-### Best practices (`best-practices`)
+### Guideline (`guideline`)
 
-Documents actionable usage rules for an entity. Each item is a self-contained rule pairing guidance with a rationale. Best practices tell the reader _how_ to use the entity correctly after choosing it. For guidance on _whether_ to use it at all, see [Purpose](#purpose-purpose).
+Documents actionable usage rules for an entity. Each item is a self-contained rule pairing guidance with a rationale. Guidelines tell the reader _how_ to use the entity correctly after choosing it. For guidance on _whether_ to use it at all, see [Purpose](#purpose-purpose).
 
-#### Best practice entry
+#### Guideline entry
 
 | Property | Type | Required | Description |
 |---|---|---|---|
@@ -430,9 +430,9 @@ Enforcement levels align with RFC 2119 requirement levels:
 
 ### Purpose (`purpose`)
 
-Documents what an entity is for — the concrete scenarios where it is the right choice and where a different entity fits better. Purpose guidelines help the reader decide _whether_ to reach for this entity before they start using it.
+Documents what an entity is for — the concrete scenarios where it is the right choice and where a different entity fits better. Purpose document block entries help the reader decide _whether_ to reach for this entity before they start using it.
 
-The purpose guideline wraps the common `useCases` data model with a `type` discriminator:
+The purpose document block type wraps the common `useCases` data model with a `type` discriminator:
 
 ```json
 {
@@ -467,7 +467,7 @@ Documents structured accessibility specs. It captures _machine-readable specs_ f
 - color contrast pairs
 - motion concerns
 
-For actionable accessibility _rules_ with rationale (e.g., "Provide an aria-label for icon-only buttons"), use a best-practice entry with `category: "accessibility"` instead.
+For actionable accessibility _rules_ with rationale (e.g., "Provide an aria-label for icon-only buttons"), use a guideline entry with `category: "accessibility"` instead.
 
 | Property | Type | Required | Description |
 |---|---|---|---|
@@ -493,7 +493,7 @@ Optional `title` and `description` provide context.
 
 ### Content (`content`)
 
-Documents structured content guidelines — recommended action labels and localization/i18n concerns. Content guidelines complement best-practice guidelines: best practices say "Use sentence case" (a _rule_), content guidelines say "Add: Takes an existing object and uses it in a new context" (a _reference_).
+Documents structured content documentation — recommended action labels and localization/i18n concerns. Content document block entries complement guideline document block entries: guidelines say "Use sentence case" (a _rule_), content entries say "Add: Takes an existing object and uses it in a new context" (a _reference_).
 
 At least one of `labels` or `localization` must be present.
 
@@ -518,9 +518,9 @@ At least one of `labels` or `localization` must be present.
 
 ---
 
-## Component-scoped guidelines
+## Component-scoped document block types
 
-These guideline types are only accepted on **component** entities.
+These document block types are only accepted on **component** entities.
 
 ### Anatomy (`anatomy`)
 
@@ -640,9 +640,9 @@ Note: the `tokens` field on state entries (in the states guideline) is a descrip
 
 ---
 
-## Style-scoped guidelines
+## Style-scoped document block types
 
-These guideline types are only accepted on **style** entities.
+These document block types are only accepted on **style** entities.
 
 ### Principles (`principles`)
 
@@ -677,9 +677,9 @@ Documents the motion system — named easing curves, their cubic-bezier timing f
 
 ---
 
-## Pattern-scoped guidelines
+## Pattern-scoped document block types
 
-These guideline types are only accepted on **pattern** entities (in addition to the shared anatomy, variants, and states guidelines).
+These document block types are only accepted on **pattern** entities (in addition to the shared anatomy, variants, and states document block types).
 
 ### Interactions (`interactions`)
 
@@ -736,7 +736,7 @@ Fields that contain human-written prose use the `richText` type:
 
 The `useCases` data model provides scenario-driven guidance for when an entity or option is — and is not — the right choice. It appears in three places:
 
-1. **Purpose guideline** — wrapped with a `type: "purpose"` discriminator to appear in the guidelines array.
+1. **Purpose document block type** — wrapped with a `type: "purpose"` discriminator to appear in the document block array.
 2. **Variant values** — inline `useCases` property on each variant value for "when to choose this value."
 3. **State entries** — inline `useCases` property on each state entry for "when this state is appropriate."
 
@@ -862,12 +862,12 @@ The root document, each documentation group, and each entity can carry a `$exten
 
 Most entity types enforce a strict `^[a-z][a-z0-9-]*$` pattern on the `name` property. Tokens and token groups are the exception by design. Their names are unconstrained to fit the W3C Design Tokens Format Module, design tool variable systems, and existing token setups. These setups may use dots (`color.text.primary`), slashes (`color/text/primary`), or other separators. Token names _SHOULD_ still be lowercase and human-readable, but the schema does not enforce a pattern.
 
-### Guideline type naming
+### Document block type naming
 
-Guideline type values follow two naming patterns based on their structural role:
+Document block type values follow two naming patterns based on their structural role:
 
-- **Plural names** for guideline types that wrap a list of like items in an `items` array: `"best-practices"`, `"variants"`, `"states"`, `"principles"`, `"interactions"`, `"examples"`, `"motion"`, `"content"`.
-- **Singular names** for guideline types that are self-contained with their own internal structure:
+- **Plural names** for document block types that wrap a list of like items in an `items` array: `"guideline"`, `"variants"`, `"states"`, `"principles"`, `"interactions"`, `"examples"`, `"motion"`, `"content"`.
+- **Singular names** for document block types that are self-contained with their own internal structure:
   - `"scale"` (has `name`, `steps`)
   - `"anatomy"` (has `parts`)
   - `"api"` (has `properties`, `events`, etc.)
@@ -875,7 +875,7 @@ Guideline type values follow two naming patterns based on their structural role:
   - `"design-specifications"` (has `tokens`, `spacing`, etc.)
   - `"purpose"` (has `useCases`)
 
-The distinction: plural types are containers of interchangeable items where the container has no identity beyond its type. Singular types have meaningful internal structure where properties are named and semantically distinct.
+The distinction: plural types are containers of interchangeable items where the container has no identity beyond its type. Singular types have meaningful internal structure where properties are named and semantically distinct. Note: `"guideline"` uses a singular name despite wrapping a list, because it describes the concept of providing guidelines (actionable rules with rationale) rather than being a generic plural container.
 
 ---
 
@@ -903,4 +903,4 @@ The distinction: plural types are containers of interchangeable items where the 
 | Level | Requirement |
 |---|---|
 | **Level 1: Core** | Identity fields only. For tokens: `type`, `name`, `tokenType`. For all others: `type`, `name`, `displayName`, `description`, `status` (+ `overrides` for themes). |
-| **Level 2: Complete** | Level 1 + at least one substantive guideline (anatomy/api/variants for components, principles/scale for styles, interactions for patterns, best-practices/purpose for tokens). |
+| **Level 2: Complete** | Level 1 + at least one substantive document block entry (anatomy/api/variants for components, principles/scale for styles, interactions for patterns, guideline/purpose for tokens). |

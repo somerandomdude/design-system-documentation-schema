@@ -204,8 +204,8 @@ function buildPage() {
     ],
   };
 
-  const bestPracticeExample = {
-    kind: "best-practices",
+  const guidelineExample = {
+    kind: "guideline",
     items: [
       {
         guidance: "Limit each surface to one primary button.",
@@ -248,7 +248,7 @@ function buildPage() {
         '<ds-code inline>"stable"</ds-code>, <ds-code inline>"experimental"</ds-code>, <ds-code inline>"draft"</ds-code>, <ds-code inline>"deprecated"</ds-code> — or an object with per-platform status',
       ],
       [
-        "<ds-code inline>guidelines</ds-code>",
+        "<ds-code inline>info</ds-code>",
         "No",
         "Array of typed guideline objects (see below)",
       ],
@@ -275,7 +275,7 @@ function buildPage() {
         "All",
       ],
       [
-        '<ds-code inline>"best-practices"</ds-code>',
+        '<ds-code inline>"guideline"</ds-code>',
         "Actionable rules with rationale",
         "All",
       ],
@@ -404,7 +404,7 @@ ${buildSpecNav("quickstart")}
   <a slot="nav" href="#what">What is DSDS?</a>
   <a slot="nav" href="#structure">Document Structure</a>
   <a slot="nav" href="#entities">Entity Types</a>
-  <a slot="nav" href="#guidelines">Guidelines</a>
+  <a slot="nav" href="#info">Info</a>
   <a slot="nav" href="#minimal">Minimal Examples</a>
   <a slot="nav" href="#validate">Validate</a>
   <a slot="nav" href="#next">Next Steps</a>
@@ -486,11 +486,11 @@ ${entityCardsHtml}
 </section>
 
 <!-- ════════════════════════════════════════════════════════
-     4. GUIDELINES
+     4. INFO
      ════════════════════════════════════════════════════════ -->
-<section id="guidelines">
-  <ds-heading level="2" anchor="guidelines"><span class="num">4</span> The Guidelines System</ds-heading>
-  <p class="lead">All structured documentation lives in the <ds-code inline>guidelines</ds-code> array on each entity. Each guideline is a typed container identified by <ds-code inline>kind</ds-code>.</p>
+<section id="info">
+  <ds-heading level="2" anchor="info"><span class="num">4</span> The Info System</ds-heading>
+  <p class="lead">All structured documentation lives in the <ds-code inline>info</ds-code> array on each entity. Each info entry is a typed container identified by <ds-code inline>kind</ds-code>.</p>
 
   ${guidelineTable}
 
@@ -498,9 +498,9 @@ ${entityCardsHtml}
   <p>The <ds-code inline>purpose</ds-code> guideline provides concrete scenarios. Each use case is <ds-code inline>"positive"</ds-code> (do use) or <ds-code inline>"negative"</ds-code> (don't use, with an alternative):</p>
   ${codeBlock(purposeExample, "purpose guideline")}
 
-  <ds-heading level="3">Best practices: how to use it</ds-heading>
-  <p>Each best practice pairs a <ds-code inline>guidance</ds-code> statement with a <ds-code inline>rationale</ds-code> and an enforcement level:</p>
-  ${codeBlock(bestPracticeExample, "best-practices guideline")}
+  <ds-heading level="3">Guidelines: how to use it</ds-heading>
+  <p>Each guideline pairs a <ds-code inline>guidance</ds-code> statement with a <ds-code inline>rationale</ds-code> and an enforcement level:</p>
+  ${codeBlock(guidelineExample, "guideline")}
   <p>Enforcement levels:
     <ds-badge variant="required" size="sm">required</ds-badge> (MUST),
     <ds-badge variant="encouraged" size="sm">encouraged</ds-badge> (SHOULD),
@@ -515,7 +515,7 @@ ${entityCardsHtml}
      ════════════════════════════════════════════════════════ -->
 <section id="minimal">
   <ds-heading level="2" anchor="minimal"><span class="num">5</span> Minimal Examples</ds-heading>
-  <p class="lead">These are the smallest valid entities — the floor of documentation. Copy one, fill in your content, and add guidelines as you go.</p>
+  <p class="lead">These are the smallest valid entities — the floor of documentation. Copy one, fill in your content, and add info as you go.</p>
 
   ${exampleSection(
     "Component",
@@ -609,7 +609,7 @@ npx ajv validate -s spec/schema/dsds.bundled.schema.json -d my-system.dsds.json`
     <ol style="margin:8px 0 0;padding-left:20px">
       <li>Copy the <a href="#minimal">minimal document</a> above</li>
       <li>Replace the example entities with your own design system's components and tokens</li>
-      <li>Add <ds-code inline>guidelines</ds-code> to each entity as your documentation matures</li>
+      <li>Add <ds-code inline>info</ds-code> to each entity as your documentation matures</li>
       <li>Validate with <ds-code inline>npm run validate</ds-code> to catch structural errors early</li>
     </ol>
   </div>

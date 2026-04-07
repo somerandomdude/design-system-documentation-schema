@@ -15,7 +15,7 @@ DSDS defines a JSON-based format for documenting the six entity types of a desig
 - **Styles** — Foundations for color, typography, spacing, elevation, motion, and content — with principles, scales, motion definitions, and best practices
 - **Patterns** — Broad interaction patterns like navigation, error messaging, and empty states — with anatomy, variants, states, interactions, and content
 
-All structured documentation — best practices, anatomy, API specs, variants, states, accessibility, examples, design specifications, principles, scales, motion definitions, content guidelines, and interactions — lives in a unified **guidelines** system. Each guideline is a typed container identified by a `kind` discriminator.
+All structured documentation — guidelines, anatomy, API specs, variants, states, accessibility, examples, design specifications, principles, scales, motion definitions, content, and interactions — lives in a unified **document block** system. Each document block entry is a typed container identified by a `kind` discriminator.
 
 The goal is simple: make design system documentation structured, portable, and consumable by tools — whether that tool is a documentation site, a linter, a code assistant, or a human reading JSON.
 
@@ -69,12 +69,12 @@ spec/
 │   │   ├── style.schema.json                           # style
 │   │   ├── theme.schema.json                           # theme, tokenOverride
 │   │   └── token.schema.json                           # token, tokenGroup
-│   └── guidelines/                                     # Guideline types
-│       ├── guideline.schema.json                       # Scoped unions (componentGuideline, styleGuideline, etc.)
+│   └── document-blocks/                                 # Document block types
+│       ├── document-blocks.schema.json                  # Scoped unions (componentDocumentBlock, styleDocumentBlock, etc.)
 │       ├── accessibility.schema.json                   # accessibility, keyboardInteraction, ariaAttribute, colorContrast
 │       ├── anatomy.schema.json                         # anatomy, anatomyEntry
 │       ├── api.schema.json                             # api, apiProperty, apiEvent, apiSlot, etc.
-│       ├── best-practice.schema.json                   # bestPractices, bestPracticeEntry
+│       ├── guideline.schema.json                       # guideline, guidelineEntry
 │       ├── content.schema.json                         # content, contentLabelEntry, localizationEntry
 │       ├── design-specifications.schema.json           # designSpecifications, spacingSpec, sizingSpec, typographySpec, etc.
 │       ├── interaction.schema.json                     # interactions, interactionEntry
@@ -88,7 +88,7 @@ spec/
     ├── minimal/                                        # Lightweight examples showing the floor of documentation
     ├── common/                                         # Per-definition examples for common primitives
     ├── entities/                                       # Per-definition examples for entity types (incl. empty-state pattern)
-    └── guidelines/                                     # Per-definition examples for guideline types (incl. motion, content)
+    └── document-blocks/                                 # Per-definition examples for document block types (incl. motion, content)
 
 scripts/
 ├── bundle.js                                           # Generates dsds.bundled.schema.json from split schemas
@@ -287,9 +287,9 @@ Three optional top-level properties describe the design system as a whole:
 
 **`purpose`** (optional) — describes what the design system is for, who it serves, and when teams should or should not adopt it. Contains a `description` and an array of `useCases` with positive and negative scenarios.
 
-**`bestPractices`** (optional) — system-level best practices that apply across the entire design system. These are cross-cutting rules like "always use semantic tokens" or "test all components at 200% zoom" — not component-specific guidance (which lives in each entity's `guidelines` array). Each entry pairs an actionable `guidance` statement with a `rationale` and an enforcement `kind`.
+**`bestPractices`** (optional) — system-level best practices that apply across the entire design system. These are cross-cutting rules like "always use semantic tokens" or "test all components at 200% zoom" — not component-specific guidance (which lives in each entity's `documentBlocks` array). Each entry pairs an actionable `guidance` statement with a `rationale` and an enforcement `kind`.
 
-> **System-level vs. entity-level:** The root `purpose` and `bestPractices` apply to the design system as a whole. They are distinct from the entity-level `purpose` and `best-practices` guideline types that appear inside each entity's `guidelines` array.
+> **System-level vs. entity-level:** The root `purpose` and `bestPractices` apply to the design system as a whole. They are distinct from the entity-level `purpose` and `guideline` document block types that appear inside each entity's `documentBlocks` array.
 
 ```json
 {
@@ -356,7 +356,7 @@ Three optional top-level properties describe the design system as a whole:
 
 ### Entity Types
 
-Each entity kind lives in its own named array within a documentation group. The array name is the primary type indicator. Every entity still carries a `kind` discriminator for use in contexts where the source array is not available, along with common identity properties (`name`, `displayName`, `description`, `status`) and a `guidelines` array for all structured documentation.
+Each entity kind lives in its own named array within a documentation group. The array name is the primary type indicator. Every entity still carries a `kind` discriminator for use in contexts where the source array is not available, along with common identity properties (`name`, `displayName`, `description`, `status`) and a `documentBlocks` array for all structured documentation.
 
 | `kind` value | Entity | Array | Description |
 |---|---|---|---|
@@ -392,22 +392,22 @@ When per-platform readiness is needed, use the object form with `overall` and `p
 
 The object form requires `platforms` — if you don't need platform-specific tracking, use the string form. When `overall` is `"deprecated"`, a `deprecationNotice` is required.
 
-## Guidelines System
+## Document Block System
 
-All structured documentation lives in the `guidelines` array on each entity. Each guideline is a typed container with a `kind` discriminator. Entity types accept only the guideline types relevant to them through scoped unions:
+All structured documentation lives in the `documentBlocks` array on each entity. Each document block entry is a typed container with a `kind` discriminator. Entity types accept only the document block types relevant to them through scoped unions:
 
 | Scope | Used by | Specific types | General types (all entities) |
 |---|---|---|---|
-| **Component** | component | anatomy, api, variants, states, design-specifications | best-practices, purpose, accessibility, content |
+| **Component** | component | anatomy, api, variants, states, design-specifications | guideline, purpose, accessibility, content |
 | **Style** | style | principles, scale, motion | *(same)* |
 | **Pattern** | pattern | interactions, anatomy, variants, states | *(same)* |
 | **Token** | token, token-group, theme | *(none)* | *(same)* |
 
-### Guideline Types
+### Document Block Types
 
 | Kind value | Container | Items | Description |
 |---|---|---|---|
-| `"best-practices"` | `items` | bestPracticeEntry | Actionable usage rules with rationale and enforcement levels |
+| `"guideline"` | `items` | guidelineEntry | Actionable usage rules with rationale and enforcement levels |
 | `"purpose"` | `useCases` | useCase | When to use and when not to use the entity |
 | `"accessibility"` | Named arrays | various | Keyboard, ARIA, screen reader, contrast, motion specs |
 | `"content"` | `labels`, `localization` | contentLabelEntry, localizationEntry | Content guidelines and i18n considerations |
@@ -423,21 +423,21 @@ All structured documentation lives in the `guidelines` array on each entity. Eac
 
 ### Naming Convention
 
-Guideline types follow two naming patterns:
+Document block types follow two naming patterns:
 
-- **Plural names** for homogeneous lists: `"best-practices"`, `"variants"`, `"states"`, `"principles"`, `"interactions"`
-- **Singular names** for self-contained structures: `"scale"`, `"anatomy"`, `"api"`, `"accessibility"`, `"design-specifications"`, `"purpose"`, `"content"`, `"motion"`
+- **Plural names** for homogeneous lists: `"variants"`, `"states"`, `"principles"`, `"interactions"`
+- **Singular names** for self-contained structures: `"guideline"`, `"scale"`, `"anatomy"`, `"api"`, `"accessibility"`, `"design-specifications"`, `"purpose"`, `"content"`, `"motion"`
 
-### Purpose tells you *when*. Best practices tell you *how*.
+### Purpose tells you *when*. Guidelines tell you *how*.
 
 DSDS separates two kinds of guidance:
 
 - **Purpose** provides concrete scenarios for when to use and when *not* to use an entity. Each use case carries a `kind` (`"positive"` or `"negative"`) and negative entries recommend an alternative with a rationale.
-- **Best practices** provide concrete rules for using an entity correctly *after* you've chosen it. Each rule pairs an actionable `guidance` statement with a `rationale` explaining why.
+- **Guidelines** provide concrete rules for using an entity correctly *after* you've chosen it. Each rule pairs an actionable `guidance` statement with a `rationale` explaining why.
 
 ```json
 {
-  "guidelines": [
+  "documentBlocks": [
     {
       "kind": "purpose",
       "useCases": [
@@ -456,7 +456,7 @@ DSDS separates two kinds of guidance:
       ]
     },
     {
-      "kind": "best-practices",
+      "kind": "guideline",
       "items": [
         {
           "guidance": "Limit each surface to one primary button.",
@@ -470,9 +470,9 @@ DSDS separates two kinds of guidance:
 }
 ```
 
-### Best Practice Enforcement Levels
+### Guideline Enforcement Levels
 
-The `kind` property on each best practice entry classifies how strictly it should be followed. Defaults to `"informational"` when omitted.
+The `kind` property on each guideline entry classifies how strictly it should be followed. Defaults to `"informational"` when omitted.
 
 | Value | RFC 2119 | Meaning |
 |---|---|---|
@@ -482,9 +482,9 @@ The `kind` property on each best practice entry classifies how strictly it shoul
 | `"discouraged"` | SHOULD NOT | Avoid unless justified. |
 | `"prohibited"` | MUST NOT | Violations are defects. |
 
-### Best Practices Link to External Criteria
+### Guidelines Link to External Criteria
 
-Any best practice can reference external standards via the `criteria` property:
+Any guideline can reference external standards via the `criteria` property:
 
 ```json
 {
@@ -698,7 +698,7 @@ Individual components and tokens can declare that they extend a specific base en
   "displayName": "Button",
   "description": "Enterprise Button — extends core with an enterprise variant and theme prop.",
   "status": "stable",
-  "guidelines": [ "..." ]
+  "documentBlocks": [ "..." ]
 }
 ```
 
@@ -714,7 +714,7 @@ Several optional properties declare default values via the JSON Schema `default`
 
 | Property | Schema | Default | Meaning when omitted |
 |---|---|---|---|
-| `bestPracticeEntry.kind` | `best-practice.schema.json` | `"informational"` | The best practice is advisory context with no enforcement expectation. |
+| `guidelineEntry.kind` | `guideline.schema.json` | `"informational"` | The guideline is advisory context with no enforcement expectation. |
 | `link.required` | `link.schema.json` | `false` | The linked artifact is an optional enhancement, not a dependency. |
 | `anatomyEntry.required` | `anatomy.schema.json` | `false` | The anatomy part is conditionally rendered, not always present. |
 | `apiProperty.required` | `api.schema.json` | `false` | The property does not need to be provided by the consumer. |
@@ -730,7 +730,7 @@ The schema is organized into three directories plus a root schema:
 |---|---|
 | `common/` | Shared primitives — richText, statusObject, link, example, extensions, metadata, useCase |
 | `entities/` | Entity types — component, token (+ tokenGroup), theme, style, pattern |
-| `guidelines/` | Guideline types — 13 type schemas + scoped unions (componentGuideline, styleGuideline, patternGuideline, tokenGuideline) |
+| `document-blocks/` | Document block types — 13 type schemas + scoped unions (componentDocumentBlock, styleDocumentBlock, patternDocumentBlock, tokenDocumentBlock) |
 
 The root `dsds.schema.json` defines the document structure and references entity schemas via a `oneOf` discriminated union. The `dsds.bundled.schema.json` is auto-generated by `scripts/bundle.js` for tools that require a single-file schema.
 
