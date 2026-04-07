@@ -55,7 +55,7 @@
   <div class="content content--with-toc">
     <main class="content__main" role="main">
       <div class="content__inner">
-        <ds-schema-header title="DSDS Token and Token Group Definitions" description="Documentation for individual design tokens and hierarchical token groups. Token values, aliases, and type information live in the authoritative W3C Design Tokens Format (DTCG) file — DSDS documents the purpose, guidelines, and organizational structure only. Token groups are flexible organizational units — a full token collection, a token family (e.g., all color tokens), or a sub-family (e.g., a single hue family). Groups can contain tokens, nested groups, or both, forming a hierarchy that mirrors how design systems organize tokens. The displayName property is omitted from tokens and token groups — the token name itself serves as the display name. Description and status are optional to reduce verbosity at scale. When omitted on children within a token group, status is inherited from the parent group." source="entities/token.schema.json"></ds-schema-header>
+        <ds-schema-header title="DSDS Token and Token Group Definitions" description="Documentation for individual design tokens and hierarchical token groups. Token values, aliases, and type information live in the authoritative W3C Design Tokens Format (DTCG) file — DSDS documents the purpose, guidelines, and organizational structure only. Token groups are flexible organizational units — a full token collection, a token family (e.g., all color tokens), or a sub-family (e.g., a single hue family). Groups can contain tokens, nested groups, or both, forming a hierarchy that mirrors how design systems organize tokens. The displayName property is omitted from tokens and token groups — the token name itself serves as the display name. Description and status are optional to reduce verbosity at scale. Shared presentational and classificatory properties (status, since, tags, category, aliases, summary, thumbnail, preview, extends, links) are expressed as typed entries in the modular `metadata` array." source="entities/token.schema.json"></ds-schema-header>
 <ds-def-index>
 <p><strong>2 definitions</strong> in this file:</p>
 <ul>
@@ -63,72 +63,106 @@
 <li><a href="#tokengroup"><ds-code inline>tokenGroup</ds-code></a></li>
 </ul>
 </ds-def-index>
-<ds-def-section name="token" anchor="token" description="Documentation for a single design token — name, type, use cases, guidelines, and accessibility considerations. The displayName property is absent — the token name is the display name. Description and status are optional. When a token appears inside a token group, an omitted status is inherited from the parent group." type="object">
+<ds-def-section name="token" anchor="token" description="Documentation for a single design token — name, type, use cases, guidelines, and accessibility considerations. The displayName property is absent — the token name is the display name. Description and status are optional. Shared presentational and classificatory properties (status, since, tags, category, aliases, summary, thumbnail, preview, extends, links) are expressed as typed entries in the modular `metadata` array rather than as top-level properties. When a token appears inside a token group, an omitted status metadata entry is inherited from the parent group." type="object">
 <ds-prop-table>
   <ds-prop name="kind" type="&lt;ds-code inline&gt;&quot;token&quot;&lt;/ds-code&gt;" required>Identifies this entity as a token.</ds-prop>
   <ds-prop name="name" type="string" required>The token name. Unconstrained by a pattern to accommodate DTCG and design tool naming conventions that use dots, slashes, or other separators (e.g., 'color-text-primary', 'color.text.primary', 'color/text/primary'). Also serves as the human-readable display name.</ds-prop>
   <ds-prop name="tokenType" type="string" required>The type of token aligned with the DTCG spec (e.g., 'color', 'dimension', 'fontFamily', 'fontWeight', 'duration', 'cubicBezier', 'shadow').</ds-prop>
-  <ds-prop name="extends" type="&lt;ds-type-ref href=&quot;common-extends.html#entityextends&quot;&gt;entityExtends&lt;/ds-type-ref&gt;">Declares that this token inherits from a base token in a parent design system. The base token provides the foundational type, source reference, and guidelines. This token layers on top — providing additional guidelines or context while inheriting everything else.</ds-prop>
-  <ds-prop name="aliases" type="string[]">Alternative names this token is known by across teams, tools, or legacy systems. Useful for search, migration mapping, and cross-referencing.</ds-prop>
-  <ds-prop name="summary" type="string">A one-line, plain-text summary. MUST NOT contain markup.</ds-prop>
-  <ds-prop name="thumbnail" type="&lt;ds-type-ref href=&quot;common-presentation.html#presentationimage&quot;&gt;presentationImage&lt;/ds-type-ref&gt;">A visual for compact display contexts such as list views, tooltips, search results, and cards.</ds-prop>
   <ds-prop name="description" type="&lt;ds-type-ref href=&quot;common-rich-text.html#richtext&quot;&gt;richText&lt;/ds-type-ref&gt;">A description of the token — what it represents, where to use it, and any constraints. Optional; when omitted, tools MAY generate a description from the token name and type.</ds-prop>
-  <ds-prop name="preview" type="&lt;ds-type-ref href=&quot;common-presentation.html#presentationimage&quot;&gt;presentationImage&lt;/ds-type-ref&gt; | &lt;ds-type-ref href=&quot;common-presentation.html#presentationvideo&quot;&gt;presentationVideo&lt;/ds-type-ref&gt; | &lt;ds-type-ref href=&quot;common-presentation.html#presentationcode&quot;&gt;presentationCode&lt;/ds-type-ref&gt; | &lt;ds-type-ref href=&quot;common-presentation.html#presentationurl&quot;&gt;presentationUrl&lt;/ds-type-ref&gt;">A visual or interactive preview — a hero image, video walkthrough, code snippet, or link to a live demo. Accepts any presentation type from the presentation schema.</ds-prop>
-  <ds-prop name="status" type="&lt;ds-type-ref href=&quot;common-status.html#status&quot;&gt;status&lt;/ds-type-ref&gt;">Lifecycle status of the token. Optional. When omitted inside a token group, inherited from the parent group. When omitted at the top level, tools SHOULD treat the token as having no declared status.</ds-prop>
-  <ds-prop name="since" type="string">The version in which this token was introduced.</ds-prop>
-  <ds-prop name="tags" type="string[]">Freeform keywords to relate guidelines across categories/disciplines (e.g., 'rtl', 'localization', 'validation').</ds-prop>
-  <ds-prop name="category" type="string">The token's semantic category. Standard values: 'base' (raw palette values, not used directly in components), 'semantic' (purpose-driven tokens that map to base values, e.g., 'color-text-primary'), 'component' (tokens scoped to a specific component, e.g., 'button-background'). Custom values are permitted and SHOULD be lowercase kebab-case.</ds-prop>
   <ds-prop name="source" type="object">Reference to the authoritative W3C Design Tokens Format (DTCG) definition. DSDS does not duplicate token values — the DTCG file is the source of truth for resolved values, aliases, and type information.</ds-prop>
+  <ds-prop name="metadata" type="&lt;ds-code inline&gt;entityMetadata&lt;/ds-code&gt;[]">Modular metadata entries. Each entry is a typed object with a `kind` discriminator. Types include status, since, tags, category, aliases, summary, thumbnail, preview, extends, and links.</ds-prop>
   <ds-prop name="documentBlocks" type="&lt;ds-type-ref href=&quot;document-blocks-document-blocks.html#tokendocumentblock&quot;&gt;tokenDocumentBlock&lt;/ds-type-ref&gt;[]">All structured docs for this token as an ordered array of typed document block objects. Tokens accept general document block types only (guideline, use-cases, accessibility, examples). Each document block entry has a `type` property that determines its shape. Ordering is significant: tools SHOULD preserve it for display.</ds-prop>
-  <ds-prop name="links" type="&lt;ds-type-ref href=&quot;common-link.html#link&quot;&gt;link&lt;/ds-type-ref&gt;[]">External resource links, related artifact references, and internal relationships. Each link can point to an external URL, an internal DSDS artifact by name, or both.</ds-prop>
   <ds-prop name="$extensions" type="&lt;ds-type-ref href=&quot;common-extensions.html#extensions&quot;&gt;extensions&lt;/ds-type-ref&gt;"></ds-prop>
 </ds-prop-table>
 <ds-cross-refs><strong>References:</strong> 
-<ds-type-ref href="common-extends.html#entityextends">entityExtends</ds-type-ref>, <ds-type-ref href="common-presentation.html#presentationimage">presentationImage</ds-type-ref>, <ds-type-ref href="common-rich-text.html#richtext">richText</ds-type-ref>, <ds-type-ref href="common-presentation.html#presentationvideo">presentationVideo</ds-type-ref>, <ds-type-ref href="common-presentation.html#presentationcode">presentationCode</ds-type-ref>, <ds-type-ref href="common-presentation.html#presentationurl">presentationUrl</ds-type-ref>, <ds-type-ref href="common-status.html#status">status</ds-type-ref>, <ds-type-ref href="document-blocks-document-blocks.html#tokendocumentblock">tokenDocumentBlock</ds-type-ref>, <ds-type-ref href="common-link.html#link">link</ds-type-ref>, <ds-type-ref href="common-extensions.html#extensions">extensions</ds-type-ref>
+<ds-type-ref href="common-rich-text.html#richtext">richText</ds-type-ref>, <ds-code inline>entityMetadata</ds-code>, <ds-type-ref href="document-blocks-document-blocks.html#tokendocumentblock">tokenDocumentBlock</ds-type-ref>, <ds-type-ref href="common-extensions.html#extensions">extensions</ds-type-ref>
 </ds-cross-refs>
 <ds-def-example>
 <ds-code language="json" label="example">{
   &quot;kind&quot;: &quot;token&quot;,
   &quot;name&quot;: &quot;color-text-primary&quot;,
-  &quot;summary&quot;: &quot;Default body text color for light and dark surfaces.&quot;,
   &quot;description&quot;: &quot;The default color for body text, headings, and labels. Provides the highest-contrast text color for standard reading content on default background surfaces.&quot;,
-  &quot;status&quot;: {
-    &quot;overall&quot;: &quot;stable&quot;,
-    &quot;platforms&quot;: {
-      &quot;css&quot;: {
-        &quot;status&quot;: &quot;stable&quot;,
-        &quot;since&quot;: &quot;2.0.0&quot;
-      },
-      &quot;ios&quot;: {
-        &quot;status&quot;: &quot;stable&quot;,
-        &quot;since&quot;: &quot;2.1.0&quot;
-      },
-      &quot;android&quot;: {
-        &quot;status&quot;: &quot;stable&quot;,
-        &quot;since&quot;: &quot;2.2.0&quot;
-      },
-      &quot;figma&quot;: {
-        &quot;status&quot;: &quot;stable&quot;,
-        &quot;since&quot;: &quot;2.0.0&quot;
+  &quot;metadata&quot;: [
+    {
+      &quot;kind&quot;: &quot;status&quot;,
+      &quot;status&quot;: &quot;stable&quot;,
+      &quot;platformStatus&quot;: {
+        &quot;css&quot;: {
+          &quot;status&quot;: &quot;stable&quot;,
+          &quot;since&quot;: &quot;2.0.0&quot;
+        },
+        &quot;ios&quot;: {
+          &quot;status&quot;: &quot;stable&quot;,
+          &quot;since&quot;: &quot;2.1.0&quot;
+        },
+        &quot;android&quot;: {
+          &quot;status&quot;: &quot;stable&quot;,
+          &quot;since&quot;: &quot;2.2.0&quot;
+        },
+        &quot;figma&quot;: {
+          &quot;status&quot;: &quot;stable&quot;,
+          &quot;since&quot;: &quot;2.0.0&quot;
+        }
       }
+    },
+    {
+      &quot;kind&quot;: &quot;since&quot;,
+      &quot;value&quot;: &quot;2.0.0&quot;
+    },
+    {
+      &quot;kind&quot;: &quot;tags&quot;,
+      &quot;items&quot;: [
+        &quot;color&quot;,
+        &quot;text&quot;,
+        &quot;body&quot;
+      ]
+    },
+    {
+      &quot;kind&quot;: &quot;category&quot;,
+      &quot;value&quot;: &quot;semantic&quot;
+    },
+    {
+      &quot;kind&quot;: &quot;aliases&quot;,
+      &quot;items&quot;: [
+        &quot;color.text.default&quot;,
+        &quot;color.text.body&quot;
+      ]
+    },
+    {
+      &quot;kind&quot;: &quot;summary&quot;,
+      &quot;value&quot;: &quot;Default body text color for light and dark surfaces.&quot;
+    },
+    {
+      &quot;kind&quot;: &quot;links&quot;,
+      &quot;items&quot;: [
+        {
+          &quot;kind&quot;: &quot;source&quot;,
+          &quot;url&quot;: &quot;https://code.acme.com/design-system/src/tokens/color/text.tokens.json&quot;,
+          &quot;label&quot;: &quot;Token source file&quot;
+        },
+        {
+          &quot;kind&quot;: &quot;documentation&quot;,
+          &quot;url&quot;: &quot;https://design.acme.com/tokens/color-text-primary&quot;,
+          &quot;label&quot;: &quot;Token documentation&quot;
+        },
+        {
+          &quot;kind&quot;: &quot;related&quot;,
+          &quot;url&quot;: &quot;https://design.acme.com/tokens/color-text-secondary&quot;,
+          &quot;label&quot;: &quot;color-text-secondary&quot;
+        },
+        {
+          &quot;kind&quot;: &quot;related&quot;,
+          &quot;url&quot;: &quot;https://design.acme.com/tokens/color-text-tertiary&quot;,
+          &quot;label&quot;: &quot;color-text-tertiary&quot;
+        }
+      ]
     }
-  },
-  &quot;since&quot;: &quot;2.0.0&quot;,
-  &quot;tags&quot;: [
-    &quot;color&quot;,
-    &quot;text&quot;,
-    &quot;body&quot;
   ],
   &quot;tokenType&quot;: &quot;color&quot;,
-  &quot;category&quot;: &quot;semantic&quot;,
   &quot;source&quot;: {
     &quot;file&quot;: &quot;tokens/color.tokens.json&quot;,
     &quot;path&quot;: &quot;color.text.primary&quot;
   },
-  &quot;aliases&quot;: [
-    &quot;color.text.default&quot;,
-    &quot;color.text.body&quot;
-  ],
   &quot;documentBlocks&quot;: [
     {
       &quot;kind&quot;: &quot;purpose&quot;,
@@ -210,54 +244,24 @@
         }
       ]
     }
-  ],
-  &quot;links&quot;: [
-    {
-      &quot;kind&quot;: &quot;source&quot;,
-      &quot;url&quot;: &quot;https://code.acme.com/design-system/src/tokens/color/text.tokens.json&quot;,
-      &quot;label&quot;: &quot;Token source file&quot;
-    },
-    {
-      &quot;kind&quot;: &quot;documentation&quot;,
-      &quot;url&quot;: &quot;https://design.acme.com/tokens/color-text-primary&quot;,
-      &quot;label&quot;: &quot;Token documentation&quot;
-    },
-    {
-      &quot;kind&quot;: &quot;related&quot;,
-      &quot;url&quot;: &quot;https://design.acme.com/tokens/color-text-secondary&quot;,
-      &quot;label&quot;: &quot;color-text-secondary&quot;
-    },
-    {
-      &quot;kind&quot;: &quot;related&quot;,
-      &quot;url&quot;: &quot;https://design.acme.com/tokens/color-text-tertiary&quot;,
-      &quot;label&quot;: &quot;color-text-tertiary&quot;
-    }
   ]
 }</ds-code>
 </ds-def-example>
 </ds-def-section>
-<ds-def-section name="tokenGroup" anchor="tokengroup" description="A group of related design tokens. Token groups are flexible organizational units — a full collection, a family (e.g., all color tokens), a sub-family (e.g., a single hue with its grade scale), or any other logical grouping. Groups can nest to form a deep hierarchy. A top-level group might represent 'color', containing child groups for 'color-text', 'color-background', and 'color-border', each with individual tokens. This recursive structure mirrors how real design systems organize tokens into families and sub-families. The displayName property is absent — the group name is the display name. Description and status are optional. Children inherit the parent group's status when they omit their own." type="object">
+<ds-def-section name="tokenGroup" anchor="tokengroup" description="A group of related design tokens. Token groups are flexible organizational units — a full collection, a family (e.g., all color tokens), a sub-family (e.g., a single hue with its grade scale), or any other logical grouping. Groups can nest to form a deep hierarchy. A top-level group might represent 'color', containing child groups for 'color-text', 'color-background', and 'color-border', each with individual tokens. This recursive structure mirrors how real design systems organize tokens into families and sub-families. The displayName property is absent — the group name is the display name. Description and status are optional. Shared presentational and classificatory properties (status, since, tags, category, aliases, summary, thumbnail, preview, links) are expressed as typed entries in the modular `metadata` array rather than as top-level properties. Children inherit the parent group's status metadata entry when they omit their own." type="object">
 <ds-prop-table>
   <ds-prop name="kind" type="&lt;ds-code inline&gt;&quot;token-group&quot;&lt;/ds-code&gt;" required>Identifies this entity as a token-group.</ds-prop>
   <ds-prop name="name" type="string" required>The token group name. Unconstrained by a pattern to accommodate DTCG and design tool naming conventions (e.g., 'color-text', 'color.text', 'color/text'). Also serves as the human-readable display name.</ds-prop>
-  <ds-prop name="aliases" type="string[]">Alternative names this token group is known by across teams, tools, or legacy systems. Useful for search, migration mapping, and cross-referencing.</ds-prop>
-  <ds-prop name="summary" type="string">A one-line, plain-text summary. MUST NOT contain markup.</ds-prop>
-  <ds-prop name="thumbnail" type="&lt;ds-type-ref href=&quot;common-presentation.html#presentationimage&quot;&gt;presentationImage&lt;/ds-type-ref&gt;">A visual for compact display contexts such as list views, tooltips, search results, and cards.</ds-prop>
   <ds-prop name="description" type="&lt;ds-type-ref href=&quot;common-rich-text.html#richtext&quot;&gt;richText&lt;/ds-type-ref&gt;">A description of the group's purpose, the tokens it contains, and how they relate. Optional; when omitted, tools MAY generate a description from the group name and children.</ds-prop>
-  <ds-prop name="preview" type="&lt;ds-type-ref href=&quot;common-presentation.html#presentationimage&quot;&gt;presentationImage&lt;/ds-type-ref&gt; | &lt;ds-type-ref href=&quot;common-presentation.html#presentationvideo&quot;&gt;presentationVideo&lt;/ds-type-ref&gt; | &lt;ds-type-ref href=&quot;common-presentation.html#presentationcode&quot;&gt;presentationCode&lt;/ds-type-ref&gt; | &lt;ds-type-ref href=&quot;common-presentation.html#presentationurl&quot;&gt;presentationUrl&lt;/ds-type-ref&gt;">A visual or interactive preview — a hero image, video walkthrough, code snippet, or link to a live demo. Accepts any presentation type from the presentation schema.</ds-prop>
-  <ds-prop name="status" type="&lt;ds-type-ref href=&quot;common-status.html#status&quot;&gt;status&lt;/ds-type-ref&gt;">Lifecycle status of the token group. Optional. When omitted inside a parent token group, inherited from the parent. Children that omit their own status inherit this group's status.</ds-prop>
-  <ds-prop name="since" type="string">The version in which this group was introduced.</ds-prop>
-  <ds-prop name="tags" type="string[]">Freeform keywords for categorization and search (e.g., 'color', 'palette', 'semantic').</ds-prop>
   <ds-prop name="tokenType" type="string">When all tokens in this group share the same DTCG token type, declare it here to avoid repetition on each child. Each token in children MAY override this value. Common values: 'color', 'dimension', 'fontFamily', 'fontWeight', 'duration', 'number', 'shadow'.</ds-prop>
-  <ds-prop name="category" type="string">When all tokens in this group share the same semantic category, declare it here. Standard values: 'base', 'semantic', 'component'. Each token in children MAY override this value.</ds-prop>
   <ds-prop name="source" type="object">Reference to the authoritative W3C Design Tokens Format (DTCG) definition. DSDS does not duplicate token values — the DTCG file is the source of truth for resolved values, aliases, and type information.</ds-prop>
-  <ds-prop name="children" type="&lt;ds-type-ref href=&quot;entities-token.html#token&quot;&gt;token&lt;/ds-type-ref&gt; | &lt;ds-type-ref href=&quot;entities-token.html#tokengroup&quot;&gt;tokenGroup&lt;/ds-type-ref&gt;[]">An ordered array of tokens and/or nested token groups in this group. Each item MUST be either a token or a tokenGroup. Ordering is significant — tools SHOULD preserve order for display, as it often represents a meaningful progression (e.g., lightest to darkest, or smallest to largest). Children inherit tokenType, category, and status from this group when they omit their own values.<br><small>Min items: 1</small></ds-prop>
+  <ds-prop name="children" type="&lt;ds-type-ref href=&quot;entities-token.html#token&quot;&gt;token&lt;/ds-type-ref&gt; | &lt;ds-type-ref href=&quot;entities-token.html#tokengroup&quot;&gt;tokenGroup&lt;/ds-type-ref&gt;[]">An ordered array of tokens and/or nested token groups in this group. Each item MUST be either a token or a tokenGroup. Ordering is significant — tools SHOULD preserve order for display, as it often represents a meaningful progression (e.g., lightest to darkest, or smallest to largest). Children inherit tokenType and status from this group when they omit their own values.<br><small>Min items: 1</small></ds-prop>
+  <ds-prop name="metadata" type="&lt;ds-code inline&gt;entityMetadata&lt;/ds-code&gt;[]">Modular metadata entries. Each entry is a typed object with a `kind` discriminator. Types include status, since, tags, category, aliases, summary, thumbnail, preview, extends, and links.</ds-prop>
   <ds-prop name="documentBlocks" type="&lt;ds-type-ref href=&quot;document-blocks-document-blocks.html#tokendocumentblock&quot;&gt;tokenDocumentBlock&lt;/ds-type-ref&gt;[]">All structured docs for this token group as an ordered array of typed document block objects. Accepts general document block types only (guideline, use-cases, accessibility, examples). Document blocks for the group as a whole live here. Document blocks for individual tokens SHOULD be placed on the token within children.</ds-prop>
-  <ds-prop name="links" type="&lt;ds-type-ref href=&quot;common-link.html#link&quot;&gt;link&lt;/ds-type-ref&gt;[]">External resource links, related artifact references, and internal relationships.</ds-prop>
   <ds-prop name="$extensions" type="&lt;ds-type-ref href=&quot;common-extensions.html#extensions&quot;&gt;extensions&lt;/ds-type-ref&gt;"></ds-prop>
 </ds-prop-table>
 <ds-cross-refs><strong>References:</strong> 
-<ds-type-ref href="common-presentation.html#presentationimage">presentationImage</ds-type-ref>, <ds-type-ref href="common-rich-text.html#richtext">richText</ds-type-ref>, <ds-type-ref href="common-presentation.html#presentationvideo">presentationVideo</ds-type-ref>, <ds-type-ref href="common-presentation.html#presentationcode">presentationCode</ds-type-ref>, <ds-type-ref href="common-presentation.html#presentationurl">presentationUrl</ds-type-ref>, <ds-type-ref href="common-status.html#status">status</ds-type-ref>, <ds-type-ref href="entities-token.html#token">token</ds-type-ref>, <ds-type-ref href="entities-token.html#tokengroup">tokenGroup</ds-type-ref>, <ds-type-ref href="document-blocks-document-blocks.html#tokendocumentblock">tokenDocumentBlock</ds-type-ref>, <ds-type-ref href="common-link.html#link">link</ds-type-ref>, <ds-type-ref href="common-extensions.html#extensions">extensions</ds-type-ref>
+<ds-type-ref href="common-rich-text.html#richtext">richText</ds-type-ref>, <ds-type-ref href="entities-token.html#token">token</ds-type-ref>, <ds-type-ref href="entities-token.html#tokengroup">tokenGroup</ds-type-ref>, <ds-code inline>entityMetadata</ds-code>, <ds-type-ref href="document-blocks-document-blocks.html#tokendocumentblock">tokenDocumentBlock</ds-type-ref>, <ds-type-ref href="common-extensions.html#extensions">extensions</ds-type-ref>
 </ds-cross-refs>
 </ds-def-section>
 

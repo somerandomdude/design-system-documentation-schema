@@ -2,11 +2,11 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://designsystemdocspec.org/v0.1/pattern.schema.json",
   "title": "DSDS Pattern Definitions",
-  "description": "Definitions for documenting interaction patterns — recurring solutions to common UX problems such as navigation, error messaging, form validation, empty states, loading sequences, and onboarding flows. A pattern document captures the identity and metadata of a multi-component solution. All structured docs live in the unified `documentBlock` array as typed document block objects.",
+  "description": "Definitions for documenting interaction patterns — recurring solutions to common UX problems such as navigation, error messaging, form validation, empty states, loading sequences, and onboarding flows. A pattern document captures the identity of a multi-component solution. Ancillary concerns — status, category, tags, aliases, summary, thumbnail, preview, extends, and links — live in the modular `metadata` array as typed entries. All structured docs live in the unified `documentBlock` array as typed document block objects.",
   "$defs": {
     "pattern": {
       "type": "object",
-      "description": "Documentation for an interaction pattern — a recurring, multi-component solution to a common UX problem. Patterns sit above individual components and describe how they compose to address a user need. The pattern's identity (name, description, status, category) lives at the top level. All structured docs live in the `documentBlock` array — each entry is a typed document block object (interaction for flow steps, guideline for rules, accessibility for a11y specs, etc.). This unified model replaces the previous architecture where components, interactions, useCases, guidelines, accessibility, and examples were separate top-level properties.",
+      "description": "Documentation for an interaction pattern — a recurring, multi-component solution to a common UX problem. Patterns sit above individual components and describe how they compose to address a user need. The pattern's identity (name, displayName, description) lives at the top level. Ancillary concerns — status, category, tags, aliases, summary, thumbnail, preview, extends, and links — live in the modular `metadata` array as typed entries with a `kind` discriminator. All structured docs live in the `documentBlock` array — each entry is a typed document block object (interaction for flow steps, guideline for rules, accessibility for a11y specs, etc.).",
       "required": ["kind", "name", "displayName", "description"],
       "properties": {
         "kind": {
@@ -23,72 +23,22 @@
           "type": "string",
           "description": "Human-readable name for display in docs (e.g., 'Error Messaging', 'Navigation', 'Empty State')."
         },
-        "aliases": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "description": "Alternative names this artifact is known by across teams, tools, or legacy systems. Useful for search, migration mapping, and cross-referencing."
-        },
-        "summary": {
-          "type": "string",
-          "description": "A one-line, plain-text summary for compact display contexts such as list views, tooltips, search results, and card layouts. MUST NOT contain markup."
-        },
-        "thumbnail": {
-          "$ref": "../common/presentation.schema.json#/$defs/presentationImage",
-          "description": "A visual for compact display contexts such as list views, tooltips, search results, and card layouts."
-        },
         "description": {
           "$ref": "../common/rich-text.schema.json#/$defs/richText",
           "description": "A description of the pattern — what user need it addresses, how it works at a high level, and its role in the design system. CommonMark supported."
         },
-        "preview": {
-          "description": "A visual or interactive preview — a hero image, video walkthrough, code snippet, or link to a live demo. Accepts any presentation type from the presentation schema.",
-          "oneOf": [
-            {
-              "$ref": "../common/presentation.schema.json#/$defs/presentationImage"
-            },
-            {
-              "$ref": "../common/presentation.schema.json#/$defs/presentationVideo"
-            },
-            {
-              "$ref": "../common/presentation.schema.json#/$defs/presentationCode"
-            },
-            {
-              "$ref": "../common/presentation.schema.json#/$defs/presentationUrl"
-            }
-          ]
-        },
-        "status": {
-          "$ref": "../common/status.schema.json#/$defs/status"
-        },
-        "since": {
-          "type": "string",
-          "description": "The design system version in which this pattern was introduced (e.g., '1.0.0', '2.3.0')."
-        },
-        "tags": {
+        "metadata": {
           "type": "array",
+          "description": "Modular metadata entries. Each entry is a typed object with a `kind` discriminator. Types include status, since, tags, category, aliases, summary, thumbnail, preview, extends, and links.",
           "items": {
-            "type": "string"
-          },
-          "description": "Freeform keywords for categorization, search, and cross-referencing (e.g., 'feedback', 'validation', 'forms', 'errors'). Tags are not constrained to a vocabulary — use them for any cross-cutting concern."
-        },
-        "category": {
-          "type": "string",
-          "description": "The interaction problem this pattern solves. Common values: 'feedback' (communicating system status, errors, success, and warnings), 'navigation' (moving between views, sections, or pages), 'data-entry' (collecting input — forms, search, filters, inline editing), 'disclosure' (revealing and hiding content — accordions, drawers, modals, tooltips), 'onboarding' (introducing features, flows, or concepts), 'layout' (organizing content across screen sizes), 'selection' (choosing items from a set), 'loading' (communicating progress during async operations). Custom values are permitted and SHOULD be lowercase kebab-case."
+            "$ref": "../metadata/metadata.schema.json#/$defs/entityMetadata"
+          }
         },
         "documentBlocks": {
           "type": "array",
-          "description": "All structured docs for this pattern as an ordered array of typed document block objects. Patterns accept pattern-specific document block types (interactions) and general types (guidelines, use-cases, accessibility, examples). Each document block entry has a `type` property that determines its shape. Ordering is significant: tools SHOULD preserve it for display. Interaction document block entries rely on ordering to represent chronological flow. Reference participating components through the `links` array (with type 'component', name, and role) rather than a dedicated document block type.",
+          "description": "All structured docs for this pattern as an ordered array of typed document block objects. Patterns accept pattern-specific document block types (interactions) and general types (guidelines, use-cases, accessibility, examples). Each document block entry has a `type` property that determines its shape. Ordering is significant: tools SHOULD preserve it for display. Interaction document block entries rely on ordering to represent chronological flow. Reference participating components through a links metadata entry (with type 'component', name, and role) rather than a dedicated document block type.",
           "items": {
             "$ref": "../document-blocks/document-blocks.schema.json#/$defs/patternDocumentBlock"
-          }
-        },
-        "links": {
-          "type": "array",
-          "description": "External resource links, internal artifact references, and relationships — source code, design files, Storybook stories, docs pages, npm packages, participating components (with roles), and relationships to other DSDS artifacts. Each link can point to an external URL, an internal DSDS artifact by name, or both.",
-          "items": {
-            "$ref": "../common/link.schema.json#/$defs/link"
           }
         },
         "$extensions": {

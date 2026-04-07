@@ -2,11 +2,11 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://designsystemdocspec.org/v0.1/style.schema.json",
   "title": "DSDS Style Definitions",
-  "description": "Definitions for documenting visual style guidelines — color palettes, typography systems, spacing scales, elevation levels, and other visual attributes. A style document captures the identity and metadata of a visual attribute domain. All structured docs live in the unified `documentBlock` array as typed document block objects.",
+  "description": "Definitions for documenting visual style guidelines — color palettes, typography systems, spacing scales, elevation levels, and other visual attributes. A style document captures the identity and metadata of a visual attribute domain. Descriptive and presentational metadata (status, tags, category, aliases, summary, thumbnail, preview, links, etc.) lives in the modular `metadata` array as typed entries. All structured docs live in the unified `documentBlock` array as typed document block objects.",
   "$defs": {
     "style": {
       "type": "object",
-      "description": "Documentation for a visual style — the principles, guidelines, scales, and token references that govern a visual attribute such as color, typography, spacing, or elevation across the system. Identity (name, description, status, category) lives at the top level. All structured docs live in the `documentBlock` array — each entry is a typed document block object (principle, scale, guideline, accessibility, etc.). This unified model replaces the previous architecture where principles, tokenGroups, scales, useCases, guidelines, and accessibility were separate top-level properties.",
+      "description": "Documentation for a visual style — the principles, guidelines, scales, and token references that govern a visual attribute such as color, typography, spacing, or elevation across the system. Identity (name, displayName, description) lives at the top level. Descriptive and presentational metadata (status, tags, category, aliases, summary, thumbnail, preview, links, etc.) lives in the modular `metadata` array — each entry is a typed object with a `kind` discriminator. All structured docs live in the `documentBlock` array — each entry is a typed document block object (principle, scale, guideline, accessibility, etc.).",
       "required": ["kind", "name", "displayName", "description"],
       "properties": {
         "kind": {
@@ -23,72 +23,22 @@
           "type": "string",
           "description": "Human-readable name for display in docs (e.g., 'Color', 'Typography', 'Spacing', 'Elevation')."
         },
-        "aliases": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "description": "Alternative names for this artifact across teams, tools, or legacy systems. Useful for search, migration mapping, and cross-referencing."
-        },
-        "summary": {
-          "type": "string",
-          "description": "A one-line, plain-text summary for compact display contexts such as list views, tooltips, search results, and cards. MUST NOT contain markup."
-        },
-        "thumbnail": {
-          "$ref": "../common/presentation.schema.json#/$defs/presentationImage",
-          "description": "A visual for compact display contexts such as list views, tooltips, search results, and cards."
-        },
         "description": {
           "$ref": "../common/rich-text.schema.json#/$defs/richText",
           "description": "A description of the style — what visual attribute it governs, how the system approaches it, and its role in the design language. CommonMark supported."
         },
-        "preview": {
-          "description": "A visual or interactive preview — a hero image, video walkthrough, code snippet, or link to a live demo. Accepts any presentation type from the presentation schema.",
-          "oneOf": [
-            {
-              "$ref": "../common/presentation.schema.json#/$defs/presentationImage"
-            },
-            {
-              "$ref": "../common/presentation.schema.json#/$defs/presentationVideo"
-            },
-            {
-              "$ref": "../common/presentation.schema.json#/$defs/presentationCode"
-            },
-            {
-              "$ref": "../common/presentation.schema.json#/$defs/presentationUrl"
-            }
-          ]
-        },
-        "status": {
-          "$ref": "../common/status.schema.json#/$defs/status"
-        },
-        "since": {
-          "type": "string",
-          "description": "The design system version in which this style was introduced (e.g., '1.0.0', '2.3.0')."
-        },
-        "tags": {
+        "metadata": {
           "type": "array",
+          "description": "Modular metadata entries. Each entry is a typed object with a `kind` discriminator. Types include status, since, tags, category, aliases, summary, thumbnail, preview, extends, and links.",
           "items": {
-            "type": "string"
-          },
-          "description": "Freeform keywords for categorization, search, and cross-referencing (e.g., 'visual', 'foundation', 'layout', 'theming'). Tags are not constrained to a vocabulary."
-        },
-        "category": {
-          "type": "string",
-          "description": "The visual attribute category this style governs. Common values: 'color' (color system, palettes, semantic color usage, and color modes), 'typography' (type hierarchy, font families, type scales, and typographic rules), 'spacing' (spatial system, spacing scale, and layout rhythm), 'elevation' (shadows, layering, z-index strategy, and depth), 'motion' (animation timing, easing curves, transition patterns, and reduced-motion), 'shape' (border radius, corner treatments, and geometric conventions). Custom values are permitted and SHOULD be lowercase kebab-case."
+            "$ref": "../metadata/metadata.schema.json#/$defs/entityMetadata"
+          }
         },
         "documentBlocks": {
           "type": "array",
-          "description": "All structured docs for this style as an ordered array of typed document block objects. Accepts style-specific types (principles, scale) and general types (guideline, use-cases, accessibility, examples). Each document block entry has a `type` property that determines its shape. Ordering is significant: tools SHOULD preserve it for display. Express internal artifact relationships (e.g., token group references) through the `links` array, not as document block entries.",
+          "description": "All structured docs for this style as an ordered array of typed document block objects. Accepts style-specific types (principles, scale) and general types (guideline, use-cases, accessibility, examples). Each document block entry has a `type` property that determines its shape. Ordering is significant: tools SHOULD preserve it for display. Express internal artifact relationships (e.g., token group references) through a links metadata entry, not as document block entries.",
           "items": {
             "$ref": "../document-blocks/document-blocks.schema.json#/$defs/styleDocumentBlock"
-          }
-        },
-        "links": {
-          "type": "array",
-          "description": "External resource links, related artifact references, and internal relationships — source code, design files, Storybook stories, docs pages, npm packages, and relationships to other DSDS artifacts. Each link can point to an external URL, an internal DSDS artifact by name, or both.",
-          "items": {
-            "$ref": "../common/link.schema.json#/$defs/link"
           }
         },
         "$extensions": {

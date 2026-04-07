@@ -570,6 +570,251 @@
         }
       ]
     },
+    "aliasesMetadata": {
+      "type": "object",
+      "required": [
+        "kind",
+        "items"
+      ],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "const": "aliases"
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "description": "Alternative names across teams, tools, or legacy systems."
+        }
+      },
+      "additionalProperties": false
+    },
+    "categoryMetadata": {
+      "type": "object",
+      "required": [
+        "kind",
+        "value"
+      ],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "const": "category"
+        },
+        "value": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]*$",
+          "description": "Taxonomy category (e.g., 'action', 'navigation', 'feedback', 'base', 'semantic')."
+        }
+      },
+      "additionalProperties": false
+    },
+    "extendsMetadata": {
+      "type": "object",
+      "required": [
+        "kind"
+      ],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "const": "extends"
+        },
+        "extends": {
+          "$ref": "#/$defs/entityExtends",
+          "description": "The inheritance declaration."
+        }
+      },
+      "additionalProperties": false
+    },
+    "linksMetadata": {
+      "type": "object",
+      "required": [
+        "kind",
+        "items"
+      ],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "const": "links"
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/link"
+          },
+          "minItems": 1,
+          "description": "Links to source code, design files, related entities, etc."
+        }
+      },
+      "additionalProperties": false
+    },
+    "entityMetadata": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/statusMetadata"
+        },
+        {
+          "$ref": "#/$defs/sinceMetadata"
+        },
+        {
+          "$ref": "#/$defs/tagsMetadata"
+        },
+        {
+          "$ref": "#/$defs/categoryMetadata"
+        },
+        {
+          "$ref": "#/$defs/aliasesMetadata"
+        },
+        {
+          "$ref": "#/$defs/summaryMetadata"
+        },
+        {
+          "$ref": "#/$defs/thumbnailMetadata"
+        },
+        {
+          "$ref": "#/$defs/previewMetadata"
+        },
+        {
+          "$ref": "#/$defs/extendsMetadata"
+        },
+        {
+          "$ref": "#/$defs/linksMetadata"
+        }
+      ]
+    },
+    "previewMetadata": {
+      "type": "object",
+      "required": [
+        "kind"
+      ],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "const": "preview"
+        },
+        "presentation": {
+          "description": "The preview content.",
+          "oneOf": [
+            {
+              "$ref": "#/$defs/presentationImage"
+            },
+            {
+              "$ref": "#/$defs/presentationVideo"
+            },
+            {
+              "$ref": "#/$defs/presentationCode"
+            },
+            {
+              "$ref": "#/$defs/presentationUrl"
+            }
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "sinceMetadata": {
+      "type": "object",
+      "required": [
+        "kind",
+        "value"
+      ],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "const": "since"
+        },
+        "value": {
+          "type": "string",
+          "description": "Version string (e.g., '1.0.0', '2.3.0')."
+        }
+      },
+      "additionalProperties": false
+    },
+    "statusMetadata": {
+      "type": "object",
+      "required": [
+        "kind"
+      ],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "const": "status"
+        },
+        "status": {
+          "$ref": "#/$defs/statusValue"
+        },
+        "platformStatus": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/platformStatus"
+          }
+        },
+        "deprecationNotice": {
+          "type": "string",
+          "description": "Required when status is deprecated. MUST explain what to use instead."
+        }
+      },
+      "additionalProperties": false
+    },
+    "summaryMetadata": {
+      "type": "object",
+      "required": [
+        "kind",
+        "value"
+      ],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "const": "summary"
+        },
+        "value": {
+          "type": "string",
+          "description": "One-line plain-text summary. MUST NOT contain markup."
+        }
+      },
+      "additionalProperties": false
+    },
+    "tagsMetadata": {
+      "type": "object",
+      "required": [
+        "kind",
+        "items"
+      ],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "const": "tags"
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "description": "Keywords for categorization, search, and cross-referencing."
+        }
+      },
+      "additionalProperties": false
+    },
+    "thumbnailMetadata": {
+      "type": "object",
+      "required": [
+        "kind"
+      ],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "const": "thumbnail"
+        },
+        "image": {
+          "$ref": "#/$defs/presentationImage",
+          "description": "The thumbnail image."
+        }
+      },
+      "additionalProperties": false
+    },
     "keyboardInteraction": {
       "type": "object",
       "description": "A keyboard interaction spec documenting what happens when a specific key or key combination is pressed.",
@@ -2291,7 +2536,7 @@
     },
     "component": {
       "type": "object",
-      "description": "A single reusable UI component. Identity (name, description, status, category) lives at the top level. All structured docs live in the `documentBlock` array — each entry is a typed document block object (anatomy, api, variant, state, design-specifications, guideline, accessibility, etc.). This unified model replaces separate top-level properties for each concern.",
+      "description": "A single reusable UI component. Identity (name, displayName, description) lives at the top level. Modular metadata (status, category, tags, aliases, summary, thumbnail, preview, extends, since, links) lives in the `metadata` array as typed entries with a `kind` discriminator. All structured docs live in the `documentBlocks` array — each entry is a typed document block object (anatomy, api, variant, state, design-specifications, guideline, accessibility, etc.). This unified model replaces separate top-level properties for each concern.",
       "required": [
         "kind",
         "name",
@@ -2309,81 +2554,26 @@
           "pattern": "^[a-z][a-z0-9-]*$",
           "description": "Machine-readable identifier (e.g., 'button', 'dialog', 'form-field', 'data-table'). MUST be unique within the documentation group."
         },
-        "extends": {
-          "$ref": "#/$defs/entityExtends",
-          "description": "Declares that this component inherits from a base component in a parent design system. The base provides the foundational anatomy, API, variants, states, and guidelines. This component layers on top — adding variants, props, guidelines, or specialized behavior while inheriting everything else."
-        },
-        "aliases": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "description": "Alternative names for this component across teams, tools, or legacy systems (e.g., ['btn', 'action-button', 'CTA']). Useful for search, migration mapping, and cross-referencing."
-        },
         "displayName": {
           "type": "string",
           "description": "Human-readable name for display in docs (e.g., 'Button', 'Dialog', 'Form Field', 'Data Table')."
-        },
-        "summary": {
-          "type": "string",
-          "description": "A one-line, plain-text summary for compact contexts such as list views, tooltips, search results, and cards. MUST NOT contain markup."
-        },
-        "thumbnail": {
-          "$ref": "#/$defs/presentationImage",
-          "description": "A visual for compact display contexts such as list views, tooltips, search results, and cards."
         },
         "description": {
           "$ref": "#/$defs/richText",
           "description": "A description of the component — what it is, what it does, and its role in the design system. CommonMark supported."
         },
-        "preview": {
-          "description": "A visual or interactive preview of the component — a hero image, video walkthrough, code snippet, or link to a live demo. Accepts any presentation type.",
-          "oneOf": [
-            {
-              "$ref": "#/$defs/presentationImage"
-            },
-            {
-              "$ref": "#/$defs/presentationVideo"
-            },
-            {
-              "$ref": "#/$defs/presentationCode"
-            },
-            {
-              "$ref": "#/$defs/presentationUrl"
-            }
-          ]
-        },
-        "status": {
-          "$ref": "#/$defs/status"
-        },
-        "since": {
-          "type": "string",
-          "description": "The design system version in which this component was introduced (e.g., '1.0.0', '2.3.0')."
-        },
-        "tags": {
+        "metadata": {
           "type": "array",
+          "description": "Modular metadata entries. Each entry is a typed object with a `kind` discriminator. Types include status, since, tags, category, aliases, summary, thumbnail, preview, extends, and links.",
           "items": {
-            "type": "string"
-          },
-          "description": "Freeform keywords for categorization, search, and cross-referencing (e.g., 'action', 'form', 'interactive', 'navigation', 'feedback'). Tags are not constrained to a vocabulary."
-        },
-        "category": {
-          "type": "string",
-          "pattern": "^[a-z][a-z0-9-]*$",
-          "description": "Component classification within the design system's taxonomy (e.g., 'action', 'navigation', 'feedback', 'data-display', 'layout', 'form', 'overlay'). Used for organizing components into sections in documentation sites and component libraries."
+            "$ref": "#/$defs/entityMetadata"
+          }
         },
         "documentBlocks": {
           "type": "array",
-          "description": "All structured docs for this component as an ordered array of typed document block objects. Accepts component-specific types (anatomy, api, variants, states, design-specifications) and general types (guideline, purpose, accessibility, examples). Each document block entry has a `type` property that determines its shape. Ordering is significant: tools SHOULD preserve it for display. Express internal artifact relationships through the `links` array rather than as document block entries.",
+          "description": "All structured docs for this component as an ordered array of typed document block objects. Accepts component-specific types (anatomy, api, variants, states, design-specifications) and general types (guideline, purpose, accessibility, examples). Each document block entry has a `type` property that determines its shape. Ordering is significant: tools SHOULD preserve it for display.",
           "items": {
             "$ref": "#/$defs/componentDocumentBlock"
-          }
-        },
-        "links": {
-          "type": "array",
-          "description": "External resource links, internal artifact references, and entity relationships — source code, design files, Storybook stories, docs pages, npm packages, related components, parent/child relationships, and alternatives. Each link points to an external URL, an internal DSDS artifact by name, or both.",
-          "items": {
-            "$ref": "#/$defs/link"
           }
         },
         "$extensions": {
@@ -2394,7 +2584,7 @@
     },
     "pattern": {
       "type": "object",
-      "description": "Documentation for an interaction pattern — a recurring, multi-component solution to a common UX problem. Patterns sit above individual components and describe how they compose to address a user need. The pattern's identity (name, description, status, category) lives at the top level. All structured docs live in the `documentBlock` array — each entry is a typed document block object (interaction for flow steps, guideline for rules, accessibility for a11y specs, etc.). This unified model replaces the previous architecture where components, interactions, useCases, guidelines, accessibility, and examples were separate top-level properties.",
+      "description": "Documentation for an interaction pattern — a recurring, multi-component solution to a common UX problem. Patterns sit above individual components and describe how they compose to address a user need. The pattern's identity (name, displayName, description) lives at the top level. Ancillary concerns — status, category, tags, aliases, summary, thumbnail, preview, extends, and links — live in the modular `metadata` array as typed entries with a `kind` discriminator. All structured docs live in the `documentBlock` array — each entry is a typed document block object (interaction for flow steps, guideline for rules, accessibility for a11y specs, etc.).",
       "required": [
         "kind",
         "name",
@@ -2416,72 +2606,22 @@
           "type": "string",
           "description": "Human-readable name for display in docs (e.g., 'Error Messaging', 'Navigation', 'Empty State')."
         },
-        "aliases": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "description": "Alternative names this artifact is known by across teams, tools, or legacy systems. Useful for search, migration mapping, and cross-referencing."
-        },
-        "summary": {
-          "type": "string",
-          "description": "A one-line, plain-text summary for compact display contexts such as list views, tooltips, search results, and card layouts. MUST NOT contain markup."
-        },
-        "thumbnail": {
-          "$ref": "#/$defs/presentationImage",
-          "description": "A visual for compact display contexts such as list views, tooltips, search results, and card layouts."
-        },
         "description": {
           "$ref": "#/$defs/richText",
           "description": "A description of the pattern — what user need it addresses, how it works at a high level, and its role in the design system. CommonMark supported."
         },
-        "preview": {
-          "description": "A visual or interactive preview — a hero image, video walkthrough, code snippet, or link to a live demo. Accepts any presentation type from the presentation schema.",
-          "oneOf": [
-            {
-              "$ref": "#/$defs/presentationImage"
-            },
-            {
-              "$ref": "#/$defs/presentationVideo"
-            },
-            {
-              "$ref": "#/$defs/presentationCode"
-            },
-            {
-              "$ref": "#/$defs/presentationUrl"
-            }
-          ]
-        },
-        "status": {
-          "$ref": "#/$defs/status"
-        },
-        "since": {
-          "type": "string",
-          "description": "The design system version in which this pattern was introduced (e.g., '1.0.0', '2.3.0')."
-        },
-        "tags": {
+        "metadata": {
           "type": "array",
+          "description": "Modular metadata entries. Each entry is a typed object with a `kind` discriminator. Types include status, since, tags, category, aliases, summary, thumbnail, preview, extends, and links.",
           "items": {
-            "type": "string"
-          },
-          "description": "Freeform keywords for categorization, search, and cross-referencing (e.g., 'feedback', 'validation', 'forms', 'errors'). Tags are not constrained to a vocabulary — use them for any cross-cutting concern."
-        },
-        "category": {
-          "type": "string",
-          "description": "The interaction problem this pattern solves. Common values: 'feedback' (communicating system status, errors, success, and warnings), 'navigation' (moving between views, sections, or pages), 'data-entry' (collecting input — forms, search, filters, inline editing), 'disclosure' (revealing and hiding content — accordions, drawers, modals, tooltips), 'onboarding' (introducing features, flows, or concepts), 'layout' (organizing content across screen sizes), 'selection' (choosing items from a set), 'loading' (communicating progress during async operations). Custom values are permitted and SHOULD be lowercase kebab-case."
+            "$ref": "#/$defs/entityMetadata"
+          }
         },
         "documentBlocks": {
           "type": "array",
-          "description": "All structured docs for this pattern as an ordered array of typed document block objects. Patterns accept pattern-specific document block types (interactions) and general types (guidelines, use-cases, accessibility, examples). Each document block entry has a `type` property that determines its shape. Ordering is significant: tools SHOULD preserve it for display. Interaction document block entries rely on ordering to represent chronological flow. Reference participating components through the `links` array (with type 'component', name, and role) rather than a dedicated document block type.",
+          "description": "All structured docs for this pattern as an ordered array of typed document block objects. Patterns accept pattern-specific document block types (interactions) and general types (guidelines, use-cases, accessibility, examples). Each document block entry has a `type` property that determines its shape. Ordering is significant: tools SHOULD preserve it for display. Interaction document block entries rely on ordering to represent chronological flow. Reference participating components through a links metadata entry (with type 'component', name, and role) rather than a dedicated document block type.",
           "items": {
             "$ref": "#/$defs/patternDocumentBlock"
-          }
-        },
-        "links": {
-          "type": "array",
-          "description": "External resource links, internal artifact references, and relationships — source code, design files, Storybook stories, docs pages, npm packages, participating components (with roles), and relationships to other DSDS artifacts. Each link can point to an external URL, an internal DSDS artifact by name, or both.",
-          "items": {
-            "$ref": "#/$defs/link"
           }
         },
         "$extensions": {
@@ -2492,7 +2632,7 @@
     },
     "style": {
       "type": "object",
-      "description": "Documentation for a visual style — the principles, guidelines, scales, and token references that govern a visual attribute such as color, typography, spacing, or elevation across the system. Identity (name, description, status, category) lives at the top level. All structured docs live in the `documentBlock` array — each entry is a typed document block object (principle, scale, guideline, accessibility, etc.). This unified model replaces the previous architecture where principles, tokenGroups, scales, useCases, guidelines, and accessibility were separate top-level properties.",
+      "description": "Documentation for a visual style — the principles, guidelines, scales, and token references that govern a visual attribute such as color, typography, spacing, or elevation across the system. Identity (name, displayName, description) lives at the top level. Descriptive and presentational metadata (status, tags, category, aliases, summary, thumbnail, preview, links, etc.) lives in the modular `metadata` array — each entry is a typed object with a `kind` discriminator. All structured docs live in the `documentBlock` array — each entry is a typed document block object (principle, scale, guideline, accessibility, etc.).",
       "required": [
         "kind",
         "name",
@@ -2514,72 +2654,22 @@
           "type": "string",
           "description": "Human-readable name for display in docs (e.g., 'Color', 'Typography', 'Spacing', 'Elevation')."
         },
-        "aliases": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "description": "Alternative names for this artifact across teams, tools, or legacy systems. Useful for search, migration mapping, and cross-referencing."
-        },
-        "summary": {
-          "type": "string",
-          "description": "A one-line, plain-text summary for compact display contexts such as list views, tooltips, search results, and cards. MUST NOT contain markup."
-        },
-        "thumbnail": {
-          "$ref": "#/$defs/presentationImage",
-          "description": "A visual for compact display contexts such as list views, tooltips, search results, and cards."
-        },
         "description": {
           "$ref": "#/$defs/richText",
           "description": "A description of the style — what visual attribute it governs, how the system approaches it, and its role in the design language. CommonMark supported."
         },
-        "preview": {
-          "description": "A visual or interactive preview — a hero image, video walkthrough, code snippet, or link to a live demo. Accepts any presentation type from the presentation schema.",
-          "oneOf": [
-            {
-              "$ref": "#/$defs/presentationImage"
-            },
-            {
-              "$ref": "#/$defs/presentationVideo"
-            },
-            {
-              "$ref": "#/$defs/presentationCode"
-            },
-            {
-              "$ref": "#/$defs/presentationUrl"
-            }
-          ]
-        },
-        "status": {
-          "$ref": "#/$defs/status"
-        },
-        "since": {
-          "type": "string",
-          "description": "The design system version in which this style was introduced (e.g., '1.0.0', '2.3.0')."
-        },
-        "tags": {
+        "metadata": {
           "type": "array",
+          "description": "Modular metadata entries. Each entry is a typed object with a `kind` discriminator. Types include status, since, tags, category, aliases, summary, thumbnail, preview, extends, and links.",
           "items": {
-            "type": "string"
-          },
-          "description": "Freeform keywords for categorization, search, and cross-referencing (e.g., 'visual', 'foundation', 'layout', 'theming'). Tags are not constrained to a vocabulary."
-        },
-        "category": {
-          "type": "string",
-          "description": "The visual attribute category this style governs. Common values: 'color' (color system, palettes, semantic color usage, and color modes), 'typography' (type hierarchy, font families, type scales, and typographic rules), 'spacing' (spatial system, spacing scale, and layout rhythm), 'elevation' (shadows, layering, z-index strategy, and depth), 'motion' (animation timing, easing curves, transition patterns, and reduced-motion), 'shape' (border radius, corner treatments, and geometric conventions). Custom values are permitted and SHOULD be lowercase kebab-case."
+            "$ref": "#/$defs/entityMetadata"
+          }
         },
         "documentBlocks": {
           "type": "array",
-          "description": "All structured docs for this style as an ordered array of typed document block objects. Accepts style-specific types (principles, scale) and general types (guideline, use-cases, accessibility, examples). Each document block entry has a `type` property that determines its shape. Ordering is significant: tools SHOULD preserve it for display. Express internal artifact relationships (e.g., token group references) through the `links` array, not as document block entries.",
+          "description": "All structured docs for this style as an ordered array of typed document block objects. Accepts style-specific types (principles, scale) and general types (guideline, use-cases, accessibility, examples). Each document block entry has a `type` property that determines its shape. Ordering is significant: tools SHOULD preserve it for display. Express internal artifact relationships (e.g., token group references) through a links metadata entry, not as document block entries.",
           "items": {
             "$ref": "#/$defs/styleDocumentBlock"
-          }
-        },
-        "links": {
-          "type": "array",
-          "description": "External resource links, related artifact references, and internal relationships — source code, design files, Storybook stories, docs pages, npm packages, and relationships to other DSDS artifacts. Each link can point to an external URL, an internal DSDS artifact by name, or both.",
-          "items": {
-            "$ref": "#/$defs/link"
           }
         },
         "$extensions": {
@@ -2608,7 +2698,7 @@
     },
     "theme": {
       "type": "object",
-      "description": "Documents a theme — a named context that adapts the design system's token values. DSDS captures the purpose, usage document blocks, accessibility considerations, and the list of affected tokens. The actual override values live in the DTCG file referenced by the source property. Use themes for color modes (light, dark, high-contrast), density settings (compact, comfortable), brand variants, or product-specific customizations. The token catalog remains the authoritative source for token identity, type, and documentation.",
+      "description": "Documents a theme — a named context that adapts the design system's token values. DSDS captures the purpose, usage document blocks, accessibility considerations, and the list of affected tokens. The actual override values live in the DTCG file referenced by the source property. Use themes for color modes (light, dark, high-contrast), density settings (compact, comfortable), brand variants, or product-specific customizations. The token catalog remains the authoritative source for token identity, type, and documentation. Presentational and classificatory concerns (status, tags, category, aliases, summary, thumbnail, preview, extends, links) live in the modular `metadata` array as typed entries with a `kind` discriminator.",
       "required": [
         "kind",
         "name",
@@ -2630,59 +2720,16 @@
           "type": "string",
           "description": "Human-readable name for the theme (e.g., 'Dark Mode', 'High Contrast', 'Compact Density')."
         },
-        "aliases": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "description": "Alternative names for this artifact across teams, tools, or legacy systems. Useful for search, migration mapping, and cross-referencing."
-        },
-        "summary": {
-          "type": "string",
-          "description": "A one-line, plain-text summary for compact display contexts such as list views, tooltips, search results, and cards. MUST NOT contain markup."
-        },
-        "thumbnail": {
-          "$ref": "#/$defs/presentationImage",
-          "description": "A visual for compact display contexts such as list views, tooltips, search results, and cards."
-        },
         "description": {
           "$ref": "#/$defs/richText",
           "description": "A description of the theme — what context it adapts the system to, when to apply it, and how it differs from default token values. CommonMark supported."
         },
-        "preview": {
-          "description": "A visual or interactive preview — a hero image, video walkthrough, code snippet, or link to a live demo. Accepts any presentation type from the presentation schema.",
-          "oneOf": [
-            {
-              "$ref": "#/$defs/presentationImage"
-            },
-            {
-              "$ref": "#/$defs/presentationVideo"
-            },
-            {
-              "$ref": "#/$defs/presentationCode"
-            },
-            {
-              "$ref": "#/$defs/presentationUrl"
-            }
-          ]
-        },
-        "status": {
-          "$ref": "#/$defs/status"
-        },
-        "since": {
-          "type": "string",
-          "description": "The design system version in which this theme was introduced."
-        },
-        "tags": {
+        "metadata": {
           "type": "array",
+          "description": "Modular metadata entries. Each entry is a typed object with a `kind` discriminator. Types include status, since, tags, category, aliases, summary, thumbnail, preview, extends, and links.",
           "items": {
-            "type": "string"
-          },
-          "description": "Freeform keywords for categorization and search (e.g., 'dark-mode', 'accessibility', 'brand')."
-        },
-        "category": {
-          "type": "string",
-          "description": "The category of adaptation this theme represents. Common values: 'color-mode' (light/dark/high-contrast), 'density' (compact/comfortable/spacious), 'brand' (sub-brand or partner theming), 'product' (product-specific overrides). Custom values are permitted and SHOULD be lowercase kebab-case."
+            "$ref": "#/$defs/entityMetadata"
+          }
         },
         "source": {
           "type": "object",
@@ -2714,13 +2761,6 @@
             "$ref": "#/$defs/tokenDocumentBlock"
           }
         },
-        "links": {
-          "type": "array",
-          "description": "External resource links, related artifact references, and internal relationships. Each link can point to an external URL, an internal DSDS artifact by name, or both.",
-          "items": {
-            "$ref": "#/$defs/link"
-          }
-        },
         "$extensions": {
           "$ref": "#/$defs/extensions"
         }
@@ -2729,7 +2769,7 @@
     },
     "token": {
       "type": "object",
-      "description": "Documentation for a single design token — name, type, use cases, guidelines, and accessibility considerations. The displayName property is absent — the token name is the display name. Description and status are optional. When a token appears inside a token group, an omitted status is inherited from the parent group.",
+      "description": "Documentation for a single design token — name, type, use cases, guidelines, and accessibility considerations. The displayName property is absent — the token name is the display name. Description and status are optional. Shared presentational and classificatory properties (status, since, tags, category, aliases, summary, thumbnail, preview, extends, links) are expressed as typed entries in the modular `metadata` array rather than as top-level properties. When a token appears inside a token group, an omitted status metadata entry is inherited from the parent group.",
       "required": [
         "kind",
         "name",
@@ -2745,68 +2785,13 @@
           "type": "string",
           "description": "The token name. Unconstrained by a pattern to accommodate DTCG and design tool naming conventions that use dots, slashes, or other separators (e.g., 'color-text-primary', 'color.text.primary', 'color/text/primary'). Also serves as the human-readable display name."
         },
-        "extends": {
-          "$ref": "#/$defs/entityExtends",
-          "description": "Declares that this token inherits from a base token in a parent design system. The base token provides the foundational type, source reference, and guidelines. This token layers on top — providing additional guidelines or context while inheriting everything else."
-        },
-        "aliases": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "description": "Alternative names this token is known by across teams, tools, or legacy systems. Useful for search, migration mapping, and cross-referencing."
-        },
-        "summary": {
-          "type": "string",
-          "description": "A one-line, plain-text summary. MUST NOT contain markup."
-        },
-        "thumbnail": {
-          "$ref": "#/$defs/presentationImage",
-          "description": "A visual for compact display contexts such as list views, tooltips, search results, and cards."
-        },
         "description": {
           "$ref": "#/$defs/richText",
           "description": "A description of the token — what it represents, where to use it, and any constraints. Optional; when omitted, tools MAY generate a description from the token name and type."
         },
-        "preview": {
-          "description": "A visual or interactive preview — a hero image, video walkthrough, code snippet, or link to a live demo. Accepts any presentation type from the presentation schema.",
-          "oneOf": [
-            {
-              "$ref": "#/$defs/presentationImage"
-            },
-            {
-              "$ref": "#/$defs/presentationVideo"
-            },
-            {
-              "$ref": "#/$defs/presentationCode"
-            },
-            {
-              "$ref": "#/$defs/presentationUrl"
-            }
-          ]
-        },
-        "status": {
-          "$ref": "#/$defs/status",
-          "description": "Lifecycle status of the token. Optional. When omitted inside a token group, inherited from the parent group. When omitted at the top level, tools SHOULD treat the token as having no declared status."
-        },
-        "since": {
-          "type": "string",
-          "description": "The version in which this token was introduced."
-        },
-        "tags": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "description": "Freeform keywords to relate guidelines across categories/disciplines (e.g., 'rtl', 'localization', 'validation')."
-        },
         "tokenType": {
           "type": "string",
           "description": "The type of token aligned with the DTCG spec (e.g., 'color', 'dimension', 'fontFamily', 'fontWeight', 'duration', 'cubicBezier', 'shadow')."
-        },
-        "category": {
-          "type": "string",
-          "description": "The token's semantic category. Standard values: 'base' (raw palette values, not used directly in components), 'semantic' (purpose-driven tokens that map to base values, e.g., 'color-text-primary'), 'component' (tokens scoped to a specific component, e.g., 'button-background'). Custom values are permitted and SHOULD be lowercase kebab-case."
         },
         "source": {
           "type": "object",
@@ -2823,18 +2808,18 @@
           },
           "additionalProperties": false
         },
+        "metadata": {
+          "type": "array",
+          "description": "Modular metadata entries. Each entry is a typed object with a `kind` discriminator. Types include status, since, tags, category, aliases, summary, thumbnail, preview, extends, and links.",
+          "items": {
+            "$ref": "#/$defs/entityMetadata"
+          }
+        },
         "documentBlocks": {
           "type": "array",
           "description": "All structured docs for this token as an ordered array of typed document block objects. Tokens accept general document block types only (guideline, use-cases, accessibility, examples). Each document block entry has a `type` property that determines its shape. Ordering is significant: tools SHOULD preserve it for display.",
           "items": {
             "$ref": "#/$defs/tokenDocumentBlock"
-          }
-        },
-        "links": {
-          "type": "array",
-          "description": "External resource links, related artifact references, and internal relationships. Each link can point to an external URL, an internal DSDS artifact by name, or both.",
-          "items": {
-            "$ref": "#/$defs/link"
           }
         },
         "$extensions": {
@@ -2845,7 +2830,7 @@
     },
     "tokenGroup": {
       "type": "object",
-      "description": "A group of related design tokens. Token groups are flexible organizational units — a full collection, a family (e.g., all color tokens), a sub-family (e.g., a single hue with its grade scale), or any other logical grouping. Groups can nest to form a deep hierarchy. A top-level group might represent 'color', containing child groups for 'color-text', 'color-background', and 'color-border', each with individual tokens. This recursive structure mirrors how real design systems organize tokens into families and sub-families. The displayName property is absent — the group name is the display name. Description and status are optional. Children inherit the parent group's status when they omit their own.",
+      "description": "A group of related design tokens. Token groups are flexible organizational units — a full collection, a family (e.g., all color tokens), a sub-family (e.g., a single hue with its grade scale), or any other logical grouping. Groups can nest to form a deep hierarchy. A top-level group might represent 'color', containing child groups for 'color-text', 'color-background', and 'color-border', each with individual tokens. This recursive structure mirrors how real design systems organize tokens into families and sub-families. The displayName property is absent — the group name is the display name. Description and status are optional. Shared presentational and classificatory properties (status, since, tags, category, aliases, summary, thumbnail, preview, links) are expressed as typed entries in the modular `metadata` array rather than as top-level properties. Children inherit the parent group's status metadata entry when they omit their own.",
       "required": [
         "kind",
         "name"
@@ -2860,64 +2845,13 @@
           "type": "string",
           "description": "The token group name. Unconstrained by a pattern to accommodate DTCG and design tool naming conventions (e.g., 'color-text', 'color.text', 'color/text'). Also serves as the human-readable display name."
         },
-        "aliases": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "description": "Alternative names this token group is known by across teams, tools, or legacy systems. Useful for search, migration mapping, and cross-referencing."
-        },
-        "summary": {
-          "type": "string",
-          "description": "A one-line, plain-text summary. MUST NOT contain markup."
-        },
-        "thumbnail": {
-          "$ref": "#/$defs/presentationImage",
-          "description": "A visual for compact display contexts such as list views, tooltips, search results, and cards."
-        },
         "description": {
           "$ref": "#/$defs/richText",
           "description": "A description of the group's purpose, the tokens it contains, and how they relate. Optional; when omitted, tools MAY generate a description from the group name and children."
         },
-        "preview": {
-          "description": "A visual or interactive preview — a hero image, video walkthrough, code snippet, or link to a live demo. Accepts any presentation type from the presentation schema.",
-          "oneOf": [
-            {
-              "$ref": "#/$defs/presentationImage"
-            },
-            {
-              "$ref": "#/$defs/presentationVideo"
-            },
-            {
-              "$ref": "#/$defs/presentationCode"
-            },
-            {
-              "$ref": "#/$defs/presentationUrl"
-            }
-          ]
-        },
-        "status": {
-          "$ref": "#/$defs/status",
-          "description": "Lifecycle status of the token group. Optional. When omitted inside a parent token group, inherited from the parent. Children that omit their own status inherit this group's status."
-        },
-        "since": {
-          "type": "string",
-          "description": "The version in which this group was introduced."
-        },
-        "tags": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "description": "Freeform keywords for categorization and search (e.g., 'color', 'palette', 'semantic')."
-        },
         "tokenType": {
           "type": "string",
           "description": "When all tokens in this group share the same DTCG token type, declare it here to avoid repetition on each child. Each token in children MAY override this value. Common values: 'color', 'dimension', 'fontFamily', 'fontWeight', 'duration', 'number', 'shadow'."
-        },
-        "category": {
-          "type": "string",
-          "description": "When all tokens in this group share the same semantic category, declare it here. Standard values: 'base', 'semantic', 'component'. Each token in children MAY override this value."
         },
         "source": {
           "type": "object",
@@ -2936,7 +2870,7 @@
         },
         "children": {
           "type": "array",
-          "description": "An ordered array of tokens and/or nested token groups in this group. Each item MUST be either a token or a tokenGroup. Ordering is significant — tools SHOULD preserve order for display, as it often represents a meaningful progression (e.g., lightest to darkest, or smallest to largest). Children inherit tokenType, category, and status from this group when they omit their own values.",
+          "description": "An ordered array of tokens and/or nested token groups in this group. Each item MUST be either a token or a tokenGroup. Ordering is significant — tools SHOULD preserve order for display, as it often represents a meaningful progression (e.g., lightest to darkest, or smallest to largest). Children inherit tokenType and status from this group when they omit their own values.",
           "items": {
             "oneOf": [
               {
@@ -2949,18 +2883,18 @@
           },
           "minItems": 1
         },
+        "metadata": {
+          "type": "array",
+          "description": "Modular metadata entries. Each entry is a typed object with a `kind` discriminator. Types include status, since, tags, category, aliases, summary, thumbnail, preview, extends, and links.",
+          "items": {
+            "$ref": "#/$defs/entityMetadata"
+          }
+        },
         "documentBlocks": {
           "type": "array",
           "description": "All structured docs for this token group as an ordered array of typed document block objects. Accepts general document block types only (guideline, use-cases, accessibility, examples). Document blocks for the group as a whole live here. Document blocks for individual tokens SHOULD be placed on the token within children.",
           "items": {
             "$ref": "#/$defs/tokenDocumentBlock"
-          }
-        },
-        "links": {
-          "type": "array",
-          "description": "External resource links, related artifact references, and internal relationships.",
-          "items": {
-            "$ref": "#/$defs/link"
           }
         },
         "$extensions": {

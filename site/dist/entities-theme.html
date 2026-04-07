@@ -55,7 +55,7 @@
   <div class="content content--with-toc">
     <main class="content__main" role="main">
       <div class="content__inner">
-        <ds-schema-header title="DSDS Theme Definition" description="A theme documents an alternative token-value context such as a color mode, density setting, or brand variant. DSDS captures the purpose, document blocks, and relationships of a theme — the actual override values live in the authoritative W3C Design Tokens Format (DTCG) file referenced by the source property. Express internal artifact relationships through the unified `links` array rather than a dedicated document block type." source="entities/theme.schema.json"></ds-schema-header>
+        <ds-schema-header title="DSDS Theme Definition" description="A theme documents an alternative token-value context such as a color mode, density setting, or brand variant. DSDS captures the purpose, document blocks, and relationships of a theme — the actual override values live in the authoritative W3C Design Tokens Format (DTCG) file referenced by the source property. Presentational and classificatory concerns (status, tags, category, aliases, summary, thumbnail, preview, extends, links) live in the modular `metadata` array as typed entries. Express internal artifact relationships through metadata link entries rather than a dedicated document block type." source="entities/theme.schema.json"></ds-schema-header>
 <ds-def-index>
 <p><strong>2 definitions</strong> in this file:</p>
 <ul>
@@ -72,71 +72,98 @@
 <ds-type-ref href="common-rich-text.html#richtext">richText</ds-type-ref>
 </ds-cross-refs>
 </ds-def-section>
-<ds-def-section name="theme" anchor="theme" description="Documents a theme — a named context that adapts the design system's token values. DSDS captures the purpose, usage document blocks, accessibility considerations, and the list of affected tokens. The actual override values live in the DTCG file referenced by the source property. Use themes for color modes (light, dark, high-contrast), density settings (compact, comfortable), brand variants, or product-specific customizations. The token catalog remains the authoritative source for token identity, type, and documentation." type="object">
+<ds-def-section name="theme" anchor="theme" description="Documents a theme — a named context that adapts the design system's token values. DSDS captures the purpose, usage document blocks, accessibility considerations, and the list of affected tokens. The actual override values live in the DTCG file referenced by the source property. Use themes for color modes (light, dark, high-contrast), density settings (compact, comfortable), brand variants, or product-specific customizations. The token catalog remains the authoritative source for token identity, type, and documentation. Presentational and classificatory concerns (status, tags, category, aliases, summary, thumbnail, preview, extends, links) live in the modular `metadata` array as typed entries with a `kind` discriminator." type="object">
 <ds-prop-table>
   <ds-prop name="kind" type="&lt;ds-code inline&gt;&quot;theme&quot;&lt;/ds-code&gt;" required>Identifies this entity as a theme.</ds-prop>
   <ds-prop name="name" type="string" required>Machine-readable identifier for the theme (e.g., 'dark', 'high-contrast', 'compact', 'brand-sub-brand').<br><small>Pattern: <ds-code inline>^[a-z][a-z0-9-]*$</ds-code></small></ds-prop>
   <ds-prop name="displayName" type="string" required>Human-readable name for the theme (e.g., 'Dark Mode', 'High Contrast', 'Compact Density').</ds-prop>
   <ds-prop name="description" type="&lt;ds-type-ref href=&quot;common-rich-text.html#richtext&quot;&gt;richText&lt;/ds-type-ref&gt;" required>A description of the theme — what context it adapts the system to, when to apply it, and how it differs from default token values. CommonMark supported.</ds-prop>
-  <ds-prop name="aliases" type="string[]">Alternative names for this artifact across teams, tools, or legacy systems. Useful for search, migration mapping, and cross-referencing.</ds-prop>
-  <ds-prop name="summary" type="string">A one-line, plain-text summary for compact display contexts such as list views, tooltips, search results, and cards. MUST NOT contain markup.</ds-prop>
-  <ds-prop name="thumbnail" type="&lt;ds-type-ref href=&quot;common-presentation.html#presentationimage&quot;&gt;presentationImage&lt;/ds-type-ref&gt;">A visual for compact display contexts such as list views, tooltips, search results, and cards.</ds-prop>
-  <ds-prop name="preview" type="&lt;ds-type-ref href=&quot;common-presentation.html#presentationimage&quot;&gt;presentationImage&lt;/ds-type-ref&gt; | &lt;ds-type-ref href=&quot;common-presentation.html#presentationvideo&quot;&gt;presentationVideo&lt;/ds-type-ref&gt; | &lt;ds-type-ref href=&quot;common-presentation.html#presentationcode&quot;&gt;presentationCode&lt;/ds-type-ref&gt; | &lt;ds-type-ref href=&quot;common-presentation.html#presentationurl&quot;&gt;presentationUrl&lt;/ds-type-ref&gt;">A visual or interactive preview — a hero image, video walkthrough, code snippet, or link to a live demo. Accepts any presentation type from the presentation schema.</ds-prop>
-  <ds-prop name="status" type="&lt;ds-type-ref href=&quot;common-status.html#status&quot;&gt;status&lt;/ds-type-ref&gt;"></ds-prop>
-  <ds-prop name="since" type="string">The design system version in which this theme was introduced.</ds-prop>
-  <ds-prop name="tags" type="string[]">Freeform keywords for categorization and search (e.g., 'dark-mode', 'accessibility', 'brand').</ds-prop>
-  <ds-prop name="category" type="string">The category of adaptation this theme represents. Common values: 'color-mode' (light/dark/high-contrast), 'density' (compact/comfortable/spacious), 'brand' (sub-brand or partner theming), 'product' (product-specific overrides). Custom values are permitted and SHOULD be lowercase kebab-case.</ds-prop>
+  <ds-prop name="metadata" type="&lt;ds-code inline&gt;entityMetadata&lt;/ds-code&gt;[]">Modular metadata entries. Each entry is a typed object with a `kind` discriminator. Types include status, since, tags, category, aliases, summary, thumbnail, preview, extends, and links.</ds-prop>
   <ds-prop name="source" type="object">Reference to the authoritative W3C Design Tokens Format (DTCG) definition. DSDS does not duplicate token values — the DTCG file is the source of truth for resolved values, aliases, and type information.</ds-prop>
   <ds-prop name="overrides" type="&lt;ds-type-ref href=&quot;entities-theme.html#tokenoverride&quot;&gt;tokenOverride&lt;/ds-type-ref&gt;[]">Token overrides that this theme affects. Each entry documents which token is changed and why. Only list tokens whose values differ from the default — unlisted tokens retain their default values. The actual override values live in the DTCG file referenced by source.<br><small>Min items: 1</small></ds-prop>
   <ds-prop name="documentBlocks" type="&lt;ds-type-ref href=&quot;document-blocks-document-blocks.html#tokendocumentblock&quot;&gt;tokenDocumentBlock&lt;/ds-type-ref&gt;[]">All structured docs for this theme as an ordered array of typed document block objects. Themes accept general document block types only (guideline, use-cases, accessibility, examples). Each document block entry has a `type` property that determines its shape. Ordering is significant: tools SHOULD preserve it for display.</ds-prop>
-  <ds-prop name="links" type="&lt;ds-type-ref href=&quot;common-link.html#link&quot;&gt;link&lt;/ds-type-ref&gt;[]">External resource links, related artifact references, and internal relationships. Each link can point to an external URL, an internal DSDS artifact by name, or both.</ds-prop>
   <ds-prop name="$extensions" type="&lt;ds-type-ref href=&quot;common-extensions.html#extensions&quot;&gt;extensions&lt;/ds-type-ref&gt;"></ds-prop>
 </ds-prop-table>
 <ds-cross-refs><strong>References:</strong> 
-<ds-type-ref href="common-presentation.html#presentationimage">presentationImage</ds-type-ref>, <ds-type-ref href="common-rich-text.html#richtext">richText</ds-type-ref>, <ds-type-ref href="common-presentation.html#presentationvideo">presentationVideo</ds-type-ref>, <ds-type-ref href="common-presentation.html#presentationcode">presentationCode</ds-type-ref>, <ds-type-ref href="common-presentation.html#presentationurl">presentationUrl</ds-type-ref>, <ds-type-ref href="common-status.html#status">status</ds-type-ref>, <ds-type-ref href="entities-theme.html#tokenoverride">tokenOverride</ds-type-ref>, <ds-type-ref href="document-blocks-document-blocks.html#tokendocumentblock">tokenDocumentBlock</ds-type-ref>, <ds-type-ref href="common-link.html#link">link</ds-type-ref>, <ds-type-ref href="common-extensions.html#extensions">extensions</ds-type-ref>
+<ds-type-ref href="common-rich-text.html#richtext">richText</ds-type-ref>, <ds-code inline>entityMetadata</ds-code>, <ds-type-ref href="entities-theme.html#tokenoverride">tokenOverride</ds-type-ref>, <ds-type-ref href="document-blocks-document-blocks.html#tokendocumentblock">tokenDocumentBlock</ds-type-ref>, <ds-type-ref href="common-extensions.html#extensions">extensions</ds-type-ref>
 </ds-cross-refs>
 <ds-def-example>
 <ds-code language="json" label="example">{
   &quot;kind&quot;: &quot;theme&quot;,
   &quot;name&quot;: &quot;dark&quot;,
   &quot;displayName&quot;: &quot;Dark Mode&quot;,
-  &quot;summary&quot;: &quot;A dark color mode theme for low-light environments and user preference.&quot;,
   &quot;description&quot;: &quot;The dark color mode theme. Inverts the default light surface/text relationship, using light text on dark backgrounds. Designed for low-light environments, user preference, and reduced eye strain. All override values have been validated to maintain WCAG AA contrast ratios against the dark background surfaces.&quot;,
-  &quot;status&quot;: {
-    &quot;overall&quot;: &quot;stable&quot;,
-    &quot;platforms&quot;: {
-      &quot;react&quot;: {
-        &quot;status&quot;: &quot;stable&quot;,
-        &quot;since&quot;: &quot;2.0.0&quot;
-      },
-      &quot;web-component&quot;: {
-        &quot;status&quot;: &quot;stable&quot;,
-        &quot;since&quot;: &quot;2.1.0&quot;
-      },
-      &quot;ios&quot;: {
-        &quot;status&quot;: &quot;stable&quot;,
-        &quot;since&quot;: &quot;2.0.0&quot;,
-        &quot;description&quot;: &quot;Automatically applied when the device is set to dark appearance.&quot;
-      },
-      &quot;android&quot;: {
-        &quot;status&quot;: &quot;stable&quot;,
-        &quot;since&quot;: &quot;2.2.0&quot;,
-        &quot;description&quot;: &quot;Follows the system-level dark theme setting via AppCompat.DayNight.&quot;
-      },
-      &quot;figma&quot;: {
-        &quot;status&quot;: &quot;stable&quot;,
-        &quot;since&quot;: &quot;2.0.0&quot;,
-        &quot;description&quot;: &quot;Available as a dedicated mode in the Figma variable collection.&quot;
+  &quot;metadata&quot;: [
+    {
+      &quot;kind&quot;: &quot;status&quot;,
+      &quot;status&quot;: &quot;stable&quot;,
+      &quot;platformStatus&quot;: {
+        &quot;react&quot;: {
+          &quot;status&quot;: &quot;stable&quot;,
+          &quot;since&quot;: &quot;2.0.0&quot;
+        },
+        &quot;web-component&quot;: {
+          &quot;status&quot;: &quot;stable&quot;,
+          &quot;since&quot;: &quot;2.1.0&quot;
+        },
+        &quot;ios&quot;: {
+          &quot;status&quot;: &quot;stable&quot;,
+          &quot;since&quot;: &quot;2.0.0&quot;,
+          &quot;description&quot;: &quot;Automatically applied when the device is set to dark appearance.&quot;
+        },
+        &quot;android&quot;: {
+          &quot;status&quot;: &quot;stable&quot;,
+          &quot;since&quot;: &quot;2.2.0&quot;,
+          &quot;description&quot;: &quot;Follows the system-level dark theme setting via AppCompat.DayNight.&quot;
+        },
+        &quot;figma&quot;: {
+          &quot;status&quot;: &quot;stable&quot;,
+          &quot;since&quot;: &quot;2.0.0&quot;,
+          &quot;description&quot;: &quot;Available as a dedicated mode in the Figma variable collection.&quot;
+        }
       }
+    },
+    {
+      &quot;kind&quot;: &quot;since&quot;,
+      &quot;value&quot;: &quot;2.0.0&quot;
+    },
+    {
+      &quot;kind&quot;: &quot;tags&quot;,
+      &quot;items&quot;: [
+        &quot;dark-mode&quot;,
+        &quot;color-mode&quot;,
+        &quot;accessibility&quot;
+      ]
+    },
+    {
+      &quot;kind&quot;: &quot;category&quot;,
+      &quot;value&quot;: &quot;color-mode&quot;
+    },
+    {
+      &quot;kind&quot;: &quot;summary&quot;,
+      &quot;value&quot;: &quot;A dark color mode theme for low-light environments and user preference.&quot;
+    },
+    {
+      &quot;kind&quot;: &quot;links&quot;,
+      &quot;items&quot;: [
+        {
+          &quot;kind&quot;: &quot;design&quot;,
+          &quot;url&quot;: &quot;https://www.figma.com/file/abc123/color-system?node-id=100:200&quot;,
+          &quot;label&quot;: &quot;Figma — Dark mode variable collection&quot;
+        },
+        {
+          &quot;kind&quot;: &quot;documentation&quot;,
+          &quot;url&quot;: &quot;https://design.example.com/foundations/color/dark-mode&quot;,
+          &quot;label&quot;: &quot;Dark mode usage guidelines&quot;
+        },
+        {
+          &quot;kind&quot;: &quot;source&quot;,
+          &quot;url&quot;: &quot;https://github.com/example/design-system/blob/main/tokens/themes/dark.tokens.json&quot;,
+          &quot;label&quot;: &quot;Dark theme token source (DTCG format)&quot;
+        }
+      ]
     }
-  },
-  &quot;since&quot;: &quot;2.0.0&quot;,
-  &quot;tags&quot;: [
-    &quot;dark-mode&quot;,
-    &quot;color-mode&quot;,
-    &quot;accessibility&quot;
   ],
-  &quot;category&quot;: &quot;color-mode&quot;,
   &quot;overrides&quot;: [
     {
       &quot;token&quot;: &quot;color-background-default&quot;,
@@ -415,23 +442,6 @@
           &quot;context&quot;: &quot;Primary text (#FFFFFF) on floating surface (#2B2B2B).&quot;
         }
       ]
-    }
-  ],
-  &quot;links&quot;: [
-    {
-      &quot;kind&quot;: &quot;design&quot;,
-      &quot;url&quot;: &quot;https://www.figma.com/file/abc123/color-system?node-id=100:200&quot;,
-      &quot;label&quot;: &quot;Figma — Dark mode variable collection&quot;
-    },
-    {
-      &quot;kind&quot;: &quot;documentation&quot;,
-      &quot;url&quot;: &quot;https://design.example.com/foundations/color/dark-mode&quot;,
-      &quot;label&quot;: &quot;Dark mode usage guidelines&quot;
-    },
-    {
-      &quot;kind&quot;: &quot;source&quot;,
-      &quot;url&quot;: &quot;https://github.com/example/design-system/blob/main/tokens/themes/dark.tokens.json&quot;,
-      &quot;label&quot;: &quot;Dark theme token source (DTCG format)&quot;
     }
   ],
   &quot;$extensions&quot;: {

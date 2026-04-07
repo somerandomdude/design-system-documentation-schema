@@ -55,27 +55,19 @@
   <div class="content content--with-toc">
     <main class="content__main" role="main">
       <div class="content__inner">
-        <ds-schema-header title="DSDS Style Definitions" description="Definitions for documenting visual style guidelines — color palettes, typography systems, spacing scales, elevation levels, and other visual attributes. A style document captures the identity and metadata of a visual attribute domain. All structured docs live in the unified `documentBlock` array as typed document block objects." source="entities/style.schema.json"></ds-schema-header>
-<ds-def-section name="style" anchor="style" description="Documentation for a visual style — the principles, guidelines, scales, and token references that govern a visual attribute such as color, typography, spacing, or elevation across the system. Identity (name, description, status, category) lives at the top level. All structured docs live in the `documentBlock` array — each entry is a typed document block object (principle, scale, guideline, accessibility, etc.). This unified model replaces the previous architecture where principles, tokenGroups, scales, useCases, guidelines, and accessibility were separate top-level properties." type="object">
+        <ds-schema-header title="DSDS Style Definitions" description="Definitions for documenting visual style guidelines — color palettes, typography systems, spacing scales, elevation levels, and other visual attributes. A style document captures the identity and metadata of a visual attribute domain. Descriptive and presentational metadata (status, tags, category, aliases, summary, thumbnail, preview, links, etc.) lives in the modular `metadata` array as typed entries. All structured docs live in the unified `documentBlock` array as typed document block objects." source="entities/style.schema.json"></ds-schema-header>
+<ds-def-section name="style" anchor="style" description="Documentation for a visual style — the principles, guidelines, scales, and token references that govern a visual attribute such as color, typography, spacing, or elevation across the system. Identity (name, displayName, description) lives at the top level. Descriptive and presentational metadata (status, tags, category, aliases, summary, thumbnail, preview, links, etc.) lives in the modular `metadata` array — each entry is a typed object with a `kind` discriminator. All structured docs live in the `documentBlock` array — each entry is a typed document block object (principle, scale, guideline, accessibility, etc.)." type="object">
 <ds-prop-table>
   <ds-prop name="kind" type="&lt;ds-code inline&gt;&quot;style&quot;&lt;/ds-code&gt;" required>Identifies this entity as a style.</ds-prop>
   <ds-prop name="name" type="string" required>Machine-readable identifier for the style (e.g., 'color', 'typography', 'spacing', 'elevation', 'motion', 'shape'). MUST be unique within the documentation group.<br><small>Pattern: <ds-code inline>^[a-z][a-z0-9-]*$</ds-code></small></ds-prop>
   <ds-prop name="displayName" type="string" required>Human-readable name for display in docs (e.g., 'Color', 'Typography', 'Spacing', 'Elevation').</ds-prop>
   <ds-prop name="description" type="&lt;ds-type-ref href=&quot;common-rich-text.html#richtext&quot;&gt;richText&lt;/ds-type-ref&gt;" required>A description of the style — what visual attribute it governs, how the system approaches it, and its role in the design language. CommonMark supported.</ds-prop>
-  <ds-prop name="aliases" type="string[]">Alternative names for this artifact across teams, tools, or legacy systems. Useful for search, migration mapping, and cross-referencing.</ds-prop>
-  <ds-prop name="summary" type="string">A one-line, plain-text summary for compact display contexts such as list views, tooltips, search results, and cards. MUST NOT contain markup.</ds-prop>
-  <ds-prop name="thumbnail" type="&lt;ds-type-ref href=&quot;common-presentation.html#presentationimage&quot;&gt;presentationImage&lt;/ds-type-ref&gt;">A visual for compact display contexts such as list views, tooltips, search results, and cards.</ds-prop>
-  <ds-prop name="preview" type="&lt;ds-type-ref href=&quot;common-presentation.html#presentationimage&quot;&gt;presentationImage&lt;/ds-type-ref&gt; | &lt;ds-type-ref href=&quot;common-presentation.html#presentationvideo&quot;&gt;presentationVideo&lt;/ds-type-ref&gt; | &lt;ds-type-ref href=&quot;common-presentation.html#presentationcode&quot;&gt;presentationCode&lt;/ds-type-ref&gt; | &lt;ds-type-ref href=&quot;common-presentation.html#presentationurl&quot;&gt;presentationUrl&lt;/ds-type-ref&gt;">A visual or interactive preview — a hero image, video walkthrough, code snippet, or link to a live demo. Accepts any presentation type from the presentation schema.</ds-prop>
-  <ds-prop name="status" type="&lt;ds-type-ref href=&quot;common-status.html#status&quot;&gt;status&lt;/ds-type-ref&gt;"></ds-prop>
-  <ds-prop name="since" type="string">The design system version in which this style was introduced (e.g., '1.0.0', '2.3.0').</ds-prop>
-  <ds-prop name="tags" type="string[]">Freeform keywords for categorization, search, and cross-referencing (e.g., 'visual', 'foundation', 'layout', 'theming'). Tags are not constrained to a vocabulary.</ds-prop>
-  <ds-prop name="category" type="string">The visual attribute category this style governs. Common values: 'color' (color system, palettes, semantic color usage, and color modes), 'typography' (type hierarchy, font families, type scales, and typographic rules), 'spacing' (spatial system, spacing scale, and layout rhythm), 'elevation' (shadows, layering, z-index strategy, and depth), 'motion' (animation timing, easing curves, transition patterns, and reduced-motion), 'shape' (border radius, corner treatments, and geometric conventions). Custom values are permitted and SHOULD be lowercase kebab-case.</ds-prop>
-  <ds-prop name="documentBlocks" type="&lt;ds-type-ref href=&quot;document-blocks-document-blocks.html#styledocumentblock&quot;&gt;styleDocumentBlock&lt;/ds-type-ref&gt;[]">All structured docs for this style as an ordered array of typed document block objects. Accepts style-specific types (principles, scale) and general types (guideline, use-cases, accessibility, examples). Each document block entry has a `type` property that determines its shape. Ordering is significant: tools SHOULD preserve it for display. Express internal artifact relationships (e.g., token group references) through the `links` array, not as document block entries.</ds-prop>
-  <ds-prop name="links" type="&lt;ds-type-ref href=&quot;common-link.html#link&quot;&gt;link&lt;/ds-type-ref&gt;[]">External resource links, related artifact references, and internal relationships — source code, design files, Storybook stories, docs pages, npm packages, and relationships to other DSDS artifacts. Each link can point to an external URL, an internal DSDS artifact by name, or both.</ds-prop>
+  <ds-prop name="metadata" type="&lt;ds-code inline&gt;entityMetadata&lt;/ds-code&gt;[]">Modular metadata entries. Each entry is a typed object with a `kind` discriminator. Types include status, since, tags, category, aliases, summary, thumbnail, preview, extends, and links.</ds-prop>
+  <ds-prop name="documentBlocks" type="&lt;ds-type-ref href=&quot;document-blocks-document-blocks.html#styledocumentblock&quot;&gt;styleDocumentBlock&lt;/ds-type-ref&gt;[]">All structured docs for this style as an ordered array of typed document block objects. Accepts style-specific types (principles, scale) and general types (guideline, use-cases, accessibility, examples). Each document block entry has a `type` property that determines its shape. Ordering is significant: tools SHOULD preserve it for display. Express internal artifact relationships (e.g., token group references) through a links metadata entry, not as document block entries.</ds-prop>
   <ds-prop name="$extensions" type="&lt;ds-type-ref href=&quot;common-extensions.html#extensions&quot;&gt;extensions&lt;/ds-type-ref&gt;"></ds-prop>
 </ds-prop-table>
 <ds-cross-refs><strong>References:</strong> 
-<ds-type-ref href="common-presentation.html#presentationimage">presentationImage</ds-type-ref>, <ds-type-ref href="common-rich-text.html#richtext">richText</ds-type-ref>, <ds-type-ref href="common-presentation.html#presentationvideo">presentationVideo</ds-type-ref>, <ds-type-ref href="common-presentation.html#presentationcode">presentationCode</ds-type-ref>, <ds-type-ref href="common-presentation.html#presentationurl">presentationUrl</ds-type-ref>, <ds-type-ref href="common-status.html#status">status</ds-type-ref>, <ds-type-ref href="document-blocks-document-blocks.html#styledocumentblock">styleDocumentBlock</ds-type-ref>, <ds-type-ref href="common-link.html#link">link</ds-type-ref>, <ds-type-ref href="common-extensions.html#extensions">extensions</ds-type-ref>
+<ds-type-ref href="common-rich-text.html#richtext">richText</ds-type-ref>, <ds-code inline>entityMetadata</ds-code>, <ds-type-ref href="document-blocks-document-blocks.html#styledocumentblock">styleDocumentBlock</ds-type-ref>, <ds-type-ref href="common-extensions.html#extensions">extensions</ds-type-ref>
 </ds-cross-refs>
 <ds-def-example>
 <ds-code language="json" label="example">{
@@ -83,17 +75,69 @@
   &quot;name&quot;: &quot;spacing&quot;,
   &quot;displayName&quot;: &quot;Spacing&quot;,
   &quot;description&quot;: &quot;A spatial system built on a 4px base unit. Defines the scale and rules for all whitespace, padding, margin, and gap values across the system. Eliminates ad hoc pixel values and reduces visual inconsistency caused by individual interpretation of spatial relationships.&quot;,
-  &quot;status&quot;: &quot;stable&quot;,
-  &quot;since&quot;: &quot;1.0.0&quot;,
-  &quot;category&quot;: &quot;spacing&quot;,
-  &quot;summary&quot;: &quot;A constrained spacing scale built on a 4px base unit.&quot;,
-  &quot;tags&quot;: [
-    &quot;layout&quot;,
-    &quot;spatial&quot;,
-    &quot;whitespace&quot;,
-    &quot;padding&quot;,
-    &quot;margin&quot;,
-    &quot;gap&quot;
+  &quot;metadata&quot;: [
+    {
+      &quot;kind&quot;: &quot;status&quot;,
+      &quot;status&quot;: &quot;stable&quot;
+    },
+    {
+      &quot;kind&quot;: &quot;since&quot;,
+      &quot;value&quot;: &quot;1.0.0&quot;
+    },
+    {
+      &quot;kind&quot;: &quot;tags&quot;,
+      &quot;items&quot;: [
+        &quot;layout&quot;,
+        &quot;spatial&quot;,
+        &quot;whitespace&quot;,
+        &quot;padding&quot;,
+        &quot;margin&quot;,
+        &quot;gap&quot;
+      ]
+    },
+    {
+      &quot;kind&quot;: &quot;category&quot;,
+      &quot;value&quot;: &quot;spacing&quot;
+    },
+    {
+      &quot;kind&quot;: &quot;summary&quot;,
+      &quot;value&quot;: &quot;A constrained spacing scale built on a 4px base unit.&quot;
+    },
+    {
+      &quot;kind&quot;: &quot;links&quot;,
+      &quot;items&quot;: [
+        {
+          &quot;kind&quot;: &quot;token-group&quot;,
+          &quot;name&quot;: &quot;spacing&quot;,
+          &quot;role&quot;: &quot;Provides all spatial tokens from space-0 (0px) through space-8 (48px), built on a 4px base unit.&quot;
+        },
+        {
+          &quot;kind&quot;: &quot;source&quot;,
+          &quot;url&quot;: &quot;https://code.acme.com/design-system/src/tokens/spacing.tokens.json&quot;,
+          &quot;label&quot;: &quot;Token source file&quot;
+        },
+        {
+          &quot;kind&quot;: &quot;design&quot;,
+          &quot;url&quot;: &quot;https://design-tool.acme.com/file/abc123?node-id=200:1&quot;,
+          &quot;label&quot;: &quot;Design file — spacing variables&quot;
+        },
+        {
+          &quot;kind&quot;: &quot;documentation&quot;,
+          &quot;url&quot;: &quot;https://design.acme.com/style/spacing&quot;,
+          &quot;label&quot;: &quot;Documentation site&quot;
+        },
+        {
+          &quot;kind&quot;: &quot;related&quot;,
+          &quot;url&quot;: &quot;https://design.acme.com/style/typography&quot;,
+          &quot;label&quot;: &quot;Typography style&quot;
+        },
+        {
+          &quot;kind&quot;: &quot;related&quot;,
+          &quot;url&quot;: &quot;https://design.acme.com/components/stack&quot;,
+          &quot;label&quot;: &quot;Stack component&quot;
+        }
+      ]
+    }
   ],
   &quot;documentBlocks&quot;: [
     {
@@ -315,38 +359,6 @@
           }
         }
       ]
-    }
-  ],
-  &quot;links&quot;: [
-    {
-      &quot;kind&quot;: &quot;token-group&quot;,
-      &quot;name&quot;: &quot;spacing&quot;,
-      &quot;role&quot;: &quot;Provides all spatial tokens from space-0 (0px) through space-8 (48px), built on a 4px base unit.&quot;
-    },
-    {
-      &quot;kind&quot;: &quot;source&quot;,
-      &quot;url&quot;: &quot;https://code.acme.com/design-system/src/tokens/spacing.tokens.json&quot;,
-      &quot;label&quot;: &quot;Token source file&quot;
-    },
-    {
-      &quot;kind&quot;: &quot;design&quot;,
-      &quot;url&quot;: &quot;https://design-tool.acme.com/file/abc123?node-id=200:1&quot;,
-      &quot;label&quot;: &quot;Design file — spacing variables&quot;
-    },
-    {
-      &quot;kind&quot;: &quot;documentation&quot;,
-      &quot;url&quot;: &quot;https://design.acme.com/style/spacing&quot;,
-      &quot;label&quot;: &quot;Documentation site&quot;
-    },
-    {
-      &quot;kind&quot;: &quot;related&quot;,
-      &quot;url&quot;: &quot;https://design.acme.com/style/typography&quot;,
-      &quot;label&quot;: &quot;Typography style&quot;
-    },
-    {
-      &quot;kind&quot;: &quot;related&quot;,
-      &quot;url&quot;: &quot;https://design.acme.com/components/stack&quot;,
-      &quot;label&quot;: &quot;Stack component&quot;
     }
   ]
 }</ds-code>

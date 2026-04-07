@@ -2,11 +2,11 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://designsystemdocspec.org/v0.1/component.schema.json",
   "title": "DSDS Component Definitions",
-  "description": "Definitions for the composite component document. A component document captures the identity and metadata of a reusable UI element. All structured docs — anatomy, API, variants, states, design specs, best practices, accessibility specs, use cases, and examples — live in the unified `documentBlock` array as typed document block objects.",
+  "description": "Definitions for the composite component document. A component document captures the identity of a reusable UI element. Modular metadata — status, category, tags, aliases, summary, thumbnail, preview, extends, since, and links — lives in the `metadata` array as typed entries. All structured docs — anatomy, API, variants, states, design specs, best practices, accessibility specs, use cases, and examples — live in the unified `documentBlocks` array as typed document block objects.",
   "$defs": {
     "component": {
       "type": "object",
-      "description": "A single reusable UI component. Identity (name, description, status, category) lives at the top level. All structured docs live in the `documentBlock` array — each entry is a typed document block object (anatomy, api, variant, state, design-specifications, guideline, accessibility, etc.). This unified model replaces separate top-level properties for each concern.",
+      "description": "A single reusable UI component. Identity (name, displayName, description) lives at the top level. Modular metadata (status, category, tags, aliases, summary, thumbnail, preview, extends, since, links) lives in the `metadata` array as typed entries with a `kind` discriminator. All structured docs live in the `documentBlocks` array — each entry is a typed document block object (anatomy, api, variant, state, design-specifications, guideline, accessibility, etc.). This unified model replaces separate top-level properties for each concern.",
       "required": ["kind", "name", "displayName", "description"],
       "properties": {
         "kind": {
@@ -19,81 +19,26 @@
           "pattern": "^[a-z][a-z0-9-]*$",
           "description": "Machine-readable identifier (e.g., 'button', 'dialog', 'form-field', 'data-table'). MUST be unique within the documentation group."
         },
-        "extends": {
-          "$ref": "../common/extends.schema.json#/$defs/entityExtends",
-          "description": "Declares that this component inherits from a base component in a parent design system. The base provides the foundational anatomy, API, variants, states, and guidelines. This component layers on top — adding variants, props, guidelines, or specialized behavior while inheriting everything else."
-        },
-        "aliases": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "description": "Alternative names for this component across teams, tools, or legacy systems (e.g., ['btn', 'action-button', 'CTA']). Useful for search, migration mapping, and cross-referencing."
-        },
         "displayName": {
           "type": "string",
           "description": "Human-readable name for display in docs (e.g., 'Button', 'Dialog', 'Form Field', 'Data Table')."
-        },
-        "summary": {
-          "type": "string",
-          "description": "A one-line, plain-text summary for compact contexts such as list views, tooltips, search results, and cards. MUST NOT contain markup."
-        },
-        "thumbnail": {
-          "$ref": "../common/presentation.schema.json#/$defs/presentationImage",
-          "description": "A visual for compact display contexts such as list views, tooltips, search results, and cards."
         },
         "description": {
           "$ref": "../common/rich-text.schema.json#/$defs/richText",
           "description": "A description of the component — what it is, what it does, and its role in the design system. CommonMark supported."
         },
-        "preview": {
-          "description": "A visual or interactive preview of the component — a hero image, video walkthrough, code snippet, or link to a live demo. Accepts any presentation type.",
-          "oneOf": [
-            {
-              "$ref": "../common/presentation.schema.json#/$defs/presentationImage"
-            },
-            {
-              "$ref": "../common/presentation.schema.json#/$defs/presentationVideo"
-            },
-            {
-              "$ref": "../common/presentation.schema.json#/$defs/presentationCode"
-            },
-            {
-              "$ref": "../common/presentation.schema.json#/$defs/presentationUrl"
-            }
-          ]
-        },
-        "status": {
-          "$ref": "../common/status.schema.json#/$defs/status"
-        },
-        "since": {
-          "type": "string",
-          "description": "The design system version in which this component was introduced (e.g., '1.0.0', '2.3.0')."
-        },
-        "tags": {
+        "metadata": {
           "type": "array",
+          "description": "Modular metadata entries. Each entry is a typed object with a `kind` discriminator. Types include status, since, tags, category, aliases, summary, thumbnail, preview, extends, and links.",
           "items": {
-            "type": "string"
-          },
-          "description": "Freeform keywords for categorization, search, and cross-referencing (e.g., 'action', 'form', 'interactive', 'navigation', 'feedback'). Tags are not constrained to a vocabulary."
-        },
-        "category": {
-          "type": "string",
-          "pattern": "^[a-z][a-z0-9-]*$",
-          "description": "Component classification within the design system's taxonomy (e.g., 'action', 'navigation', 'feedback', 'data-display', 'layout', 'form', 'overlay'). Used for organizing components into sections in documentation sites and component libraries."
+            "$ref": "../metadata/metadata.schema.json#/$defs/entityMetadata"
+          }
         },
         "documentBlocks": {
           "type": "array",
-          "description": "All structured docs for this component as an ordered array of typed document block objects. Accepts component-specific types (anatomy, api, variants, states, design-specifications) and general types (guideline, purpose, accessibility, examples). Each document block entry has a `type` property that determines its shape. Ordering is significant: tools SHOULD preserve it for display. Express internal artifact relationships through the `links` array rather than as document block entries.",
+          "description": "All structured docs for this component as an ordered array of typed document block objects. Accepts component-specific types (anatomy, api, variants, states, design-specifications) and general types (guideline, purpose, accessibility, examples). Each document block entry has a `type` property that determines its shape. Ordering is significant: tools SHOULD preserve it for display.",
           "items": {
             "$ref": "../document-blocks/document-blocks.schema.json#/$defs/componentDocumentBlock"
-          }
-        },
-        "links": {
-          "type": "array",
-          "description": "External resource links, internal artifact references, and entity relationships — source code, design files, Storybook stories, docs pages, npm packages, related components, parent/child relationships, and alternatives. Each link points to an external URL, an internal DSDS artifact by name, or both.",
-          "items": {
-            "$ref": "../common/link.schema.json#/$defs/link"
           }
         },
         "$extensions": {

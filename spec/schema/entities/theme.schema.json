@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://designsystemdocspec.org/v0.1/theme.schema.json",
   "title": "DSDS Theme Definition",
-  "description": "A theme documents an alternative token-value context such as a color mode, density setting, or brand variant. DSDS captures the purpose, document blocks, and relationships of a theme — the actual override values live in the authoritative W3C Design Tokens Format (DTCG) file referenced by the source property. Express internal artifact relationships through the unified `links` array rather than a dedicated document block type.",
+  "description": "A theme documents an alternative token-value context such as a color mode, density setting, or brand variant. DSDS captures the purpose, document blocks, and relationships of a theme — the actual override values live in the authoritative W3C Design Tokens Format (DTCG) file referenced by the source property. Presentational and classificatory concerns (status, tags, category, aliases, summary, thumbnail, preview, extends, links) live in the modular `metadata` array as typed entries. Express internal artifact relationships through metadata link entries rather than a dedicated document block type.",
   "$defs": {
     "tokenOverride": {
       "type": "object",
@@ -22,7 +22,7 @@
     },
     "theme": {
       "type": "object",
-      "description": "Documents a theme — a named context that adapts the design system's token values. DSDS captures the purpose, usage document blocks, accessibility considerations, and the list of affected tokens. The actual override values live in the DTCG file referenced by the source property. Use themes for color modes (light, dark, high-contrast), density settings (compact, comfortable), brand variants, or product-specific customizations. The token catalog remains the authoritative source for token identity, type, and documentation.",
+      "description": "Documents a theme — a named context that adapts the design system's token values. DSDS captures the purpose, usage document blocks, accessibility considerations, and the list of affected tokens. The actual override values live in the DTCG file referenced by the source property. Use themes for color modes (light, dark, high-contrast), density settings (compact, comfortable), brand variants, or product-specific customizations. The token catalog remains the authoritative source for token identity, type, and documentation. Presentational and classificatory concerns (status, tags, category, aliases, summary, thumbnail, preview, extends, links) live in the modular `metadata` array as typed entries with a `kind` discriminator.",
       "required": ["kind", "name", "displayName", "description"],
       "properties": {
         "kind": {
@@ -39,59 +39,16 @@
           "type": "string",
           "description": "Human-readable name for the theme (e.g., 'Dark Mode', 'High Contrast', 'Compact Density')."
         },
-        "aliases": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "description": "Alternative names for this artifact across teams, tools, or legacy systems. Useful for search, migration mapping, and cross-referencing."
-        },
-        "summary": {
-          "type": "string",
-          "description": "A one-line, plain-text summary for compact display contexts such as list views, tooltips, search results, and cards. MUST NOT contain markup."
-        },
-        "thumbnail": {
-          "$ref": "../common/presentation.schema.json#/$defs/presentationImage",
-          "description": "A visual for compact display contexts such as list views, tooltips, search results, and cards."
-        },
         "description": {
           "$ref": "../common/rich-text.schema.json#/$defs/richText",
           "description": "A description of the theme — what context it adapts the system to, when to apply it, and how it differs from default token values. CommonMark supported."
         },
-        "preview": {
-          "description": "A visual or interactive preview — a hero image, video walkthrough, code snippet, or link to a live demo. Accepts any presentation type from the presentation schema.",
-          "oneOf": [
-            {
-              "$ref": "../common/presentation.schema.json#/$defs/presentationImage"
-            },
-            {
-              "$ref": "../common/presentation.schema.json#/$defs/presentationVideo"
-            },
-            {
-              "$ref": "../common/presentation.schema.json#/$defs/presentationCode"
-            },
-            {
-              "$ref": "../common/presentation.schema.json#/$defs/presentationUrl"
-            }
-          ]
-        },
-        "status": {
-          "$ref": "../common/status.schema.json#/$defs/status"
-        },
-        "since": {
-          "type": "string",
-          "description": "The design system version in which this theme was introduced."
-        },
-        "tags": {
+        "metadata": {
           "type": "array",
+          "description": "Modular metadata entries. Each entry is a typed object with a `kind` discriminator. Types include status, since, tags, category, aliases, summary, thumbnail, preview, extends, and links.",
           "items": {
-            "type": "string"
-          },
-          "description": "Freeform keywords for categorization and search (e.g., 'dark-mode', 'accessibility', 'brand')."
-        },
-        "category": {
-          "type": "string",
-          "description": "The category of adaptation this theme represents. Common values: 'color-mode' (light/dark/high-contrast), 'density' (compact/comfortable/spacious), 'brand' (sub-brand or partner theming), 'product' (product-specific overrides). Custom values are permitted and SHOULD be lowercase kebab-case."
+            "$ref": "../metadata/metadata.schema.json#/$defs/entityMetadata"
+          }
         },
         "source": {
           "type": "object",
@@ -121,13 +78,6 @@
           "description": "All structured docs for this theme as an ordered array of typed document block objects. Themes accept general document block types only (guideline, use-cases, accessibility, examples). Each document block entry has a `type` property that determines its shape. Ordering is significant: tools SHOULD preserve it for display.",
           "items": {
             "$ref": "../document-blocks/document-blocks.schema.json#/$defs/tokenDocumentBlock"
-          }
-        },
-        "links": {
-          "type": "array",
-          "description": "External resource links, related artifact references, and internal relationships. Each link can point to an external URL, an internal DSDS artifact by name, or both.",
-          "items": {
-            "$ref": "../common/link.schema.json#/$defs/link"
           }
         },
         "$extensions": {
