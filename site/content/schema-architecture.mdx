@@ -30,7 +30,7 @@ spec/schema/
 │   ├── pattern.schema.json             # pattern
 │   ├── style.schema.json               # style
 │   ├── theme.schema.json               # theme, tokenOverride
-│   └── token.schema.json               # token, tokenGroup, tokenValue, tokenApi
+│   └── token.schema.json               # token, tokenGroup
 └── guidelines/                         # Guideline types
     ├── guideline.schema.json           # Scoped unions: componentGuideline, styleGuideline, etc.
     ├── accessibility.schema.json       # accessibility, keyboardInteraction, ariaAttribute, colorContrast
@@ -257,9 +257,10 @@ More properties:
 | Property | Type | Required | Description |
 |---|---|---|---|
 | `tokenType` | `string` | Yes | DTCG-aligned token type (e.g., `"color"`, `"dimension"`, `"fontFamily"`, `"fontWeight"`, `"duration"`, `"cubicBezier"`, `"shadow"`). |
-| `value` | `tokenValue` | No | Display form of the token's value. See [Token Value](#token-value). |
-| `api` | `tokenApi` | No | Platform-specific identifiers. See [Token API](#token-api). |
+| `source` | `string` | No | URI or relative path to the W3C DTCG file that contains this token's authoritative definition. |
 | `category` | `string` | No | Semantic category: `"base"`, `"semantic"`, `"component"`. Custom values permitted. |
+
+DSDS does not duplicate token values or platform identifiers. The W3C Design Tokens Format file is the source of truth for values. Use the `source` property to link tokens to their DTCG definitions.
 
 Tokens have no `displayName` property by design. The token name itself serves as the human-readable display name. Token naming conventions (dots, slashes, kebab-case) are already human-readable in their native format.
 
@@ -283,7 +284,7 @@ Like tokens, `displayName`, `description`, and `status` are optional. Children i
 
 ### Theme
 
-A named set of token value overrides that adapt the system to a specific context (color mode, density, brand variant). Accepts **general guidelines**.
+A named set of token overrides that adapt the system to a specific context (color mode, density, brand variant). Accepts **general guidelines**.
 
 Required properties: `type`, `name`, `displayName`, `description`, `status`, `overrides`.
 
@@ -291,9 +292,10 @@ More properties:
 
 | Property | Type | Required | Description |
 |---|---|---|---|
-| `overrides` | `tokenOverride[]` | Yes | Array of token name → value mappings. Only tokens that differ from the default need to be listed. |
+| `overrides` | `tokenOverride[]` | Yes | Array of token names that differ from the default in this theme. Only tokens that change need to be listed. |
+| `source` | `string` | No | URI or relative path to the W3C DTCG file that contains this theme's authoritative token values. |
 
-Each `tokenOverride` has two required properties: `token` (the token name to override) and `value` (a `tokenValue` object with the theme-specific resolved value and/or alias reference).
+Each `tokenOverride` identifies a token by `token` (the token name). Override values live in the DTCG source file, not in DSDS.
 
 ### Style
 
@@ -310,29 +312,6 @@ A broad interaction pattern — a recurring, multi-component solution to a commo
 Required properties: `type`, `name`, `displayName`, `description`, `status`.
 
 Patterns reference their participating components through the `links` array (with `type: "component"`, `name`, and `role`) instead of through a dedicated guideline type.
-
----
-
-## Token value
-
-The `tokenValue` object holds a display form of a token's value for docs tools. It is **not** the source of truth — the W3C Design Tokens Format file is.
-
-| Property | Type | Required | Description |
-|---|---|---|---|
-| `resolved` | `string` | No | The resolved value as a human-readable string (e.g., `"#1a1a1a"`, `"16px"`, `"400"`). |
-| `reference` | `string` | No | If this token is an alias, the name of the referenced token (e.g., `"color.neutral.900"`). Corresponds to the W3C DTCG concept of an alias/reference (§3.8, §7). |
-| `resolution` | `string` | No | How the value was derived: `"explicit"` (direct value, not an alias) or `"alias"` (value references another token). When omitted, tools SHOULD infer: if `reference` is present, the token is an alias; otherwise it is explicit. Aligns with the W3C Design Tokens Format Module (§3.8 "Alias/Reference", §7 "Aliases/References"). |
-| `dtcgFile` | `string` | No | URI or relative path to the DTCG file containing the authoritative value. |
-
-## Token API
-
-The `tokenApi` object maps platform names to identifier strings. You can add more platforms without schema changes. Keys are platform names; values are the identifier strings for that platform. Built-in examples:
-
-- `"cssCustomProperty"`
-- `"scssVariable"`
-- `"jsConstant"`
-- `"iosToken"`, `"androidToken"`
-- `"designToolVariable"`
 
 ---
 

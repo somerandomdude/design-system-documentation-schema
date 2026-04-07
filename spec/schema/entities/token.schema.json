@@ -2,42 +2,11 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://designsystemdocspec.org/v0.1/token.schema.json",
   "title": "DSDS Token and Token Group Definitions",
-  "description": "Documentation for individual design tokens and hierarchical token groups. Includes token value representation and platform-specific API mappings. Token groups are flexible organizational units — a full token collection, a token family (e.g., all color tokens), or a sub-family (e.g., a single hue family). Groups can contain tokens, nested groups, or both, forming a hierarchy that mirrors how design systems organize tokens. The displayName property is omitted from tokens and token groups — the token name itself serves as the display name. Description and status are optional to reduce verbosity at scale. When omitted on children within a token group, status is inherited from the parent group.",
+  "description": "Documentation for individual design tokens and hierarchical token groups. Token values, aliases, and type information live in the authoritative W3C Design Tokens Format (DTCG) file — DSDS documents the purpose, guidelines, and organizational structure only. Token groups are flexible organizational units — a full token collection, a token family (e.g., all color tokens), or a sub-family (e.g., a single hue family). Groups can contain tokens, nested groups, or both, forming a hierarchy that mirrors how design systems organize tokens. The displayName property is omitted from tokens and token groups — the token name itself serves as the display name. Description and status are optional to reduce verbosity at scale. When omitted on children within a token group, status is inherited from the parent group.",
   "$defs": {
-    "tokenValue": {
-      "type": "object",
-      "description": "A displayable representation of the token's value for docs tools. The Design Tokens Format file is the authoritative source of truth, not this object. The resolved value provides a human-readable snapshot, the reference traces the alias chain, the resolution field classifies how the value was derived (using W3C DTCG terminology), and dtcgFile points to the authoritative source.",
-      "properties": {
-        "resolved": {
-          "type": "string",
-          "description": "The resolved value as a human-readable string (e.g., '#1a1a1a', '16px', '400', 'rgb(0, 85, 179)')."
-        },
-        "reference": {
-          "type": "string",
-          "description": "If this token is an alias, the name of the referenced token (e.g., 'color.neutral.900', 'spacing.base'). Corresponds to the W3C Design Tokens Format Module alias/reference concept (§3.8, §7): a token whose value references another token rather than containing an explicit value."
-        },
-        "resolution": {
-          "type": "string",
-          "enum": ["explicit", "alias"],
-          "description": "How the token's value was derived, using terminology from the W3C Design Tokens Format Module (§3.8, §7). 'explicit' means the token has a direct, standalone value. 'alias' means the value references another token (identified in the `reference` property). When omitted, tools SHOULD infer: if `reference` is present the token is an alias, otherwise it is explicit."
-        },
-        "dtcgFile": {
-          "type": "string",
-          "description": "URI or relative path to the W3C Design Tokens Format (DTCG) file containing the authoritative value."
-        }
-      },
-      "additionalProperties": false
-    },
-    "tokenApi": {
-      "type": "object",
-      "description": "Platform-specific identifiers for a token. Keys are platform names (e.g., 'cssCustomProperty', 'scssVariable', 'jsConstant', 'iosToken', 'androidToken', 'designToolVariable'). Values are the identifier strings for that platform. More platforms can be added without schema changes.",
-      "additionalProperties": {
-        "type": "string"
-      }
-    },
     "token": {
       "type": "object",
-      "description": "Documentation for a single design token — name, type, value, platform API mappings, use cases, guidelines, and accessibility considerations. The displayName property is absent — the token name is the display name. Description and status are optional. When a token appears inside a token group, an omitted status is inherited from the parent group.",
+      "description": "Documentation for a single design token — name, type, use cases, guidelines, and accessibility considerations. The displayName property is absent — the token name is the display name. Description and status are optional. When a token appears inside a token group, an omitted status is inherited from the parent group.",
       "required": ["kind", "name", "tokenType"],
       "properties": {
         "kind": {
@@ -51,7 +20,7 @@
         },
         "extends": {
           "$ref": "../common/extends.schema.json#/$defs/entityExtends",
-          "description": "Declares that this token inherits from a base token in a parent design system. The base token provides the foundational value, type, API mappings, and guidelines. This token layers on top — overriding the value, adding platform API mappings, or providing more guidelines while inheriting everything else."
+          "description": "Declares that this token inherits from a base token in a parent design system. The base token provides the foundational type, source reference, and guidelines. This token layers on top — providing additional guidelines or context while inheriting everything else."
         },
         "aliases": {
           "type": "array",
@@ -112,11 +81,20 @@
           "type": "string",
           "description": "The token's semantic category. Standard values: 'base' (raw palette values, not used directly in components), 'semantic' (purpose-driven tokens that map to base values, e.g., 'color-text-primary'), 'component' (tokens scoped to a specific component, e.g., 'button-background'). Custom values are permitted and SHOULD be lowercase kebab-case."
         },
-        "value": {
-          "$ref": "#/$defs/tokenValue"
-        },
-        "api": {
-          "$ref": "#/$defs/tokenApi"
+        "source": {
+          "type": "object",
+          "description": "Reference to the authoritative W3C Design Tokens Format (DTCG) definition. DSDS does not duplicate token values — the DTCG file is the source of truth for resolved values, aliases, and type information.",
+          "properties": {
+            "file": {
+              "type": "string",
+              "description": "URI or relative path to the DTCG file containing this token's definition."
+            },
+            "path": {
+              "type": "string",
+              "description": "The dot-path to this token within the DTCG file (e.g., 'color.text.primary')."
+            }
+          },
+          "additionalProperties": false
         },
         "guidelines": {
           "type": "array",
@@ -210,6 +188,21 @@
         "category": {
           "type": "string",
           "description": "When all tokens in this group share the same semantic category, declare it here. Standard values: 'base', 'semantic', 'component'. Each token in children MAY override this value."
+        },
+        "source": {
+          "type": "object",
+          "description": "Reference to the authoritative W3C Design Tokens Format (DTCG) definition. DSDS does not duplicate token values — the DTCG file is the source of truth for resolved values, aliases, and type information.",
+          "properties": {
+            "file": {
+              "type": "string",
+              "description": "URI or relative path to the DTCG file containing this group's definition."
+            },
+            "path": {
+              "type": "string",
+              "description": "The dot-path to this group within the DTCG file (e.g., 'color.text')."
+            }
+          },
+          "additionalProperties": false
         },
         "children": {
           "type": "array",

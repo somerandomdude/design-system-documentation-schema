@@ -97,11 +97,11 @@
 <hr />
 <ds-heading level="2" anchor="entity-types">Entity types</ds-heading>
 <p>Every entity has a <ds-code inline>kind</ds-code> field that tells tools what type of thing it is. There are six kinds.</p>
-<ds-table><table><thead><tr><th>Kind</th><th>Code</th><th>Description</th></tr></thead><tbody><tr><td>component</td><td><ds-code inline>"component"</ds-code></td><td>A reusable UI element — buttons, inputs, modals. Supports anatomy, API, variants, states, and design specs.</td></tr><tr><td>token</td><td><ds-code inline>"token"</ds-code></td><td>A single design token — color, spacing, typography. Carries a resolved value, platform API mappings, and usage rules.</td></tr><tr><td>token-group</td><td><ds-code inline>"token-group"</ds-code></td><td>A nested group of related tokens. Recursive — groups can contain groups.</td></tr><tr><td>theme</td><td><ds-code inline>"theme"</ds-code></td><td>A named set of token value overrides — dark mode, high-contrast, compact density, brand variants.</td></tr><tr><td>style</td><td><ds-code inline>"style"</ds-code></td><td>A design base — color, typography, spacing, elevation. Carries principles, scales, and motion definitions.</td></tr><tr><td>pattern</td><td><ds-code inline>"pattern"</ds-code></td><td>A broad action pattern — nav, error messaging, empty states. Describes how components compose to solve a user need.</td></tr></tbody></table></ds-table>
+<ds-table><table><thead><tr><th>Kind</th><th>Code</th><th>Description</th></tr></thead><tbody><tr><td>component</td><td><ds-code inline>"component"</ds-code></td><td>A reusable UI element — buttons, inputs, modals. Supports anatomy, API, variants, states, and design specs.</td></tr><tr><td>token</td><td><ds-code inline>"token"</ds-code></td><td>A single design token — color, spacing, typography. Carries type, category, and usage rules. Link to W3C DTCG definitions via <ds-code inline>source</ds-code>.</td></tr><tr><td>token-group</td><td><ds-code inline>"token-group"</ds-code></td><td>A nested group of related tokens. Recursive — groups can contain groups.</td></tr><tr><td>theme</td><td><ds-code inline>"theme"</ds-code></td><td>A named set of token overrides — dark mode, high-contrast, compact density, brand variants. Lists which token names change; the DTCG file holds the actual values.</td></tr><tr><td>style</td><td><ds-code inline>"style"</ds-code></td><td>A design base — color, typography, spacing, elevation. Carries principles, scales, and motion definitions.</td></tr><tr><td>pattern</td><td><ds-code inline>"pattern"</ds-code></td><td>A broad action pattern — nav, error messaging, empty states. Describes how components compose to solve a user need.</td></tr></tbody></table></ds-table>
 <ds-heading level="3" anchor="common-properties">Common properties</ds-heading>
 <p>Every entity shares these fields:</p>
 <ds-table><table><thead><tr><th>Property</th><th>Required</th><th>Description</th></tr></thead><tbody><tr><td><ds-code inline>kind</ds-code></td><td>Yes</td><td>Entity type</td></tr><tr><td><ds-code inline>name</ds-code></td><td>Yes*</td><td>Machine-readable ID (<ds-code inline>^[a-z][a-z0-9-]*$</ds-code>, except tokens)</td></tr><tr><td><ds-code inline>displayName</ds-code></td><td>Yes*</td><td>Human-readable label</td></tr><tr><td><ds-code inline>description</ds-code></td><td>Yes*</td><td>What this entity is and does (CommonMark supported)</td></tr><tr><td><ds-code inline>status</ds-code></td><td>No</td><td><ds-code inline>"stable"</ds-code>, <ds-code inline>"experimental"</ds-code>, <ds-code inline>"draft"</ds-code>, <ds-code inline>"deprecated"</ds-code> — or an object with per-platform status</td></tr><tr><td><ds-code inline>since</ds-code></td><td>No</td><td>Version when this entity first shipped</td></tr><tr><td><ds-code inline>tags</ds-code></td><td>No</td><td>Array of freeform category tags</td></tr><tr><td><ds-code inline>guidelines</ds-code></td><td>No</td><td>Array of typed guideline objects</td></tr></tbody></table></ds-table>
-<p>* Required for component, style, and pattern. Token requires <ds-code inline>name</ds-code> + <ds-code inline>tokenType</ds-code> + <ds-code inline>value</ds-code>.</p>
+<p>* Required for component, style, and pattern. Token requires <ds-code inline>name</ds-code> + <ds-code inline>tokenType</ds-code>.</p>
 <ds-heading level="3" anchor="status-string-or-object">Status: string or object</ds-heading>
 <p>For the simple case, status is a string:</p>
 <ds-code language="json">{ "status": "stable" }
@@ -190,13 +190,14 @@
 }
 </ds-code>
 <ds-heading level="3" anchor="token">Token</ds-heading>
-<p>A token needs <ds-code inline>kind</ds-code>, <ds-code inline>name</ds-code>, <ds-code inline>tokenType</ds-code>, and a <ds-code inline>value</ds-code> with at least <ds-code inline>resolved</ds-code>.</p>
+<p>A token needs <ds-code inline>kind</ds-code>, <ds-code inline>name</ds-code>, and <ds-code inline>tokenType</ds-code>. Use the optional <ds-code inline>source</ds-code> property to link back to the W3C DTCG file that holds the authoritative value.</p>
 <ds-code language="json">{
   "kind": "token",
   "name": "color-text-primary",
   "tokenType": "color",
-  "value": {
-    "resolved": "#1a1a1a"
+  "source": {
+    "file": "tokens/color.tokens.json",
+    "path": "color.text.primary"
   }
 }
 </ds-code>
@@ -209,45 +210,43 @@
   "status": "stable",
   "tokenType": "color",
   "category": "semantic",
+  "source": {
+    "file": "tokens/color.tokens.json",
+    "path": "color.text"
+  },
   "children": [
     {
       "kind": "token",
       "name": "color-text-primary",
       "tokenType": "color",
-      "value": {
-        "resolved": "#1a1a1a"
-      },
-      "api": {
-        "cssCustomProperty": "--color-text-primary"
+      "source": {
+        "file": "tokens/color.tokens.json",
+        "path": "color.text.primary"
       }
     },
     {
       "kind": "token",
       "name": "color-text-secondary",
       "tokenType": "color",
-      "value": {
-        "resolved": "#6b7280"
-      },
-      "api": {
-        "cssCustomProperty": "--color-text-secondary"
+      "source": {
+        "file": "tokens/color.tokens.json",
+        "path": "color.text.secondary"
       }
     },
     {
       "kind": "token",
       "name": "color-text-disabled",
       "tokenType": "color",
-      "value": {
-        "resolved": "#9ca3af"
-      },
-      "api": {
-        "cssCustomProperty": "--color-text-disabled"
+      "source": {
+        "file": "tokens/color.tokens.json",
+        "path": "color.text.disabled"
       }
     }
   ]
 }
 </ds-code>
 <ds-heading level="3" anchor="theme">Theme</ds-heading>
-<p>A theme provides <ds-code inline>overrides</ds-code> — an array of token + value pairs that replace the default.</p>
+<p>A theme provides <ds-code inline>overrides</ds-code> — an array of token names that differ from the default. The DTCG file holds the actual override values.</p>
 <ds-code language="json">{
   "kind": "theme",
   "name": "dark",
@@ -258,21 +257,15 @@
   "overrides": [
     {
       "token": "color-background-default",
-      "value": {
-        "resolved": "#1a1a1a"
-      }
+      "description": "Inverted default surface for dark mode."
     },
     {
       "token": "color-text-primary",
-      "value": {
-        "resolved": "#f5f5f5"
-      }
+      "description": "High-contrast text on dark surfaces."
     },
     {
       "token": "color-border-default",
-      "value": {
-        "resolved": "#333333"
-      }
+      "description": "Subtle border visible on dark backgrounds."
     }
   ]
 }
@@ -356,16 +349,18 @@
               "kind": "token",
               "name": "color-text-primary",
               "tokenType": "color",
-              "value": {
-                "resolved": "#1a1a1a"
+              "source": {
+                "file": "tokens/color.tokens.json",
+                "path": "color.text.primary"
               }
             },
             {
               "kind": "token",
               "name": "color-text-secondary",
               "tokenType": "color",
-              "value": {
-                "resolved": "#6b7280"
+              "source": {
+                "file": "tokens/color.tokens.json",
+                "path": "color.text.secondary"
               }
             }
           ]
@@ -373,21 +368,27 @@
         {
           "kind": "token-group",
           "name": "color-text",
+          "source": {
+            "file": "tokens/color.tokens.json",
+            "path": "color.text"
+          },
           "children": [
             {
               "kind": "token",
               "name": "color-text-primary",
               "tokenType": "color",
-              "value": {
-                "resolved": "#1a1a1a"
+              "source": {
+                "file": "tokens/color.tokens.json",
+                "path": "color.text.primary"
               }
             },
             {
               "kind": "token",
               "name": "color-text-secondary",
               "tokenType": "color",
-              "value": {
-                "resolved": "#6b7280"
+              "source": {
+                "file": "tokens/color.tokens.json",
+                "path": "color.text.secondary"
               }
             }
           ]
@@ -403,15 +404,11 @@
           "overrides": [
             {
               "token": "color-text-primary",
-              "value": {
-                "resolved": "#f5f5f5"
-              }
+              "description": "High-contrast text on dark surfaces."
             },
             {
               "token": "color-text-secondary",
-              "value": {
-                "resolved": "#a1a1aa"
-              }
+              "description": "Muted text for secondary content in dark mode."
             }
           ]
         }

@@ -55,7 +55,7 @@
   <div class="content content--with-toc">
     <main class="content__main" role="main">
       <div class="content__inner">
-        <ds-schema-header title="DSDS Theme Definition" description="A theme provides alternative token values for a named context such as a color mode, density setting, or brand variant. Themes reference existing tokens and supply override values without redefining the token's identity, docs, or API mappings. This keeps the token catalog as the single source of truth for what a token is. Themes describe how token values change across contexts. Express internal artifact relationships through the unified `links` array rather than a dedicated guideline type." source="entities/theme.schema.json"></ds-schema-header>
+        <ds-schema-header title="DSDS Theme Definition" description="A theme documents an alternative token-value context such as a color mode, density setting, or brand variant. DSDS captures the purpose, guidelines, and relationships of a theme — the actual override values live in the authoritative W3C Design Tokens Format (DTCG) file referenced by the source property. Express internal artifact relationships through the unified `links` array rather than a dedicated guideline type." source="entities/theme.schema.json"></ds-schema-header>
 <ds-def-index>
 <p><strong>2 definitions</strong> in this file:</p>
 <ul>
@@ -63,47 +63,21 @@
 <li><a href="#theme"><ds-code inline>theme</ds-code></a></li>
 </ul>
 </ds-def-index>
-<ds-def-section name="tokenOverride" anchor="tokenoverride" description="An alternative value for a single token within a theme. Maps a token name to its theme-specific value." type="object">
+<ds-def-section name="tokenOverride" anchor="tokenoverride" description="Documents a single token override within a theme — which token is affected, and why. The actual override value lives in the DTCG file; this entry captures the intent and rationale." type="object">
 <ds-prop-table>
   <ds-prop name="token" type="string" required>The name of the token being overridden. MUST match the `name` of a token defined elsewhere in the system. Token names are unconstrained by a pattern to support DTCG and design tool naming conventions (e.g., 'color-text-primary', 'color.text.primary', 'color/text/primary').</ds-prop>
-  <ds-prop name="value" type="&lt;ds-type-ref href=&quot;entities-token.html#tokenvalue&quot;&gt;tokenValue&lt;/ds-type-ref&gt;" required>The override value for this token within the theme. Follows the same structure as token.value — a displayable representation containing a resolved value, alias reference, and/or DTCG file pointer.</ds-prop>
+  <ds-prop name="description" type="&lt;ds-type-ref href=&quot;common-rich-text.html#richtext&quot;&gt;richText&lt;/ds-type-ref&gt;">Explains what changes for this token in this theme and why — e.g., 'Lightened to meet WCAG AAA contrast on the dark background.' The resolved value itself is in the DTCG file.</ds-prop>
 </ds-prop-table>
 <ds-cross-refs><strong>References:</strong> 
-<ds-type-ref href="entities-token.html#tokenvalue">tokenValue</ds-type-ref>
+<ds-type-ref href="common-rich-text.html#richtext">richText</ds-type-ref>
 </ds-cross-refs>
-<ds-def-example>
-<ds-code language="json" label="example">[
-  {
-    &quot;token&quot;: &quot;color-background-default&quot;,
-    &quot;value&quot;: {
-      &quot;resolved&quot;: &quot;#111111&quot;,
-      &quot;reference&quot;: &quot;color.black.cosmicore.900&quot;
-    }
-  },
-  {
-    &quot;token&quot;: &quot;color-text-default&quot;,
-    &quot;value&quot;: {
-      &quot;resolved&quot;: &quot;#FFFFFF&quot;,
-      &quot;reference&quot;: &quot;color.white.mochimalist.0&quot;
-    }
-  },
-  {
-    &quot;token&quot;: &quot;color-text-subtle&quot;,
-    &quot;value&quot;: {
-      &quot;resolved&quot;: &quot;#A5A5A5&quot;,
-      &quot;reference&quot;: &quot;color.gray.roboflow.400&quot;
-    }
-  }
-]</ds-code>
-</ds-def-example>
 </ds-def-section>
-<ds-def-section name="theme" anchor="theme" description="Docs for a theme — a named set of token value overrides that adapt the design system to a specific context. Use themes for color modes (light, dark, high-contrast), density settings (compact, comfortable), brand variants, or product-specific customizations. A theme does not redefine tokens; it references existing tokens and provides alternative values. The token catalog remains the authoritative source for token identity, type, docs, and API mappings." type="object">
+<ds-def-section name="theme" anchor="theme" description="Documents a theme — a named context that adapts the design system's token values. DSDS captures the purpose, usage guidelines, accessibility considerations, and the list of affected tokens. The actual override values live in the DTCG file referenced by the source property. Use themes for color modes (light, dark, high-contrast), density settings (compact, comfortable), brand variants, or product-specific customizations. The token catalog remains the authoritative source for token identity, type, and documentation." type="object">
 <ds-prop-table>
   <ds-prop name="kind" type="&lt;ds-code inline&gt;&quot;theme&quot;&lt;/ds-code&gt;" required>Identifies this entity as a theme.</ds-prop>
   <ds-prop name="name" type="string" required>Machine-readable identifier for the theme (e.g., 'dark', 'high-contrast', 'compact', 'brand-sub-brand').<br><small>Pattern: <ds-code inline>^[a-z][a-z0-9-]*$</ds-code></small></ds-prop>
   <ds-prop name="displayName" type="string" required>Human-readable name for the theme (e.g., 'Dark Mode', 'High Contrast', 'Compact Density').</ds-prop>
   <ds-prop name="description" type="&lt;ds-type-ref href=&quot;common-rich-text.html#richtext&quot;&gt;richText&lt;/ds-type-ref&gt;" required>A description of the theme — what context it adapts the system to, when to apply it, and how it differs from default token values. CommonMark supported.</ds-prop>
-  <ds-prop name="overrides" type="&lt;ds-type-ref href=&quot;entities-theme.html#tokenoverride&quot;&gt;tokenOverride&lt;/ds-type-ref&gt;[]" required>Token value overrides that define this theme. Each entry maps a token name to its theme-specific value. Only list tokens whose values differ from the default — unlisted tokens retain their default values.<br><small>Min items: 1</small></ds-prop>
   <ds-prop name="aliases" type="string[]">Alternative names for this artifact across teams, tools, or legacy systems. Useful for search, migration mapping, and cross-referencing.</ds-prop>
   <ds-prop name="summary" type="string">A one-line, plain-text summary for compact display contexts such as list views, tooltips, search results, and cards. MUST NOT contain markup.</ds-prop>
   <ds-prop name="thumbnail" type="&lt;ds-type-ref href=&quot;common-presentation.html#presentationimage&quot;&gt;presentationImage&lt;/ds-type-ref&gt;">A visual for compact display contexts such as list views, tooltips, search results, and cards.</ds-prop>
@@ -112,6 +86,8 @@
   <ds-prop name="since" type="string">The design system version in which this theme was introduced.</ds-prop>
   <ds-prop name="tags" type="string[]">Freeform keywords for categorization and search (e.g., 'dark-mode', 'accessibility', 'brand').</ds-prop>
   <ds-prop name="category" type="string">The category of adaptation this theme represents. Common values: 'color-mode' (light/dark/high-contrast), 'density' (compact/comfortable/spacious), 'brand' (sub-brand or partner theming), 'product' (product-specific overrides). Custom values are permitted and SHOULD be lowercase kebab-case.</ds-prop>
+  <ds-prop name="source" type="object">Reference to the authoritative W3C Design Tokens Format (DTCG) definition. DSDS does not duplicate token values — the DTCG file is the source of truth for resolved values, aliases, and type information.</ds-prop>
+  <ds-prop name="overrides" type="&lt;ds-type-ref href=&quot;entities-theme.html#tokenoverride&quot;&gt;tokenOverride&lt;/ds-type-ref&gt;[]">Token overrides that this theme affects. Each entry documents which token is changed and why. Only list tokens whose values differ from the default — unlisted tokens retain their default values. The actual override values live in the DTCG file referenced by source.<br><small>Min items: 1</small></ds-prop>
   <ds-prop name="guidelines" type="&lt;ds-type-ref href=&quot;guidelines-guideline.html#tokenguideline&quot;&gt;tokenGuideline&lt;/ds-type-ref&gt;[]">All structured docs for this theme as an ordered array of typed guideline objects. Themes accept general guideline types only (best-practices, use-cases, accessibility, examples). Each guideline has a `type` property that determines its shape. Ordering is significant: tools SHOULD preserve it for display.</ds-prop>
   <ds-prop name="links" type="&lt;ds-type-ref href=&quot;common-link.html#link&quot;&gt;link&lt;/ds-type-ref&gt;[]">External resource links, related artifact references, and internal relationships. Each link can point to an external URL, an internal DSDS artifact by name, or both.</ds-prop>
   <ds-prop name="$extensions" type="&lt;ds-type-ref href=&quot;common-extensions.html#extensions&quot;&gt;extensions&lt;/ds-type-ref&gt;"></ds-prop>
@@ -164,266 +140,155 @@
   &quot;overrides&quot;: [
     {
       &quot;token&quot;: &quot;color-background-default&quot;,
-      &quot;value&quot;: {
-        &quot;resolved&quot;: &quot;#111111&quot;,
-        &quot;reference&quot;: &quot;color.black.cosmicore.900&quot;
-      }
+      &quot;description&quot;: &quot;Inverted default surface for dark mode.&quot;
     },
     {
       &quot;token&quot;: &quot;color-background-elevation-accent&quot;,
-      &quot;value&quot;: {
-        &quot;resolved&quot;: &quot;#191919&quot;,
-        &quot;reference&quot;: &quot;color.gray.roboflow.800&quot;
-      }
+      &quot;description&quot;: &quot;Slightly lighter accent surface for dark layering.&quot;
     },
     {
       &quot;token&quot;: &quot;color-background-elevation-floating&quot;,
-      &quot;value&quot;: {
-        &quot;resolved&quot;: &quot;#2B2B2B&quot;,
-        &quot;reference&quot;: &quot;color.gray.roboflow.700&quot;
-      }
+      &quot;description&quot;: &quot;Floating surface, one step lighter than accent in dark mode.&quot;
     },
     {
       &quot;token&quot;: &quot;color-background-elevation-raised&quot;,
-      &quot;value&quot;: {
-        &quot;resolved&quot;: &quot;#4A4A4A&quot;,
-        &quot;reference&quot;: &quot;color.gray.roboflow.600&quot;
-      }
+      &quot;description&quot;: &quot;Raised surface, lighter still to communicate depth in dark mode.&quot;
     },
     {
       &quot;token&quot;: &quot;color-background-secondary-base&quot;,
-      &quot;value&quot;: {
-        &quot;resolved&quot;: &quot;#767676&quot;,
-        &quot;reference&quot;: &quot;color.gray.roboflow.500&quot;
-      }
+      &quot;description&quot;: &quot;Secondary background remapped for dark surfaces.&quot;
     },
     {
       &quot;token&quot;: &quot;color-background-inverse-base&quot;,
-      &quot;value&quot;: {
-        &quot;resolved&quot;: &quot;#F9F9F9&quot;,
-        &quot;reference&quot;: &quot;color.gray.roboflow.50&quot;
-      }
+      &quot;description&quot;: &quot;Inverse background flipped to near-white for dark mode.&quot;
     },
     {
       &quot;token&quot;: &quot;color-background-error-base&quot;,
-      &quot;value&quot;: {
-        &quot;resolved&quot;: &quot;#F47171&quot;,
-        &quot;reference&quot;: &quot;color.red.pushpin.300&quot;
-      }
+      &quot;description&quot;: &quot;Error background lightened for visibility on dark surfaces.&quot;
     },
     {
       &quot;token&quot;: &quot;color-background-error-weak&quot;,
-      &quot;value&quot;: {
-        &quot;resolved&quot;: &quot;#660000&quot;,
-        &quot;reference&quot;: &quot;color.red.pushpin.900&quot;
-      }
+      &quot;description&quot;: &quot;Subtle error background darkened for dark mode.&quot;
     },
     {
       &quot;token&quot;: &quot;color-background-success-base&quot;,
-      &quot;value&quot;: {
-        &quot;resolved&quot;: &quot;#6BEC8C&quot;,
-        &quot;reference&quot;: &quot;color.green.matchacado.300&quot;
-      }
+      &quot;description&quot;: &quot;Success background lightened for visibility on dark surfaces.&quot;
     },
     {
       &quot;token&quot;: &quot;color-background-success-weak&quot;,
-      &quot;value&quot;: {
-        &quot;resolved&quot;: &quot;#00422C&quot;,
-        &quot;reference&quot;: &quot;color.green.matchacado.700&quot;
-      }
+      &quot;description&quot;: &quot;Subtle success background darkened for dark mode.&quot;
     },
     {
       &quot;token&quot;: &quot;color-background-info-base&quot;,
-      &quot;value&quot;: {
-        &quot;resolved&quot;: &quot;#75BFFF&quot;,
-        &quot;reference&quot;: &quot;color.blue.skycicle.300&quot;
-      }
+      &quot;description&quot;: &quot;Info background lightened for visibility on dark surfaces.&quot;
     },
     {
       &quot;token&quot;: &quot;color-background-info-weak&quot;,
-      &quot;value&quot;: {
-        &quot;resolved&quot;: &quot;#003C96&quot;,
-        &quot;reference&quot;: &quot;color.blue.skycicle.800&quot;
-      }
+      &quot;description&quot;: &quot;Subtle info background darkened for dark mode.&quot;
     },
     {
       &quot;token&quot;: &quot;color-background-warning-base&quot;,
-      &quot;value&quot;: {
-        &quot;resolved&quot;: &quot;#FDC900&quot;,
-        &quot;reference&quot;: &quot;color.yellow.caramellow.300&quot;
-      }
+      &quot;description&quot;: &quot;Warning background lightened for visibility on dark surfaces.&quot;
     },
     {
       &quot;token&quot;: &quot;color-background-warning-weak&quot;,
-      &quot;value&quot;: {
-        &quot;resolved&quot;: &quot;#7C2D00&quot;,
-        &quot;reference&quot;: &quot;color.yellow.caramellow.800&quot;
-      }
+      &quot;description&quot;: &quot;Subtle warning background darkened for dark mode.&quot;
     },
     {
       &quot;token&quot;: &quot;color-background-selected-base&quot;,
-      &quot;value&quot;: {
-        &quot;resolved&quot;: &quot;#E9E9E9&quot;,
-        &quot;reference&quot;: &quot;color.gray.roboflow.200&quot;
-      }
+      &quot;description&quot;: &quot;Selected-state background remapped for dark surfaces.&quot;
     },
     {
       &quot;token&quot;: &quot;color-text-default&quot;,
-      &quot;value&quot;: {
-        &quot;resolved&quot;: &quot;#FFFFFF&quot;,
-        &quot;reference&quot;: &quot;color.white.mochimalist.0&quot;
-      }
+      &quot;description&quot;: &quot;Primary text switched to white for dark backgrounds.&quot;
     },
     {
       &quot;token&quot;: &quot;color-text-subtle&quot;,
-      &quot;value&quot;: {
-        &quot;resolved&quot;: &quot;#A5A5A5&quot;,
-        &quot;reference&quot;: &quot;color.gray.roboflow.400&quot;
-      }
+      &quot;description&quot;: &quot;Subtle text lightened to maintain AA contrast on dark surfaces.&quot;
     },
     {
       &quot;token&quot;: &quot;color-text-disabled&quot;,
-      &quot;value&quot;: {
-        &quot;resolved&quot;: &quot;#4A4A4A&quot;,
-        &quot;reference&quot;: &quot;color.gray.roboflow.600&quot;
-      }
+      &quot;description&quot;: &quot;Disabled text adjusted for dark mode.&quot;
     },
     {
       &quot;token&quot;: &quot;color-text-inverse&quot;,
-      &quot;value&quot;: {
-        &quot;resolved&quot;: &quot;#111111&quot;,
-        &quot;reference&quot;: &quot;color.black.cosmicore.900&quot;
-      }
+      &quot;description&quot;: &quot;Inverse text switched to near-black for light-on-dark inversion.&quot;
     },
     {
       &quot;token&quot;: &quot;color-text-error&quot;,
-      &quot;value&quot;: {
-        &quot;resolved&quot;: &quot;#F47171&quot;,
-        &quot;reference&quot;: &quot;color.red.pushpin.300&quot;
-      }
+      &quot;description&quot;: &quot;Error text lightened for contrast on dark backgrounds.&quot;
     },
     {
       &quot;token&quot;: &quot;color-text-success&quot;,
-      &quot;value&quot;: {
-        &quot;resolved&quot;: &quot;#39D377&quot;,
-        &quot;reference&quot;: &quot;color.green.matchacado.400&quot;
-      }
+      &quot;description&quot;: &quot;Success text lightened for contrast on dark backgrounds.&quot;
     },
     {
       &quot;token&quot;: &quot;color-text-warning&quot;,
-      &quot;value&quot;: {
-        &quot;resolved&quot;: &quot;#E18D00&quot;,
-        &quot;reference&quot;: &quot;color.yellow.caramellow.400&quot;
-      }
+      &quot;description&quot;: &quot;Warning text adjusted for dark mode contrast.&quot;
     },
     {
       &quot;token&quot;: &quot;color-text-link&quot;,
-      &quot;value&quot;: {
-        &quot;resolved&quot;: &quot;#45A3FE&quot;,
-        &quot;reference&quot;: &quot;color.blue.skycicle.400&quot;
-      }
+      &quot;description&quot;: &quot;Link text shifted to a lighter blue for dark mode.&quot;
     },
     {
       &quot;token&quot;: &quot;color-icon-default&quot;,
-      &quot;value&quot;: {
-        &quot;resolved&quot;: &quot;#FFFFFF&quot;,
-        &quot;reference&quot;: &quot;color.white.mochimalist.0&quot;
-      }
+      &quot;description&quot;: &quot;Default icon color switched to white for dark mode.&quot;
     },
     {
       &quot;token&quot;: &quot;color-icon-subtle&quot;,
-      &quot;value&quot;: {
-        &quot;resolved&quot;: &quot;#A5A5A5&quot;,
-        &quot;reference&quot;: &quot;color.gray.roboflow.400&quot;
-      }
+      &quot;description&quot;: &quot;Subtle icon color lightened for dark surfaces.&quot;
     },
     {
       &quot;token&quot;: &quot;color-icon-inverse&quot;,
-      &quot;value&quot;: {
-        &quot;resolved&quot;: &quot;#111111&quot;,
-        &quot;reference&quot;: &quot;color.black.cosmicore.900&quot;
-      }
+      &quot;description&quot;: &quot;Inverse icon color switched to near-black.&quot;
     },
     {
       &quot;token&quot;: &quot;color-icon-disabled&quot;,
-      &quot;value&quot;: {
-        &quot;resolved&quot;: &quot;#4A4A4A&quot;,
-        &quot;reference&quot;: &quot;color.gray.roboflow.600&quot;
-      }
+      &quot;description&quot;: &quot;Disabled icon color adjusted for dark mode.&quot;
     },
     {
       &quot;token&quot;: &quot;color-icon-error&quot;,
-      &quot;value&quot;: {
-        &quot;resolved&quot;: &quot;#F47171&quot;,
-        &quot;reference&quot;: &quot;color.red.pushpin.300&quot;
-      }
+      &quot;description&quot;: &quot;Error icon color lightened for dark backgrounds.&quot;
     },
     {
       &quot;token&quot;: &quot;color-icon-success&quot;,
-      &quot;value&quot;: {
-        &quot;resolved&quot;: &quot;#39D377&quot;,
-        &quot;reference&quot;: &quot;color.green.matchacado.400&quot;
-      }
+      &quot;description&quot;: &quot;Success icon color lightened for dark backgrounds.&quot;
     },
     {
       &quot;token&quot;: &quot;color-icon-info&quot;,
-      &quot;value&quot;: {
-        &quot;resolved&quot;: &quot;#75BFFF&quot;,
-        &quot;reference&quot;: &quot;color.blue.skycicle.300&quot;
-      }
+      &quot;description&quot;: &quot;Info icon color lightened for dark backgrounds.&quot;
     },
     {
       &quot;token&quot;: &quot;color-icon-warning&quot;,
-      &quot;value&quot;: {
-        &quot;resolved&quot;: &quot;#E18D00&quot;,
-        &quot;reference&quot;: &quot;color.yellow.caramellow.400&quot;
-      }
+      &quot;description&quot;: &quot;Warning icon color adjusted for dark mode.&quot;
     },
     {
       &quot;token&quot;: &quot;color-icon-recommendation&quot;,
-      &quot;value&quot;: {
-        &quot;resolved&quot;: &quot;#B190FF&quot;,
-        &quot;reference&quot;: &quot;color.purple.mysticool.300&quot;
-      }
+      &quot;description&quot;: &quot;Recommendation icon color lightened for dark backgrounds.&quot;
     },
     {
       &quot;token&quot;: &quot;color-border-default&quot;,
-      &quot;value&quot;: {
-        &quot;resolved&quot;: &quot;#CDCDCD&quot;,
-        &quot;reference&quot;: &quot;color.gray.roboflow.300&quot;
-      }
+      &quot;description&quot;: &quot;Default border lightened for visibility on dark surfaces.&quot;
     },
     {
       &quot;token&quot;: &quot;color-border-container&quot;,
-      &quot;value&quot;: {
-        &quot;resolved&quot;: &quot;#767676&quot;,
-        &quot;reference&quot;: &quot;color.gray.roboflow.500&quot;
-      }
+      &quot;description&quot;: &quot;Container border adjusted for dark mode.&quot;
     },
     {
       &quot;token&quot;: &quot;color-border-error&quot;,
-      &quot;value&quot;: {
-        &quot;resolved&quot;: &quot;#F47171&quot;,
-        &quot;reference&quot;: &quot;color.red.pushpin.300&quot;
-      }
+      &quot;description&quot;: &quot;Error border lightened for dark backgrounds.&quot;
     },
     {
       &quot;token&quot;: &quot;elevation-floating&quot;,
-      &quot;value&quot;: {
-        &quot;resolved&quot;: &quot;none&quot;
-      }
+      &quot;description&quot;: &quot;Floating elevation removed; dark mode uses surface color for depth.&quot;
     },
     {
       &quot;token&quot;: &quot;elevation-raised-top&quot;,
-      &quot;value&quot;: {
-        &quot;resolved&quot;: &quot;0px 0.5px 0px 0px rgba(249, 249, 249, 0)&quot;
-      }
+      &quot;description&quot;: &quot;Top raised shadow effectively invisible in dark mode.&quot;
     },
     {
       &quot;token&quot;: &quot;elevation-raised-bottom&quot;,
-      &quot;value&quot;: {
-        &quot;resolved&quot;: &quot;0px -0.5px 0px 0px rgba(249, 249, 249, 0)&quot;
-      }
+      &quot;description&quot;: &quot;Bottom raised shadow effectively invisible in dark mode.&quot;
     }
   ],
   &quot;guidelines&quot;: [

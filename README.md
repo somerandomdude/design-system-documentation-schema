@@ -44,7 +44,7 @@ DSDS addresses these problems by defining a standard format that is:
 
 The W3C Design Tokens Community Group defines a format for exchanging token **values** between tools. DSDS defines a format for exchanging the **documentation** that describes how those tokens — and the components, styles, and patterns that use them — should be understood and applied.
 
-The two formats are designed to work together. A DSDS token entity can reference a DTCG file for the token's authoritative value.
+The two formats are designed to work together. DSDS does not duplicate token values or platform identifiers. The W3C Design Tokens Format file is the source of truth for values. Use the `source` property on a token entity to link it back to its DTCG definition.
 
 ## Project Structure
 
@@ -68,7 +68,7 @@ spec/
 │   │   ├── pattern.schema.json                         # pattern
 │   │   ├── style.schema.json                           # style
 │   │   ├── theme.schema.json                           # theme, tokenOverride
-│   │   └── token.schema.json                           # token, tokenGroup, tokenValue, tokenApi
+│   │   └── token.schema.json                           # token, tokenGroup
 │   └── guidelines/                                     # Guideline types
 │       ├── guideline.schema.json                       # Scoped unions (componentGuideline, styleGuideline, etc.)
 │       ├── accessibility.schema.json                   # accessibility, keyboardInteraction, ariaAttribute, colorContrast
@@ -147,7 +147,7 @@ The [`spec/examples/`](spec/examples/) directory contains validated example file
 - **[`entities/component.json`](spec/examples/entities/component.json)** — A full Button component with anatomy, API, variants (flag and enum types), states, design specs, best practices, purpose, and accessibility.
 - **[`entities/empty-state-pattern.json`](spec/examples/entities/empty-state-pattern.json)** — An Empty State pattern demonstrating anatomy, variants, states, interactions, content guidelines, and localization on a pattern entity.
 - **[`entities/style.json`](spec/examples/entities/style.json)** — A Spacing style with principles, scale, motion definitions, and best practices.
-- **[`entities/token.json`](spec/examples/entities/token.json)** — A semantic color token with value, resolution, API mappings, and guidelines.
+- **[`entities/token.json`](spec/examples/entities/token.json)** — A semantic color token with source reference, category, and guidelines.
 - **[`entities/token-group.json`](spec/examples/entities/token-group.json)** — A hierarchical color palette with nested hue families and grade scales.
 - **[`entities/theme.json`](spec/examples/entities/theme.json)** — A dark mode theme with token overrides, purpose, best practices, and accessibility.
 - **[`entities/pattern.json`](spec/examples/entities/pattern.json)** — An error messaging pattern with interactions, component references, and accessibility.
@@ -363,7 +363,7 @@ Each entity kind lives in its own named array within a documentation group. The 
 | `"component"` | Component | `components` | A reusable UI component |
 | `"token"` | Token | _(inline in token groups)_ | A single design token |
 | `"token-group"` | Token Group | `tokenGroups` | A hierarchical group of related tokens (recursive) |
-| `"theme"` | Theme | `themes` | A named set of token value overrides |
+| `"theme"` | Theme | `themes` | A named set of token overrides (lists token names, not values) |
 | `"style"` | Style | `styles` | A macro-level visual style |
 | `"pattern"` | Pattern | `patterns` | A broad interaction pattern |
 
@@ -602,19 +602,16 @@ The `variants`, `sizes`, and `states` arrays each contain named entries with the
 }
 ```
 
-### Token APIs Are Open Maps
+### Tokens and the W3C Design Tokens Format
 
-The `tokenApi` object uses an open map — keys are platform names, values are identifier strings. New platforms can be added without schema changes:
+DSDS does not carry token values or platform API mappings. The W3C Design Tokens Format (DTCG) file is the single source of truth for resolved values and platform-specific identifiers. Use the `source` property on a token entity to link it to its DTCG definition:
 
 ```json
 {
-  "api": {
-    "cssCustomProperty": "--color-text-primary",
-    "scssVariable": "$color-text-primary",
-    "jsConstant": "colorTextPrimary",
-    "designToolVariable": "color/text/primary",
-    "composeToken": "Color.Text.Primary"
-  }
+  "type": "token",
+  "name": "color.text.primary",
+  "tokenType": "color",
+  "source": "./tokens.json"
 }
 ```
 

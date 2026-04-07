@@ -2590,32 +2590,30 @@
     },
     "tokenOverride": {
       "type": "object",
-      "description": "An alternative value for a single token within a theme. Maps a token name to its theme-specific value.",
+      "description": "Documents a single token override within a theme — which token is affected, and why. The actual override value lives in the DTCG file; this entry captures the intent and rationale.",
       "required": [
-        "token",
-        "value"
+        "token"
       ],
       "properties": {
         "token": {
           "type": "string",
           "description": "The name of the token being overridden. MUST match the `name` of a token defined elsewhere in the system. Token names are unconstrained by a pattern to support DTCG and design tool naming conventions (e.g., 'color-text-primary', 'color.text.primary', 'color/text/primary')."
         },
-        "value": {
-          "$ref": "#/$defs/tokenValue",
-          "description": "The override value for this token within the theme. Follows the same structure as token.value — a displayable representation containing a resolved value, alias reference, and/or DTCG file pointer."
+        "description": {
+          "$ref": "#/$defs/richText",
+          "description": "Explains what changes for this token in this theme and why — e.g., 'Lightened to meet WCAG AAA contrast on the dark background.' The resolved value itself is in the DTCG file."
         }
       },
       "additionalProperties": false
     },
     "theme": {
       "type": "object",
-      "description": "Docs for a theme — a named set of token value overrides that adapt the design system to a specific context. Use themes for color modes (light, dark, high-contrast), density settings (compact, comfortable), brand variants, or product-specific customizations. A theme does not redefine tokens; it references existing tokens and provides alternative values. The token catalog remains the authoritative source for token identity, type, docs, and API mappings.",
+      "description": "Documents a theme — a named context that adapts the design system's token values. DSDS captures the purpose, usage guidelines, accessibility considerations, and the list of affected tokens. The actual override values live in the DTCG file referenced by the source property. Use themes for color modes (light, dark, high-contrast), density settings (compact, comfortable), brand variants, or product-specific customizations. The token catalog remains the authoritative source for token identity, type, and documentation.",
       "required": [
         "kind",
         "name",
         "displayName",
-        "description",
-        "overrides"
+        "description"
       ],
       "properties": {
         "kind": {
@@ -2686,9 +2684,24 @@
           "type": "string",
           "description": "The category of adaptation this theme represents. Common values: 'color-mode' (light/dark/high-contrast), 'density' (compact/comfortable/spacious), 'brand' (sub-brand or partner theming), 'product' (product-specific overrides). Custom values are permitted and SHOULD be lowercase kebab-case."
         },
+        "source": {
+          "type": "object",
+          "description": "Reference to the authoritative W3C Design Tokens Format (DTCG) definition. DSDS does not duplicate token values — the DTCG file is the source of truth for resolved values, aliases, and type information.",
+          "properties": {
+            "file": {
+              "type": "string",
+              "description": "URI or relative path to the DTCG file containing this theme's token override definitions."
+            },
+            "path": {
+              "type": "string",
+              "description": "The dot-path to this theme's group within the DTCG file, if applicable."
+            }
+          },
+          "additionalProperties": false
+        },
         "overrides": {
           "type": "array",
-          "description": "Token value overrides that define this theme. Each entry maps a token name to its theme-specific value. Only list tokens whose values differ from the default — unlisted tokens retain their default values.",
+          "description": "Token overrides that this theme affects. Each entry documents which token is changed and why. Only list tokens whose values differ from the default — unlisted tokens retain their default values. The actual override values live in the DTCG file referenced by source.",
           "items": {
             "$ref": "#/$defs/tokenOverride"
           },
@@ -2714,43 +2727,9 @@
       },
       "additionalProperties": false
     },
-    "tokenValue": {
-      "type": "object",
-      "description": "A displayable representation of the token's value for docs tools. The Design Tokens Format file is the authoritative source of truth, not this object. The resolved value provides a human-readable snapshot, the reference traces the alias chain, the resolution field classifies how the value was derived (using W3C DTCG terminology), and dtcgFile points to the authoritative source.",
-      "properties": {
-        "resolved": {
-          "type": "string",
-          "description": "The resolved value as a human-readable string (e.g., '#1a1a1a', '16px', '400', 'rgb(0, 85, 179)')."
-        },
-        "reference": {
-          "type": "string",
-          "description": "If this token is an alias, the name of the referenced token (e.g., 'color.neutral.900', 'spacing.base'). Corresponds to the W3C Design Tokens Format Module alias/reference concept (§3.8, §7): a token whose value references another token rather than containing an explicit value."
-        },
-        "resolution": {
-          "type": "string",
-          "enum": [
-            "explicit",
-            "alias"
-          ],
-          "description": "How the token's value was derived, using terminology from the W3C Design Tokens Format Module (§3.8, §7). 'explicit' means the token has a direct, standalone value. 'alias' means the value references another token (identified in the `reference` property). When omitted, tools SHOULD infer: if `reference` is present the token is an alias, otherwise it is explicit."
-        },
-        "dtcgFile": {
-          "type": "string",
-          "description": "URI or relative path to the W3C Design Tokens Format (DTCG) file containing the authoritative value."
-        }
-      },
-      "additionalProperties": false
-    },
-    "tokenApi": {
-      "type": "object",
-      "description": "Platform-specific identifiers for a token. Keys are platform names (e.g., 'cssCustomProperty', 'scssVariable', 'jsConstant', 'iosToken', 'androidToken', 'designToolVariable'). Values are the identifier strings for that platform. More platforms can be added without schema changes.",
-      "additionalProperties": {
-        "type": "string"
-      }
-    },
     "token": {
       "type": "object",
-      "description": "Documentation for a single design token — name, type, value, platform API mappings, use cases, guidelines, and accessibility considerations. The displayName property is absent — the token name is the display name. Description and status are optional. When a token appears inside a token group, an omitted status is inherited from the parent group.",
+      "description": "Documentation for a single design token — name, type, use cases, guidelines, and accessibility considerations. The displayName property is absent — the token name is the display name. Description and status are optional. When a token appears inside a token group, an omitted status is inherited from the parent group.",
       "required": [
         "kind",
         "name",
@@ -2768,7 +2747,7 @@
         },
         "extends": {
           "$ref": "#/$defs/entityExtends",
-          "description": "Declares that this token inherits from a base token in a parent design system. The base token provides the foundational value, type, API mappings, and guidelines. This token layers on top — overriding the value, adding platform API mappings, or providing more guidelines while inheriting everything else."
+          "description": "Declares that this token inherits from a base token in a parent design system. The base token provides the foundational type, source reference, and guidelines. This token layers on top — providing additional guidelines or context while inheriting everything else."
         },
         "aliases": {
           "type": "array",
@@ -2829,11 +2808,20 @@
           "type": "string",
           "description": "The token's semantic category. Standard values: 'base' (raw palette values, not used directly in components), 'semantic' (purpose-driven tokens that map to base values, e.g., 'color-text-primary'), 'component' (tokens scoped to a specific component, e.g., 'button-background'). Custom values are permitted and SHOULD be lowercase kebab-case."
         },
-        "value": {
-          "$ref": "#/$defs/tokenValue"
-        },
-        "api": {
-          "$ref": "#/$defs/tokenApi"
+        "source": {
+          "type": "object",
+          "description": "Reference to the authoritative W3C Design Tokens Format (DTCG) definition. DSDS does not duplicate token values — the DTCG file is the source of truth for resolved values, aliases, and type information.",
+          "properties": {
+            "file": {
+              "type": "string",
+              "description": "URI or relative path to the DTCG file containing this token's definition."
+            },
+            "path": {
+              "type": "string",
+              "description": "The dot-path to this token within the DTCG file (e.g., 'color.text.primary')."
+            }
+          },
+          "additionalProperties": false
         },
         "guidelines": {
           "type": "array",
@@ -2930,6 +2918,21 @@
         "category": {
           "type": "string",
           "description": "When all tokens in this group share the same semantic category, declare it here. Standard values: 'base', 'semantic', 'component'. Each token in children MAY override this value."
+        },
+        "source": {
+          "type": "object",
+          "description": "Reference to the authoritative W3C Design Tokens Format (DTCG) definition. DSDS does not duplicate token values — the DTCG file is the source of truth for resolved values, aliases, and type information.",
+          "properties": {
+            "file": {
+              "type": "string",
+              "description": "URI or relative path to the DTCG file containing this group's definition."
+            },
+            "path": {
+              "type": "string",
+              "description": "The dot-path to this group within the DTCG file (e.g., 'color.text')."
+            }
+          },
+          "additionalProperties": false
         },
         "children": {
           "type": "array",

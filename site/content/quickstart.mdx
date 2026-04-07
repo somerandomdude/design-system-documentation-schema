@@ -68,9 +68,9 @@ Every entity has a `kind` field that tells tools what type of thing it is. There
 | Kind | Code | Description |
 |------|------|-------------|
 | component | `"component"` | A reusable UI element — buttons, inputs, modals. Supports anatomy, API, variants, states, and design specs. |
-| token | `"token"` | A single design token — color, spacing, typography. Carries a resolved value, platform API mappings, and usage rules. |
+| token | `"token"` | A single design token — color, spacing, typography. Carries type, category, and usage rules. Link to W3C DTCG definitions via `source`. |
 | token-group | `"token-group"` | A nested group of related tokens. Recursive — groups can contain groups. |
-| theme | `"theme"` | A named set of token value overrides — dark mode, high-contrast, compact density, brand variants. |
+| theme | `"theme"` | A named set of token overrides — dark mode, high-contrast, compact density, brand variants. Lists which token names change; the DTCG file holds the actual values. |
 | style | `"style"` | A design base — color, typography, spacing, elevation. Carries principles, scales, and motion definitions. |
 | pattern | `"pattern"` | A broad action pattern — nav, error messaging, empty states. Describes how components compose to solve a user need. |
 
@@ -89,7 +89,7 @@ Every entity shares these fields:
 | `tags` | No | Array of freeform category tags |
 | `guidelines` | No | Array of typed guideline objects |
 
-\* Required for component, style, and pattern. Token requires `name` + `tokenType` + `value`.
+\* Required for component, style, and pattern. Token requires `name` + `tokenType`.
 
 ### Status: string or object
 
@@ -193,7 +193,7 @@ A component needs `kind`, `name`, `displayName`, and `description`. Everything e
 
 ### Token
 
-A token needs `kind`, `name`, `tokenType`, and a `value` with at least `resolved`.
+A token needs `kind`, `name`, and `tokenType`. Use the optional `source` property to link back to the W3C DTCG file that holds the authoritative value.
 
 <ds-example file="token.json" label="minimal token" />
 
@@ -205,7 +205,7 @@ Groups arrange tokens in a tree. The `children` array can contain tokens or nest
 
 ### Theme
 
-A theme provides `overrides` — an array of token + value pairs that replace the default.
+A theme provides `overrides` — an array of token names that differ from the default. The DTCG file holds the actual override values.
 
 <ds-example file="theme.json" label="minimal theme" />
 
