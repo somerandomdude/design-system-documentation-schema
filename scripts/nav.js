@@ -18,10 +18,10 @@ const SCHEMA_DIR = path.join(ROOT, "spec", "schema");
 // Subdirectories of spec/schema/ that become nav groups.
 const DIR_GROUPS = [
   { dir: "documentation", label: "Documentation" },
-  { dir: "metadata", label: "Metadata" },
   { dir: "common", label: "Common" },
   { dir: "entities", label: "Entities" },
-  { dir: "document-blocks", label: "Document block" },
+  { dir: "document-blocks", label: "Document blocks" },
+  { dir: "metadata", label: "Metadata" },
 ];
 
 // Top-level (non-schema-driven) links that always appear first.
