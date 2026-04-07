@@ -6,17 +6,21 @@
   <title>DSDS Component Definitions — DSDS 0.1</title>
   <link rel="stylesheet" href="tokens.css">
   <link rel="stylesheet" href="style.css">
-  <script src="components.js?v=2"></script>
+  <script src="components.js"></script>
 </head>
 <body>
   <ds-nav-toggle target="ds-spec-nav"></ds-nav-toggle>
-  <ds-spec-nav title="DSDS 0.1" title-href="index.html" active="entities-component">
+  <ds-spec-nav title="Design system documentation standard 0.1" title-href="index.html" active="entities-component">
     <a href="index.html" slug="index">Overview</a>
-    <a href="quickstart.html" slug="quickstart">Quick Start</a>
-    <a href="samples.html" slug="samples">Interactive Samples</a>
-    <a href="root.html" slug="root">Root Schema</a>
+    <a href="quickstart.html" slug="quickstart">Quick start</a>
+    <a href="schema-architecture.html" slug="schema-architecture">Schema architecture</a>
+    <a href="samples.html" slug="samples">Interactive samples</a>
+    <ds-nav-group label="Documentation">
+      <a href="root.html" slug="root">Root schema</a>
+    </ds-nav-group>
     <ds-nav-group label="Common">
       <a href="common-example.html" slug="common-example">example</a>
+      <a href="common-extends.html" slug="common-extends">extends</a>
       <a href="common-extensions.html" slug="common-extensions">extensions</a>
       <a href="common-link.html" slug="common-link">link</a>
       <a href="common-metadata.html" slug="common-metadata">metadata</a>
@@ -51,27 +55,28 @@
   <div class="content content--with-toc">
     <main class="content__main" role="main">
       <div class="content__inner">
-        <ds-schema-header title="DSDS Component Definitions" description="Definitions for the composite component document. A component document captures the identity and metadata of a reusable UI element. All structured documentation — anatomy, API, variants, states, design specifications, best practices, accessibility specs, use cases, and examples — lives in the unified `guidelines` array as typed guideline objects." source="entities/component.schema.json"></ds-schema-header>
-<ds-def-section name="component" anchor="component" description="Documentation for a single reusable UI component. The component's identity (name, description, status, category) lives at the top level. All structured documentation lives in the `guidelines` array — each entry is a typed guideline object (anatomy, api, variant, state, design-specifications, best-practice, accessibility, use-cases, example, etc.). This unified model replaces the previous architecture where each documentation concern was a separate top-level property." type="object">
+        <ds-schema-header title="DSDS Component Definitions" description="Definitions for the composite component document. A component document captures the identity and metadata of a reusable UI element. All structured docs — anatomy, API, variants, states, design specs, best practices, accessibility specs, use cases, and examples — live in the unified `guidelines` array as typed guideline objects." source="entities/component.schema.json"></ds-schema-header>
+<ds-def-section name="component" anchor="component" description="A single reusable UI component. Identity (name, description, status, category) lives at the top level. All structured docs live in the `guidelines` array — each entry is a typed guideline object (anatomy, api, variant, state, design-specifications, best-practice, accessibility, etc.). This unified model replaces separate top-level properties for each concern." type="object">
 <ds-prop-table>
   <ds-prop name="kind" type="&lt;ds-code inline&gt;&quot;component&quot;&lt;/ds-code&gt;" required>Identifies this entity as a component.</ds-prop>
   <ds-prop name="name" type="string" required>Machine-readable identifier (e.g., 'button', 'dialog', 'form-field', 'data-table'). MUST be unique within the documentation group.<br><small>Pattern: <ds-code inline>^[a-z][a-z0-9-]*$</ds-code></small></ds-prop>
-  <ds-prop name="displayName" type="string" required>Human-readable name for display in documentation (e.g., 'Button', 'Dialog', 'Form Field', 'Data Table').</ds-prop>
+  <ds-prop name="displayName" type="string" required>Human-readable name for display in docs (e.g., 'Button', 'Dialog', 'Form Field', 'Data Table').</ds-prop>
   <ds-prop name="description" type="&lt;ds-type-ref href=&quot;common-rich-text.html#richtext&quot;&gt;richText&lt;/ds-type-ref&gt;" required>A description of the component — what it is, what it does, and its role in the design system. CommonMark supported.</ds-prop>
-  <ds-prop name="aliases" type="string[]">Alternative names this component is known by across teams, tools, or legacy systems (e.g., ['btn', 'action-button', 'CTA']). Useful for search, migration mapping, and cross-referencing when different disciplines use different terminology for the same component.</ds-prop>
-  <ds-prop name="summary" type="string">A one-line, plain-text summary for compact display contexts such as list views, tooltips, search results, and card layouts. MUST NOT contain markup of any kind.</ds-prop>
-  <ds-prop name="thumbnail" type="&lt;ds-type-ref href=&quot;common-presentation.html#presentationimage&quot;&gt;presentationImage&lt;/ds-type-ref&gt;">A visual for compact display contexts such as list views, tooltips, search results, and card layouts.</ds-prop>
-  <ds-prop name="preview" type="&lt;ds-type-ref href=&quot;common-presentation.html#presentationimage&quot;&gt;presentationImage&lt;/ds-type-ref&gt; | &lt;ds-type-ref href=&quot;common-presentation.html#presentationvideo&quot;&gt;presentationVideo&lt;/ds-type-ref&gt; | &lt;ds-type-ref href=&quot;common-presentation.html#presentationcode&quot;&gt;presentationCode&lt;/ds-type-ref&gt; | &lt;ds-type-ref href=&quot;common-presentation.html#presentationurl&quot;&gt;presentationUrl&lt;/ds-type-ref&gt;">A visual or interactive preview of the component — a hero image, video walkthrough, code snippet, or link to a live demo. Accepts any presentation type defined in the presentation schema.</ds-prop>
+  <ds-prop name="extends" type="&lt;ds-type-ref href=&quot;common-extends.html#entityextends&quot;&gt;entityExtends&lt;/ds-type-ref&gt;">Declares that this component inherits from a base component in a parent design system. The base provides the foundational anatomy, API, variants, states, and guidelines. This component layers on top — adding variants, props, guidelines, or specialized behavior while inheriting everything else.</ds-prop>
+  <ds-prop name="aliases" type="string[]">Alternative names for this component across teams, tools, or legacy systems (e.g., ['btn', 'action-button', 'CTA']). Useful for search, migration mapping, and cross-referencing.</ds-prop>
+  <ds-prop name="summary" type="string">A one-line, plain-text summary for compact contexts such as list views, tooltips, search results, and cards. MUST NOT contain markup.</ds-prop>
+  <ds-prop name="thumbnail" type="&lt;ds-type-ref href=&quot;common-presentation.html#presentationimage&quot;&gt;presentationImage&lt;/ds-type-ref&gt;">A visual for compact display contexts such as list views, tooltips, search results, and cards.</ds-prop>
+  <ds-prop name="preview" type="&lt;ds-type-ref href=&quot;common-presentation.html#presentationimage&quot;&gt;presentationImage&lt;/ds-type-ref&gt; | &lt;ds-type-ref href=&quot;common-presentation.html#presentationvideo&quot;&gt;presentationVideo&lt;/ds-type-ref&gt; | &lt;ds-type-ref href=&quot;common-presentation.html#presentationcode&quot;&gt;presentationCode&lt;/ds-type-ref&gt; | &lt;ds-type-ref href=&quot;common-presentation.html#presentationurl&quot;&gt;presentationUrl&lt;/ds-type-ref&gt;">A visual or interactive preview of the component — a hero image, video walkthrough, code snippet, or link to a live demo. Accepts any presentation type.</ds-prop>
   <ds-prop name="status" type="&lt;ds-type-ref href=&quot;common-status.html#status&quot;&gt;status&lt;/ds-type-ref&gt;"></ds-prop>
-  <ds-prop name="since" type="string">The version of the design system in which this component was introduced (e.g., '1.0.0', '2.3.0').</ds-prop>
-  <ds-prop name="tags" type="string[]">Freeform keywords for categorization, search, and cross-referencing (e.g., 'action', 'form', 'interactive', 'navigation', 'feedback'). Tags are not constrained to a vocabulary — use them for any cross-cutting concern.</ds-prop>
+  <ds-prop name="since" type="string">The design system version in which this component was introduced (e.g., '1.0.0', '2.3.0').</ds-prop>
+  <ds-prop name="tags" type="string[]">Freeform keywords for categorization, search, and cross-referencing (e.g., 'action', 'form', 'interactive', 'navigation', 'feedback'). Tags are not constrained to a vocabulary.</ds-prop>
   <ds-prop name="category" type="string">Component classification within the design system's taxonomy (e.g., 'action', 'navigation', 'feedback', 'data-display', 'layout', 'form', 'overlay'). Used for organizing components into sections in documentation sites and component libraries.<br><small>Pattern: <ds-code inline>^[a-z][a-z0-9-]*$</ds-code></small></ds-prop>
-  <ds-prop name="guidelines" type="&lt;ds-type-ref href=&quot;guidelines-guideline.html#componentguideline&quot;&gt;componentGuideline&lt;/ds-type-ref&gt;[]">All structured documentation for this component, expressed as an ordered array of typed guideline objects. Components accept component-specific guideline types (anatomy, api, variants, states, design-specifications) and general types (best-practices, purpose, accessibility, examples). Each guideline has a `type` property that determines its shape. The ordering is significant: tools SHOULD preserve it for display. A typical component includes guidelines in roughly this order: examples (hero previews), anatomy, api, variants, states, design-specifications, purpose, best-practices, accessibility. However, authors are free to order guidelines in whatever way best serves their documentation. Internal artifact relationships (e.g., related components, parent/child) are expressed through the `links` array rather than as guidelines.</ds-prop>
-  <ds-prop name="links" type="&lt;ds-type-ref href=&quot;common-link.html#link&quot;&gt;link&lt;/ds-type-ref&gt;[]">External resource links, internal artifact references, and entity relationships — source code, design files, Storybook stories, documentation pages, npm packages, related components, parent/child relationships, and alternatives. Each link is a typed reference that can point to an external URL, an internal DSDS artifact by name, or both.</ds-prop>
+  <ds-prop name="guidelines" type="&lt;ds-type-ref href=&quot;guidelines-guideline.html#componentguideline&quot;&gt;componentGuideline&lt;/ds-type-ref&gt;[]">All structured docs for this component as an ordered array of typed guideline objects. Accepts component-specific types (anatomy, api, variants, states, design-specifications) and general types (best-practices, purpose, accessibility, examples). Each guideline has a `type` property that determines its shape. Ordering is significant: tools SHOULD preserve it for display. Express internal artifact relationships through the `links` array rather than as guidelines.</ds-prop>
+  <ds-prop name="links" type="&lt;ds-type-ref href=&quot;common-link.html#link&quot;&gt;link&lt;/ds-type-ref&gt;[]">External resource links, internal artifact references, and entity relationships — source code, design files, Storybook stories, docs pages, npm packages, related components, parent/child relationships, and alternatives. Each link points to an external URL, an internal DSDS artifact by name, or both.</ds-prop>
   <ds-prop name="$extensions" type="&lt;ds-type-ref href=&quot;common-extensions.html#extensions&quot;&gt;extensions&lt;/ds-type-ref&gt;"></ds-prop>
 </ds-prop-table>
 <ds-cross-refs><strong>References:</strong> 
-<ds-type-ref href="common-presentation.html#presentationimage">presentationImage</ds-type-ref>, <ds-type-ref href="common-rich-text.html#richtext">richText</ds-type-ref>, <ds-type-ref href="common-presentation.html#presentationvideo">presentationVideo</ds-type-ref>, <ds-type-ref href="common-presentation.html#presentationcode">presentationCode</ds-type-ref>, <ds-type-ref href="common-presentation.html#presentationurl">presentationUrl</ds-type-ref>, <ds-type-ref href="common-status.html#status">status</ds-type-ref>, <ds-type-ref href="guidelines-guideline.html#componentguideline">componentGuideline</ds-type-ref>, <ds-type-ref href="common-link.html#link">link</ds-type-ref>, <ds-type-ref href="common-extensions.html#extensions">extensions</ds-type-ref>
+<ds-type-ref href="common-extends.html#entityextends">entityExtends</ds-type-ref>, <ds-type-ref href="common-presentation.html#presentationimage">presentationImage</ds-type-ref>, <ds-type-ref href="common-rich-text.html#richtext">richText</ds-type-ref>, <ds-type-ref href="common-presentation.html#presentationvideo">presentationVideo</ds-type-ref>, <ds-type-ref href="common-presentation.html#presentationcode">presentationCode</ds-type-ref>, <ds-type-ref href="common-presentation.html#presentationurl">presentationUrl</ds-type-ref>, <ds-type-ref href="common-status.html#status">status</ds-type-ref>, <ds-type-ref href="guidelines-guideline.html#componentguideline">componentGuideline</ds-type-ref>, <ds-type-ref href="common-link.html#link">link</ds-type-ref>, <ds-type-ref href="common-extensions.html#extensions">extensions</ds-type-ref>
 </ds-cross-refs>
 <ds-def-example>
 <ds-code language="json" label="example">{
@@ -529,32 +534,33 @@
     },
     {
       &quot;kind&quot;: &quot;design-specifications&quot;,
-      &quot;tokens&quot;: [
-        &quot;button-background&quot;,
-        &quot;button-text-color&quot;,
-        &quot;button-border-color&quot;,
-        &quot;button-border-width&quot;,
-        &quot;button-border-radius&quot;,
-        &quot;button-padding-horizontal&quot;,
-        &quot;button-padding-vertical&quot;,
-        &quot;button-font-family&quot;,
-        &quot;button-font-size&quot;,
-        &quot;button-font-weight&quot;,
-        &quot;button-line-height&quot;,
-        &quot;button-icon-size&quot;,
-        &quot;button-icon-color&quot;,
-        &quot;button-icon-gap&quot;,
-        &quot;button-focus-ring-color&quot;,
-        &quot;button-focus-ring-width&quot;,
-        &quot;button-focus-ring-offset&quot;,
-        &quot;button-min-height&quot;,
-        &quot;button-min-width&quot;
-      ],
+      &quot;properties&quot;: {
+        &quot;background&quot;: &quot;button-bg&quot;,
+        &quot;text-color&quot;: &quot;button-text&quot;,
+        &quot;border-color&quot;: &quot;button-border&quot;,
+        &quot;border-width&quot;: &quot;1px&quot;,
+        &quot;border-radius&quot;: &quot;button-radius&quot;,
+        &quot;padding-horizontal&quot;: &quot;space-4&quot;,
+        &quot;padding-vertical&quot;: &quot;space-2&quot;,
+        &quot;font-family&quot;: &quot;font-family-body&quot;,
+        &quot;font-size&quot;: &quot;14px&quot;,
+        &quot;font-weight&quot;: &quot;500&quot;,
+        &quot;line-height&quot;: &quot;20px&quot;,
+        &quot;icon-size&quot;: &quot;16px&quot;,
+        &quot;icon-color&quot;: &quot;inherit&quot;,
+        &quot;icon-gap&quot;: &quot;8px&quot;,
+        &quot;focus-ring-color&quot;: &quot;color-focus&quot;,
+        &quot;focus-ring-width&quot;: &quot;2px&quot;,
+        &quot;focus-ring-offset&quot;: &quot;2px&quot;,
+        &quot;min-height&quot;: &quot;40px&quot;,
+        &quot;min-width&quot;: &quot;64px&quot;,
+        &quot;opacity&quot;: &quot;1&quot;
+      },
       &quot;spacing&quot;: {
         &quot;internal&quot;: {
-          &quot;container-horizontal&quot;: &quot;button-padding-horizontal&quot;,
-          &quot;container-vertical&quot;: &quot;button-padding-vertical&quot;,
-          &quot;icon-to-label&quot;: &quot;button-icon-gap&quot;
+          &quot;container-horizontal&quot;: &quot;space-4&quot;,
+          &quot;container-vertical&quot;: &quot;space-2&quot;,
+          &quot;icon-to-label&quot;: &quot;space-2&quot;
         },
         &quot;external&quot;: {
           &quot;button-to-button&quot;: &quot;space-3&quot;,
@@ -562,13 +568,13 @@
         }
       },
       &quot;sizing&quot;: {
-        &quot;minWidth&quot;: &quot;button-min-width&quot;,
-        &quot;minHeight&quot;: &quot;button-min-height&quot;
+        &quot;minWidth&quot;: &quot;64px&quot;,
+        &quot;minHeight&quot;: &quot;40px&quot;
       },
       &quot;typography&quot;: {
         &quot;label&quot;: {
           &quot;fontSize&quot;: &quot;14px&quot;,
-          &quot;fontWeight&quot;: &quot;400&quot;,
+          &quot;fontWeight&quot;: &quot;500&quot;,
           &quot;lineHeight&quot;: &quot;20px&quot;,
           &quot;typeToken&quot;: &quot;$body-compact-01&quot;
         }
@@ -581,6 +587,184 @@
         {
           &quot;breakpoint&quot;: &quot;medium&quot;,
           &quot;description&quot;: &quot;Buttons display at their intrinsic width. Button groups display inline.&quot;
+        }
+      ],
+      &quot;variants&quot;: [
+        {
+          &quot;name&quot;: &quot;primary&quot;,
+          &quot;description&quot;: &quot;High-emphasis filled button. Solid background with light text.&quot;,
+          &quot;properties&quot;: {
+            &quot;background&quot;: &quot;button-primary-bg&quot;,
+            &quot;text-color&quot;: &quot;button-primary-text&quot;,
+            &quot;border-color&quot;: &quot;transparent&quot;,
+            &quot;border-width&quot;: &quot;0px&quot;,
+            &quot;icon-color&quot;: &quot;button-primary-text&quot;
+          }
+        },
+        {
+          &quot;name&quot;: &quot;secondary&quot;,
+          &quot;description&quot;: &quot;Medium-emphasis outlined button. Transparent background with visible border.&quot;,
+          &quot;properties&quot;: {
+            &quot;background&quot;: &quot;transparent&quot;,
+            &quot;text-color&quot;: &quot;button-secondary-text&quot;,
+            &quot;border-color&quot;: &quot;button-secondary-border&quot;,
+            &quot;border-width&quot;: &quot;1px&quot;,
+            &quot;icon-color&quot;: &quot;button-secondary-text&quot;
+          }
+        },
+        {
+          &quot;name&quot;: &quot;ghost&quot;,
+          &quot;description&quot;: &quot;Low-emphasis button with no background or border.&quot;,
+          &quot;properties&quot;: {
+            &quot;background&quot;: &quot;transparent&quot;,
+            &quot;text-color&quot;: &quot;button-ghost-text&quot;,
+            &quot;border-color&quot;: &quot;transparent&quot;,
+            &quot;border-width&quot;: &quot;0px&quot;,
+            &quot;icon-color&quot;: &quot;button-ghost-text&quot;
+          }
+        },
+        {
+          &quot;name&quot;: &quot;danger&quot;,
+          &quot;description&quot;: &quot;High-emphasis destructive button.&quot;,
+          &quot;properties&quot;: {
+            &quot;background&quot;: &quot;button-danger-bg&quot;,
+            &quot;text-color&quot;: &quot;button-danger-text&quot;,
+            &quot;border-color&quot;: &quot;transparent&quot;,
+            &quot;border-width&quot;: &quot;0px&quot;,
+            &quot;icon-color&quot;: &quot;button-danger-text&quot;
+          }
+        }
+      ],
+      &quot;sizes&quot;: [
+        {
+          &quot;name&quot;: &quot;small&quot;,
+          &quot;description&quot;: &quot;Compact size — 32px height.&quot;,
+          &quot;properties&quot;: {
+            &quot;min-height&quot;: &quot;32px&quot;,
+            &quot;font-size&quot;: &quot;12px&quot;,
+            &quot;line-height&quot;: &quot;16px&quot;,
+            &quot;icon-size&quot;: &quot;14px&quot;,
+            &quot;icon-gap&quot;: &quot;4px&quot;,
+            &quot;padding-horizontal&quot;: &quot;space-3&quot;,
+            &quot;padding-vertical&quot;: &quot;space-1&quot;
+          },
+          &quot;spacing&quot;: {
+            &quot;internal&quot;: {
+              &quot;container-horizontal&quot;: &quot;space-3&quot;,
+              &quot;container-vertical&quot;: &quot;space-1&quot;,
+              &quot;icon-to-label&quot;: &quot;space-1&quot;
+            }
+          },
+          &quot;sizing&quot;: {
+            &quot;minWidth&quot;: &quot;44px&quot;,
+            &quot;minHeight&quot;: &quot;32px&quot;
+          },
+          &quot;typography&quot;: {
+            &quot;label&quot;: {
+              &quot;fontSize&quot;: &quot;12px&quot;,
+              &quot;fontWeight&quot;: &quot;500&quot;,
+              &quot;lineHeight&quot;: &quot;16px&quot;,
+              &quot;typeToken&quot;: &quot;$label-01&quot;
+            }
+          }
+        },
+        {
+          &quot;name&quot;: &quot;large&quot;,
+          &quot;description&quot;: &quot;Touch-optimized — 48px height.&quot;,
+          &quot;properties&quot;: {
+            &quot;min-height&quot;: &quot;48px&quot;,
+            &quot;font-size&quot;: &quot;16px&quot;,
+            &quot;line-height&quot;: &quot;24px&quot;,
+            &quot;icon-size&quot;: &quot;20px&quot;,
+            &quot;icon-gap&quot;: &quot;space-3&quot;,
+            &quot;padding-horizontal&quot;: &quot;space-5&quot;,
+            &quot;padding-vertical&quot;: &quot;space-3&quot;
+          },
+          &quot;spacing&quot;: {
+            &quot;internal&quot;: {
+              &quot;container-horizontal&quot;: &quot;space-5&quot;,
+              &quot;container-vertical&quot;: &quot;space-3&quot;,
+              &quot;icon-to-label&quot;: &quot;space-3&quot;
+            }
+          },
+          &quot;sizing&quot;: {
+            &quot;minWidth&quot;: &quot;80px&quot;,
+            &quot;minHeight&quot;: &quot;48px&quot;
+          },
+          &quot;typography&quot;: {
+            &quot;label&quot;: {
+              &quot;fontSize&quot;: &quot;16px&quot;,
+              &quot;fontWeight&quot;: &quot;500&quot;,
+              &quot;lineHeight&quot;: &quot;24px&quot;,
+              &quot;typeToken&quot;: &quot;$body-compact-02&quot;
+            }
+          }
+        }
+      ],
+      &quot;states&quot;: [
+        {
+          &quot;name&quot;: &quot;hover&quot;,
+          &quot;description&quot;: &quot;Pointer over the button. Background shifts to indicate interactivity.&quot;,
+          &quot;properties&quot;: {
+            &quot;background&quot;: &quot;button-hover-bg&quot;
+          }
+        },
+        {
+          &quot;name&quot;: &quot;active&quot;,
+          &quot;description&quot;: &quot;Button is being pressed.&quot;,
+          &quot;properties&quot;: {
+            &quot;background&quot;: &quot;button-active-bg&quot;
+          }
+        },
+        {
+          &quot;name&quot;: &quot;focus&quot;,
+          &quot;description&quot;: &quot;Keyboard focus. A 2px focus ring appears with a 2px offset.&quot;,
+          &quot;properties&quot;: {
+            &quot;focus-ring-color&quot;: &quot;color-focus&quot;,
+            &quot;focus-ring-width&quot;: &quot;2px&quot;,
+            &quot;focus-ring-offset&quot;: &quot;2px&quot;
+          }
+        },
+        {
+          &quot;name&quot;: &quot;disabled&quot;,
+          &quot;description&quot;: &quot;Non-interactive. Opacity reduced, pointer-events disabled. Uses aria-disabled.&quot;,
+          &quot;properties&quot;: {
+            &quot;opacity&quot;: &quot;0.4&quot;
+          }
+        },
+        {
+          &quot;name&quot;: &quot;loading&quot;,
+          &quot;description&quot;: &quot;Label replaced by spinner. Non-interactive but retains dimensions. Spinner respects prefers-reduced-motion.&quot;
+        }
+      ],
+      &quot;variantStates&quot;: [
+        {
+          &quot;variant&quot;: &quot;primary&quot;,
+          &quot;state&quot;: &quot;hover&quot;,
+          &quot;properties&quot;: {
+            &quot;background&quot;: &quot;button-primary-hover-bg&quot;
+          }
+        },
+        {
+          &quot;variant&quot;: &quot;primary&quot;,
+          &quot;state&quot;: &quot;active&quot;,
+          &quot;properties&quot;: {
+            &quot;background&quot;: &quot;button-primary-active-bg&quot;
+          }
+        },
+        {
+          &quot;variant&quot;: &quot;danger&quot;,
+          &quot;state&quot;: &quot;hover&quot;,
+          &quot;properties&quot;: {
+            &quot;background&quot;: &quot;button-danger-hover-bg&quot;
+          }
+        },
+        {
+          &quot;variant&quot;: &quot;danger&quot;,
+          &quot;state&quot;: &quot;active&quot;,
+          &quot;properties&quot;: {
+            &quot;background&quot;: &quot;button-danger-active-bg&quot;
+          }
         }
       ]
     },

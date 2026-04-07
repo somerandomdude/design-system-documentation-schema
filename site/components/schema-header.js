@@ -1,4 +1,4 @@
-import { createShadow, esc, BASE_RESET, FONT } from './_shared.js';
+import { createShadow, esc, BASE_RESET, FONT } from "./_shared.js";
 
 const SCHEMA_HEADER_CSS = `
   ${BASE_RESET}
@@ -18,14 +18,13 @@ const SCHEMA_HEADER_CSS = `
   }
   .source {
     font-size: var(--ds-font-size-sm);
-    color: var(--ds-color-text-faint);
     margin: 0 0 var(--ds-space-6);
   }
 `;
 
 export class DsSchemaHeader extends HTMLElement {
   static get observedAttributes() {
-    return ['title', 'description', 'source'];
+    return ["title", "description", "source"];
   }
   constructor() {
     super();
@@ -38,16 +37,17 @@ export class DsSchemaHeader extends HTMLElement {
     if (this.isConnected) this._render();
   }
   _render() {
-    var t = this.getAttribute('title') || '';
-    var d = this.getAttribute('description') || '';
-    var s = this.getAttribute('source') || '';
-    var html = '<h1>' + esc(t) + ' <slot></slot></h1>';
-    if (d) html += '<p class="desc">' + esc(d) + '</p>';
+    var t = this.getAttribute("title") || "";
+    var d = this.getAttribute("description") || "";
+    var s = this.getAttribute("source") || "";
+    var html = "<h1>" + esc(t) + " <slot></slot></h1>";
     if (s)
       html +=
         '<p class="source">Source: <ds-code inline>' +
         esc(s) +
-        '</ds-code></p>';
+        "</ds-code></p>";
+    if (d) html += '<p class="desc">' + esc(d) + "</p>";
+
     this._shadow.innerHTML = html;
   }
 }

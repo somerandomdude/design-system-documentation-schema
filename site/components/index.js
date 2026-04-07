@@ -37,6 +37,7 @@ import { DsStepNumber } from "./step-number.js";
 import { DsCallout } from "./callout.js";
 import { DsCardGrid } from "./card-grid.js";
 import { DsPageFooter } from "./page-footer.js";
+import { DsTag } from "./tag.js";
 
 const registry = [
   ["ds-button", DsButton],
@@ -71,6 +72,7 @@ const registry = [
   ["ds-callout", DsCallout],
   ["ds-card-grid", DsCardGrid],
   ["ds-page-footer", DsPageFooter],
+  ["ds-tag", DsTag],
 ];
 
 for (const [name, ctor] of registry) {

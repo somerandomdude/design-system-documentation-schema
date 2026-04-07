@@ -2,27 +2,27 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://designsystemdocspec.org/v0.1/theme.schema.json",
   "title": "DSDS Theme Definition",
-  "description": "A theme provides alternative token values for a named context such as a color mode, density setting, or brand variant. Themes reference existing tokens defined elsewhere in the system and supply override values without redefining the token's identity, documentation, or API mappings. This separation keeps the token catalog as the single source of truth for what a token is, while themes describe how token values change across contexts. Internal artifact relationships (e.g., related themes, parent styles) are expressed through the unified `links` array rather than a dedicated guideline type.",
+  "description": "A theme provides alternative token values for a named context such as a color mode, density setting, or brand variant. Themes reference existing tokens and supply override values without redefining the token's identity, docs, or API mappings. This keeps the token catalog as the single source of truth for what a token is. Themes describe how token values change across contexts. Express internal artifact relationships through the unified `links` array rather than a dedicated guideline type.",
   "$defs": {
     "tokenOverride": {
       "type": "object",
-      "description": "An alternative value for a single token within a theme. A simple mapping of a token name to its theme-specific value.",
+      "description": "An alternative value for a single token within a theme. Maps a token name to its theme-specific value.",
       "required": ["token", "value"],
       "properties": {
         "token": {
           "type": "string",
-          "description": "The name of the token being overridden. MUST match the `name` of a token defined elsewhere in the system. Token names are intentionally unconstrained by a pattern to accommodate DTCG and design tool naming conventions (e.g., 'color-text-primary', 'color.text.primary', 'color/text/primary')."
+          "description": "The name of the token being overridden. MUST match the `name` of a token defined elsewhere in the system. Token names are unconstrained by a pattern to support DTCG and design tool naming conventions (e.g., 'color-text-primary', 'color.text.primary', 'color/text/primary')."
         },
         "value": {
           "$ref": "token.schema.json#/$defs/tokenValue",
-          "description": "The override value for this token within the theme. Follows the same structure as token.value \u2014 a displayable representation containing a resolved value, alias reference, and/or DTCG file pointer."
+          "description": "The override value for this token within the theme. Follows the same structure as token.value — a displayable representation containing a resolved value, alias reference, and/or DTCG file pointer."
         }
       },
       "additionalProperties": false
     },
     "theme": {
       "type": "object",
-      "description": "Documentation for a theme \u2014 a named set of token value overrides that adapt the design system to a specific context. Themes are commonly used for color modes (light, dark, high-contrast), density settings (compact, comfortable), brand variants, or product-specific customizations. A theme does not redefine tokens; it references existing tokens and provides alternative values for them. The token catalog remains the authoritative source for token identity, type, documentation, and API mappings.",
+      "description": "Docs for a theme — a named set of token value overrides that adapt the design system to a specific context. Use themes for color modes (light, dark, high-contrast), density settings (compact, comfortable), brand variants, or product-specific customizations. A theme does not redefine tokens; it references existing tokens and provides alternative values. The token catalog remains the authoritative source for token identity, type, docs, and API mappings.",
       "required": ["kind", "name", "displayName", "description", "overrides"],
       "properties": {
         "kind": {
@@ -44,22 +44,22 @@
           "items": {
             "type": "string"
           },
-          "description": "Alternative names this artifact is known by across teams, tools, or legacy systems. Useful for search, migration mapping, and cross-referencing."
+          "description": "Alternative names for this artifact across teams, tools, or legacy systems. Useful for search, migration mapping, and cross-referencing."
         },
         "summary": {
           "type": "string",
-          "description": "A one-line, plain-text summary for compact display contexts such as list views, tooltips, search results, and card layouts. MUST NOT contain markup of any kind."
+          "description": "A one-line, plain-text summary for compact display contexts such as list views, tooltips, search results, and cards. MUST NOT contain markup."
         },
         "thumbnail": {
           "$ref": "../common/presentation.schema.json#/$defs/presentationImage",
-          "description": "A visual for compact display contexts such as list views, tooltips, search results, and card layouts."
+          "description": "A visual for compact display contexts such as list views, tooltips, search results, and cards."
         },
         "description": {
           "$ref": "../common/rich-text.schema.json#/$defs/richText",
-          "description": "A description of the theme \u2014 what context it adapts the system to, when to apply it, and how it differs from the default token values. CommonMark supported."
+          "description": "A description of the theme — what context it adapts the system to, when to apply it, and how it differs from default token values. CommonMark supported."
         },
         "preview": {
-          "description": "A visual or interactive preview of the component — a hero image, video walkthrough, code snippet, or link to a live demo. Accepts any presentation type defined in the presentation schema.",
+          "description": "A visual or interactive preview — a hero image, video walkthrough, code snippet, or link to a live demo. Accepts any presentation type from the presentation schema.",
           "oneOf": [
             {
               "$ref": "../common/presentation.schema.json#/$defs/presentationImage"
@@ -80,7 +80,7 @@
         },
         "since": {
           "type": "string",
-          "description": "The version of the design system in which this theme was introduced."
+          "description": "The design system version in which this theme was introduced."
         },
         "tags": {
           "type": "array",
@@ -95,7 +95,7 @@
         },
         "overrides": {
           "type": "array",
-          "description": "The set of token value overrides that define this theme. Each entry is a simple mapping of a token name to its theme-specific value. Only tokens whose values differ from the default need to be listed \u2014 unlisted tokens retain their default values.",
+          "description": "Token value overrides that define this theme. Each entry maps a token name to its theme-specific value. Only list tokens whose values differ from the default — unlisted tokens retain their default values.",
           "items": {
             "$ref": "#/$defs/tokenOverride"
           },
@@ -103,14 +103,14 @@
         },
         "guidelines": {
           "type": "array",
-          "description": "All structured documentation for this theme, expressed as an ordered array of typed guideline objects. Themes accept general guideline types only (best-practices, use-cases, accessibility, examples). Each guideline has a `type` property that determines its shape. The ordering is significant: tools SHOULD preserve it for display.",
+          "description": "All structured docs for this theme as an ordered array of typed guideline objects. Themes accept general guideline types only (best-practices, use-cases, accessibility, examples). Each guideline has a `type` property that determines its shape. Ordering is significant: tools SHOULD preserve it for display.",
           "items": {
             "$ref": "../guidelines/guideline.schema.json#/$defs/tokenGuideline"
           }
         },
         "links": {
           "type": "array",
-          "description": "External resource links, related artifact references, and internal relationships. Each link is a typed reference that can point to an external URL, an internal DSDS artifact by name, or both.",
+          "description": "External resource links, related artifact references, and internal relationships. Each link can point to an external URL, an internal DSDS artifact by name, or both.",
           "items": {
             "$ref": "../common/link.schema.json#/$defs/link"
           }

@@ -44,8 +44,8 @@ const SIDEBAR_CSS = `
     padding: var(--ds-space-5) var(--ds-space-4) var(--ds-space-3);
     font-size: var(--ds-font-size-base);
     font-weight: var(--ds-font-weight-bold);
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
+    letter-spacing: 0;
+    text-transform: none;
     color: var(--ds-color-text-on-dark-heading);
   }
 

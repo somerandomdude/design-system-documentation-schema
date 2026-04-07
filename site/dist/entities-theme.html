@@ -6,17 +6,21 @@
   <title>DSDS Theme Definition — DSDS 0.1</title>
   <link rel="stylesheet" href="tokens.css">
   <link rel="stylesheet" href="style.css">
-  <script src="components.js?v=2"></script>
+  <script src="components.js"></script>
 </head>
 <body>
   <ds-nav-toggle target="ds-spec-nav"></ds-nav-toggle>
-  <ds-spec-nav title="DSDS 0.1" title-href="index.html" active="entities-theme">
+  <ds-spec-nav title="Design system documentation standard 0.1" title-href="index.html" active="entities-theme">
     <a href="index.html" slug="index">Overview</a>
-    <a href="quickstart.html" slug="quickstart">Quick Start</a>
-    <a href="samples.html" slug="samples">Interactive Samples</a>
-    <a href="root.html" slug="root">Root Schema</a>
+    <a href="quickstart.html" slug="quickstart">Quick start</a>
+    <a href="schema-architecture.html" slug="schema-architecture">Schema architecture</a>
+    <a href="samples.html" slug="samples">Interactive samples</a>
+    <ds-nav-group label="Documentation">
+      <a href="root.html" slug="root">Root schema</a>
+    </ds-nav-group>
     <ds-nav-group label="Common">
       <a href="common-example.html" slug="common-example">example</a>
+      <a href="common-extends.html" slug="common-extends">extends</a>
       <a href="common-extensions.html" slug="common-extensions">extensions</a>
       <a href="common-link.html" slug="common-link">link</a>
       <a href="common-metadata.html" slug="common-metadata">metadata</a>
@@ -51,7 +55,7 @@
   <div class="content content--with-toc">
     <main class="content__main" role="main">
       <div class="content__inner">
-        <ds-schema-header title="DSDS Theme Definition" description="A theme provides alternative token values for a named context such as a color mode, density setting, or brand variant. Themes reference existing tokens defined elsewhere in the system and supply override values without redefining the token's identity, documentation, or API mappings. This separation keeps the token catalog as the single source of truth for what a token is, while themes describe how token values change across contexts. Internal artifact relationships (e.g., related themes, parent styles) are expressed through the unified `links` array rather than a dedicated guideline type." source="entities/theme.schema.json"></ds-schema-header>
+        <ds-schema-header title="DSDS Theme Definition" description="A theme provides alternative token values for a named context such as a color mode, density setting, or brand variant. Themes reference existing tokens and supply override values without redefining the token's identity, docs, or API mappings. This keeps the token catalog as the single source of truth for what a token is. Themes describe how token values change across contexts. Express internal artifact relationships through the unified `links` array rather than a dedicated guideline type." source="entities/theme.schema.json"></ds-schema-header>
 <ds-def-index>
 <p><strong>2 definitions</strong> in this file:</p>
 <ul>
@@ -59,9 +63,9 @@
 <li><a href="#theme"><ds-code inline>theme</ds-code></a></li>
 </ul>
 </ds-def-index>
-<ds-def-section name="tokenOverride" anchor="tokenoverride" description="An alternative value for a single token within a theme. A simple mapping of a token name to its theme-specific value." type="object">
+<ds-def-section name="tokenOverride" anchor="tokenoverride" description="An alternative value for a single token within a theme. Maps a token name to its theme-specific value." type="object">
 <ds-prop-table>
-  <ds-prop name="token" type="string" required>The name of the token being overridden. MUST match the `name` of a token defined elsewhere in the system. Token names are intentionally unconstrained by a pattern to accommodate DTCG and design tool naming conventions (e.g., 'color-text-primary', 'color.text.primary', 'color/text/primary').</ds-prop>
+  <ds-prop name="token" type="string" required>The name of the token being overridden. MUST match the `name` of a token defined elsewhere in the system. Token names are unconstrained by a pattern to support DTCG and design tool naming conventions (e.g., 'color-text-primary', 'color.text.primary', 'color/text/primary').</ds-prop>
   <ds-prop name="value" type="&lt;ds-type-ref href=&quot;entities-token.html#tokenvalue&quot;&gt;tokenValue&lt;/ds-type-ref&gt;" required>The override value for this token within the theme. Follows the same structure as token.value — a displayable representation containing a resolved value, alias reference, and/or DTCG file pointer.</ds-prop>
 </ds-prop-table>
 <ds-cross-refs><strong>References:</strong> 
@@ -93,23 +97,23 @@
 ]</ds-code>
 </ds-def-example>
 </ds-def-section>
-<ds-def-section name="theme" anchor="theme" description="Documentation for a theme — a named set of token value overrides that adapt the design system to a specific context. Themes are commonly used for color modes (light, dark, high-contrast), density settings (compact, comfortable), brand variants, or product-specific customizations. A theme does not redefine tokens; it references existing tokens and provides alternative values for them. The token catalog remains the authoritative source for token identity, type, documentation, and API mappings." type="object">
+<ds-def-section name="theme" anchor="theme" description="Docs for a theme — a named set of token value overrides that adapt the design system to a specific context. Use themes for color modes (light, dark, high-contrast), density settings (compact, comfortable), brand variants, or product-specific customizations. A theme does not redefine tokens; it references existing tokens and provides alternative values. The token catalog remains the authoritative source for token identity, type, docs, and API mappings." type="object">
 <ds-prop-table>
   <ds-prop name="kind" type="&lt;ds-code inline&gt;&quot;theme&quot;&lt;/ds-code&gt;" required>Identifies this entity as a theme.</ds-prop>
   <ds-prop name="name" type="string" required>Machine-readable identifier for the theme (e.g., 'dark', 'high-contrast', 'compact', 'brand-sub-brand').<br><small>Pattern: <ds-code inline>^[a-z][a-z0-9-]*$</ds-code></small></ds-prop>
   <ds-prop name="displayName" type="string" required>Human-readable name for the theme (e.g., 'Dark Mode', 'High Contrast', 'Compact Density').</ds-prop>
-  <ds-prop name="description" type="&lt;ds-type-ref href=&quot;common-rich-text.html#richtext&quot;&gt;richText&lt;/ds-type-ref&gt;" required>A description of the theme — what context it adapts the system to, when to apply it, and how it differs from the default token values. CommonMark supported.</ds-prop>
-  <ds-prop name="overrides" type="&lt;ds-type-ref href=&quot;entities-theme.html#tokenoverride&quot;&gt;tokenOverride&lt;/ds-type-ref&gt;[]" required>The set of token value overrides that define this theme. Each entry is a simple mapping of a token name to its theme-specific value. Only tokens whose values differ from the default need to be listed — unlisted tokens retain their default values.<br><small>Min items: 1</small></ds-prop>
-  <ds-prop name="aliases" type="string[]">Alternative names this artifact is known by across teams, tools, or legacy systems. Useful for search, migration mapping, and cross-referencing.</ds-prop>
-  <ds-prop name="summary" type="string">A one-line, plain-text summary for compact display contexts such as list views, tooltips, search results, and card layouts. MUST NOT contain markup of any kind.</ds-prop>
-  <ds-prop name="thumbnail" type="&lt;ds-type-ref href=&quot;common-presentation.html#presentationimage&quot;&gt;presentationImage&lt;/ds-type-ref&gt;">A visual for compact display contexts such as list views, tooltips, search results, and card layouts.</ds-prop>
-  <ds-prop name="preview" type="&lt;ds-type-ref href=&quot;common-presentation.html#presentationimage&quot;&gt;presentationImage&lt;/ds-type-ref&gt; | &lt;ds-type-ref href=&quot;common-presentation.html#presentationvideo&quot;&gt;presentationVideo&lt;/ds-type-ref&gt; | &lt;ds-type-ref href=&quot;common-presentation.html#presentationcode&quot;&gt;presentationCode&lt;/ds-type-ref&gt; | &lt;ds-type-ref href=&quot;common-presentation.html#presentationurl&quot;&gt;presentationUrl&lt;/ds-type-ref&gt;">A visual or interactive preview of the component — a hero image, video walkthrough, code snippet, or link to a live demo. Accepts any presentation type defined in the presentation schema.</ds-prop>
+  <ds-prop name="description" type="&lt;ds-type-ref href=&quot;common-rich-text.html#richtext&quot;&gt;richText&lt;/ds-type-ref&gt;" required>A description of the theme — what context it adapts the system to, when to apply it, and how it differs from default token values. CommonMark supported.</ds-prop>
+  <ds-prop name="overrides" type="&lt;ds-type-ref href=&quot;entities-theme.html#tokenoverride&quot;&gt;tokenOverride&lt;/ds-type-ref&gt;[]" required>Token value overrides that define this theme. Each entry maps a token name to its theme-specific value. Only list tokens whose values differ from the default — unlisted tokens retain their default values.<br><small>Min items: 1</small></ds-prop>
+  <ds-prop name="aliases" type="string[]">Alternative names for this artifact across teams, tools, or legacy systems. Useful for search, migration mapping, and cross-referencing.</ds-prop>
+  <ds-prop name="summary" type="string">A one-line, plain-text summary for compact display contexts such as list views, tooltips, search results, and cards. MUST NOT contain markup.</ds-prop>
+  <ds-prop name="thumbnail" type="&lt;ds-type-ref href=&quot;common-presentation.html#presentationimage&quot;&gt;presentationImage&lt;/ds-type-ref&gt;">A visual for compact display contexts such as list views, tooltips, search results, and cards.</ds-prop>
+  <ds-prop name="preview" type="&lt;ds-type-ref href=&quot;common-presentation.html#presentationimage&quot;&gt;presentationImage&lt;/ds-type-ref&gt; | &lt;ds-type-ref href=&quot;common-presentation.html#presentationvideo&quot;&gt;presentationVideo&lt;/ds-type-ref&gt; | &lt;ds-type-ref href=&quot;common-presentation.html#presentationcode&quot;&gt;presentationCode&lt;/ds-type-ref&gt; | &lt;ds-type-ref href=&quot;common-presentation.html#presentationurl&quot;&gt;presentationUrl&lt;/ds-type-ref&gt;">A visual or interactive preview — a hero image, video walkthrough, code snippet, or link to a live demo. Accepts any presentation type from the presentation schema.</ds-prop>
   <ds-prop name="status" type="&lt;ds-type-ref href=&quot;common-status.html#status&quot;&gt;status&lt;/ds-type-ref&gt;"></ds-prop>
-  <ds-prop name="since" type="string">The version of the design system in which this theme was introduced.</ds-prop>
+  <ds-prop name="since" type="string">The design system version in which this theme was introduced.</ds-prop>
   <ds-prop name="tags" type="string[]">Freeform keywords for categorization and search (e.g., 'dark-mode', 'accessibility', 'brand').</ds-prop>
   <ds-prop name="category" type="string">The category of adaptation this theme represents. Common values: 'color-mode' (light/dark/high-contrast), 'density' (compact/comfortable/spacious), 'brand' (sub-brand or partner theming), 'product' (product-specific overrides). Custom values are permitted and SHOULD be lowercase kebab-case.</ds-prop>
-  <ds-prop name="guidelines" type="&lt;ds-type-ref href=&quot;guidelines-guideline.html#tokenguideline&quot;&gt;tokenGuideline&lt;/ds-type-ref&gt;[]">All structured documentation for this theme, expressed as an ordered array of typed guideline objects. Themes accept general guideline types only (best-practices, use-cases, accessibility, examples). Each guideline has a `type` property that determines its shape. The ordering is significant: tools SHOULD preserve it for display.</ds-prop>
-  <ds-prop name="links" type="&lt;ds-type-ref href=&quot;common-link.html#link&quot;&gt;link&lt;/ds-type-ref&gt;[]">External resource links, related artifact references, and internal relationships. Each link is a typed reference that can point to an external URL, an internal DSDS artifact by name, or both.</ds-prop>
+  <ds-prop name="guidelines" type="&lt;ds-type-ref href=&quot;guidelines-guideline.html#tokenguideline&quot;&gt;tokenGuideline&lt;/ds-type-ref&gt;[]">All structured docs for this theme as an ordered array of typed guideline objects. Themes accept general guideline types only (best-practices, use-cases, accessibility, examples). Each guideline has a `type` property that determines its shape. Ordering is significant: tools SHOULD preserve it for display.</ds-prop>
+  <ds-prop name="links" type="&lt;ds-type-ref href=&quot;common-link.html#link&quot;&gt;link&lt;/ds-type-ref&gt;[]">External resource links, related artifact references, and internal relationships. Each link can point to an external URL, an internal DSDS artifact by name, or both.</ds-prop>
   <ds-prop name="$extensions" type="&lt;ds-type-ref href=&quot;common-extensions.html#extensions&quot;&gt;extensions&lt;/ds-type-ref&gt;"></ds-prop>
 </ds-prop-table>
 <ds-cross-refs><strong>References:</strong> 

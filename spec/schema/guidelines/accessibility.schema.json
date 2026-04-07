@@ -2,11 +2,11 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://designsystemdocspec.org/v0.1/guidelines/accessibility.schema.json",
   "title": "DSDS Accessibility Guideline",
-  "description": "Documents the accessibility specifications for an artifact — keyboard interactions, ARIA attributes, screen reader behavior, focus management, color contrast pairs, and motion considerations. This guideline type captures structured, machine-readable accessibility data. For actionable accessibility rules with rationale (e.g., 'Provide an aria-label for icon-only buttons'), use a best-practice guideline with category 'accessibility' instead.",
+  "description": "Documents accessibility specs for an artifact — keyboard interactions, ARIA attributes, screen reader behavior, focus management, color contrast pairs, and motion considerations. Captures structured, machine-readable accessibility data. For actionable accessibility rules with rationale, use a best-practice guideline with category 'accessibility' instead.",
   "$defs": {
     "keyboardInteraction": {
       "type": "object",
-      "description": "A keyboard interaction specification documenting what happens when a specific key or key combination is pressed.",
+      "description": "A keyboard interaction spec documenting what happens when a specific key or key combination is pressed.",
       "required": ["key", "action"],
       "properties": {
         "key": {
@@ -19,14 +19,14 @@
         },
         "context": {
           "type": "string",
-          "description": "Any preconditions for this interaction (e.g., 'When the menu is open', 'When focus is on the trigger element', 'When the component is not disabled'). When omitted, the interaction applies in all contexts."
+          "description": "Preconditions for this interaction (e.g., 'When the menu is open', 'When focus is on the trigger element', 'When the component is not disabled'). When omitted, the interaction applies in all contexts."
         }
       },
       "additionalProperties": false
     },
     "ariaAttribute": {
       "type": "object",
-      "description": "Documentation for an ARIA attribute used by the artifact, explaining what it communicates and when it should be applied.",
+      "description": "An ARIA attribute used by the artifact — what it communicates and when to apply it.",
       "required": ["attribute", "description"],
       "properties": {
         "attribute": {
@@ -39,19 +39,19 @@
         },
         "description": {
           "$ref": "../common/rich-text.schema.json#/$defs/richText",
-          "description": "What this attribute communicates to assistive technology and when it should be applied. Include guidance on dynamic value changes if applicable."
+          "description": "What this attribute communicates to assistive technology and when to apply it. Include guidance on dynamic value changes when applicable."
         },
         "required": {
           "type": "boolean",
           "default": false,
-          "description": "Whether this attribute is always required on the artifact. Defaults to false when omitted, indicating the attribute is conditionally required or optional."
+          "description": "Whether this attribute is always required on the artifact. Defaults to false, meaning the attribute is conditionally required or optional."
         }
       },
       "additionalProperties": false
     },
     "colorContrast": {
       "type": "object",
-      "description": "A color contrast specification documenting the measured contrast ratio between a foreground and background color pair and the WCAG conformance level it meets.",
+      "description": "A color contrast spec: the measured contrast ratio between a foreground and background color pair and the WCAG conformance level it meets.",
       "required": ["foreground", "background", "contrastRatio", "level"],
       "properties": {
         "foreground": {
@@ -64,7 +64,7 @@
         },
         "contrastRatio": {
           "type": "number",
-          "description": "The contrast ratio as a decimal number (e.g., 4.5, 7.2, 15.3). Represents the ratio N:1 where N is this value. Tools MAY format for display as 'N:1'.",
+          "description": "The contrast ratio as a decimal (e.g., 4.5, 7.2, 15.3). Represents the ratio N:1 where N is this value. Tools MAY format for display as 'N:1'.",
           "exclusiveMinimum": 0
         },
         "level": {
@@ -81,13 +81,13 @@
     },
     "accessibility": {
       "type": "object",
-      "description": "Structured accessibility specifications for an artifact. Documents keyboard behavior, ARIA attributes, screen reader announcements, focus management, color contrast pairs, and motion considerations. This is distinct from best-practice guidelines — accessibility guidelines capture machine-readable specifications, while best practices capture actionable rules with rationale. Both can coexist in the same guidelines array.",
+      "description": "Structured accessibility specs for an artifact. Documents keyboard behavior, ARIA attributes, screen reader announcements, focus management, color contrast pairs, and motion considerations. Distinct from best-practice guidelines — accessibility guidelines capture machine-readable specs, while best practices capture actionable rules with rationale. Both can coexist in the same guidelines array.",
       "required": ["kind"],
       "properties": {
         "kind": {
           "type": "string",
           "const": "accessibility",
-          "description": "Identifies this guideline as an accessibility specification."
+          "description": "Identifies this guideline as an accessibility spec."
         },
         "wcagLevel": {
           "type": "string",
@@ -96,25 +96,25 @@
         },
         "keyboardInteraction": {
           "type": "array",
-          "description": "Keyboard interaction specifications. Documents what happens when each key or key combination is pressed while the artifact has focus.",
+          "description": "Keyboard interaction specs — what happens when each key or key combination is pressed while the artifact has focus.",
           "items": {
             "$ref": "#/$defs/keyboardInteraction"
           }
         },
         "ariaAttributes": {
           "type": "array",
-          "description": "ARIA attribute documentation. Lists every ARIA attribute the artifact uses, what it communicates, and when it should be applied.",
+          "description": "ARIA attribute docs. Lists every ARIA attribute the artifact uses, what it communicates, and when to apply it.",
           "items": {
             "$ref": "#/$defs/ariaAttribute"
           }
         },
         "screenReaderBehavior": {
           "$ref": "../common/rich-text.schema.json#/$defs/richText",
-          "description": "How the artifact is announced by screen readers in various states. Include announcements for default, focused, disabled, loading, expanded, and any other relevant states. Name specific screen readers (VoiceOver, NVDA, JAWS) when behavior differs."
+          "description": "How the artifact is announced by screen readers in various states. Include announcements for default, focused, disabled, loading, expanded, and other relevant states. Name specific screen readers (VoiceOver, NVDA, JAWS) when behavior differs."
         },
         "focusManagement": {
           "$ref": "../common/rich-text.schema.json#/$defs/richText",
-          "description": "How focus moves into, within, and out of the artifact. Document focus trapping (for modals/dialogs), focus restoration (when dismissing overlays), and any programmatic focus movement. Describe both keyboard and programmatic focus behavior."
+          "description": "How focus moves into, within, and out of the artifact. Document focus trapping (for modals/dialogs), focus restoration (when dismissing overlays), and programmatic focus movement. Describe both keyboard and programmatic focus behavior."
         },
         "colorContrast": {
           "type": "array",
@@ -125,7 +125,7 @@
         },
         "motionConsiderations": {
           "$ref": "../common/rich-text.schema.json#/$defs/richText",
-          "description": "How the artifact respects the prefers-reduced-motion media query. Document what animations or transitions are present and what happens when reduced motion is preferred (e.g., 'The loading spinner is replaced with a static ellipsis indicator')."
+          "description": "How the artifact respects the prefers-reduced-motion media query. Document what animations or transitions exist and what happens when reduced motion is preferred (e.g., 'The loading spinner is replaced with a static ellipsis indicator')."
         }
       },
       "additionalProperties": false

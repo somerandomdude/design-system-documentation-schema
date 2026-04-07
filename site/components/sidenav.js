@@ -21,8 +21,8 @@ const SIDENAV_CSS = `
   .sidenav__title {
     font-size: var(--ds-font-size-base);
     font-weight: 700;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
+    letter-spacing: 0;
+    text-transform: none;
     color: var(--ds-color-bg);
     padding: 0 var(--ds-space-4);
     margin-bottom: var(--ds-space-5);
@@ -71,7 +71,7 @@ const SIDENAV_CSS = `
     font-size: var(--ds-font-size-xs);
     font-weight: 600;
     letter-spacing: var(--ds-tracking-widest);
-    text-transform: uppercase;
+    text-transform: none;
     cursor: pointer;
     text-align: left;
     transition: color var(--ds-transition-fast);

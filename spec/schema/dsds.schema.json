@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://designsystemdocspec.org/v0.1/dsds.schema.json",
   "title": "Design System Documentation Standard (DSDS) v0.1",
-  "description": "A standard, machine-readable format for design system documentation covering components, design tokens, token groups, themes, styles, and patterns. A DSDS document contains one or more documentation groups — named collections of typed entities. Each entity carries a `kind` discriminator that identifies it as a component, token, token-group, theme, style, or pattern. Entity schemas are defined in entities/. Guideline schemas are defined in guidelines/. Common schemas are defined in common/.",
+  "description": "A machine-readable format for design system documentation covering components, design tokens, token groups, themes, styles, and patterns. A DSDS document contains one or more documentation groups — named collections of typed entities. Each entity carries a `kind` discriminator identifying it as a component, token, token-group, theme, style, or pattern. Entity schemas are in entities/. Guideline schemas are in guidelines/. Common schemas are in common/.",
   "type": "object",
   "required": ["dsdsVersion", "documentation"],
   "properties": {
@@ -13,18 +13,18 @@
     "dsdsVersion": {
       "type": "string",
       "const": "0.1",
-      "description": "The version of the DSDS specification this document conforms to."
+      "description": "The DSDS spec version this document conforms to."
     },
     "metadata": {
       "$ref": "common/metadata.schema.json#/$defs/metadata"
     },
     "extends": {
       "$ref": "common/extends.schema.json#/$defs/documentExtends",
-      "description": "Declares that this DSDS document extends (inherits from) another DSDS document — typically a core design system. The base document provides the foundational set of entities. This document layers on top, adding new entities or providing extended versions of base entities. Enables systems-of-systems architectures where product-specific or brand-specific extension systems inherit from a shared core."
+      "description": "Declares that this DSDS document inherits from another DSDS document — typically a core design system. The base document provides the foundational entities. This document layers on top, adding or extending entities. Enables systems-of-systems architectures where product- or brand-specific systems inherit from a shared core."
     },
     "purpose": {
       "type": "object",
-      "description": "The purpose of the design system as a whole — why it exists, what problems it solves, who it serves, and when teams should or should not adopt it. Helps stakeholders, new team members, and external consumers understand the system's intent before exploring individual components or tokens.",
+      "description": "The purpose of the design system as a whole — why it exists, what problems it solves, and who it serves. Helps stakeholders, new team members, and external consumers understand the system's intent before exploring individual components or tokens.",
       "properties": {
         "description": {
           "$ref": "common/rich-text.schema.json#/$defs/richText",
@@ -32,7 +32,7 @@
         },
         "useCases": {
           "type": "array",
-          "description": "Scenario-driven guidance describing when this design system is or is not the right choice. Positive cases describe situations where the system should be adopted. Negative cases describe situations where a different approach is more appropriate, with an explanation of why.",
+          "description": "Scenario-driven guidance describing when this design system is or is not the right choice. Positive cases describe when the system should be adopted. Negative cases describe when a different approach fits better, and why.",
           "items": {
             "$ref": "common/purpose.schema.json#/$defs/useCase"
           }
@@ -42,14 +42,14 @@
     },
     "bestPractices": {
       "type": "array",
-      "description": "System-level best practices that apply across the entire design system — high-altitude guidance for teams adopting, contributing to, or consuming the system. These are not component-specific rules (those live in each entity's guidelines array) but cross-cutting principles like 'always use semantic tokens instead of raw values', 'test all components at 200% zoom', or 'do not modify token values at the component level'. Each entry is a self-contained rule paired with a rationale.",
+      "description": "System-level best practices that apply across the entire design system — broad guidance for teams adopting, contributing to, or consuming the system. These are not component-specific rules (those live in each entity's guidelines array) but cross-cutting principles like 'always use semantic tokens instead of raw values' or 'test all components at 200% zoom'. Each entry is a self-contained rule paired with a rationale.",
       "items": {
         "$ref": "guidelines/best-practice.schema.json#/$defs/bestPracticeEntry"
       }
     },
     "documentation": {
       "type": "array",
-      "description": "One or more documentation groups. Each group is a named collection of typed entities — components, tokens, token groups, themes, styles, and/or patterns. Multiple groups allow a single DSDS file to organize artifacts into logical sections (e.g., one group for foundations, another for components).",
+      "description": "One or more documentation groups. Each group is a named collection of typed entities — components, tokens, token groups, themes, styles, and/or patterns. Multiple groups let a single DSDS file organize entities into logical sections (e.g., one group for foundations, another for components).",
       "items": {
         "$ref": "#/$defs/documentationGroup"
       },
@@ -63,7 +63,7 @@
   "$defs": {
     "documentationGroup": {
       "type": "object",
-      "description": "A named collection of design system documentation entities. Contains a single `items` array of typed entities — components, tokens, token groups, themes, styles, and/or patterns mixed freely in any order. Each entity is identified by its `kind` discriminator property. At least one entity must be present.",
+      "description": "A named collection of design system documentation entities. Contains a single `items` array of typed entities — components, tokens, token groups, themes, styles, and/or patterns mixed in any order. Each entity is identified by its `kind` discriminator. At least one entity must be present.",
       "required": ["name", "items"],
       "properties": {
         "name": {
@@ -75,7 +75,7 @@
         },
         "items": {
           "type": "array",
-          "description": "The entities in this documentation group. Each item is a typed entity — its `kind` property determines which schema applies. Entities of different types can be mixed freely in the same array. The ordering is significant: tools SHOULD preserve it for display. Authors MAY organize entities in whatever order best serves their documentation (e.g., tokens before components, or grouped by domain).",
+          "description": "The entities in this documentation group. Each item is a typed entity whose `kind` property determines which schema applies. Different entity types can be mixed in the same array. Ordering is significant: tools SHOULD preserve it for display. Authors MAY organize entities in whatever order best serves their documentation.",
           "items": {
             "oneOf": [
               {

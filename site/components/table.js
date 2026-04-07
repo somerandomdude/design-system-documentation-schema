@@ -28,7 +28,7 @@ import { createShadow, BASE_RESET, FONT } from "./_shared.js";
 
 const TABLE_CSS = `
   ${BASE_RESET}
-  :host { display: block; margin-bottom: var(--ds-space-6); }
+  :host { display: block; margin: var(--ds-space-4) 0; }
 
   .table-wrap {
     overflow-x: auto;
@@ -67,10 +67,10 @@ export function ensureTableLightStyles() {
   style.id = TABLE_LIGHT_DOM_ID;
   style.textContent = [
     "ds-table table { width: 100%; border-collapse: collapse; font-size: var(--ds-font-size-md); }",
-    "ds-table thead { background: var(--ds-color-bg-subtle); }",
+    "ds-table thead { background: transparent; }",
     "ds-table th {",
     "  text-align: left; font-weight: var(--ds-font-weight-semibold); font-size: var(--ds-font-size-sm);",
-    "  text-transform: uppercase; letter-spacing: var(--ds-tracking-wide);",
+    "  text-transform: none; letter-spacing: var(--ds-tracking-wide);",
     "  color: var(--ds-color-text-secondary);",
     "  padding: var(--ds-space-2) var(--ds-space-4);",
     "  border-bottom: var(--ds-border-width-md) solid var(--ds-color-border);",

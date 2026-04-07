@@ -18,26 +18,27 @@ const HEADING_CSS = `
   :host { display: block; }
 
   .heading {
-    display: flex;
-    align-items: center;
-    gap: var(--ds-space-3);
+    display: block;
     color: var(--ds-color-text);
     font-family: ${FONT.body};
     line-height: var(--ds-line-height-snug);
   }
 
-  .heading--1 { font-size: var(--ds-font-size-4xl); font-weight: var(--ds-font-weight-bold); margin: 0 0 var(--ds-space-4); }
-  .heading--2 { font-size: var(--ds-font-size-3xl); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-12) 0 var(--ds-space-3); padding-bottom: var(--ds-space-2); border-bottom: var(--ds-border-width-sm) solid var(--ds-color-border-light); }
+  .heading--1 { font-size: var(--ds-font-size-4xl); font-weight: var(--ds-font-weight-semibold); margin: 0 0 var(--ds-space-4); }
+  .heading--2 { font-size: var(--ds-font-size-3xl); font-weight: var(--ds-font-weight-semibold); margin: var(--ds-space-12) 0 var(--ds-space-3); }
   .heading--3 { font-size: var(--ds-font-size-2xl); font-weight: var(--ds-font-weight-semibold); margin: var(--ds-space-6) 0 var(--ds-space-3); }
   .heading--4 { font-size: var(--ds-font-size-xl); font-weight: var(--ds-font-weight-semibold); margin: var(--ds-space-5) 0 var(--ds-space-2); }
   .heading--5 { font-size: var(--ds-font-size-lg); font-weight: var(--ds-font-weight-semibold); margin: var(--ds-space-4) 0 var(--ds-space-2); }
   .heading--6 { font-size: var(--ds-font-size-md); font-weight: var(--ds-font-weight-semibold); margin: var(--ds-space-3) 0 var(--ds-space-2); color: var(--ds-color-text-secondary); }
 
   .anchor-link {
+    display: inline;
     opacity: 0;
+    margin-left: var(--ds-space-2);
     color: var(--ds-color-text-secondary);
     text-decoration: none;
     font-size: 0.75em;
+    vertical-align: baseline;
     transition: opacity var(--ds-transition-normal);
   }
   .heading:hover .anchor-link { opacity: 0.6; }
@@ -45,10 +46,11 @@ const HEADING_CSS = `
 
   .badge {
     display: inline-block;
+    margin-left: var(--ds-space-2);
     font-size: var(--ds-font-size-xs);
     font-weight: var(--ds-font-weight-semibold);
     letter-spacing: var(--ds-tracking-normal);
-    text-transform: uppercase;
+    text-transform: none;
     padding: 2px var(--ds-space-2);
     border-radius: var(--ds-radius-sm);
     background: var(--ds-color-accent-subtle);
@@ -98,8 +100,11 @@ export class DsHeading extends HTMLElement {
       badgeHtml = ' <span class="badge">' + esc(badge) + "</span>";
     }
 
+    const tag = "h" + level;
     this._shadow.innerHTML =
-      '<div class="heading heading--' +
+      "<" +
+      tag +
+      ' class="heading heading--' +
       level +
       '" part="heading">' +
       "<slot></slot>" +
@@ -107,6 +112,8 @@ export class DsHeading extends HTMLElement {
       ' <a class="anchor-link" href="#' +
       esc(anchor) +
       '" part="anchor">#</a>' +
-      "</div>";
+      "</" +
+      tag +
+      ">";
   }
 }

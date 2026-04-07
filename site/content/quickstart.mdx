@@ -1,0 +1,282 @@
+---
+title: DSDS Quick Start Guide
+slug: quickstart
+---
+
+## What is DSDS?
+
+DSDS (Design System Documentation Standard) is a JSON-based format for documenting design systems. It gives every piece of documentation — components, tokens, themes, styles, patterns — a predictable, machine-readable structure.
+
+<ds-callout>
+
+**Key idea:** DSDS documents the *how and why* of your design system — not the token values themselves. It complements the [W3C Design Tokens Format](https://www.w3.org/community/reports/design-tokens/CG-FINAL-format-20251028/) which handles the *what*.
+
+</ds-callout>
+
+### What you get
+
+- **Structured** — every section has a defined shape, no guessing
+- **Machine-readable** — tools can parse, generate, validate, and transform it
+- **Portable** — not locked to any docs tool or platform
+- **Extensible** — add vendor metadata without breaking compatibility
+- **Validatable** — JSON Schema catches errors before they reach consumers
+
+---
+
+## Document structure
+
+A DSDS file is a JSON document with a version and one or more documentation groups. Each group contains an array of typed entities.
+
+```json
+{
+  "dsdsVersion": "0.1",
+  "documentation": [
+    {
+      "name": "My Design System",
+      "items": [
+        { "kind": "component", "name": "button", "...": "" },
+        { "kind": "token", "name": "color-text-primary", "...": "" },
+        { "kind": "theme", "name": "dark", "...": "" }
+      ]
+    }
+  ]
+}
+```
+
+That's the full top-level structure:
+
+- `dsdsVersion` — always `"0.1"` for this version
+- `documentation` — array of named groups, each with an `items` array
+- `items` — array of typed entities, mixed freely in any order
+
+<ds-callout variant="tip">
+
+**Tip:** You can split entities into groups — one for base styles, one for components, one for tokens. Or put them all in one group. The schema allows both.
+
+</ds-callout>
+
+---
+
+## Entity types
+
+Every entity has a `kind` field that tells tools what type of thing it is. There are six kinds.
+
+| Kind | Code | Description |
+|------|------|-------------|
+| component | `"component"` | A reusable UI element — buttons, inputs, modals. Supports anatomy, API, variants, states, and design specs. |
+| token | `"token"` | A single design token — color, spacing, typography. Carries a resolved value, platform API mappings, and usage rules. |
+| token-group | `"token-group"` | A nested group of related tokens. Recursive — groups can contain groups. |
+| theme | `"theme"` | A named set of token value overrides — dark mode, high-contrast, compact density, brand variants. |
+| style | `"style"` | A design base — color, typography, spacing, elevation. Carries principles, scales, and motion definitions. |
+| pattern | `"pattern"` | A broad action pattern — nav, error messaging, empty states. Describes how components compose to solve a user need. |
+
+### Common properties
+
+Every entity shares these fields:
+
+| Property | Required | Description |
+|----------|----------|-------------|
+| `kind` | Yes | Entity type |
+| `name` | Yes\* | Machine-readable ID (`^[a-z][a-z0-9-]*$`, except tokens) |
+| `displayName` | Yes\* | Human-readable label |
+| `description` | Yes\* | What this entity is and does (CommonMark supported) |
+| `status` | No | `"stable"`, `"experimental"`, `"draft"`, `"deprecated"` — or an object with per-platform status |
+| `since` | No | Version when this entity first shipped |
+| `tags` | No | Array of freeform category tags |
+| `guidelines` | No | Array of typed guideline objects |
+
+\* Required for component, style, and pattern. Token requires `name` + `tokenType` + `value`.
+
+### Status: string or object
+
+For the simple case, status is a string:
+
+```json
+{ "status": "stable" }
+```
+
+When you need per-platform tracking:
+
+```json
+{
+  "status": {
+    "overall": "stable",
+    "platforms": {
+      "react": { "status": "stable", "since": "1.0.0" },
+      "ios": { "status": "experimental", "since": "3.0.0" }
+    }
+  }
+}
+```
+
+---
+
+## The guidelines system
+
+Structured docs live in the `guidelines` array on each entity. Each guideline is typed by its `kind` field.
+
+| Kind | Applies To | Description |
+|------|-------------|-------------|
+| `anatomy` | component, pattern | Named parts that make up the entity, with optional design-token mapping per part |
+| `api` | component | Properties, events, slots, and CSS custom properties |
+| `variants` | component, pattern | Named variant axes (e.g. size, color) with discrete values |
+| `states` | component, pattern | Interactive states (hover, disabled, …) with per-state token overrides |
+| `purpose` | all | When to use / when not to use, with options for negative cases |
+| `best-practices` | all | Actionable guidance paired with rationale and enforcement level |
+| `accessibility` | component, pattern | WCAG level, keyboard interactions, ARIA attributes, screen-reader behavior |
+| `content` | component, pattern | Writing and labelling guidelines for UI text |
+| `interaction` | component, pattern | Step-by-step action flows with optional wireframes |
+| `design-specifications` | component, pattern | Concrete measurements, spacing, and sizing values for implementors |
+| `scale` | style | Named stops along a design scale (e.g. spacing-100…spacing-900) |
+| `motion` | style | Named animation/transition presets with duration, easing, and purpose |
+| `principle` | style | Guiding design principles with rationale and examples |
+
+### Purpose: when to use it
+
+The `purpose` guideline lists scenarios. Each use case is `"positive"` (do use) or `"negative"` (don't use, with an option):
+
+```json
+{
+  "kind": "purpose",
+  "useCases": [
+    {
+      "description": "When the user needs to trigger an action such as submitting a form.",
+      "kind": "positive"
+    },
+    {
+      "description": "When the action navigates to a different page.",
+      "kind": "negative",
+      "alternative": {
+        "name": "link",
+        "rationale": "Links carry native navigation semantics."
+      }
+    }
+  ]
+}
+```
+
+### Best practices: how to use it
+
+Each best practice pairs a `guidance` statement with a `rationale` and an enforcement level:
+
+```json
+{
+  "kind": "best-practices",
+  "items": [
+    {
+      "guidance": "Limit each surface to one primary button.",
+      "rationale": "Multiple primary buttons dilute visual hierarchy.",
+      "kind": "required",
+      "category": "visual-design"
+    }
+  ]
+}
+```
+
+Enforcement levels: <ds-badge>required</ds-badge> (MUST), <ds-badge>encouraged</ds-badge> (SHOULD), <ds-badge>informational</ds-badge> (MAY, default), <ds-badge>discouraged</ds-badge> (SHOULD NOT), <ds-badge>prohibited</ds-badge> (MUST NOT).
+
+---
+
+## Minimal examples
+
+These are the smallest valid entities — the bare minimum. Copy one, fill in your content, and add guidelines as you go.
+
+### Component
+
+A component needs `kind`, `name`, `displayName`, and `description`. Everything else is optional.
+
+<ds-example file="component.json" label="minimal component" />
+
+### Token
+
+A token needs `kind`, `name`, `tokenType`, and a `value` with at least `resolved`.
+
+<ds-example file="token.json" label="minimal token" />
+
+### Token group
+
+Groups arrange tokens in a tree. The `children` array can contain tokens or nested groups.
+
+<ds-example file="token-group.json" label="minimal token-group" />
+
+### Theme
+
+A theme provides `overrides` — an array of token + value pairs that replace the default.
+
+<ds-example file="theme.json" label="minimal theme" />
+
+### Style
+
+A style documents a design base. Guidelines like `principles`, `scale`, and `motion` are specific to styles.
+
+<ds-example file="style.json" label="minimal style" />
+
+### Pattern
+
+A pattern describes how components compose to solve a user need. It supports `interactions` for flow steps.
+
+<ds-example file="pattern.json" label="minimal pattern" />
+
+### Full document {#minimal}
+
+Here's a complete, minimal DSDS file with one of each entity type:
+
+<ds-example file="minimal.dsds.json" label="minimal.dsds.json" />
+
+---
+
+## Validate your document
+
+DSDS ships with a JSON Schema for validating your documents.
+
+### Using the bundled schema
+
+Add `$schema` to get editor autocompletion and inline validation:
+
+```json
+{
+  "$schema": "https://designsystemdocspec.org/v0.1/dsds.bundled.schema.json",
+  "dsdsVersion": "0.1",
+  "documentation": []
+}
+```
+
+### Using the CLI
+
+```bash
+# Clone the repo
+git clone https://github.com/somerandomdude/design-system-documentation-schema.git
+cd design-system-documentation-schema
+npm install
+
+# Validate the built-in examples
+npm run validate
+
+# Validate your own file
+npx ajv validate -s spec/schema/dsds.bundled.schema.json -d my-system.dsds.json
+```
+
+---
+
+## Next steps
+
+You've seen the basics. Here's where to go deeper.
+
+| Resource | Description |
+|----------|-------------|
+| [Full Spec](index.html) | Complete schema reference for every field and constraint |
+| [Interactive Samples](samples.html) | Side-by-side JSON ↔ rendered documentation for real-world entities |
+| [JSON Schema](https://github.com/somerandomdude/design-system-documentation-schema/tree/main/spec/schema) | The raw `.schema.json` files — use for editor autocompletion |
+| [Example Files](https://github.com/somerandomdude/design-system-documentation-schema/tree/main/spec/examples) | Complete, valid example documents for every entity and guideline type |
+| [GitHub Discussions](https://github.com/somerandomdude/design-system-documentation-schema/discussions) | Ask questions, share ideas, propose changes |
+
+<ds-callout variant="tip">
+
+**Getting started recipe:**
+
+1. Copy the [minimal document](#minimal) above
+2. Replace the example entities with your own design system's components and tokens
+3. Add `guidelines` to each entity as your docs grow
+4. Validate with `npm run validate` to catch schema errors early
+
+</ds-callout>

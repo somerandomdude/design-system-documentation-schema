@@ -6,17 +6,21 @@
   <title>DSDS Motion Guideline — DSDS 0.1</title>
   <link rel="stylesheet" href="tokens.css">
   <link rel="stylesheet" href="style.css">
-  <script src="components.js?v=2"></script>
+  <script src="components.js"></script>
 </head>
 <body>
   <ds-nav-toggle target="ds-spec-nav"></ds-nav-toggle>
-  <ds-spec-nav title="DSDS 0.1" title-href="index.html" active="guidelines-motion">
+  <ds-spec-nav title="Design system documentation standard 0.1" title-href="index.html" active="guidelines-motion">
     <a href="index.html" slug="index">Overview</a>
-    <a href="quickstart.html" slug="quickstart">Quick Start</a>
-    <a href="samples.html" slug="samples">Interactive Samples</a>
-    <a href="root.html" slug="root">Root Schema</a>
+    <a href="quickstart.html" slug="quickstart">Quick start</a>
+    <a href="schema-architecture.html" slug="schema-architecture">Schema architecture</a>
+    <a href="samples.html" slug="samples">Interactive samples</a>
+    <ds-nav-group label="Documentation">
+      <a href="root.html" slug="root">Root schema</a>
+    </ds-nav-group>
     <ds-nav-group label="Common">
       <a href="common-example.html" slug="common-example">example</a>
+      <a href="common-extends.html" slug="common-extends">extends</a>
       <a href="common-extensions.html" slug="common-extensions">extensions</a>
       <a href="common-link.html" slug="common-link">link</a>
       <a href="common-metadata.html" slug="common-metadata">metadata</a>
@@ -51,7 +55,7 @@
   <div class="content content--with-toc">
     <main class="content__main" role="main">
       <div class="content__inner">
-        <ds-schema-header title="DSDS Motion Guideline" description="Documents the motion system for a style — named easing curves, recommended durations, and usage guidance. Each item in the motion guideline represents a single named easing definition with its cubic-bezier function (aligned with the W3C Design Tokens Format Module cubicBezier type), recommended duration range, usage context, and optional examples. Motion guidelines capture the structured data that tools need to generate CSS transitions, validate animation implementations, and display interactive easing curve previews." source="guidelines/motion.schema.json"></ds-schema-header>
+        <ds-schema-header title="DSDS Motion Guideline" description="Documents the motion system for a style — named easing curves, recommended durations, and usage guidance. Each item defines an easing with its cubic-bezier function (aligned with the W3C Design Tokens Format Module cubicBezier type), recommended duration range, usage context, and optional examples. Motion guidelines capture structured data that tools need to generate CSS transitions, validate animation implementations, and display interactive easing curve previews." source="guidelines/motion.schema.json"></ds-schema-header>
 <ds-def-index>
 <p><strong>3 definitions</strong> in this file:</p>
 <ul>
@@ -60,26 +64,26 @@
 <li><a href="#motion"><ds-code inline>motion</ds-code></a></li>
 </ul>
 </ds-def-index>
-<ds-def-section name="motionDuration" anchor="motionduration" description="A recommended duration range for an easing curve. Duration values are strings representing time values (e.g., '200ms', '0.3s') or token references (e.g., 'duration-quick'). When both min and max are provided, they define a range. When only one is provided, it serves as a point recommendation. When neither is provided, the description field should explain the guidance (e.g., 'depends on element size')." type="object">
+<ds-def-section name="motionDuration" anchor="motionduration" description="A recommended duration range for an easing curve. Duration values are strings representing time values (e.g., '200ms', '0.3s') or token references (e.g., 'duration-quick'). When both min and max are provided, they define a range. When only one is provided, it serves as a point recommendation. When neither is provided, the description field should explain the guidance." type="object">
 <ds-prop-table>
-  <ds-prop name="min" type="string">The minimum recommended duration as a time value or token reference (e.g., '200ms', '0.3s', 'duration-quick'). When omitted, there is no minimum recommendation.</ds-prop>
-  <ds-prop name="max" type="string">The maximum recommended duration as a time value or token reference (e.g., '500ms', '0.5s', 'duration-slow'). When omitted, there is no maximum recommendation.</ds-prop>
-  <ds-prop name="description" type="&lt;ds-type-ref href=&quot;common-rich-text.html#richtext&quot;&gt;richText&lt;/ds-type-ref&gt;">Freeform duration guidance. Use when the recommendation cannot be expressed as a simple min/max range (e.g., 'Depends on element size — use shorter durations for small elements and longer durations for full-screen transitions'). Also useful for supplementary notes when min/max are provided.</ds-prop>
+  <ds-prop name="min" type="string">Minimum recommended duration as a time value or token reference (e.g., '200ms', '0.3s', 'duration-quick'). When omitted, there is no minimum recommendation.</ds-prop>
+  <ds-prop name="max" type="string">Maximum recommended duration as a time value or token reference (e.g., '500ms', '0.5s', 'duration-slow'). When omitted, there is no maximum recommendation.</ds-prop>
+  <ds-prop name="description" type="&lt;ds-type-ref href=&quot;common-rich-text.html#richtext&quot;&gt;richText&lt;/ds-type-ref&gt;">Freeform duration guidance. Use when the recommendation cannot be expressed as a min/max range (e.g., 'Depends on element size — use shorter durations for small elements and longer durations for full-screen transitions'). Also useful for supplementary notes when min/max are provided.</ds-prop>
 </ds-prop-table>
 <ds-cross-refs><strong>References:</strong> 
 <ds-type-ref href="common-rich-text.html#richtext">richText</ds-type-ref>
 </ds-cross-refs>
 </ds-def-section>
-<ds-def-section name="motionEntry" anchor="motionentry" description="A single named easing definition in the motion system. Each entry documents a cubic-bezier timing function with its recommended usage and duration. The `function` property uses the same four-number array format as the W3C Design Tokens Format Module cubicBezier type: [P1x, P1y, P2x, P2y] where P1x and P2x are in the range [0, 1] and P1y and P2y can be any real number." type="object">
+<ds-def-section name="motionEntry" anchor="motionentry" description="A single named easing in the motion system. Documents a cubic-bezier timing function with its recommended usage and duration. The `function` property uses the same four-number array format as the W3C Design Tokens Format Module cubicBezier type: [P1x, P1y, P2x, P2y] where P1x and P2x are in [0, 1] and P1y and P2y can be any real number." type="object">
 <ds-prop-table>
   <ds-prop name="name" type="string" required>Machine-readable name of the easing (e.g., 'expressive', 'enter', 'exit', 'lateral', 'bounce', 'linear'). Used for cross-referencing and tooling.</ds-prop>
-  <ds-prop name="description" type="&lt;ds-type-ref href=&quot;common-rich-text.html#richtext&quot;&gt;richText&lt;/ds-type-ref&gt;" required>What this easing is for, when to use it, and how it affects the user experience. Should explain the visual character of the curve (e.g., 'elements accelerate quickly and decelerate into their final position') and the types of transitions it suits.</ds-prop>
-  <ds-prop name="displayName" type="string">Human-readable name of the easing (e.g., 'Expressive Ease', 'Enter Ease', 'Exit Ease', 'Bounce Ease').</ds-prop>
-  <ds-prop name="function" type="number[]">The cubic-bezier control points as a four-number array [P1x, P1y, P2x, P2y], aligned with the W3C Design Tokens Format Module cubicBezier type (§8.6). P1x and P2x MUST be in the range [0, 1]. P1y and P2y can be any real number (values outside [0, 1] produce bounce/overshoot effects). Maps directly to CSS cubic-bezier() and DTCG cubicBezier token values. When omitted, the easing is described qualitatively in the description field or references a token via the `token` property.<br><small>Min items: 4</small></ds-prop>
+  <ds-prop name="description" type="&lt;ds-type-ref href=&quot;common-rich-text.html#richtext&quot;&gt;richText&lt;/ds-type-ref&gt;" required>What this easing is for, when to use it, and how it affects the user experience. Explain the visual character of the curve and the types of transitions it suits.</ds-prop>
+  <ds-prop name="displayName" type="string">Human-readable name of the easing (e.g., 'Expressive Ease', 'Enter Ease', 'Exit Ease').</ds-prop>
+  <ds-prop name="function" type="number[]">Cubic-bezier control points as a four-number array [P1x, P1y, P2x, P2y], aligned with the W3C Design Tokens Format Module cubicBezier type (§8.6). P1x and P2x MUST be in [0, 1]. P1y and P2y can be any real number (values outside [0, 1] produce bounce/overshoot effects). Maps to CSS cubic-bezier() and DTCG cubicBezier token values. When omitted, the easing is described in the description field or references a token via `token`.<br><small>Min items: 4</small></ds-prop>
   <ds-prop name="token" type="string">Reference to a DTCG cubicBezier or transition token that defines this easing (e.g., 'motion-ease-expressive', 'transition-enter'). When both `function` and `token` are present, `function` is the display value and `token` is the authoritative source.</ds-prop>
-  <ds-prop name="duration" type="&lt;ds-type-ref href=&quot;guidelines-motion.html#motionduration&quot;&gt;motionDuration&lt;/ds-type-ref&gt;">The recommended duration range when using this easing. Different easings suit different durations — enter transitions are typically longer (300-500ms) to draw attention, while exit transitions are shorter (200-300ms) to feel responsive.</ds-prop>
-  <ds-prop name="usage" type="string">A short, comma-separated list of usage contexts for this easing (e.g., 'entering elements', 'exiting elements', 'moving, pushing', 'lateral navigation', 'micro-interactions'). Provides a scannable summary — use description for detailed guidance.</ds-prop>
-  <ds-prop name="examples" type="&lt;ds-type-ref href=&quot;common-example.html#example&quot;&gt;example&lt;/ds-type-ref&gt;[]">Visual or interactive examples showing this easing in action — screen recordings of transitions, interactive curve visualizations, or code snippets demonstrating CSS usage.</ds-prop>
+  <ds-prop name="duration" type="&lt;ds-type-ref href=&quot;guidelines-motion.html#motionduration&quot;&gt;motionDuration&lt;/ds-type-ref&gt;">Recommended duration range when using this easing. Different easings suit different durations — enter transitions are typically longer (300–500ms) to draw attention, while exit transitions are shorter (200–300ms) to feel responsive.</ds-prop>
+  <ds-prop name="usage" type="string">A short, comma-separated list of usage contexts (e.g., 'entering elements', 'exiting elements', 'lateral navigation', 'micro-interactions'). Provides a scannable summary — use description for detailed guidance.</ds-prop>
+  <ds-prop name="examples" type="&lt;ds-type-ref href=&quot;common-example.html#example&quot;&gt;example&lt;/ds-type-ref&gt;[]">Visual or interactive examples showing this easing in action — screen recordings, interactive curve visualizations, or CSS code snippets.</ds-prop>
 </ds-prop-table>
 <ds-cross-refs><strong>References:</strong> 
 <ds-type-ref href="common-rich-text.html#richtext">richText</ds-type-ref>, <ds-type-ref href="guidelines-motion.html#motionduration">motionDuration</ds-type-ref>, <ds-type-ref href="common-example.html#example">example</ds-type-ref>
@@ -200,11 +204,11 @@
 ]</ds-code>
 </ds-def-example>
 </ds-def-section>
-<ds-def-section name="motion" anchor="motion" description="Documents the motion system for a visual style — the named easing curves, their timing functions, recommended durations, and usage guidance. Each item represents a single easing definition that designers and engineers select from when adding animation or transitions. The ordering is significant — tools SHOULD display easings in this order. A typical motion guideline lists easings from most commonly used to most specialized (e.g., expressive first, then enter, exit, lateral, bounce, linear). This guideline type is scoped to style entities and complements the scale guideline (which documents duration token progressions) and best-practice guidelines (which document motion rules like reduced-motion handling)." type="object">
+<ds-def-section name="motion" anchor="motion" description="Documents the motion system for a visual style — named easing curves, timing functions, recommended durations, and usage guidance. Each item defines an easing that designers and engineers select when adding animation or transitions. Ordering is significant — tools SHOULD display easings in this order. A typical motion guideline lists easings from most common to most specialized. Scoped to style entities; complements the scale guideline (for duration token progressions) and best-practice guidelines (for motion rules like reduced-motion handling)." type="object">
 <ds-prop-table>
-  <ds-prop name="kind" type="&lt;ds-code inline&gt;&quot;motion&quot;&lt;/ds-code&gt;" required>Identifies this guideline as a motion specification.</ds-prop>
-  <ds-prop name="items" type="&lt;ds-type-ref href=&quot;guidelines-motion.html#motionentry&quot;&gt;motionEntry&lt;/ds-type-ref&gt;[]" required>The named easing definitions in the motion system. Each item documents a single easing curve with its cubic-bezier function, recommended duration, and usage guidance. The ordering is significant — tools SHOULD display easings in this order.<br><small>Min items: 1</small></ds-prop>
-  <ds-prop name="description" type="&lt;ds-type-ref href=&quot;common-rich-text.html#richtext&quot;&gt;richText&lt;/ds-type-ref&gt;">An overview of the motion system — the philosophy behind the easing choices, how duration and easing interact, and any system-wide motion principles not covered by individual easing entries.</ds-prop>
+  <ds-prop name="kind" type="&lt;ds-code inline&gt;&quot;motion&quot;&lt;/ds-code&gt;" required>Identifies this guideline as a motion spec.</ds-prop>
+  <ds-prop name="items" type="&lt;ds-type-ref href=&quot;guidelines-motion.html#motionentry&quot;&gt;motionEntry&lt;/ds-type-ref&gt;[]" required>Named easing definitions in the motion system. Each item documents a single easing curve with its cubic-bezier function, recommended duration, and usage guidance. Ordering is significant — tools SHOULD display easings in this order.<br><small>Min items: 1</small></ds-prop>
+  <ds-prop name="description" type="&lt;ds-type-ref href=&quot;common-rich-text.html#richtext&quot;&gt;richText&lt;/ds-type-ref&gt;">An overview of the motion system — the philosophy behind easing choices, how duration and easing interact, and system-wide motion principles not covered by individual easing entries.</ds-prop>
 </ds-prop-table>
 <ds-cross-refs><strong>References:</strong> 
 <ds-type-ref href="common-rich-text.html#richtext">richText</ds-type-ref>, <ds-type-ref href="guidelines-motion.html#motionentry">motionEntry</ds-type-ref>

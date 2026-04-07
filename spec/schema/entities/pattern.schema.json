@@ -2,11 +2,11 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://designsystemdocspec.org/v0.1/pattern.schema.json",
   "title": "DSDS Pattern Definitions",
-  "description": "Definitions for documenting broad interaction patterns \u2014 recurring solutions to common UX problems such as navigation, error messaging, form validation, empty states, loading sequences, and onboarding flows. A pattern document captures the identity and metadata of a multi-component solution. All structured documentation \u2014 component references, interaction flows, best practices, accessibility specs, use cases, and examples \u2014 lives in the unified `guidelines` array as typed guideline objects.",
+  "description": "Definitions for documenting interaction patterns — recurring solutions to common UX problems such as navigation, error messaging, form validation, empty states, loading sequences, and onboarding flows. A pattern document captures the identity and metadata of a multi-component solution. All structured docs live in the unified `guidelines` array as typed guideline objects.",
   "$defs": {
     "pattern": {
       "type": "object",
-      "description": "Documentation for a broad interaction pattern \u2014 a recurring, multi-component solution to a common UX problem. Patterns sit above individual components and describe how they are composed to address a user need. The pattern's identity (name, description, status, category) lives at the top level. All structured documentation lives in the `guidelines` array \u2014 each entry is a typed guideline object (artifact-reference for participating components, interaction for flow steps, best-practice for rules, accessibility for a11y specs, use-cases for scenario guidance, example for demonstrations, etc.). This unified model replaces the previous architecture where components, interactions, useCases, guidelines, accessibility, and examples were separate top-level properties.",
+      "description": "Documentation for an interaction pattern — a recurring, multi-component solution to a common UX problem. Patterns sit above individual components and describe how they compose to address a user need. The pattern's identity (name, description, status, category) lives at the top level. All structured docs live in the `guidelines` array — each entry is a typed guideline object (interaction for flow steps, best-practice for rules, accessibility for a11y specs, etc.). This unified model replaces the previous architecture where components, interactions, useCases, guidelines, accessibility, and examples were separate top-level properties.",
       "required": ["kind", "name", "displayName", "description"],
       "properties": {
         "kind": {
@@ -17,11 +17,11 @@
         "name": {
           "type": "string",
           "pattern": "^[a-z][a-z0-9-]*$",
-          "description": "Machine-readable identifier for the pattern (e.g., 'error-messaging', 'navigation', 'empty-state', 'loading-sequence', 'onboarding', 'form-validation'). MUST be unique within the documentation group."
+          "description": "Machine-readable identifier for the pattern (e.g., 'error-messaging', 'navigation', 'empty-state', 'form-validation'). MUST be unique within the documentation group."
         },
         "displayName": {
           "type": "string",
-          "description": "Human-readable name for display in documentation (e.g., 'Error Messaging', 'Navigation', 'Empty State', 'Loading Sequence')."
+          "description": "Human-readable name for display in docs (e.g., 'Error Messaging', 'Navigation', 'Empty State')."
         },
         "aliases": {
           "type": "array",
@@ -32,7 +32,7 @@
         },
         "summary": {
           "type": "string",
-          "description": "A one-line, plain-text summary for compact display contexts such as list views, tooltips, search results, and card layouts. MUST NOT contain markup of any kind."
+          "description": "A one-line, plain-text summary for compact display contexts such as list views, tooltips, search results, and card layouts. MUST NOT contain markup."
         },
         "thumbnail": {
           "$ref": "../common/presentation.schema.json#/$defs/presentationImage",
@@ -40,10 +40,10 @@
         },
         "description": {
           "$ref": "../common/rich-text.schema.json#/$defs/richText",
-          "description": "A description of the pattern \u2014 what user need it addresses, how it works at a high level, and its role in the design system. CommonMark supported."
+          "description": "A description of the pattern — what user need it addresses, how it works at a high level, and its role in the design system. CommonMark supported."
         },
         "preview": {
-          "description": "A visual or interactive preview of the component — a hero image, video walkthrough, code snippet, or link to a live demo. Accepts any presentation type defined in the presentation schema.",
+          "description": "A visual or interactive preview — a hero image, video walkthrough, code snippet, or link to a live demo. Accepts any presentation type from the presentation schema.",
           "oneOf": [
             {
               "$ref": "../common/presentation.schema.json#/$defs/presentationImage"
@@ -64,29 +64,29 @@
         },
         "since": {
           "type": "string",
-          "description": "The version of the design system in which this pattern was introduced (e.g., '1.0.0', '2.3.0')."
+          "description": "The design system version in which this pattern was introduced (e.g., '1.0.0', '2.3.0')."
         },
         "tags": {
           "type": "array",
           "items": {
             "type": "string"
           },
-          "description": "Freeform keywords for categorization, search, and cross-referencing (e.g., 'feedback', 'validation', 'forms', 'errors', 'async'). Tags are not constrained to a vocabulary \u2014 use them for any cross-cutting concern."
+          "description": "Freeform keywords for categorization, search, and cross-referencing (e.g., 'feedback', 'validation', 'forms', 'errors'). Tags are not constrained to a vocabulary — use them for any cross-cutting concern."
         },
         "category": {
           "type": "string",
-          "description": "The interaction problem this pattern solves. Common values: 'feedback' (communicating system status, errors, success, and warnings), 'navigation' (moving between views, sections, or pages), 'data-entry' (collecting input \u2014 forms, search, filters, inline editing), 'disclosure' (revealing and hiding content \u2014 accordions, drawers, modals, tooltips), 'onboarding' (introducing the user to features, flows, or concepts), 'layout' (organizing content across screen sizes and contexts), 'selection' (choosing one or more items from a set), 'loading' (communicating progress and managing expectations during async operations). Custom values are permitted and SHOULD be lowercase kebab-case."
+          "description": "The interaction problem this pattern solves. Common values: 'feedback' (communicating system status, errors, success, and warnings), 'navigation' (moving between views, sections, or pages), 'data-entry' (collecting input — forms, search, filters, inline editing), 'disclosure' (revealing and hiding content — accordions, drawers, modals, tooltips), 'onboarding' (introducing features, flows, or concepts), 'layout' (organizing content across screen sizes), 'selection' (choosing items from a set), 'loading' (communicating progress during async operations). Custom values are permitted and SHOULD be lowercase kebab-case."
         },
         "guidelines": {
           "type": "array",
-          "description": "All structured documentation for this pattern, expressed as an ordered array of typed guideline objects. Patterns accept pattern-specific guideline types (interactions) and general types (best-practices, use-cases, accessibility, examples). Each guideline has a `type` property that determines its shape. The ordering is significant: tools SHOULD preserve it for display. Interaction guidelines in particular rely on ordering to represent chronological flow. Participating component references are now expressed through the `links` array (with type 'component', name, and role) rather than through a dedicated guideline type. A typical pattern includes guidelines in roughly this order: examples (hero demonstrations), interactions (flow steps), use-cases, best-practices, accessibility. However, authors are free to order guidelines in whatever way best serves their documentation.",
+          "description": "All structured docs for this pattern as an ordered array of typed guideline objects. Patterns accept pattern-specific guideline types (interactions) and general types (best-practices, use-cases, accessibility, examples). Each guideline has a `type` property that determines its shape. Ordering is significant: tools SHOULD preserve it for display. Interaction guidelines rely on ordering to represent chronological flow. Reference participating components through the `links` array (with type 'component', name, and role) rather than a dedicated guideline type.",
           "items": {
             "$ref": "../guidelines/guideline.schema.json#/$defs/patternGuideline"
           }
         },
         "links": {
           "type": "array",
-          "description": "External resource links, internal artifact references, and relationships — source code, design files, Storybook stories, documentation pages, npm packages, participating components (with roles), and relationships to other DSDS artifacts (alternatives, related patterns). Each link can point to an external URL, an internal DSDS artifact by name, or both.",
+          "description": "External resource links, internal artifact references, and relationships — source code, design files, Storybook stories, docs pages, npm packages, participating components (with roles), and relationships to other DSDS artifacts. Each link can point to an external URL, an internal DSDS artifact by name, or both.",
           "items": {
             "$ref": "../common/link.schema.json#/$defs/link"
           }

@@ -6,17 +6,21 @@
   <title>DSDS Interactions Guideline — DSDS 0.1</title>
   <link rel="stylesheet" href="tokens.css">
   <link rel="stylesheet" href="style.css">
-  <script src="components.js?v=2"></script>
+  <script src="components.js"></script>
 </head>
 <body>
   <ds-nav-toggle target="ds-spec-nav"></ds-nav-toggle>
-  <ds-spec-nav title="DSDS 0.1" title-href="index.html" active="guidelines-interaction">
+  <ds-spec-nav title="Design system documentation standard 0.1" title-href="index.html" active="guidelines-interaction">
     <a href="index.html" slug="index">Overview</a>
-    <a href="quickstart.html" slug="quickstart">Quick Start</a>
-    <a href="samples.html" slug="samples">Interactive Samples</a>
-    <a href="root.html" slug="root">Root Schema</a>
+    <a href="quickstart.html" slug="quickstart">Quick start</a>
+    <a href="schema-architecture.html" slug="schema-architecture">Schema architecture</a>
+    <a href="samples.html" slug="samples">Interactive samples</a>
+    <ds-nav-group label="Documentation">
+      <a href="root.html" slug="root">Root schema</a>
+    </ds-nav-group>
     <ds-nav-group label="Common">
       <a href="common-example.html" slug="common-example">example</a>
+      <a href="common-extends.html" slug="common-extends">extends</a>
       <a href="common-extensions.html" slug="common-extensions">extensions</a>
       <a href="common-link.html" slug="common-link">link</a>
       <a href="common-metadata.html" slug="common-metadata">metadata</a>
@@ -51,7 +55,7 @@
   <div class="content content--with-toc">
     <main class="content__main" role="main">
       <div class="content__inner">
-        <ds-schema-header title="DSDS Interactions Guideline" description="Documents the interaction flow of a pattern — the ordered sequence of steps describing triggers, system responses, and component behavior. Each item in the interactions array is a single step or event in the flow, describing what triggers it, what happens, which components are involved, and optional visual examples. Multiple items in sequence describe the chronological flow of a user journey from trigger through resolution." source="guidelines/interaction.schema.json"></ds-schema-header>
+        <ds-schema-header title="DSDS Interactions Guideline" description="Documents the interaction flow of a pattern — an ordered sequence of steps describing triggers, system responses, and component behavior. Each item is a single step in the flow, describing what triggers it, what happens, which components are involved, and optional visual examples. Multiple items in sequence describe the chronological flow of a user journey from trigger through resolution." source="guidelines/interaction.schema.json"></ds-schema-header>
 <ds-def-index>
 <p><strong>2 definitions</strong> in this file:</p>
 <ul>
@@ -59,21 +63,21 @@
 <li><a href="#interactions"><ds-code inline>interactions</ds-code></a></li>
 </ul>
 </ds-def-index>
-<ds-def-section name="interactionEntry" anchor="interactionentry" description="A single step in an interaction flow. Each interaction describes a trigger (what initiates the step), a description (what happens), the components involved, and optional examples illustrating the step." type="object">
+<ds-def-section name="interactionEntry" anchor="interactionentry" description="A single step in an interaction flow. Each interaction describes a trigger (what starts the step), a description (what happens), the components involved, and optional examples." type="object">
 <ds-prop-table>
-  <ds-prop name="description" type="&lt;ds-type-ref href=&quot;common-rich-text.html#richtext&quot;&gt;richText&lt;/ds-type-ref&gt;" required>What happens during this step — the system's response, visual changes, state transitions, and any user-facing feedback. CommonMark supported.</ds-prop>
-  <ds-prop name="trigger" type="string">What initiates this interaction step. Describes the user action, system event, or condition that causes this step to occur (e.g., 'User submits the form by activating the submit button', 'API returns a 422 response', 'Client-side validation detects one or more invalid fields'). When omitted, the step is a continuation of the previous step's flow without a new trigger.</ds-prop>
-  <ds-prop name="components" type="string[]">The names of the components involved in this interaction step. Each name MUST match the `name` of a component documented elsewhere in the system. This creates a cross-reference between the pattern's interaction flow and the individual component documentation.</ds-prop>
-  <ds-prop name="examples" type="&lt;ds-type-ref href=&quot;common-example.html#example&quot;&gt;example&lt;/ds-type-ref&gt;[]">Visual or interactive examples illustrating this specific interaction step — screenshots of the state after this step, screen recordings of the transition, or code snippets showing the implementation.</ds-prop>
+  <ds-prop name="description" type="&lt;ds-type-ref href=&quot;common-rich-text.html#richtext&quot;&gt;richText&lt;/ds-type-ref&gt;" required>What happens during this step — the system's response, visual changes, state transitions, and user-facing feedback. CommonMark supported.</ds-prop>
+  <ds-prop name="trigger" type="string">What starts this interaction step — a user action, system event, or condition (e.g., 'User submits the form by activating the submit button', 'API returns a 422 response'). When omitted, the step continues the previous step's flow without a new trigger.</ds-prop>
+  <ds-prop name="components" type="string[]">Names of the components involved in this step. Each name MUST match the `name` of a component documented elsewhere in the system. Creates a cross-reference between the pattern's interaction flow and individual component docs.</ds-prop>
+  <ds-prop name="examples" type="&lt;ds-type-ref href=&quot;common-example.html#example&quot;&gt;example&lt;/ds-type-ref&gt;[]">Visual or interactive examples for this step — screenshots of the resulting state, screen recordings of the transition, or code snippets showing the implementation.</ds-prop>
 </ds-prop-table>
 <ds-cross-refs><strong>References:</strong> 
 <ds-type-ref href="common-rich-text.html#richtext">richText</ds-type-ref>, <ds-type-ref href="common-example.html#example">example</ds-type-ref>
 </ds-cross-refs>
 </ds-def-section>
-<ds-def-section name="interactions" anchor="interactions" description="Documents the interaction flow of a pattern as an ordered sequence of steps. Each item describes a single step — what triggers it, what the system does in response, which components are involved, and optional examples. The ordering of items is critical: it represents the chronological flow of the user journey. Authors SHOULD include steps for the initial trigger, the system's response, recovery or correction steps, and completion. Multiple interaction guidelines on the same pattern can document alternative flows (e.g., a happy path and an error path)." type="object">
+<ds-def-section name="interactions" anchor="interactions" description="Documents the interaction flow of a pattern as an ordered sequence of steps. Each item describes a single step — what triggers it, what the system does in response, which components are involved, and optional examples. Item ordering is critical: it represents the chronological flow of the user journey. Authors SHOULD include steps for the initial trigger, the system's response, recovery or correction steps, and completion. Multiple interaction guidelines on the same pattern can document alternative flows (e.g., a happy path and an error path)." type="object">
 <ds-prop-table>
-  <ds-prop name="kind" type="&lt;ds-code inline&gt;&quot;interactions&quot;&lt;/ds-code&gt;" required>Identifies this guideline as an interactions specification.</ds-prop>
-  <ds-prop name="items" type="&lt;ds-type-ref href=&quot;guidelines-interaction.html#interactionentry&quot;&gt;interactionEntry&lt;/ds-type-ref&gt;[]" required>The interaction steps in chronological order. Each item documents a single step in the flow with its trigger, description, involved components, and optional examples. The ordering is significant — tools SHOULD preserve and display steps in this order to represent the temporal sequence of the interaction.<br><small>Min items: 1</small></ds-prop>
+  <ds-prop name="kind" type="&lt;ds-code inline&gt;&quot;interactions&quot;&lt;/ds-code&gt;" required>Identifies this guideline as an interactions spec.</ds-prop>
+  <ds-prop name="items" type="&lt;ds-type-ref href=&quot;guidelines-interaction.html#interactionentry&quot;&gt;interactionEntry&lt;/ds-type-ref&gt;[]" required>The interaction steps in chronological order. Each item documents a single step with its trigger, description, involved components, and optional examples. Ordering is significant — tools SHOULD preserve and display steps in this order to represent the temporal sequence.<br><small>Min items: 1</small></ds-prop>
 </ds-prop-table>
 <ds-cross-refs><strong>References:</strong> 
 <ds-type-ref href="guidelines-interaction.html#interactionentry">interactionEntry</ds-type-ref>

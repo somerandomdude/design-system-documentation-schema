@@ -21,7 +21,7 @@ const TOC_CSS = `
     font-size: var(--ds-font-size-xs);
     font-weight: 600;
     letter-spacing: var(--ds-tracking-widest);
-    text-transform: uppercase;
+    text-transform: none;
     color: var(--ds-color-text-secondary);
     padding: 0 var(--ds-space-4);
     margin: 0 0 var(--ds-space-2);
