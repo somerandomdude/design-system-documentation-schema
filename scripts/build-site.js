@@ -672,10 +672,14 @@ async function build() {
     path.join(DIST_DIR, "tokens.css"),
   );
 
-  // Copy stylesheet
+  // Copy stylesheets
   fs.copyFileSync(
     path.join(SITE_DIR, "style.css"),
     path.join(DIST_DIR, "style.css"),
+  );
+  fs.copyFileSync(
+    path.join(SITE_DIR, "samples.css"),
+    path.join(DIST_DIR, "samples.css"),
   );
 
   // Build agentation bundle

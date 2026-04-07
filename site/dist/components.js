@@ -784,8 +784,8 @@
     }
     .tab-btn:hover { color: var(--ds-color-text); }
     .tab-btn--active {
-      color: var(--ds-color-accent);
-      border-bottom-color: var(--ds-color-accent);
+      color: var(--ds-color-text);
+      border-bottom-color: var(--ds-color-text);
     }
     .tab-btn:focus-visible {
       outline: var(--ds-border-width-md) solid var(--ds-color-accent);
@@ -811,8 +811,19 @@
     }
 
     connectedCallback() {
-      this._buildBar();
-      this._activate(this.getAttribute("active") || null);
+      if (document.readyState === "loading") {
+        document.addEventListener(
+          "DOMContentLoaded",
+          () => {
+            this._buildBar();
+            this._activate(this.getAttribute("active") || null);
+          },
+          { once: true },
+        );
+      } else {
+        this._buildBar();
+        this._activate(this.getAttribute("active") || null);
+      }
     }
 
     attributeChangedCallback(name) {

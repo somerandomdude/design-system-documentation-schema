@@ -1,18 +1,13 @@
 #!/usr/bin/env node
 /**
- * build-samples.js — Build the interactive samples page from example JSON files.
+ * build-samples.js — Build the interactive samples page.
  *
- * Reads entity examples from spec/examples/, injects them into the HTML
- * template at site/samples-template.html, and writes the result to
- * site/dist/samples.html.
+ * Reads entity examples from spec/examples/, renders them at build time
+ * using the render-entity module, and injects the pre-rendered HTML into
+ * the samples template.
  *
- * Adding a new example:
- *   1. Add an entry to the SAMPLES array below with:
- *      - file:  path to the example JSON file (relative to EXAMPLES_DIR)
- *      - key:   the top-level key inside that file to extract
- *      - id:    a unique slug used for the tab id and data script id
- *      - label: the human-readable tab label
- *   2. Run `node scripts/build-samples.js`
+ * The renderers run server-side — no client-side rendering is needed.
+ * The only client-side JS handles tab switching and hover highlighting.
  *
  * Usage:
  *   node scripts/build-samples.js
@@ -24,6 +19,7 @@
 const fs = require("fs");
 const path = require("path");
 const { buildSpecNav } = require("./nav");
+const { renderComponent, renderToken, resetFid } = require("./render-entity");
 
 // ---------------------------------------------------------------------------
 // Paths
@@ -41,7 +37,7 @@ const OUTPUT_PATH = path.join(OUTPUT_DIR, "samples.html");
 // Each entry describes one tab in the samples page.
 //   file  — path to the example JSON file, relative to EXAMPLES_DIR
 //   key   — the top-level key inside that JSON file to extract
-//   id    — unique slug (used as tab id, script id, renderer key)
+//   id    — unique slug (used as tab id)
 //   label — human-readable tab label
 // ---------------------------------------------------------------------------
 
@@ -101,6 +97,15 @@ function escHtml(s) {
     .replace(/"/g, "&quot;");
 }
 
+/**
+ * Pick the right renderer based on entity kind.
+ * Components, patterns, and styles use renderComponent.
+ * Tokens and themes use renderToken.
+ */
+function pickRenderer(kind) {
+  return kind === "token" || kind === "theme" ? renderToken : renderComponent;
+}
+
 // ---------------------------------------------------------------------------
 // Main
 // ---------------------------------------------------------------------------
@@ -117,10 +122,8 @@ function buildSamples() {
   }
   const template = fs.readFileSync(TEMPLATE_PATH, "utf-8");
 
-  // 2. Load and extract example data for each sample
-  const tabButtons = [];
-  const tabContents = [];
-  const dataScripts = [];
+  // 2. Load examples, render at build time
+  const tabPanels = [];
 
   for (let i = 0; i < SAMPLES.length; i++) {
     const sample = SAMPLES[i];
@@ -144,23 +147,17 @@ function buildSamples() {
       process.exit(1);
     }
 
-    const isFirst = i === 0;
-    const activeClass = isFirst ? " active" : "";
-    const jsonStr = JSON.stringify(entityData, null, 4);
+    // Reset field ID counter between samples so IDs don't collide
+    resetFid();
 
-    // Tab button
-    tabButtons.push(
-      `<button class="tab-btn${activeClass}" data-tab="${escHtml(sample.id)}">${escHtml(sample.label)}</button>`,
-    );
+    // Pick renderer and produce HTML at build time
+    const kind = entityData.kind || sample.key;
+    const renderer = pickRenderer(kind);
+    const renderedHTML = renderer(entityData);
 
-    // Tab content container
-    tabContents.push(
-      `<div class="tab-content${activeClass}" id="tab-${escHtml(sample.id)}"></div>`,
-    );
-
-    // Data script block
-    dataScripts.push(
-      `<script id="${escHtml(sample.id)}-data" type="application/json">\n${jsonStr}\n</script>`,
+    // Tab panel — <ds-tabs> component handles switching
+    tabPanels.push(
+      `<ds-tab label="${escHtml(sample.label)}" id="tab-${escHtml(sample.id)}">${renderedHTML}</ds-tab>`,
     );
 
     console.log(
@@ -168,29 +165,17 @@ function buildSamples() {
     );
   }
 
-  // 3. Build the sample registry that the client-side JS will use.
-  //    This tells the browser which data blocks to load and which
-  //    renderer function to call for each tab.
-  //
-  //    Renderer mapping:
-  //      kind === "component" | "pattern" | "style"  → renderComponent
-  //      kind === "token"                            → renderToken
-  //      kind === "theme"                            → renderToken (similar shape)
-  //      (extensible — add more mappings as renderers are built)
-  const sampleRegistryEntries = SAMPLES.map(function (s) {
-    return `{ id: ${JSON.stringify(s.id)}, key: ${JSON.stringify(s.key)} }`;
-  });
-  const sampleRegistryJS = `[${sampleRegistryEntries.join(", ")}]`;
+  // 3. Substitute placeholders in the template
+  const tabsHtml =
+    "<ds-tabs>\n        " +
+    tabPanels.join("\n        ") +
+    "\n        </ds-tabs>";
 
-  // 4. Substitute placeholders in the template
   let html = template;
   html = html.replace("{{NAV}}", buildSpecNav("samples"));
-  html = html.replace("{{TAB_BUTTONS}}", tabButtons.join("\n            "));
-  html = html.replace("{{TAB_CONTENTS}}", tabContents.join("\n        "));
-  html = html.replace("{{DATA_SCRIPTS}}", dataScripts.join("\n\n        "));
-  html = html.replace("{{SAMPLE_REGISTRY}}", sampleRegistryJS);
+  html = html.replace("{{TAB_CONTENTS}}", tabsHtml);
 
-  // 5. Write output
+  // 4. Write output
   if (!fs.existsSync(OUTPUT_DIR)) {
     fs.mkdirSync(OUTPUT_DIR, { recursive: true });
   }
