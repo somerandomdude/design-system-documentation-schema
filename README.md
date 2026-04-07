@@ -178,7 +178,7 @@ Reference the schema in your DSDS files for editor support:
   "documentation": [
     {
       "name": "My Design System",
-      "items": [
+      "components": [
         {
           "kind": "component",
           "name": "my-component",
@@ -279,7 +279,7 @@ The examples are read from disk at build time, so the guide automatically reflec
 
 ## Document Structure
 
-A DSDS file has a `dsdsVersion` and a `documentation` array. Each entry in `documentation` is a named group containing an `items` array of typed entities. Entities of different types can be mixed freely.
+A DSDS file has a `dsdsVersion` and a `documentation` array. Each entry in `documentation` is a named group with separate typed arrays for each entity kind: `components`, `tokenGroups`, `themes`, `styles`, `patterns`. All arrays are optional.
 
 Three optional top-level properties describe the design system as a whole:
 
@@ -334,12 +334,19 @@ Three optional top-level properties describe the design system as a whole:
   "documentation": [
     {
       "name": "Acme Design System",
-      "items": [
-        { "kind": "token", "name": "color-text-primary", "..." },
-        { "kind": "token-group", "name": "color-palette", "..." },
-        { "kind": "theme", "name": "dark", "..." },
-        { "kind": "style", "name": "spacing", "..." },
-        { "kind": "component", "name": "button", "..." },
+      "components": [
+        { "kind": "component", "name": "button", "..." }
+      ],
+      "tokenGroups": [
+        { "kind": "token-group", "name": "color-palette", "..." }
+      ],
+      "themes": [
+        { "kind": "theme", "name": "dark", "..." }
+      ],
+      "styles": [
+        { "kind": "style", "name": "spacing", "..." }
+      ],
+      "patterns": [
         { "kind": "pattern", "name": "error-messaging", "..." }
       ]
     }
@@ -349,16 +356,16 @@ Three optional top-level properties describe the design system as a whole:
 
 ### Entity Types
 
-Every entity carries a `kind` discriminator, common identity properties (`name`, `displayName`, `description`, `status`), and a `guidelines` array for all structured documentation.
+Each entity kind lives in its own named array within a documentation group. The array name is the primary type indicator. Every entity still carries a `kind` discriminator for use in contexts where the source array is not available, along with common identity properties (`name`, `displayName`, `description`, `status`) and a `guidelines` array for all structured documentation.
 
-| `type` value | Entity | Description |
-|---|---|---|
-| `"component"` | Component | A reusable UI component |
-| `"token"` | Token | A single design token |
-| `"token-group"` | Token Group | A hierarchical group of related tokens (recursive) |
-| `"theme"` | Theme | A named set of token value overrides |
-| `"style"` | Style | A macro-level visual style |
-| `"pattern"` | Pattern | A broad interaction pattern |
+| `kind` value | Entity | Array | Description |
+|---|---|---|---|
+| `"component"` | Component | `components` | A reusable UI component |
+| `"token"` | Token | _(inline in token groups)_ | A single design token |
+| `"token-group"` | Token Group | `tokenGroups` | A hierarchical group of related tokens (recursive) |
+| `"theme"` | Theme | `themes` | A named set of token value overrides |
+| `"style"` | Style | `styles` | A macro-level visual style |
+| `"pattern"` | Pattern | `patterns` | A broad interaction pattern |
 
 ### Status
 

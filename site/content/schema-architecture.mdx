@@ -68,39 +68,50 @@ A DSDS file is a JSON object with a `dsdsVersion` string and a `documentation` a
 
 ### Documentation groups
 
-Each entry in `documentation` is a named collection of typed entities. Different entity types can mix freely in a single `items` array — no need to separate components from tokens from styles. Each entity identifies itself with a `type` discriminator property.
+Each entry in `documentation` is a named collection of typed entities. Entities are organized into separate typed arrays — one for each entity kind. All arrays are optional; include only the ones your documentation needs.
 
 | Property | Type | Required | Description |
 |---|---|---|---|
 | `name` | `string` | Yes | Human-readable name of the collection (e.g., `"Acme Design System"`, `"Color Foundations"`, `"Button Documentation"`). |
 | `description` | `richText` | No | Description of the collection. |
-| `items` | `array` | Yes | One or more typed entities. Each item is a component, token, token-group, theme, style, or pattern identified by its `type` property. Entities of different types can be mixed in any order. |
+| `components` | `array` | No | Component entities. Each item must have `"type": "component"`. |
+| `tokenGroups` | `array` | No | Token group entities (which contain tokens via `children`). Each item must have `"type": "token-group"`. |
+| `themes` | `array` | No | Theme entities. Each item must have `"type": "theme"`. |
+| `styles` | `array` | No | Style entities. Each item must have `"type": "style"`. |
+| `patterns` | `array` | No | Pattern entities. Each item must have `"type": "pattern"`. |
 | `$extensions` | `object` | No | Vendor-specific extensions. |
 
 ### Entity type discriminators
 
-Every entity in the `items` array carries a `type` property that identifies its kind. The `type` is a required string const on every entity schema.
+Every entity carries a `type` property that identifies its kind. The `type` is a required string const on every entity schema. Because entities are placed in typed arrays (`components`, `tokenGroups`, `themes`, `styles`, `patterns`), the array name already determines the expected type — but the `type` property is still required on each entity for self-description and validation.
 
-| `type` value | Entity | Defined in |
-|---|---|---|
-| `"component"` | A reusable UI component | `entities/component.schema.json` |
-| `"token"` | A single design token | `entities/token.schema.json` |
-| `"token-group"` | A nested group of related tokens (recursive) | `entities/token.schema.json` |
-| `"theme"` | A named set of token value overrides | `entities/theme.schema.json` |
-| `"style"` | A macro-level visual style (foundation) | `entities/style.schema.json` |
-| `"pattern"` | A broad interaction pattern | `entities/pattern.schema.json` |
+| `type` value | Array | Entity | Defined in |
+|---|---|---|---|
+| `"component"` | `components` | A reusable UI component | `entities/component.schema.json` |
+| `"token"` | — | A single design token (nested inside token groups via `children`) | `entities/token.schema.json` |
+| `"token-group"` | `tokenGroups` | A nested group of related tokens (recursive) | `entities/token.schema.json` |
+| `"theme"` | `themes` | A named set of token value overrides | `entities/theme.schema.json` |
+| `"style"` | `styles` | A macro-level visual style (foundation) | `entities/style.schema.json` |
+| `"pattern"` | `patterns` | A broad interaction pattern | `entities/pattern.schema.json` |
 
-This discriminated union model means a documentation group can hold any mix of entity types in a single flat array:
+Each typed array accepts only its matching entity type. A documentation group uses as many or as few arrays as needed:
 
 ```json
 {
   "name": "Acme Design System",
-  "items": [
-    { "type": "token", "name": "color-text-primary", "..." },
-    { "type": "token-group", "name": "color-palette", "..." },
-    { "type": "theme", "name": "dark", "..." },
-    { "type": "style", "name": "spacing", "..." },
-    { "type": "component", "name": "button", "..." },
+  "components": [
+    { "type": "component", "name": "button", "..." }
+  ],
+  "tokenGroups": [
+    { "type": "token-group", "name": "color-palette", "..." }
+  ],
+  "themes": [
+    { "type": "theme", "name": "dark", "..." }
+  ],
+  "styles": [
+    { "type": "style", "name": "spacing", "..." }
+  ],
+  "patterns": [
     { "type": "pattern", "name": "empty-state", "..." }
   ]
 }

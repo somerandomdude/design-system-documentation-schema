@@ -49,7 +49,7 @@
     },
     "documentation": {
       "type": "array",
-      "description": "One or more documentation groups. Each group is a named collection of typed entities — components, tokens, token groups, themes, styles, and/or patterns. Multiple groups let a single DSDS file organize entities into logical sections (e.g., one group for foundations, another for components).",
+      "description": "One or more documentation groups. Each group is a named collection that organizes entities into separate typed arrays — components, tokenGroups, themes, styles, and patterns. Multiple groups let a single DSDS file organize entities into logical sections (e.g., one group for foundations, another for components). All entity arrays are optional; a group only needs a name.",
       "items": {
         "$ref": "#/$defs/documentationGroup"
       },
@@ -63,8 +63,8 @@
   "$defs": {
     "documentationGroup": {
       "type": "object",
-      "description": "A named collection of design system documentation entities. Contains a single `items` array of typed entities — components, tokens, token groups, themes, styles, and/or patterns mixed in any order. Each entity is identified by its `kind` discriminator. At least one entity must be present.",
-      "required": ["name", "items"],
+      "description": "A named collection of design system documentation entities. Entities are organized into separate typed arrays — components, tokenGroups, themes, styles, and patterns — rather than a single mixed array. Only the group name is required; all entity arrays are optional, so a group may contain any combination of entity types.",
+      "required": ["name"],
       "properties": {
         "name": {
           "type": "string",
@@ -73,32 +73,40 @@
         "description": {
           "$ref": "common/rich-text.schema.json#/$defs/richText"
         },
-        "items": {
+        "components": {
           "type": "array",
-          "description": "The entities in this documentation group. Each item is a typed entity whose `kind` property determines which schema applies. Different entity types can be mixed in the same array. Ordering is significant: tools SHOULD preserve it for display. Authors MAY organize entities in whatever order best serves their documentation.",
+          "description": "Component entities in this documentation group. Each item describes a UI component — its anatomy, variants, states, accessibility guidelines, and usage rules.",
           "items": {
-            "oneOf": [
-              {
-                "$ref": "entities/component.schema.json#/$defs/component"
-              },
-              {
-                "$ref": "entities/token.schema.json#/$defs/token"
-              },
-              {
-                "$ref": "entities/token.schema.json#/$defs/tokenGroup"
-              },
-              {
-                "$ref": "entities/theme.schema.json#/$defs/theme"
-              },
-              {
-                "$ref": "entities/style.schema.json#/$defs/style"
-              },
-              {
-                "$ref": "entities/pattern.schema.json#/$defs/pattern"
-              }
-            ]
-          },
-          "minItems": 1
+            "$ref": "entities/component.schema.json#/$defs/component"
+          }
+        },
+        "tokenGroups": {
+          "type": "array",
+          "description": "Token group entities in this documentation group. Each item describes a collection of related design tokens — colors, spacing, typography scales, etc.",
+          "items": {
+            "$ref": "entities/token.schema.json#/$defs/tokenGroup"
+          }
+        },
+        "themes": {
+          "type": "array",
+          "description": "Theme entities in this documentation group. Each item describes a theme — a named set of token overrides that customize the visual appearance of the system (e.g., light/dark mode, brand variations).",
+          "items": {
+            "$ref": "entities/theme.schema.json#/$defs/theme"
+          }
+        },
+        "styles": {
+          "type": "array",
+          "description": "Style entities in this documentation group. Each item describes a reusable visual style — a named combination of token values that can be applied to elements (e.g., elevation levels, text styles).",
+          "items": {
+            "$ref": "entities/style.schema.json#/$defs/style"
+          }
+        },
+        "patterns": {
+          "type": "array",
+          "description": "Pattern entities in this documentation group. Each item describes a UX pattern — a reusable solution to a common design problem, composed of one or more components (e.g., form validation, empty states, navigation flows).",
+          "items": {
+            "$ref": "entities/pattern.schema.json#/$defs/pattern"
+          }
         },
         "$extensions": {
           "$ref": "common/extensions.schema.json#/$defs/extensions"
