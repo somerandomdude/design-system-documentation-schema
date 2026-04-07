@@ -18,16 +18,30 @@
     <ds-nav-group label="Documentation">
       <a href="root.html" slug="root">Root schema</a>
     </ds-nav-group>
+    <ds-nav-group label="Metadata">
+      <a href="metadata-aliases.html" slug="metadata-aliases">aliases</a>
+      <a href="metadata-category.html" slug="metadata-category">category</a>
+      <a href="metadata-description.html" slug="metadata-description">description</a>
+      <a href="metadata-extends.html" slug="metadata-extends">extends</a>
+      <a href="metadata-links.html" slug="metadata-links">links</a>
+      <a href="metadata-metadata.html" slug="metadata-metadata">metadata</a>
+      <a href="metadata-preview.html" slug="metadata-preview">preview</a>
+      <a href="metadata-since.html" slug="metadata-since">since</a>
+      <a href="metadata-status.html" slug="metadata-status">status</a>
+      <a href="metadata-summary.html" slug="metadata-summary">summary</a>
+      <a href="metadata-tags.html" slug="metadata-tags">tags</a>
+      <a href="metadata-thumbnail.html" slug="metadata-thumbnail">thumbnail</a>
+    </ds-nav-group>
     <ds-nav-group label="Common">
       <a href="common-example.html" slug="common-example">example</a>
       <a href="common-extends.html" slug="common-extends">extends</a>
       <a href="common-extensions.html" slug="common-extensions">extensions</a>
       <a href="common-link.html" slug="common-link">link</a>
-      <a href="common-metadata.html" slug="common-metadata">metadata</a>
       <a href="common-presentation.html" slug="common-presentation">presentation</a>
       <a href="common-purpose.html" slug="common-purpose">purpose</a>
       <a href="common-rich-text.html" slug="common-rich-text">rich-text</a>
       <a href="common-status.html" slug="common-status">status</a>
+      <a href="common-system-metadata.html" slug="common-system-metadata">system-metadata</a>
     </ds-nav-group>
     <ds-nav-group label="Entities">
       <a href="entities-component.html" slug="entities-component">component</a>
@@ -77,23 +91,25 @@
   <ds-prop name="kind" type="&lt;ds-code inline&gt;&quot;theme&quot;&lt;/ds-code&gt;" required>Identifies this entity as a theme.</ds-prop>
   <ds-prop name="name" type="string" required>Machine-readable identifier for the theme (e.g., 'dark', 'high-contrast', 'compact', 'brand-sub-brand').<br><small>Pattern: <ds-code inline>^[a-z][a-z0-9-]*$</ds-code></small></ds-prop>
   <ds-prop name="displayName" type="string" required>Human-readable name for the theme (e.g., 'Dark Mode', 'High Contrast', 'Compact Density').</ds-prop>
-  <ds-prop name="description" type="&lt;ds-type-ref href=&quot;common-rich-text.html#richtext&quot;&gt;richText&lt;/ds-type-ref&gt;" required>A description of the theme — what context it adapts the system to, when to apply it, and how it differs from default token values. CommonMark supported.</ds-prop>
-  <ds-prop name="metadata" type="&lt;ds-code inline&gt;entityMetadata&lt;/ds-code&gt;[]">Modular metadata entries. Each entry is a typed object with a `kind` discriminator. Types include status, since, tags, category, aliases, summary, thumbnail, preview, extends, and links.</ds-prop>
+  <ds-prop name="metadata" type="&lt;ds-type-ref href=&quot;metadata-metadata.html#entitymetadata&quot;&gt;entityMetadata&lt;/ds-type-ref&gt;[]">Modular metadata entries. Each entry is a typed object with a `kind` discriminator. Types include status, since, tags, category, aliases, summary, thumbnail, preview, extends, and links.</ds-prop>
   <ds-prop name="source" type="object">Reference to the authoritative W3C Design Tokens Format (DTCG) definition. DSDS does not duplicate token values — the DTCG file is the source of truth for resolved values, aliases, and type information.</ds-prop>
   <ds-prop name="overrides" type="&lt;ds-type-ref href=&quot;entities-theme.html#tokenoverride&quot;&gt;tokenOverride&lt;/ds-type-ref&gt;[]">Token overrides that this theme affects. Each entry documents which token is changed and why. Only list tokens whose values differ from the default — unlisted tokens retain their default values. The actual override values live in the DTCG file referenced by source.<br><small>Min items: 1</small></ds-prop>
   <ds-prop name="documentBlocks" type="&lt;ds-type-ref href=&quot;document-blocks-document-blocks.html#tokendocumentblock&quot;&gt;tokenDocumentBlock&lt;/ds-type-ref&gt;[]">All structured docs for this theme as an ordered array of typed document block objects. Themes accept general document block types only (guideline, use-cases, accessibility, examples). Each document block entry has a `type` property that determines its shape. Ordering is significant: tools SHOULD preserve it for display.</ds-prop>
   <ds-prop name="$extensions" type="&lt;ds-type-ref href=&quot;common-extensions.html#extensions&quot;&gt;extensions&lt;/ds-type-ref&gt;"></ds-prop>
 </ds-prop-table>
 <ds-cross-refs><strong>References:</strong> 
-<ds-type-ref href="common-rich-text.html#richtext">richText</ds-type-ref>, <ds-code inline>entityMetadata</ds-code>, <ds-type-ref href="entities-theme.html#tokenoverride">tokenOverride</ds-type-ref>, <ds-type-ref href="document-blocks-document-blocks.html#tokendocumentblock">tokenDocumentBlock</ds-type-ref>, <ds-type-ref href="common-extensions.html#extensions">extensions</ds-type-ref>
+<ds-type-ref href="metadata-metadata.html#entitymetadata">entityMetadata</ds-type-ref>, <ds-type-ref href="entities-theme.html#tokenoverride">tokenOverride</ds-type-ref>, <ds-type-ref href="document-blocks-document-blocks.html#tokendocumentblock">tokenDocumentBlock</ds-type-ref>, <ds-type-ref href="common-extensions.html#extensions">extensions</ds-type-ref>
 </ds-cross-refs>
 <ds-def-example>
 <ds-code language="json" label="example">{
   &quot;kind&quot;: &quot;theme&quot;,
   &quot;name&quot;: &quot;dark&quot;,
   &quot;displayName&quot;: &quot;Dark Mode&quot;,
-  &quot;description&quot;: &quot;The dark color mode theme. Inverts the default light surface/text relationship, using light text on dark backgrounds. Designed for low-light environments, user preference, and reduced eye strain. All override values have been validated to maintain WCAG AA contrast ratios against the dark background surfaces.&quot;,
   &quot;metadata&quot;: [
+    {
+      &quot;kind&quot;: &quot;description&quot;,
+      &quot;value&quot;: &quot;The dark color mode theme. Inverts the default light surface/text relationship, using light text on dark backgrounds. Designed for low-light environments, user preference, and reduced eye strain. All override values have been validated to maintain WCAG AA contrast ratios against the dark background surfaces.&quot;
+    },
     {
       &quot;kind&quot;: &quot;status&quot;,
       &quot;status&quot;: &quot;stable&quot;,

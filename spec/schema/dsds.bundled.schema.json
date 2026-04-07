@@ -18,8 +18,8 @@
       "const": "0.1",
       "description": "The DSDS spec version this document conforms to."
     },
-    "metadata": {
-      "$ref": "#/$defs/metadata"
+    "systemMetadata": {
+      "$ref": "#/$defs/systemMetadata"
     },
     "extends": {
       "$ref": "#/$defs/documentExtends",
@@ -249,37 +249,6 @@
           "type": "boolean",
           "default": false,
           "description": "Whether this linked artifact is required for the parent entity to function. Used for internal artifact references — for example, a form-validation pattern might mark 'form-field' as required and 'toast' as optional. Defaults to false. Not applicable to external resource links."
-        }
-      },
-      "additionalProperties": false
-    },
-    "metadata": {
-      "type": "object",
-      "description": "System-level metadata about the design system.",
-      "required": [
-        "systemName"
-      ],
-      "properties": {
-        "systemName": {
-          "type": "string",
-          "description": "The name of the design system."
-        },
-        "systemVersion": {
-          "type": "string",
-          "description": "The version of the design system."
-        },
-        "organization": {
-          "type": "string",
-          "description": "The organization that maintains the system."
-        },
-        "url": {
-          "type": "string",
-          "format": "uri",
-          "description": "URL to the system's documentation site."
-        },
-        "license": {
-          "type": "string",
-          "description": "SPDX license identifier or license URL."
         }
       },
       "additionalProperties": false
@@ -570,6 +539,37 @@
         }
       ]
     },
+    "systemMetadata": {
+      "type": "object",
+      "description": "System-level metadata about the design system.",
+      "required": [
+        "systemName"
+      ],
+      "properties": {
+        "systemName": {
+          "type": "string",
+          "description": "The name of the design system."
+        },
+        "systemVersion": {
+          "type": "string",
+          "description": "The version of the design system."
+        },
+        "organization": {
+          "type": "string",
+          "description": "The organization that maintains the system."
+        },
+        "url": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL to the system's documentation site."
+        },
+        "license": {
+          "type": "string",
+          "description": "SPDX license identifier or license URL."
+        }
+      },
+      "additionalProperties": false
+    },
     "aliasesMetadata": {
       "type": "object",
       "required": [
@@ -607,6 +607,24 @@
           "type": "string",
           "pattern": "^[a-z][a-z0-9-]*$",
           "description": "Taxonomy category (e.g., 'action', 'navigation', 'feedback', 'base', 'semantic')."
+        }
+      },
+      "additionalProperties": false
+    },
+    "descriptionMetadata": {
+      "type": "object",
+      "required": [
+        "kind",
+        "value"
+      ],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "const": "description"
+        },
+        "value": {
+          "$ref": "#/$defs/richText",
+          "description": "A description of the entity. CommonMark supported."
         }
       },
       "additionalProperties": false
@@ -652,6 +670,9 @@
     },
     "entityMetadata": {
       "oneOf": [
+        {
+          "$ref": "#/$defs/descriptionMetadata"
+        },
         {
           "$ref": "#/$defs/statusMetadata"
         },
@@ -2540,8 +2561,7 @@
       "required": [
         "kind",
         "name",
-        "displayName",
-        "description"
+        "displayName"
       ],
       "properties": {
         "kind": {
@@ -2557,10 +2577,6 @@
         "displayName": {
           "type": "string",
           "description": "Human-readable name for display in docs (e.g., 'Button', 'Dialog', 'Form Field', 'Data Table')."
-        },
-        "description": {
-          "$ref": "#/$defs/richText",
-          "description": "A description of the component — what it is, what it does, and its role in the design system. CommonMark supported."
         },
         "metadata": {
           "type": "array",
@@ -2588,8 +2604,7 @@
       "required": [
         "kind",
         "name",
-        "displayName",
-        "description"
+        "displayName"
       ],
       "properties": {
         "kind": {
@@ -2605,10 +2620,6 @@
         "displayName": {
           "type": "string",
           "description": "Human-readable name for display in docs (e.g., 'Error Messaging', 'Navigation', 'Empty State')."
-        },
-        "description": {
-          "$ref": "#/$defs/richText",
-          "description": "A description of the pattern — what user need it addresses, how it works at a high level, and its role in the design system. CommonMark supported."
         },
         "metadata": {
           "type": "array",
@@ -2636,8 +2647,7 @@
       "required": [
         "kind",
         "name",
-        "displayName",
-        "description"
+        "displayName"
       ],
       "properties": {
         "kind": {
@@ -2653,10 +2663,6 @@
         "displayName": {
           "type": "string",
           "description": "Human-readable name for display in docs (e.g., 'Color', 'Typography', 'Spacing', 'Elevation')."
-        },
-        "description": {
-          "$ref": "#/$defs/richText",
-          "description": "A description of the style — what visual attribute it governs, how the system approaches it, and its role in the design language. CommonMark supported."
         },
         "metadata": {
           "type": "array",
@@ -2702,8 +2708,7 @@
       "required": [
         "kind",
         "name",
-        "displayName",
-        "description"
+        "displayName"
       ],
       "properties": {
         "kind": {
@@ -2719,10 +2724,6 @@
         "displayName": {
           "type": "string",
           "description": "Human-readable name for the theme (e.g., 'Dark Mode', 'High Contrast', 'Compact Density')."
-        },
-        "description": {
-          "$ref": "#/$defs/richText",
-          "description": "A description of the theme — what context it adapts the system to, when to apply it, and how it differs from default token values. CommonMark supported."
         },
         "metadata": {
           "type": "array",
@@ -2785,10 +2786,6 @@
           "type": "string",
           "description": "The token name. Unconstrained by a pattern to accommodate DTCG and design tool naming conventions that use dots, slashes, or other separators (e.g., 'color-text-primary', 'color.text.primary', 'color/text/primary'). Also serves as the human-readable display name."
         },
-        "description": {
-          "$ref": "#/$defs/richText",
-          "description": "A description of the token — what it represents, where to use it, and any constraints. Optional; when omitted, tools MAY generate a description from the token name and type."
-        },
         "tokenType": {
           "type": "string",
           "description": "The type of token aligned with the DTCG spec (e.g., 'color', 'dimension', 'fontFamily', 'fontWeight', 'duration', 'cubicBezier', 'shadow')."
@@ -2844,10 +2841,6 @@
         "name": {
           "type": "string",
           "description": "The token group name. Unconstrained by a pattern to accommodate DTCG and design tool naming conventions (e.g., 'color-text', 'color.text', 'color/text'). Also serves as the human-readable display name."
-        },
-        "description": {
-          "$ref": "#/$defs/richText",
-          "description": "A description of the group's purpose, the tokens it contains, and how they relate. Optional; when omitted, tools MAY generate a description from the group name and children."
         },
         "tokenType": {
           "type": "string",

@@ -58,7 +58,7 @@ spec/
 │   │   ├── example.schema.json                         # example
 │   │   ├── extensions.schema.json                      # $extensions
 │   │   ├── link.schema.json                            # link
-│   │   ├── metadata.schema.json                        # metadata
+│   │   ├── system-metadata.schema.json                 # systemMetadata
 │   │   ├── rich-text.schema.json                       # richText
 │   │   ├── presentation.schema.json                    # presentationImage, presentationVideo, presentationCode, presentationUrl
 │   │   ├── status.schema.json                          # status, statusObject, statusValue, platformStatus
