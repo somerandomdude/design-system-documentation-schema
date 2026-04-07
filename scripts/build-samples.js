@@ -166,14 +166,9 @@ function buildSamples() {
   }
 
   // 3. Substitute placeholders in the template
-  const tabsHtml =
-    "<ds-tabs>\n        " +
-    tabPanels.join("\n        ") +
-    "\n        </ds-tabs>";
-
   let html = template;
   html = html.replace("{{NAV}}", buildSpecNav("samples"));
-  html = html.replace("{{TAB_CONTENTS}}", tabsHtml);
+  html = html.replace("{{TAB_CONTENTS}}", tabPanels.join("\n        "));
 
   // 4. Write output
   if (!fs.existsSync(OUTPUT_DIR)) {
