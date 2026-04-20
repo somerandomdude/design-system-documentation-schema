@@ -236,6 +236,7 @@ These properties are on all entity types. **Required** fields differ by entity t
 | `aliases` | `string[]` | No | Other names for search, migration mapping, and cross-referencing. |
 | `category` | `string` | No | Classification within the system's taxonomy. |
 | `documentBlocks` | `array` | No | Typed document block objects. See [Document block](#document-block). |
+| `agents` | `object` | No | Agent-optimized context for efficient agentic consumption. See [Agents](#agents). |
 | `links` | `array` | No | Typed references to external resources and internal entities. See [Links](#links). |
 | `extends` | `entityExtends` | No | Declares that this entity extends a base entity in a parent system. Available on component and token entities. See [Extends](#extends). |
 | `$extensions` | `object` | No | Vendor-specific extensions. See [Extensions](#extensions). |
@@ -312,6 +313,36 @@ A broad interaction pattern — a recurring, multi-component solution to a commo
 Required properties: `type`, `name`, `displayName`, `description`, `status`.
 
 Patterns reference their participating components through the `links` array (with `type: "component"`, `name`, and `role`) instead of through a dedicated guideline type.
+
+---
+
+## Agents
+
+The optional `agents` property provides context intended exclusively for agentic (AI/LLM) consumption. All properties are optional.
+
+| Property | Type | Description |
+|---|---|---|
+| `intent` | `string` | One sentence stating the primary purpose. Agents use this to determine relevance without parsing the full description. |
+| `constraints` | `array` | Hard rules with `must`/`must-not`/`should`/`should-not` enforcement levels. Each entry has `rule`, `level`, and optional `context`. |
+| `disambiguation` | `array` | Entries resolving confusion with similar entities. Each has `entity` (name) and `distinction` (the deciding criterion). |
+| `antiPatterns` | `array` | Known incorrect uses. Each has `description` (what not to do) and `instead` (correct alternative). |
+| `examples` | `array` | Ready-to-use code examples. Each has `description`, `code`, and optional `language`. |
+| `keywords` | `string[]` | Semantic retrieval terms — synonyms, common query vocabulary, related concepts. |
+
+```json
+{
+  "agents": {
+    "intent": "Trigger a user action within the current view without causing page navigation.",
+    "constraints": [
+      { "rule": "Do not use for navigation between pages.", "level": "must-not" }
+    ],
+    "disambiguation": [
+      { "entity": "link", "distinction": "Use button for in-page actions; use link for navigation to a URL." }
+    ],
+    "keywords": ["action", "submit", "click", "CTA", "trigger"]
+  }
+}
+```
 
 ---
 

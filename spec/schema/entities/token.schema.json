@@ -2,12 +2,16 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://designsystemdocspec.org/v0.1/token.schema.json",
   "title": "DSDS Token and Token Group Definitions",
-  "description": "Documentation for individual design tokens and hierarchical token groups. Token values, aliases, and type information live in the authoritative W3C Design Tokens Format (DTCG) file — DSDS documents the purpose, guidelines, and organizational structure only. Token groups are flexible organizational units — a full token collection, a token family (e.g., all color tokens), or a sub-family (e.g., a single hue family). Groups can contain tokens, nested groups, or both, forming a hierarchy that mirrors how design systems organize tokens. The displayName property is omitted from tokens and token groups — the token name itself serves as the display name. Description and status are optional to reduce verbosity at scale. Shared presentational and classificatory properties (status, since, tags, category, aliases, summary, thumbnail, preview, extends, links) are expressed as typed entries in the modular `metadata` array.",
+  "description": "Documentation for individual design tokens and hierarchical token groups. Token values, aliases, and type information live in the authoritative W3C Design Tokens Format (DTCG) file \u2014 DSDS documents the purpose, guidelines, and organizational structure only. Token groups are flexible organizational units \u2014 a full token collection, a token family (e.g., all color tokens), or a sub-family (e.g., a single hue family). Groups can contain tokens, nested groups, or both, forming a hierarchy that mirrors how design systems organize tokens. The displayName property is omitted from tokens and token groups \u2014 the token name itself serves as the display name. Description and status are optional to reduce verbosity at scale. Shared presentational and classificatory properties (status, since, tags, category, aliases, summary, thumbnail, preview, extends, links) are expressed as typed entries in the modular `metadata` array.",
   "$defs": {
     "token": {
       "type": "object",
-      "description": "Documentation for a single design token — name, type, use cases, guidelines, and accessibility considerations. The displayName property is absent — the token name is the display name. Description and status are optional. Shared presentational and classificatory properties (status, since, tags, category, aliases, summary, thumbnail, preview, extends, links) are expressed as typed entries in the modular `metadata` array rather than as top-level properties. When a token appears inside a token group, an omitted status metadata entry is inherited from the parent group.",
-      "required": ["kind", "name", "tokenType"],
+      "description": "Documentation for a single design token \u2014 name, type, use cases, guidelines, and accessibility considerations. The displayName property is absent \u2014 the token name is the display name. Description and status are optional. Shared presentational and classificatory properties (status, since, tags, category, aliases, summary, thumbnail, preview, extends, links) are expressed as typed entries in the modular `metadata` array rather than as top-level properties. When a token appears inside a token group, an omitted status metadata entry is inherited from the parent group.",
+      "required": [
+        "kind",
+        "name",
+        "tokenType"
+      ],
       "properties": {
         "kind": {
           "type": "string",
@@ -24,7 +28,7 @@
         },
         "source": {
           "type": "object",
-          "description": "Reference to the authoritative W3C Design Tokens Format (DTCG) definition. DSDS does not duplicate token values — the DTCG file is the source of truth for resolved values, aliases, and type information.",
+          "description": "Reference to the authoritative W3C Design Tokens Format (DTCG) definition. DSDS does not duplicate token values \u2014 the DTCG file is the source of truth for resolved values, aliases, and type information.",
           "properties": {
             "file": {
               "type": "string",
@@ -51,6 +55,10 @@
             "$ref": "../document-blocks/document-blocks.schema.json#/$defs/tokenDocumentBlock"
           }
         },
+        "agents": {
+          "$ref": "../common/agents.schema.json#/$defs/agents",
+          "description": "Agent-optimized context for this token \u2014 intent, constraints, disambiguation, anti-patterns, examples, and keywords for efficient agentic consumption."
+        },
         "$extensions": {
           "$ref": "../common/extensions.schema.json#/$defs/extensions"
         }
@@ -59,8 +67,11 @@
     },
     "tokenGroup": {
       "type": "object",
-      "description": "A group of related design tokens. Token groups are flexible organizational units — a full collection, a family (e.g., all color tokens), a sub-family (e.g., a single hue with its grade scale), or any other logical grouping. Groups can nest to form a deep hierarchy. A top-level group might represent 'color', containing child groups for 'color-text', 'color-background', and 'color-border', each with individual tokens. This recursive structure mirrors how real design systems organize tokens into families and sub-families. The displayName property is absent — the group name is the display name. Description and status are optional. Shared presentational and classificatory properties (status, since, tags, category, aliases, summary, thumbnail, preview, links) are expressed as typed entries in the modular `metadata` array rather than as top-level properties. Children inherit the parent group's status metadata entry when they omit their own.",
-      "required": ["kind", "name"],
+      "description": "A group of related design tokens. Token groups are flexible organizational units \u2014 a full collection, a family (e.g., all color tokens), a sub-family (e.g., a single hue with its grade scale), or any other logical grouping. Groups can nest to form a deep hierarchy. A top-level group might represent 'color', containing child groups for 'color-text', 'color-background', and 'color-border', each with individual tokens. This recursive structure mirrors how real design systems organize tokens into families and sub-families. The displayName property is absent \u2014 the group name is the display name. Description and status are optional. Shared presentational and classificatory properties (status, since, tags, category, aliases, summary, thumbnail, preview, links) are expressed as typed entries in the modular `metadata` array rather than as top-level properties. Children inherit the parent group's status metadata entry when they omit their own.",
+      "required": [
+        "kind",
+        "name"
+      ],
       "properties": {
         "kind": {
           "type": "string",
@@ -77,7 +88,7 @@
         },
         "source": {
           "type": "object",
-          "description": "Reference to the authoritative W3C Design Tokens Format (DTCG) definition. DSDS does not duplicate token values — the DTCG file is the source of truth for resolved values, aliases, and type information.",
+          "description": "Reference to the authoritative W3C Design Tokens Format (DTCG) definition. DSDS does not duplicate token values \u2014 the DTCG file is the source of truth for resolved values, aliases, and type information.",
           "properties": {
             "file": {
               "type": "string",
@@ -92,7 +103,7 @@
         },
         "children": {
           "type": "array",
-          "description": "An ordered array of tokens and/or nested token groups in this group. Each item MUST be either a token or a tokenGroup. Ordering is significant — tools SHOULD preserve order for display, as it often represents a meaningful progression (e.g., lightest to darkest, or smallest to largest). Children inherit tokenType and status from this group when they omit their own values.",
+          "description": "An ordered array of tokens and/or nested token groups in this group. Each item MUST be either a token or a tokenGroup. Ordering is significant \u2014 tools SHOULD preserve order for display, as it often represents a meaningful progression (e.g., lightest to darkest, or smallest to largest). Children inherit tokenType and status from this group when they omit their own values.",
           "items": {
             "oneOf": [
               {
@@ -118,6 +129,10 @@
           "items": {
             "$ref": "../document-blocks/document-blocks.schema.json#/$defs/tokenDocumentBlock"
           }
+        },
+        "agents": {
+          "$ref": "../common/agents.schema.json#/$defs/agents",
+          "description": "Agent-optimized context for this token \u2014 intent, constraints, disambiguation, anti-patterns, examples, and keywords for efficient agentic consumption."
         },
         "$extensions": {
           "$ref": "../common/extensions.schema.json#/$defs/extensions"

@@ -367,6 +367,34 @@ Each entity kind lives in its own named array within a documentation group. The 
 | `"style"` | Style | `styles` | A macro-level visual style |
 | `"pattern"` | Pattern | `patterns` | A broad interaction pattern |
 
+### The `agents` property
+
+Every entity accepts an optional `agents` object providing context optimized for AI/LLM consumption. Human-readable content like `documentBlocks` is written for people; `agents` is written for machines.
+
+| Property | Type | Description |
+|---|---|---|
+| `intent` | `string` | One sentence stating the primary purpose. |
+| `constraints` | `array` | Hard rules with `must`/`must-not`/`should`/`should-not` levels. Each entry has `rule`, `level`, and optional `context`. |
+| `disambiguation` | `array` | Confusion-resolution entries against similar entities. Each has `entity` (name) and `distinction` (the deciding criterion). |
+| `antiPatterns` | `array` | Known incorrect uses with corrective alternatives. Each has `description` and `instead`. |
+| `examples` | `array` | Ready-to-use code examples. Each has `description`, `code`, and optional `language`. |
+| `keywords` | `string[]` | Semantic retrieval terms and synonyms. |
+
+```json
+{
+  "agents": {
+    "intent": "Trigger a user action within the current view.",
+    "constraints": [
+      { "rule": "Do not use for page navigation.", "level": "must-not" }
+    ],
+    "disambiguation": [
+      { "entity": "link", "distinction": "Use button for actions; use link for navigation." }
+    ],
+    "keywords": ["action", "submit", "click", "CTA"]
+  }
+}
+```
+
 ### Status
 
 Every entity carries a `status` property that accepts either a plain string for the common case or a full object when platform-specific tracking is needed:

@@ -1,0 +1,116 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://designsystemdocspec.org/v0.1/common/agents.schema.json",
+  "title": "DSDS Agent Context Definition",
+  "description": "Context properties intended exclusively for agentic (AI/LLM) consumption. Provides dense, structured information that allows agents to understand and apply a design system entity without parsing human-oriented prose. All properties are optional — include only what meaningfully improves agentic comprehension.",
+  "$defs": {
+    "agents": {
+      "type": "object",
+      "description": "Agent-optimized context for a design system entity. Each property is structured for direct machine consumption: constraints are explicit and leveled, disambiguation resolves common confusion with similar entities, anti-patterns pair bad practices with correct alternatives, examples provide immediately usable code, and keywords support semantic retrieval.",
+      "properties": {
+        "intent": {
+          "type": "string",
+          "description": "A single sentence stating the primary purpose of this entity — what problem it solves and why it exists. MUST be concrete and distinct from similar entities. Agents use this to quickly determine relevance without parsing the full description."
+        },
+        "constraints": {
+          "type": "array",
+          "description": "Hard rules governing use of this entity. Each constraint pairs an explicit rule with an enforcement level aligned to RFC 2119. Agents use these to validate decisions without inferring rules from prose.",
+          "items": {
+            "type": "object",
+            "required": ["rule", "level"],
+            "properties": {
+              "rule": {
+                "type": "string",
+                "description": "The constraint statement. MUST be concrete, unambiguous, and actionable. Avoid 'use sparingly' or 'when appropriate' — state exact conditions."
+              },
+              "level": {
+                "type": "string",
+                "enum": ["must", "must-not", "should", "should-not"],
+                "description": "Enforcement level. 'must' and 'must-not' are hard constraints — violations are defects. 'should' and 'should-not' are strong recommendations — exceptions require justification."
+              },
+              "context": {
+                "type": "string",
+                "description": "Optional scope or condition under which this constraint applies (e.g., 'when used inside a Dialog', 'for mobile viewports'). Omit when the constraint applies universally."
+              }
+            },
+            "additionalProperties": false
+          },
+          "minItems": 1
+        },
+        "disambiguation": {
+          "type": "array",
+          "description": "Entries resolving common confusion between this entity and similar ones. Each entry names a potentially confusable entity and states the precise distinction. Agents use this to make the correct entity selection without trial and error.",
+          "items": {
+            "type": "object",
+            "required": ["entity", "distinction"],
+            "properties": {
+              "entity": {
+                "type": "string",
+                "description": "The name of the similar or commonly confused entity (e.g., 'button', 'link', 'chip')."
+              },
+              "distinction": {
+                "type": "string",
+                "description": "A concrete statement of what differentiates this entity from the named entity. MUST state the deciding criterion, not just describe each entity separately."
+              }
+            },
+            "additionalProperties": false
+          },
+          "minItems": 1
+        },
+        "antiPatterns": {
+          "type": "array",
+          "description": "Common incorrect uses of this entity. Each entry describes what NOT to do and provides the correct alternative. Agents use these to avoid known failure modes.",
+          "items": {
+            "type": "object",
+            "required": ["description"],
+            "properties": {
+              "description": {
+                "type": "string",
+                "description": "What the anti-pattern looks like — the incorrect usage to avoid."
+              },
+              "instead": {
+                "type": "string",
+                "description": "What to do instead. SHOULD reference a concrete alternative (another entity name, a correct pattern, or a specific approach)."
+              }
+            },
+            "additionalProperties": false
+          },
+          "minItems": 1
+        },
+        "examples": {
+          "type": "array",
+          "description": "Usage examples agents can apply directly. Each example pairs a description of the scenario with code or a structured representation. Prefer minimal, correct examples over exhaustive ones.",
+          "items": {
+            "type": "object",
+            "required": ["description", "code"],
+            "properties": {
+              "description": {
+                "type": "string",
+                "description": "The scenario or use case this example demonstrates."
+              },
+              "code": {
+                "type": "string",
+                "description": "The code or markup for this example. SHOULD be immediately usable with minimal modification."
+              },
+              "language": {
+                "type": "string",
+                "description": "The language or format of the code (e.g., 'html', 'jsx', 'tsx', 'css', 'json'). Omit when the language is obvious from context."
+              }
+            },
+            "additionalProperties": false
+          },
+          "minItems": 1
+        },
+        "keywords": {
+          "type": "array",
+          "description": "Semantic terms that support retrieval and entity matching. Include synonyms, related concepts, common query terms, and vocabulary that designers or engineers use when searching for this entity but that may not appear in its name or description.",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

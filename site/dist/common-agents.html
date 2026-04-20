@@ -3,14 +3,14 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>DSDS Category Metadata — DSDS 0.1</title>
+  <title>DSDS Agent Context Definition — DSDS 0.1</title>
   <link rel="stylesheet" href="tokens.css">
   <link rel="stylesheet" href="style.css">
   <script src="components.js"></script>
 </head>
 <body>
   <ds-nav-toggle target="ds-spec-nav"></ds-nav-toggle>
-  <ds-spec-nav title="Design system documentation standard 0.1" title-href="index.html" active="metadata-category">
+  <ds-spec-nav title="Design system documentation standard 0.1" title-href="index.html" active="common-agents">
     <a href="index.html" slug="index">Overview</a>
     <a href="quickstart.html" slug="quickstart">Quick start</a>
     <a href="schema-architecture.html" slug="schema-architecture">Schema architecture</a>
@@ -70,11 +70,15 @@
   <div class="content content--with-toc">
     <main class="content__main" role="main">
       <div class="content__inner">
-        <ds-schema-header title="DSDS Category Metadata" description="Classification within the design system's taxonomy." source="metadata/category.schema.json"></ds-schema-header>
-<ds-def-section name="categoryMetadata" anchor="categorymetadata" type="object">
+        <ds-schema-header title="DSDS Agent Context Definition" description="Context properties intended exclusively for agentic (AI/LLM) consumption. Provides dense, structured information that allows agents to understand and apply a design system entity without parsing human-oriented prose. All properties are optional — include only what meaningfully improves agentic comprehension." source="common/agents.schema.json"></ds-schema-header>
+<ds-def-section name="agents" anchor="agents" description="Agent-optimized context for a design system entity. Each property is structured for direct machine consumption: constraints are explicit and leveled, disambiguation resolves common confusion with similar entities, anti-patterns pair bad practices with correct alternatives, examples provide immediately usable code, and keywords support semantic retrieval." type="object">
 <ds-prop-table>
-  <ds-prop name="kind" type="&lt;ds-code inline&gt;&quot;category&quot;&lt;/ds-code&gt;" required></ds-prop>
-  <ds-prop name="value" type="string" required>Taxonomy category (e.g., 'action', 'navigation', 'feedback', 'base', 'semantic').<br><small>Pattern: <ds-code inline>^[a-z][a-z0-9-]*$</ds-code></small></ds-prop>
+  <ds-prop name="intent" type="string">A single sentence stating the primary purpose of this entity — what problem it solves and why it exists. MUST be concrete and distinct from similar entities. Agents use this to quickly determine relevance without parsing the full description.</ds-prop>
+  <ds-prop name="constraints" type="object[]">Hard rules governing use of this entity. Each constraint pairs an explicit rule with an enforcement level aligned to RFC 2119. Agents use these to validate decisions without inferring rules from prose.<br><small>Min items: 1</small></ds-prop>
+  <ds-prop name="disambiguation" type="object[]">Entries resolving common confusion between this entity and similar ones. Each entry names a potentially confusable entity and states the precise distinction. Agents use this to make the correct entity selection without trial and error.<br><small>Min items: 1</small></ds-prop>
+  <ds-prop name="antiPatterns" type="object[]">Common incorrect uses of this entity. Each entry describes what NOT to do and provides the correct alternative. Agents use these to avoid known failure modes.<br><small>Min items: 1</small></ds-prop>
+  <ds-prop name="examples" type="object[]">Usage examples agents can apply directly. Each example pairs a description of the scenario with code or a structured representation. Prefer minimal, correct examples over exhaustive ones.<br><small>Min items: 1</small></ds-prop>
+  <ds-prop name="keywords" type="string[]">Semantic terms that support retrieval and entity matching. Include synonyms, related concepts, common query terms, and vocabulary that designers or engineers use when searching for this entity but that may not appear in its name or description.<br><small>Min items: 1</small></ds-prop>
 </ds-prop-table>
 </ds-def-section>
 

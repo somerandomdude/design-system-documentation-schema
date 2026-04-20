@@ -18,21 +18,8 @@
     <ds-nav-group label="Documentation">
       <a href="root.html" slug="root">Root schema</a>
     </ds-nav-group>
-    <ds-nav-group label="Metadata">
-      <a href="metadata-aliases.html" slug="metadata-aliases">aliases</a>
-      <a href="metadata-category.html" slug="metadata-category">category</a>
-      <a href="metadata-description.html" slug="metadata-description">description</a>
-      <a href="metadata-extends.html" slug="metadata-extends">extends</a>
-      <a href="metadata-links.html" slug="metadata-links">links</a>
-      <a href="metadata-metadata.html" slug="metadata-metadata">metadata</a>
-      <a href="metadata-preview.html" slug="metadata-preview">preview</a>
-      <a href="metadata-since.html" slug="metadata-since">since</a>
-      <a href="metadata-status.html" slug="metadata-status">status</a>
-      <a href="metadata-summary.html" slug="metadata-summary">summary</a>
-      <a href="metadata-tags.html" slug="metadata-tags">tags</a>
-      <a href="metadata-thumbnail.html" slug="metadata-thumbnail">thumbnail</a>
-    </ds-nav-group>
     <ds-nav-group label="Common">
+      <a href="common-agents.html" slug="common-agents">agents</a>
       <a href="common-example.html" slug="common-example">example</a>
       <a href="common-extends.html" slug="common-extends">extends</a>
       <a href="common-extensions.html" slug="common-extensions">extensions</a>
@@ -50,7 +37,7 @@
       <a href="entities-theme.html" slug="entities-theme">theme</a>
       <a href="entities-token.html" slug="entities-token">token</a>
     </ds-nav-group>
-    <ds-nav-group label="Document block">
+    <ds-nav-group label="Document blocks">
       <a href="document-blocks-accessibility.html" slug="document-blocks-accessibility">accessibility</a>
       <a href="document-blocks-anatomy.html" slug="document-blocks-anatomy">anatomy</a>
       <a href="document-blocks-api.html" slug="document-blocks-api">api</a>
@@ -65,6 +52,20 @@
       <a href="document-blocks-state.html" slug="document-blocks-state">state</a>
       <a href="document-blocks-variant.html" slug="document-blocks-variant">variant</a>
     </ds-nav-group>
+    <ds-nav-group label="Metadata">
+      <a href="metadata-aliases.html" slug="metadata-aliases">aliases</a>
+      <a href="metadata-category.html" slug="metadata-category">category</a>
+      <a href="metadata-description.html" slug="metadata-description">description</a>
+      <a href="metadata-extends.html" slug="metadata-extends">extends</a>
+      <a href="metadata-links.html" slug="metadata-links">links</a>
+      <a href="metadata-metadata.html" slug="metadata-metadata">metadata</a>
+      <a href="metadata-preview.html" slug="metadata-preview">preview</a>
+      <a href="metadata-since.html" slug="metadata-since">since</a>
+      <a href="metadata-status.html" slug="metadata-status">status</a>
+      <a href="metadata-summary.html" slug="metadata-summary">summary</a>
+      <a href="metadata-tags.html" slug="metadata-tags">tags</a>
+      <a href="metadata-thumbnail.html" slug="metadata-thumbnail">thumbnail</a>
+    </ds-nav-group>
   </ds-spec-nav>
   <div class="content content--with-toc">
     <main class="content__main" role="main">
@@ -77,10 +78,11 @@
   <ds-prop name="displayName" type="string" required>Human-readable name for display in docs (e.g., 'Error Messaging', 'Navigation', 'Empty State').</ds-prop>
   <ds-prop name="metadata" type="&lt;ds-type-ref href=&quot;metadata-metadata.html#entitymetadata&quot;&gt;entityMetadata&lt;/ds-type-ref&gt;[]">Modular metadata entries. Each entry is a typed object with a `kind` discriminator. Types include status, since, tags, category, aliases, summary, thumbnail, preview, extends, and links.</ds-prop>
   <ds-prop name="documentBlocks" type="&lt;ds-type-ref href=&quot;document-blocks-document-blocks.html#patterndocumentblock&quot;&gt;patternDocumentBlock&lt;/ds-type-ref&gt;[]">All structured docs for this pattern as an ordered array of typed document block objects. Patterns accept pattern-specific document block types (interactions) and general types (guidelines, use-cases, accessibility, examples). Each document block entry has a `type` property that determines its shape. Ordering is significant: tools SHOULD preserve it for display. Interaction document block entries rely on ordering to represent chronological flow. Reference participating components through a links metadata entry (with type 'component', name, and role) rather than a dedicated document block type.</ds-prop>
+  <ds-prop name="agents" type="&lt;ds-type-ref href=&quot;common-agents.html#agents&quot;&gt;agents&lt;/ds-type-ref&gt;">Agent-optimized context for this pattern — intent, constraints, disambiguation, anti-patterns, examples, and keywords for efficient agentic consumption.</ds-prop>
   <ds-prop name="$extensions" type="&lt;ds-type-ref href=&quot;common-extensions.html#extensions&quot;&gt;extensions&lt;/ds-type-ref&gt;"></ds-prop>
 </ds-prop-table>
 <ds-cross-refs><strong>References:</strong> 
-<ds-type-ref href="metadata-metadata.html#entitymetadata">entityMetadata</ds-type-ref>, <ds-type-ref href="document-blocks-document-blocks.html#patterndocumentblock">patternDocumentBlock</ds-type-ref>, <ds-type-ref href="common-extensions.html#extensions">extensions</ds-type-ref>
+<ds-type-ref href="metadata-metadata.html#entitymetadata">entityMetadata</ds-type-ref>, <ds-type-ref href="document-blocks-document-blocks.html#patterndocumentblock">patternDocumentBlock</ds-type-ref>, <ds-type-ref href="common-agents.html#agents">agents</ds-type-ref>, <ds-type-ref href="common-extensions.html#extensions">extensions</ds-type-ref>
 </ds-cross-refs>
 <ds-def-example>
 <ds-code language="json" label="example">{
@@ -493,6 +495,44 @@
       &quot;focusManagement&quot;: &quot;On validation failure, focus moves to the error summary. Activating a summary link moves focus to the corresponding field. When a field error is resolved, focus remains on the field. When all errors are resolved and the summary is removed, focus is not moved — the user continues from their current position.&quot;
     }
   ],
+  &quot;agents&quot;: {
+    &quot;intent&quot;: &quot;Guide multi-component composition for surfacing, communicating, and resolving form validation errors.&quot;,
+    &quot;constraints&quot;: [
+      {
+        &quot;rule&quot;: &quot;Always include both an inline field error and a summary when multiple fields fail.&quot;,
+        &quot;level&quot;: &quot;must&quot;
+      },
+      {
+        &quot;rule&quot;: &quot;Do not use toast notifications as the sole error communication for form validation.&quot;,
+        &quot;level&quot;: &quot;must-not&quot;
+      }
+    ],
+    &quot;disambiguation&quot;: [
+      {
+        &quot;entity&quot;: &quot;empty-state&quot;,
+        &quot;distinction&quot;: &quot;Use error-messaging for validation and system errors; use empty-state for the absence of content.&quot;
+      },
+      {
+        &quot;entity&quot;: &quot;alert&quot;,
+        &quot;distinction&quot;: &quot;Use error-messaging for form validation flows; use alert for non-form system or status messages.&quot;
+      }
+    ],
+    &quot;antiPatterns&quot;: [
+      {
+        &quot;description&quot;: &quot;Showing errors only on submit without inline field feedback.&quot;,
+        &quot;instead&quot;: &quot;Show inline errors on field blur and in a summary on submit.&quot;
+      }
+    ],
+    &quot;keywords&quot;: [
+      &quot;error&quot;,
+      &quot;validation&quot;,
+      &quot;form&quot;,
+      &quot;feedback&quot;,
+      &quot;inline-error&quot;,
+      &quot;error-summary&quot;,
+      &quot;alert&quot;
+    ]
+  },
   &quot;$extensions&quot;: {
     &quot;com.designTool&quot;: {
       &quot;patternId&quot;: &quot;pattern-error-messaging-001&quot;

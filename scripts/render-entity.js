@@ -875,6 +875,93 @@ function renderComponent(data) {
       html += sectionPair("links", "Links", codeLines.join("\n"), r);
     })();
 
+  /* ── Agents ─────────────────────────────────────────── */
+  if (data.agents)
+    (function () {
+      var ag = data.agents;
+      var LEVEL_BADGE = {
+        "must": "required",
+        "must-not": "prohibited",
+        "should": "encouraged",
+        "should-not": "discouraged"
+      };
+
+      var codeLines = [synHL("{")];
+      if (ag.intent)         codeLines.push(fieldJSON({ intent: ag.intent }, fid("ag")) + ",");
+      if (ag.constraints)    codeLines.push(fieldJSON({ constraints: ag.constraints }, fid("ag")) + ",");
+      if (ag.disambiguation) codeLines.push(fieldJSON({ disambiguation: ag.disambiguation }, fid("ag")) + ",");
+      if (ag.antiPatterns)   codeLines.push(fieldJSON({ antiPatterns: ag.antiPatterns }, fid("ag")) + ",");
+      if (ag.examples)       codeLines.push(fieldJSON({ examples: ag.examples }, fid("ag")) + ",");
+      if (ag.keywords)       codeLines.push(fieldJSON({ keywords: ag.keywords }, fid("ag")));
+      codeLines.push(synHL("}"));
+
+      var r = "<h2>Agent context</h2>";
+
+      if (ag.intent) {
+        r += '<p class="summary">' + esc(ag.intent) + "</p>";
+      }
+
+      if (ag.constraints && ag.constraints.length) {
+        r +=
+          "<h3>Constraints</h3>" +
+          '<ds-table><table class="data-table"><thead><tr><th>Level</th><th>Rule</th><th>Context</th></tr></thead><tbody>' +
+          ag.constraints.map(function (c) {
+            return (
+              "<tr><td><ds-badge variant=\"" + esc(LEVEL_BADGE[c.level] || c.level) + "\" size=\"sm\">" +
+              esc(c.level) + "</ds-badge></td><td>" + esc(c.rule) + "</td><td>" +
+              esc(c.context || "") + "</td></tr>"
+            );
+          }).join("") +
+          "</tbody></table></ds-table>";
+      }
+
+      if (ag.disambiguation && ag.disambiguation.length) {
+        r +=
+          "<h3>Disambiguation</h3>" +
+          '<ds-table><table class="data-table"><thead><tr><th>Entity</th><th>Distinction</th></tr></thead><tbody>' +
+          ag.disambiguation.map(function (d) {
+            return (
+              "<tr><td><ds-code inline>" + esc(d.entity) + "</ds-code></td><td>" +
+              esc(d.distinction) + "</td></tr>"
+            );
+          }).join("") +
+          "</tbody></table></ds-table>";
+      }
+
+      if (ag.antiPatterns && ag.antiPatterns.length) {
+        r += "<h3>Anti-patterns</h3>";
+        ag.antiPatterns.forEach(function (ap) {
+          r +=
+            '<div class="use-case negative"><div class="use-case-badge">\u2717</div><div>' +
+            esc(ap.description) +
+            (ap.instead
+              ? '<div class="alternative-note"><strong>Instead:</strong> ' + esc(ap.instead) + "</div>"
+              : "") +
+            "</div></div>";
+        });
+      }
+
+      if (ag.examples && ag.examples.length) {
+        r += "<h3>Examples</h3>";
+        ag.examples.forEach(function (ex) {
+          r +=
+            '<p style="font-size:var(--ds-font-size-sm);color:#666;margin:0 0 var(--ds-space-1)">' +
+            esc(ex.description) + "</p>" +
+            '<ds-code language="' + esc(ex.language || "html") + '">' + esc(ex.code) + "</ds-code>";
+        });
+      }
+
+      if (ag.keywords && ag.keywords.length) {
+        r += '<h3>Keywords</h3><div class="tag-list">';
+        ag.keywords.forEach(function (kw) {
+          r += '<ds-tag size="sm">' + esc(kw) + "</ds-tag>";
+        });
+        r += "</div>";
+      }
+
+      html += sectionPair("agents", "Agent context", codeLines.join("\n"), r);
+    })();
+
   return html;
 }
 
@@ -1237,6 +1324,93 @@ function renderToken(data) {
         r += "</div>";
       });
       html += sectionPair("links", "Links", codeLines.join("\n"), r);
+    })();
+
+  /* ── Agents ─────────────────────────────────────────── */
+  if (data.agents)
+    (function () {
+      var ag = data.agents;
+      var LEVEL_BADGE = {
+        "must": "required",
+        "must-not": "prohibited",
+        "should": "encouraged",
+        "should-not": "discouraged"
+      };
+
+      var codeLines = [synHL("{")];
+      if (ag.intent)         codeLines.push(fieldJSON({ intent: ag.intent }, fid("ag")) + ",");
+      if (ag.constraints)    codeLines.push(fieldJSON({ constraints: ag.constraints }, fid("ag")) + ",");
+      if (ag.disambiguation) codeLines.push(fieldJSON({ disambiguation: ag.disambiguation }, fid("ag")) + ",");
+      if (ag.antiPatterns)   codeLines.push(fieldJSON({ antiPatterns: ag.antiPatterns }, fid("ag")) + ",");
+      if (ag.examples)       codeLines.push(fieldJSON({ examples: ag.examples }, fid("ag")) + ",");
+      if (ag.keywords)       codeLines.push(fieldJSON({ keywords: ag.keywords }, fid("ag")));
+      codeLines.push(synHL("}"));
+
+      var r = "<h2>Agent context</h2>";
+
+      if (ag.intent) {
+        r += '<p class="summary">' + esc(ag.intent) + "</p>";
+      }
+
+      if (ag.constraints && ag.constraints.length) {
+        r +=
+          "<h3>Constraints</h3>" +
+          '<ds-table><table class="data-table"><thead><tr><th>Level</th><th>Rule</th><th>Context</th></tr></thead><tbody>' +
+          ag.constraints.map(function (c) {
+            return (
+              "<tr><td><ds-badge variant=\"" + esc(LEVEL_BADGE[c.level] || c.level) + "\" size=\"sm\">" +
+              esc(c.level) + "</ds-badge></td><td>" + esc(c.rule) + "</td><td>" +
+              esc(c.context || "") + "</td></tr>"
+            );
+          }).join("") +
+          "</tbody></table></ds-table>";
+      }
+
+      if (ag.disambiguation && ag.disambiguation.length) {
+        r +=
+          "<h3>Disambiguation</h3>" +
+          '<ds-table><table class="data-table"><thead><tr><th>Entity</th><th>Distinction</th></tr></thead><tbody>' +
+          ag.disambiguation.map(function (d) {
+            return (
+              "<tr><td><ds-code inline>" + esc(d.entity) + "</ds-code></td><td>" +
+              esc(d.distinction) + "</td></tr>"
+            );
+          }).join("") +
+          "</tbody></table></ds-table>";
+      }
+
+      if (ag.antiPatterns && ag.antiPatterns.length) {
+        r += "<h3>Anti-patterns</h3>";
+        ag.antiPatterns.forEach(function (ap) {
+          r +=
+            '<div class="use-case negative"><div class="use-case-badge">\u2717</div><div>' +
+            esc(ap.description) +
+            (ap.instead
+              ? '<div class="alternative-note"><strong>Instead:</strong> ' + esc(ap.instead) + "</div>"
+              : "") +
+            "</div></div>";
+        });
+      }
+
+      if (ag.examples && ag.examples.length) {
+        r += "<h3>Examples</h3>";
+        ag.examples.forEach(function (ex) {
+          r +=
+            '<p style="font-size:var(--ds-font-size-sm);color:#666;margin:0 0 var(--ds-space-1)">' +
+            esc(ex.description) + "</p>" +
+            '<ds-code language="' + esc(ex.language || "html") + '">' + esc(ex.code) + "</ds-code>";
+        });
+      }
+
+      if (ag.keywords && ag.keywords.length) {
+        r += '<h3>Keywords</h3><div class="tag-list">';
+        ag.keywords.forEach(function (kw) {
+          r += '<ds-tag size="sm">' + esc(kw) + "</ds-tag>";
+        });
+        r += "</div>";
+      }
+
+      html += sectionPair("agents", "Agent context", codeLines.join("\n"), r);
     })();
 
   return html;
