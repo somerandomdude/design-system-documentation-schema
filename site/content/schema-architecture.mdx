@@ -344,6 +344,24 @@ The optional `agents` property provides context intended exclusively for agentic
 }
 ```
 
+### Block-level agents
+
+Document blocks also accept the same optional `agents` object. Block-level agent context is scoped to that specific documentation section — an anatomy block's agents might disambiguate part naming, while a guideline block's agents might provide enforcement constraints for AI code generation.
+
+```json
+{
+  "kind": "guideline",
+  "items": ["..."],
+  "agents": {
+    "intent": "Enforce correct Button usage in generated UI code.",
+    "constraints": [
+      { "rule": "Never place two primary buttons on the same surface.", "level": "must-not" }
+    ],
+    "keywords": ["button rules", "best practices", "usage guidelines"]
+  }
+}
+```
+
 ---
 
 ## Status
@@ -400,8 +418,8 @@ Each entity type accepts only the document block types relevant to it. The scopi
 
 | Scope | Used by | Accepts |
 |---|---|---|
-| **Component** | component | anatomy, api, variants, states, design-specifications + general |
-| **Pattern** | pattern | interactions, anatomy, variants, states + general |
+| **Component** | component | anatomy, api, events, variants, states, design-specifications + general |
+| **Pattern** | pattern | interactions, events, anatomy, variants, states + general |
 | **Style** | style | principles, scale, motion + general |
 | **Token** | token, token-group, theme | general only |
 
@@ -418,6 +436,7 @@ Each entity type accepts only the document block types relevant to it. The scopi
 | `"content"` | `labels`, `localization` | contentLabelEntry, localizationEntry | General | Recommended action labels and localization/i18n notes. |
 | `"anatomy"` | `parts` | anatomyEntry | Component, Pattern | Visual structure broken into named parts with token references. |
 | `"api"` | Named arrays | various | Component | Code-level interface — props, events, slots, CSS hooks, methods. |
+| `"events"` | `items` | eventEntry | Component, Pattern | Events emitted by the component — trigger conditions, payload shapes, DOM behavior, lifecycle. |
 | `"variants"` | `items` | variantEntry | Component, Pattern | Dimensions of variation with enumerated values. Optional exclusions. |
 | `"states"` | `items` | stateEntry | Component, Pattern | Interactive states with triggers, token overrides, and previews. |
 | `"design-specifications"` | Named properties | various | Component | Token inventory, spacing, sizing, typography, responsive behavior. |
@@ -425,6 +444,8 @@ Each entity type accepts only the document block types relevant to it. The scopi
 | `"scale"` | `steps` | scaleStep | Style | Ordered progression of token values (spacing scale, type scale, etc.). |
 | `"motion"` | `items` | motionEntry | Style | Named easing curves with cubic-bezier functions and recommended durations. |
 | `"interactions"` | `items` | interactionEntry | Pattern | Ordered steps in a pattern's interaction flow. |
+
+Every document block type accepts an optional `agents` property — the same structure available on entities. Use it to provide AI/LLM context scoped to a specific documentation section.
 
 ---
 

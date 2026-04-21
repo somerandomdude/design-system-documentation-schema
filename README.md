@@ -395,6 +395,26 @@ Every entity accepts an optional `agents` object providing context optimized for
 }
 ```
 
+Document blocks also accept the same optional `agents` object. Block-level agent context is scoped to that specific section — for example, an anatomy block's agents might disambiguate part naming, while a guidelines block's agents might provide enforcement-level constraints for AI code generation:
+
+```json
+{
+  "documentBlocks": [
+    {
+      "kind": "guideline",
+      "items": ["..."],
+      "agents": {
+        "intent": "Enforce correct Button usage in generated UI code.",
+        "constraints": [
+          { "rule": "Never place two primary buttons on the same surface.", "level": "must-not" }
+        ],
+        "keywords": ["button rules", "best practices", "usage guidelines"]
+      }
+    }
+  ]
+}
+```
+
 ### Status
 
 Every entity carries a `status` property that accepts either a plain string for the common case or a full object when platform-specific tracking is needed:
@@ -426,9 +446,9 @@ All structured documentation lives in the `documentBlocks` array on each entity.
 
 | Scope | Used by | Specific types | General types (all entities) |
 |---|---|---|---|
-| **Component** | component | anatomy, api, variants, states, design-specifications | guideline, purpose, accessibility, content |
+| **Component** | component | anatomy, api, events, variants, states, design-specifications | guideline, purpose, accessibility, content |
 | **Style** | style | principles, scale, motion | *(same)* |
-| **Pattern** | pattern | interactions, anatomy, variants, states | *(same)* |
+| **Pattern** | pattern | interactions, events, anatomy, variants, states | *(same)* |
 | **Token** | token, token-group, theme | *(none)* | *(same)* |
 
 ### Document Block Types
@@ -441,6 +461,7 @@ All structured documentation lives in the `documentBlocks` array on each entity.
 | `"content"` | `labels`, `localization` | contentLabelEntry, localizationEntry | Content guidelines and i18n considerations |
 | `"anatomy"` | `parts` | anatomyEntry | Component visual structure with token references |
 | `"api"` | Named arrays | various | Props, events, slots, CSS hooks, methods |
+| `"events"` | `items` | eventEntry | Component events with payloads, DOM behavior, and lifecycle |
 | `"variants"` | `items` | flagVariant \| enumVariant | Dimensions of visual/behavioral variation |
 | `"states"` | `items` | stateEntry | Interactive states with token overrides |
 | `"design-specifications"` | `properties` + `variants` / `sizes` / `states` | various | Design properties, spacing, sizing, typography, responsive — grouped by variant, size, and state |
@@ -448,6 +469,8 @@ All structured documentation lives in the `documentBlocks` array on each entity.
 | `"scale"` | `steps` | scaleStep | Ordered token value progressions |
 | `"motion"` | `items` | motionEntry | Named easing curves with durations and usage |
 | `"interactions"` | `items` | interactionEntry | Pattern flow steps |
+
+Every document block type accepts an optional `agents` property — the same `agents` object available on entities. Block-level agents provide context scoped to that specific documentation section (e.g., constraints specific to accessibility requirements, or disambiguation relevant only to the API surface).
 
 ### Naming Convention
 

@@ -1,0 +1,92 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://designsystemdocspec.org/v0.1/document-blocks/events.schema.json",
+  "title": "DSDS Events Document Block",
+  "description": "Documents the events emitted by a component — what triggers each event, its payload shape, DOM behavior (bubbling, cancelability), and lifecycle information. Separating events from the API block allows tools to render, search, and cross-reference event documentation independently.",
+  "$defs": {
+    "eventEntry": {
+      "type": "object",
+      "description": "A single event emitted by a component. Documents the event name, what triggers it, the payload shape consumers receive, DOM propagation behavior, and lifecycle metadata.",
+      "required": ["name", "description"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "The event name as used in code (e.g., 'onClick', 'onChange', 'onDismiss', 'ds-select'). For custom events, use the full event name including any namespace prefix."
+        },
+        "description": {
+          "$ref": "../common/rich-text.schema.json#/$defs/richText",
+          "description": "When this event fires, what it communicates, and how consumers should respond. Include conditions under which the event does NOT fire (e.g., 'Does not fire when disabled')."
+        },
+        "payload": {
+          "type": "string",
+          "description": "Human-readable description of the event payload shape (e.g., '(event: MouseEvent) => void', '{ value: string, index: number }', 'CustomEvent<{ selectedId: string }>')."
+        },
+        "payloadSchema": {
+          "type": "object",
+          "description": "Machine-readable JSON Schema (Draft 2020-12) describing the event payload or detail object. Enables tooling to generate type definitions and validate event handlers."
+        },
+        "bubbles": {
+          "type": "boolean",
+          "default": true,
+          "description": "Whether the event bubbles up through the DOM tree. Defaults to true. Set to false for events that only fire on the target element."
+        },
+        "cancelable": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether the event can be cancelled via preventDefault(). Defaults to false. When true, document what cancelling the event prevents."
+        },
+        "composed": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether the event crosses shadow DOM boundaries. Defaults to false. Relevant for web components using shadow DOM encapsulation."
+        },
+        "since": {
+          "type": "string",
+          "description": "The version in which this event was introduced."
+        },
+        "deprecated": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether this event is deprecated. Defaults to false."
+        },
+        "deprecationNotice": {
+          "type": "string",
+          "description": "What to use instead when this event is deprecated. Required context when deprecated is true."
+        },
+        "examples": {
+          "type": "array",
+          "description": "Usage examples showing how to listen for and handle this event.",
+          "items": {
+            "$ref": "../common/example.schema.json#/$defs/example"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "events": {
+      "type": "object",
+      "description": "Documents the events emitted by a component as a dedicated document block. Each item describes a single event — its name, trigger conditions, payload shape, DOM behavior, and lifecycle metadata. Separating events from the API block gives tooling a clear, searchable unit for event documentation and allows cross-referencing between events and the states or interactions that trigger them.",
+      "required": ["kind", "items"],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "const": "events",
+          "description": "Identifies this document block as an events spec."
+        },
+        "items": {
+          "type": "array",
+          "description": "The events emitted by this component. Each item documents a single event with its name, description, payload, DOM behavior, and lifecycle metadata.",
+          "items": {
+            "$ref": "#/$defs/eventEntry"
+          },
+          "minItems": 1
+        },
+        "agents": {
+          "$ref": "../common/agents.schema.json#/$defs/agents",
+          "description": "Agent-optimized context for this document block. Provides structured information for AI/LLM consumption — constraints, disambiguation, anti-patterns, examples, and keywords."
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

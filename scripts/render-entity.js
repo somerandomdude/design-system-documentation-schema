@@ -203,6 +203,76 @@ function sectionPair(sectionName, label, codeHTML, renderedHTML) {
   );
 }
 
+/**
+ * Generate code-column JSON lines for a document-block-level agents object.
+ * Returns an array of highlighted lines (empty array if no agents).
+ */
+function blockAgentsCode(agents) {
+  if (!agents) return [];
+  return [",\n" + fieldJSON({ agents: agents }, fid("ba"))];
+}
+
+/**
+ * Generate rendered-column HTML for a document-block-level agents object.
+ * Returns an HTML string (empty string if no agents).
+ * Reuses the same structure as entity-level agents but rendered more compactly.
+ */
+function blockAgentsRendered(agents) {
+  if (!agents) return "";
+  var LEVEL_BADGE = {
+    "must": "required",
+    "must-not": "prohibited",
+    "should": "encouraged",
+    "should-not": "discouraged"
+  };
+
+  var html = '<div style="margin-top:var(--ds-space-4);padding-top:var(--ds-space-3);border-top:1px dashed var(--ds-color-border-light)">';
+  html += '<h3 style="font-size:var(--ds-font-size-sm);color:var(--ds-color-text-muted);letter-spacing:var(--ds-tracking-wide);margin:0 0 var(--ds-space-2)">Agent Context</h3>';
+
+  if (agents.intent) {
+    html += '<p style="font-size:var(--ds-font-size-md);color:#666;margin:0 0 var(--ds-space-2)">' + esc(agents.intent) + '</p>';
+  }
+
+  if (agents.constraints && agents.constraints.length) {
+    html += '<ds-table><table class="data-table"><thead><tr><th>Level</th><th>Rule</th></tr></thead><tbody>';
+    agents.constraints.forEach(function(c) {
+      html += '<tr><td><ds-badge variant="' + esc(LEVEL_BADGE[c.level] || c.level) + '" size="sm">' +
+        esc(c.level) + '</ds-badge></td><td>' + esc(c.rule) +
+        (c.context ? ' <span style="color:#999">(' + esc(c.context) + ')</span>' : '') +
+        '</td></tr>';
+    });
+    html += '</tbody></table></ds-table>';
+  }
+
+  if (agents.disambiguation && agents.disambiguation.length) {
+    html += '<ds-table><table class="data-table"><thead><tr><th>Entity</th><th>Distinction</th></tr></thead><tbody>';
+    agents.disambiguation.forEach(function(d) {
+      html += '<tr><td><ds-code inline>' + esc(d.entity) + '</ds-code></td><td>' + esc(d.distinction) + '</td></tr>';
+    });
+    html += '</tbody></table></ds-table>';
+  }
+
+  if (agents.antiPatterns && agents.antiPatterns.length) {
+    agents.antiPatterns.forEach(function(ap) {
+      html += '<div class="use-case negative" style="font-size:var(--ds-font-size-sm)"><div class="use-case-badge">\u2717</div><div>' +
+        esc(ap.description) +
+        (ap.instead ? '<div class="alternative-note"><strong>Instead:</strong> ' + esc(ap.instead) + '</div>' : '') +
+        '</div></div>';
+    });
+  }
+
+  if (agents.keywords && agents.keywords.length) {
+    html += '<div class="tag-list" style="margin-top:var(--ds-space-2)">';
+    agents.keywords.forEach(function(kw) {
+      html += '<ds-tag size="sm">' + esc(kw) + '</ds-tag>';
+    });
+    html += '</div>';
+  }
+
+  html += '</div>';
+  return html;
+}
+
 /* ═══════════════════════════════════════════════════════
    COMPONENT RENDERER
    ═══════════════════════════════════════════════════════ */
@@ -361,6 +431,8 @@ function renderComponent(data) {
             "</div>",
         );
       }
+      codeLines = codeLines.concat(blockAgentsCode(a.agents));
+      r += blockAgentsRendered(a.agents);
       html += sectionPair("anatomy", "Anatomy", codeLines.join("\n"), r);
     })();
 
@@ -509,7 +581,52 @@ function renderComponent(data) {
             .join("") +
           "</tbody></table></ds-table>";
       }
+      codeLines = codeLines.concat(blockAgentsCode(api.agents));
+      r += blockAgentsRendered(api.agents);
       html += sectionPair("api", "API", codeLines.join("\n"), r);
+    })();
+
+  /* ── Events ───────────────────────────────────────── */
+  if (gMap.events)
+    (function () {
+      var ev = gMap.events;
+      var codeLines = [synHL('"items": [')];
+      var rows = [];
+      (ev.items || []).forEach(function (e, i) {
+        var eid = fid("ev");
+        codeLines.push(
+          fieldJSON(e, eid) + (i < ev.items.length - 1 ? "," : "")
+        );
+        var meta = [];
+        if (e.bubbles === true) meta.push("bubbles");
+        if (e.cancelable === true) meta.push("cancelable");
+        if (e.composed === true) meta.push("composed");
+        var metaStr = meta.length
+          ? ' <span style="font-size:0.75rem;color:#999">(' + meta.join(", ") + ")</span>"
+          : "";
+        rows.push(
+          '<tr class="rf" data-field="' +
+            eid +
+            '"><td><strong>' +
+            esc(e.name) +
+            "</strong>" +
+            metaStr +
+            "</td><td>" +
+            esc(e.payload || "\u2014") +
+            "</td><td>" +
+            esc(e.description) +
+            "</td></tr>"
+        );
+      });
+      codeLines.push(synHL("]"));
+      var r =
+        "<h2>Events</h2>" +
+        '<ds-table><table class="data-table"><thead><tr><th>Event</th><th>Payload</th><th>Description</th></tr></thead><tbody>' +
+        rows.join("") +
+        "</tbody></table></ds-table>";
+      codeLines = codeLines.concat(blockAgentsCode(ev.agents));
+      r += blockAgentsRendered(ev.agents);
+      html += sectionPair("events", "Events", codeLines.join("\n"), r);
     })();
 
   /* ── Variants ─────────────────────────────────────── */
@@ -588,6 +705,8 @@ function renderComponent(data) {
         codeLines.push(synHL("}" + (ii < v.items.length - 1 ? "," : "")));
       });
       codeLines.push(synHL("]"));
+      codeLines = codeLines.concat(blockAgentsCode(v.agents));
+      rHtml += blockAgentsRendered(v.agents);
       html += sectionPair("variants", "Variants", codeLines.join("\n"), rHtml);
     })();
 
@@ -636,6 +755,8 @@ function renderComponent(data) {
         '<ds-table><table class="data-table"><thead><tr><th>State</th><th>Description</th><th>Token Overrides</th></tr></thead><tbody>' +
         rows.join("") +
         "</tbody></table></ds-table>";
+      codeLines = codeLines.concat(blockAgentsCode(st.agents));
+      r += blockAgentsRendered(st.agents);
       html += sectionPair("states", "States", codeLines.join("\n"), r);
     })();
 
@@ -676,6 +797,8 @@ function renderComponent(data) {
         positives +
         "<h3>When Not to Use</h3>" +
         negatives;
+      codeLines = codeLines.concat(blockAgentsCode(pur.agents));
+      r += blockAgentsRendered(pur.agents);
       html += sectionPair("purpose", "Purpose", codeLines.join("\n"), r);
     })();
 
@@ -728,6 +851,8 @@ function renderComponent(data) {
         rCards += rfDiv(bid, card);
       });
       codeLines.push(synHL("]"));
+      codeLines = codeLines.concat(blockAgentsCode(bp.agents));
+      rCards += blockAgentsRendered(bp.agents);
       html += sectionPair(
         "guideline",
         "Guidelines",
@@ -874,6 +999,8 @@ function renderComponent(data) {
             .join("") +
           "</tbody></table></ds-table>";
       }
+      codeLines = codeLines.concat(blockAgentsCode(a11y.agents));
+      r += blockAgentsRendered(a11y.agents);
       html += sectionPair(
         "accessibility",
         "Accessibility",
@@ -1230,13 +1357,15 @@ function renderToken(data) {
         else neg += rfDiv(uid, card);
       });
       codeLines.push(synHL("]"));
+      codeLines = codeLines.concat(blockAgentsCode(pur.agents));
       html += sectionPair(
         "purpose",
         "Purpose",
         codeLines.join("\n"),
         "<h2>Purpose</h2><h3>When to Use</h3>" +
           pos +
-          (neg ? "<h3>When Not to Use</h3>" + neg : ""),
+          (neg ? "<h3>When Not to Use</h3>" + neg : "") +
+          blockAgentsRendered(pur.agents),
       );
     })();
 
@@ -1269,6 +1398,8 @@ function renderToken(data) {
         rCards += rfDiv(bid, card);
       });
       codeLines.push(synHL("]"));
+      codeLines = codeLines.concat(blockAgentsCode(bp.agents));
+      rCards += blockAgentsRendered(bp.agents);
       html += sectionPair(
         "guideline",
         "Guidelines",
@@ -1329,6 +1460,8 @@ function renderToken(data) {
             .join("") +
           "</tbody></table></ds-table>";
       }
+      codeLines = codeLines.concat(blockAgentsCode(a11y.agents));
+      r += blockAgentsRendered(a11y.agents);
       html += sectionPair(
         "accessibility",
         "Accessibility",
@@ -1481,4 +1614,6 @@ module.exports = {
   renderStatusHTML: renderStatusHTML,
   sectionPair: sectionPair,
   normalizeEntity: normalizeEntity,
+  blockAgentsCode: blockAgentsCode,
+  blockAgentsRendered: blockAgentsRendered,
 };

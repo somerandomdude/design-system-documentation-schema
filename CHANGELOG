@@ -4,6 +4,84 @@ All notable changes to the DSDS specification are documented in this file.
 
 ---
 
+## [0.1.5] — 2025-07-15
+
+### Additions
+
+#### 1. `agents` property on all document block types
+
+Every document block type now accepts an optional `agents` property — the same `agents` object available on entities. This allows block-level AI/LLM context that is scoped to a specific documentation section rather than the entity as a whole.
+
+Affected schemas:
+- `accessibility.schema.json`
+- `anatomy.schema.json`
+- `api.schema.json`
+- `content.schema.json`
+- `design-specifications.schema.json`
+- `guideline.schema.json`
+- `interaction.schema.json`
+- `motion.schema.json`
+- `principle.schema.json`
+- `scale.schema.json`
+- `state.schema.json`
+- `variant.schema.json`
+
+The `agents` object provides:
+- `intent` — one-sentence purpose statement
+- `constraints` — leveled rules (must/must-not/should/should-not)
+- `disambiguation` — confusion-resolution against similar entities
+- `antiPatterns` — incorrect uses with corrective alternatives
+- `examples` — ready-to-use code samples
+- `keywords` — semantic retrieval terms
+
+**Example:**
+```json
+{
+  "kind": "guideline",
+  "items": [...],
+  "agents": {
+    "intent": "Enforce correct Button usage in generated UI code.",
+    "constraints": [
+      { "rule": "Never place two primary buttons on the same surface.", "level": "must-not" }
+    ]
+  }
+}
+```
+
+All entity examples have been updated to demonstrate block-level agents.
+
+#### 2. `events` document block type
+
+A new `events` document block type documents the events emitted by a component as a dedicated, independently renderable section. Each event entry supports:
+
+- `name` — event name as used in code
+- `description` — trigger conditions and consumer guidance
+- `payload` / `payloadSchema` — human-readable and machine-readable payload descriptions
+- `bubbles`, `cancelable`, `composed` — DOM propagation behavior flags
+- `since`, `deprecated`, `deprecationNotice` — lifecycle metadata
+- `examples` — usage examples
+
+The `events` block is accepted on **component** and **pattern** entities.
+
+**Example:**
+```json
+{
+  "kind": "events",
+  "items": [
+    {
+      "name": "onClick",
+      "description": "Fires when the button is activated.",
+      "payload": "(event: MouseEvent) => void",
+      "bubbles": true,
+      "cancelable": false,
+      "since": "1.0.0"
+    }
+  ]
+}
+```
+
+---
+
 ## [0.1.4] — 2026-02-26
 
 ### Breaking Changes
