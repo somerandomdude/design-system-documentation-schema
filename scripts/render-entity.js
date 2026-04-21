@@ -27,6 +27,50 @@ var LINK_ICONS = {
   related: "",
 };
 
+/* ── Normalize metadata array into flat properties ──── */
+/**
+ * Entity JSON files store summary, description, status, since, tags,
+ * category, aliases and links inside a `metadata` array.  The renderers
+ * expect them as direct top-level properties.  This function copies them
+ * out so the rest of the code works unchanged.
+ */
+function normalizeEntity(data) {
+  if (!data || !Array.isArray(data.metadata)) return data;
+  data.metadata.forEach(function (m) {
+    switch (m.kind) {
+      case "description":
+        if (data.description == null) data.description = m.value;
+        break;
+      case "summary":
+        if (data.summary == null) data.summary = m.value;
+        break;
+      case "status":
+        if (data.status == null)
+          data.status = {
+            overall: m.status,
+            platforms: m.platformStatus || null,
+          };
+        break;
+      case "since":
+        if (data.since == null) data.since = m.value;
+        break;
+      case "tags":
+        if (data.tags == null) data.tags = m.items;
+        break;
+      case "category":
+        if (data.category == null) data.category = m.value;
+        break;
+      case "aliases":
+        if (data.aliases == null) data.aliases = m.items;
+        break;
+      case "links":
+        if (data.links == null) data.links = m.items;
+        break;
+    }
+  });
+  return data;
+}
+
 /* ── Unique field id counter ────────────────────────── */
 var _fid = 0;
 
@@ -163,6 +207,7 @@ function sectionPair(sectionName, label, codeHTML, renderedHTML) {
    COMPONENT RENDERER
    ═══════════════════════════════════════════════════════ */
 function renderComponent(data) {
+  normalizeEntity(data);
   var html = "";
   var gMap = {};
   if (data.documentBlocks)
@@ -969,6 +1014,7 @@ function renderComponent(data) {
    TOKEN RENDERER
    ═══════════════════════════════════════════════════════ */
 function renderToken(data) {
+  normalizeEntity(data);
   var html = "";
   var gMap = {};
   if (data.documentBlocks)
@@ -1434,4 +1480,5 @@ module.exports = {
   normalizeStatus: normalizeStatus,
   renderStatusHTML: renderStatusHTML,
   sectionPair: sectionPair,
+  normalizeEntity: normalizeEntity,
 };
