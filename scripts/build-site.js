@@ -730,6 +730,19 @@ async function build() {
   // ── Samples page ────────────────────────────────────────────────────
   buildSamples();
 
+  // ── Versioned bundled schema ─────────────────────────────────────────
+  const bundledSchemaPath = path.join(SCHEMA_DIR, "dsds.bundled.schema.json");
+  if (fs.existsSync(bundledSchemaPath)) {
+    const bundledSchema = JSON.parse(fs.readFileSync(bundledSchemaPath, "utf-8"));
+    const version = bundledSchema.properties?.dsdsVersion?.const;
+    if (version) {
+      const versionDir = path.join(DIST_DIR, `v${version}`);
+      fs.mkdirSync(versionDir, { recursive: true });
+      fs.copyFileSync(bundledSchemaPath, path.join(versionDir, "dsds.bundled.schema.json"));
+      console.log(`  ✓  site/dist/v${version}/dsds.bundled.schema.json  ← spec/schema/dsds.bundled.schema.json\n`);
+    }
+  }
+
   console.log(
     `\nDone. ${mdxPages.length + pages.length + 1} pages built to site/dist/\n`,
   );
