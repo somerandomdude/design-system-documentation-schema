@@ -25,7 +25,32 @@ DSDS (Design System Documentation Standard) is a JSON-based format for documenti
 
 ## Document structure
 
-A DSDS file is a JSON document with a version and one or more documentation groups. Each group contains an array of typed entities.
+A DSDS file requires `dsdsVersion` and one of two shapes:
+
+### Single-entity files
+
+Use `entity` when each component, token, or pattern lives in its own file. The `kind` field on the entity identifies its type.
+
+```json
+{
+  "$schema": "https://designsystemdocspec.org/v0.1/dsds.bundled.schema.json",
+  "dsdsVersion": "0.1",
+  "entity": {
+    "kind": "component",
+    "name": "button",
+    "displayName": "Button",
+    "metadata": [
+      { "kind": "description", "value": "An interactive element that triggers an action." },
+      { "kind": "status", "status": "stable" }
+    ],
+    "documentBlocks": []
+  }
+}
+```
+
+### Multi-entity files
+
+Use `documentation` when you want to organize multiple entities in one file, or as a manifest that references individual entity files.
 
 ```json
 {
@@ -47,15 +72,34 @@ A DSDS file is a JSON document with a version and one or more documentation grou
 }
 ```
 
-That's the full top-level structure:
-
 - `dsdsVersion` — always `"0.1"` for this version
 - `documentation` — array of named groups, each with typed entity arrays
-- `components`, `tokenGroups`, `themes`, `styles`, `patterns` — separate arrays for each entity type. All are optional — include only the ones you need.
+- `components`, `tokenGroups`, `themes`, `styles`, `patterns` — separate arrays for each entity type. All are optional.
+
+### Linking files with `$ref`
+
+Entity arrays accept `$ref` objects that point to other DSDS files. This lets you keep entities in individual files while assembling them in a manifest:
+
+```json
+{
+  "dsdsVersion": "0.1",
+  "documentation": [
+    {
+      "name": "Acme Design System",
+      "components": [
+        { "$ref": "./button.dsds.json#/entity" },
+        { "$ref": "./link.dsds.json#/entity" }
+      ]
+    }
+  ]
+}
+```
+
+The `#/entity` fragment is a JSON Pointer targeting the `entity` value in the referenced file. Tooling resolves `$ref` objects before validation using a library like [`json-schema-ref-parser`](https://github.com/APIDevTools/json-schema-ref-parser).
 
 <ds-callout variant="tip">
 
-**Tip:** You can split entities into groups — one for base styles, one for components, one for tokens. Or put them all in one group. The schema allows both.
+**Tip:** Use single-entity files + a `$ref` manifest for large systems where each component is owned by a different team. Use a single multi-entity file for smaller systems or when you want everything in one place.
 
 </ds-callout>
 
@@ -247,7 +291,12 @@ Add `$schema` to get editor autocompletion and inline validation:
 {
   "$schema": "https://designsystemdocspec.org/v0.1/dsds.bundled.schema.json",
   "dsdsVersion": "0.1",
-  "documentation": []
+  "entity": {
+    "kind": "component",
+    "name": "my-component",
+    "displayName": "My Component",
+    "metadata": []
+  }
 }
 ```
 
