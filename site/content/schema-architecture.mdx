@@ -51,7 +51,7 @@ spec/schema/
 
 ## Document structure
 
-A DSDS file is a JSON object with a `dsdsVersion` string and a `documentation` array. Each documentation group is a named collection of one or more typed entities.
+A DSDS file is a JSON object with a required `dsdsVersion` and exactly one of two primary shapes: a `documentation` array for multi-entity documents, or an `entity` object for single-entity files. Every valid DSDS document must have one or the other.
 
 ### Root properties
 
@@ -62,7 +62,8 @@ A DSDS file is a JSON object with a `dsdsVersion` string and a `documentation` a
 | `systemMetadata` | `object` | No | System-level metadata about the design system. See [Metadata](#metadata). |
 | `purpose` | `object` | No | System-level purpose describing what the design system is for and when to adopt it. See [Root Purpose](#root-purpose). |
 | `bestPractices` | `array` | No | System-level best practices that apply across the whole design system. See [Root Best Practices](#root-best-practices). |
-| `documentation` | `array` | Yes | One or more documentation groups. See [Documentation Groups](#documentation-groups). |
+| `documentation` | `array` | Conditional | One or more documentation groups. Required when `entity` is absent. See [Documentation Groups](#documentation-groups). |
+| `entity` | `object` | Conditional | A single entity — component, token, token-group, theme, style, or pattern. Required when `documentation` is absent. See [Single-entity documents](#single-entity-documents). |
 | `extends` | `object` | No | Declares that this document extends another DSDS document — typically a core design system. See [Extends](#extends). |
 | `$extensions` | `object` | No | Vendor-specific extensions. See [Extensions](#extensions). |
 
@@ -70,16 +71,81 @@ A DSDS file is a JSON object with a `dsdsVersion` string and a `documentation` a
 
 Each entry in `documentation` is a named collection of typed entities. Entities are organized into separate typed arrays — one for each entity kind. All arrays are optional; include only the ones your documentation needs.
 
+Every entity array accepts either inline entity objects or `$ref` objects pointing to external DSDS files (see [Multi-file documents](#multi-file-documents)). The `documentation` array itself also accepts `$ref` objects, allowing whole groups to be defined in separate files.
+
 | Property | Type | Required | Description |
 |---|---|---|---|
 | `name` | `string` | Yes | Human-readable name of the collection (e.g., `"Acme Design System"`, `"Color Foundations"`, `"Button Documentation"`). |
 | `description` | `richText` | No | Description of the collection. |
-| `components` | `array` | No | Component entities. Each item must have `"type": "component"`. |
-| `tokenGroups` | `array` | No | Token group entities (which contain tokens via `children`). Each item must have `"type": "token-group"`. |
-| `themes` | `array` | No | Theme entities. Each item must have `"type": "theme"`. |
-| `styles` | `array` | No | Style entities. Each item must have `"type": "style"`. |
-| `patterns` | `array` | No | Pattern entities. Each item must have `"type": "pattern"`. |
+| `components` | `array` | No | Component entities or `$ref` objects. Each inline item must have `"kind": "component"`. |
+| `tokenGroups` | `array` | No | Token group entities or `$ref` objects. Each inline item must have `"kind": "token-group"`. |
+| `themes` | `array` | No | Theme entities or `$ref` objects. Each inline item must have `"kind": "theme"`. |
+| `styles` | `array` | No | Style entities or `$ref` objects. Each inline item must have `"kind": "style"`. |
+| `patterns` | `array` | No | Pattern entities or `$ref` objects. Each inline item must have `"kind": "pattern"`. |
 | `$extensions` | `object` | No | Vendor-specific extensions. |
+
+### Single-entity documents
+
+When each entity lives in its own file, use the `entity` property instead of `documentation`. The `kind` field on the entity identifies its type.
+
+```json
+{
+  "$schema": "https://designsystemdocspec.org/v0.1/dsds.bundled.schema.json",
+  "dsdsVersion": "0.1",
+  "entity": {
+    "kind": "component",
+    "name": "button",
+    "displayName": "Button",
+    "metadata": [
+      { "kind": "description", "value": "An interactive element that triggers an action." },
+      { "kind": "status", "status": "stable" }
+    ],
+    "documentBlocks": []
+  }
+}
+```
+
+Valid `kind` values for `entity`: `"component"`, `"token"`, `"token-group"`, `"theme"`, `"style"`, `"pattern"`.
+
+### Multi-file documents
+
+Entity arrays support `$ref` JSON Reference objects alongside inline entities. This allows large design systems to split documentation across individual files while maintaining a single manifest that assembles them.
+
+Each `$ref` object has one property — `$ref` — containing a URI or relative path to a DSDS file, optionally followed by a JSON Pointer fragment that targets a specific value within that file.
+
+**Individual entity file** (`button.dsds.json`):
+```json
+{
+  "dsdsVersion": "0.1",
+  "entity": {
+    "kind": "component",
+    "name": "button",
+    "displayName": "Button",
+    "metadata": []
+  }
+}
+```
+
+**Manifest file** (`index.dsds.json`):
+```json
+{
+  "dsdsVersion": "0.1",
+  "documentation": [
+    {
+      "name": "Acme Design System",
+      "components": [
+        { "$ref": "./button.dsds.json#/entity" },
+        { "$ref": "./link.dsds.json#/entity" }
+      ],
+      "tokenGroups": [
+        { "$ref": "./tokens/color.dsds.json#/entity" }
+      ]
+    }
+  ]
+}
+```
+
+The `#/entity` fragment is a JSON Pointer — it pulls the `entity` value out of the referenced file. Tooling resolves all `$ref` objects into a merged document before validation, using a library such as [`json-schema-ref-parser`](https://github.com/APIDevTools/json-schema-ref-parser). The schema validates the structure of `$ref` objects; resolution and deep validation of referenced content is the responsibility of consuming tooling.
 
 ### Entity type discriminators
 

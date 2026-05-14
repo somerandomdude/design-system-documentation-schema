@@ -169,23 +169,35 @@ To validate your own DSDS file:
 npx ajv validate -s spec/schema/dsds.bundled.schema.json -d my-system.dsds.json
 ```
 
-Reference the schema in your DSDS files for editor support:
+Reference the schema in your DSDS files for editor support. Use the `entity` form for single-entity files:
 
 ```json
 {
-  "$schema": "./spec/schema/dsds.schema.json",
+  "$schema": "https://designsystemdocspec.org/v0.1/dsds.bundled.schema.json",
+  "dsdsVersion": "0.1",
+  "entity": {
+    "kind": "component",
+    "name": "my-component",
+    "displayName": "My Component",
+    "metadata": [
+      { "kind": "description", "value": "A brief description." },
+      { "kind": "status", "status": "draft" }
+    ]
+  }
+}
+```
+
+Or the `documentation` form for multi-entity files:
+
+```json
+{
+  "$schema": "https://designsystemdocspec.org/v0.1/dsds.bundled.schema.json",
   "dsdsVersion": "0.1",
   "documentation": [
     {
       "name": "My Design System",
       "components": [
-        {
-          "kind": "component",
-          "name": "my-component",
-          "displayName": "My Component",
-          "description": "A brief description.",
-          "status": { "status": "draft" }
-        }
+        { "$ref": "./my-component.dsds.json#/entity" }
       ]
     }
   ]
@@ -279,7 +291,10 @@ The examples are read from disk at build time, so the guide automatically reflec
 
 ## Document Structure
 
-A DSDS file has a `dsdsVersion` and a `documentation` array. Each entry in `documentation` is a named group with separate typed arrays for each entity kind: `components`, `tokenGroups`, `themes`, `styles`, `patterns`. All arrays are optional.
+A DSDS file requires `dsdsVersion` and exactly one of two top-level properties:
+
+- **`documentation`** — an array of named groups, each containing typed entity arrays. Use this for multi-entity documents or when you want to organize entities into named sections.
+- **`entity`** — a single entity object. Use this when each entity lives in its own file.
 
 Three optional top-level properties describe the design system as a whole:
 
@@ -290,6 +305,31 @@ Three optional top-level properties describe the design system as a whole:
 **`bestPractices`** (optional) — system-level best practices that apply across the entire design system. These are cross-cutting rules like "always use semantic tokens" or "test all components at 200% zoom" — not component-specific guidance (which lives in each entity's `documentBlocks` array). Each entry pairs an actionable `guidance` statement with a `rationale` and an enforcement `kind`.
 
 > **System-level vs. entity-level:** The root `purpose` and `bestPractices` apply to the design system as a whole. They are distinct from the entity-level `purpose` and `guideline` document block types that appear inside each entity's `documentBlocks` array.
+
+### Single-entity form
+
+When each entity lives in its own file, use `entity` instead of `documentation`:
+
+```json
+{
+  "$schema": "https://designsystemdocspec.org/v0.1/dsds.bundled.schema.json",
+  "dsdsVersion": "0.1",
+  "entity": {
+    "kind": "component",
+    "name": "button",
+    "displayName": "Button",
+    "metadata": [
+      { "kind": "description", "value": "An interactive element that triggers an action." },
+      { "kind": "status", "status": "stable" }
+    ],
+    "documentBlocks": []
+  }
+}
+```
+
+The `kind` field on the entity identifies its type. Valid values are `"component"`, `"token"`, `"token-group"`, `"theme"`, `"style"`, and `"pattern"`.
+
+### Multi-group form
 
 ```json
 {
@@ -353,6 +393,46 @@ Three optional top-level properties describe the design system as a whole:
   ]
 }
 ```
+
+### Multi-file documents
+
+Large design systems can split entities across individual files and reference them from a manifest using `$ref` JSON References. Each entity file uses the `entity` form; the manifest uses `$ref` objects in its entity arrays:
+
+**`button.dsds.json`**
+```json
+{
+  "dsdsVersion": "0.1",
+  "entity": {
+    "kind": "component",
+    "name": "button",
+    "displayName": "Button",
+    "metadata": []
+  }
+}
+```
+
+**`index.dsds.json`** (manifest)
+```json
+{
+  "dsdsVersion": "0.1",
+  "documentation": [
+    {
+      "name": "Acme Design System",
+      "components": [
+        { "$ref": "./button.dsds.json#/entity" },
+        { "$ref": "./link.dsds.json#/entity" }
+      ],
+      "tokenGroups": [
+        { "$ref": "./tokens/color.dsds.json#/entity" }
+      ]
+    }
+  ]
+}
+```
+
+The `#/entity` fragment is a JSON Pointer — it pulls the `entity` value out of the referenced file. Tooling resolves all `$ref` objects into a single merged document (using a library like [`json-schema-ref-parser`](https://github.com/APIDevTools/json-schema-ref-parser)) before validation. `$ref` is also supported in `documentation` array items, allowing whole groups to be referenced from external files.
+
+See [`spec/examples/multi-file/`](spec/examples/multi-file/) for a validated example.
 
 ### Entity Types
 
