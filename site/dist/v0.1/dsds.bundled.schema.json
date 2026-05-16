@@ -5,8 +5,7 @@
   "description": "Single-file bundled version of the DSDS schema. Auto-generated from the split schema files by scripts/bundle.js. Use the split files for development; use this file for tools that require a single schema document.",
   "type": "object",
   "required": [
-    "dsdsVersion",
-    "documentation"
+    "dsdsVersion"
   ],
   "properties": {
     "$schema": {
@@ -52,11 +51,41 @@
     },
     "documentation": {
       "type": "array",
-      "description": "One or more documentation groups. Each group is a named collection that organizes entities into separate typed arrays — components, tokenGroups, themes, styles, and patterns. Multiple groups let a single DSDS file organize entities into logical sections (e.g., one group for foundations, another for components). All entity arrays are optional; a group only needs a name.",
+      "description": "One or more documentation groups. Each group is a named collection that organizes entities into separate typed arrays — components, tokenGroups, themes, styles, and patterns. Multiple groups let a single DSDS file organize entities into logical sections (e.g., one group for foundations, another for components). All entity arrays are optional; a group only needs a name. Items may be inlined or referenced via a $ref object pointing to another DSDS file.",
       "items": {
-        "$ref": "#/$defs/documentationGroup"
+        "oneOf": [
+          {
+            "$ref": "#/$defs/documentationGroup"
+          },
+          {
+            "$ref": "#/$defs/fileRef"
+          }
+        ]
       },
       "minItems": 1
+    },
+    "entity": {
+      "description": "A single entity document — one component, token, token group, theme, style, or pattern. Use this instead of `documentation` when each entity lives in its own file. The `kind` field on the entity identifies its type.",
+      "oneOf": [
+        {
+          "$ref": "#/$defs/component"
+        },
+        {
+          "$ref": "#/$defs/pattern"
+        },
+        {
+          "$ref": "#/$defs/style"
+        },
+        {
+          "$ref": "#/$defs/theme"
+        },
+        {
+          "$ref": "#/$defs/token"
+        },
+        {
+          "$ref": "#/$defs/tokenGroup"
+        }
+      ]
     },
     "$extensions": {
       "$ref": "#/$defs/extensions"
@@ -1199,7 +1228,7 @@
     },
     "apiProperty": {
       "type": "object",
-      "description": "A configurable property of a component. Pairs a human-readable type string with an optional machine-readable JSON Schema for tooling.",
+      "description": "A configurable property of a component.",
       "required": [
         "name",
         "type",
@@ -1213,7 +1242,14 @@
         },
         "type": {
           "type": "string",
-          "description": "A human-readable type description for display (e.g., \"'primary' | 'secondary' | 'ghost'\", 'boolean', 'IconComponent')."
+          "description": "The property's type as it would appear in a type signature (e.g., 'boolean', 'number', 'string', 'ReactNode', 'IconComponent'). For enum properties, use `values` instead of encoding members here."
+        },
+        "values": {
+          "type": "array",
+          "description": "The accepted values for enum-like properties (e.g., ['default', 'primary', 'ghost']). Use this instead of encoding members in `type`.",
+          "items": {
+            "type": "string"
+          }
         },
         "schema": {
           "type": "object",
@@ -1270,9 +1306,9 @@
           "$ref": "#/$defs/richText",
           "description": "When this event fires, what it communicates, and how consumers should respond."
         },
-        "payload": {
+        "returns": {
           "type": "string",
-          "description": "Description of the event payload shape (e.g., '(event: MouseEvent) => void', '{ value: string, index: number }')."
+          "description": "Description of the event return shape (e.g., '(event: MouseEvent) => void', '{ value: string, index: number }')."
         },
         "since": {
           "type": "string",
@@ -2035,7 +2071,7 @@
         },
         {
           "$ref": "#/$defs/events",
-          "description": "Events emitted by the component — trigger conditions, payload shapes, DOM behavior (bubbling, cancelability, composed), and lifecycle metadata."
+          "description": "Events emitted by the component — trigger conditions, return shapes, DOM behavior (bubbling, cancelability, composed), and lifecycle metadata."
         },
         {
           "$ref": "#/$defs/variants",
@@ -2113,7 +2149,7 @@
         },
         {
           "$ref": "#/$defs/events",
-          "description": "Events emitted during the pattern's interaction flow — trigger conditions, payload shapes, and lifecycle metadata."
+          "description": "Events emitted during the pattern's interaction flow — trigger conditions, return shapes, and lifecycle metadata."
         },
         {
           "$ref": "#/$defs/guideline"
@@ -2148,7 +2184,7 @@
     },
     "eventEntry": {
       "type": "object",
-      "description": "A single event emitted by a component. Documents the event name, what triggers it, the payload shape consumers receive, DOM propagation behavior, and lifecycle metadata.",
+      "description": "A single event emitted by a component. Documents the event name, what triggers it, the return shape consumers receive, DOM propagation behavior, and lifecycle metadata.",
       "required": [
         "name",
         "description"
@@ -2162,13 +2198,13 @@
           "$ref": "#/$defs/richText",
           "description": "When this event fires, what it communicates, and how consumers should respond. Include conditions under which the event does NOT fire (e.g., 'Does not fire when disabled')."
         },
-        "payload": {
+        "returns": {
           "type": "string",
-          "description": "Human-readable description of the event payload shape (e.g., '(event: MouseEvent) => void', '{ value: string, index: number }', 'CustomEvent<{ selectedId: string }>')."
+          "description": "Human-readable description of the event return shape (e.g., '(event: MouseEvent) => void', '{ value: string, index: number }', 'CustomEvent<{ selectedId: string }>')."
         },
-        "payloadSchema": {
+        "returnsSchema": {
           "type": "object",
-          "description": "Machine-readable JSON Schema (Draft 2020-12) describing the event payload or detail object. Enables tooling to generate type definitions and validate event handlers."
+          "description": "Machine-readable JSON Schema (Draft 2020-12) describing the event return or detail object. Enables tooling to generate type definitions and validate event handlers."
         },
         "bubbles": {
           "type": "boolean",
@@ -2210,7 +2246,7 @@
     },
     "events": {
       "type": "object",
-      "description": "Documents the events emitted by a component as a dedicated document block. Each item describes a single event — its name, trigger conditions, payload shape, DOM behavior, and lifecycle metadata. Separating events from the API block gives tooling a clear, searchable unit for event documentation and allows cross-referencing between events and the states or interactions that trigger them.",
+      "description": "Documents the events emitted by a component as a dedicated document block. Each item describes a single event — its name, trigger conditions, return shape, DOM behavior, and lifecycle metadata. Separating events from the API block gives tooling a clear, searchable unit for event documentation and allows cross-referencing between events and the states or interactions that trigger them.",
       "required": [
         "kind",
         "items"
@@ -2223,7 +2259,7 @@
         },
         "items": {
           "type": "array",
-          "description": "The events emitted by this component. Each item documents a single event with its name, description, payload, DOM behavior, and lifecycle metadata.",
+          "description": "The events emitted by this component. Each item documents a single event with its name, description, return shape, DOM behavior, and lifecycle metadata.",
           "items": {
             "$ref": "#/$defs/eventEntry"
           },
@@ -3194,6 +3230,20 @@
       },
       "additionalProperties": false
     },
+    "fileRef": {
+      "type": "object",
+      "description": "A JSON Reference to a DSDS entity or documentation group defined in another file. Tooling (e.g. json-schema-ref-parser) resolves the reference before validation and merge. The URI should include a JSON Pointer fragment to target a specific value within the referenced file (e.g. './button.dsds.json#/entity', './groups/tokens.dsds.json#/documentation/0').",
+      "required": [
+        "$ref"
+      ],
+      "properties": {
+        "$ref": {
+          "type": "string",
+          "description": "A relative or absolute URI pointing to a DSDS file, optionally with a JSON Pointer fragment identifying the target value within that file."
+        }
+      },
+      "additionalProperties": false
+    },
     "documentationGroup": {
       "type": "object",
       "description": "A named collection of design system documentation entities. Entities are organized into separate typed arrays — components, tokenGroups, themes, styles, and patterns — rather than a single mixed array. Only the group name is required; all entity arrays are optional, so a group may contain any combination of entity types.",
@@ -3210,37 +3260,72 @@
         },
         "components": {
           "type": "array",
-          "description": "Component entities in this documentation group. Each item describes a UI component — its anatomy, variants, states, accessibility guidelines, and usage rules.",
+          "description": "Component entities in this documentation group. Each item describes a UI component — its anatomy, variants, states, accessibility guidelines, and usage rules. Items may be inlined or referenced via a $ref object pointing to another DSDS file.",
           "items": {
-            "$ref": "#/$defs/component"
+            "oneOf": [
+              {
+                "$ref": "#/$defs/component"
+              },
+              {
+                "$ref": "#/$defs/fileRef"
+              }
+            ]
           }
         },
         "tokenGroups": {
           "type": "array",
-          "description": "Token group entities in this documentation group. Each item describes a collection of related design tokens — colors, spacing, typography scales, etc.",
+          "description": "Token group entities in this documentation group. Each item describes a collection of related design tokens — colors, spacing, typography scales, etc. Items may be inlined or referenced via a $ref object pointing to another DSDS file.",
           "items": {
-            "$ref": "#/$defs/tokenGroup"
+            "oneOf": [
+              {
+                "$ref": "#/$defs/tokenGroup"
+              },
+              {
+                "$ref": "#/$defs/fileRef"
+              }
+            ]
           }
         },
         "themes": {
           "type": "array",
-          "description": "Theme entities in this documentation group. Each item describes a theme — a named set of token overrides that customize the visual appearance of the system (e.g., light/dark mode, brand variations).",
+          "description": "Theme entities in this documentation group. Each item describes a theme — a named set of token overrides that customize the visual appearance of the system (e.g., light/dark mode, brand variations). Items may be inlined or referenced via a $ref object pointing to another DSDS file.",
           "items": {
-            "$ref": "#/$defs/theme"
+            "oneOf": [
+              {
+                "$ref": "#/$defs/theme"
+              },
+              {
+                "$ref": "#/$defs/fileRef"
+              }
+            ]
           }
         },
         "styles": {
           "type": "array",
-          "description": "Style entities in this documentation group. Each item describes a reusable visual style — a named combination of token values that can be applied to elements (e.g., elevation levels, text styles).",
+          "description": "Style entities in this documentation group. Each item describes a reusable visual style — a named combination of token values that can be applied to elements (e.g., elevation levels, text styles). Items may be inlined or referenced via a $ref object pointing to another DSDS file.",
           "items": {
-            "$ref": "#/$defs/style"
+            "oneOf": [
+              {
+                "$ref": "#/$defs/style"
+              },
+              {
+                "$ref": "#/$defs/fileRef"
+              }
+            ]
           }
         },
         "patterns": {
           "type": "array",
-          "description": "Pattern entities in this documentation group. Each item describes a UX pattern — a reusable solution to a common design problem, composed of one or more components (e.g., form validation, empty states, navigation flows).",
+          "description": "Pattern entities in this documentation group. Each item describes a UX pattern — a reusable solution to a common design problem, composed of one or more components (e.g., form validation, empty states, navigation flows). Items may be inlined or referenced via a $ref object pointing to another DSDS file.",
           "items": {
-            "$ref": "#/$defs/pattern"
+            "oneOf": [
+              {
+                "$ref": "#/$defs/pattern"
+              },
+              {
+                "$ref": "#/$defs/fileRef"
+              }
+            ]
           }
         },
         "$extensions": {

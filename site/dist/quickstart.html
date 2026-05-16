@@ -84,7 +84,26 @@
 </ul>
 <hr />
 <ds-heading level="2" anchor="document-structure">Document structure</ds-heading>
-<p>A DSDS file is a JSON document with a version and one or more documentation groups. Each group contains an array of typed entities.</p>
+<p>A DSDS file requires <ds-code inline>dsdsVersion</ds-code> and one of two shapes:</p>
+<ds-heading level="3" anchor="single-entity-files">Single-entity files</ds-heading>
+<p>Use <ds-code inline>entity</ds-code> when each component, token, or pattern lives in its own file. The <ds-code inline>kind</ds-code> field on the entity identifies its type.</p>
+<ds-code language="json">{
+  "$schema": "https://designsystemdocspec.org/v0.1/dsds.bundled.schema.json",
+  "dsdsVersion": "0.1",
+  "entity": {
+    "kind": "component",
+    "name": "button",
+    "displayName": "Button",
+    "metadata": [
+      { "kind": "description", "value": "An interactive element that triggers an action." },
+      { "kind": "status", "status": "stable" }
+    ],
+    "documentBlocks": []
+  }
+}
+</ds-code>
+<ds-heading level="3" anchor="multi-entity-files">Multi-entity files</ds-heading>
+<p>Use <ds-code inline>documentation</ds-code> when you want to organize multiple entities in one file, or as a manifest that references individual entity files.</p>
 <ds-code language="json">{
   "dsdsVersion": "0.1",
   "documentation": [
@@ -103,13 +122,28 @@
   ]
 }
 </ds-code>
-<p>That's the full top-level structure:</p>
 <ul>
 <li><ds-code inline>dsdsVersion</ds-code> — always <ds-code inline>"0.1"</ds-code> for this version</li>
 <li><ds-code inline>documentation</ds-code> — array of named groups, each with typed entity arrays</li>
-<li><ds-code inline>components</ds-code>, <ds-code inline>tokenGroups</ds-code>, <ds-code inline>themes</ds-code>, <ds-code inline>styles</ds-code>, <ds-code inline>patterns</ds-code> — separate arrays for each entity type. All are optional — include only the ones you need.</li>
+<li><ds-code inline>components</ds-code>, <ds-code inline>tokenGroups</ds-code>, <ds-code inline>themes</ds-code>, <ds-code inline>styles</ds-code>, <ds-code inline>patterns</ds-code> — separate arrays for each entity type. All are optional.</li>
 </ul>
-<ds-callout variant="tip"><p><strong>Tip:</strong> You can split entities into groups — one for base styles, one for components, one for tokens. Or put them all in one group. The schema allows both.</p></ds-callout>
+<ds-heading level="3" anchor="linking-files-with-ref">Linking files with <ds-code inline>$ref</ds-code></ds-heading>
+<p>Entity arrays accept <ds-code inline>$ref</ds-code> objects that point to other DSDS files. This lets you keep entities in individual files while assembling them in a manifest:</p>
+<ds-code language="json">{
+  "dsdsVersion": "0.1",
+  "documentation": [
+    {
+      "name": "Acme Design System",
+      "components": [
+        { "$ref": "./button.dsds.json#/entity" },
+        { "$ref": "./link.dsds.json#/entity" }
+      ]
+    }
+  ]
+}
+</ds-code>
+<p>The <ds-code inline>#/entity</ds-code> fragment is a JSON Pointer targeting the <ds-code inline>entity</ds-code> value in the referenced file. Tooling resolves <ds-code inline>$ref</ds-code> objects before validation using a library like <a href="https://github.com/APIDevTools/json-schema-ref-parser"><ds-code inline>json-schema-ref-parser</ds-code></a>.</p>
+<ds-callout variant="tip"><p><strong>Tip:</strong> Use single-entity files + a <ds-code inline>$ref</ds-code> manifest for large systems where each component is owned by a different team. Use a single multi-entity file for smaller systems or when you want everything in one place.</p></ds-callout>
 <hr />
 <ds-heading level="2" anchor="entity-types">Entity types</ds-heading>
 <p>Every entity has a <ds-code inline>kind</ds-code> field that tells tools what type of thing it is. There are six kinds.</p>
@@ -137,7 +171,7 @@
 <hr />
 <ds-heading level="2" anchor="the-document-block-system">The document block system</ds-heading>
 <p>Structured docs live in the <ds-code inline>documentBlocks</ds-code> array on each entity. Each document block entry is typed by its <ds-code inline>kind</ds-code> field.</p>
-<ds-table><table><thead><tr><th>Kind</th><th>Applies To</th><th>Description</th></tr></thead><tbody><tr><td><ds-code inline>anatomy</ds-code></td><td>component, pattern</td><td>Named parts that make up the entity, with optional design-token mapping per part</td></tr><tr><td><ds-code inline>api</ds-code></td><td>component</td><td>Properties, events, slots, and CSS custom properties</td></tr><tr><td><ds-code inline>events</ds-code></td><td>component, pattern</td><td>Events emitted by the component — trigger conditions, payloads, DOM behavior</td></tr><tr><td><ds-code inline>variants</ds-code></td><td>component, pattern</td><td>Named variant axes (e.g. size, color) with discrete values</td></tr><tr><td><ds-code inline>states</ds-code></td><td>component, pattern</td><td>Interactive states (hover, disabled, …) with per-state token overrides</td></tr><tr><td><ds-code inline>purpose</ds-code></td><td>all</td><td>When to use / when not to use, with options for negative cases</td></tr><tr><td><ds-code inline>guideline</ds-code></td><td>all</td><td>Actionable guidance paired with rationale and enforcement level</td></tr><tr><td><ds-code inline>accessibility</ds-code></td><td>component, pattern</td><td>WCAG level, keyboard interactions, ARIA attributes, screen-reader behavior</td></tr><tr><td><ds-code inline>content</ds-code></td><td>component, pattern</td><td>Writing and labelling guidelines for UI text</td></tr><tr><td><ds-code inline>interaction</ds-code></td><td>component, pattern</td><td>Step-by-step action flows with optional wireframes</td></tr><tr><td><ds-code inline>design-specifications</ds-code></td><td>component, pattern</td><td>Concrete measurements, spacing, and sizing values for implementors</td></tr><tr><td><ds-code inline>scale</ds-code></td><td>style</td><td>Named stops along a design scale (e.g. spacing-100…spacing-900)</td></tr><tr><td><ds-code inline>motion</ds-code></td><td>style</td><td>Named animation/transition presets with duration, easing, and purpose</td></tr><tr><td><ds-code inline>principle</ds-code></td><td>style</td><td>Guiding design principles with rationale and examples</td></tr></tbody></table></ds-table>
+<ds-table><table><thead><tr><th>Kind</th><th>Applies To</th><th>Description</th></tr></thead><tbody><tr><td><ds-code inline>anatomy</ds-code></td><td>component, pattern</td><td>Named parts that make up the entity, with optional design-token mapping per part</td></tr><tr><td><ds-code inline>api</ds-code></td><td>component</td><td>Properties, events, slots, and CSS custom properties</td></tr><tr><td><ds-code inline>events</ds-code></td><td>component, pattern</td><td>Events emitted by the component — trigger conditions, return shapes, DOM behavior</td></tr><tr><td><ds-code inline>variants</ds-code></td><td>component, pattern</td><td>Named variant axes (e.g. size, color) with discrete values</td></tr><tr><td><ds-code inline>states</ds-code></td><td>component, pattern</td><td>Interactive states (hover, disabled, …) with per-state token overrides</td></tr><tr><td><ds-code inline>purpose</ds-code></td><td>all</td><td>When to use / when not to use, with options for negative cases</td></tr><tr><td><ds-code inline>guideline</ds-code></td><td>all</td><td>Actionable guidance paired with rationale and enforcement level</td></tr><tr><td><ds-code inline>accessibility</ds-code></td><td>component, pattern</td><td>WCAG level, keyboard interactions, ARIA attributes, screen-reader behavior</td></tr><tr><td><ds-code inline>content</ds-code></td><td>component, pattern</td><td>Writing and labelling guidelines for UI text</td></tr><tr><td><ds-code inline>interaction</ds-code></td><td>component, pattern</td><td>Step-by-step action flows with optional wireframes</td></tr><tr><td><ds-code inline>design-specifications</ds-code></td><td>component, pattern</td><td>Concrete measurements, spacing, and sizing values for implementors</td></tr><tr><td><ds-code inline>scale</ds-code></td><td>style</td><td>Named stops along a design scale (e.g. spacing-100…spacing-900)</td></tr><tr><td><ds-code inline>motion</ds-code></td><td>style</td><td>Named animation/transition presets with duration, easing, and purpose</td></tr><tr><td><ds-code inline>principle</ds-code></td><td>style</td><td>Guiding design principles with rationale and examples</td></tr></tbody></table></ds-table>
 <p>Every document block type also accepts an optional <ds-code inline>agents</ds-code> property for AI/LLM-optimized context scoped to that section. See <a href="schema-architecture.html#block-level-agents">Schema Architecture</a> for details.</p>
 <ds-heading level="3" anchor="purpose-when-to-use-it">Purpose: when to use it</ds-heading>
 <p>The <ds-code inline>purpose</ds-code> guideline lists scenarios. Each use case is <ds-code inline>"positive"</ds-code> (do use) or <ds-code inline>"negative"</ds-code> (don't use, with an option):</p>
@@ -905,7 +939,12 @@
 <ds-code language="json">{
   "$schema": "https://designsystemdocspec.org/v0.1/dsds.bundled.schema.json",
   "dsdsVersion": "0.1",
-  "documentation": []
+  "entity": {
+    "kind": "component",
+    "name": "my-component",
+    "displayName": "My Component",
+    "metadata": []
+  }
 }
 </ds-code>
 <ds-heading level="3" anchor="using-the-cli">Using the CLI</ds-heading>

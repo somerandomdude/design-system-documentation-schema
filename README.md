@@ -541,7 +541,7 @@ All structured documentation lives in the `documentBlocks` array on each entity.
 | `"content"` | `labels`, `localization` | contentLabelEntry, localizationEntry | Content guidelines and i18n considerations |
 | `"anatomy"` | `parts` | anatomyEntry | Component visual structure with token references |
 | `"api"` | Named arrays | various | Props, events, slots, CSS hooks, methods |
-| `"events"` | `items` | eventEntry | Component events with payloads, DOM behavior, and lifecycle |
+| `"events"` | `items` | eventEntry | Component events with return shapes, DOM behavior, and lifecycle |
 | `"variants"` | `items` | flagVariant \| enumVariant | Dimensions of visual/behavioral variation |
 | `"states"` | `items` | stateEntry | Interactive states with token overrides |
 | `"design-specifications"` | `properties` + `variants` / `sizes` / `states` | various | Design properties, spacing, sizing, typography, responsive — grouped by variant, size, and state |

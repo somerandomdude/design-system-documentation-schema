@@ -2,11 +2,11 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://designsystemdocspec.org/v0.1/document-blocks/events.schema.json",
   "title": "DSDS Events Document Block",
-  "description": "Documents the events emitted by a component — what triggers each event, its payload shape, DOM behavior (bubbling, cancelability), and lifecycle information. Separating events from the API block allows tools to render, search, and cross-reference event documentation independently.",
+  "description": "Documents the events emitted by a component — what triggers each event, its return shape, DOM behavior (bubbling, cancelability), and lifecycle information. Separating events from the API block allows tools to render, search, and cross-reference event documentation independently.",
   "$defs": {
     "eventEntry": {
       "type": "object",
-      "description": "A single event emitted by a component. Documents the event name, what triggers it, the payload shape consumers receive, DOM propagation behavior, and lifecycle metadata.",
+      "description": "A single event emitted by a component. Documents the event name, what triggers it, the return shape consumers receive, DOM propagation behavior, and lifecycle metadata.",
       "required": ["name", "description"],
       "properties": {
         "name": {
@@ -17,13 +17,13 @@
           "$ref": "../common/rich-text.schema.json#/$defs/richText",
           "description": "When this event fires, what it communicates, and how consumers should respond. Include conditions under which the event does NOT fire (e.g., 'Does not fire when disabled')."
         },
-        "payload": {
+        "returns": {
           "type": "string",
-          "description": "Human-readable description of the event payload shape (e.g., '(event: MouseEvent) => void', '{ value: string, index: number }', 'CustomEvent<{ selectedId: string }>')."
+          "description": "Human-readable description of the event return shape (e.g., '(event: MouseEvent) => void', '{ value: string, index: number }', 'CustomEvent<{ selectedId: string }>')."
         },
-        "payloadSchema": {
+        "returnsSchema": {
           "type": "object",
-          "description": "Machine-readable JSON Schema (Draft 2020-12) describing the event payload or detail object. Enables tooling to generate type definitions and validate event handlers."
+          "description": "Machine-readable JSON Schema (Draft 2020-12) describing the event return or detail object. Enables tooling to generate type definitions and validate event handlers."
         },
         "bubbles": {
           "type": "boolean",
@@ -65,7 +65,7 @@
     },
     "events": {
       "type": "object",
-      "description": "Documents the events emitted by a component as a dedicated document block. Each item describes a single event — its name, trigger conditions, payload shape, DOM behavior, and lifecycle metadata. Separating events from the API block gives tooling a clear, searchable unit for event documentation and allows cross-referencing between events and the states or interactions that trigger them.",
+      "description": "Documents the events emitted by a component as a dedicated document block. Each item describes a single event — its name, trigger conditions, return shape, DOM behavior, and lifecycle metadata. Separating events from the API block gives tooling a clear, searchable unit for event documentation and allows cross-referencing between events and the states or interactions that trigger them.",
       "required": ["kind", "items"],
       "properties": {
         "kind": {
@@ -75,7 +75,7 @@
         },
         "items": {
           "type": "array",
-          "description": "The events emitted by this component. Each item documents a single event with its name, description, payload, DOM behavior, and lifecycle metadata.",
+          "description": "The events emitted by this component. Each item documents a single event with its name, description, return shape, DOM behavior, and lifecycle metadata.",
           "items": {
             "$ref": "#/$defs/eventEntry"
           },

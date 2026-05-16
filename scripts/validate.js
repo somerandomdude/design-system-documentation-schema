@@ -4,7 +4,7 @@
  *
  * Validates:
  *   1. All .dsds.json files in spec/examples/ (recursively) against the bundled schema
- *   2. All per-definition example files in spec/examples/{common,guidelines,entities}/
+ *   2. All per-definition example files in spec/examples/{common,document-blocks,entities}/
  *      against their matching $defs in the bundled schema
  *   3. Bare entity files (e.g. spec/examples/minimal/*.json) against their
  *      entity $def, detected via the top-level `type` property

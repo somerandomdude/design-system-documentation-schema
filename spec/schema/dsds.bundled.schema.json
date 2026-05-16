@@ -1228,7 +1228,7 @@
     },
     "apiProperty": {
       "type": "object",
-      "description": "A configurable property of a component. Pairs a human-readable type string with an optional machine-readable JSON Schema for tooling.",
+      "description": "A configurable property of a component.",
       "required": [
         "name",
         "type",
@@ -1242,7 +1242,14 @@
         },
         "type": {
           "type": "string",
-          "description": "A human-readable type description for display (e.g., \"'primary' | 'secondary' | 'ghost'\", 'boolean', 'IconComponent')."
+          "description": "The property's type as it would appear in a type signature (e.g., 'boolean', 'number', 'string', 'ReactNode', 'IconComponent'). For enum properties, use `values` instead of encoding members here."
+        },
+        "values": {
+          "type": "array",
+          "description": "The accepted values for enum-like properties (e.g., ['default', 'primary', 'ghost']). Use this instead of encoding members in `type`.",
+          "items": {
+            "type": "string"
+          }
         },
         "schema": {
           "type": "object",
@@ -1299,9 +1306,9 @@
           "$ref": "#/$defs/richText",
           "description": "When this event fires, what it communicates, and how consumers should respond."
         },
-        "payload": {
+        "returns": {
           "type": "string",
-          "description": "Description of the event payload shape (e.g., '(event: MouseEvent) => void', '{ value: string, index: number }')."
+          "description": "Description of the event return shape (e.g., '(event: MouseEvent) => void', '{ value: string, index: number }')."
         },
         "since": {
           "type": "string",
@@ -2064,7 +2071,7 @@
         },
         {
           "$ref": "#/$defs/events",
-          "description": "Events emitted by the component — trigger conditions, payload shapes, DOM behavior (bubbling, cancelability, composed), and lifecycle metadata."
+          "description": "Events emitted by the component — trigger conditions, return shapes, DOM behavior (bubbling, cancelability, composed), and lifecycle metadata."
         },
         {
           "$ref": "#/$defs/variants",
@@ -2142,7 +2149,7 @@
         },
         {
           "$ref": "#/$defs/events",
-          "description": "Events emitted during the pattern's interaction flow — trigger conditions, payload shapes, and lifecycle metadata."
+          "description": "Events emitted during the pattern's interaction flow — trigger conditions, return shapes, and lifecycle metadata."
         },
         {
           "$ref": "#/$defs/guideline"
@@ -2177,7 +2184,7 @@
     },
     "eventEntry": {
       "type": "object",
-      "description": "A single event emitted by a component. Documents the event name, what triggers it, the payload shape consumers receive, DOM propagation behavior, and lifecycle metadata.",
+      "description": "A single event emitted by a component. Documents the event name, what triggers it, the return shape consumers receive, DOM propagation behavior, and lifecycle metadata.",
       "required": [
         "name",
         "description"
@@ -2191,13 +2198,13 @@
           "$ref": "#/$defs/richText",
           "description": "When this event fires, what it communicates, and how consumers should respond. Include conditions under which the event does NOT fire (e.g., 'Does not fire when disabled')."
         },
-        "payload": {
+        "returns": {
           "type": "string",
-          "description": "Human-readable description of the event payload shape (e.g., '(event: MouseEvent) => void', '{ value: string, index: number }', 'CustomEvent<{ selectedId: string }>')."
+          "description": "Human-readable description of the event return shape (e.g., '(event: MouseEvent) => void', '{ value: string, index: number }', 'CustomEvent<{ selectedId: string }>')."
         },
-        "payloadSchema": {
+        "returnsSchema": {
           "type": "object",
-          "description": "Machine-readable JSON Schema (Draft 2020-12) describing the event payload or detail object. Enables tooling to generate type definitions and validate event handlers."
+          "description": "Machine-readable JSON Schema (Draft 2020-12) describing the event return or detail object. Enables tooling to generate type definitions and validate event handlers."
         },
         "bubbles": {
           "type": "boolean",
@@ -2239,7 +2246,7 @@
     },
     "events": {
       "type": "object",
-      "description": "Documents the events emitted by a component as a dedicated document block. Each item describes a single event — its name, trigger conditions, payload shape, DOM behavior, and lifecycle metadata. Separating events from the API block gives tooling a clear, searchable unit for event documentation and allows cross-referencing between events and the states or interactions that trigger them.",
+      "description": "Documents the events emitted by a component as a dedicated document block. Each item describes a single event — its name, trigger conditions, return shape, DOM behavior, and lifecycle metadata. Separating events from the API block gives tooling a clear, searchable unit for event documentation and allows cross-referencing between events and the states or interactions that trigger them.",
       "required": [
         "kind",
         "items"
@@ -2252,7 +2259,7 @@
         },
         "items": {
           "type": "array",
-          "description": "The events emitted by this component. Each item documents a single event with its name, description, payload, DOM behavior, and lifecycle metadata.",
+          "description": "The events emitted by this component. Each item documents a single event with its name, description, return shape, DOM behavior, and lifecycle metadata.",
           "items": {
             "$ref": "#/$defs/eventEntry"
           },

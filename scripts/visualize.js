@@ -15,7 +15,7 @@
  *   node scripts/visualize.js --format=mmd     # Mermaid source only
  *   node scripts/visualize.js --format=svg     # SVG only
  *   node scripts/visualize.js --format=all     # All formats (default)
- *   node scripts/visualize.js --layout=root+common,entities,guidelines
+ *   node scripts/visualize.js --layout=root+common,entities,document-blocks
  *                                              # Custom column order (left → right)
  *                                              # Use + to stack groups in one column
  *   node scripts/visualize.js --no-edges       # Hide dependency edges
@@ -40,7 +40,7 @@ const ROOT_SCHEMA = path.join(SCHEMA_DIR, "dsds.schema.json");
 
 const SPLIT_DIRS = [
   path.join(SCHEMA_DIR, "common"),
-  path.join(SCHEMA_DIR, "guidelines"),
+  path.join(SCHEMA_DIR, "document-blocks"),
   path.join(SCHEMA_DIR, "entities"),
 ];
 
@@ -54,13 +54,13 @@ const THEME = {
   root: { fill: "#4A4A4A", stroke: "#333333", text: "#FFFFFF" },
   common: { fill: "#6C8EBF", stroke: "#5A7DAE", text: "#FFFFFF" },
   entities: { fill: "#82B366", stroke: "#71A255", text: "#FFFFFF" },
-  guidelines: { fill: "#D4A843", stroke: "#C39732", text: "#FFFFFF" },
+  "document-blocks": { fill: "#D4A843", stroke: "#C39732", text: "#FFFFFF" },
 };
 
 const GROUP_BG = {
   common: { fill: "#EBF0F7", stroke: "#B0C4DE", label: "#5A7DAE" },
   entities: { fill: "#EDF5E8", stroke: "#A3C68C", label: "#71A255" },
-  guidelines: { fill: "#FBF4E4", stroke: "#D4B872", label: "#B8922E" },
+  "document-blocks": { fill: "#FBF4E4", stroke: "#D4B872", label: "#B8922E" },
 };
 
 const EDGE_COLOR = "#999999";
@@ -116,7 +116,7 @@ function classifyFile(filePath) {
   const rel = path.relative(SCHEMA_DIR, filePath);
   if (rel.startsWith("common")) return "common";
   if (rel.startsWith("entities")) return "entities";
-  if (rel.startsWith("guidelines")) return "guidelines";
+  if (rel.startsWith("document-blocks")) return "document-blocks";
   return "root";
 }
 
@@ -233,11 +233,11 @@ function generateMermaid() {
     `  classDef entities fill:${THEME.entities.fill},stroke:${THEME.entities.stroke},color:${THEME.entities.text},stroke-width:1.5px`,
   );
   lines.push(
-    `  classDef guidelines fill:${THEME.guidelines.fill},stroke:${THEME.guidelines.stroke},color:${THEME.guidelines.text},stroke-width:1.5px`,
+    `  classDef document-blocks fill:${THEME["document-blocks"].fill},stroke:${THEME["document-blocks"].stroke},color:${THEME["document-blocks"].text},stroke-width:1.5px`,
   );
   lines.push("");
 
-  const groups = { root: [], common: [], entities: [], guidelines: [] };
+  const groups = { root: [], common: [], entities: [], "document-blocks": [] };
   for (const [, info] of files) {
     groups[info.group].push(info);
   }
@@ -255,7 +255,7 @@ function generateMermaid() {
 
   const groupMeta = [
     { key: "entities", title: "Entities" },
-    { key: "guidelines", title: "Guidelines" },
+    { key: "document-blocks", title: "Document Blocks" },
     { key: "common", title: "Common" },
   ];
 
@@ -335,12 +335,12 @@ function measureNode(info) {
  *
  * Each entry in `columnOrder` is an array of group keys that share one column.
  * Groups within the same column are stacked vertically with GROUP_GAP between
- * them. This lets you write `--layout=root+common,entities,guidelines` to put
+ * them. This lets you write `--layout=root+common,entities,document-blocks` to put
  * root and common in the first column.
  *
  * Returns positioned node map + group boxes + canvas size.
  */
-const DEFAULT_COLUMN_ORDER = [["root"], ["entities", "common"], ["guidelines"]];
+const DEFAULT_COLUMN_ORDER = [["root"], ["entities", "common"], ["document-blocks"]];
 
 function layoutGraph(options = {}) {
   const columnOrder = options.columnOrder || DEFAULT_COLUMN_ORDER;
@@ -349,7 +349,7 @@ function layoutGraph(options = {}) {
   const { files, edges } = buildGraph();
 
   // Group nodes
-  const groups = { root: [], entities: [], guidelines: [], common: [] };
+  const groups = { root: [], entities: [], "document-blocks": [], common: [] };
   for (const [, info] of files) {
     groups[info.group].push(info);
   }
@@ -735,8 +735,8 @@ Options:
   --format=FORMAT   Output format(s): mmd, svg, or all (default: all)
   --layout=ORDER    Comma-separated column order, left to right.
                     Use + to stack groups in the same column.
-                    Valid groups: root, entities, guidelines, common
-                    (default: root+common,entities,guidelines)
+                    Valid groups: root, entities, document-blocks, common
+                    (default: root+common,entities,document-blocks)
   --no-edges        Hide dependency edges (show only nodes and groups)
   --output=DIR      Output directory (default: site/dist)
   --help            Show this help message
@@ -745,9 +745,9 @@ Examples:
   node scripts/visualize.js                  # Generate .mmd and .svg
   node scripts/visualize.js --format=svg     # SVG only
   node scripts/visualize.js --format=mmd     # Mermaid source only
-  node scripts/visualize.js --layout=root+common,entities,guidelines
-  node scripts/visualize.js --layout=entities,guidelines,common --no-edges
-  node scripts/visualize.js --layout=root,entities,guidelines,common
+  node scripts/visualize.js --layout=root+common,entities,document-blocks
+  node scripts/visualize.js --layout=entities,document-blocks,common --no-edges
+  node scripts/visualize.js --layout=root,entities,document-blocks,common
 `);
 }
 
@@ -774,7 +774,7 @@ function parseArgs(argv) {
       const validGroups = new Set(
         ["root"],
         ["entities", "common"],
-        ["guidelines"],
+        ["document-blocks"],
       );
       const columns = arg
         .split("=")[1]

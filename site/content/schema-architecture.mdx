@@ -502,7 +502,7 @@ Each entity type accepts only the document block types relevant to it. The scopi
 | `"content"` | `labels`, `localization` | contentLabelEntry, localizationEntry | General | Recommended action labels and localization/i18n notes. |
 | `"anatomy"` | `parts` | anatomyEntry | Component, Pattern | Visual structure broken into named parts with token references. |
 | `"api"` | Named arrays | various | Component | Code-level interface — props, events, slots, CSS hooks, methods. |
-| `"events"` | `items` | eventEntry | Component, Pattern | Events emitted by the component — trigger conditions, payload shapes, DOM behavior, lifecycle. |
+| `"events"` | `items` | eventEntry | Component, Pattern | Events emitted by the component — trigger conditions, return shapes, DOM behavior, lifecycle. |
 | `"variants"` | `items` | variantEntry | Component, Pattern | Dimensions of variation with enumerated values. Optional exclusions. |
 | `"states"` | `items` | stateEntry | Component, Pattern | Interactive states with triggers, token overrides, and previews. |
 | `"design-specifications"` | Named properties | various | Component | Token inventory, spacing, sizing, typography, responsive behavior. |
@@ -670,6 +670,43 @@ Sections:
 - `cssParts` (apiCssPart[])
 - `dataAttributes` (apiDataAttribute[])
 - `methods` (apiMethod[])
+
+#### Property entry (`apiProperty`)
+
+| Property | Type | Required | Description |
+|---|---|---|---|
+| `name` | `string` | Yes | The property name as used in code. |
+| `type` | `string` | Yes | The base type as it would appear in a type signature (e.g., `"boolean"`, `"number"`, `"string"`, `"ReactNode"`). For enum properties, use `values` instead of encoding members here. |
+| `values` | `string[]` | No | Accepted values for enum-like properties (e.g., `["default", "primary", "ghost"]`). Use this instead of encoding members in `type`. |
+| `description` | `richText` | Yes | What the property controls, how it affects the component, and any constraints. |
+| `required` | `boolean` | Yes | Whether consumers must provide this property. |
+| `defaultValue` | any | No | The default value in its native JSON type. |
+| `schema` | `object` | No | Machine-readable JSON Schema (Draft 2020-12) for the property. Useful for tooling. |
+| `deprecated` | `boolean` | No | Whether this property is deprecated. |
+| `deprecationNotice` | `string` | No | What to use instead when deprecated. |
+| `since` | `string` | No | Version in which this property was introduced. |
+
+For enum properties, set `type` to the base type (`"string"`) and list the accepted values in `values`:
+
+```json
+{
+  "name": "variant",
+  "type": "string",
+  "values": ["default", "primary", "ghost", "danger"],
+  "description": "The visual style of the button.",
+  "required": false,
+  "defaultValue": "default"
+}
+```
+
+#### Event entry (`apiEvent`)
+
+| Property | Type | Required | Description |
+|---|---|---|---|
+| `name` | `string` | Yes | The event name as used in code (e.g., `"onClick"`, `"onChange"`). |
+| `description` | `richText` | Yes | When the event fires, what it communicates, and conditions under which it does not fire. |
+| `returns` | `string` | No | The return shape (e.g., `"(event: MouseEvent) => void"`, `"{ value: string }"`). |
+| `since` | `string` | No | Version in which this event was introduced. |
 
 ### Variants (`variants`)
 
