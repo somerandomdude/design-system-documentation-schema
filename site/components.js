@@ -2304,7 +2304,7 @@
   //
   // Usage:
   //   <ds-footer>
-  //     <p>Design System Documentation Schema (DSDS) 0.1</p>
+  //     <p>Design System Documentation Spec (DSDS) 0.1</p>
   //     <p><a href="https://github.com/...">GitHub</a></p>
   //   </ds-footer>
   // ═══════════════════════════════════════════════════════════════════════════

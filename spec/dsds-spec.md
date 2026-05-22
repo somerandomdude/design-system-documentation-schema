@@ -1,4 +1,4 @@
-# Design System Documentation Schema (DSDS) 0.1
+# Design System Documentation Spec (DSDS) 0.1
 
 **Draft Specification — February 2026**
 
