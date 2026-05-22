@@ -626,7 +626,7 @@ ${buildSpecNav(activeSlug, pages)}
         <ds-back-to-top></ds-back-to-top>
 
         <ds-footer>
-          <p>Design System Documentation Standard (DSDS) 0.1 — Draft Specification</p>
+          <p>Design System Documentation Schema (DSDS) 0.1 — Draft Specification</p>
           <p><a href="https://github.com/somerandomdude/design-system-documentation-schema">GitHub</a></p>
         </ds-footer>
       </div>

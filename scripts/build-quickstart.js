@@ -417,7 +417,7 @@ ${buildSpecNav("quickstart")}
      ════════════════════════════════════════════════════════ -->
 <section id="what">
   <ds-heading level="2" anchor="what"><span class="num">1</span> What is DSDS?</ds-heading>
-  <p class="lead">DSDS (Design System Documentation Standard) is a JSON-based format for documenting design systems. It gives every piece of documentation — components, tokens, themes, styles, patterns — a predictable, machine-readable structure.</p>
+  <p class="lead">DSDS (Design System Documentation Schema) is a JSON-based format for documenting design systems. It gives every piece of documentation — components, tokens, themes, styles, patterns — a predictable, machine-readable structure.</p>
 
   <div class="callout">
     <strong>Key idea:</strong> DSDS documents the <em>how and why</em> of your design system — not the token values themselves. It complements the <a href="https://www.w3.org/community/reports/design-tokens/CG-FINAL-format-20251028/">W3C Design Tokens Format</a> which handles the <em>what</em>.
@@ -620,7 +620,7 @@ npx ajv validate -s spec/schema/dsds.bundled.schema.json -d my-system.dsds.json`
         <ds-back-to-top></ds-back-to-top>
 
         <ds-footer>
-          <p>Design System Documentation Standard (DSDS) 0.1 — Quick Start Guide</p>
+          <p>Design System Documentation Schema (DSDS) 0.1 — Quick Start Guide</p>
           <p><a href="https://github.com/somerandomdude/design-system-documentation-schema">GitHub</a> · <a href="index.html">Full Spec</a> · <a href="samples.html">Interactive Samples</a></p>
         </ds-footer>
       </div>

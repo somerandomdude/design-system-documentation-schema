@@ -1,4 +1,4 @@
-# Design System Documentation Standard (DSDS)
+# Design System Documentation Schema (DSDS)
 
 A standard, machine-readable format for design system documentation.
 

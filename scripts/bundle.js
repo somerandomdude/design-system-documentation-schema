@@ -187,7 +187,7 @@ function buildBundled() {
   const bundled = {
     $schema: "https://json-schema.org/draft/2020-12/schema",
     $id: "https://designsystemdocspec.org/v0.1/dsds.bundled.schema.json",
-    title: "Design System Documentation Standard (DSDS) v0.1 — Bundled",
+    title: "Design System Documentation Schema (DSDS) v0.1 — Bundled",
     description:
       "Single-file bundled version of the DSDS schema. " +
       "Auto-generated from the split schema files by scripts/bundle.js. " +
