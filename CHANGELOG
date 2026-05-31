@@ -4,6 +4,73 @@ All notable changes to the DSDS specification are documented in this file.
 
 ---
 
+## [0.1.6] — 2025-07-19
+
+### Additions
+
+#### 1. Enhanced `agents` schema with empirical and verification fields
+
+The `agents` schema gained several new optional fields to support empirically-grounded, verifiable agent context:
+
+- **`evidence`** on `constraints` and `antiPatterns` — quantitative or empirical backing (test run data, audit findings, issue references)
+- **`examples`** on `constraints` — inline before/after code examples scoped to a specific rule
+- **`entityType`** on `disambiguation` — categorizes the disambiguated entity (`component`, `prop`, `token`, `pattern`, `package`, `concept`)
+- **`verified`** — ISO date when the agent context block was last validated
+- **`verifiedAgainst`** — package version or audit reference the block was validated against
+
+The `antiPatterns` array description was strengthened: every entry SHOULD include an `instead` value.
+
+All additions are non-breaking — existing content remains valid.
+
+#### 2. `agent-collection.schema.json` — multi-entity agent context files
+
+A new schema for standalone files containing agent context blocks for multiple entities. Use for system-wide pre-generation checklists, migration guides, or QA failure logs.
+
+Structure: a `sections` object where each key is a named scope and each value is a full agents block. Top-level metadata (`name`, `description`, `updated`, `source`, `version`, `schema`) provides collection-level context.
+
+**Example:**
+```json
+{
+  "name": "Pre-Generation Checklist",
+  "updated": "2025-07-19",
+  "sections": {
+    "button": {
+      "intent": "Use Button for all interactive action triggers.",
+      "verified": "2025-07-19"
+    }
+  }
+}
+```
+
+#### 3. `import` document block type
+
+A new `import` document block type documents how to import a component across platforms and frameworks. Each entry provides a platform identifier, the import code, package name, and optional setup context.
+
+Accepted on **component** entities only.
+
+**Example:**
+```json
+{
+  "kind": "import",
+  "items": [
+    {
+      "platform": "react",
+      "package": "@acme/design-system",
+      "code": "import { Button } from '@acme/design-system';",
+      "language": "tsx"
+    },
+    {
+      "platform": "web-component",
+      "package": "@acme/design-system-wc",
+      "code": "import '@acme/design-system-wc/button';",
+      "language": "js"
+    }
+  ]
+}
+```
+
+---
+
 ## [0.1.5] — 2025-07-15
 
 ### Additions

@@ -116,6 +116,37 @@
     ],
     "documentBlocks": [
       {
+        "kind": "import",
+        "items": [
+          {
+            "platform": "react",
+            "package": "@acme/design-system",
+            "code": "import { Button } from '@acme/design-system';",
+            "language": "tsx",
+            "since": "1.0.0"
+          },
+          {
+            "platform": "web-component",
+            "package": "@acme/design-system-wc",
+            "code": "import '@acme/design-system-wc/button';\n\n// Then use in HTML:\n// <acme-button variant=\"primary\">Click me</acme-button>",
+            "language": "js",
+            "description": "Web Component wrapper. Available since v3.2.0 — native shadow DOM implementation planned for v4.",
+            "since": "3.2.0"
+          },
+          {
+            "platform": "vue",
+            "package": "@acme/design-system-vue",
+            "code": "import { AcmeButton } from '@acme/design-system-vue';",
+            "language": "vue",
+            "since": "2.0.0"
+          }
+        ],
+        "agents": {
+          "intent": "Provide copy-pasteable import statements for the Button component across all supported platforms.",
+          "keywords": ["import", "install", "setup", "package", "getting started"]
+        }
+      },
+      {
         "kind": "anatomy",
         "description": "The Button is composed of a container, a text label, and an optional leading or trailing icon.",
         "parts": [
@@ -1091,14 +1122,24 @@
     ],
     "agents": {
       "intent": "Trigger a user-initiated action within the current view without causing page navigation.",
+      "verified": "2025-07-19",
+      "verifiedAgainst": "dsds-spec-v0.1",
       "constraints": [
         {
           "rule": "Do not use for navigating to a different page or URL.",
-          "level": "must-not"
+          "level": "must-not",
+          "evidence": "Navigation-via-button flagged in 8/10 accessibility audits across design systems."
         },
         {
           "rule": "Limit each surface to one primary-emphasis button.",
-          "level": "must"
+          "level": "must",
+          "examples": [
+            {
+              "description": "Two primary buttons on the same surface dilute visual hierarchy.",
+              "code": "<!-- Wrong: two primary buttons -->\n<Button variant=\"primary\">Save</Button>\n<Button variant=\"primary\">Cancel</Button>\n\n<!-- Correct: one primary, one secondary -->\n<Button variant=\"primary\">Save</Button>\n<Button variant=\"secondary\">Cancel</Button>",
+              "language": "html"
+            }
+          ]
         },
         {
           "rule": "Always provide an accessible label via visible text or aria-label.",
@@ -1108,17 +1149,20 @@
       "disambiguation": [
         {
           "entity": "link",
+          "entityType": "component",
           "distinction": "Use button for in-page actions; use link for navigation to a URL."
         },
         {
           "entity": "icon-button",
+          "entityType": "component",
           "distinction": "Use button when a visible text label is present; use icon-button for icon-only affordances."
         }
       ],
       "antiPatterns": [
         {
           "description": "Using a button to navigate to another page.",
-          "instead": "Use a link element with href."
+          "instead": "Use a link element with href.",
+          "evidence": "Most common agent error in UI generation benchmarks."
         },
         {
           "description": "Placing multiple primary buttons on the same surface.",

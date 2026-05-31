@@ -19,6 +19,7 @@
       <a href="root.html" slug="root">Root schema</a>
     </ds-nav-group>
     <ds-nav-group label="Common">
+      <a href="common-agent-collection.html" slug="common-agent-collection">agent-collection</a>
       <a href="common-agents.html" slug="common-agents">agents</a>
       <a href="common-example.html" slug="common-example">example</a>
       <a href="common-extends.html" slug="common-extends">extends</a>
@@ -46,6 +47,7 @@
       <a href="document-blocks-document-blocks.html" slug="document-blocks-document-blocks">document-blocks</a>
       <a href="document-blocks-events.html" slug="document-blocks-events">events</a>
       <a href="document-blocks-guideline.html" slug="document-blocks-guideline">guideline</a>
+      <a href="document-blocks-import.html" slug="document-blocks-import">import</a>
       <a href="document-blocks-interaction.html" slug="document-blocks-interaction">interaction</a>
       <a href="document-blocks-motion.html" slug="document-blocks-motion">motion</a>
       <a href="document-blocks-principle.html" slug="document-blocks-principle">principle</a>
@@ -202,6 +204,43 @@
     }
   ],
   &quot;documentBlocks&quot;: [
+    {
+      &quot;kind&quot;: &quot;import&quot;,
+      &quot;items&quot;: [
+        {
+          &quot;platform&quot;: &quot;react&quot;,
+          &quot;package&quot;: &quot;@acme/design-system&quot;,
+          &quot;code&quot;: &quot;import { Button } from '@acme/design-system';&quot;,
+          &quot;language&quot;: &quot;tsx&quot;,
+          &quot;since&quot;: &quot;1.0.0&quot;
+        },
+        {
+          &quot;platform&quot;: &quot;web-component&quot;,
+          &quot;package&quot;: &quot;@acme/design-system-wc&quot;,
+          &quot;code&quot;: &quot;import '@acme/design-system-wc/button';\n\n// Then use in HTML:\n// &lt;acme-button variant=\&quot;primary\&quot;&gt;Click me&lt;/acme-button&gt;&quot;,
+          &quot;language&quot;: &quot;js&quot;,
+          &quot;description&quot;: &quot;Web Component wrapper. Available since v3.2.0 — native shadow DOM implementation planned for v4.&quot;,
+          &quot;since&quot;: &quot;3.2.0&quot;
+        },
+        {
+          &quot;platform&quot;: &quot;vue&quot;,
+          &quot;package&quot;: &quot;@acme/design-system-vue&quot;,
+          &quot;code&quot;: &quot;import { AcmeButton } from '@acme/design-system-vue';&quot;,
+          &quot;language&quot;: &quot;vue&quot;,
+          &quot;since&quot;: &quot;2.0.0&quot;
+        }
+      ],
+      &quot;agents&quot;: {
+        &quot;intent&quot;: &quot;Provide copy-pasteable import statements for the Button component across all supported platforms.&quot;,
+        &quot;keywords&quot;: [
+          &quot;import&quot;,
+          &quot;install&quot;,
+          &quot;setup&quot;,
+          &quot;package&quot;,
+          &quot;getting started&quot;
+        ]
+      }
+    },
     {
       &quot;kind&quot;: &quot;anatomy&quot;,
       &quot;description&quot;: &quot;The Button is composed of a container, a text label, and an optional leading or trailing icon.&quot;,
@@ -1297,14 +1336,24 @@
   ],
   &quot;agents&quot;: {
     &quot;intent&quot;: &quot;Trigger a user-initiated action within the current view without causing page navigation.&quot;,
+    &quot;verified&quot;: &quot;2025-07-19&quot;,
+    &quot;verifiedAgainst&quot;: &quot;dsds-spec-v0.1&quot;,
     &quot;constraints&quot;: [
       {
         &quot;rule&quot;: &quot;Do not use for navigating to a different page or URL.&quot;,
-        &quot;level&quot;: &quot;must-not&quot;
+        &quot;level&quot;: &quot;must-not&quot;,
+        &quot;evidence&quot;: &quot;Navigation-via-button flagged in 8/10 accessibility audits across design systems.&quot;
       },
       {
         &quot;rule&quot;: &quot;Limit each surface to one primary-emphasis button.&quot;,
-        &quot;level&quot;: &quot;must&quot;
+        &quot;level&quot;: &quot;must&quot;,
+        &quot;examples&quot;: [
+          {
+            &quot;description&quot;: &quot;Two primary buttons on the same surface dilute visual hierarchy.&quot;,
+            &quot;code&quot;: &quot;&lt;!-- Wrong: two primary buttons --&gt;\n&lt;Button variant=\&quot;primary\&quot;&gt;Save&lt;/Button&gt;\n&lt;Button variant=\&quot;primary\&quot;&gt;Cancel&lt;/Button&gt;\n\n&lt;!-- Correct: one primary, one secondary --&gt;\n&lt;Button variant=\&quot;primary\&quot;&gt;Save&lt;/Button&gt;\n&lt;Button variant=\&quot;secondary\&quot;&gt;Cancel&lt;/Button&gt;&quot;,
+            &quot;language&quot;: &quot;html&quot;
+          }
+        ]
       },
       {
         &quot;rule&quot;: &quot;Always provide an accessible label via visible text or aria-label.&quot;,
@@ -1314,17 +1363,20 @@
     &quot;disambiguation&quot;: [
       {
         &quot;entity&quot;: &quot;link&quot;,
+        &quot;entityType&quot;: &quot;component&quot;,
         &quot;distinction&quot;: &quot;Use button for in-page actions; use link for navigation to a URL.&quot;
       },
       {
         &quot;entity&quot;: &quot;icon-button&quot;,
+        &quot;entityType&quot;: &quot;component&quot;,
         &quot;distinction&quot;: &quot;Use button when a visible text label is present; use icon-button for icon-only affordances.&quot;
       }
     ],
     &quot;antiPatterns&quot;: [
       {
         &quot;description&quot;: &quot;Using a button to navigate to another page.&quot;,
-        &quot;instead&quot;: &quot;Use a link element with href.&quot;
+        &quot;instead&quot;: &quot;Use a link element with href.&quot;,
+        &quot;evidence&quot;: &quot;Most common agent error in UI generation benchmarks.&quot;
       },
       {
         &quot;description&quot;: &quot;Placing multiple primary buttons on the same surface.&quot;,

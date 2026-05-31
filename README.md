@@ -55,6 +55,8 @@ spec/
 │   ├── dsds.schema.json                                # Root JSON Schema
 │   ├── dsds.bundled.schema.json                        # Auto-generated single-file bundle
 │   ├── common/                                         # Shared primitives
+│   │   ├── agent-collection.schema.json                # agentCollection (multi-entity agent context file)
+│   │   ├── agents.schema.json                          # agents (agent context for AI/LLM consumption)
 │   │   ├── example.schema.json                         # example
 │   │   ├── extensions.schema.json                      # $extensions
 │   │   ├── link.schema.json                            # link
@@ -454,11 +456,13 @@ Every entity accepts an optional `agents` object providing context optimized for
 | Property | Type | Description |
 |---|---|---|
 | `intent` | `string` | One sentence stating the primary purpose. |
-| `constraints` | `array` | Hard rules with `must`/`must-not`/`should`/`should-not` levels. Each entry has `rule`, `level`, and optional `context`. |
-| `disambiguation` | `array` | Confusion-resolution entries against similar entities. Each has `entity` (name) and `distinction` (the deciding criterion). |
-| `antiPatterns` | `array` | Known incorrect uses with corrective alternatives. Each has `description` and `instead`. |
+| `constraints` | `array` | Hard rules with `must`/`must-not`/`should`/`should-not` levels. Each entry has `rule`, `level`, optional `context`, optional `evidence` (empirical backing), and optional `examples` (constraint-specific code). |
+| `disambiguation` | `array` | Confusion-resolution entries against similar entities. Each has `entity` (name), optional `entityType` (component, prop, token, pattern, package, or concept), and `distinction` (the deciding criterion). |
+| `antiPatterns` | `array` | Known incorrect uses with corrective alternatives. Each has `description`, `instead` (SHOULD be provided), and optional `evidence`. |
 | `examples` | `array` | Ready-to-use code examples. Each has `description`, `code`, and optional `language`. |
 | `keywords` | `string[]` | Semantic retrieval terms and synonyms. |
+| `verified` | `string` (date) | ISO date when this agents block was last validated. |
+| `verifiedAgainst` | `string` | Package version or audit reference this block was validated against. |
 
 ```json
 {
@@ -495,6 +499,38 @@ Document blocks also accept the same optional `agents` object. Block-level agent
 }
 ```
 
+### Agent Context Collections
+
+For system-wide agent guidance that spans many entities — pre-generation checklists, migration guides, QA failure logs — use the `agent-collection.schema.json` format. A collection file contains named `sections`, each validated as a full agents block:
+
+```json
+{
+  "name": "UI Pre-Generation Checklist",
+  "updated": "2025-07-19",
+  "source": "Agent test suite v2.1",
+  "sections": {
+    "button": {
+      "intent": "Use Button for all interactive action triggers.",
+      "constraints": [
+        {
+          "rule": "Never override Button height below 36px.",
+          "level": "must",
+          "evidence": "Touch-target test failed in 9/10 agent runs."
+        }
+      ],
+      "verified": "2025-07-19",
+      "verifiedAgainst": "@acme/ui@3.2.0"
+    },
+    "layout": {
+      "intent": "Use Stack and Grid for all layout composition.",
+      "constraints": [
+        { "rule": "Never use raw CSS flexbox or grid.", "level": "must-not" }
+      ]
+    }
+  }
+}
+```
+
 ### Status
 
 Every entity carries a `status` property that accepts either a plain string for the common case or a full object when platform-specific tracking is needed:
@@ -526,7 +562,7 @@ All structured documentation lives in the `documentBlocks` array on each entity.
 
 | Scope | Used by | Specific types | General types (all entities) |
 |---|---|---|---|
-| **Component** | component | anatomy, api, events, variants, states, design-specifications | guideline, purpose, accessibility, content |
+| **Component** | component | import, anatomy, api, events, variants, states, design-specifications | guideline, purpose, accessibility, content |
 | **Style** | style | principles, scale, motion | *(same)* |
 | **Pattern** | pattern | interactions, events, anatomy, variants, states | *(same)* |
 | **Token** | token, token-group, theme | *(none)* | *(same)* |
@@ -535,6 +571,7 @@ All structured documentation lives in the `documentBlocks` array on each entity.
 
 | Kind value | Container | Items | Description |
 |---|---|---|---|
+| `"import"` | `items` | importEntry | Platform-specific import statements with packages and setup context |
 | `"guideline"` | `items` | guidelineEntry | Actionable usage rules with rationale and enforcement levels |
 | `"purpose"` | `useCases` | useCase | When to use and when not to use the entity |
 | `"accessibility"` | Named arrays | various | Keyboard, ARIA, screen reader, contrast, motion specs |
@@ -859,7 +896,7 @@ The schema is organized into three directories plus a root schema:
 
 | Directory | Contents |
 |---|---|
-| `common/` | Shared primitives — richText, statusObject, link, example, extensions, metadata, useCase |
+| `common/` | Shared primitives — agents, agentCollection, richText, statusObject, link, example, extensions, metadata, useCase |
 | `entities/` | Entity types — component, token (+ tokenGroup), theme, style, pattern |
 | `document-blocks/` | Document block types — 13 type schemas + scoped unions (componentDocumentBlock, styleDocumentBlock, patternDocumentBlock, tokenDocumentBlock) |
 

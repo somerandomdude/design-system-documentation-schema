@@ -239,7 +239,14 @@ function blockAgentsRendered(agents) {
       html += '<tr><td><ds-badge variant="' + esc(LEVEL_BADGE[c.level] || c.level) + '" size="sm">' +
         esc(c.level) + '</ds-badge></td><td>' + esc(c.rule) +
         (c.context ? ' <span style="color:#999">(' + esc(c.context) + ')</span>' : '') +
+        (c.evidence ? ' <span style="color:#999;font-size:0.75rem">(' + esc(c.evidence) + ')</span>' : '') +
         '</td></tr>';
+      if (c.examples && c.examples.length) {
+        c.examples.forEach(function(ex) {
+          html += '<tr><td colspan="2"><p style="font-size:var(--ds-font-size-sm);color:#666;margin:var(--ds-space-1) 0">' +
+            esc(ex.description) + '</p><ds-code language="' + esc(ex.language || 'html') + '">' + esc(ex.code) + '</ds-code></td></tr>';
+        });
+      }
     });
     html += '</tbody></table></ds-table>';
   }
@@ -247,7 +254,7 @@ function blockAgentsRendered(agents) {
   if (agents.disambiguation && agents.disambiguation.length) {
     html += '<ds-table><table class="data-table"><thead><tr><th>Entity</th><th>Distinction</th></tr></thead><tbody>';
     agents.disambiguation.forEach(function(d) {
-      html += '<tr><td><ds-code inline>' + esc(d.entity) + '</ds-code></td><td>' + esc(d.distinction) + '</td></tr>';
+      html += '<tr><td>' + (d.entityType ? '<ds-tag size="sm">' + esc(d.entityType) + '</ds-tag> ' : '') + '<ds-code inline>' + esc(d.entity) + '</ds-code></td><td>' + esc(d.distinction) + '</td></tr>';
     });
     html += '</tbody></table></ds-table>';
   }
@@ -257,6 +264,7 @@ function blockAgentsRendered(agents) {
       html += '<div class="use-case negative" style="font-size:var(--ds-font-size-sm)"><div class="use-case-badge">\u2717</div><div>' +
         esc(ap.description) +
         (ap.instead ? '<div class="alternative-note"><strong>Instead:</strong> ' + esc(ap.instead) + '</div>' : '') +
+        (ap.evidence ? '<div style="color:#999;font-size:0.75rem;margin-top:var(--ds-space-1)">Evidence: ' + esc(ap.evidence) + '</div>' : '') +
         '</div></div>';
     });
   }
@@ -267,6 +275,10 @@ function blockAgentsRendered(agents) {
       html += '<ds-tag size="sm">' + esc(kw) + '</ds-tag>';
     });
     html += '</div>';
+  }
+
+  if (agents.verified) {
+    html += '<div style="margin-top:var(--ds-space-2);font-size:0.72rem;color:#999">Verified: ' + esc(agents.verified) + (agents.verifiedAgainst ? ' against ' + esc(agents.verifiedAgainst) : '') + '</div>';
   }
 
   html += '</div>';
@@ -356,6 +368,45 @@ function renderComponent(data) {
       "</div>";
     html += sectionPair("header", "Entity Header", code, r);
   })();
+
+  /* ── Import ───────────────────────────────────────── */
+  if (gMap["import"])
+    (function () {
+      var imp = gMap["import"];
+      var codeLines = [synHL('"items": [')];
+      var rCards = "";
+      (imp.items || []).forEach(function (item, i) {
+        var iid = fid("im");
+        codeLines.push(
+          fieldJSON(item, iid) + (i < imp.items.length - 1 ? "," : "")
+        );
+        rCards += rfDiv(
+          iid,
+          '<div style="margin-bottom:var(--ds-space-3);padding:var(--ds-space-3) var(--ds-space-4);border:var(--ds-border-width-sm) solid var(--ds-color-border-light);border-radius:var(--ds-radius-lg);background:var(--ds-color-bg)">' +
+            '<div style="display:flex;align-items:center;gap:var(--ds-space-2);margin-bottom:var(--ds-space-2)">' +
+            '<ds-badge variant="kind" size="sm">' + esc(item.platform) + "</ds-badge>" +
+            (item["package"]
+              ? ' <ds-code inline>' + esc(item["package"]) + "</ds-code>"
+              : "") +
+            (item.since
+              ? ' <span style="font-size:0.72rem;color:#999">v' + esc(item.since) + "</span>"
+              : "") +
+            "</div>" +
+            '<pre style="margin:0;padding:var(--ds-space-3);background:var(--ds-color-bg-muted);border-radius:var(--ds-radius-md);font-family:var(--ds-font-mono);font-size:12px;line-height:var(--ds-line-height-loose);white-space:pre;overflow-x:auto"><code>' +
+            esc(item.code) +
+            "</code></pre>" +
+            (item.description
+              ? '<p style="margin:var(--ds-space-2) 0 0;font-size:var(--ds-font-size-sm);color:#666">' + esc(item.description) + "</p>"
+              : "") +
+            "</div>"
+        );
+      });
+      codeLines.push(synHL("]"));
+      var r = "<h2>Import</h2>" + rCards;
+      codeLines = codeLines.concat(blockAgentsCode(imp.agents));
+      r += blockAgentsRendered(imp.agents);
+      html += sectionPair("import", "Import", codeLines.join("\n"), r);
+    })();
 
   /* ── Anatomy ──────────────────────────────────────── */
   if (gMap.anatomy)
@@ -1064,7 +1115,9 @@ function renderComponent(data) {
       if (ag.disambiguation) codeLines.push(fieldJSON({ disambiguation: ag.disambiguation }, fid("ag")) + ",");
       if (ag.antiPatterns)   codeLines.push(fieldJSON({ antiPatterns: ag.antiPatterns }, fid("ag")) + ",");
       if (ag.examples)       codeLines.push(fieldJSON({ examples: ag.examples }, fid("ag")) + ",");
-      if (ag.keywords)       codeLines.push(fieldJSON({ keywords: ag.keywords }, fid("ag")));
+      if (ag.keywords)       codeLines.push(fieldJSON({ keywords: ag.keywords }, fid("ag")) + ",");
+      if (ag.verified)        codeLines.push(fieldJSON({ verified: ag.verified }, fid("ag")) + ",");
+      if (ag.verifiedAgainst) codeLines.push(fieldJSON({ verifiedAgainst: ag.verifiedAgainst }, fid("ag")));
       codeLines.push(synHL("}"));
 
       var r = "<h2>Agent context</h2>";
@@ -1076,13 +1129,19 @@ function renderComponent(data) {
       if (ag.constraints && ag.constraints.length) {
         r +=
           "<h3>Constraints</h3>" +
-          '<ds-table><table class="data-table"><thead><tr><th>Level</th><th>Rule</th><th>Context</th></tr></thead><tbody>' +
+          '<ds-table><table class="data-table"><thead><tr><th>Level</th><th>Rule</th><th>Context</th><th>Evidence</th></tr></thead><tbody>' +
           ag.constraints.map(function (c) {
-            return (
+            var row =
               "<tr><td><ds-badge variant=\"" + esc(LEVEL_BADGE[c.level] || c.level) + "\" size=\"sm\">" +
               esc(c.level) + "</ds-badge></td><td>" + esc(c.rule) + "</td><td>" +
-              esc(c.context || "") + "</td></tr>"
-            );
+              esc(c.context || "") + "</td><td>" + esc(c.evidence || "") + "</td></tr>";
+            if (c.examples && c.examples.length) {
+              c.examples.forEach(function (ex) {
+                row += '<tr><td colspan="4"><p style="font-size:var(--ds-font-size-sm);color:#666;margin:var(--ds-space-1) 0">' +
+                  esc(ex.description) + '</p><ds-code language="' + esc(ex.language || 'html') + '">' + esc(ex.code) + '</ds-code></td></tr>';
+              });
+            }
+            return row;
           }).join("") +
           "</tbody></table></ds-table>";
       }
@@ -1093,7 +1152,7 @@ function renderComponent(data) {
           '<ds-table><table class="data-table"><thead><tr><th>Entity</th><th>Distinction</th></tr></thead><tbody>' +
           ag.disambiguation.map(function (d) {
             return (
-              "<tr><td><ds-code inline>" + esc(d.entity) + "</ds-code></td><td>" +
+              "<tr><td>" + (d.entityType ? '<ds-tag size="sm">' + esc(d.entityType) + '</ds-tag> ' : '') + "<ds-code inline>" + esc(d.entity) + "</ds-code></td><td>" +
               esc(d.distinction) + "</td></tr>"
             );
           }).join("") +
@@ -1108,6 +1167,9 @@ function renderComponent(data) {
             esc(ap.description) +
             (ap.instead
               ? '<div class="alternative-note"><strong>Instead:</strong> ' + esc(ap.instead) + "</div>"
+              : "") +
+            (ap.evidence
+              ? '<div style="color:#999;font-size:0.75rem;margin-top:var(--ds-space-1)">Evidence: ' + esc(ap.evidence) + "</div>"
               : "") +
             "</div></div>";
         });
@@ -1129,6 +1191,10 @@ function renderComponent(data) {
           r += '<ds-tag size="sm">' + esc(kw) + "</ds-tag>";
         });
         r += "</div>";
+      }
+
+      if (ag.verified) {
+        r += '<div style="margin-top:var(--ds-space-2);font-size:0.72rem;color:#999">Verified: ' + esc(ag.verified) + (ag.verifiedAgainst ? ' against ' + esc(ag.verifiedAgainst) : '') + '</div>';
       }
 
       html += sectionPair("agents", "Agent context", codeLines.join("\n"), r);
@@ -1522,7 +1588,9 @@ function renderToken(data) {
       if (ag.disambiguation) codeLines.push(fieldJSON({ disambiguation: ag.disambiguation }, fid("ag")) + ",");
       if (ag.antiPatterns)   codeLines.push(fieldJSON({ antiPatterns: ag.antiPatterns }, fid("ag")) + ",");
       if (ag.examples)       codeLines.push(fieldJSON({ examples: ag.examples }, fid("ag")) + ",");
-      if (ag.keywords)       codeLines.push(fieldJSON({ keywords: ag.keywords }, fid("ag")));
+      if (ag.keywords)       codeLines.push(fieldJSON({ keywords: ag.keywords }, fid("ag")) + ",");
+      if (ag.verified)        codeLines.push(fieldJSON({ verified: ag.verified }, fid("ag")) + ",");
+      if (ag.verifiedAgainst) codeLines.push(fieldJSON({ verifiedAgainst: ag.verifiedAgainst }, fid("ag")));
       codeLines.push(synHL("}"));
 
       var r = "<h2>Agent context</h2>";
@@ -1534,13 +1602,19 @@ function renderToken(data) {
       if (ag.constraints && ag.constraints.length) {
         r +=
           "<h3>Constraints</h3>" +
-          '<ds-table><table class="data-table"><thead><tr><th>Level</th><th>Rule</th><th>Context</th></tr></thead><tbody>' +
+          '<ds-table><table class="data-table"><thead><tr><th>Level</th><th>Rule</th><th>Context</th><th>Evidence</th></tr></thead><tbody>' +
           ag.constraints.map(function (c) {
-            return (
+            var row =
               "<tr><td><ds-badge variant=\"" + esc(LEVEL_BADGE[c.level] || c.level) + "\" size=\"sm\">" +
               esc(c.level) + "</ds-badge></td><td>" + esc(c.rule) + "</td><td>" +
-              esc(c.context || "") + "</td></tr>"
-            );
+              esc(c.context || "") + "</td><td>" + esc(c.evidence || "") + "</td></tr>";
+            if (c.examples && c.examples.length) {
+              c.examples.forEach(function (ex) {
+                row += '<tr><td colspan="4"><p style="font-size:var(--ds-font-size-sm);color:#666;margin:var(--ds-space-1) 0">' +
+                  esc(ex.description) + '</p><ds-code language="' + esc(ex.language || 'html') + '">' + esc(ex.code) + '</ds-code></td></tr>';
+              });
+            }
+            return row;
           }).join("") +
           "</tbody></table></ds-table>";
       }
@@ -1551,7 +1625,7 @@ function renderToken(data) {
           '<ds-table><table class="data-table"><thead><tr><th>Entity</th><th>Distinction</th></tr></thead><tbody>' +
           ag.disambiguation.map(function (d) {
             return (
-              "<tr><td><ds-code inline>" + esc(d.entity) + "</ds-code></td><td>" +
+              "<tr><td>" + (d.entityType ? '<ds-tag size="sm">' + esc(d.entityType) + '</ds-tag> ' : '') + "<ds-code inline>" + esc(d.entity) + "</ds-code></td><td>" +
               esc(d.distinction) + "</td></tr>"
             );
           }).join("") +
@@ -1566,6 +1640,9 @@ function renderToken(data) {
             esc(ap.description) +
             (ap.instead
               ? '<div class="alternative-note"><strong>Instead:</strong> ' + esc(ap.instead) + "</div>"
+              : "") +
+            (ap.evidence
+              ? '<div style="color:#999;font-size:0.75rem;margin-top:var(--ds-space-1)">Evidence: ' + esc(ap.evidence) + "</div>"
               : "") +
             "</div></div>";
         });
@@ -1587,6 +1664,10 @@ function renderToken(data) {
           r += '<ds-tag size="sm">' + esc(kw) + "</ds-tag>";
         });
         r += "</div>";
+      }
+
+      if (ag.verified) {
+        r += '<div style="margin-top:var(--ds-space-2);font-size:0.72rem;color:#999">Verified: ' + esc(ag.verified) + (ag.verifiedAgainst ? ' against ' + esc(ag.verifiedAgainst) : '') + '</div>';
       }
 
       html += sectionPair("agents", "Agent context", codeLines.join("\n"), r);

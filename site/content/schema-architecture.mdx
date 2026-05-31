@@ -18,6 +18,8 @@ spec/schema/
 ├── dsds.schema.json                    # Root document schema
 ├── dsds.bundled.schema.json            # Auto-generated single-file bundle
 ├── common/                             # Shared primitives
+│   ├── agent-collection.schema.json    # agentCollection (multi-entity agent context)
+│   ├── agents.schema.json              # agents (agent context for AI/LLM consumption)
 │   ├── example.schema.json             # example, examples (guideline container), presentations
 │   ├── extensions.schema.json          # $extensions
 │   ├── link.schema.json                # link (external resources + internal artifact references)
@@ -389,11 +391,13 @@ The optional `agents` property provides context intended exclusively for agentic
 | Property | Type | Description |
 |---|---|---|
 | `intent` | `string` | One sentence stating the primary purpose. Agents use this to determine relevance without parsing the full description. |
-| `constraints` | `array` | Hard rules with `must`/`must-not`/`should`/`should-not` enforcement levels. Each entry has `rule`, `level`, and optional `context`. |
-| `disambiguation` | `array` | Entries resolving confusion with similar entities. Each has `entity` (name) and `distinction` (the deciding criterion). |
-| `antiPatterns` | `array` | Known incorrect uses. Each has `description` (what not to do) and `instead` (correct alternative). |
+| `constraints` | `array` | Hard rules with `must`/`must-not`/`should`/`should-not` enforcement levels. Each entry has `rule`, `level`, optional `context`, optional `evidence` (empirical backing), and optional `examples` (constraint-specific before/after code). |
+| `disambiguation` | `array` | Entries resolving confusion with similar entities. Each has `entity` (name), optional `entityType` (component, prop, token, pattern, package, concept), and `distinction` (the deciding criterion). |
+| `antiPatterns` | `array` | Known incorrect uses. Each has `description` (what not to do), `instead` (correct alternative — SHOULD be provided), and optional `evidence`. |
 | `examples` | `array` | Ready-to-use code examples. Each has `description`, `code`, and optional `language`. |
 | `keywords` | `string[]` | Semantic retrieval terms — synonyms, common query vocabulary, related concepts. |
+| `verified` | `string` (date) | ISO date when this agents block was last validated against the live design system. |
+| `verifiedAgainst` | `string` | Package version, test run ID, or audit reference this block was validated against. |
 
 ```json
 {
@@ -424,6 +428,26 @@ Document blocks also accept the same optional `agents` object. Block-level agent
       { "rule": "Never place two primary buttons on the same surface.", "level": "must-not" }
     ],
     "keywords": ["button rules", "best practices", "usage guidelines"]
+  }
+}
+```
+
+### Agent context collections
+
+For system-wide agent guidance spanning many entities, use `agent-collection.schema.json`. A collection file contains named `sections`, each validated as a full agents block:
+
+```json
+{
+  "name": "Pre-Generation Checklist",
+  "updated": "2025-07-19",
+  "sections": {
+    "button": {
+      "intent": "Use Button for all interactive action triggers.",
+      "constraints": [
+        { "rule": "Never override height below 36px.", "level": "must", "evidence": "9/10 agent test runs failed." }
+      ],
+      "verified": "2025-07-19"
+    }
   }
 }
 ```
@@ -484,7 +508,7 @@ Each entity type accepts only the document block types relevant to it. The scopi
 
 | Scope | Used by | Accepts |
 |---|---|---|
-| **Component** | component | anatomy, api, events, variants, states, design-specifications + general |
+| **Component** | component | import, anatomy, api, events, variants, states, design-specifications + general |
 | **Pattern** | pattern | interactions, events, anatomy, variants, states + general |
 | **Style** | style | principles, scale, motion + general |
 | **Token** | token, token-group, theme | general only |
@@ -495,6 +519,7 @@ Each entity type accepts only the document block types relevant to it. The scopi
 
 | Type value | Container property | Item type | Scope | Description |
 |---|---|---|---|---|
+| `"import"` | `items` | importEntry | Component | Platform-specific import statements — packages, code snippets, and setup context. |
 | `"guideline"` | `items` | guidelineEntry | General | Actionable usage rules with rationale and enforcement levels. |
 | `"purpose"` | `useCases` | useCases (whenToUse/whenNotToUse) | General | Scenario-driven guidance for when to use and when not to use an entity. |
 | `"accessibility"` | Named properties | various | General | Structured a11y specs — keyboard, ARIA, screen reader, contrast, motion. |

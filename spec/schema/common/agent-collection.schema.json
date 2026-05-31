@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://designsystemdocspec.org/v0.1/common/agent-collection.schema.json",
+  "title": "DSDS Agent Context Collection",
+  "description": "A standalone file containing agent context blocks for multiple entities in a design system. Each key in `sections` is a named scope (a component, a concern, a workflow phase) whose value is a full agents block. Use this when agent guidance spans many entities or cross-cutting concerns and embedding it inline on individual DSDS entities is impractical — for example, a system-wide pre-generation checklist, a migration guide, or a QA failure log.",
+  "type": "object",
+  "required": ["sections"],
+  "properties": {
+    "version": {
+      "type": "string",
+      "description": "The version of this collection file. Use for your own versioning — not tied to the DSDS spec version."
+    },
+    "schema": {
+      "type": "string",
+      "format": "uri",
+      "description": "URI of the schema this file conforms to. Tools can use this for auto-detection and validation."
+    },
+    "name": {
+      "type": "string",
+      "description": "Human-readable name for this collection (e.g., 'Sanity UI Pre-Generation Checklist', 'Material Design Migration Guide')."
+    },
+    "description": {
+      "type": "string",
+      "description": "What this collection covers, who it's for, and how agents should use it."
+    },
+    "updated": {
+      "type": "string",
+      "format": "date",
+      "description": "ISO date when this collection was last updated."
+    },
+    "source": {
+      "type": "string",
+      "description": "Where this collection was derived from — a test suite, an audit, a design system package, or a documentation site."
+    },
+    "sections": {
+      "type": "object",
+      "description": "Named agent context blocks. Each key is a scope identifier — a component name, a concern area, or a workflow phase. Each value is a full agents block validated against the agents schema. Keys should be lowercase kebab-case for consistency with DSDS entity naming.",
+      "additionalProperties": {
+        "$ref": "agents.schema.json#/$defs/agents"
+      },
+      "minProperties": 1
+    }
+  },
+  "additionalProperties": false
+}
