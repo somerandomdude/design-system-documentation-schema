@@ -83,7 +83,7 @@
 </ds-def-index>
 <ds-def-section name="tokenOverride" anchor="tokenoverride" description="Documents a single token override within a theme — which token is affected, and why. The actual override value lives in the DTCG file; this entry captures the intent and rationale." type="object">
 <ds-prop-table>
-  <ds-prop name="token" type="string" required>The name of the token being overridden. MUST match the `name` of a token defined elsewhere in the system. Token names are unconstrained by a pattern to support DTCG and design tool naming conventions (e.g., 'color-text-primary', 'color.text.primary', 'color/text/primary').</ds-prop>
+  <ds-prop name="token" type="string" required>The identifier of the token being overridden. MUST match the `identifier` of a token defined elsewhere in the system. Token identifiers are unconstrained by a pattern to support DTCG and design tool naming conventions (e.g., 'color-text-primary', 'color.text.primary', 'color/text/primary').</ds-prop>
   <ds-prop name="description" type="&lt;ds-type-ref href=&quot;common-rich-text.html#richtext&quot;&gt;richText&lt;/ds-type-ref&gt;">Explains what changes for this token in this theme and why — e.g., 'Lightened to meet WCAG AAA contrast on the dark background.' The resolved value itself is in the DTCG file.</ds-prop>
 </ds-prop-table>
 <ds-cross-refs><strong>References:</strong> 
@@ -93,8 +93,8 @@
 <ds-def-section name="theme" anchor="theme" description="Documents a theme — a named context that adapts the design system's token values. DSDS captures the purpose, usage document blocks, accessibility considerations, and the list of affected tokens. The actual override values live in the DTCG file referenced by the source property. Use themes for color modes (light, dark, high-contrast), density settings (compact, comfortable), brand variants, or product-specific customizations. The token catalog remains the authoritative source for token identity, type, and documentation. Presentational and classificatory concerns (status, tags, category, aliases, summary, thumbnail, preview, extends, links) live in the modular `metadata` array as typed entries with a `kind` discriminator." type="object">
 <ds-prop-table>
   <ds-prop name="kind" type="&lt;ds-code inline&gt;&quot;theme&quot;&lt;/ds-code&gt;" required>Identifies this entity as a theme.</ds-prop>
-  <ds-prop name="name" type="string" required>Machine-readable identifier for the theme (e.g., 'dark', 'high-contrast', 'compact', 'brand-sub-brand').<br><small>Pattern: <ds-code inline>^[a-z][a-z0-9-]*$</ds-code></small></ds-prop>
-  <ds-prop name="displayName" type="string" required>Human-readable name for the theme (e.g., 'Dark Mode', 'High Contrast', 'Compact Density').</ds-prop>
+  <ds-prop name="identifier" type="string" required>Machine-readable identifier for the theme (e.g., 'dark', 'high-contrast', 'compact', 'brand-sub-brand').<br><small>Pattern: <ds-code inline>^[a-z][a-z0-9-]*$</ds-code></small></ds-prop>
+  <ds-prop name="name" type="string" required>Human-readable name for the theme (e.g., 'Dark Mode', 'High Contrast', 'Compact Density').</ds-prop>
   <ds-prop name="metadata" type="&lt;ds-type-ref href=&quot;metadata-metadata.html#entitymetadata&quot;&gt;entityMetadata&lt;/ds-type-ref&gt;[]">Modular metadata entries. Each entry is a typed object with a `kind` discriminator. Types include status, since, tags, category, aliases, summary, thumbnail, preview, extends, and links.</ds-prop>
   <ds-prop name="source" type="object">Reference to the authoritative W3C Design Tokens Format (DTCG) definition. DSDS does not duplicate token values — the DTCG file is the source of truth for resolved values, aliases, and type information.</ds-prop>
   <ds-prop name="overrides" type="&lt;ds-type-ref href=&quot;entities-theme.html#tokenoverride&quot;&gt;tokenOverride&lt;/ds-type-ref&gt;[]">Token overrides that this theme affects. Each entry documents which token is changed and why. Only list tokens whose values differ from the default — unlisted tokens retain their default values. The actual override values live in the DTCG file referenced by source.<br><small>Min items: 1</small></ds-prop>
@@ -108,8 +108,8 @@
 <ds-def-example>
 <ds-code language="json" label="example">{
   &quot;kind&quot;: &quot;theme&quot;,
-  &quot;name&quot;: &quot;dark&quot;,
-  &quot;displayName&quot;: &quot;Dark Mode&quot;,
+  &quot;identifier&quot;: &quot;dark&quot;,
+  &quot;name&quot;: &quot;Dark Mode&quot;,
   &quot;metadata&quot;: [
     {
       &quot;kind&quot;: &quot;description&quot;,
@@ -359,7 +359,7 @@
           &quot;description&quot;: &quot;When the user has not expressed a preference for dark mode. Default to the light theme.&quot;,
           &quot;kind&quot;: &quot;negative&quot;,
           &quot;alternative&quot;: {
-            &quot;name&quot;: &quot;light&quot;,
+            &quot;identifier&quot;: &quot;light&quot;,
             &quot;rationale&quot;: &quot;Dark mode can reduce readability for users with certain visual impairments such as astigmatism, where light text on dark backgrounds causes halation. Defaulting to light ensures the broadest accessibility baseline.&quot;
           }
         },
@@ -367,7 +367,7 @@
           &quot;description&quot;: &quot;When high-contrast accessibility is the primary concern rather than a dark aesthetic.&quot;,
           &quot;kind&quot;: &quot;negative&quot;,
           &quot;alternative&quot;: {
-            &quot;name&quot;: &quot;high-contrast&quot;,
+            &quot;identifier&quot;: &quot;high-contrast&quot;,
             &quot;rationale&quot;: &quot;The dark theme is optimized for comfort in low-light environments, not maximum contrast. The high-contrast theme provides stronger contrast ratios that better serve users with low vision.&quot;
           }
         },
@@ -375,7 +375,7 @@
           &quot;description&quot;: &quot;When the content is primarily photographic or illustrative and the surrounding chrome should not compete visually.&quot;,
           &quot;kind&quot;: &quot;negative&quot;,
           &quot;alternative&quot;: {
-            &quot;name&quot;: &quot;light&quot;,
+            &quot;identifier&quot;: &quot;light&quot;,
             &quot;rationale&quot;: &quot;Photographic content often assumes a neutral white surround for accurate color perception. A dark surround shifts the viewer's perception of brightness and color in the images.&quot;
           }
         }

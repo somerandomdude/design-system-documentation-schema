@@ -179,8 +179,8 @@ Reference the schema in your DSDS files for editor support. Use the `entity` for
   "dsdsVersion": "0.1",
   "entity": {
     "kind": "component",
-    "name": "my-component",
-    "displayName": "My Component",
+    "identifier": "my-component",
+    "name": "My Component",
     "metadata": [
       { "kind": "description", "value": "A brief description." },
       { "kind": "status", "status": "draft" }
@@ -318,8 +318,8 @@ When each entity lives in its own file, use `entity` instead of `documentation`:
   "dsdsVersion": "0.1",
   "entity": {
     "kind": "component",
-    "name": "button",
-    "displayName": "Button",
+    "identifier": "button",
+    "name": "Button",
     "metadata": [
       { "kind": "description", "value": "An interactive element that triggers an action." },
       { "kind": "status", "status": "stable" }
@@ -344,7 +344,7 @@ The `kind` field on the entity identifies its type. Valid values are `"component
         "description": "One-off marketing landing pages with heavy custom art direction.",
         "kind": "negative",
         "alternative": {
-          "name": "marketing-toolkit",
+          "identifier": "marketing-toolkit",
           "rationale": "The marketing toolkit provides art-direction-first primitives."
         }
       }
@@ -377,19 +377,19 @@ The `kind` field on the entity identifies its type. Valid values are `"component
     {
       "name": "Acme Design System",
       "components": [
-        { "kind": "component", "name": "button", "..." }
+        { "kind": "component", "identifier": "button", "..." }
       ],
       "tokenGroups": [
-        { "kind": "token-group", "name": "color-palette", "..." }
+        { "kind": "token-group", "identifier": "color-palette", "..." }
       ],
       "themes": [
-        { "kind": "theme", "name": "dark", "..." }
+        { "kind": "theme", "identifier": "dark", "..." }
       ],
       "styles": [
-        { "kind": "style", "name": "spacing", "..." }
+        { "kind": "style", "identifier": "spacing", "..." }
       ],
       "patterns": [
-        { "kind": "pattern", "name": "error-messaging", "..." }
+        { "kind": "pattern", "identifier": "error-messaging", "..." }
       ]
     }
   ]
@@ -406,8 +406,8 @@ Large design systems can split entities across individual files and reference th
   "dsdsVersion": "0.1",
   "entity": {
     "kind": "component",
-    "name": "button",
-    "displayName": "Button",
+    "identifier": "button",
+    "name": "Button",
     "metadata": []
   }
 }
@@ -438,7 +438,7 @@ See [`spec/examples/multi-file/`](spec/examples/multi-file/) for a validated exa
 
 ### Entity Types
 
-Each entity kind lives in its own named array within a documentation group. The array name is the primary type indicator. Every entity still carries a `kind` discriminator for use in contexts where the source array is not available, along with common identity properties (`name`, `displayName`, `description`, `status`) and a `documentBlocks` array for all structured documentation.
+Each entity kind lives in its own named array within a documentation group. The array name is the primary type indicator. Every entity still carries a `kind` discriminator for use in contexts where the source array is not available, along with common identity properties (`identifier`, `name`, `description`, `status`) and a `documentBlocks` array for all structured documentation.
 
 | `kind` value | Entity | Array | Description |
 |---|---|---|---|
@@ -457,7 +457,7 @@ Every entity accepts an optional `agents` object providing context optimized for
 |---|---|---|
 | `intent` | `string` | One sentence stating the primary purpose. |
 | `constraints` | `array` | Hard rules with `must`/`must-not`/`should`/`should-not` levels. Each entry has `rule`, `level`, optional `context`, optional `evidence` (empirical backing), and optional `examples` (constraint-specific code). |
-| `disambiguation` | `array` | Confusion-resolution entries against similar entities. Each has `entity` (name), optional `entityType` (component, prop, token, pattern, package, or concept), and `distinction` (the deciding criterion). |
+| `disambiguation` | `array` | Confusion-resolution entries against similar entities. Each has `entity` (identifier), optional `entityType` (component, prop, token, pattern, package, or concept), and `distinction` (the deciding criterion). |
 | `antiPatterns` | `array` | Known incorrect uses with corrective alternatives. Each has `description`, `instead` (SHOULD be provided), and optional `evidence`. |
 | `examples` | `array` | Ready-to-use code examples. Each has `description`, `code`, and optional `language`. |
 | `keywords` | `string[]` | Semantic retrieval terms and synonyms. |
@@ -617,7 +617,7 @@ DSDS separates two kinds of guidance:
           "description": "When the action navigates to a different page.",
           "kind": "negative",
           "alternative": {
-            "name": "link",
+            "identifier": "link",
             "rationale": "Links carry native navigation semantics."
           }
         }
@@ -679,19 +679,19 @@ Component variants are modeled as dimensions of variation inside a `"variants"` 
   "items": [
     {
       "kind": "enum",
-      "name": "emphasis",
-      "displayName": "Emphasis",
+      "identifier": "emphasis",
+      "name": "Emphasis",
       "description": "Controls the visual weight of the button.",
       "values": [
-        { "name": "primary", "description": "High-emphasis — the main action." },
-        { "name": "secondary", "description": "Medium-emphasis — important but not primary." },
-        { "name": "ghost", "description": "Low-emphasis — tertiary actions." }
+        { "identifier": "primary", "description": "High-emphasis — the main action." },
+        { "identifier": "secondary", "description": "Medium-emphasis — important but not primary." },
+        { "identifier": "ghost", "description": "Low-emphasis — tertiary actions." }
       ]
     },
     {
       "kind": "flag",
-      "name": "full-width",
-      "displayName": "Full Width",
+      "identifier": "full-width",
+      "name": "Full Width",
       "description": "Stretches the button to fill its container.",
       "purpose": "Provides a prominent call to action in narrow or single-column layouts."
     }
@@ -748,7 +748,7 @@ The `variants`, `sizes`, and `states` arrays each contain named entries with the
   },
   "variants": [
     {
-      "name": "danger",
+      "identifier": "danger",
       "properties": {
         "background": "button-danger-bg",
         "color": "#ffffff",
@@ -758,7 +758,7 @@ The `variants`, `sizes`, and `states` arrays each contain named entries with the
   ],
   "sizes": [
     {
-      "name": "small",
+      "identifier": "small",
       "properties": {
         "font-size": "14px"
       },
@@ -777,7 +777,7 @@ DSDS does not carry token values or platform API mappings. The W3C Design Tokens
 ```json
 {
   "type": "token",
-  "name": "color.text.primary",
+  "identifier": "color.text.primary",
   "tokenType": "color",
   "source": "./tokens.json"
 }
@@ -785,7 +785,7 @@ DSDS does not carry token values or platform API mappings. The W3C Design Tokens
 
 ### Token Names Are Unconstrained
 
-Most entity types enforce `^[a-z][a-z0-9-]*$` on the `name` property. Tokens and token groups are the intentional exception — their names are unconstrained to accommodate DTCG and design tool naming conventions that use dots (`color.text.primary`), slashes (`color/text/primary`), or other separators.
+Most entity types enforce `^[a-z][a-z0-9-]*$` on the `identifier` property. Tokens and token groups are the intentional exception — their identifiers are unconstrained to accommodate DTCG and design tool naming conventions that use dots (`color.text.primary`), slashes (`color/text/primary`), or other separators.
 
 ### Links Handle Both Resources and Relationships
 
@@ -848,14 +848,14 @@ The root `extends` property declares that the entire document inherits from a ba
 
 ### Entity-level extends
 
-Individual components and tokens can declare that they extend a specific base entity from the parent system. The entity-level `extends` includes a `name` (matching the base entity), an optional `system` override, and an optional `modifications` array that serves as a human-readable changelog:
+Individual components and tokens can declare that they extend a specific base entity from the parent system. The entity-level `extends` includes an `identifier` (matching the base entity), an optional `system` override, and an optional `modifications` array that serves as a human-readable changelog:
 
 ```json
 {
   "kind": "component",
-  "name": "button",
+  "identifier": "button",
   "extends": {
-    "name": "button",
+    "identifier": "button",
     "description": "Adds an 'enterprise' variant and a 'theme' prop.",
     "modifications": [
       { "type": "added",     "target": "variant:enterprise", "description": "High-emphasis enterprise brand variant." },
@@ -863,7 +863,7 @@ Individual components and tokens can declare that they extend a specific base en
       { "type": "inherited", "target": "guideline:anatomy",  "description": "Anatomy inherited from core without changes." }
     ]
   },
-  "displayName": "Button",
+  "name": "Button",
   "description": "Enterprise Button — extends core with an enterprise variant and theme prop.",
   "status": "stable",
   "documentBlocks": [ "..." ]

@@ -74,11 +74,11 @@
     <main class="content__main" role="main">
       <div class="content__inner">
         <ds-schema-header title="DSDS Pattern Definitions" description="Definitions for documenting interaction patterns — recurring solutions to common UX problems such as navigation, error messaging, form validation, empty states, loading sequences, and onboarding flows. A pattern document captures the identity of a multi-component solution. Ancillary concerns — status, category, tags, aliases, summary, thumbnail, preview, extends, and links — live in the modular `metadata` array as typed entries. All structured docs live in the unified `documentBlock` array as typed document block objects." source="entities/pattern.schema.json"></ds-schema-header>
-<ds-def-section name="pattern" anchor="pattern" description="Documentation for an interaction pattern — a recurring, multi-component solution to a common UX problem. Patterns sit above individual components and describe how they compose to address a user need. The pattern's identity (name, displayName, description) lives at the top level. Ancillary concerns — status, category, tags, aliases, summary, thumbnail, preview, extends, and links — live in the modular `metadata` array as typed entries with a `kind` discriminator. All structured docs live in the `documentBlock` array — each entry is a typed document block object (interaction for flow steps, guideline for rules, accessibility for a11y specs, etc.)." type="object">
+<ds-def-section name="pattern" anchor="pattern" description="Documentation for an interaction pattern — a recurring, multi-component solution to a common UX problem. Patterns sit above individual components and describe how they compose to address a user need. The pattern's identity (identifier, name, description) lives at the top level. Ancillary concerns — status, category, tags, aliases, summary, thumbnail, preview, extends, and links — live in the modular `metadata` array as typed entries with a `kind` discriminator. All structured docs live in the `documentBlock` array — each entry is a typed document block object (interaction for flow steps, guideline for rules, accessibility for a11y specs, etc.)." type="object">
 <ds-prop-table>
   <ds-prop name="kind" type="&lt;ds-code inline&gt;&quot;pattern&quot;&lt;/ds-code&gt;" required>Identifies this entity as a pattern.</ds-prop>
-  <ds-prop name="name" type="string" required>Machine-readable identifier for the pattern (e.g., 'error-messaging', 'navigation', 'empty-state', 'form-validation'). MUST be unique within the documentation group.<br><small>Pattern: <ds-code inline>^[a-z][a-z0-9-]*$</ds-code></small></ds-prop>
-  <ds-prop name="displayName" type="string" required>Human-readable name for display in docs (e.g., 'Error Messaging', 'Navigation', 'Empty State').</ds-prop>
+  <ds-prop name="identifier" type="string" required>Machine-readable identifier for the pattern (e.g., 'error-messaging', 'navigation', 'empty-state', 'form-validation'). MUST be unique within the documentation group.<br><small>Pattern: <ds-code inline>^[a-z][a-z0-9-]*$</ds-code></small></ds-prop>
+  <ds-prop name="name" type="string" required>Human-readable name for display in docs (e.g., 'Error Messaging', 'Navigation', 'Empty State').</ds-prop>
   <ds-prop name="metadata" type="&lt;ds-type-ref href=&quot;metadata-metadata.html#entitymetadata&quot;&gt;entityMetadata&lt;/ds-type-ref&gt;[]">Modular metadata entries. Each entry is a typed object with a `kind` discriminator. Types include status, since, tags, category, aliases, summary, thumbnail, preview, extends, and links.</ds-prop>
   <ds-prop name="documentBlocks" type="&lt;ds-type-ref href=&quot;document-blocks-document-blocks.html#patterndocumentblock&quot;&gt;patternDocumentBlock&lt;/ds-type-ref&gt;[]">All structured docs for this pattern as an ordered array of typed document block objects. Patterns accept pattern-specific document block types (interactions) and general types (guidelines, use-cases, accessibility, examples). Each document block entry has a `type` property that determines its shape. Ordering is significant: tools SHOULD preserve it for display. Interaction document block entries rely on ordering to represent chronological flow. Reference participating components through a links metadata entry (with type 'component', name, and role) rather than a dedicated document block type.</ds-prop>
   <ds-prop name="agents" type="&lt;ds-type-ref href=&quot;common-agents.html#agents&quot;&gt;agents&lt;/ds-type-ref&gt;">Agent-optimized context for this pattern — intent, constraints, disambiguation, anti-patterns, examples, and keywords for efficient agentic consumption.</ds-prop>
@@ -90,8 +90,8 @@
 <ds-def-example>
 <ds-code language="json" label="example">{
   &quot;kind&quot;: &quot;pattern&quot;,
-  &quot;name&quot;: &quot;error-messaging&quot;,
-  &quot;displayName&quot;: &quot;Error Messaging&quot;,
+  &quot;identifier&quot;: &quot;error-messaging&quot;,
+  &quot;name&quot;: &quot;Error Messaging&quot;,
   &quot;metadata&quot;: [
     {
       &quot;kind&quot;: &quot;description&quot;,
@@ -143,36 +143,36 @@
       &quot;items&quot;: [
         {
           &quot;kind&quot;: &quot;component&quot;,
-          &quot;name&quot;: &quot;form-field&quot;,
+          &quot;identifier&quot;: &quot;form-field&quot;,
           &quot;role&quot;: &quot;Container for individual inputs. Displays inline validation messages directly below the field when validation fails.&quot;,
           &quot;required&quot;: true
         },
         {
           &quot;kind&quot;: &quot;component&quot;,
-          &quot;name&quot;: &quot;alert&quot;,
+          &quot;identifier&quot;: &quot;alert&quot;,
           &quot;role&quot;: &quot;Page-level error summary. Appears at the top of the form or page listing all current errors with anchor links to each invalid field.&quot;,
           &quot;required&quot;: true
         },
         {
           &quot;kind&quot;: &quot;component&quot;,
-          &quot;name&quot;: &quot;toast&quot;,
+          &quot;identifier&quot;: &quot;toast&quot;,
           &quot;role&quot;: &quot;Transient notification for server-side or asynchronous errors that cannot be tied to a specific field (e.g., network failure, timeout)&quot;
         },
         {
           &quot;kind&quot;: &quot;component&quot;,
-          &quot;name&quot;: &quot;icon&quot;,
+          &quot;identifier&quot;: &quot;icon&quot;,
           &quot;role&quot;: &quot;Visual error indicator displayed alongside inline validation text and inside the error summary. Provides a non-color signal that reinforces the error state.&quot;,
           &quot;required&quot;: true
         },
         {
           &quot;kind&quot;: &quot;component&quot;,
-          &quot;name&quot;: &quot;button&quot;,
+          &quot;identifier&quot;: &quot;button&quot;,
           &quot;role&quot;: &quot;Submit trigger for the form. Initiates client-side validation before submission.&quot;,
           &quot;required&quot;: true
         },
         {
           &quot;kind&quot;: &quot;component&quot;,
-          &quot;name&quot;: &quot;link&quot;,
+          &quot;identifier&quot;: &quot;link&quot;,
           &quot;role&quot;: &quot;Anchor links within the error summary that navigate the user to the corresponding invalid field.&quot;,
           &quot;required&quot;: true
         },
@@ -345,7 +345,7 @@
           &quot;description&quot;: &quot;When the feedback is a successful outcome (e.g., 'Changes saved', 'Account created').&quot;,
           &quot;kind&quot;: &quot;negative&quot;,
           &quot;alternative&quot;: {
-            &quot;name&quot;: &quot;success-messaging&quot;,
+            &quot;identifier&quot;: &quot;success-messaging&quot;,
             &quot;rationale&quot;: &quot;Success feedback uses the success color and icon. Reusing the error pattern for positive outcomes confuses the visual language and dilutes the urgency of actual errors.&quot;
           }
         },
@@ -353,7 +353,7 @@
           &quot;description&quot;: &quot;When the feedback is an informational or warning message that does not block the user from proceeding.&quot;,
           &quot;kind&quot;: &quot;negative&quot;,
           &quot;alternative&quot;: {
-            &quot;name&quot;: &quot;notification-messaging&quot;,
+            &quot;identifier&quot;: &quot;notification-messaging&quot;,
             &quot;rationale&quot;: &quot;Informational messages use a neutral or warning color. Treating them as errors creates false urgency and trains users to ignore error styling.&quot;
           }
         },
@@ -361,7 +361,7 @@
           &quot;description&quot;: &quot;When the entire page or view fails to load (e.g., 404, 503).&quot;,
           &quot;kind&quot;: &quot;negative&quot;,
           &quot;alternative&quot;: {
-            &quot;name&quot;: &quot;empty-state&quot;,
+            &quot;identifier&quot;: &quot;empty-state&quot;,
             &quot;rationale&quot;: &quot;Full-page failures are better handled by empty state patterns that replace the entire content area with an explanation and recovery action, rather than overlaying error messages on a non-functional page.&quot;
           }
         }
@@ -416,7 +416,8 @@
           &quot;category&quot;: &quot;accessibility&quot;,
           &quot;criteria&quot;: [
             {
-              &quot;url&quot;: &quot;https://www.w3.org/TR/WCAG22/#error-identification&quot;
+              &quot;url&quot;: &quot;https://www.w3.org/TR/WCAG22/#error-identification&quot;,
+              &quot;kind&quot;: &quot;reference&quot;
             }
           ]
         },
@@ -439,7 +440,8 @@
           &quot;category&quot;: &quot;accessibility&quot;,
           &quot;criteria&quot;: [
             {
-              &quot;url&quot;: &quot;https://www.w3.org/TR/WCAG22/#use-of-color&quot;
+              &quot;url&quot;: &quot;https://www.w3.org/TR/WCAG22/#use-of-color&quot;,
+              &quot;kind&quot;: &quot;reference&quot;
             }
           ]
         },
@@ -450,10 +452,12 @@
           &quot;category&quot;: &quot;accessibility&quot;,
           &quot;criteria&quot;: [
             {
-              &quot;url&quot;: &quot;https://www.w3.org/TR/WCAG22/#error-identification&quot;
+              &quot;url&quot;: &quot;https://www.w3.org/TR/WCAG22/#error-identification&quot;,
+              &quot;kind&quot;: &quot;reference&quot;
             },
             {
-              &quot;url&quot;: &quot;https://www.w3.org/TR/WCAG22/#info-and-relationships&quot;
+              &quot;url&quot;: &quot;https://www.w3.org/TR/WCAG22/#info-and-relationships&quot;,
+              &quot;kind&quot;: &quot;reference&quot;
             }
           ]
         },
@@ -464,7 +468,8 @@
           &quot;category&quot;: &quot;accessibility&quot;,
           &quot;criteria&quot;: [
             {
-              &quot;url&quot;: &quot;https://www.w3.org/TR/WCAG22/#error-identification&quot;
+              &quot;url&quot;: &quot;https://www.w3.org/TR/WCAG22/#error-identification&quot;,
+              &quot;kind&quot;: &quot;reference&quot;
             }
           ]
         },
@@ -475,7 +480,8 @@
           &quot;category&quot;: &quot;accessibility&quot;,
           &quot;criteria&quot;: [
             {
-              &quot;url&quot;: &quot;https://www.w3.org/TR/WCAG22/#status-messages&quot;
+              &quot;url&quot;: &quot;https://www.w3.org/TR/WCAG22/#status-messages&quot;,
+              &quot;kind&quot;: &quot;reference&quot;
             }
           ]
         },
@@ -486,7 +492,8 @@
           &quot;category&quot;: &quot;accessibility&quot;,
           &quot;criteria&quot;: [
             {
-              &quot;url&quot;: &quot;https://www.w3.org/TR/WCAG22/#focus-order&quot;
+              &quot;url&quot;: &quot;https://www.w3.org/TR/WCAG22/#focus-order&quot;,
+              &quot;kind&quot;: &quot;reference&quot;
             }
           ]
         },
@@ -497,7 +504,8 @@
           &quot;category&quot;: &quot;accessibility&quot;,
           &quot;criteria&quot;: [
             {
-              &quot;url&quot;: &quot;https://www.w3.org/TR/WCAG22/#timing-adjustable&quot;
+              &quot;url&quot;: &quot;https://www.w3.org/TR/WCAG22/#timing-adjustable&quot;,
+              &quot;kind&quot;: &quot;reference&quot;
             }
           ]
         }

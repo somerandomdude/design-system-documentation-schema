@@ -75,26 +75,183 @@
       <div class="content__inner">
         <ds-schema-header title="DSDS Guideline" description="Documents actionable usage guidance for an artifact. Each item is a self-contained rule paired with a rationale explaining why. Guidelines tell the reader what to do (or not do) and why. They appear alongside other document block types in the unified document block array on any artifact." source="document-blocks/guideline.schema.json"></ds-schema-header>
 <ds-def-index>
-<p><strong>2 definitions</strong> in this file:</p>
+<p><strong>4 definitions</strong> in this file:</p>
 <ul>
 <li><a href="#guidelineentry"><ds-code inline>guidelineEntry</ds-code></a></li>
+<li><a href="#criterionreference"><ds-code inline>criterionReference</ds-code></a></li>
+<li><a href="#criteriondefinition"><ds-code inline>criterionDefinition</ds-code></a></li>
 <li><a href="#guideline"><ds-code inline>guideline</ds-code></a></li>
 </ul>
 </ds-def-index>
-<ds-def-section name="guidelineEntry" anchor="guidelineentry" description="A single, self-contained piece of usage guidance. Every guideline pairs an actionable statement with a rationale. `kind` classifies enforcement. `category` groups by discipline. `target` identifies which anatomy part or content area the guidance applies to. `criteria` links to external standards (WCAG, platform guidelines, etc.)." type="object">
+<ds-def-section name="guidelineEntry" anchor="guidelineentry" description="A single, self-contained piece of usage guidance. Every guideline pairs an actionable statement with a rationale. `kind` classifies enforcement. `category` groups by discipline. `target` identifies which anatomy part or content area the guidance applies to. `criteria` is a polymorphic array — each entry is either an external reference (citing WCAG, platform guidelines, etc.) or an internal criterion definition (a stable, testable success criterion owned by this design system, citable via a tooling-managed display code)." type="object">
 <ds-prop-table>
   <ds-prop name="guidance" type="&lt;ds-type-ref href=&quot;common-rich-text.html#richtext&quot;&gt;richText&lt;/ds-type-ref&gt;" required>The actionable guidance statement. MUST be concrete and unambiguous. Avoid subjective language like 'use sparingly' or 'when possible'.</ds-prop>
   <ds-prop name="kind" type="&lt;ds-code inline&gt;&quot;required&quot;&lt;/ds-code&gt; | &lt;ds-code inline&gt;&quot;encouraged&quot;&lt;/ds-code&gt; | &lt;ds-code inline&gt;&quot;informational&quot;&lt;/ds-code&gt; | &lt;ds-code inline&gt;&quot;discouraged&quot;&lt;/ds-code&gt; | &lt;ds-code inline&gt;&quot;prohibited&quot;&lt;/ds-code&gt;" required>The enforcement level, classifying how strictly the guideline should be followed. Values align with RFC 2119: 'required' (MUST — non-compliance is a defect), 'encouraged' (SHOULD — follow in most cases; exceptions need justification), 'informational' (MAY — advisory with no enforcement expectation), 'discouraged' (SHOULD NOT — avoid unless justified), 'prohibited' (MUST NOT — violations are defects). Defaults to 'informational'.<br><small>Default: <ds-code inline>"informational"</ds-code></small></ds-prop>
   <ds-prop name="rationale" type="&lt;ds-type-ref href=&quot;common-rich-text.html#richtext&quot;&gt;richText&lt;/ds-type-ref&gt;">Why this guidance exists. Cite evidence, accessibility standards, or user research when available. MUST NOT restate the guidance.</ds-prop>
   <ds-prop name="category" type="string">The discipline or domain this guideline belongs to. Used to group guidelines by concern. Standard values: 'visual-design' (color, typography, spacing, layout), 'interaction' (behavior, animation, transitions, gestures), 'accessibility' (inclusive design, assistive technology, WCAG compliance), 'content' (text, imagery, tone, voice, labeling), 'motion' (animation timing, easing, reduced-motion), 'development' (implementation patterns, performance, code conventions). Custom values are permitted and SHOULD be lowercase kebab-case.</ds-prop>
   <ds-prop name="target" type="string">The anatomy part or content area this guideline applies to (e.g., 'label', 'icon', 'helper-text'). When omitted, the guideline applies to the artifact as a whole.</ds-prop>
-  <ds-prop name="criteria" type="object[]">References to external standards that this guideline addresses. Each entry carries a URL and a human-readable label. For WCAG criteria, use the direct URL to the success criterion and a descriptive label (e.g., '1.4.3 Contrast (Minimum)').</ds-prop>
+  <ds-prop name="criteria" type="&lt;ds-type-ref href=&quot;document-blocks-guideline.html#criterionreference&quot;&gt;criterionReference&lt;/ds-type-ref&gt; | &lt;ds-type-ref href=&quot;document-blocks-guideline.html#criteriondefinition&quot;&gt;criterionDefinition&lt;/ds-type-ref&gt;[]">Criteria addressed or defined by this guideline. Each entry is either an external reference (citing a published standard such as WCAG) or an internal criterion (defining a testable success condition owned by this design system). External references support citation of authoritative external rules. Internal criteria support WCAG-style governance: a stable, author-owned `identifier` anchors the criterion across edits, and tooling can derive citable display codes from those identifiers via a persistent registry. Authors SHOULD attach internal criteria only to guidelines whose success condition is objectively verifiable.</ds-prop>
   <ds-prop name="examples" type="&lt;ds-type-ref href=&quot;common-example.html#example&quot;&gt;example&lt;/ds-type-ref&gt;[]">Examples showing encouraged and discouraged approaches.</ds-prop>
   <ds-prop name="tags" type="string[]">Freeform keywords to relate guidelines across categories and disciplines (e.g., 'rtl', 'localization', 'validation', 'contrast').</ds-prop>
 </ds-prop-table>
 <ds-cross-refs><strong>References:</strong> 
+<ds-type-ref href="common-rich-text.html#richtext">richText</ds-type-ref>, <ds-type-ref href="document-blocks-guideline.html#criterionreference">criterionReference</ds-type-ref>, <ds-type-ref href="document-blocks-guideline.html#criteriondefinition">criterionDefinition</ds-type-ref>, <ds-type-ref href="common-example.html#example">example</ds-type-ref>
+</ds-cross-refs>
+<ds-def-example>
+<ds-code language="json" label="example">[
+  {
+    &quot;guidance&quot;: &quot;Use at most one primary (filled) button per visible surface.&quot;,
+    &quot;rationale&quot;: &quot;Multiple primary buttons on the same surface dilute visual hierarchy and confuse users about which action is most important.&quot;,
+    &quot;kind&quot;: &quot;required&quot;,
+    &quot;category&quot;: &quot;visual-design&quot;,
+    &quot;criteria&quot;: [
+      {
+        &quot;kind&quot;: &quot;criterion&quot;,
+        &quot;identifier&quot;: &quot;single-primary-action&quot;,
+        &quot;title&quot;: &quot;Single Primary Action&quot;,
+        &quot;successCriterion&quot;: &quot;A surface contains at most one element with `variant=\&quot;primary\&quot;`. Verifiable by static AST scan of the rendered tree.&quot;,
+        &quot;techniques&quot;: [
+          &quot;Use `variant=\&quot;primary\&quot;` for the most important action and `variant=\&quot;secondary\&quot;` for the next-most-important.&quot;,
+          &quot;When two actions appear adjacent (e.g., Save / Cancel), assign primary to Save and secondary to Cancel.&quot;
+        ],
+        &quot;failures&quot;: [
+          &quot;Rendering two or more elements with `variant=\&quot;primary\&quot;` inside the same form, dialog, or card.&quot;
+        ],
+        &quot;examples&quot;: [
+          {
+            &quot;title&quot;: &quot;Correct — single primary action&quot;,
+            &quot;presentation&quot;: {
+              &quot;kind&quot;: &quot;code&quot;,
+              &quot;code&quot;: &quot;&lt;ButtonGroup&gt;\n  &lt;Button variant=\&quot;secondary\&quot;&gt;Cancel&lt;/Button&gt;\n  &lt;Button variant=\&quot;primary\&quot;&gt;Save&lt;/Button&gt;\n&lt;/ButtonGroup&gt;&quot;,
+              &quot;language&quot;: &quot;jsx&quot;
+            }
+          },
+          {
+            &quot;title&quot;: &quot;Incorrect — two primary actions on the same surface&quot;,
+            &quot;presentation&quot;: {
+              &quot;kind&quot;: &quot;code&quot;,
+              &quot;code&quot;: &quot;&lt;ButtonGroup&gt;\n  &lt;Button variant=\&quot;primary\&quot;&gt;Cancel&lt;/Button&gt;\n  &lt;Button variant=\&quot;primary\&quot;&gt;Save&lt;/Button&gt;\n&lt;/ButtonGroup&gt;&quot;,
+              &quot;language&quot;: &quot;jsx&quot;
+            }
+          }
+        ],
+        &quot;tags&quot;: [
+          &quot;visual-hierarchy&quot;,
+          &quot;governance&quot;
+        ]
+      }
+    ]
+  },
+  {
+    &quot;guidance&quot;: &quot;Maintain a minimum tap target of 44×44 CSS pixels for all button sizes.&quot;,
+    &quot;rationale&quot;: &quot;Touch devices require larger targets to prevent mis-taps. WCAG 2.5.8 requires 24×24px minimum and recommends 44×44px.&quot;,
+    &quot;kind&quot;: &quot;required&quot;,
+    &quot;category&quot;: &quot;accessibility&quot;,
+    &quot;criteria&quot;: [
+      {
+        &quot;kind&quot;: &quot;criterion&quot;,
+        &quot;identifier&quot;: &quot;touch-target-minimum&quot;,
+        &quot;title&quot;: &quot;Touch Target Minimum&quot;,
+        &quot;successCriterion&quot;: &quot;Every interactive element exposes a hit area of at least 44×44 CSS pixels in all viewports. Verifiable via runtime measurement of bounding rectangles.&quot;,
+        &quot;techniques&quot;: [
+          &quot;Apply `min-height: 44px` and sufficient horizontal padding to every interactive element.&quot;,
+          &quot;Use the `&lt;Button&gt;` component without overriding its default height.&quot;
+        ],
+        &quot;failures&quot;: [
+          &quot;Setting `height` below 44px on an interactive element.&quot;,
+          &quot;Removing default vertical padding from the component's CSS.&quot;
+        ],
+        &quot;references&quot;: [
+          {
+            &quot;url&quot;: &quot;https://www.w3.org/TR/WCAG22/#target-size-minimum&quot;,
+            &quot;label&quot;: &quot;WCAG 2.5.8 Target Size (Minimum)&quot;
+          }
+        ],
+        &quot;tags&quot;: [
+          &quot;a11y&quot;,
+          &quot;touch-target&quot;,
+          &quot;governance&quot;
+        ]
+      },
+      {
+        &quot;kind&quot;: &quot;reference&quot;,
+        &quot;url&quot;: &quot;https://www.w3.org/TR/WCAG22/#target-size-enhanced&quot;,
+        &quot;label&quot;: &quot;WCAG 2.5.5 Target Size (Enhanced)&quot;
+      }
+    ]
+  },
+  {
+    &quot;guidance&quot;: &quot;Button label text must meet a minimum 4.5:1 contrast ratio against the button background.&quot;,
+    &quot;rationale&quot;: &quot;Text contrast ensures readability for users with low vision. Failing this criterion is a documented WCAG AA failure.&quot;,
+    &quot;kind&quot;: &quot;required&quot;,
+    &quot;category&quot;: &quot;accessibility&quot;,
+    &quot;criteria&quot;: [
+      {
+        &quot;kind&quot;: &quot;reference&quot;,
+        &quot;url&quot;: &quot;https://www.w3.org/TR/WCAG22/#contrast-minimum&quot;,
+        &quot;label&quot;: &quot;WCAG 1.4.3 Contrast (Minimum)&quot;
+      }
+    ]
+  }
+]</ds-code>
+</ds-def-example>
+</ds-def-section>
+<ds-def-section name="criterionReference" anchor="criterionreference" description="A reference to an external standard that this guideline addresses. Use for citing published standards (WCAG, MDN, platform docs, vendor compliance frameworks). Pair the URL with a descriptive label so the citation is meaningful in display." type="object">
+<ds-prop-table>
+  <ds-prop name="kind" type="&lt;ds-code inline&gt;&quot;reference&quot;&lt;/ds-code&gt;" required>Identifies this entry as a reference to an external standard.</ds-prop>
+  <ds-prop name="url" type="string (uri)" required>URL to the external standard or requirement (e.g., 'https://www.w3.org/TR/WCAG22/#contrast-minimum').</ds-prop>
+  <ds-prop name="label" type="string">A human-readable label for the citation (e.g., '1.4.3 Contrast (Minimum)', 'WCAG 2.5.8 Target Size'). When omitted, tools MAY derive a label from the URL.</ds-prop>
+</ds-prop-table>
+<ds-def-example>
+<ds-code language="json" label="example">{
+  &quot;kind&quot;: &quot;reference&quot;,
+  &quot;url&quot;: &quot;https://www.w3.org/TR/WCAG22/#contrast-minimum&quot;,
+  &quot;label&quot;: &quot;WCAG 1.4.3 Contrast (Minimum)&quot;
+}</ds-code>
+</ds-def-example>
+</ds-def-section>
+<ds-def-section name="criterionDefinition" anchor="criteriondefinition" description="A testable success criterion defined by this design system. Provides a stable, citable governance unit alongside the parent guideline's actionable guidance. Each definition pairs an author-owned `identifier` (which never changes once published) with a `title`, an objectively verifiable `successCriterion`, and optional techniques, failure conditions, examples, and external alignments. Tooling derives display codes (e.g., 'BTN-2.1') from the identifier via a persistent registry so that citations remain stable as guidelines are edited or reordered." type="object">
+<ds-prop-table>
+  <ds-prop name="kind" type="&lt;ds-code inline&gt;&quot;criterion&quot;&lt;/ds-code&gt;" required>Identifies this entry as an internal success criterion defined by this design system.</ds-prop>
+  <ds-prop name="identifier" type="string" required>Stable, author-owned identifier scoped to the parent entity. MUST be lowercase kebab-case, MUST be unique within the parent entity, and MUST NOT change once published. Tooling SHOULD derive the display code (e.g., 'BTN-2.1', 'A11Y-1.4.3') from this identifier via a persistent registry; changing the identifier invalidates every citation that points at the criterion, so treat renames as deprecation + replacement.<br><small>Pattern: <ds-code inline>^[a-z][a-z0-9-]*$</ds-code></small></ds-prop>
+  <ds-prop name="title" type="string" required>A short human-readable title for the criterion (e.g., 'Touch Target Minimum', 'Single Primary Action'). Tools SHOULD render this alongside the display code when surfacing the criterion in docs or audit output.</ds-prop>
+  <ds-prop name="successCriterion" type="&lt;ds-type-ref href=&quot;common-rich-text.html#richtext&quot;&gt;richText&lt;/ds-type-ref&gt;" required>The testable statement of what success looks like. MUST be objectively verifiable — either by inspection, static analysis, or runtime measurement. Avoid subjective language like 'feels right' or 'looks balanced'. Mirrors the role of a WCAG Success Criterion (e.g., 'The visual presentation of text has a contrast ratio of at least 4.5:1, except for large text, incidental text, and logotypes').</ds-prop>
+  <ds-prop name="techniques" type="&lt;ds-type-ref href=&quot;common-rich-text.html#richtext&quot;&gt;richText&lt;/ds-type-ref&gt;[]">Ways to satisfy this criterion. Each entry is a richText description of a sufficient technique (e.g., 'Apply the `min-height: 44px` declaration to all interactive elements', 'Use the `&lt;Button&gt;` component without overriding its default height'). Maps to WCAG's 'Sufficient Techniques' list.</ds-prop>
+  <ds-prop name="failures" type="&lt;ds-type-ref href=&quot;common-rich-text.html#richtext&quot;&gt;richText&lt;/ds-type-ref&gt;[]">Conditions that constitute a failure of this criterion. Each entry is a richText description of a known failure mode (e.g., 'Setting `height` below 44px on an interactive element', 'Removing `aria-label` from an icon-only button'). Maps to WCAG's 'Common Failures' list.</ds-prop>
+  <ds-prop name="references" type="object[]">External standards this internal criterion aligns with or is derived from (e.g., a corresponding WCAG success criterion, an internal accessibility audit, a platform guideline). Each entry mirrors the shape of an external `criterionReference`.</ds-prop>
+  <ds-prop name="examples" type="&lt;ds-type-ref href=&quot;common-example.html#example&quot;&gt;example&lt;/ds-type-ref&gt;[]">Examples illustrating the criterion — typically before/after pairs showing passing and failing implementations.</ds-prop>
+  <ds-prop name="tags" type="string[]">Freeform keywords to relate criteria across guidelines (e.g., 'a11y', 'contrast', 'touch-target', 'governance').</ds-prop>
+</ds-prop-table>
+<ds-cross-refs><strong>References:</strong> 
 <ds-type-ref href="common-rich-text.html#richtext">richText</ds-type-ref>, <ds-type-ref href="common-example.html#example">example</ds-type-ref>
 </ds-cross-refs>
+<ds-def-example>
+<ds-code language="json" label="example">{
+  &quot;kind&quot;: &quot;criterion&quot;,
+  &quot;identifier&quot;: &quot;touch-target-minimum&quot;,
+  &quot;title&quot;: &quot;Touch Target Minimum&quot;,
+  &quot;successCriterion&quot;: &quot;Every interactive element exposes a hit area of at least 44×44 CSS pixels in all viewports. Verifiable via runtime measurement of bounding rectangles.&quot;,
+  &quot;techniques&quot;: [
+    &quot;Apply `min-height: 44px` and sufficient horizontal padding to every interactive element.&quot;,
+    &quot;Use the `&lt;Button&gt;` component without overriding its default height.&quot;
+  ],
+  &quot;failures&quot;: [
+    &quot;Setting `height` below 44px on an interactive element.&quot;,
+    &quot;Removing default vertical padding from the component's CSS.&quot;
+  ],
+  &quot;references&quot;: [
+    {
+      &quot;url&quot;: &quot;https://www.w3.org/TR/WCAG22/#target-size-minimum&quot;,
+      &quot;label&quot;: &quot;WCAG 2.5.8 Target Size (Minimum)&quot;
+    }
+  ],
+  &quot;tags&quot;: [
+    &quot;a11y&quot;,
+    &quot;touch-target&quot;,
+    &quot;governance&quot;
+  ]
+}</ds-code>
+</ds-def-example>
 </ds-def-section>
 <ds-def-section name="guideline" anchor="guideline" description="Documents actionable usage rules for an artifact. Each item pairs a guidance statement with a rationale. Categorize by discipline, target specific anatomy parts, and link to external standards like WCAG. Guidelines complement other document block types — use-cases tell the reader *when* to use the artifact, guidelines tell the reader *how* to use it correctly." type="object">
 <ds-prop-table>
@@ -105,6 +262,61 @@
 <ds-cross-refs><strong>References:</strong> 
 <ds-type-ref href="document-blocks-guideline.html#guidelineentry">guidelineEntry</ds-type-ref>, <ds-type-ref href="common-agents.html#agents">agents</ds-type-ref>
 </ds-cross-refs>
+<ds-def-example>
+<ds-code language="json" label="example">{
+  &quot;kind&quot;: &quot;guideline&quot;,
+  &quot;items&quot;: [
+    {
+      &quot;guidance&quot;: &quot;Use at most one primary (filled) button per visible surface.&quot;,
+      &quot;rationale&quot;: &quot;Multiple primary buttons dilute visual hierarchy.&quot;,
+      &quot;kind&quot;: &quot;required&quot;,
+      &quot;category&quot;: &quot;visual-design&quot;,
+      &quot;criteria&quot;: [
+        {
+          &quot;kind&quot;: &quot;criterion&quot;,
+          &quot;identifier&quot;: &quot;single-primary-action&quot;,
+          &quot;title&quot;: &quot;Single Primary Action&quot;,
+          &quot;successCriterion&quot;: &quot;A surface contains at most one element with `variant=\&quot;primary\&quot;`.&quot;
+        }
+      ]
+    },
+    {
+      &quot;guidance&quot;: &quot;Maintain a minimum tap target of 44×44 CSS pixels for all button sizes.&quot;,
+      &quot;rationale&quot;: &quot;Touch devices require larger targets to prevent mis-taps.&quot;,
+      &quot;kind&quot;: &quot;required&quot;,
+      &quot;category&quot;: &quot;accessibility&quot;,
+      &quot;criteria&quot;: [
+        {
+          &quot;kind&quot;: &quot;criterion&quot;,
+          &quot;identifier&quot;: &quot;touch-target-minimum&quot;,
+          &quot;title&quot;: &quot;Touch Target Minimum&quot;,
+          &quot;successCriterion&quot;: &quot;Every interactive element exposes a hit area of at least 44×44 CSS pixels.&quot;
+        },
+        {
+          &quot;kind&quot;: &quot;reference&quot;,
+          &quot;url&quot;: &quot;https://www.w3.org/TR/WCAG22/#target-size-minimum&quot;,
+          &quot;label&quot;: &quot;WCAG 2.5.8 Target Size (Minimum)&quot;
+        }
+      ]
+    }
+  ],
+  &quot;agents&quot;: {
+    &quot;intent&quot;: &quot;Enforce the design system's governance criteria for the Button component.&quot;,
+    &quot;constraints&quot;: [
+      {
+        &quot;rule&quot;: &quot;Surface BTN-1 violations as build errors; surface BTN-2 violations as accessibility audit findings.&quot;,
+        &quot;level&quot;: &quot;must&quot;
+      }
+    ],
+    &quot;keywords&quot;: [
+      &quot;governance&quot;,
+      &quot;audit&quot;,
+      &quot;wcag&quot;,
+      &quot;criteria&quot;
+    ]
+  }
+}</ds-code>
+</ds-def-example>
 </ds-def-section>
 
         <ds-back-to-top></ds-back-to-top>

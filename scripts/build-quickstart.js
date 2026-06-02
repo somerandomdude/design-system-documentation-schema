@@ -177,9 +177,9 @@ function buildPage() {
       {
         name: "My Design System",
         items: [
-          { kind: "component", name: "button", "...": "" },
-          { kind: "token", name: "color-text-primary", "...": "" },
-          { kind: "theme", name: "dark", "...": "" },
+          { kind: "component", identifier: "button", "...": "" },
+          { kind: "token", identifier: "color-text-primary", "...": "" },
+          { kind: "theme", identifier: "dark", "...": "" },
         ],
       },
     ],
@@ -197,7 +197,7 @@ function buildPage() {
         description: "When the action navigates to a different page.",
         kind: "negative",
         alternative: {
-          name: "link",
+          identifier: "link",
           rationale: "Links carry native navigation semantics.",
         },
       },
@@ -232,11 +232,11 @@ function buildPage() {
     [
       ["<ds-code inline>kind</ds-code>", "Yes", "Entity type discriminator"],
       [
-        "<ds-code inline>name</ds-code>",
+        "<ds-code inline>identifier</ds-code>",
         "Yes*",
         "Machine-readable identifier (<ds-code inline>^[a-z][a-z0-9-]*$</ds-code>, except tokens)",
       ],
-      ["<ds-code inline>displayName</ds-code>", "Yes*", "Human-readable label"],
+      ["<ds-code inline>name</ds-code>", "Yes*", "Human-readable label"],
       [
         "<ds-code inline>description</ds-code>",
         "Yes*",
@@ -468,7 +468,7 @@ ${entityCardsHtml}
   <ds-heading level="3">Common properties</ds-heading>
   <p>Every entity shares these fields:</p>
   ${commonPropsTable}
-  <p><small>* Required for component, style, and pattern. Token requires <ds-code inline>name</ds-code> + <ds-code inline>tokenType</ds-code> + <ds-code inline>value</ds-code>.</small></p>
+  <p><small>* Required for component, style, and pattern. Token requires <ds-code inline>identifier</ds-code> + <ds-code inline>tokenType</ds-code> + <ds-code inline>value</ds-code>.</small></p>
 
   <ds-heading level="3">Status: string or object</ds-heading>
   <p>For the simple case, status is just a string:</p>
@@ -519,14 +519,14 @@ ${entityCardsHtml}
 
   ${exampleSection(
     "Component",
-    "A component needs <ds-code inline>kind</ds-code>, <ds-code inline>name</ds-code>, <ds-code inline>displayName</ds-code>, and <ds-code inline>description</ds-code>. Everything else is optional.",
+    "A component needs <ds-code inline>kind</ds-code>, <ds-code inline>identifier</ds-code>, <ds-code inline>name</ds-code>, and <ds-code inline>description</ds-code>. Everything else is optional.",
     "component.json",
     "minimal component",
   )}
 
   ${exampleSection(
     "Token",
-    "A token needs <ds-code inline>kind</ds-code>, <ds-code inline>name</ds-code>, <ds-code inline>tokenType</ds-code>, and a <ds-code inline>value</ds-code> with at least <ds-code inline>resolved</ds-code>.",
+    "A token needs <ds-code inline>kind</ds-code>, <ds-code inline>identifier</ds-code>, <ds-code inline>tokenType</ds-code>, and a <ds-code inline>value</ds-code> with at least <ds-code inline>resolved</ds-code>.",
     "token.json",
     "minimal token",
   )}

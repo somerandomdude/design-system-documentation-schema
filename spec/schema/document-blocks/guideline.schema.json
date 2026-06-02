@@ -6,7 +6,7 @@
   "$defs": {
     "guidelineEntry": {
       "type": "object",
-      "description": "A single, self-contained piece of usage guidance. Every guideline pairs an actionable statement with a rationale. `kind` classifies enforcement. `category` groups by discipline. `target` identifies which anatomy part or content area the guidance applies to. `criteria` links to external standards (WCAG, platform guidelines, etc.).",
+      "description": "A single, self-contained piece of usage guidance. Every guideline pairs an actionable statement with a rationale. `kind` classifies enforcement. `category` groups by discipline. `target` identifies which anatomy part or content area the guidance applies to. `criteria` is a polymorphic array — each entry is either an external reference (citing WCAG, platform guidelines, etc.) or an internal criterion definition (a stable, testable success criterion owned by this design system, citable via a tooling-managed display code).",
       "required": ["guidance", "kind"],
       "properties": {
         "guidance": {
@@ -39,22 +39,12 @@
         },
         "criteria": {
           "type": "array",
-          "description": "References to external standards that this guideline addresses. Each entry carries a URL and a human-readable label. For WCAG criteria, use the direct URL to the success criterion and a descriptive label (e.g., '1.4.3 Contrast (Minimum)').",
+          "description": "Criteria addressed or defined by this guideline. Each entry is either an external reference (citing a published standard such as WCAG) or an internal criterion (defining a testable success condition owned by this design system). External references support citation of authoritative external rules. Internal criteria support WCAG-style governance: a stable, author-owned `identifier` anchors the criterion across edits, and tooling can derive citable display codes from those identifiers via a persistent registry. Authors SHOULD attach internal criteria only to guidelines whose success condition is objectively verifiable.",
           "items": {
-            "type": "object",
-            "required": ["url"],
-            "properties": {
-              "url": {
-                "type": "string",
-                "format": "uri",
-                "description": "URL to the external standard or requirement (e.g., 'https://www.w3.org/TR/WCAG22/#contrast-minimum')."
-              },
-              "label": {
-                "type": "string",
-                "description": "A human-readable label for the criterion (e.g., '1.4.3 Contrast (Minimum)', 'WCAG 2.5.8 Target Size'). When omitted, tools MAY derive a label from the URL."
-              }
-            },
-            "additionalProperties": false
+            "oneOf": [
+              { "$ref": "#/$defs/criterionReference" },
+              { "$ref": "#/$defs/criterionDefinition" }
+            ]
           }
         },
         "examples": {
@@ -70,6 +60,100 @@
             "type": "string"
           },
           "description": "Freeform keywords to relate guidelines across categories and disciplines (e.g., 'rtl', 'localization', 'validation', 'contrast')."
+        }
+      },
+      "additionalProperties": false
+    },
+    "criterionReference": {
+      "type": "object",
+      "description": "A reference to an external standard that this guideline addresses. Use for citing published standards (WCAG, MDN, platform docs, vendor compliance frameworks). Pair the URL with a descriptive label so the citation is meaningful in display.",
+      "required": ["kind", "url"],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "const": "reference",
+          "description": "Identifies this entry as a reference to an external standard."
+        },
+        "url": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL to the external standard or requirement (e.g., 'https://www.w3.org/TR/WCAG22/#contrast-minimum')."
+        },
+        "label": {
+          "type": "string",
+          "description": "A human-readable label for the citation (e.g., '1.4.3 Contrast (Minimum)', 'WCAG 2.5.8 Target Size'). When omitted, tools MAY derive a label from the URL."
+        }
+      },
+      "additionalProperties": false
+    },
+    "criterionDefinition": {
+      "type": "object",
+      "description": "A testable success criterion defined by this design system. Provides a stable, citable governance unit alongside the parent guideline's actionable guidance. Each definition pairs an author-owned `identifier` (which never changes once published) with a `title`, an objectively verifiable `successCriterion`, and optional techniques, failure conditions, examples, and external alignments. Tooling derives display codes (e.g., 'BTN-2.1') from the identifier via a persistent registry so that citations remain stable as guidelines are edited or reordered.",
+      "required": ["kind", "identifier", "title", "successCriterion"],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "const": "criterion",
+          "description": "Identifies this entry as an internal success criterion defined by this design system."
+        },
+        "identifier": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]*$",
+          "description": "Stable, author-owned identifier scoped to the parent entity. MUST be lowercase kebab-case, MUST be unique within the parent entity, and MUST NOT change once published. Tooling SHOULD derive the display code (e.g., 'BTN-2.1', 'A11Y-1.4.3') from this identifier via a persistent registry; changing the identifier invalidates every citation that points at the criterion, so treat renames as deprecation + replacement."
+        },
+        "title": {
+          "type": "string",
+          "description": "A short human-readable title for the criterion (e.g., 'Touch Target Minimum', 'Single Primary Action'). Tools SHOULD render this alongside the display code when surfacing the criterion in docs or audit output."
+        },
+        "successCriterion": {
+          "$ref": "../common/rich-text.schema.json#/$defs/richText",
+          "description": "The testable statement of what success looks like. MUST be objectively verifiable — either by inspection, static analysis, or runtime measurement. Avoid subjective language like 'feels right' or 'looks balanced'. Mirrors the role of a WCAG Success Criterion (e.g., 'The visual presentation of text has a contrast ratio of at least 4.5:1, except for large text, incidental text, and logotypes')."
+        },
+        "techniques": {
+          "type": "array",
+          "description": "Ways to satisfy this criterion. Each entry is a richText description of a sufficient technique (e.g., 'Apply the `min-height: 44px` declaration to all interactive elements', 'Use the `<Button>` component without overriding its default height'). Maps to WCAG's 'Sufficient Techniques' list.",
+          "items": {
+            "$ref": "../common/rich-text.schema.json#/$defs/richText"
+          }
+        },
+        "failures": {
+          "type": "array",
+          "description": "Conditions that constitute a failure of this criterion. Each entry is a richText description of a known failure mode (e.g., 'Setting `height` below 44px on an interactive element', 'Removing `aria-label` from an icon-only button'). Maps to WCAG's 'Common Failures' list.",
+          "items": {
+            "$ref": "../common/rich-text.schema.json#/$defs/richText"
+          }
+        },
+        "references": {
+          "type": "array",
+          "description": "External standards this internal criterion aligns with or is derived from (e.g., a corresponding WCAG success criterion, an internal accessibility audit, a platform guideline). Each entry mirrors the shape of an external `criterionReference`.",
+          "items": {
+            "type": "object",
+            "required": ["url"],
+            "properties": {
+              "url": {
+                "type": "string",
+                "format": "uri",
+                "description": "URL to the aligned external standard."
+              },
+              "label": {
+                "type": "string",
+                "description": "A human-readable label for the aligned standard."
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "examples": {
+          "type": "array",
+          "description": "Examples illustrating the criterion — typically before/after pairs showing passing and failing implementations.",
+          "items": {
+            "$ref": "../common/example.schema.json#/$defs/example"
+          }
+        },
+        "tags": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Freeform keywords to relate criteria across guidelines (e.g., 'a11y', 'contrast', 'touch-target', 'governance')."
         }
       },
       "additionalProperties": false

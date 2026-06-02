@@ -7,7 +7,7 @@ const BASE = join(__dirname, 'spec');
 
 // Properties that move into metadata
 const METADATA_PROPS = new Set([
-  'name', 'displayName', 'extends', 'aliases', 'summary',
+  'identifier', 'name', 'extends', 'aliases', 'summary',
   'thumbnail', 'description', 'preview', 'status', 'since',
   'tags', 'category', 'source', 'tokenType'
 ]);

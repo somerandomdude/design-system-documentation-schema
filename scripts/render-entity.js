@@ -311,7 +311,7 @@ function renderComponent(data) {
 
     var code = "{\n";
     code += fieldJSON({ kind: data.kind }, f_kind) + ",\n";
-    code += fieldJSON({ displayName: data.displayName }, f_dn) + ",\n";
+    code += fieldJSON({ name: data.name }, f_dn) + ",\n";
     code += fieldJSON({ summary: data.summary }, f_sum) + ",\n";
     code += fieldJSON({ description: data.description }, f_desc) + ",\n";
     code += fieldJSON({ status: data.status }, f_status) + ",\n";
@@ -322,7 +322,7 @@ function renderComponent(data) {
 
     var r =
       '<div class="entity-header">' +
-      rfDiv(f_dn, "<h1>" + esc(data.displayName) + "</h1>") +
+      rfDiv(f_dn, "<h1>" + esc(data.name) + "</h1>") +
       rfDiv(f_sum, '<p class="summary">' + esc(data.summary) + "</p>") +
       rfDiv(
         f_desc,
@@ -461,9 +461,9 @@ function renderComponent(data) {
               '<tr class="rf" data-field="' +
               fp.id +
               '"><td><strong>' +
-              esc(p.displayName) +
-              "</strong><br><ds-code inline>" +
               esc(p.name) +
+              "</strong><br><ds-code inline>" +
+              esc(p.identifier) +
               "</ds-code></td><td>" +
               (p.required ? "Yes" : "No") +
               "</td><td>" +
@@ -549,7 +549,7 @@ function renderComponent(data) {
               '<tr class="rf" data-field="' +
               fp.id +
               '"><td><ds-code inline>' +
-              esc(p.name) +
+              esc(p.identifier) +
               "</ds-code></td><td><ds-code inline>" +
               esc(p.type) +
               "</ds-code></td><td>" +
@@ -577,7 +577,7 @@ function renderComponent(data) {
                 '<tr class="rf" data-field="' +
                 fe.id +
                 '"><td><ds-code inline>' +
-                esc(e.name) +
+                esc(e.identifier) +
                 "</ds-code></td><td><ds-code inline>" +
                 esc(e.payload) +
                 "</ds-code></td><td>" +
@@ -599,7 +599,7 @@ function renderComponent(data) {
                 '<tr class="rf" data-field="' +
                 fs.id +
                 '"><td><ds-code inline>' +
-                esc(s.name) +
+                esc(s.identifier) +
                 "</ds-code></td><td>" +
                 esc(s.description) +
                 "</td></tr>"
@@ -619,7 +619,7 @@ function renderComponent(data) {
                 '<tr class="rf" data-field="' +
                 fc.id +
                 '"><td><ds-code inline>' +
-                esc(c.name) +
+                esc(c.identifier) +
                 "</ds-code></td><td>" +
                 esc(c.type || "") +
                 "</td><td><ds-code inline>" +
@@ -659,7 +659,7 @@ function renderComponent(data) {
           '<tr class="rf" data-field="' +
             eid +
             '"><td><strong>' +
-            esc(e.name) +
+            esc(e.identifier) +
             "</strong>" +
             metaStr +
             "</td><td>" +
@@ -693,8 +693,8 @@ function renderComponent(data) {
           fieldJSON(
             {
               kind: item.kind,
+              identifier: item.identifier,
               name: item.name,
-              displayName: item.displayName,
               description: item.description,
             },
             iid,
@@ -705,7 +705,7 @@ function renderComponent(data) {
         rHtml += rfDiv(
           iid,
           "<h3>" +
-            esc(item.displayName) +
+            esc(item.name) +
             ' <small style="color:#aaa">(' +
             esc(item.kind) +
             ")</small></h3><p>" +
@@ -731,7 +731,7 @@ function renderComponent(data) {
               if (uc.alternative) {
                 ucHtml +=
                   '<div class="alternative-note"><strong>Use instead:</strong> <ds-code inline>' +
-                  esc(uc.alternative.name) +
+                  esc(uc.alternative.identifier) +
                   "</ds-code> \u2014 " +
                   esc(uc.alternative.rationale) +
                   "</div>";
@@ -742,9 +742,9 @@ function renderComponent(data) {
           rHtml += rfDiv(
             vid,
             '<div class="variant-card"><h4>' +
-              esc(val.displayName) +
-              " <ds-code inline>" +
               esc(val.name) +
+              " <ds-code inline>" +
+              esc(val.identifier) +
               "</ds-code></h4><p>" +
               esc(val.description) +
               "</p>" +
@@ -790,9 +790,9 @@ function renderComponent(data) {
           '<tr class="rf" data-field="' +
             sid +
             '"><td><strong>' +
-            esc(s.displayName) +
-            "</strong><br><ds-code inline>" +
             esc(s.name) +
+            "</strong><br><ds-code inline>" +
+            esc(s.identifier) +
             "</ds-code></td><td>" +
             esc(s.description) +
             "</td><td>" +
@@ -833,7 +833,7 @@ function renderComponent(data) {
         if (u.alternative) {
           card +=
             '<div class="alternative-note"><strong>Use instead:</strong> <ds-code inline>' +
-            esc(u.alternative.name) +
+            esc(u.alternative.identifier) +
             "</ds-code> \u2014 " +
             esc(u.alternative.rationale) +
             "</div>";
@@ -1230,7 +1230,7 @@ function renderToken(data) {
 
     var code = "{\n";
     code += fieldJSON({ kind: data.kind }, f_kind) + ",\n";
-    code += fieldJSON({ name: data.name }, f_name) + ",\n";
+    code += fieldJSON({ identifier: data.identifier }, f_name) + ",\n";
     code += fieldJSON({ summary: data.summary }, f_sum) + ",\n";
     code += fieldJSON({ description: data.description }, f_desc) + ",\n";
     code += fieldJSON({ status: data.status }, f_status) + ",\n";
@@ -1242,7 +1242,7 @@ function renderToken(data) {
 
     var r =
       '<div class="entity-header">' +
-      rfDiv(f_name, "<h1>" + esc(data.name) + "</h1>") +
+      rfDiv(f_name, "<h1>" + esc(data.identifier) + "</h1>") +
       rfDiv(f_sum, '<p class="summary">' + esc(data.summary) + "</p>") +
       rfDiv(
         f_desc,
@@ -1413,7 +1413,7 @@ function renderToken(data) {
         if (u.alternative) {
           card +=
             '<div class="alternative-note"><strong>Use instead:</strong> <ds-code inline>' +
-            esc(u.alternative.name) +
+            esc(u.alternative.identifier) +
             "</ds-code> \u2014 " +
             esc(u.alternative.rationale) +
             "</div>";

@@ -94,9 +94,9 @@
 </ds-def-section>
 <ds-def-section name="motionEntry" anchor="motionentry" description="A single named easing in the motion system. Documents a cubic-bezier timing function with its recommended usage and duration. The `function` property uses the same four-number array format as the W3C Design Tokens Format Module cubicBezier type: [P1x, P1y, P2x, P2y] where P1x and P2x are in [0, 1] and P1y and P2y can be any real number." type="object">
 <ds-prop-table>
-  <ds-prop name="name" type="string" required>Machine-readable name of the easing (e.g., 'expressive', 'enter', 'exit', 'lateral', 'bounce', 'linear'). Used for cross-referencing and tooling.</ds-prop>
+  <ds-prop name="identifier" type="string" required>Machine-readable identifier of the easing (e.g., 'expressive', 'enter', 'exit', 'lateral', 'bounce', 'linear'). Used for cross-referencing and tooling.</ds-prop>
   <ds-prop name="description" type="&lt;ds-type-ref href=&quot;common-rich-text.html#richtext&quot;&gt;richText&lt;/ds-type-ref&gt;" required>What this easing is for, when to use it, and how it affects the user experience. Explain the visual character of the curve and the types of transitions it suits.</ds-prop>
-  <ds-prop name="displayName" type="string">Human-readable name of the easing (e.g., 'Expressive Ease', 'Enter Ease', 'Exit Ease').</ds-prop>
+  <ds-prop name="name" type="string">Human-readable name of the easing (e.g., 'Expressive Ease', 'Enter Ease', 'Exit Ease').</ds-prop>
   <ds-prop name="function" type="number[]">Cubic-bezier control points as a four-number array [P1x, P1y, P2x, P2y], aligned with the W3C Design Tokens Format Module cubicBezier type (§8.6). P1x and P2x MUST be in [0, 1]. P1y and P2y can be any real number (values outside [0, 1] produce bounce/overshoot effects). Maps to CSS cubic-bezier() and DTCG cubicBezier token values. When omitted, the easing is described in the description field or references a token via `token`.<br><small>Min items: 4</small></ds-prop>
   <ds-prop name="token" type="string">Reference to a DTCG cubicBezier or transition token that defines this easing (e.g., 'motion-ease-expressive', 'transition-enter'). When both `function` and `token` are present, `function` is the display value and `token` is the authoritative source.</ds-prop>
   <ds-prop name="duration" type="&lt;ds-type-ref href=&quot;document-blocks-motion.html#motionduration&quot;&gt;motionDuration&lt;/ds-type-ref&gt;">Recommended duration range when using this easing. Different easings suit different durations — enter transitions are typically longer (300–500ms) to draw attention, while exit transitions are shorter (200–300ms) to feel responsive.</ds-prop>
@@ -109,8 +109,8 @@
 <ds-def-example>
 <ds-code language="json" label="example">[
   {
-    &quot;name&quot;: &quot;expressive&quot;,
-    &quot;displayName&quot;: &quot;Expressive Ease&quot;,
+    &quot;identifier&quot;: &quot;expressive&quot;,
+    &quot;name&quot;: &quot;Expressive Ease&quot;,
     &quot;description&quot;: &quot;The most commonly used easing, and a reliable default choice when unsure. Suitable for elements that both begin and end within the user's field of view, such as size or position changes. Also appropriate for elements entering or exiting in sync with other visible elements.&quot;,
     &quot;function&quot;: [
       0.55,
@@ -134,8 +134,8 @@
     ]
   },
   {
-    &quot;name&quot;: &quot;enter&quot;,
-    &quot;displayName&quot;: &quot;Enter Ease&quot;,
+    &quot;identifier&quot;: &quot;enter&quot;,
+    &quot;name&quot;: &quot;Enter Ease&quot;,
     &quot;description&quot;: &quot;Used for elements that initially exist out of view and smoothly enter the screen. Also appropriate for elements that snap into position after being released from a drag interaction.&quot;,
     &quot;function&quot;: [
       0.05,
@@ -152,8 +152,8 @@
     }
   },
   {
-    &quot;name&quot;: &quot;exit&quot;,
-    &quot;displayName&quot;: &quot;Exit Ease&quot;,
+    &quot;identifier&quot;: &quot;exit&quot;,
+    &quot;name&quot;: &quot;Exit Ease&quot;,
     &quot;description&quot;: &quot;Used for elements that begin within the user's field of view and passively disappear from the screen without direct user interaction.&quot;,
     &quot;function&quot;: [
       0.3,
@@ -170,8 +170,8 @@
     }
   },
   {
-    &quot;name&quot;: &quot;lateral&quot;,
-    &quot;displayName&quot;: &quot;Lateral Ease&quot;,
+    &quot;identifier&quot;: &quot;lateral&quot;,
+    &quot;name&quot;: &quot;Lateral Ease&quot;,
     &quot;description&quot;: &quot;Used for smooth horizontal transitions of elements at the same hierarchy level, like swiping between tabs or navigating a carousel. Creates natural movement by starting slowly, accelerating in the middle, and slowing toward the end.&quot;,
     &quot;function&quot;: [
       0.8,
@@ -187,8 +187,8 @@
     }
   },
   {
-    &quot;name&quot;: &quot;bounce&quot;,
-    &quot;displayName&quot;: &quot;Bounce Ease&quot;,
+    &quot;identifier&quot;: &quot;bounce&quot;,
+    &quot;name&quot;: &quot;Bounce Ease&quot;,
     &quot;description&quot;: &quot;Used for light and fun motion that allows users to interact playfully. The overshoot creates a sense of weightlessness. Commonly used for floating elements like toolbars.&quot;,
     &quot;function&quot;: [
       0,
@@ -204,8 +204,8 @@
     }
   },
   {
-    &quot;name&quot;: &quot;linear&quot;,
-    &quot;displayName&quot;: &quot;Linear Ease&quot;,
+    &quot;identifier&quot;: &quot;linear&quot;,
+    &quot;name&quot;: &quot;Linear Ease&quot;,
     &quot;description&quot;: &quot;Used for properties unrelated to spatial motion, such as opacity and color changes. A background color change on hover or a fade-in/fade-out can happen linearly as it provides direct feedback about state without implying physical movement.&quot;,
     &quot;function&quot;: [
       0,
@@ -238,8 +238,8 @@
   &quot;description&quot;: &quot;The motion system defines how animated transitions behave across the product. Easing curves control the acceleration profile of animations, making movement feel natural and responsive. Duration is chosen based on transition size (smaller areas get shorter durations) and direction (enter transitions are longer than exit transitions to draw attention).&quot;,
   &quot;items&quot;: [
     {
-      &quot;name&quot;: &quot;expressive&quot;,
-      &quot;displayName&quot;: &quot;Expressive Ease&quot;,
+      &quot;identifier&quot;: &quot;expressive&quot;,
+      &quot;name&quot;: &quot;Expressive Ease&quot;,
       &quot;description&quot;: &quot;The default easing for most transitions. Suitable for elements that change size or position within the viewport.&quot;,
       &quot;function&quot;: [
         0.55,
@@ -254,8 +254,8 @@
       }
     },
     {
-      &quot;name&quot;: &quot;enter&quot;,
-      &quot;displayName&quot;: &quot;Enter Ease&quot;,
+      &quot;identifier&quot;: &quot;enter&quot;,
+      &quot;name&quot;: &quot;Enter Ease&quot;,
       &quot;description&quot;: &quot;For elements entering the viewport from off-screen or snapping into position after a drag.&quot;,
       &quot;function&quot;: [
         0.05,
@@ -271,8 +271,8 @@
       }
     },
     {
-      &quot;name&quot;: &quot;exit&quot;,
-      &quot;displayName&quot;: &quot;Exit Ease&quot;,
+      &quot;identifier&quot;: &quot;exit&quot;,
+      &quot;name&quot;: &quot;Exit Ease&quot;,
       &quot;description&quot;: &quot;For elements passively leaving the viewport without direct user interaction.&quot;,
       &quot;function&quot;: [
         0.3,
@@ -288,8 +288,8 @@
       }
     },
     {
-      &quot;name&quot;: &quot;lateral&quot;,
-      &quot;displayName&quot;: &quot;Lateral Ease&quot;,
+      &quot;identifier&quot;: &quot;lateral&quot;,
+      &quot;name&quot;: &quot;Lateral Ease&quot;,
       &quot;description&quot;: &quot;For horizontal transitions between peers at the same hierarchy level.&quot;,
       &quot;function&quot;: [
         0.8,
@@ -305,8 +305,8 @@
       }
     },
     {
-      &quot;name&quot;: &quot;bounce&quot;,
-      &quot;displayName&quot;: &quot;Bounce Ease&quot;,
+      &quot;identifier&quot;: &quot;bounce&quot;,
+      &quot;name&quot;: &quot;Bounce Ease&quot;,
       &quot;description&quot;: &quot;For playful micro-interactions on floating elements like toolbars.&quot;,
       &quot;function&quot;: [
         0,
@@ -322,8 +322,8 @@
       }
     },
     {
-      &quot;name&quot;: &quot;linear&quot;,
-      &quot;displayName&quot;: &quot;Linear Ease&quot;,
+      &quot;identifier&quot;: &quot;linear&quot;,
+      &quot;name&quot;: &quot;Linear Ease&quot;,
       &quot;description&quot;: &quot;For non-spatial property changes like opacity and color.&quot;,
       &quot;function&quot;: [
         0,

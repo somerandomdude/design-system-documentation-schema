@@ -118,12 +118,12 @@ This discriminated union model means a documentation group can contain any mix o
 {
   "name": "Acme Design System",
   "items": [
-    { "type": "token", "name": "color-text-primary", "..." },
-    { "type": "token-group", "name": "color-palette", "..." },
-    { "type": "theme", "name": "dark", "..." },
-    { "type": "style", "name": "spacing", "..." },
-    { "type": "component", "name": "button", "..." },
-    { "type": "pattern", "name": "empty-state", "..." }
+    { "type": "token", "identifier": "color-text-primary", "..." },
+    { "type": "token-group", "identifier": "color-palette", "..." },
+    { "type": "theme", "identifier": "dark", "..." },
+    { "type": "style", "identifier": "spacing", "..." },
+    { "type": "component", "identifier": "button", "..." },
+    { "type": "pattern", "identifier": "empty-state", "..." }
   ]
 }
 ```
@@ -153,7 +153,7 @@ Each use-case entry has the following shape:
 |---|---|---|---|
 | `description` | `richText` | Yes | The scenario being described. |
 | `kind` | `string` | Yes | `"positive"` (when the system is the right choice) or `"negative"` (when it is not). |
-| `alternative` | `object` | No | For negative entries, a recommended alternative with `name` and `rationale`. |
+| `alternative` | `object` | No | For negative entries, a recommended alternative with `identifier` and `rationale`. |
 
 ```json
 {
@@ -168,7 +168,7 @@ Each use-case entry has the following shape:
         "description": "Building internal tooling with specialized data-heavy dashboards.",
         "kind": "negative",
         "alternative": {
-          "name": "Acme Admin Kit",
+          "identifier": "Acme Admin Kit",
           "rationale": "Admin Kit is optimized for data-dense internal interfaces."
         }
       }
@@ -237,8 +237,8 @@ The following properties are available on all entity types. **Required** fields 
 | Property | Type | Required | Notes |
 |---|---|---|---|
 | `type` | `string` | Yes | Entity type discriminator. |
-| `name` | `string` | Yes | Machine-readable identifier. Components, styles, patterns, and themes enforce `^[a-z][a-z0-9-]*$`. Token and token group names are intentionally unconstrained (see [Token Name Exception](#token-name-exception)). |
-| `displayName` | `string` | Varies | Human-readable name. Required on component, style, pattern, theme. **Not present** on token or token-group — the token name serves as the display name. |
+| `identifier` | `string` | Yes | Machine-readable identifier. Components, styles, patterns, and themes enforce `^[a-z][a-z0-9-]*$`. Token and token group identifiers are intentionally unconstrained (see [Token Name Exception](#token-name-exception)). |
+| `name` | `string` | Varies | Human-readable label. Required on component, style, pattern, theme. **Not present** on token or token-group — the `identifier` itself serves as the display label. |
 | `summary` | `string` | No | One-line plain-text summary for compact display. MUST NOT contain markup. |
 | `description` | `richText` | Varies | Description with CommonMark support. Required on component, style, pattern, theme. **Optional** on token and token-group. |
 | `status` | `statusObject` | Varies | Lifecycle status with optional per-platform readiness. Required on component, style, pattern, theme. **Optional** on token and token-group — when omitted inside a group, inherited from the parent. |
@@ -255,13 +255,13 @@ The following properties are available on all entity types. **Required** fields 
 
 A reusable UI element. Accepts **component-scoped guidelines** (anatomy, api, variants, states, design-specifications) and all general guidelines.
 
-Required properties: `type`, `name`, `displayName`, `description`, `status`.
+Required properties: `type`, `identifier`, `name`, `description`, `status`.
 
 ### Token
 
 A single design token. Accepts **general guidelines** only.
 
-Required properties: `type`, `name`, `tokenType`.
+Required properties: `type`, `identifier`, `tokenType`.
 
 Additional properties:
 
@@ -272,7 +272,7 @@ Additional properties:
 | `api` | `tokenApi` | No | Platform-specific identifiers. See [Token API](#token-api). |
 | `category` | `string` | No | Semantic category: `"base"`, `"semantic"`, `"component"`. Custom values permitted. |
 
-The `displayName` property is intentionally absent from tokens. The token name itself serves as the human-readable display name, since token naming conventions (dots, slashes, kebab-case) are already human-readable in their native format.
+The human-readable `name` property is intentionally absent from tokens. The `identifier` itself serves as the display label, since token naming conventions (dots, slashes, kebab-case) are already human-readable in their native format.
 
 The `description` and `status` properties are optional on tokens to reduce verbosity at scale. When omitted inside a token group, `status` is inherited from the parent group.
 
@@ -280,7 +280,7 @@ The `description` and `status` properties are optional on tokens to reduce verbo
 
 A hierarchical group of related tokens. The `children` array can contain token objects, nested token group objects, or a mix of both — forming an arbitrarily deep recursive hierarchy. Accepts **general guidelines** only.
 
-Required properties: `type`, `name`.
+Required properties: `type`, `identifier`.
 
 Additional properties:
 
@@ -290,13 +290,13 @@ Additional properties:
 | `category` | `string` | No | Inherited default for children that omit their own `category`. |
 | `children` | `array` | No | Recursive array of tokens and/or nested token groups. |
 
-Like tokens, `displayName`, `description`, and `status` are optional. Children inherit `tokenType`, `category`, and `status` from the parent group when they omit their own values.
+Like tokens, the human-readable `name`, `description`, and `status` are optional. Children inherit `tokenType`, `category`, and `status` from the parent group when they omit their own values.
 
 ### Theme
 
 A named set of token value overrides that adapt the system to a specific context (color mode, density, brand variant). Accepts **general guidelines**.
 
-Required properties: `type`, `name`, `displayName`, `description`, `status`, `overrides`.
+Required properties: `type`, `identifier`, `name`, `description`, `status`, `overrides`.
 
 Additional properties:
 
@@ -310,7 +310,7 @@ Each `tokenOverride` has two required properties: `token` (the token name to ove
 
 A macro-level visual style (foundation) governing a domain like color, typography, spacing, elevation, motion, or content. Accepts **style-scoped guidelines** (principles, scale, motion) and all general guidelines.
 
-Required properties: `type`, `name`, `displayName`, `description`, `status`.
+Required properties: `type`, `identifier`, `name`, `description`, `status`.
 
 Styles are the entity type for documenting foundations — not just visual attributes like color and spacing, but also cross-cutting concerns like accessibility guidelines, motion systems, and content rules. The `category` property classifies the domain (e.g., `"color"`, `"typography"`, `"spacing"`, `"motion"`, `"accessibility"`, `"content"`).
 
@@ -318,9 +318,9 @@ Styles are the entity type for documenting foundations — not just visual attri
 
 A broad interaction pattern — a recurring, multi-component solution to a common UX problem. Accepts **pattern-scoped guidelines** (interactions) and **shared structural guidelines** (anatomy, variants, states) as well as all general guidelines.
 
-Required properties: `type`, `name`, `displayName`, `description`, `status`.
+Required properties: `type`, `identifier`, `name`, `description`, `status`.
 
-Patterns reference their participating components through the `links` array (with `type: "component"`, `name`, and `role`) rather than through a dedicated guideline type.
+Patterns reference their participating components through the `links` array (with `type: "component"`, `identifier`, and `role`) rather than through a dedicated guideline type.
 
 ---
 
@@ -466,7 +466,7 @@ The purpose guideline wraps the common `useCases` data model with a `type` discr
       {
         "description": "When the action navigates to a different page.",
         "alternative": {
-          "name": "link",
+          "identifier": "link",
           "rationale": "Links carry native navigation semantics."
         }
       }
@@ -544,8 +544,8 @@ For components, parts represent rendered UI sub-elements (container, label, icon
 
 | Property | Type | Required | Description |
 |---|---|---|---|
-| `name` | `string` | Yes | Machine-readable part name (e.g., `"container"`, `"label"`). |
-| `displayName` | `string` | No | Human-readable name. |
+| `identifier` | `string` | Yes | Machine-readable part identifier (e.g., `"container"`, `"label"`). |
+| `name` | `string` | No | Human-readable label. |
 | `description` | `richText` | Yes | What this part is and any constraints. |
 | `required` | `boolean` | Yes | Whether this part is always present in the rendered output. |
 | `tokens` | `object` | No | Token map: keys are purposes (e.g., `"background"`, `"text-color"`), values are token names (e.g., `"color-action-primary"`). Same format as variant and state token references. |
@@ -567,8 +567,8 @@ The optional `exclusions` array documents invalid combinations across dimensions
 {
   "type": "variants",
   "items": [
-    { "name": "emphasis", "description": "...", "values": [...] },
-    { "name": "size", "description": "...", "values": [...] }
+    { "identifier": "emphasis", "description": "...", "values": [...] },
+    { "identifier": "size", "description": "...", "values": [...] }
   ],
   "exclusions": [
     {
@@ -588,8 +588,8 @@ Each exclusion requires at least two conditions (a single condition would exclud
 
 | Property | Type | Required | Description |
 |---|---|---|---|
-| `name` | `string` | Yes | Machine-readable value name. |
-| `displayName` | `string` | No | Human-readable name. |
+| `identifier` | `string` | Yes | Machine-readable value identifier. |
+| `name` | `string` | No | Human-readable label. |
 | `description` | `richText` | Yes | What this value looks like and when to use it. |
 | `tokens` | `object` | No | Token overrides: keys are purposes, values are token names. |
 | `preview` | `example[]` | No | Visual previews. |
@@ -603,8 +603,8 @@ Documents all interactive states — hover, focus, active, disabled, loading, se
 
 | Property | Type | Required | Description |
 |---|---|---|---|
-| `name` | `string` | Yes | Machine-readable state name. |
-| `displayName` | `string` | No | Human-readable name. |
+| `identifier` | `string` | Yes | Machine-readable state identifier. |
+| `name` | `string` | No | Human-readable label. |
 | `description` | `richText` | Yes | Triggers, visual changes, and constraints. |
 | `tokens` | `object` | No | Token overrides active in this state. Same map format as variants. |
 | `preview` | `example[]` | No | Visual previews. |
@@ -621,16 +621,16 @@ Documents measurable visual specifications — token inventory, spacing relation
 | `sizing` | `sizingSpec` | Dimension constraints: `minWidth`, `maxWidth`, `minHeight`, `maxHeight`, `aspectRatio`. |
 | `typography` | `typographySpec` | Per-element typographic settings. Keys are anatomy part names, values are objects with `fontFamily`, `fontSize`, `fontWeight`, `lineHeight`, `letterSpacing`, `textTransform`, `typeToken`. |
 | `responsive` | `responsiveEntry[]` | Breakpoint-specific behavior. Each entry has `breakpoint` and `description`. |
-| `variants` | `specVariant[]` | Design properties grouped by variant. Each entry has `name`, `properties`, and optional `spacing`, `sizing`, `typography`. |
-| `sizes` | `specSize[]` | Design properties grouped by size. Each entry has `name`, `properties`, and optional `spacing`, `sizing`, `typography`. |
-| `states` | `specState[]` | Design properties grouped by interactive state. Each entry has `name`, `properties`, and optional `spacing`, `sizing`, `typography`. |
+| `variants` | `specVariant[]` | Design properties grouped by variant. Each entry has `identifier`, `properties`, and optional `spacing`, `sizing`, `typography`. |
+| `sizes` | `specSize[]` | Design properties grouped by size. Each entry has `identifier`, `properties`, and optional `spacing`, `sizing`, `typography`. |
+| `states` | `specState[]` | Design properties grouped by interactive state. Each entry has `identifier`, `properties`, and optional `spacing`, `sizing`, `typography`. |
 | `variantStates` | `specVariantState[]` | Design properties for variant×state combinations. Each entry has `variant`, `state`, and `properties`. |
 
 #### Variants, Sizes, and States
 
 The base-level `properties` map defines the default specification — typically the primary variant at medium size in the default state. Values are always strings: either design token names (e.g., `"button-background"`, `"space-4"`) or raw CSS values (e.g., `"#0055b3"`, `"16px"`, `"transparent"`). Systems that do not use tokens simply provide raw values directly.
 
-The `variants` array groups design properties by variant — each entry has a `name` and its own `properties` map, plus optional `spacing`, `sizing`, and `typography` sections. The `sizes` array groups properties by size, including size-specific spacing, sizing, and typography. The `states` array groups properties by interactive state (e.g., hover, focus, disabled).
+The `variants` array groups design properties by variant — each entry has an `identifier` and its own `properties` map, plus optional `spacing`, `sizing`, and `typography` sections. The `sizes` array groups properties by size, including size-specific spacing, sizing, and typography. The `states` array groups properties by interactive state (e.g., hover, focus, disabled).
 
 The `variantStates` array handles variant×state combinations where the state's visual treatment differs across variants. Each entry specifies both a `variant` and a `state` along with the `properties` map for that combination.
 
@@ -656,7 +656,7 @@ Documents an ordered sequence of values forming a visual scale — a type scale,
 
 Each `scaleStep` references a design token and optionally provides a `label`, `value` (display convenience), and `description` (usage notes). Steps are ordered from smallest/lowest to largest/highest.
 
-The scale guideline requires a `name`, `description`, and `steps` array.
+The scale guideline requires an `identifier`, `description`, and `steps` array.
 
 ### Motion (`motion`)
 
@@ -666,8 +666,8 @@ Documents the motion system — named easing curves, their cubic-bezier timing f
 
 | Property | Type | Required | Description |
 |---|---|---|---|
-| `name` | `string` | Yes | Machine-readable easing name (e.g., `"expressive"`, `"enter"`, `"exit"`). |
-| `displayName` | `string` | No | Human-readable name. |
+| `identifier` | `string` | Yes | Machine-readable easing identifier (e.g., `"expressive"`, `"enter"`, `"exit"`). |
+| `name` | `string` | No | Human-readable label. |
 | `description` | `richText` | Yes | Visual character, usage context, and UX effect. |
 | `function` | `number[4]` | No | Cubic-bezier control points `[P1x, P1y, P2x, P2y]`, aligned with the W3C DTCG `cubicBezier` type (§8.6). |
 | `token` | `string` | No | Reference to a DTCG cubicBezier or transition token. |
@@ -700,13 +700,13 @@ Documents the interaction flow of a pattern as an ordered sequence of steps. The
 
 The `links` array provides typed references to external resources and internal DSDS artifact relationships. Links unify what was previously split between external URL references and internal artifact references into a single relationship model.
 
-Every link requires a `type` and at least one of `url` (for external resources) or `name` (for internal DSDS artifact references). Both can be present when an internal artifact also has an addressable URL.
+Every link requires a `type` and at least one of `url` (for external resources) or `identifier` (for internal DSDS artifact references). Both can be present when an internal artifact also has an addressable URL.
 
 | Property | Type | Required | Description |
 |---|---|---|---|
 | `type` | `string` | Yes | Category of the link. See below. |
-| `url` | `string` | Conditional | URL of the external resource. Required when `name` is not provided. |
-| `name` | `string` | Conditional | Name of a referenced DSDS artifact. Required when `url` is not provided. |
+| `url` | `string` | Conditional | URL of the external resource. Required when `identifier` is not provided. |
+| `identifier` | `string` | Conditional | Identifier of a referenced DSDS artifact. Required when `url` is not provided. |
 | `label` | `string` | No | Display text for the link — what a user sees when it is rendered in documentation. |
 | `role` | `string` | No | The functional relationship this artifact has to the current entity — what part it plays in the current context. Distinct from `label`: label names the thing, role describes its function here. |
 | `required` | `boolean` | No | Whether this linked artifact is required for the parent entity to function correctly. |
@@ -751,7 +751,7 @@ In all three contexts, the shape is identical:
     {
       "description": "Scenario description...",
       "alternative": {
-        "name": "alternative-artifact",
+        "identifier": "alternative-artifact",
         "rationale": "Why the alternative is better."
       }
     }
@@ -795,7 +795,7 @@ Individual entities (components, tokens) can declare that they extend a base ent
 
 | Property | Type | Required | Description |
 |---|---|---|---|
-| `name` | `string` | Yes | The name of the base entity being extended. MUST match the `name` property of the base entity in the parent system. |
+| `identifier` | `string` | Yes | The identifier of the base entity being extended. MUST match the `identifier` property of the base entity in the parent system. |
 | `system` | `string` | No | The owning system of the base entity. When omitted, resolved from the document-level `extends.system`. |
 | `url` | `string` (URI) | No | Direct URL to the base entity's documentation or DSDS definition. |
 | `version` | `string` | No | Version of the base entity or system. When omitted, inherits from the document-level `extends.version`. |
@@ -813,9 +813,9 @@ Each entry in `modifications` has the following shape:
 ```json
 {
   "kind": "component",
-  "name": "button",
+  "identifier": "button",
   "extends": {
-    "name": "button",
+    "identifier": "button",
     "system": "Acme Core Design System",
     "version": "2.0.0",
     "description": "Adds an 'enterprise' variant and a 'theme' prop for sub-brand theming.",
@@ -825,7 +825,7 @@ Each entry in `modifications` has the following shape:
       { "type": "inherited", "target": "guideline:anatomy", "description": "Anatomy inherited from core without changes." }
     ]
   },
-  "displayName": "Button",
+  "name": "Button",
   "description": "Enterprise Button extends core Button with additional variants and props.",
   "status": "stable"
 }
@@ -860,14 +860,14 @@ The `$extensions` property is available on the root document, on each documentat
 
 ### Token Name Exception
 
-Most entity types enforce a strict `^[a-z][a-z0-9-]*$` pattern on the `name` property. Tokens and token groups are the intentional exception — their names are unconstrained to accommodate the naming conventions used by the W3C Design Tokens Format Module, design tool variable systems, and existing token architectures that use dots (`color.text.primary`), slashes (`color/text/primary`), or other separators. Token names _SHOULD_ still be lowercase and human-readable, but the schema does not enforce a pattern.
+Most entity types enforce a strict `^[a-z][a-z0-9-]*$` pattern on the `identifier` property. Tokens and token groups are the intentional exception — their identifiers are unconstrained to accommodate the naming conventions used by the W3C Design Tokens Format Module, design tool variable systems, and existing token architectures that use dots (`color.text.primary`), slashes (`color/text/primary`), or other separators. Token identifiers _SHOULD_ still be lowercase and human-readable, but the schema does not enforce a pattern.
 
 ### Guideline Type Naming
 
 Guideline type values follow two naming patterns based on their structural role:
 
 - **Plural names** for guideline types that wrap a homogeneous list of items in an `items` array: `"best-practices"`, `"variants"`, `"states"`, `"principles"`, `"interactions"`, `"examples"`, `"motion"`, `"content"`.
-- **Singular names** for guideline types that are self-contained entities with their own internal structure: `"scale"` (has `name`, `steps`), `"anatomy"` (has `parts`), `"api"` (has `properties`, `events`, etc.), `"accessibility"` (has `keyboardInteraction`, `ariaAttributes`, etc.), `"design-specifications"` (has `tokens`, `spacing`, etc.), `"purpose"` (has `useCases`).
+- **Singular names** for guideline types that are self-contained entities with their own internal structure: `"scale"` (has `identifier`, `steps`), `"anatomy"` (has `parts`), `"api"` (has `properties`, `events`, etc.), `"accessibility"` (has `keyboardInteraction`, `ariaAttributes`, etc.), `"design-specifications"` (has `tokens`, `spacing`, etc.), `"purpose"` (has `useCases`).
 
 The distinction: plural types are containers of interchangeable items where the container itself has no identity beyond its type. Singular types have meaningful internal structure where the properties are named and semantically distinct.
 
@@ -896,7 +896,7 @@ The distinction: plural types are containers of interchangeable items where the 
 
 | Level | Requirement |
 |---|---|
-| **Level 1: Core** | Identity fields only. For tokens: `type`, `name`, `tokenType`. For all others: `type`, `name`, `displayName`, `description`, `status` (+ `overrides` for themes). |
+| **Level 1: Core** | Identity fields only. For tokens: `type`, `identifier`, `tokenType`. For all others: `type`, `identifier`, `name`, `description`, `status` (+ `overrides` for themes). |
 | **Level 2: Complete** | Level 1 + at least one substantive guideline (anatomy/api/variants for components, principles/scale for styles, interactions for patterns, best-practices/purpose for tokens). |
 
 ---
