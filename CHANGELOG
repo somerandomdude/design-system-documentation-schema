@@ -4,6 +4,39 @@ All notable changes to the DSDS specification are documented in this file.
 
 ---
 
+## [0.2.1] — 2026-06-01
+
+### Additions
+
+#### 1. `last-updated` metadata kind
+
+A new optional metadata kind documents the date an entity's documentation was last revised, with an optional plain-text note explaining what changed. It joins the existing `entityMetadata` union and is accepted on every entity type (component, token, token-group, theme, style, pattern).
+
+The entry is a single-purpose timestamp — distinct from `since` (which records the version the entity first shipped). Use `last-updated` for documentation freshness, governance review cadence, and consumer-facing "this guidance was revised on …" labels.
+
+| Property | Type | Required | Description |
+|---|---|---|---|
+| `kind` | `"last-updated"` | Yes | Discriminator. |
+| `value` | `string` (`format: date`) | Yes | ISO 8601 date (`YYYY-MM-DD`) of the most recent update. |
+| `description` | `string` | No | Plain-text summary of what changed. MUST NOT contain markup. |
+
+**Example:**
+```json
+{
+  "kind": "last-updated",
+  "value": "2026-05-28",
+  "description": "Added focus-visible guidance and refreshed contrast requirements for inverse surfaces."
+}
+```
+
+Affected schemas:
+- `metadata/last-updated.schema.json` (new)
+- `metadata/metadata.schema.json` (added the new kind to the `entityMetadata` union)
+
+The entity examples for component, style, theme, the aggregated `metadata/metadata.json`, and the `starter-kit.dsds.json` document have been updated to demonstrate the new kind.
+
+---
+
 ## [0.2.0] — 2026-06-01
 
 First release on the 0.2.x line. Supersedes the never-published 0.1.6 draft; everything in 0.1.6 is included below. Schema files are now served at `https://designsystemdocspec.org/v0.2/...`.

@@ -89,6 +89,7 @@ spec/
 │   │   ├── category.schema.json                        # categoryMetadata
 │   │   ├── description.schema.json                     # descriptionMetadata
 │   │   ├── extends.schema.json                         # extendsMetadata
+│   │   ├── last-updated.schema.json                    # lastUpdatedMetadata
 │   │   ├── links.schema.json                           # linksMetadata
 │   │   ├── preview.schema.json                         # previewMetadata
 │   │   ├── since.schema.json                           # sinceMetadata
