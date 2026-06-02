@@ -50,6 +50,30 @@ function esc(text) {
     .replace(/"/g, "&quot;");
 }
 
+/**
+ * HTML-escape `s`, but also convert CommonMark-style backtick inline-code
+ * spans (`like-this`) into <ds-code inline> elements. Mirrors
+ * `escWithCode` in site/components/_shared.js so prop-table descriptions
+ * (built into HTML here, at build time) and def-section / schema-header
+ * descriptions (rendered at runtime by the web components) render the
+ * same way.
+ *
+ * Closing backticks must appear on the same line as the opening one; an
+ * unmatched ` falls through as a literal character.
+ */
+function escWithCode(s) {
+  if (s == null) return "";
+  const parts = String(s).split(/(`[^`\n]+`)/g);
+  return parts
+    .map((p) => {
+      if (p.length >= 2 && p.startsWith("`") && p.endsWith("`")) {
+        return `<ds-code inline>${esc(p.slice(1, -1))}</ds-code>`;
+      }
+      return esc(p);
+    })
+    .join("");
+}
+
 function slug(text) {
   return String(text)
     .replace(/<[^>]+>/g, "")
@@ -266,7 +290,7 @@ function renderPropertyTable(defSchema, defIndex = {}) {
     const typeStr = describeType(propSchema, defIndex);
     const desc = propSchema.description || "";
 
-    let descHtml = esc(desc);
+    let descHtml = escWithCode(desc);
 
     if (propSchema.enum && propSchema.enum.length > 8) {
       descHtml += `<br><small>Values: ${propSchema.enum.map((v) => `<ds-code inline>${esc(String(v))}</ds-code>`).join(", ")}</small>`;
@@ -376,6 +400,7 @@ function renderPropertyTableForRef(schemaRef, defName, opts = {}) {
 
 module.exports = {
   esc,
+  escWithCode,
   slug,
   linkToRef,
   describeType,

@@ -1,4 +1,4 @@
-import { createShadow, esc, BASE_RESET, FONT } from "./_shared.js";
+import { createShadow, esc, escWithCode, BASE_RESET, FONT } from "./_shared.js";
 
 const SCHEMA_HEADER_CSS = `
   ${BASE_RESET}
@@ -46,7 +46,9 @@ export class DsSchemaHeader extends HTMLElement {
         '<p class="source">Source: <ds-code inline>' +
         esc(s) +
         "</ds-code></p>";
-    if (d) html += '<p class="desc">' + esc(d) + "</p>";
+    // Use escWithCode so backtick inline-code spans in the description
+    // render as <ds-code inline> rather than literal `backticks`.
+    if (d) html += '<p class="desc">' + escWithCode(d) + "</p>";
 
     this._shadow.innerHTML = html;
   }

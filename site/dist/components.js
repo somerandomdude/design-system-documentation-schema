@@ -19,6 +19,29 @@
       .replace(/"/g, "&quot;");
   }
 
+  /**
+   * HTML-escape `s`, but also convert CommonMark-style backtick inline-code
+   * spans (`like-this`) into <ds-code inline> elements. The full markdown
+   * grammar is out of scope; we only handle the one construct that
+   * appears in DSDS schema descriptions, where contributors refer to
+   * field names and code fragments inline.
+   *
+   * Closing backticks must appear on the same line as the opening one; an
+   * unmatched ` falls through as a literal character.
+   */
+  function escWithCode(s) {
+    if (s == null) return "";
+    const parts = String(s).split(/(`[^`\n]+`)/g);
+    return parts
+      .map((p) => {
+        if (p.length >= 2 && p.startsWith("`") && p.endsWith("`")) {
+          return `<ds-code inline>${esc(p.slice(1, -1))}</ds-code>`;
+        }
+        return esc(p);
+      })
+      .join("");
+  }
+
   const BASE_RESET = `
     :host { display: inline-block; box-sizing: border-box; }
     :host([hidden]) { display: none !important; }
@@ -1918,7 +1941,9 @@
           '<p class="source">Source: <ds-code inline>' +
           esc(s) +
           "</ds-code></p>";
-      if (d) html += '<p class="desc">' + esc(d) + "</p>";
+      // Use escWithCode so backtick inline-code spans in the description
+      // render as <ds-code inline> rather than literal `backticks`.
+      if (d) html += '<p class="desc">' + escWithCode(d) + "</p>";
 
       this._shadow.innerHTML = html;
     }
@@ -1978,7 +2003,10 @@
       // Set id on host for TOC linking
       if (anchor) this.id = anchor;
       var html = '<h3 id="' + esc(anchor) + '">' + esc(name) + "</h3>";
-      if (desc) html += '<p class="desc">' + esc(desc) + "</p>";
+      // Use escWithCode so CommonMark-style `inline code` spans in the
+      // description render as <ds-code inline> rather than literal
+      // backtick characters.
+      if (desc) html += '<p class="desc">' + escWithCode(desc) + "</p>";
       if (type)
         html +=
           '<p class="type-line"><ds-badge variant="kind" size="sm">' +
