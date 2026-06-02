@@ -20,6 +20,13 @@ const path = require("path");
 
 const { buildSpecNav, DIR_GROUPS } = require("./nav");
 const { buildSamples } = require("./build-samples");
+const {
+  esc,
+  slug,
+  linkToRef,
+  describeType: describeTypeShared,
+  renderPropertyTable: renderPropertyTableShared,
+} = require("./render-prop-table");
 
 // MDX compiler (ESM) — loaded dynamically in build()
 let compileMdxModule = null;
@@ -118,33 +125,13 @@ function discoverPages() {
 // HTML helpers
 // ---------------------------------------------------------------------------
 
-function esc(text) {
-  if (typeof text !== "string") return String(text);
-  return text
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
-}
-
-function slug(text) {
-  return text
-    .replace(/<[^>]+>/g, "")
-    .replace(/[^\w\s-]/g, "")
-    .trim()
-    .replace(/[\s]+/g, "-")
-    .toLowerCase();
-}
-
-function linkToRef(ref) {
-  if (!ref) return null;
-  const match = ref.match(/\$defs\/(\w+)/);
-  return match ? match[1] : null;
-}
-
 /**
  * Build a definition index from the discovered pages.
  * Maps: defName -> { pageSlug, filename }
+ *
+ * Note: `esc`, `slug`, and `linkToRef` are imported from
+ * ./render-prop-table so the MDX shortcode preprocessor and the
+ * schema-page generator share one canonical implementation.
  */
 function buildDefIndex(pages) {
   const index = {};
@@ -161,90 +148,14 @@ let DEF_INDEX = {};
 
 // ---------------------------------------------------------------------------
 // Type description rendering
+//
+// The real implementation lives in ./render-prop-table. We wrap it here so
+// callers in this file can continue calling `describeType(prop)` without
+// threading DEF_INDEX through every invocation.
 // ---------------------------------------------------------------------------
 
-/**
- * Produce a human-readable type string from a property schema.
- */
 function describeType(prop) {
-  if (!prop || typeof prop !== "object") return "any";
-
-  // $ref
-  if (prop.$ref) {
-    const defName = linkToRef(prop.$ref);
-    if (defName) {
-      const target = DEF_INDEX[defName];
-      if (target) {
-        return `<ds-type-ref href="${target.pageSlug}.html#${slug(defName)}">${esc(defName)}</ds-type-ref>`;
-      }
-      return `<ds-code inline>${esc(defName)}</ds-code>`;
-    }
-    return `<ds-code inline>$ref</ds-code>`;
-  }
-
-  // oneOf
-  if (prop.oneOf) {
-    const parts = prop.oneOf.map((alt) => describeType(alt));
-    return parts.join(" | ");
-  }
-
-  // anyOf
-  if (prop.anyOf) {
-    const parts = prop.anyOf.map((alt) => describeType(alt));
-    return parts.join(" | ");
-  }
-
-  // array
-  if (prop.type === "array") {
-    if (prop.items) {
-      const itemType = describeType(prop.items);
-      return `${itemType}[]`;
-    }
-    return "array";
-  }
-
-  // object with additionalProperties
-  if (prop.type === "object" && prop.additionalProperties) {
-    if (typeof prop.additionalProperties === "object") {
-      const valType = describeType(prop.additionalProperties);
-      return `map&lt;string, ${valType}&gt;`;
-    }
-    return "object (open)";
-  }
-
-  // object with properties (inline sub-object)
-  if (prop.type === "object" && prop.properties) {
-    return "object";
-  }
-
-  // const
-  if (prop.const !== undefined) {
-    return `<ds-code inline>"${esc(String(prop.const))}"</ds-code>`;
-  }
-
-  // enum
-  if (prop.enum) {
-    return prop.enum
-      .map((v) => `<ds-code inline>"${esc(String(v))}"</ds-code>`)
-      .join(" | ");
-  }
-
-  // string with format
-  if (prop.type === "string" && prop.format) {
-    return `string (${esc(prop.format)})`;
-  }
-
-  // simple type
-  if (prop.type) {
-    return esc(prop.type);
-  }
-
-  // description-only (no type constraint, e.g., "value" that accepts any JSON)
-  if (prop.description) {
-    return "any";
-  }
-
-  return "any";
+  return describeTypeShared(prop, DEF_INDEX);
 }
 
 // ---------------------------------------------------------------------------
@@ -253,95 +164,12 @@ function describeType(prop) {
 
 /**
  * Render a property table for a definition's properties.
+ *
+ * Thin wrapper around ./render-prop-table so MDX preprocessing and the
+ * schema-page generator emit identical markup from the same source.
  */
 function renderPropertyTable(defSchema) {
-  const properties = defSchema.properties;
-  if (!properties || Object.keys(properties).length === 0) return "";
-
-  const required = new Set(defSchema.required || []);
-
-  // Collect anyOf/required constraints to identify "at least one" groups
-  const anyOfGroups = [];
-  if (defSchema.anyOf) {
-    for (const alt of defSchema.anyOf) {
-      if (alt.required && Array.isArray(alt.required)) {
-        anyOfGroups.push(alt.required);
-      }
-    }
-  }
-  // Build a set of all property names that participate in anyOf constraints
-  const anyOfProps = new Set();
-  for (const group of anyOfGroups) {
-    for (const name of group) {
-      anyOfProps.add(name);
-    }
-  }
-
-  // Build <ds-prop> children for <ds-prop-table>
-  const propElements = [];
-  for (const [propName, propSchema] of Object.entries(properties)) {
-    const isRequired = required.has(propName);
-    const isAnyOf = anyOfProps.has(propName);
-    const typeStr = describeType(propSchema);
-    const desc = propSchema.description || "";
-
-    // Build description with supplementary notes
-    let descHtml = esc(desc);
-
-    if (propSchema.enum && propSchema.enum.length > 8) {
-      descHtml += `<br><small>Values: ${propSchema.enum.map((v) => `<ds-code inline>${esc(String(v))}</ds-code>`).join(", ")}</small>`;
-    }
-    if (propSchema.pattern) {
-      descHtml += `<br><small>Pattern: <ds-code inline>${esc(propSchema.pattern)}</ds-code></small>`;
-    }
-    if (propSchema.minItems) {
-      descHtml += `<br><small>Min items: ${propSchema.minItems}</small>`;
-    }
-    if (propSchema.default !== undefined) {
-      const defaultVal =
-        typeof propSchema.default === "string"
-          ? `"${esc(propSchema.default)}"`
-          : String(propSchema.default);
-      descHtml += `<br><small>Default: <ds-code inline>${defaultVal}</ds-code></small>`;
-    }
-    if (
-      propSchema.type === "array" &&
-      propSchema.items &&
-      propSchema.items.format
-    ) {
-      descHtml += `<br><small>Format: ${esc(propSchema.items.format)}</small>`;
-    }
-
-    // Determine sort order and status attribute
-    let sortOrder;
-    let statusAttr = "";
-    if (isRequired) {
-      statusAttr = " required";
-      sortOrder = 0;
-    } else if (isAnyOf) {
-      statusAttr = " conditional";
-      sortOrder = 1;
-    } else {
-      sortOrder = 2;
-    }
-
-    propElements.push({
-      sortOrder,
-      html:
-        `<ds-prop name="${esc(propName)}" type="${esc(typeStr)}"${statusAttr}>` +
-        descHtml +
-        `</ds-prop>`,
-    });
-  }
-
-  // Stable sort: required → conditional → optional, preserving original order within each group
-  propElements.sort((a, b) => a.sortOrder - b.sortOrder);
-
-  return (
-    `<ds-prop-table>\n` +
-    propElements.map((p) => `  ${p.html}`).join("\n") +
-    `\n</ds-prop-table>`
-  );
+  return renderPropertyTableShared(defSchema, DEF_INDEX);
 }
 
 // ---------------------------------------------------------------------------
