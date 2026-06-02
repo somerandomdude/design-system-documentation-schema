@@ -207,7 +207,7 @@ To validate your own DSDS file:
 npx ajv validate -s spec/schema/dsds.bundled.schema.json -d my-system.dsds.json
 ```
 
-Reference `https://designsystemdocspec.org/v0.1/dsds.bundled.schema.json` from your DSDS files via the `$schema` keyword to get editor autocompletion and inline validation. See the [Quick Start docs page](https://designsystemdocspec.org/quickstart.html) for the single-entity and multi-entity document shapes.
+Reference `https://designsystemdocspec.org/v0.2/dsds.bundled.schema.json` from your DSDS files via the `$schema` keyword to get editor autocompletion and inline validation. See the [Quick Start docs page](https://designsystemdocspec.org/quickstart.html) for the single-entity and multi-entity document shapes.
 
 ### 4. Build the spec site
 

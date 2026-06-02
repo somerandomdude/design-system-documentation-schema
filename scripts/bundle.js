@@ -174,6 +174,21 @@ function buildBundled() {
   // Read the root schema as the base
   const root = readJSON(ROOT_SCHEMA);
 
+  // Derive the spec version from the single source of truth
+  // (`dsds.schema.json` → properties.dsdsVersion.const). This keeps the
+  // bundle's $id, title, and the versioned `site/dist/v<n>/` directory
+  // produced by build-site.js all aligned. Bump the const, rerun the
+  // bundle + build, done.
+  const version = root.properties && root.properties.dsdsVersion && root.properties.dsdsVersion.const;
+  if (!version) {
+    console.error(
+      "  ✗ Could not derive spec version from dsds.schema.json.\n" +
+      "    Expected: properties.dsdsVersion.const (e.g., \"0.1\").",
+    );
+    process.exit(1);
+  }
+  console.log(`  Spec version: v${version} (from dsds.schema.json#/properties/dsdsVersion/const)`);
+
   // Collect all definitions
   const allDefs = collectDefs();
 
@@ -186,8 +201,8 @@ function buildBundled() {
   // Build the bundled document
   const bundled = {
     $schema: "https://json-schema.org/draft/2020-12/schema",
-    $id: "https://designsystemdocspec.org/v0.1/dsds.bundled.schema.json",
-    title: "Design System Documentation Spec (DSDS) v0.1 — Bundled",
+    $id: `https://designsystemdocspec.org/v${version}/dsds.bundled.schema.json`,
+    title: `Design System Documentation Spec (DSDS) v${version} — Bundled`,
     description:
       "Single-file bundled version of the DSDS schema. " +
       "Auto-generated from the split schema files by scripts/bundle.js. " +
