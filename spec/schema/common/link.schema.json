@@ -2,22 +2,22 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://designsystemdocspec.org/v0.1/link.schema.json",
   "title": "DSDS Link Definition",
-  "description": "A typed reference to an external resource, a related artifact, or an internal DSDS entity. Used across all DSDS document types for source code, design files, docs, packages, artifact relationships, and internal cross-references. Every link requires a `kind` and at least one of `url` (for external resources) or `identifier` (for internal DSDS artifact references). Both can be present when an internal artifact also has an addressable URL.",
+  "description": "A typed pointer to an external resource, a related artifact, or another DSDS entity. Used across every DSDS document type for source code, design files, docs, packages, artifact relationships, and internal cross-references. Every link requires a `kind`, plus at least one of `url` (for external resources) or `identifier` (for internal DSDS artifact references). Both may appear together when an internal artifact also has a public URL.",
   "$defs": {
     "link": {
       "type": "object",
-      "description": "A typed reference to an external resource or an internal DSDS artifact. Links point to external resources (source code, design files, docs, packages), express relationships to other DSDS artifacts by identifier, or combine both when an internal artifact also has an addressable URL. The `kind` property classifies the reference. Standard external types: 'source', 'design', 'storybook', 'documentation', 'package', 'repository'. Standard relationship types: 'alternative', 'parent', 'child', 'related'. Standard artifact types (for internal references): 'component', 'token', 'token-group', 'style', 'pattern', 'theme'. Custom values are permitted.",
+      "description": "A typed pointer to an external resource or another DSDS artifact. Links point to external resources (source code, design files, docs, packages), express relationships to other DSDS artifacts by identifier, or combine both when an internal artifact also has a public URL. The `kind` property classifies the reference. Standard external kinds: 'source', 'design', 'storybook', 'documentation', 'package', 'repository'. Standard relationship kinds: 'alternative', 'parent', 'child', 'related'. Standard artifact kinds (for internal references): 'component', 'token', 'token-group', 'style', 'pattern', 'theme'. Custom values are allowed.",
       "required": ["kind"],
       "anyOf": [{ "required": ["url"] }, { "required": ["identifier"] }],
       "properties": {
         "kind": {
           "type": "string",
-          "description": "The category of the linked resource or relationship. Standard external types: 'source', 'design', 'storybook', 'documentation', 'package', 'repository'. Standard relationship types: 'alternative', 'parent', 'child', 'related'. Standard artifact types (for internal references): 'component', 'token', 'token-group', 'style', 'pattern', 'theme'. Custom values are permitted and SHOULD match ^[a-z][a-z0-9-]*$."
+          "description": "The category of the linked resource or relationship. Standard external kinds: 'source', 'design', 'storybook', 'documentation', 'package', 'repository'. Standard relationship kinds: 'alternative', 'parent', 'child', 'related'. Standard artifact kinds (for internal references): 'component', 'token', 'token-group', 'style', 'pattern', 'theme'. Custom values are allowed and SHOULD match ^[a-z][a-z0-9-]*$."
         },
         "url": {
           "type": "string",
           "format": "uri",
-          "description": "The URL of the linked resource. MUST be a valid absolute URI. Required for external resource links. Optional for internal artifact references (where `identifier` identifies the artifact). When both `url` and `identifier` are present, `url` points to the artifact's docs page and `identifier` is the machine-readable cross-reference."
+          "description": "The URL of the linked resource. MUST be a valid absolute URI. Required for external resource links. Optional for internal artifact references (where `identifier` names the artifact). When both `url` and `identifier` are present, `url` points to the artifact's docs page and `identifier` is the machine-readable cross-reference."
         },
         "identifier": {
           "type": "string",
@@ -25,16 +25,16 @@
         },
         "label": {
           "type": "string",
-          "description": "Display text for this link — what a user sees when the link renders (e.g., 'React component source', 'Design file — variants', 'Button component'). Use for the human-readable resource name. To describe an internal artifact's functional relationship, use `role` instead."
+          "description": "Display text for this link — what a user sees when the link renders (e.g., 'React component source', 'Design file — variants', 'Button component'). Use it for the display name of the resource. To describe an internal artifact's role, use `role` instead."
         },
         "role": {
           "type": "string",
-          "description": "The functional relationship this artifact has to the current entity — what part it plays (e.g., 'Primary action trigger', 'Error summary container', 'Provides semantic text color tokens'). Distinct from `label`, which is display text for the link itself. Use for internal artifact references to explain *why* this artifact is linked. When omitted, the link is a general association."
+          "description": "The functional role this artifact plays in the current entity (e.g., 'Primary action trigger', 'Error summary container', 'Provides semantic text color tokens'). Distinct from `label`, which is display text for the link itself. Use it on internal artifact references to explain *why* this artifact is linked. When omitted, the link is a general association."
         },
         "required": {
           "type": "boolean",
           "default": false,
-          "description": "Whether this linked artifact is required for the parent entity to function. Used for internal artifact references — for example, a form-validation pattern might mark 'form-field' as required and 'toast' as optional. Defaults to false. Not applicable to external resource links."
+          "description": "Whether this linked artifact is required for the parent entity to work. Used on internal artifact references — for example, a form-validation pattern might mark 'form-field' as required and 'toast' as optional. Defaults to false. Not used on external resource links."
         }
       },
       "additionalProperties": false

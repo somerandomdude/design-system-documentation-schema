@@ -2,21 +2,21 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://designsystemdocspec.org/v0.1/status.schema.json",
   "title": "DSDS Status Definition",
-  "description": "Lifecycle status of a design system artifact with optional per-platform readiness tracking. The `status` union def accepts a plain statusValue string (e.g., \"stable\") or a full statusObject when platform-specific tracking or deprecation notices are needed. The statusObject holds overall status, per-platform readiness, and deprecationNotice in one reusable object; deprecationNotice is required when status is 'deprecated'.",
+  "description": "Lifecycle status of a design system artifact, with optional per-platform readiness. The `status` union accepts a plain statusValue string (e.g., \"stable\") or a full statusObject when per-platform tracking or a deprecation notice is needed. The statusObject holds overall status, per-platform readiness, and deprecationNotice in one reusable object; deprecationNotice is required when status is 'deprecated'.",
   "$defs": {
     "statusValue": {
       "type": "string",
       "pattern": "^[a-z][a-z0-9-]*$",
-      "description": "A lifecycle status value. MUST be lowercase kebab-case. Standard values: 'draft' (under development, not ready for use), 'experimental' (available but API may change without notice), 'stable' (production-ready, changes follow semver), 'deprecated' (scheduled for removal). Custom values are permitted (e.g., 'sunset', 'archived', 'beta') and MUST follow the same pattern."
+      "description": "A lifecycle status value. MUST be lowercase kebab-case. Standard values: 'draft' (under development, not ready for use), 'experimental' (available, but the API may change without notice), 'stable' (production-ready; changes follow semver), 'deprecated' (scheduled for removal). Custom values are allowed (e.g., 'sunset', 'archived', 'beta') and MUST follow the same pattern."
     },
     "platformStatus": {
       "type": "object",
-      "description": "Readiness status of an artifact on a specific platform. Tracks lifecycle stage, version availability, and optional deprecation notices per platform.",
+      "description": "Readiness of an artifact on one specific platform. Tracks lifecycle stage, the version where it became available, and an optional deprecation notice.",
       "required": ["status"],
       "properties": {
         "status": {
           "$ref": "#/$defs/statusValue",
-          "description": "Lifecycle status of the artifact on this platform. Uses the same vocabulary as the top-level status: 'draft', 'experimental', 'stable', 'deprecated'. Custom values are permitted."
+          "description": "Lifecycle status of the artifact on this platform. Uses the same vocabulary as the top-level status: 'draft', 'experimental', 'stable', 'deprecated'. Custom values are allowed."
         },
         "since": {
           "type": "string",
@@ -24,7 +24,7 @@
         },
         "deprecationNotice": {
           "type": "string",
-          "description": "Required when status is 'deprecated'. Explains what to use instead on this platform."
+          "description": "Required when status is 'deprecated'. Says what to use instead on this platform."
         },
         "description": {
           "type": "string",
@@ -45,23 +45,23 @@
     },
     "statusObject": {
       "type": "object",
-      "description": "Consolidated lifecycle status of an artifact. Holds the overall status value, optional per-platform readiness tracking, and a conditional deprecation notice. All status-bearing artifacts use this single object instead of separate status, platformStatus, and deprecationNotice siblings. When overall status is 'deprecated', deprecationNotice becomes required.",
+      "description": "Full lifecycle status of an artifact. Holds the overall status value, optional per-platform readiness, and a conditional deprecation notice. Every status-bearing artifact uses this one object instead of separate status, platformStatus, and deprecationNotice siblings. When overall status is 'deprecated', deprecationNotice becomes required.",
       "required": ["overall", "platforms"],
       "properties": {
         "overall": {
           "$ref": "#/$defs/statusValue",
-          "description": "Overall lifecycle status of the artifact. Represents an editorial judgment about maturity — not required to match the most or least advanced platform status. Tools SHOULD display this as the primary status indicator."
+          "description": "Overall lifecycle status of the artifact. An editorial judgment of maturity; it need not match the most or least advanced platform status. Tools SHOULD display this as the primary status indicator."
         },
         "platforms": {
           "type": "object",
-          "description": "Per-platform readiness or availability status. Keys are platform identifiers (freeform strings — common values include 'react', 'web-component', 'ios', 'android', 'flutter', 'figma', 'sketch', and 'compose'). Values describe the artifact's status on that platform. An artifact MAY be 'stable' overall while individual platforms are still 'experimental' or 'draft'.",
+          "description": "Per-platform readiness. Keys are platform identifiers (freeform strings; common values include 'react', 'web-component', 'ios', 'android', 'flutter', 'figma', 'sketch', 'compose'). Values describe the artifact's status on that platform. An artifact MAY be 'stable' overall while individual platforms are still 'experimental' or 'draft'.",
           "additionalProperties": {
             "$ref": "#/$defs/platformStatus"
           }
         },
         "deprecationNotice": {
           "type": "string",
-          "description": "Required when status is 'deprecated'. MUST explain what to use instead and provide a migration path. Tools SHOULD display this prominently alongside the status indicator."
+          "description": "Required when status is 'deprecated'. MUST say what to use instead and give a migration path. Tools SHOULD display this prominently next to the status indicator."
         }
       },
       "if": {
@@ -77,7 +77,7 @@
       "additionalProperties": false
     },
     "status": {
-      "description": "Lifecycle status of an artifact. Accepts a plain status string (e.g., \"stable\", \"deprecated\") for the simple case, or a full status object with per-platform tracking and deprecation notices. Tools SHOULD normalize the string form to { \"overall\": value } for consistent processing.",
+      "description": "Lifecycle status of an artifact. Accepts a plain status string (e.g., \"stable\", \"deprecated\") for the simple case, or a full status object with per-platform tracking and a deprecation notice. Tools SHOULD normalize the string form to { \"overall\": value } for consistent processing.",
       "oneOf": [
         {
           "$ref": "#/$defs/statusValue"

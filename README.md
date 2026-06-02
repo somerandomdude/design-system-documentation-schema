@@ -15,13 +15,13 @@ DSDS defines a JSON-based format for documenting the six entity types of a desig
 - **Styles** — Foundations for color, typography, spacing, elevation, motion, and content — with principles, scales, motion definitions, and best practices
 - **Patterns** — Broad interaction patterns like navigation, error messaging, and empty states — with anatomy, variants, states, interactions, and content
 
-All structured documentation — guidelines, anatomy, API specs, variants, states, accessibility, examples, design specifications, principles, scales, motion definitions, content, and interactions — lives in a unified **document block** system. Each document block entry is a typed container identified by a `kind` discriminator.
+All structured documentation lives in a unified **document block** system. Each entry is a typed container identified by a `kind` tag. The kinds cover guidelines, anatomy, API specs, variants, states, accessibility, examples, design specifications, principles, scales, motion, content, and interactions.
 
-The goal is simple: make design system documentation structured, portable, and consumable by tools — whether that tool is a documentation site, a linter, a code assistant, or a human reading JSON.
+The goal is simple: make design system documentation structured, portable, and consumable by tools. The tool can be a documentation site, a linter, a code assistant, or a human reading JSON.
 
 ## Why?
 
-Design system documentation today is trapped in tools. It lives in Notion, Storybook, Zeroheight, Confluence, or custom-built sites — each with its own structure, its own conventions, and no interoperability between them.
+Design system documentation today is trapped in tools. It lives in Notion, Storybook, Zeroheight, Confluence, or custom-built sites. Each has its own structure, its own conventions, and no interoperability between them.
 
 This creates real problems:
 
@@ -42,7 +42,7 @@ DSDS addresses these problems by defining a standard format that is:
 
 ## Relationship to W3C Design Tokens
 
-The W3C Design Tokens Community Group defines a format for exchanging token **values** between tools. DSDS defines a format for exchanging the **documentation** that describes how those tokens — and the components, styles, and patterns that use them — should be understood and applied.
+The W3C Design Tokens Community Group defines a format for exchanging token **values** between tools. DSDS defines a format for exchanging the **documentation** that describes how to understand and apply those tokens, plus the components, styles, and patterns that use them.
 
 The two formats are designed to work together. DSDS does not duplicate token values or platform identifiers. The W3C Design Tokens Format file is the source of truth for values. Use the `source` property on a token entity to link it back to its DTCG definition.
 
@@ -54,7 +54,7 @@ Start here:
 
 - **[Overview](https://designsystemdocspec.org/)** — What DSDS is, the entity model, and how the pieces fit together.
 - **[Quick Start](https://designsystemdocspec.org/quickstart.html)** — Document structure, entity kinds, the document-block system, and minimal examples for every entity type.
-- **[Schema Architecture](https://designsystemdocspec.org/schema-architecture.html)** — Document structure, entity types, the `agents` property, status, the document-block system, links, extends, extensions, naming conventions, and conformance levels — all with live property tables sourced from the schema.
+- **[Schema Architecture](https://designsystemdocspec.org/schema-architecture.html)** — The full schema reference. Covers document structure, entity types, the `agents` property, status, the document-block system, links, extends, extensions, naming conventions, and conformance levels, all with live property tables sourced from the schema.
 - **[Interactive Samples](https://designsystemdocspec.org/samples.html)** — Side-by-side JSON ↔ rendered docs for real-world entities (component, token, theme, style, pattern).
 
 Per-schema reference pages live alongside the narrative pages — e.g. [entities/component](https://designsystemdocspec.org/entities-component.html), [document-blocks/guideline](https://designsystemdocspec.org/document-blocks-guideline.html), [common/agents](https://designsystemdocspec.org/common-agents.html). Every page is auto-generated from its corresponding `spec/schema/**/*.schema.json` file.
@@ -216,7 +216,7 @@ npm run build
 # Open site/dist/index.html
 ```
 
-The site is auto-generated from the schema JSON files — property tables, type descriptions, and cross-references are all derived directly from the schemas. The prose modules provide context and examples.
+The site is auto-generated from the schema JSON files. Property tables, type descriptions, and cross-references all come directly from the schemas. The prose modules add context and examples.
 
 ### 5. Regenerate the bundled schema
 
@@ -281,7 +281,7 @@ To add a new example tab, add an entry to the `SAMPLES` array in `scripts/build-
 Narrative content (`site/content/*.mdx` — the Overview, Quick Start, and Schema Architecture pages) is compiled to HTML by `scripts/compile-mdx.mjs`. Authors write prose alongside two custom shortcodes:
 
 - `<ds-example file="..." label="..." />` — inlines a JSON example from `spec/examples/minimal/` as a fenced code block.
-- `<ds-prop-table schema="..." def="..." />` — renders the property table for any `$defs` entry directly from the schema. Both per-schema docs pages and narrative pages share the same renderer (`scripts/render-prop-table.js`), so a description change in a schema flows to every page automatically.
+- `<ds-prop-table schema="..." def="..." />` — renders the property table for any `$defs` entry directly from the schema. Per-schema docs pages and narrative pages share the same renderer (`scripts/render-prop-table.js`), so a description change in a schema flows to every page automatically.
 
 Example:
 
@@ -298,7 +298,7 @@ Special values:
 - `schema="root"` — loads `spec/schema/dsds.schema.json`.
 - `def="$root"` — renders the schema's top-level `properties` (used for schemas that don't use `$defs` at all).
 
-The Quick Start page (`site/content/quickstart.mdx`) is compiled the same way as every other narrative page — there is no longer a separate build command for it. Run `npm run build` and the page is regenerated at `site/dist/quickstart.html`.
+The Quick Start page (`site/content/quickstart.mdx`) is compiled the same way as every other narrative page. There is no longer a separate build command for it: run `npm run build` and the page is regenerated at `site/dist/quickstart.html`.
 
 ## Design Principles
 
