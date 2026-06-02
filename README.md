@@ -67,7 +67,6 @@ This README intentionally does **not** duplicate schema field listings, document
 
 ```
 spec/
-├── dsds-spec.md                                        # Legacy single-file spec, superseded by the docs site
 ├── schema/
 │   ├── dsds.schema.json                                # Root JSON Schema
 │   ├── dsds.bundled.schema.json                        # Auto-generated single-file bundle
@@ -300,6 +299,90 @@ Special values:
 - `def="$root"` — renders the schema's top-level `properties` (used for schemas that don't use `$defs` at all).
 
 The Quick Start page (`site/content/quickstart.mdx`) is compiled the same way as every other narrative page. There is no longer a separate build command for it: run `npm run build` and the page is regenerated at `site/dist/quickstart.html`.
+
+## Cutting a release
+
+The spec version lives in three coordinated places:
+
+1. **`spec/schema/dsds.schema.json#/properties/dsdsVersion/const`** — the single source of truth. The bundle script, the nav, every page title, and the versioned dist directory all derive from this value.
+2. **The `$id` URL on every schema file** — e.g., `https://designsystemdocspec.org/v0.2.1/metadata/last-updated.schema.json`. Every example document's `$schema` field and every `"dsdsVersion"` literal inside example JSON has to track the same version.
+3. **`package.json#version`** — the npm package version. Conventionally kept in lockstep with `dsdsVersion.const`.
+
+The `scripts/bump-version.js` script keeps the first two in sync across all 44 schema files, every example, the README, and the MDX content pages. `package.json` is handled separately because it's not a schema-consumer file.
+
+### Release types
+
+| Change | Spec version | New URL path? | Old URL path |
+|---|---|---|---|
+| Schema additions (new optional fields, new union members, new entity kinds) | Bump patch (e.g. `0.2` → `0.2.1`) | Yes — published at `/v0.2.1/` | `/v0.2/` stays untouched as a historical artifact |
+| Breaking changes (renamed/removed fields, new required fields, tightened constraints) | Bump minor or major (e.g. `0.2.1` → `0.3`) | Yes — published at `/v0.3/` | All older versions stay untouched |
+| Documentation-only edits (typos, prose clarifications, no schema or example changes) | No bump | No | No change |
+
+The versioned dist directories (`site/dist/v<n>/dsds.bundled.schema.json`) are **immutable public contracts**. `npm run build` refuses to overwrite an existing one. Every consumer that pins `$schema` to that URL relies on the file there never changing.
+
+### Step-by-step
+
+This is the exact sequence for cutting a release that includes schema changes. Skip steps 1–3 for a documentation-only release.
+
+1. **Make your schema changes** under `spec/schema/`. Add new files, edit existing ones, or update the unions in `metadata/metadata.schema.json` / `document-blocks/document-blocks.schema.json` as needed.
+
+2. **Add or update examples** under `spec/examples/`. Per-definition example files live in `spec/examples/{common,document-blocks,entities,metadata}/<schemaName>.json` and are picked up automatically by the docs site for each schema page. Update full-document examples (`starter-kit.dsds.json`, etc.) and entity examples (`entities/component.json`, etc.) to demonstrate the new feature in context.
+
+3. **Update the README project structure listing** under `## Project Structure` if you added or removed schema files. (The site nav auto-discovers schemas, so no MDX updates are needed for that.)
+
+4. **Bump `package.json#version`** to the target version (e.g. `0.2.0` → `0.2.1`).
+
+5. **Add a CHANGELOG entry** at the top of `CHANGELOG`, mirroring the format of the prior release. Include a one-line header noting where the bundled schema is now served (e.g., "Schema files are now served at `https://designsystemdocspec.org/v0.2.1/...`") and an "Additions" or "Breaking changes" section describing every schema-visible change.
+
+6. **Run the version bump.** Preview the change first:
+
+   ```bash
+   node scripts/bump-version.js 0.2.1 --dry-run
+   ```
+
+   Apply it:
+
+   ```bash
+   node scripts/bump-version.js 0.2.1
+   ```
+
+   This rewrites `dsdsVersion.const`, the root schema title, every `$id` URL across the 44 split schemas, every example's `$schema` URL and `"dsdsVersion"` literal, the README, and the MDX content pages — then regenerates `spec/schema/dsds.bundled.schema.json` so the bundle reflects the new version. The script is drift-tolerant: it migrates any stale `/v<X>/` URL it finds, not just the one currently in `dsdsVersion.const`.
+
+7. **Build the site.**
+
+   ```bash
+   npm run build
+   ```
+
+   This regenerates every page under `site/dist/` and publishes a new `site/dist/v<new-version>/dsds.bundled.schema.json`. If a versioned directory for the new version already exists with a differing bundle, the build will print a warning and skip the copy — delete the file manually and rerun the build to intentionally re-publish.
+
+8. **Validate.**
+
+   ```bash
+   npm run validate
+   ```
+
+   All example documents and per-definition examples must pass. A failure here usually means an example file uses an old field name or a newly required field is missing.
+
+9. **Spot-check the rendered site.** Confirm the version reads correctly in three places:
+
+   - Page `<title>` tags (e.g., `DSDS Last Updated Metadata — DSDS 0.2.1`).
+   - The nav title (`Design System Documentation Spec 0.2.1`).
+   - The footer (`Design System Documentation Spec (DSDS) 0.2.1 — Draft Specification`).
+
+   The new schema page should exist at `site/dist/<group>-<name>.html` (e.g., `site/dist/metadata-last-updated.html`), and the versioned bundle should exist at `site/dist/v<new-version>/dsds.bundled.schema.json`.
+
+10. **Commit.** Stage the schema changes, example updates, README, CHANGELOG, `package.json`, and the entire `site/dist/` tree (including the new versioned subdirectory) in one commit. The historical versioned subdirectories under `site/dist/v<older>/` must stay untouched.
+
+### Patch-release shortcut for documentation-only edits
+
+For a typo fix or prose clarification that doesn't touch any schema or example:
+
+```bash
+npm run build   # regenerates HTML only; no version bump, no new versioned bundle
+```
+
+No changelog entry, no version bump, no new `/v<n>/` artifact. Commit the regenerated HTML.
 
 ## Design Principles
 

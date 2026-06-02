@@ -5,8 +5,8 @@
  *
  * Scope:
  *   1. Long-form prose:    README.md, CHANGELOG, COMPATIBILITY_REPORT.md,
- *                          recommendations.md, spec/dsds-spec.md, the MDX
- *                          content pages, and any docs under .claude/.
+ *                          recommendations.md, the MDX content pages, and
+ *                          any docs under .claude/.
  *   2. Schema descriptions: every `description` value in every
  *                          spec/schema/**\/*.schema.json file (excluding the
  *                          auto-generated bundle). For each schema we
@@ -41,7 +41,6 @@ const LONG_FORM_PATHS = [
   "CHANGELOG",
   "COMPATIBILITY_REPORT.md",
   "recommendations.md",
-  "spec/dsds-spec.md",
   "site/content/overview.mdx",
   "site/content/quickstart.mdx",
   "site/content/schema-architecture.mdx",
