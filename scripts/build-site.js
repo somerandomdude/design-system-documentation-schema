@@ -6,7 +6,9 @@
  * generates one HTML page per schema file. Each page documents the definitions
  * within that file with property tables, type references, and cross-references.
  *
- * The overview page (dsds-spec.md) is still rendered from markdown.
+ * Narrative pages (overview, quickstart, schema-architecture) are compiled
+ * from MDX content in site/content/ by scripts/compile-mdx.mjs, which can
+ * embed schema-driven property tables via the <ds-prop-table /> shortcode.
  *
  * Usage:
  *   node scripts/build-site.js

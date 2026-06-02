@@ -67,7 +67,7 @@ This README intentionally does **not** duplicate schema field listings, document
 
 ```
 spec/
-├── dsds-spec.md                                        # Complete specification (single source of truth)
+├── dsds-spec.md                                        # Legacy single-file spec, superseded by the docs site
 ├── schema/
 │   ├── dsds.schema.json                                # Root JSON Schema
 │   ├── dsds.bundled.schema.json                        # Auto-generated single-file bundle
@@ -75,6 +75,7 @@ spec/
 │   │   ├── agent-collection.schema.json                # agentCollection (multi-entity agent context file)
 │   │   ├── agents.schema.json                          # agents (agent context for AI/LLM consumption)
 │   │   ├── example.schema.json                         # example
+│   │   ├── extends.schema.json                         # documentExtends, entityExtends
 │   │   ├── extensions.schema.json                      # $extensions
 │   │   ├── link.schema.json                            # link
 │   │   ├── system-metadata.schema.json                 # systemMetadata
@@ -82,6 +83,19 @@ spec/
 │   │   ├── presentation.schema.json                    # presentationImage, presentationVideo, presentationCode, presentationUrl
 │   │   ├── status.schema.json                          # status, statusObject, statusValue, platformStatus
 │   │   └── purpose.schema.json                         # purpose, useCase
+│   ├── metadata/                                       # Modular entity metadata kinds (entityMetadata union)
+│   │   ├── metadata.schema.json                        # entityMetadata (oneOf union of every metadata kind)
+│   │   ├── aliases.schema.json                         # aliasesMetadata
+│   │   ├── category.schema.json                        # categoryMetadata
+│   │   ├── description.schema.json                     # descriptionMetadata
+│   │   ├── extends.schema.json                         # extendsMetadata
+│   │   ├── links.schema.json                           # linksMetadata
+│   │   ├── preview.schema.json                         # previewMetadata
+│   │   ├── since.schema.json                           # sinceMetadata
+│   │   ├── status.schema.json                          # statusMetadata
+│   │   ├── summary.schema.json                         # summaryMetadata
+│   │   ├── tags.schema.json                            # tagsMetadata
+│   │   └── thumbnail.schema.json                       # thumbnailMetadata
 │   ├── entities/                                       # Entity types
 │   │   ├── component.schema.json                       # component
 │   │   ├── pattern.schema.json                         # pattern
@@ -93,9 +107,11 @@ spec/
 │       ├── accessibility.schema.json                   # accessibility, keyboardInteraction, ariaAttribute, colorContrast
 │       ├── anatomy.schema.json                         # anatomy, anatomyEntry
 │       ├── api.schema.json                             # api, apiProperty, apiEvent, apiSlot, etc.
-│       ├── guideline.schema.json                       # guideline, guidelineEntry
+│       ├── guideline.schema.json                       # guideline, guidelineEntry, criterionReference, criterionDefinition
 │       ├── content.schema.json                         # content, contentLabelEntry, localizationEntry
 │       ├── design-specifications.schema.json           # designSpecifications, spacingSpec, sizingSpec, typographySpec, etc.
+│       ├── events.schema.json                          # events, eventEntry
+│       ├── import.schema.json                          # import, importEntry
 │       ├── interaction.schema.json                     # interactions, interactionEntry
 │       ├── motion.schema.json                          # motion, motionEntry, motionDuration
 │       ├── principle.schema.json                       # principles, principleEntry
