@@ -85,6 +85,104 @@
   <ds-prop name="verified" type="string (date)">ISO date when this agent context block was last validated against the live design system. Absence signals unverified content. Agents and tooling can use this to assess data freshness and flag stale guidance.</ds-prop>
   <ds-prop name="verifiedAgainst" type="string">The package version, test run identifier, or audit reference this block was validated against. Provides traceability for empirical data. Example: '@sanity/ui@3.2.0', 'agent-test-run-2026-05-30', 'a11y-audit-Q2-2026'.</ds-prop>
 </ds-prop-table>
+<ds-def-example>
+<ds-code language="json" label="example">{
+  &quot;intent&quot;: &quot;Trigger the primary action on a surface — submit, confirm, save, or commit a destructive change.&quot;,
+  &quot;constraints&quot;: [
+    {
+      &quot;rule&quot;: &quot;Use at most one primary (filled) button per visible surface.&quot;,
+      &quot;level&quot;: &quot;must&quot;,
+      &quot;context&quot;: &quot;Applies to forms, dialogs, and panels. Secondary actions use the secondary variant.&quot;,
+      &quot;evidence&quot;: &quot;10/10 agent test runs produced multiple primary buttons when this rule was omitted from prompts.&quot;
+    },
+    {
+      &quot;rule&quot;: &quot;Do not override the minimum touch target height (44px on mobile, 36px on desktop).&quot;,
+      &quot;level&quot;: &quot;must-not&quot;,
+      &quot;context&quot;: &quot;Touch targets smaller than these thresholds fail WCAG 2.5.5 (AAA) and 2.5.8 (AA).&quot;,
+      &quot;examples&quot;: [
+        {
+          &quot;description&quot;: &quot;Correct — default height is preserved.&quot;,
+          &quot;code&quot;: &quot;&lt;Button variant=\&quot;primary\&quot;&gt;Save&lt;/Button&gt;&quot;,
+          &quot;language&quot;: &quot;jsx&quot;
+        },
+        {
+          &quot;description&quot;: &quot;Incorrect — height override below the minimum.&quot;,
+          &quot;code&quot;: &quot;&lt;Button variant=\&quot;primary\&quot; style={{ height: 28 }}&gt;Save&lt;/Button&gt;&quot;,
+          &quot;language&quot;: &quot;jsx&quot;
+        }
+      ]
+    },
+    {
+      &quot;rule&quot;: &quot;Provide an accessible label when the button has only an icon.&quot;,
+      &quot;level&quot;: &quot;must&quot;,
+      &quot;context&quot;: &quot;Icon-only buttons must expose their purpose via aria-label or a visually-hidden label.&quot;
+    }
+  ],
+  &quot;disambiguation&quot;: [
+    {
+      &quot;entity&quot;: &quot;link&quot;,
+      &quot;entityType&quot;: &quot;component&quot;,
+      &quot;distinction&quot;: &quot;Use a button when the action changes application state (submit, delete, open dialog). Use a link when the action navigates to a new URL or page.&quot;
+    },
+    {
+      &quot;entity&quot;: &quot;icon-button&quot;,
+      &quot;entityType&quot;: &quot;component&quot;,
+      &quot;distinction&quot;: &quot;Use an icon-button when the action is represented by an icon alone within a compact UI region (toolbars, headers). Use a button when a text label improves comprehension.&quot;
+    },
+    {
+      &quot;entity&quot;: &quot;chip&quot;,
+      &quot;entityType&quot;: &quot;component&quot;,
+      &quot;distinction&quot;: &quot;Use a button to trigger an action. Use a chip to represent a discrete piece of information, a filter, or a selection state.&quot;
+    }
+  ],
+  &quot;antiPatterns&quot;: [
+    {
+      &quot;description&quot;: &quot;Using a primary button for every action in a form (Save, Cancel, Reset all rendered as filled primary buttons).&quot;,
+      &quot;instead&quot;: &quot;Reserve primary (filled) for the single most important action. Use secondary for the next-most-important action and tertiary (text) for low-emphasis actions.&quot;,
+      &quot;evidence&quot;: &quot;Raised in 8/10 agent iterations when generating multi-action forms.&quot;
+    },
+    {
+      &quot;description&quot;: &quot;Wrapping a button in an anchor element to make it navigate.&quot;,
+      &quot;instead&quot;: &quot;Use the link component for navigation. Buttons trigger actions; links go somewhere.&quot;
+    },
+    {
+      &quot;description&quot;: &quot;Disabling a primary button without explaining why.&quot;,
+      &quot;instead&quot;: &quot;Pair the disabled state with inline guidance (e.g., 'Complete required fields to enable Save') or use a tooltip on hover or focus.&quot;
+    }
+  ],
+  &quot;examples&quot;: [
+    {
+      &quot;description&quot;: &quot;Primary submit button in a form.&quot;,
+      &quot;code&quot;: &quot;&lt;Button variant=\&quot;primary\&quot; type=\&quot;submit\&quot;&gt;Save changes&lt;/Button&gt;&quot;,
+      &quot;language&quot;: &quot;jsx&quot;
+    },
+    {
+      &quot;description&quot;: &quot;Icon-only button with an accessible label.&quot;,
+      &quot;code&quot;: &quot;&lt;Button variant=\&quot;tertiary\&quot; aria-label=\&quot;Close dialog\&quot;&gt;&lt;Icon name=\&quot;close\&quot; /&gt;&lt;/Button&gt;&quot;,
+      &quot;language&quot;: &quot;jsx&quot;
+    },
+    {
+      &quot;description&quot;: &quot;Destructive action paired with a confirmation dialog.&quot;,
+      &quot;code&quot;: &quot;&lt;Button variant=\&quot;danger\&quot; onClick={openConfirmDialog}&gt;Delete project&lt;/Button&gt;&quot;,
+      &quot;language&quot;: &quot;jsx&quot;
+    }
+  ],
+  &quot;keywords&quot;: [
+    &quot;button&quot;,
+    &quot;action&quot;,
+    &quot;submit&quot;,
+    &quot;confirm&quot;,
+    &quot;cta&quot;,
+    &quot;call to action&quot;,
+    &quot;primary&quot;,
+    &quot;secondary&quot;,
+    &quot;tertiary&quot;,
+    &quot;trigger&quot;
+  ],
+  &quot;verified&quot;: &quot;2026-05-30&quot;,
+  &quot;verifiedAgainst&quot;: &quot;@acme/components@2.4.0&quot;
+}</ds-code>
+</ds-def-example>
 </ds-def-section>
 
         <ds-back-to-top></ds-back-to-top>

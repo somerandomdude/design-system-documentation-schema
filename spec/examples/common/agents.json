@@ -1,0 +1,98 @@
+{
+  "agents": {
+    "intent": "Trigger the primary action on a surface — submit, confirm, save, or commit a destructive change.",
+    "constraints": [
+      {
+        "rule": "Use at most one primary (filled) button per visible surface.",
+        "level": "must",
+        "context": "Applies to forms, dialogs, and panels. Secondary actions use the secondary variant.",
+        "evidence": "10/10 agent test runs produced multiple primary buttons when this rule was omitted from prompts."
+      },
+      {
+        "rule": "Do not override the minimum touch target height (44px on mobile, 36px on desktop).",
+        "level": "must-not",
+        "context": "Touch targets smaller than these thresholds fail WCAG 2.5.5 (AAA) and 2.5.8 (AA).",
+        "examples": [
+          {
+            "description": "Correct — default height is preserved.",
+            "code": "<Button variant=\"primary\">Save</Button>",
+            "language": "jsx"
+          },
+          {
+            "description": "Incorrect — height override below the minimum.",
+            "code": "<Button variant=\"primary\" style={{ height: 28 }}>Save</Button>",
+            "language": "jsx"
+          }
+        ]
+      },
+      {
+        "rule": "Provide an accessible label when the button has only an icon.",
+        "level": "must",
+        "context": "Icon-only buttons must expose their purpose via aria-label or a visually-hidden label."
+      }
+    ],
+    "disambiguation": [
+      {
+        "entity": "link",
+        "entityType": "component",
+        "distinction": "Use a button when the action changes application state (submit, delete, open dialog). Use a link when the action navigates to a new URL or page."
+      },
+      {
+        "entity": "icon-button",
+        "entityType": "component",
+        "distinction": "Use an icon-button when the action is represented by an icon alone within a compact UI region (toolbars, headers). Use a button when a text label improves comprehension."
+      },
+      {
+        "entity": "chip",
+        "entityType": "component",
+        "distinction": "Use a button to trigger an action. Use a chip to represent a discrete piece of information, a filter, or a selection state."
+      }
+    ],
+    "antiPatterns": [
+      {
+        "description": "Using a primary button for every action in a form (Save, Cancel, Reset all rendered as filled primary buttons).",
+        "instead": "Reserve primary (filled) for the single most important action. Use secondary for the next-most-important action and tertiary (text) for low-emphasis actions.",
+        "evidence": "Raised in 8/10 agent iterations when generating multi-action forms."
+      },
+      {
+        "description": "Wrapping a button in an anchor element to make it navigate.",
+        "instead": "Use the link component for navigation. Buttons trigger actions; links go somewhere."
+      },
+      {
+        "description": "Disabling a primary button without explaining why.",
+        "instead": "Pair the disabled state with inline guidance (e.g., 'Complete required fields to enable Save') or use a tooltip on hover or focus."
+      }
+    ],
+    "examples": [
+      {
+        "description": "Primary submit button in a form.",
+        "code": "<Button variant=\"primary\" type=\"submit\">Save changes</Button>",
+        "language": "jsx"
+      },
+      {
+        "description": "Icon-only button with an accessible label.",
+        "code": "<Button variant=\"tertiary\" aria-label=\"Close dialog\"><Icon name=\"close\" /></Button>",
+        "language": "jsx"
+      },
+      {
+        "description": "Destructive action paired with a confirmation dialog.",
+        "code": "<Button variant=\"danger\" onClick={openConfirmDialog}>Delete project</Button>",
+        "language": "jsx"
+      }
+    ],
+    "keywords": [
+      "button",
+      "action",
+      "submit",
+      "confirm",
+      "cta",
+      "call to action",
+      "primary",
+      "secondary",
+      "tertiary",
+      "trigger"
+    ],
+    "verified": "2026-05-30",
+    "verifiedAgainst": "@acme/components@2.4.0"
+  }
+}

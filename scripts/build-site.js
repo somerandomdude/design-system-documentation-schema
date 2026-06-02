@@ -567,6 +567,16 @@ function renderSchemaPage(page) {
   }
 
   if (defNames.length === 0) {
+    // Root-only schemas (no $defs) can still ship an example. By convention
+    // the entire example file is treated as one root-level example document.
+    if (page.examples !== null && page.examples !== undefined) {
+      const jsonStr = JSON.stringify(page.examples, null, 2);
+      parts.push(`<ds-def-example>`);
+      parts.push(
+        `<ds-code language="json" label="example">${esc(jsonStr)}</ds-code>`,
+      );
+      parts.push(`</ds-def-example>`);
+    }
     return parts.join("\n");
   }
 

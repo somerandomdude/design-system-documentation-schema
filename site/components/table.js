@@ -85,6 +85,8 @@ export function ensureTableLightStyles() {
     "ds-table a { color: var(--ds-color-accent); }",
     "ds-table[striped] tbody tr:nth-child(even) td { background: var(--ds-color-bg-subtle); }",
     "ds-table[compact] th, ds-table[compact] td { padding: 5px 10px; font-size: 0.8rem; }",
+    "ds-table td:first-child { white-space: nowrap; }",
+    "ds-table td:first-child ds-code[inline] { white-space: nowrap; }",
   ].join("\n");
   document.head.appendChild(style);
 }

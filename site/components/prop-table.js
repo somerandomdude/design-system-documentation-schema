@@ -7,7 +7,6 @@ const PROP_TABLE_CSS = `
   table {
     width: 100%;
     max-width: 100%;
-    table-layout: fixed;
     border-collapse: collapse;
     margin-bottom: var(--ds-space-6);
     font-family: ${FONT.body};
@@ -38,10 +37,12 @@ const PROP_TABLE_CSS = `
     border-bottom: none;
   }
 
-  /* Column sizing: cols 1-3 fixed narrow, col 4 (Description) gets remaining space */
-  th:nth-child(1), td:nth-child(1) { width: 120px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  th:nth-child(2), td:nth-child(2) { width: 140px; overflow: hidden; text-overflow: ellipsis; }
-  th:nth-child(3), td:nth-child(3) { width: 70px; white-space: nowrap; }
+  /* Column sizing: cols 1-3 shrink to fit their content, col 4 (Description) gets remaining space.
+     Property names (col 1) MUST never truncate — 'white-space: nowrap' plus the 'width: 1%'
+     shrink-to-fit trick lets the column grow to fit the longest property name without clipping. */
+  th:nth-child(1), td:nth-child(1) { width: 1%; white-space: nowrap; }
+  th:nth-child(2), td:nth-child(2) { width: 1%; white-space: nowrap; }
+  th:nth-child(3), td:nth-child(3) { width: 1%; white-space: nowrap; }
   th:nth-child(4), td:nth-child(4) { width: auto; overflow-wrap: break-word; word-break: break-word; }
 
   /* Column 1: Property name — monospace, bold */
