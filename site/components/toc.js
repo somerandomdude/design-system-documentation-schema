@@ -115,10 +115,14 @@ export class DsToc extends HTMLElement {
 
     if (!root) return;
 
-    // Query both native headings and ds-heading elements
+    // Query native headings, ds-heading elements, and ds-def-section
+    // elements (the per-$defs section wrapper on schema pages — it sets
+    // its own host `id` for TOC linking but isn't a heading tag).
     var headingSet = new Set();
     var headings = [];
-    var all = root.querySelectorAll(selector + ", ds-heading[id]");
+    var all = root.querySelectorAll(
+      selector + ", ds-heading[id], ds-def-section[id]",
+    );
     all.forEach(function (el) {
       if (!headingSet.has(el)) {
         headingSet.add(el);
@@ -135,14 +139,28 @@ export class DsToc extends HTMLElement {
     for (var i = 0; i < headings.length; i++) {
       var h = headings[i];
       var id = h.id || h.getAttribute("anchor") || "";
-      var text = h.textContent.replace(/#\s*$/, "").trim() || id;
-      var level = 3; // default to sub
+      // For ds-def-section the visible heading text is the `name`
+      // attribute (rendered as an <h3> inside the shadow DOM); the host
+      // element's textContent also contains the description and child
+      // markup, so prefer the explicit attribute when present.
       var tagName = h.tagName.toLowerCase();
+      var text;
+      if (tagName === "ds-def-section") {
+        text = h.getAttribute("name") || id;
+      } else {
+        text = h.textContent.replace(/#\s*$/, "").trim() || id;
+      }
+      // Default to level 3 (sub-section); promote known top-level
+      // heading shapes to level 2.
+      var level = 3;
       if (tagName === "h1" || tagName === "h2") {
         level = 2;
       } else if (tagName === "ds-heading") {
         var lvl = h.getAttribute("level");
         if (lvl === "1" || lvl === "2") level = 2;
+      } else if (tagName === "ds-def-section") {
+        // Each $defs entry is a top-level landmark on its page.
+        level = 2;
       }
       if (id && text) {
         items.push({ id: id, text: text, level: level });

@@ -20,7 +20,7 @@
 const fs = require("fs");
 const path = require("path");
 
-const { buildSpecNav, DIR_GROUPS } = require("./nav");
+const { buildSpecNav, DIR_GROUPS, readSpecVersion } = require("./nav");
 const { buildSamples } = require("./build-samples");
 const {
   esc,
@@ -441,23 +441,41 @@ function renderSchemaPage(page) {
 // Overview page — rendered from markdown
 // ---------------------------------------------------------------------------
 
-function pageHtml(title, activeSlug, bodyHtml, hasToc, pages, layout) {
+function pageHtml(title, activeSlug, bodyHtml, hasToc, pages, layout, version) {
   const layoutCls = layout === "full" ? " content--full" : "";
   const tocCls = hasToc ? " content--with-toc" : "";
   const contentCls = "content" + layoutCls + tocCls;
+
+  // Derive the spec version from the schema if the caller didn't pass one
+  // explicitly. This keeps every `DSDS <v>` string in the rendered HTML
+  // tied to dsds.schema.json#/properties/dsdsVersion/const — the same
+  // single source of truth that the bundle script and nav use.
+  const v = version || readSpecVersion() || "";
+
+  // Skip the `— DSDS <v>` suffix when the title already names the
+  // version (e.g., the overview page title is "Design System Documentation
+  // Spec 0.2"). Otherwise the tab text reads "… Spec 0.2 — DSDS 0.2".
+  // A bare `.includes(v)` check is precise enough — a 2-character version
+  // like "0.2" is unlikely to appear coincidentally in a page title.
+  const titleHasVersion = v && title.includes(v);
+  const titleSuffix = v && !titleHasVersion ? ` — DSDS ${v}` : "";
+
+  const footerTitle = v
+    ? `Design System Documentation Spec (DSDS) ${v} — Draft Specification`
+    : "Design System Documentation Spec (DSDS) — Draft Specification";
 
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>${esc(title)} — DSDS 0.1</title>
+  <title>${esc(title)}${esc(titleSuffix)}</title>
   <link rel="stylesheet" href="tokens.css">
   <link rel="stylesheet" href="style.css">
   <script src="components.js"></script>
 </head>
 <body>
-${buildSpecNav(activeSlug, pages)}
+${buildSpecNav(activeSlug, pages, v)}
   <div class="${contentCls}">
     <main class="content__main" role="main">
       <div class="content__inner">
@@ -466,7 +484,7 @@ ${buildSpecNav(activeSlug, pages)}
         <ds-back-to-top></ds-back-to-top>
 
         <ds-footer>
-          <p>Design System Documentation Spec (DSDS) 0.1 — Draft Specification</p>
+          <p>${esc(footerTitle)}</p>
           <p><a href="https://github.com/somerandomdude/design-system-documentation-schema">GitHub</a></p>
         </ds-footer>
       </div>
@@ -485,11 +503,26 @@ ${buildSpecNav(activeSlug, pages)}
 async function build() {
   console.log("Building DSDS specification site (schema-driven)...\n");
 
-  // Clean and create dist
+  // Clean and create dist.
+  //
+  // Versioned subdirectories (`v<n>/`) hold published schema bundles whose
+  // URLs are public contracts — we MUST NOT blow them away on rebuild.
+  // Everything else under dist is regenerated each build, so we wipe it
+  // and recreate. The versioned subdirectory write step further down is
+  // also defensive (refuses to overwrite an existing versioned bundle),
+  // but this is the primary safeguard.
   if (fs.existsSync(DIST_DIR)) {
-    fs.rmSync(DIST_DIR, { recursive: true, force: true });
+    for (const entry of fs.readdirSync(DIST_DIR, { withFileTypes: true })) {
+      // Preserve site/dist/v<version>/ directories. The leading `v`
+      // followed by a digit matches v0.1, v0.2, v1.0.0, v1.0.0-beta.2,
+      // etc. without touching unrelated directories that happen to
+      // start with `v`.
+      if (entry.isDirectory() && /^v\d/.test(entry.name)) continue;
+      fs.rmSync(path.join(DIST_DIR, entry.name), { recursive: true, force: true });
+    }
+  } else {
+    fs.mkdirSync(DIST_DIR, { recursive: true });
   }
-  fs.mkdirSync(DIST_DIR, { recursive: true });
 
   // Discover all schema pages (with examples attached)
   const pages = discoverPages();
@@ -570,16 +603,43 @@ async function build() {
   // ── Samples page ────────────────────────────────────────────────────
   buildSamples();
 
-  // ── Versioned bundled schema ─────────────────────────────────────────
+  // ── Versioned bundled schema ──────────────────────────────────────
+  //
+  // Versioned dist directories (site/dist/v<n>/) hold the bundled schema
+  // at the URL it's published at — e.g., site/dist/v0.1/dsds.bundled.schema.json
+  // is served at https://designsystemdocspec.org/v0.1/dsds.bundled.schema.json.
+  //
+  // Once a versioned bundle has been published, the file at that URL is a
+  // public contract: every DSDS document that pins its $schema to that URL
+  // relies on the file there never changing. The build therefore refuses to
+  // overwrite an existing versioned bundle. To intentionally re-publish a
+  // version, delete the target file manually and rerun the build.
   const bundledSchemaPath = path.join(SCHEMA_DIR, "dsds.bundled.schema.json");
   if (fs.existsSync(bundledSchemaPath)) {
     const bundledSchema = JSON.parse(fs.readFileSync(bundledSchemaPath, "utf-8"));
     const version = bundledSchema.properties?.dsdsVersion?.const;
     if (version) {
       const versionDir = path.join(DIST_DIR, `v${version}`);
-      fs.mkdirSync(versionDir, { recursive: true });
-      fs.copyFileSync(bundledSchemaPath, path.join(versionDir, "dsds.bundled.schema.json"));
-      console.log(`  ✓  site/dist/v${version}/dsds.bundled.schema.json  ← spec/schema/dsds.bundled.schema.json\n`);
+      const versionedBundle = path.join(versionDir, "dsds.bundled.schema.json");
+      const relTarget = `site/dist/v${version}/dsds.bundled.schema.json`;
+
+      if (fs.existsSync(versionedBundle)) {
+        const existing = fs.readFileSync(versionedBundle, "utf-8");
+        const current = fs.readFileSync(bundledSchemaPath, "utf-8");
+        if (existing === current) {
+          console.log(`  =  ${relTarget} (unchanged)\n`);
+        } else {
+          console.log(
+            `  ⚠  ${relTarget} already exists and differs from the current\n` +
+              `     bundle. Skipping to preserve the published artifact. Delete the\n` +
+              `     file manually if you intend to re-publish v${version}.\n`,
+          );
+        }
+      } else {
+        fs.mkdirSync(versionDir, { recursive: true });
+        fs.copyFileSync(bundledSchemaPath, versionedBundle);
+        console.log(`  ✓  ${relTarget}  ← spec/schema/dsds.bundled.schema.json\n`);
+      }
     }
   }
 

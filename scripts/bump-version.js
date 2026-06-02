@@ -186,6 +186,21 @@ const NEW_URL_FRAGMENT = `designsystemdocspec.org/v${NEW_VERSION}/`;
 const ROOT_TITLE_REGEX = /(Design System Documentation Spec \(DSDS\) v)[A-Za-z0-9.\-]+/g;
 const DSDS_VERSION_CONST_REGEX = /("dsdsVersion"\s*:\s*\{[\s\S]*?"const"\s*:\s*")([^"]+)(")/;
 
+// In docs and example content, two more string patterns reference the spec
+// version and must move in lockstep with the const:
+//
+//   1. `"dsdsVersion": "<X>"` literals inside example JSON snippets (whether
+//      in `.json` files or fenced code blocks inside MDX/markdown). These
+//      represent example DSDS documents that conform to the current spec.
+//
+//   2. Free-form mentions of "Design System Documentation Spec <X>" or
+//      "DSDS <X>" in narrative prose (page titles, headings). We require a
+//      digit immediately after to avoid matching unrelated text like
+//      "DSDS sections".
+const DSDS_VERSION_LITERAL_REGEX = /("dsdsVersion"\s*:\s*")([A-Za-z0-9.\-]+)(")/g;
+const SPEC_DISPLAY_NAME_REGEX = /(Design System Documentation Spec )(\d[A-Za-z0-9.\-]*)/g;
+const DSDS_DISPLAY_NAME_REGEX = /(\bDSDS )(\d[A-Za-z0-9.\-]*)/g;
+
 // Track per-file metrics so we can report what changed and warn on drift.
 const urlVersionsSeen = new Map(); // version -> count across all files
 
@@ -201,6 +216,34 @@ function rewriteUrlsInText(text) {
     return NEW_URL_FRAGMENT;
   });
   return { updated, count };
+}
+
+// For each of the three secondary patterns: only rewrite when the captured
+// version differs from the target (so the bump is idempotent and tolerates
+// drift across the file set).
+function rewriteDsdsVersionLiterals(text) {
+  let count = 0;
+  const updated = text.replace(DSDS_VERSION_LITERAL_REGEX, (match, before, oldVer, after) => {
+    if (oldVer === NEW_VERSION) return match;
+    count++;
+    return before + NEW_VERSION + after;
+  });
+  return { updated, count };
+}
+
+function rewriteSpecDisplayNames(text) {
+  let count = 0;
+  let s = text.replace(SPEC_DISPLAY_NAME_REGEX, (match, prefix, oldVer) => {
+    if (oldVer === NEW_VERSION) return match;
+    count++;
+    return prefix + NEW_VERSION;
+  });
+  s = s.replace(DSDS_DISPLAY_NAME_REGEX, (match, prefix, oldVer) => {
+    if (oldVer === NEW_VERSION) return match;
+    count++;
+    return prefix + NEW_VERSION;
+  });
+  return { updated: s, count };
 }
 
 function rewriteRootSchemaText(text) {
@@ -227,8 +270,28 @@ function rewriteRootSchemaText(text) {
   return { updated: out, count: urls, titleChanged, constChanged };
 }
 
-function rewriteGenericFile(text) {
-  return rewriteUrlsInText(text);
+function rewriteGenericFile(text, opts = {}) {
+  let { updated, count } = rewriteUrlsInText(text);
+
+  // For example .json files: also rewrite `"dsdsVersion": "<old>"` literals
+  // so example documents stay valid against the bumped spec.
+  if (opts.rewriteDsdsLiteral !== false) {
+    const r = rewriteDsdsVersionLiterals(updated);
+    updated = r.updated;
+    count += r.count;
+  }
+
+  // For docs (.md, .mdx): also rewrite display-name strings and embedded
+  // example `dsdsVersion` literals. We use the same pass on both kinds of
+  // files; the regexes are narrow enough that JSON files won't get false
+  // positives on prose patterns (which never appear there).
+  if (opts.rewriteDisplayNames) {
+    const r = rewriteSpecDisplayNames(updated);
+    updated = r.updated;
+    count += r.count;
+  }
+
+  return { updated, count };
 }
 
 // ---------------------------------------------------------------------------
@@ -241,7 +304,7 @@ const changedFiles = [];
 let rootTitleChanged = false;
 let rootConstChanged = false;
 
-function processFile(absPath, isRoot) {
+function processFile(absPath, isRoot, opts) {
   const text = fs.readFileSync(absPath, "utf-8");
   let result;
   if (isRoot) {
@@ -249,7 +312,7 @@ function processFile(absPath, isRoot) {
     if (result.titleChanged) rootTitleChanged = true;
     if (result.constChanged) rootConstChanged = true;
   } else {
-    result = rewriteGenericFile(text);
+    result = rewriteGenericFile(text, opts);
   }
   if (result.updated === text) return false;
 
@@ -268,21 +331,26 @@ else if (rootTitleChanged || rootConstChanged) {
   // when any of the three change. Defensive only.
 }
 
-// All other schemas.
+// All other schemas. Schemas don't carry example `dsdsVersion` literals,
+// but the regex is narrow enough that re-applying it is harmless; we
+// disable it explicitly to keep the diff minimal.
 for (const file of schemaFiles) {
   if (file === ROOT_SCHEMA) continue;
-  if (processFile(file, false)) totalFiles++;
+  if (processFile(file, false, { rewriteDsdsLiteral: false })) totalFiles++;
 }
 
-// Examples ($schema URLs in each example doc must point at the live
-// bundled schema).
+// Examples: each example .json carries a `$schema` URL (handled by the
+// URL rewrite) and many also carry `"dsdsVersion": "<v>"` literals on the
+// root document. Both move in lockstep with the spec version.
 for (const file of exampleFiles) {
   if (processFile(file, false)) totalFiles++;
 }
 
-// Docs.
+// Docs (README, MDX content pages): rewrite URL fragments, example
+// `dsdsVersion` literals inside fenced code blocks, and free-form
+// `Design System Documentation Spec <v>` / `DSDS <v>` display strings.
 for (const file of docFiles) {
-  if (processFile(file, false)) totalFiles++;
+  if (processFile(file, false, { rewriteDisplayNames: true })) totalFiles++;
 }
 
 // ---------------------------------------------------------------------------
@@ -315,7 +383,7 @@ if (priorUrlVersions.length > 0) {
 
 const action = DRY_RUN ? "Would update" : "Updated";
 console.log(
-  `${action} ${totalFiles} file(s) (${totalReplacements} URL replacements):`,
+  `${action} ${totalFiles} file(s) (${totalReplacements} replacements):`,
 );
 console.log();
 for (const f of changedFiles) console.log(`  ${f}`);

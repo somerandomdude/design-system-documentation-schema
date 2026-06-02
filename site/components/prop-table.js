@@ -37,13 +37,32 @@ const PROP_TABLE_CSS = `
     border-bottom: none;
   }
 
-  /* Column sizing: cols 1-3 shrink to fit their content, col 4 (Description) gets remaining space.
-     Property names (col 1) MUST never truncate — 'white-space: nowrap' plus the 'width: 1%'
-     shrink-to-fit trick lets the column grow to fit the longest property name without clipping. */
+  /* Column sizing: cols 1, 3 shrink to fit; col 2 (Type) shrinks to fit but is allowed
+     to wrap when its content is a long union (e.g., the kind enum on guidelineEntry).
+     Col 4 (Description) gets the remaining space.
+
+     Property names (col 1) MUST never truncate — 'white-space: nowrap' plus the
+     'width: 1%' shrink-to-fit trick lets the column grow to fit the longest
+     property name without clipping. Required (col 3) is also nowrap since its
+     content is always a single short word.
+
+     Type (col 2) is intentionally NOT nowrap. Some kind-enum types render as a
+     long pipe-separated list of inline code values (e.g., "required" |
+     "encouraged" | "informational" | "discouraged" | "prohibited"). Forcing
+     nowrap on that pushed Description down to ~0 width and made each row very
+     tall. Allowing the type to wrap at its natural space-pipe-space boundaries
+     keeps the Description column wide enough to read. Short types like
+     'boolean' and 'string' still render on one line because the column shrinks
+     to fit. */
   th:nth-child(1), td:nth-child(1) { width: 1%; white-space: nowrap; }
-  th:nth-child(2), td:nth-child(2) { width: 1%; white-space: nowrap; }
+  th:nth-child(2), td:nth-child(2) { width: 1%; }
   th:nth-child(3), td:nth-child(3) { width: 1%; white-space: nowrap; }
   th:nth-child(4), td:nth-child(4) { width: auto; overflow-wrap: break-word; word-break: break-word; }
+
+  /* The 'th' selector earlier sets 'white-space: nowrap' on every header cell.
+     For column 2 specifically, override that so the "Type" header still reads
+     naturally (it's one word, but be explicit about the policy). */
+  th:nth-child(2) { white-space: normal; }
 
   /* Column 1: Property name — monospace, bold */
   td:nth-child(1) code {

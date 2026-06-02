@@ -133,19 +133,41 @@ function buildNavChildren(activeSlug, pages) {
 }
 
 /**
+ * Read the current spec version from `spec/schema/dsds.schema.json` so the
+ * nav title, page <title> tags, and footer text always reflect what the
+ * working tree says is current. This is the single source of truth for
+ * "what version is the site at" — the bundle script reads it too.
+ */
+function readSpecVersion() {
+  try {
+    const rootSchemaPath = path.join(SCHEMA_DIR, "dsds.schema.json");
+    const root = JSON.parse(fs.readFileSync(rootSchemaPath, "utf-8"));
+    return root.properties && root.properties.dsdsVersion && root.properties.dsdsVersion.const;
+  } catch (e) {
+    return null;
+  }
+}
+
+/**
  * Return the complete <ds-nav-toggle> + <ds-spec-nav> block ready to drop
  * into a page <body>.
  *
  * @param {string} activeSlug
  * @param {Array}  [pages]
+ * @param {string} [version]  Override the spec version. When omitted,
+ *                            derived from dsds.schema.json.
  * @returns {string}
  */
-function buildSpecNav(activeSlug, pages) {
+function buildSpecNav(activeSlug, pages, version) {
   const children = buildNavChildren(activeSlug, pages);
+  const v = version || readSpecVersion() || "";
+  const navTitle = v
+    ? `Design System Documentation Spec ${v}`
+    : "Design System Documentation Spec";
 
   return (
     `  <ds-nav-toggle target="ds-spec-nav"></ds-nav-toggle>\n` +
-    `  <ds-spec-nav title="Design System Documentation Spec 0.1" title-href="index.html" active="${esc(activeSlug)}">\n` +
+    `  <ds-spec-nav title="${esc(navTitle)}" title-href="index.html" active="${esc(activeSlug)}">\n` +
     children +
     `\n  </ds-spec-nav>`
   );
@@ -155,6 +177,7 @@ module.exports = {
   discoverNavPages,
   buildNavChildren,
   buildSpecNav,
+  readSpecVersion,
   TOP_LINKS,
   DIR_GROUPS,
 };

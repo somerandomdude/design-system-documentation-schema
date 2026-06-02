@@ -1671,10 +1671,14 @@
 
       if (!root) return;
 
-      // Query both native headings and ds-heading elements
+      // Query native headings, ds-heading elements, and ds-def-section
+      // elements (the per-$defs section wrapper on schema pages — it sets
+      // its own host `id` for TOC linking but isn't a heading tag).
       var headingSet = new Set();
       var headings = [];
-      var all = root.querySelectorAll(selector + ", ds-heading[id]");
+      var all = root.querySelectorAll(
+        selector + ", ds-heading[id], ds-def-section[id]",
+      );
       all.forEach(function (el) {
         if (!headingSet.has(el)) {
           headingSet.add(el);
@@ -1691,14 +1695,28 @@
       for (var i = 0; i < headings.length; i++) {
         var h = headings[i];
         var id = h.id || h.getAttribute("anchor") || "";
-        var text = h.textContent.replace(/#\s*$/, "").trim() || id;
-        var level = 3; // default to sub
+        // For ds-def-section the visible heading text is the `name`
+        // attribute (rendered as an <h3> inside the shadow DOM); the host
+        // element's textContent also contains the description and child
+        // markup, so prefer the explicit attribute when present.
         var tagName = h.tagName.toLowerCase();
+        var text;
+        if (tagName === "ds-def-section") {
+          text = h.getAttribute("name") || id;
+        } else {
+          text = h.textContent.replace(/#\s*$/, "").trim() || id;
+        }
+        // Default to level 3 (sub-section); promote known top-level
+        // heading shapes to level 2.
+        var level = 3;
         if (tagName === "h1" || tagName === "h2") {
           level = 2;
         } else if (tagName === "ds-heading") {
           var lvl = h.getAttribute("level");
           if (lvl === "1" || lvl === "2") level = 2;
+        } else if (tagName === "ds-def-section") {
+          // Each $defs entry is a top-level landmark on its page.
+          level = 2;
         }
         if (id && text) {
           items.push({ id: id, text: text, level: level });
@@ -2197,13 +2215,32 @@
       border-bottom: none;
     }
 
-    /* Column sizing: cols 1-3 shrink to fit their content, col 4 (Description) gets remaining space.
-       Property names (col 1) MUST never truncate — 'white-space: nowrap' plus the 'width: 1%'
-       shrink-to-fit trick lets the column grow to fit the longest property name without clipping. */
+    /* Column sizing: cols 1, 3 shrink to fit; col 2 (Type) shrinks to fit but is allowed
+       to wrap when its content is a long union (e.g., the kind enum on guidelineEntry).
+       Col 4 (Description) gets the remaining space.
+
+       Property names (col 1) MUST never truncate — 'white-space: nowrap' plus the
+       'width: 1%' shrink-to-fit trick lets the column grow to fit the longest
+       property name without clipping. Required (col 3) is also nowrap since its
+       content is always a single short word.
+
+       Type (col 2) is intentionally NOT nowrap. Some kind-enum types render as a
+       long pipe-separated list of inline code values (e.g., "required" |
+       "encouraged" | "informational" | "discouraged" | "prohibited"). Forcing
+       nowrap on that pushed Description down to ~0 width and made each row very
+       tall. Allowing the type to wrap at its natural space-pipe-space boundaries
+       keeps the Description column wide enough to read. Short types like
+       'boolean' and 'string' still render on one line because the column shrinks
+       to fit. */
     th:nth-child(1), td:nth-child(1) { width: 1%; white-space: nowrap; }
-    th:nth-child(2), td:nth-child(2) { width: 1%; white-space: nowrap; }
+    th:nth-child(2), td:nth-child(2) { width: 1%; }
     th:nth-child(3), td:nth-child(3) { width: 1%; white-space: nowrap; }
     th:nth-child(4), td:nth-child(4) { width: auto; overflow-wrap: break-word; word-break: break-word; }
+
+    /* The 'th' selector earlier sets 'white-space: nowrap' on every header cell.
+       For column 2 specifically, override that so the "Type" header still reads
+       naturally (it's one word, but be explicit about the policy). */
+    th:nth-child(2) { white-space: normal; }
 
     /* Column 1: Property name — monospace, bold */
     td:nth-child(1) code {
