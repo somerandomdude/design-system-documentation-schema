@@ -5,7 +5,7 @@ slug: quickstart
 
 ## What is DSDS?
 
-DSDS (Design System Documentation Spec) is a JSON-based format for documenting design systems. It gives every piece of documentation — components, tokens, themes, styles, patterns — a predictable, machine-readable structure.
+DSDS (Design System Documentation Spec) is a JSON-based format for documenting design systems. It gives every piece of documentation — components, tokens, themes, styles, patterns — in a machine-readable structure.
 
 <ds-callout>
 
@@ -33,12 +33,12 @@ Use `entity` when each component, token, or pattern lives in its own file. The `
 
 ```json
 {
-  "$schema": "https://designsystemdocspec.org/v0.1/dsds.bundled.schema.json",
-  "dsdsVersion": "0.1",
+  "$schema": "https://designsystemdocspec.org/v0.2.1/dsds.bundled.schema.json",
+  "dsdsVersion": "0.2.1",
   "entity": {
     "kind": "component",
-    "name": "button",
-    "displayName": "Button",
+    "identifier": "button",
+    "name": "Button",
     "metadata": [
       { "kind": "description", "value": "An interactive element that triggers an action." },
       { "kind": "status", "status": "stable" }
@@ -54,25 +54,25 @@ Use `documentation` when you want to organize multiple entities in one file, or 
 
 ```json
 {
-  "dsdsVersion": "0.1",
+  "dsdsVersion": "0.2.1",
   "documentation": [
     {
       "name": "My Design System",
       "components": [
-        { "kind": "component", "name": "button", "...": "" }
+        { "kind": "component", "identifier": "button", "...": "" }
       ],
       "tokenGroups": [
-        { "kind": "token-group", "name": "color-palette", "...": "" }
+        { "kind": "token-group", "identifier": "color-palette", "...": "" }
       ],
       "themes": [
-        { "kind": "theme", "name": "dark", "...": "" }
+        { "kind": "theme", "identifier": "dark", "...": "" }
       ]
     }
   ]
 }
 ```
 
-- `dsdsVersion` — always `"0.1"` for this version
+- `dsdsVersion` — always `"0.2"` for this version
 - `documentation` — array of named groups, each with typed entity arrays
 - `components`, `tokenGroups`, `themes`, `styles`, `patterns` — separate arrays for each entity type. All are optional.
 
@@ -82,7 +82,7 @@ Entity arrays accept `$ref` objects that point to other DSDS files. This lets yo
 
 ```json
 {
-  "dsdsVersion": "0.1",
+  "dsdsVersion": "0.2.1",
   "documentation": [
     {
       "name": "Acme Design System",
@@ -122,11 +122,13 @@ Every entity has a `kind` field that tells tools what type of thing it is. There
 
 Every entity shares these fields:
 
+{/* Hand-rolled: cross-entity summary that intentionally diverges from any single schema. */}
+
 | Property | Required | Description |
 |----------|----------|-------------|
 | `kind` | Yes | Entity type |
-| `name` | Yes\* | Machine-readable ID (`^[a-z][a-z0-9-]*$`, except tokens) |
-| `displayName` | Yes\* | Human-readable label |
+| `identifier` | Yes\* | Machine-readable identifier (`^[a-z][a-z0-9-]*$`, except tokens) |
+| `name` | Yes\* | Human-readable label |
 | `description` | Yes\* | What this entity is and does (CommonMark supported) |
 | `status` | No | `"stable"`, `"experimental"`, `"draft"`, `"deprecated"` — or an object with per-platform status |
 | `since` | No | Version when this entity first shipped |
@@ -134,9 +136,9 @@ Every entity shares these fields:
 | `documentBlocks` | No | Array of typed document block objects |
 | `agents` | No | Agent-optimized context for AI/LLM consumption |
 
-\* Required for component, style, and pattern. Token requires `name` + `tokenType`.
+\* Required for component, style, and pattern. Token requires `identifier` + `tokenType`.
 
-The optional `agents` object provides context written for AI/LLM consumers — `intent` for quick relevance checks, `keywords` for retrieval, `constraints` with enforcement levels, `disambiguation` against similar entities, and `antiPatterns` with corrective alternatives.
+The optional `agents` object provides context written for AI/LLM consumers — `intent` for quick relevance checks, `keywords` for retrieval, `constraints` with enforcement levels and optional `evidence` and inline `examples`, `disambiguation` against similar entities (with optional `entityType`), and `antiPatterns` with corrective alternatives. The `verified` and `verifiedAgainst` fields signal data freshness.
 
 ### Status: string or object
 
@@ -168,6 +170,7 @@ Structured docs live in the `documentBlocks` array on each entity. Each document
 
 | Kind | Applies To | Description |
 |------|-------------|-------------|
+| `import` | component | Platform-specific import statements for the component |
 | `anatomy` | component, pattern | Named parts that make up the entity, with optional design-token mapping per part |
 | `api` | component | Properties, events, slots, and CSS custom properties |
 | `events` | component, pattern | Events emitted by the component — trigger conditions, return shapes, DOM behavior |
@@ -201,7 +204,7 @@ The `purpose` guideline lists scenarios. Each use case is `"positive"` (do use) 
       "description": "When the action navigates to a different page.",
       "kind": "negative",
       "alternative": {
-        "name": "link",
+        "identifier": "link",
         "rationale": "Links carry native navigation semantics."
       }
     }
@@ -237,13 +240,13 @@ These are the smallest valid entities — the bare minimum. Copy one, fill in yo
 
 ### Component
 
-A component needs `kind`, `name`, `displayName`, and `description`. Everything else is optional.
+A component needs `kind`, `identifier`, `name`, and `description`. Everything else is optional.
 
 <ds-example file="component.json" label="minimal component" />
 
 ### Token
 
-A token needs `kind`, `name`, and `tokenType`. Use the optional `source` property to link back to the W3C DTCG file that holds the authoritative value.
+A token needs `kind`, `identifier`, and `tokenType`. Use the optional `source` property to link back to the W3C DTCG file that holds the authoritative value.
 
 <ds-example file="token.json" label="minimal token" />
 
@@ -289,12 +292,12 @@ Add `$schema` to get editor autocompletion and inline validation:
 
 ```json
 {
-  "$schema": "https://designsystemdocspec.org/v0.1/dsds.bundled.schema.json",
-  "dsdsVersion": "0.1",
+  "$schema": "https://designsystemdocspec.org/v0.2.1/dsds.bundled.schema.json",
+  "dsdsVersion": "0.2.1",
   "entity": {
     "kind": "component",
-    "name": "my-component",
-    "displayName": "My Component",
+    "identifier": "my-component",
+    "name": "My Component",
     "metadata": []
   }
 }

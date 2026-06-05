@@ -1,4 +1,4 @@
-import { createShadow, esc, BASE_RESET, FONT } from "./_shared.js";
+import { createShadow, esc, escWithCode, BASE_RESET, FONT } from "./_shared.js";
 
 const DEF_SECTION_CSS = `
   ${BASE_RESET}
@@ -53,7 +53,10 @@ export class DsDefSection extends HTMLElement {
     // Set id on host for TOC linking
     if (anchor) this.id = anchor;
     var html = '<h3 id="' + esc(anchor) + '">' + esc(name) + "</h3>";
-    if (desc) html += '<p class="desc">' + esc(desc) + "</p>";
+    // Use escWithCode so CommonMark-style `inline code` spans in the
+    // description render as <ds-code inline> rather than literal
+    // backtick characters.
+    if (desc) html += '<p class="desc">' + escWithCode(desc) + "</p>";
     if (type)
       html +=
         '<p class="type-line"><ds-badge variant="kind" size="sm">' +

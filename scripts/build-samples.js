@@ -18,7 +18,7 @@
 
 const fs = require("fs");
 const path = require("path");
-const { buildSpecNav } = require("./nav");
+const { buildSpecNav, readSpecVersion } = require("./nav");
 const { renderComponent, renderToken, resetFid } = require("./render-entity");
 
 // ---------------------------------------------------------------------------
@@ -165,10 +165,18 @@ function buildSamples() {
     );
   }
 
-  // 3. Substitute placeholders in the template
+  // 3. Substitute placeholders in the template. The template uses three
+  //    placeholders: {{NAV}} for the spec nav, {{TAB_CONTENTS}} for the
+  //    rendered sample panels, and {{VERSION}} for the spec version
+  //    string. The version comes from the same single source of truth
+  //    used by the schema bundle and the per-schema docs pages.
+  const version = readSpecVersion() || "";
   let html = template;
-  html = html.replace("{{NAV}}", buildSpecNav("samples"));
+  html = html.replace("{{NAV}}", buildSpecNav("samples", undefined, version));
   html = html.replace("{{TAB_CONTENTS}}", tabPanels.join("\n        "));
+  // The placeholder appears in three spots (page <title>, ds-badge,
+  // ds-footer). Use a global replace.
+  html = html.split("{{VERSION}}").join(version);
 
   // 4. Write output
   if (!fs.existsSync(OUTPUT_DIR)) {

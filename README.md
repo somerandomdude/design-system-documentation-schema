@@ -15,13 +15,13 @@ DSDS defines a JSON-based format for documenting the six entity types of a desig
 - **Styles** — Foundations for color, typography, spacing, elevation, motion, and content — with principles, scales, motion definitions, and best practices
 - **Patterns** — Broad interaction patterns like navigation, error messaging, and empty states — with anatomy, variants, states, interactions, and content
 
-All structured documentation — guidelines, anatomy, API specs, variants, states, accessibility, examples, design specifications, principles, scales, motion definitions, content, and interactions — lives in a unified **document block** system. Each document block entry is a typed container identified by a `kind` discriminator.
+All structured documentation lives in a unified **document block** system. Each entry is a typed container identified by a `kind` tag. The kinds cover guidelines, anatomy, API specs, variants, states, accessibility, examples, design specifications, principles, scales, motion, content, and interactions.
 
-The goal is simple: make design system documentation structured, portable, and consumable by tools — whether that tool is a documentation site, a linter, a code assistant, or a human reading JSON.
+The goal is simple: make design system documentation structured, portable, and consumable by tools. The tool can be a documentation site, a linter, a code assistant, or a human reading JSON.
 
 ## Why?
 
-Design system documentation today is trapped in tools. It lives in Notion, Storybook, Zeroheight, Confluence, or custom-built sites — each with its own structure, its own conventions, and no interoperability between them.
+Design system documentation today is trapped in tools. It lives in Notion, Storybook, Zeroheight, Confluence, or custom-built sites. Each has its own structure, its own conventions, and no interoperability between them.
 
 This creates real problems:
 
@@ -42,20 +42,39 @@ DSDS addresses these problems by defining a standard format that is:
 
 ## Relationship to W3C Design Tokens
 
-The W3C Design Tokens Community Group defines a format for exchanging token **values** between tools. DSDS defines a format for exchanging the **documentation** that describes how those tokens — and the components, styles, and patterns that use them — should be understood and applied.
+The W3C Design Tokens Community Group defines a format for exchanging token **values** between tools. DSDS defines a format for exchanging the **documentation** that describes how to understand and apply those tokens, plus the components, styles, and patterns that use them.
 
 The two formats are designed to work together. DSDS does not duplicate token values or platform identifiers. The W3C Design Tokens Format file is the source of truth for values. Use the `source` property on a token entity to link it back to its DTCG definition.
+
+## Documentation
+
+The authoritative reference for every schema, field, and document-block type is the **documentation site at [designsystemdocspec.org](https://designsystemdocspec.org/)**. Property tables there are generated directly from the schema JSON — they cannot drift from the implementation.
+
+Start here:
+
+- **[Overview](https://designsystemdocspec.org/)** — What DSDS is, the entity model, and how the pieces fit together.
+- **[Quick Start](https://designsystemdocspec.org/quickstart.html)** — Document structure, entity kinds, the document-block system, and minimal examples for every entity type.
+- **[Schema Architecture](https://designsystemdocspec.org/schema-architecture.html)** — The full schema reference. Covers document structure, entity types, the `agents` property, status, the document-block system, links, extends, extensions, naming conventions, and conformance levels, all with live property tables sourced from the schema.
+- **[Interactive Samples](https://designsystemdocspec.org/samples.html)** — Side-by-side JSON ↔ rendered docs for real-world entities (component, token, theme, style, pattern).
+
+Per-schema reference pages live alongside the narrative pages — e.g. [entities/component](https://designsystemdocspec.org/entities-component.html), [document-blocks/guideline](https://designsystemdocspec.org/document-blocks-guideline.html), [common/agents](https://designsystemdocspec.org/common-agents.html). Every page is auto-generated from its corresponding `spec/schema/**/*.schema.json` file.
+
+The site can also be built locally for offline browsing or while developing the spec — run `npm run build` and open `site/dist/index.html`.
+
+This README intentionally does **not** duplicate schema field listings, document-block type catalogs, default values, enforcement levels, or example payloads. Those live on the documentation site as a single source of truth.
 
 ## Project Structure
 
 ```
 spec/
-├── dsds-spec.md                                        # Complete specification (single source of truth)
 ├── schema/
 │   ├── dsds.schema.json                                # Root JSON Schema
 │   ├── dsds.bundled.schema.json                        # Auto-generated single-file bundle
 │   ├── common/                                         # Shared primitives
+│   │   ├── agent-collection.schema.json                # agentCollection (multi-entity agent context file)
+│   │   ├── agents.schema.json                          # agents (agent context for AI/LLM consumption)
 │   │   ├── example.schema.json                         # example
+│   │   ├── extends.schema.json                         # documentExtends, entityExtends
 │   │   ├── extensions.schema.json                      # $extensions
 │   │   ├── link.schema.json                            # link
 │   │   ├── system-metadata.schema.json                 # systemMetadata
@@ -63,6 +82,20 @@ spec/
 │   │   ├── presentation.schema.json                    # presentationImage, presentationVideo, presentationCode, presentationUrl
 │   │   ├── status.schema.json                          # status, statusObject, statusValue, platformStatus
 │   │   └── purpose.schema.json                         # purpose, useCase
+│   ├── metadata/                                       # Modular entity metadata kinds (entityMetadata union)
+│   │   ├── metadata.schema.json                        # entityMetadata (oneOf union of every metadata kind)
+│   │   ├── aliases.schema.json                         # aliasesMetadata
+│   │   ├── category.schema.json                        # categoryMetadata
+│   │   ├── description.schema.json                     # descriptionMetadata
+│   │   ├── extends.schema.json                         # extendsMetadata
+│   │   ├── last-updated.schema.json                    # lastUpdatedMetadata
+│   │   ├── links.schema.json                           # linksMetadata
+│   │   ├── preview.schema.json                         # previewMetadata
+│   │   ├── since.schema.json                           # sinceMetadata
+│   │   ├── status.schema.json                          # statusMetadata
+│   │   ├── summary.schema.json                         # summaryMetadata
+│   │   ├── tags.schema.json                            # tagsMetadata
+│   │   └── thumbnail.schema.json                       # thumbnailMetadata
 │   ├── entities/                                       # Entity types
 │   │   ├── component.schema.json                       # component
 │   │   ├── pattern.schema.json                         # pattern
@@ -74,9 +107,11 @@ spec/
 │       ├── accessibility.schema.json                   # accessibility, keyboardInteraction, ariaAttribute, colorContrast
 │       ├── anatomy.schema.json                         # anatomy, anatomyEntry
 │       ├── api.schema.json                             # api, apiProperty, apiEvent, apiSlot, etc.
-│       ├── guideline.schema.json                       # guideline, guidelineEntry
+│       ├── guideline.schema.json                       # guideline, guidelineEntry, criterionReference, criterionDefinition
 │       ├── content.schema.json                         # content, contentLabelEntry, localizationEntry
 │       ├── design-specifications.schema.json           # designSpecifications, spacingSpec, sizingSpec, typographySpec, etc.
+│       ├── events.schema.json                          # events, eventEntry
+│       ├── import.schema.json                          # import, importEntry
 │       ├── interaction.schema.json                     # interactions, interactionEntry
 │       ├── motion.schema.json                          # motion, motionEntry, motionDuration
 │       ├── principle.schema.json                       # principles, principleEntry
@@ -94,9 +129,12 @@ scripts/
 ├── bundle.js                                           # Generates dsds.bundled.schema.json from split schemas
 ├── validate.js                                         # Validates all example files against the bundled schema
 ├── sync-examples.js                                    # Syncs markdown dsds:include directives with example JSON
-├── build-site.js                                       # Generates the static specification site
+├── build-site.js                                       # Generates the static specification site (orchestrator)
 ├── build-samples.js                                    # Generates the interactive sample viewer from example JSON
-├── build-quickstart.js                                 # Generates the quick start guide from minimal examples
+├── render-entity.js                                    # Server-side entity rendering used by build-samples.js
+├── render-prop-table.js                                # Shared schema-to-HTML property table renderer (used by build-site + MDX)
+├── compile-mdx.mjs                                     # MDX content compiler for narrative pages (overview, quickstart, schema-architecture)
+├── nav.js                                              # Shared navigation builder for spec pages
 └── visualize.js                                        # Generates schema architecture diagram (SVG + Mermaid)
 
 site/
@@ -134,9 +172,9 @@ site/
 
 ## Quick Start
 
-### 1. Read the spec
+### 1. Read the docs site
 
-Start with [`spec/dsds-spec.md`](spec/dsds-spec.md) — it is the single source of truth for the entire specification, covering document structure, entity types, all guideline types, links, status, rich text, use cases, extensions, and naming conventions.
+Visit [designsystemdocspec.org](https://designsystemdocspec.org/) for the canonical reference, or see the [Documentation](#documentation) section above for entry points. Property tables, type definitions, and cross-references are all rendered live from the schema.
 
 ### 2. Look at the examples
 
@@ -169,40 +207,7 @@ To validate your own DSDS file:
 npx ajv validate -s spec/schema/dsds.bundled.schema.json -d my-system.dsds.json
 ```
 
-Reference the schema in your DSDS files for editor support. Use the `entity` form for single-entity files:
-
-```json
-{
-  "$schema": "https://designsystemdocspec.org/v0.1/dsds.bundled.schema.json",
-  "dsdsVersion": "0.1",
-  "entity": {
-    "kind": "component",
-    "name": "my-component",
-    "displayName": "My Component",
-    "metadata": [
-      { "kind": "description", "value": "A brief description." },
-      { "kind": "status", "status": "draft" }
-    ]
-  }
-}
-```
-
-Or the `documentation` form for multi-entity files:
-
-```json
-{
-  "$schema": "https://designsystemdocspec.org/v0.1/dsds.bundled.schema.json",
-  "dsdsVersion": "0.1",
-  "documentation": [
-    {
-      "name": "My Design System",
-      "components": [
-        { "$ref": "./my-component.dsds.json#/entity" }
-      ]
-    }
-  ]
-}
-```
+Reference `https://designsystemdocspec.org/v0.2.1/dsds.bundled.schema.json` from your DSDS files via the `$schema` keyword to get editor autocompletion and inline validation. See the [Quick Start docs page](https://designsystemdocspec.org/quickstart.html) for the single-entity and multi-entity document shapes.
 
 ### 4. Build the spec site
 
@@ -211,7 +216,7 @@ npm run build
 # Open site/dist/index.html
 ```
 
-The site is auto-generated from the schema JSON files — property tables, type descriptions, and cross-references are all derived directly from the schemas. The prose modules provide context and examples.
+The site is auto-generated from the schema JSON files. Property tables, type descriptions, and cross-references all come directly from the schemas. The prose modules add context and examples.
 
 ### 5. Regenerate the bundled schema
 
@@ -271,601 +276,113 @@ To add a new example tab, add an entry to the `SAMPLES` array in `scripts/build-
 }
 ```
 
-### 8. Build the quick start guide
+### 8. Authoring narrative pages with schema-driven tables
 
-Generate a concise, standalone introduction to DSDS from the minimal example files:
+Narrative content (`site/content/*.mdx` — the Overview, Quick Start, and Schema Architecture pages) is compiled to HTML by `scripts/compile-mdx.mjs`. Authors write prose alongside two custom shortcodes:
+
+- `<ds-example file="..." label="..." />` — inlines a JSON example from `spec/examples/minimal/` as a fenced code block.
+- `<ds-prop-table schema="..." def="..." />` — renders the property table for any `$defs` entry directly from the schema. Per-schema docs pages and narrative pages share the same renderer (`scripts/render-prop-table.js`), so a description change in a schema flows to every page automatically.
+
+Example:
+
+```mdx
+### Anatomy entry
+
+A component or pattern's anatomy entry has the following shape:
+
+<ds-prop-table schema="document-blocks/anatomy" def="anatomyEntry" />
+```
+
+Special values:
+
+- `schema="root"` — loads `spec/schema/dsds.schema.json`.
+- `def="$root"` — renders the schema's top-level `properties` (used for schemas that don't use `$defs` at all).
+
+The Quick Start page (`site/content/quickstart.mdx`) is compiled the same way as every other narrative page. There is no longer a separate build command for it: run `npm run build` and the page is regenerated at `site/dist/quickstart.html`.
+
+## Cutting a release
+
+The spec version lives in three coordinated places:
+
+1. **`spec/schema/dsds.schema.json#/properties/dsdsVersion/const`** — the single source of truth. The bundle script, the nav, every page title, and the versioned dist directory all derive from this value.
+2. **The `$id` URL on every schema file** — e.g., `https://designsystemdocspec.org/v0.2.1/metadata/last-updated.schema.json`. Every example document's `$schema` field and every `"dsdsVersion"` literal inside example JSON has to track the same version.
+3. **`package.json#version`** — the npm package version. Conventionally kept in lockstep with `dsdsVersion.const`.
+
+The `scripts/bump-version.js` script keeps the first two in sync across all 44 schema files, every example, the README, and the MDX content pages. `package.json` is handled separately because it's not a schema-consumer file.
+
+### Release types
+
+| Change | Spec version | New URL path? | Old URL path |
+|---|---|---|---|
+| Schema additions (new optional fields, new union members, new entity kinds) | Bump patch (e.g. `0.2` → `0.2.1`) | Yes — published at `/v0.2.1/` | `/v0.2/` stays untouched as a historical artifact |
+| Breaking changes (renamed/removed fields, new required fields, tightened constraints) | Bump minor or major (e.g. `0.2.1` → `0.3`) | Yes — published at `/v0.3/` | All older versions stay untouched |
+| Documentation-only edits (typos, prose clarifications, no schema or example changes) | No bump | No | No change |
+
+The versioned dist directories (`site/dist/v<n>/dsds.bundled.schema.json`) are **immutable public contracts**. `npm run build` refuses to overwrite an existing one. Every consumer that pins `$schema` to that URL relies on the file there never changing.
+
+### Step-by-step
+
+This is the exact sequence for cutting a release that includes schema changes. Skip steps 1–3 for a documentation-only release.
+
+1. **Make your schema changes** under `spec/schema/`. Add new files, edit existing ones, or update the unions in `metadata/metadata.schema.json` / `document-blocks/document-blocks.schema.json` as needed.
+
+2. **Add or update examples** under `spec/examples/`. Per-definition example files live in `spec/examples/{common,document-blocks,entities,metadata}/<schemaName>.json` and are picked up automatically by the docs site for each schema page. Update full-document examples (`starter-kit.dsds.json`, etc.) and entity examples (`entities/component.json`, etc.) to demonstrate the new feature in context.
+
+3. **Update the README project structure listing** under `## Project Structure` if you added or removed schema files. (The site nav auto-discovers schemas, so no MDX updates are needed for that.)
+
+4. **Bump `package.json#version`** to the target version (e.g. `0.2.0` → `0.2.1`).
+
+5. **Add a CHANGELOG entry** at the top of `CHANGELOG`, mirroring the format of the prior release. Include a one-line header noting where the bundled schema is now served (e.g., "Schema files are now served at `https://designsystemdocspec.org/v0.2.1/...`") and an "Additions" or "Breaking changes" section describing every schema-visible change.
+
+6. **Run the version bump.** Preview the change first:
+
+   ```bash
+   node scripts/bump-version.js 0.2.1 --dry-run
+   ```
+
+   Apply it:
+
+   ```bash
+   node scripts/bump-version.js 0.2.1
+   ```
+
+   This rewrites `dsdsVersion.const`, the root schema title, every `$id` URL across the 44 split schemas, every example's `$schema` URL and `"dsdsVersion"` literal, the README, and the MDX content pages — then regenerates `spec/schema/dsds.bundled.schema.json` so the bundle reflects the new version. The script is drift-tolerant: it migrates any stale `/v<X>/` URL it finds, not just the one currently in `dsdsVersion.const`.
+
+7. **Build the site.**
+
+   ```bash
+   npm run build
+   ```
+
+   This regenerates every page under `site/dist/` and publishes a new `site/dist/v<new-version>/dsds.bundled.schema.json`. If a versioned directory for the new version already exists with a differing bundle, the build will print a warning and skip the copy — delete the file manually and rerun the build to intentionally re-publish.
+
+8. **Validate.**
+
+   ```bash
+   npm run validate
+   ```
+
+   All example documents and per-definition examples must pass. A failure here usually means an example file uses an old field name or a newly required field is missing.
+
+9. **Spot-check the rendered site.** Confirm the version reads correctly in three places:
+
+   - Page `<title>` tags (e.g., `DSDS Last Updated Metadata — DSDS 0.2.1`).
+   - The nav title (`Design System Documentation Spec 0.2.1`).
+   - The footer (`Design System Documentation Spec (DSDS) 0.2.1 — Draft Specification`).
+
+   The new schema page should exist at `site/dist/<group>-<name>.html` (e.g., `site/dist/metadata-last-updated.html`), and the versioned bundle should exist at `site/dist/v<new-version>/dsds.bundled.schema.json`.
+
+10. **Commit.** Stage the schema changes, example updates, README, CHANGELOG, `package.json`, and the entire `site/dist/` tree (including the new versioned subdirectory) in one commit. The historical versioned subdirectories under `site/dist/v<older>/` must stay untouched.
+
+### Patch-release shortcut for documentation-only edits
+
+For a typo fix or prose clarification that doesn't touch any schema or example:
 
 ```bash
-npm run build-quickstart
+npm run build   # regenerates HTML only; no version bump, no new versioned bundle
 ```
 
-This reads `spec/examples/minimal/` and produces `site/dist/quickstart.html` — a single-page guide covering:
-
-- **Document structure** — `dsdsVersion`, documentation groups, and the items array
-- **Entity types** — all six kinds with descriptions and common properties
-- **Guidelines system** — the 13 guideline types, which entities support them, and how purpose and best-practices work
-- **Minimal examples** — copy-pasteable starting points for every entity type, pulled live from the validated examples
-- **Validation** — how to use the JSON Schema and CLI to validate your documents
-
-The examples are read from disk at build time, so the guide automatically reflects any changes to `spec/examples/minimal/`.
-
-## Document Structure
-
-A DSDS file requires `dsdsVersion` and exactly one of two top-level properties:
-
-- **`documentation`** — an array of named groups, each containing typed entity arrays. Use this for multi-entity documents or when you want to organize entities into named sections.
-- **`entity`** — a single entity object. Use this when each entity lives in its own file.
-
-Three optional top-level properties describe the design system as a whole:
-
-**`extends`** (optional) — declares that this document extends another DSDS document — typically a core design system. Identifies the base system by name, optional URL, and optional version. See [Systems of Systems: Extends](#systems-of-systems-extends).
-
-**`purpose`** (optional) — describes what the design system is for, who it serves, and when teams should or should not adopt it. Contains a `description` and an array of `useCases` with positive and negative scenarios.
-
-**`bestPractices`** (optional) — system-level best practices that apply across the entire design system. These are cross-cutting rules like "always use semantic tokens" or "test all components at 200% zoom" — not component-specific guidance (which lives in each entity's `documentBlocks` array). Each entry pairs an actionable `guidance` statement with a `rationale` and an enforcement `kind`.
-
-> **System-level vs. entity-level:** The root `purpose` and `bestPractices` apply to the design system as a whole. They are distinct from the entity-level `purpose` and `guideline` document block types that appear inside each entity's `documentBlocks` array.
-
-### Single-entity form
-
-When each entity lives in its own file, use `entity` instead of `documentation`:
-
-```json
-{
-  "$schema": "https://designsystemdocspec.org/v0.1/dsds.bundled.schema.json",
-  "dsdsVersion": "0.1",
-  "entity": {
-    "kind": "component",
-    "name": "button",
-    "displayName": "Button",
-    "metadata": [
-      { "kind": "description", "value": "An interactive element that triggers an action." },
-      { "kind": "status", "status": "stable" }
-    ],
-    "documentBlocks": []
-  }
-}
-```
-
-The `kind` field on the entity identifies its type. Valid values are `"component"`, `"token"`, `"token-group"`, `"theme"`, `"style"`, and `"pattern"`.
-
-### Multi-group form
-
-```json
-{
-  "dsdsVersion": "0.1",
-  "purpose": {
-    "description": "A unified component library for all Acme product teams.",
-    "useCases": [
-      { "description": "Building new product UIs on the Acme platform.", "kind": "positive" },
-      {
-        "description": "One-off marketing landing pages with heavy custom art direction.",
-        "kind": "negative",
-        "alternative": {
-          "name": "marketing-toolkit",
-          "rationale": "The marketing toolkit provides art-direction-first primitives."
-        }
-      }
-    ]
-  },
-  "bestPractices": [
-    {
-      "guidance": "Always use semantic tokens instead of raw color values.",
-      "rationale": "Semantic tokens ensure themes apply correctly across all surfaces.",
-      "kind": "required",
-      "category": "development"
-    },
-    {
-      "guidance": "Test all components at 200% browser zoom.",
-      "rationale": "WCAG 1.4.4 requires content to be functional at 200% zoom.",
-      "kind": "required",
-      "category": "accessibility",
-      "criteria": [
-        { "url": "https://www.w3.org/TR/WCAG22/#resize-text", "label": "1.4.4 Resize Text" }
-      ]
-    },
-    {
-      "guidance": "Do not override token values at the component level.",
-      "rationale": "Overrides break theme consistency and make audits unreliable.",
-      "kind": "prohibited",
-      "category": "development"
-    }
-  ],
-  "documentation": [
-    {
-      "name": "Acme Design System",
-      "components": [
-        { "kind": "component", "name": "button", "..." }
-      ],
-      "tokenGroups": [
-        { "kind": "token-group", "name": "color-palette", "..." }
-      ],
-      "themes": [
-        { "kind": "theme", "name": "dark", "..." }
-      ],
-      "styles": [
-        { "kind": "style", "name": "spacing", "..." }
-      ],
-      "patterns": [
-        { "kind": "pattern", "name": "error-messaging", "..." }
-      ]
-    }
-  ]
-}
-```
-
-### Multi-file documents
-
-Large design systems can split entities across individual files and reference them from a manifest using `$ref` JSON References. Each entity file uses the `entity` form; the manifest uses `$ref` objects in its entity arrays:
-
-**`button.dsds.json`**
-```json
-{
-  "dsdsVersion": "0.1",
-  "entity": {
-    "kind": "component",
-    "name": "button",
-    "displayName": "Button",
-    "metadata": []
-  }
-}
-```
-
-**`index.dsds.json`** (manifest)
-```json
-{
-  "dsdsVersion": "0.1",
-  "documentation": [
-    {
-      "name": "Acme Design System",
-      "components": [
-        { "$ref": "./button.dsds.json#/entity" },
-        { "$ref": "./link.dsds.json#/entity" }
-      ],
-      "tokenGroups": [
-        { "$ref": "./tokens/color.dsds.json#/entity" }
-      ]
-    }
-  ]
-}
-```
-
-The `#/entity` fragment is a JSON Pointer — it pulls the `entity` value out of the referenced file. Tooling resolves all `$ref` objects into a single merged document (using a library like [`json-schema-ref-parser`](https://github.com/APIDevTools/json-schema-ref-parser)) before validation. `$ref` is also supported in `documentation` array items, allowing whole groups to be referenced from external files.
-
-See [`spec/examples/multi-file/`](spec/examples/multi-file/) for a validated example.
-
-### Entity Types
-
-Each entity kind lives in its own named array within a documentation group. The array name is the primary type indicator. Every entity still carries a `kind` discriminator for use in contexts where the source array is not available, along with common identity properties (`name`, `displayName`, `description`, `status`) and a `documentBlocks` array for all structured documentation.
-
-| `kind` value | Entity | Array | Description |
-|---|---|---|---|
-| `"component"` | Component | `components` | A reusable UI component |
-| `"token"` | Token | _(inline in token groups)_ | A single design token |
-| `"token-group"` | Token Group | `tokenGroups` | A hierarchical group of related tokens (recursive) |
-| `"theme"` | Theme | `themes` | A named set of token overrides (lists token names, not values) |
-| `"style"` | Style | `styles` | A macro-level visual style |
-| `"pattern"` | Pattern | `patterns` | A broad interaction pattern |
-
-### The `agents` property
-
-Every entity accepts an optional `agents` object providing context optimized for AI/LLM consumption. Human-readable content like `documentBlocks` is written for people; `agents` is written for machines.
-
-| Property | Type | Description |
-|---|---|---|
-| `intent` | `string` | One sentence stating the primary purpose. |
-| `constraints` | `array` | Hard rules with `must`/`must-not`/`should`/`should-not` levels. Each entry has `rule`, `level`, and optional `context`. |
-| `disambiguation` | `array` | Confusion-resolution entries against similar entities. Each has `entity` (name) and `distinction` (the deciding criterion). |
-| `antiPatterns` | `array` | Known incorrect uses with corrective alternatives. Each has `description` and `instead`. |
-| `examples` | `array` | Ready-to-use code examples. Each has `description`, `code`, and optional `language`. |
-| `keywords` | `string[]` | Semantic retrieval terms and synonyms. |
-
-```json
-{
-  "agents": {
-    "intent": "Trigger a user action within the current view.",
-    "constraints": [
-      { "rule": "Do not use for page navigation.", "level": "must-not" }
-    ],
-    "disambiguation": [
-      { "entity": "link", "distinction": "Use button for actions; use link for navigation." }
-    ],
-    "keywords": ["action", "submit", "click", "CTA"]
-  }
-}
-```
-
-Document blocks also accept the same optional `agents` object. Block-level agent context is scoped to that specific section — for example, an anatomy block's agents might disambiguate part naming, while a guidelines block's agents might provide enforcement-level constraints for AI code generation:
-
-```json
-{
-  "documentBlocks": [
-    {
-      "kind": "guideline",
-      "items": ["..."],
-      "agents": {
-        "intent": "Enforce correct Button usage in generated UI code.",
-        "constraints": [
-          { "rule": "Never place two primary buttons on the same surface.", "level": "must-not" }
-        ],
-        "keywords": ["button rules", "best practices", "usage guidelines"]
-      }
-    }
-  ]
-}
-```
-
-### Status
-
-Every entity carries a `status` property that accepts either a plain string for the common case or a full object when platform-specific tracking is needed:
-
-```json
-{ "status": "stable" }
-```
-
-When per-platform readiness is needed, use the object form with `overall` and `platforms`:
-
-```json
-{
-  "status": {
-    "overall": "stable",
-    "platforms": {
-      "react": { "status": "stable", "since": "1.0.0" },
-      "ios": { "status": "experimental", "since": "3.0.0" },
-      "figma": { "status": "stable", "since": "1.0.0" }
-    }
-  }
-}
-```
-
-The object form requires `platforms` — if you don't need platform-specific tracking, use the string form. When `overall` is `"deprecated"`, a `deprecationNotice` is required.
-
-## Document Block System
-
-All structured documentation lives in the `documentBlocks` array on each entity. Each document block entry is a typed container with a `kind` discriminator. Entity types accept only the document block types relevant to them through scoped unions:
-
-| Scope | Used by | Specific types | General types (all entities) |
-|---|---|---|---|
-| **Component** | component | anatomy, api, events, variants, states, design-specifications | guideline, purpose, accessibility, content |
-| **Style** | style | principles, scale, motion | *(same)* |
-| **Pattern** | pattern | interactions, events, anatomy, variants, states | *(same)* |
-| **Token** | token, token-group, theme | *(none)* | *(same)* |
-
-### Document Block Types
-
-| Kind value | Container | Items | Description |
-|---|---|---|---|
-| `"guideline"` | `items` | guidelineEntry | Actionable usage rules with rationale and enforcement levels |
-| `"purpose"` | `useCases` | useCase | When to use and when not to use the entity |
-| `"accessibility"` | Named arrays | various | Keyboard, ARIA, screen reader, contrast, motion specs |
-| `"content"` | `labels`, `localization` | contentLabelEntry, localizationEntry | Content guidelines and i18n considerations |
-| `"anatomy"` | `parts` | anatomyEntry | Component visual structure with token references |
-| `"api"` | Named arrays | various | Props, events, slots, CSS hooks, methods |
-| `"events"` | `items` | eventEntry | Component events with return shapes, DOM behavior, and lifecycle |
-| `"variants"` | `items` | flagVariant \| enumVariant | Dimensions of visual/behavioral variation |
-| `"states"` | `items` | stateEntry | Interactive states with token overrides |
-| `"design-specifications"` | `properties` + `variants` / `sizes` / `states` | various | Design properties, spacing, sizing, typography, responsive — grouped by variant, size, and state |
-| `"principles"` | `items` | principleEntry | High-level guiding beliefs |
-| `"scale"` | `steps` | scaleStep | Ordered token value progressions |
-| `"motion"` | `items` | motionEntry | Named easing curves with durations and usage |
-| `"interactions"` | `items` | interactionEntry | Pattern flow steps |
-
-Every document block type accepts an optional `agents` property — the same `agents` object available on entities. Block-level agents provide context scoped to that specific documentation section (e.g., constraints specific to accessibility requirements, or disambiguation relevant only to the API surface).
-
-### Naming Convention
-
-Document block types follow two naming patterns:
-
-- **Plural names** for homogeneous lists: `"variants"`, `"states"`, `"principles"`, `"interactions"`
-- **Singular names** for self-contained structures: `"guideline"`, `"scale"`, `"anatomy"`, `"api"`, `"accessibility"`, `"design-specifications"`, `"purpose"`, `"content"`, `"motion"`
-
-### Purpose tells you *when*. Guidelines tell you *how*.
-
-DSDS separates two kinds of guidance:
-
-- **Purpose** provides concrete scenarios for when to use and when *not* to use an entity. Each use case carries a `kind` (`"positive"` or `"negative"`) and negative entries recommend an alternative with a rationale.
-- **Guidelines** provide concrete rules for using an entity correctly *after* you've chosen it. Each rule pairs an actionable `guidance` statement with a `rationale` explaining why.
-
-```json
-{
-  "documentBlocks": [
-    {
-      "kind": "purpose",
-      "useCases": [
-        {
-          "description": "When the user needs to trigger an action such as submitting a form.",
-          "kind": "positive"
-        },
-        {
-          "description": "When the action navigates to a different page.",
-          "kind": "negative",
-          "alternative": {
-            "name": "link",
-            "rationale": "Links carry native navigation semantics."
-          }
-        }
-      ]
-    },
-    {
-      "kind": "guideline",
-      "items": [
-        {
-          "guidance": "Limit each surface to one primary button.",
-          "rationale": "Multiple primary buttons dilute visual hierarchy.",
-          "kind": "required",
-          "category": "visual-design"
-        }
-      ]
-    }
-  ]
-}
-```
-
-### Guideline Enforcement Levels
-
-The `kind` property on each guideline entry classifies how strictly it should be followed. Defaults to `"informational"` when omitted.
-
-| Value | RFC 2119 | Meaning |
-|---|---|---|
-| `"required"` | MUST | Non-compliance is a defect. |
-| `"encouraged"` | SHOULD | Follow in most cases; exceptions need justification. |
-| `"informational"` | MAY | Advisory context with no enforcement. **(default)** |
-| `"discouraged"` | SHOULD NOT | Avoid unless justified. |
-| `"prohibited"` | MUST NOT | Violations are defects. |
-
-### Guidelines Link to External Criteria
-
-Any guideline can reference external standards via the `criteria` property:
-
-```json
-{
-  "guidance": "Button label text must meet a minimum 4.5:1 contrast ratio.",
-  "rationale": "Text contrast ensures readability for users with low vision.",
-  "kind": "required",
-  "category": "accessibility",
-  "criteria": [
-    {
-      "url": "https://www.w3.org/TR/WCAG22/#contrast-minimum",
-      "label": "1.4.3 Contrast (Minimum)"
-    }
-  ]
-}
-```
-
-### Variants Use Flag and Enum Types
-
-Component variants are modeled as dimensions of variation inside a `"variants"` guideline. Each dimension is either a **flag** (a boolean toggle that is on or off) or an **enum** (a set of mutually exclusive values):
-
-```json
-{
-  "kind": "variants",
-  "items": [
-    {
-      "kind": "enum",
-      "name": "emphasis",
-      "displayName": "Emphasis",
-      "description": "Controls the visual weight of the button.",
-      "values": [
-        { "name": "primary", "description": "High-emphasis — the main action." },
-        { "name": "secondary", "description": "Medium-emphasis — important but not primary." },
-        { "name": "ghost", "description": "Low-emphasis — tertiary actions." }
-      ]
-    },
-    {
-      "kind": "flag",
-      "name": "full-width",
-      "displayName": "Full Width",
-      "description": "Stretches the button to fill its container.",
-      "purpose": "Provides a prominent call to action in narrow or single-column layouts."
-    }
-  ]
-}
-```
-
-An **enum variant** (`type: "enum"`) has a `values` array with at least two entries — use it for dimensions like size (sm/md/lg) or emphasis (primary/secondary/ghost). A **flag variant** (`type: "flag"`) has no values array — the component either has the flag active or it doesn't. Use it for binary capabilities like `disabled`, `full-width`, or `icon-only`. Both types accept an optional `purpose` field explaining why the variation exists.
-
-### Examples Use Presentations
-
-Every example requires a `presentation` or a `value` (or both). Presentations are visual or interactive demonstrations. Four media types are supported:
-
-| `type` | What it shows |
-|---|---|
-| `"image"` | Screenshot, diagram, annotated mockup |
-| `"video"` | Screen recording, animation, walkthrough |
-| `"code"` | Source code snippet with language metadata |
-| `"url"` | Link to any web resource (Storybook, CodeSandbox, etc.) |
-
-```json
-{
-  "type": "examples",
-  "items": [
-    {
-      "title": "Primary button in default state",
-      "presentation": {
-        "kind": "image",
-        "url": "https://design.acme.com/assets/button-primary.png",
-        "alt": "A primary button with a blue background and white label text 'Save'."
-      }
-    }
-  ]
-}
-```
-
-### Design Specifications Group Properties by Variant, Size, and State
-
-The `"design-specifications"` guideline documents measurable visual specs — design properties, spacing, sizing, typography, and responsive behavior. The base `properties` map defines the default configuration — an open map of design property names to values. Values are always strings: either design token names (e.g., `"button-primary-bg"`, `"space-4"`) or raw CSS values (e.g., `"#0055b3"`, `"16px"`, `"transparent"`). Systems that do not use tokens simply provide raw values directly.
-
-The `variants`, `sizes`, and `states` arrays each contain named entries with their own `properties` maps. Each entry is self-contained — it represents that condition's complete set of values, not an override of the base. For example, a `"danger"` variant entry carries its own token names (like `"button-danger-bg"`) or raw values, independent of the base `properties`. The `variantStates` array handles variant×state combinations (e.g., primary+hover) where the visual treatment differs across variants, with each entry specifying both a `variant` and a `state` alongside its `properties`.
-
-```json
-{
-  "kind": "design-specifications",
-  "properties": {
-    "background": "button-primary-bg",
-    "color": "button-primary-text",
-    "border-radius": "4px",
-    "border-color": "transparent"
-  },
-  "spacing": {
-    "internal": { "icon-to-label": "space-2", "container-horizontal": "space-4" }
-  },
-  "variants": [
-    {
-      "name": "danger",
-      "properties": {
-        "background": "button-danger-bg",
-        "color": "#ffffff",
-        "border-color": "transparent"
-      }
-    }
-  ],
-  "sizes": [
-    {
-      "name": "small",
-      "properties": {
-        "font-size": "14px"
-      },
-      "spacing": {
-        "internal": { "icon-to-label": "4px", "container-horizontal": "space-3" }
-      }
-    }
-  ]
-}
-```
-
-### Tokens and the W3C Design Tokens Format
-
-DSDS does not carry token values or platform API mappings. The W3C Design Tokens Format (DTCG) file is the single source of truth for resolved values and platform-specific identifiers. Use the `source` property on a token entity to link it to its DTCG definition:
-
-```json
-{
-  "type": "token",
-  "name": "color.text.primary",
-  "tokenType": "color",
-  "source": "./tokens.json"
-}
-```
-
-### Token Names Are Unconstrained
-
-Most entity types enforce `^[a-z][a-z0-9-]*$` on the `name` property. Tokens and token groups are the intentional exception — their names are unconstrained to accommodate DTCG and design tool naming conventions that use dots (`color.text.primary`), slashes (`color/text/primary`), or other separators.
-
-### Links Handle Both Resources and Relationships
-
-The `links` array on each entity handles both external resources and entity relationships via a `kind` discriminator:
-
-```json
-{
-  "links": [
-    {
-      "kind": "source",
-      "url": "https://code.acme.com/design-system/src/button/button.tsx",
-      "label": "React component source"
-    },
-    {
-      "kind": "alternative",
-      "url": "https://design.acme.com/components/link",
-      "label": "Link component (alternative)"
-    }
-  ]
-}
-```
-
-Standard external types: `source`, `design`, `storybook`, `documentation`, `package`, `repository`. Standard relationship types: `alternative`, `parent`, `child`, `related`. Custom types are permitted.
-
-### Extensions Preserve Interoperability
-
-Tool-specific internal identifiers go in `$extensions` using namespaced keys. Extensions are available on the root document, on each documentation group, and on each entity:
-
-```json
-{
-  "$extensions": {
-    "com.designTool": { "componentId": "abc123def456" },
-    "com.storybook": { "storyId": "components-button--primary" }
-  }
-}
-```
-
-**Rule of thumb:** If it's a URL a human would click, it belongs in `links`. If it's an internal identifier consumed programmatically by a specific tool, it belongs in `$extensions`.
-
-## Systems of Systems: Extends
-
-Large organizations often maintain a **core design system** shared across the company and one or more **extension systems** that layer product-specific components, tokens, and guidelines on top of it. The `extends` mechanism makes this relationship explicit at two levels.
-
-### Document-level extends
-
-The root `extends` property declares that the entire document inherits from a base DSDS document. It names the core system, optionally provides a URL to the base document, and records the version being extended:
-
-```json
-{
-  "dsdsVersion": "0.1",
-  "extends": {
-    "system": "Acme Core Design System",
-    "url": "https://design.acme.com/v2/core.dsds.json",
-    "version": "2.0.0",
-    "description": "Enterprise extension layering admin components and stricter a11y rules on the core system."
-  },
-  "documentation": [ "..." ]
-}
-```
-
-### Entity-level extends
-
-Individual components and tokens can declare that they extend a specific base entity from the parent system. The entity-level `extends` includes a `name` (matching the base entity), an optional `system` override, and an optional `modifications` array that serves as a human-readable changelog:
-
-```json
-{
-  "kind": "component",
-  "name": "button",
-  "extends": {
-    "name": "button",
-    "description": "Adds an 'enterprise' variant and a 'theme' prop.",
-    "modifications": [
-      { "type": "added",     "target": "variant:enterprise", "description": "High-emphasis enterprise brand variant." },
-      { "type": "added",     "target": "prop:theme",         "description": "'default' | 'admin' sub-brand switcher." },
-      { "type": "inherited", "target": "guideline:anatomy",  "description": "Anatomy inherited from core without changes." }
-    ]
-  },
-  "displayName": "Button",
-  "description": "Enterprise Button — extends core with an enterprise variant and theme prop.",
-  "status": "stable",
-  "documentBlocks": [ "..." ]
-}
-```
-
-### What the schema does — and does not — do
-
-The `extends` declarations establish the *relationship* between a base system and its extensions. **Merge and resolution semantics — which guidelines are inherited, which are overridden, which are appended — are the responsibility of consuming tooling**, not the schema. DSDS provides a portable, machine-readable way to declare these relationships; tools decide how to resolve them.
-
-> **Example file:** See [`examples/extension-system.dsds.json`](examples/extension-system.dsds.json) for a complete enterprise extension system demonstrating document-level extends, entity-level extends on both components and tokens, the `modifications` changelog, and net-new entities that exist only in the extension.
-
-## Default Values
-
-Several optional properties declare default values via the JSON Schema `default` keyword. Validators do not inject these — they are advisory hints for tools and consumers that indicate what value to assume when the property is omitted.
-
-| Property | Schema | Default | Meaning when omitted |
-|---|---|---|---|
-| `guidelineEntry.kind` | `guideline.schema.json` | `"informational"` | The guideline is advisory context with no enforcement expectation. |
-| `link.required` | `link.schema.json` | `false` | The linked artifact is an optional enhancement, not a dependency. |
-| `anatomyEntry.required` | `anatomy.schema.json` | `false` | The anatomy part is conditionally rendered, not always present. |
-| `apiProperty.required` | `api.schema.json` | `false` | The property does not need to be provided by the consumer. |
-| `apiProperty.deprecated` | `api.schema.json` | `false` | The property is not deprecated. |
-| `ariaAttribute.required` | `accessibility.schema.json` | `false` | The ARIA attribute is conditionally required or optional. |
-| `richText.format` | `rich-text.schema.json` | `"markdown"` | Text content is interpreted as CommonMark. |
-
-## Schema Architecture
-
-The schema is organized into three directories plus a root schema:
-
-| Directory | Contents |
-|---|---|
-| `common/` | Shared primitives — richText, statusObject, link, example, extensions, metadata, useCase |
-| `entities/` | Entity types — component, token (+ tokenGroup), theme, style, pattern |
-| `document-blocks/` | Document block types — 13 type schemas + scoped unions (componentDocumentBlock, styleDocumentBlock, patternDocumentBlock, tokenDocumentBlock) |
-
-The root `dsds.schema.json` defines the document structure and references entity schemas via a `oneOf` discriminated union. The `dsds.bundled.schema.json` is auto-generated by `scripts/bundle.js` for tools that require a single-file schema.
-
-Property tables on the [specification site](site/dist/index.html) are generated directly from the schema JSON — they are always in sync with the schema and cannot drift from the implementation.
+No changelog entry, no version bump, no new `/v<n>/` artifact. Commit the regenerated HTML.
 
 ## Design Principles
 

@@ -3,14 +3,14 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>DSDS Agent Context Definition — DSDS 0.1</title>
+  <title>DSDS Agent Context Definition — DSDS 0.2.1</title>
   <link rel="stylesheet" href="tokens.css">
   <link rel="stylesheet" href="style.css">
   <script src="components.js"></script>
 </head>
 <body>
   <ds-nav-toggle target="ds-spec-nav"></ds-nav-toggle>
-  <ds-spec-nav title="Design System Documentation Spec 0.1" title-href="index.html" active="common-agents">
+  <ds-spec-nav title="Design System Documentation Spec 0.2.1" title-href="index.html" active="common-agents">
     <a href="index.html" slug="index">Overview</a>
     <a href="quickstart.html" slug="quickstart">Quick start</a>
     <a href="schema-architecture.html" slug="schema-architecture">Schema architecture</a>
@@ -19,6 +19,7 @@
       <a href="root.html" slug="root">Root schema</a>
     </ds-nav-group>
     <ds-nav-group label="Common">
+      <a href="common-agent-collection.html" slug="common-agent-collection">agent-collection</a>
       <a href="common-agents.html" slug="common-agents">agents</a>
       <a href="common-example.html" slug="common-example">example</a>
       <a href="common-extends.html" slug="common-extends">extends</a>
@@ -46,6 +47,7 @@
       <a href="document-blocks-document-blocks.html" slug="document-blocks-document-blocks">document-blocks</a>
       <a href="document-blocks-events.html" slug="document-blocks-events">events</a>
       <a href="document-blocks-guideline.html" slug="document-blocks-guideline">guideline</a>
+      <a href="document-blocks-import.html" slug="document-blocks-import">import</a>
       <a href="document-blocks-interaction.html" slug="document-blocks-interaction">interaction</a>
       <a href="document-blocks-motion.html" slug="document-blocks-motion">motion</a>
       <a href="document-blocks-principle.html" slug="document-blocks-principle">principle</a>
@@ -58,6 +60,7 @@
       <a href="metadata-category.html" slug="metadata-category">category</a>
       <a href="metadata-description.html" slug="metadata-description">description</a>
       <a href="metadata-extends.html" slug="metadata-extends">extends</a>
+      <a href="metadata-last-updated.html" slug="metadata-last-updated">last-updated</a>
       <a href="metadata-links.html" slug="metadata-links">links</a>
       <a href="metadata-metadata.html" slug="metadata-metadata">metadata</a>
       <a href="metadata-preview.html" slug="metadata-preview">preview</a>
@@ -71,22 +74,122 @@
   <div class="content content--with-toc">
     <main class="content__main" role="main">
       <div class="content__inner">
-        <ds-schema-header title="DSDS Agent Context Definition" description="Context properties intended exclusively for agentic (AI/LLM) consumption. Provides dense, structured information that allows agents to understand and apply a design system entity without parsing human-oriented prose. All properties are optional — include only what meaningfully improves agentic comprehension." source="common/agents.schema.json"></ds-schema-header>
-<ds-def-section name="agents" anchor="agents" description="Agent-optimized context for a design system entity. Each property is structured for direct machine consumption: constraints are explicit and leveled, disambiguation resolves common confusion with similar entities, anti-patterns pair bad practices with correct alternatives, examples provide immediately usable code, and keywords support semantic retrieval." type="object">
+        <ds-schema-header title="DSDS Agent Context Definition" description="Context properties intended for AI/LLM use only. Provides dense, structured info that lets an agent understand and apply a design system entity without parsing prose written for humans. All properties are optional — include only what meaningfully improves the agent's comprehension." source="common/agents.schema.json"></ds-schema-header>
+<ds-def-section name="agents" anchor="agents" description="AI-ready context for a design system entity. Each property is structured for direct machine use: constraints carry explicit levels, disambiguation resolves common confusion with similar entities, anti-patterns pair bad practices with correct alternatives, examples give ready-to-use code, and keywords support semantic retrieval." type="object">
 <ds-prop-table>
-  <ds-prop name="intent" type="string">A single sentence stating the primary purpose of this entity — what problem it solves and why it exists. MUST be concrete and distinct from similar entities. Agents use this to quickly determine relevance without parsing the full description.</ds-prop>
-  <ds-prop name="constraints" type="object[]">Hard rules governing use of this entity. Each constraint pairs an explicit rule with an enforcement level aligned to RFC 2119. Agents use these to validate decisions without inferring rules from prose.<br><small>Min items: 1</small></ds-prop>
-  <ds-prop name="disambiguation" type="object[]">Entries resolving common confusion between this entity and similar ones. Each entry names a potentially confusable entity and states the precise distinction. Agents use this to make the correct entity selection without trial and error.<br><small>Min items: 1</small></ds-prop>
-  <ds-prop name="antiPatterns" type="object[]">Common incorrect uses of this entity. Each entry describes what NOT to do and provides the correct alternative. Agents use these to avoid known failure modes.<br><small>Min items: 1</small></ds-prop>
-  <ds-prop name="examples" type="object[]">Usage examples agents can apply directly. Each example pairs a description of the scenario with code or a structured representation. Prefer minimal, correct examples over exhaustive ones.<br><small>Min items: 1</small></ds-prop>
+  <ds-prop name="intent" type="string">A single sentence stating the primary purpose of this entity: what problem it solves and why it exists. MUST be concrete and distinct from similar entities. Agents use it to judge relevance quickly without parsing the full description.</ds-prop>
+  <ds-prop name="constraints" type="object[]">Hard rules for using this entity. Each constraint pairs a rule with an enforcement level aligned to RFC 2119. Agents use these to validate decisions without inferring rules from prose.<br><small>Min items: 1</small></ds-prop>
+  <ds-prop name="disambiguation" type="object[]">Entries that resolve common confusion between this entity and similar ones. Each entry names a confusable entity and states the precise distinction. Agents use it to pick the right entity without trial and error.<br><small>Min items: 1</small></ds-prop>
+  <ds-prop name="antiPatterns" type="object[]">Common incorrect uses of this entity. Each entry describes what NOT to do and provides the correct alternative. Every entry SHOULD include an <ds-code inline>instead</ds-code> value — an anti-pattern without a correction is not actionable guidance. Agents use these to avoid known failure modes.<br><small>Min items: 1</small></ds-prop>
+  <ds-prop name="examples" type="object[]">Usage examples agents can apply directly. Each example pairs a description of the scenario with code or a structured representation. Prefer minimal, correct examples over exhaustive ones. For examples tied to a specific constraint, use the constraint-level examples property instead.<br><small>Min items: 1</small></ds-prop>
   <ds-prop name="keywords" type="string[]">Semantic terms that support retrieval and entity matching. Include synonyms, related concepts, common query terms, and vocabulary that designers or engineers use when searching for this entity but that may not appear in its name or description.<br><small>Min items: 1</small></ds-prop>
+  <ds-prop name="verified" type="string (date)">ISO date when this agent context block was last validated against the live design system. Absence signals unverified content. Agents and tooling can use this to assess data freshness and flag stale guidance.</ds-prop>
+  <ds-prop name="verifiedAgainst" type="string">The package version, test run identifier, or audit reference this block was validated against. Provides traceability for empirical data. Example: '@sanity/ui@3.2.0', 'agent-test-run-2026-05-30', 'a11y-audit-Q2-2026'.</ds-prop>
 </ds-prop-table>
+<ds-def-example>
+<ds-code language="json" label="example">{
+  &quot;intent&quot;: &quot;Trigger the primary action on a surface — submit, confirm, save, or commit a destructive change.&quot;,
+  &quot;constraints&quot;: [
+    {
+      &quot;rule&quot;: &quot;Use at most one primary (filled) button per visible surface.&quot;,
+      &quot;level&quot;: &quot;must&quot;,
+      &quot;context&quot;: &quot;Applies to forms, dialogs, and panels. Secondary actions use the secondary variant.&quot;,
+      &quot;evidence&quot;: &quot;10/10 agent test runs produced multiple primary buttons when this rule was omitted from prompts.&quot;
+    },
+    {
+      &quot;rule&quot;: &quot;Do not override the minimum touch target height (44px on mobile, 36px on desktop).&quot;,
+      &quot;level&quot;: &quot;must-not&quot;,
+      &quot;context&quot;: &quot;Touch targets smaller than these thresholds fail WCAG 2.5.5 (AAA) and 2.5.8 (AA).&quot;,
+      &quot;examples&quot;: [
+        {
+          &quot;description&quot;: &quot;Correct — default height is preserved.&quot;,
+          &quot;code&quot;: &quot;&lt;Button variant=\&quot;primary\&quot;&gt;Save&lt;/Button&gt;&quot;,
+          &quot;language&quot;: &quot;jsx&quot;
+        },
+        {
+          &quot;description&quot;: &quot;Incorrect — height override below the minimum.&quot;,
+          &quot;code&quot;: &quot;&lt;Button variant=\&quot;primary\&quot; style={{ height: 28 }}&gt;Save&lt;/Button&gt;&quot;,
+          &quot;language&quot;: &quot;jsx&quot;
+        }
+      ]
+    },
+    {
+      &quot;rule&quot;: &quot;Provide an accessible label when the button has only an icon.&quot;,
+      &quot;level&quot;: &quot;must&quot;,
+      &quot;context&quot;: &quot;Icon-only buttons must expose their purpose via aria-label or a visually-hidden label.&quot;
+    }
+  ],
+  &quot;disambiguation&quot;: [
+    {
+      &quot;entity&quot;: &quot;link&quot;,
+      &quot;entityType&quot;: &quot;component&quot;,
+      &quot;distinction&quot;: &quot;Use a button when the action changes application state (submit, delete, open dialog). Use a link when the action navigates to a new URL or page.&quot;
+    },
+    {
+      &quot;entity&quot;: &quot;icon-button&quot;,
+      &quot;entityType&quot;: &quot;component&quot;,
+      &quot;distinction&quot;: &quot;Use an icon-button when the action is represented by an icon alone within a compact UI region (toolbars, headers). Use a button when a text label improves comprehension.&quot;
+    },
+    {
+      &quot;entity&quot;: &quot;chip&quot;,
+      &quot;entityType&quot;: &quot;component&quot;,
+      &quot;distinction&quot;: &quot;Use a button to trigger an action. Use a chip to represent a discrete piece of information, a filter, or a selection state.&quot;
+    }
+  ],
+  &quot;antiPatterns&quot;: [
+    {
+      &quot;description&quot;: &quot;Using a primary button for every action in a form (Save, Cancel, Reset all rendered as filled primary buttons).&quot;,
+      &quot;instead&quot;: &quot;Reserve primary (filled) for the single most important action. Use secondary for the next-most-important action and tertiary (text) for low-emphasis actions.&quot;,
+      &quot;evidence&quot;: &quot;Raised in 8/10 agent iterations when generating multi-action forms.&quot;
+    },
+    {
+      &quot;description&quot;: &quot;Wrapping a button in an anchor element to make it navigate.&quot;,
+      &quot;instead&quot;: &quot;Use the link component for navigation. Buttons trigger actions; links go somewhere.&quot;
+    },
+    {
+      &quot;description&quot;: &quot;Disabling a primary button without explaining why.&quot;,
+      &quot;instead&quot;: &quot;Pair the disabled state with inline guidance (e.g., 'Complete required fields to enable Save') or use a tooltip on hover or focus.&quot;
+    }
+  ],
+  &quot;examples&quot;: [
+    {
+      &quot;description&quot;: &quot;Primary submit button in a form.&quot;,
+      &quot;code&quot;: &quot;&lt;Button variant=\&quot;primary\&quot; type=\&quot;submit\&quot;&gt;Save changes&lt;/Button&gt;&quot;,
+      &quot;language&quot;: &quot;jsx&quot;
+    },
+    {
+      &quot;description&quot;: &quot;Icon-only button with an accessible label.&quot;,
+      &quot;code&quot;: &quot;&lt;Button variant=\&quot;tertiary\&quot; aria-label=\&quot;Close dialog\&quot;&gt;&lt;Icon name=\&quot;close\&quot; /&gt;&lt;/Button&gt;&quot;,
+      &quot;language&quot;: &quot;jsx&quot;
+    },
+    {
+      &quot;description&quot;: &quot;Destructive action paired with a confirmation dialog.&quot;,
+      &quot;code&quot;: &quot;&lt;Button variant=\&quot;danger\&quot; onClick={openConfirmDialog}&gt;Delete project&lt;/Button&gt;&quot;,
+      &quot;language&quot;: &quot;jsx&quot;
+    }
+  ],
+  &quot;keywords&quot;: [
+    &quot;button&quot;,
+    &quot;action&quot;,
+    &quot;submit&quot;,
+    &quot;confirm&quot;,
+    &quot;cta&quot;,
+    &quot;call to action&quot;,
+    &quot;primary&quot;,
+    &quot;secondary&quot;,
+    &quot;tertiary&quot;,
+    &quot;trigger&quot;
+  ],
+  &quot;verified&quot;: &quot;2026-05-30&quot;,
+  &quot;verifiedAgainst&quot;: &quot;@acme/components@2.4.0&quot;
+}</ds-code>
+</ds-def-example>
 </ds-def-section>
 
         <ds-back-to-top></ds-back-to-top>
 
         <ds-footer>
-          <p>Design System Documentation Spec (DSDS) 0.1 — Draft Specification</p>
+          <p>Design System Documentation Spec (DSDS) 0.2.1 — Draft Specification</p>
           <p><a href="https://github.com/somerandomdude/design-system-documentation-schema">GitHub</a></p>
         </ds-footer>
       </div>

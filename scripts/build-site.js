@@ -6,7 +6,9 @@
  * generates one HTML page per schema file. Each page documents the definitions
  * within that file with property tables, type references, and cross-references.
  *
- * The overview page (dsds-spec.md) is still rendered from markdown.
+ * Narrative pages (overview, quickstart, schema-architecture) are compiled
+ * from MDX content in site/content/ by scripts/compile-mdx.mjs, which can
+ * embed schema-driven property tables via the <ds-prop-table /> shortcode.
  *
  * Usage:
  *   node scripts/build-site.js
@@ -18,8 +20,15 @@
 const fs = require("fs");
 const path = require("path");
 
-const { buildSpecNav, DIR_GROUPS } = require("./nav");
+const { buildSpecNav, DIR_GROUPS, readSpecVersion } = require("./nav");
 const { buildSamples } = require("./build-samples");
+const {
+  esc,
+  slug,
+  linkToRef,
+  describeType: describeTypeShared,
+  renderPropertyTable: renderPropertyTableShared,
+} = require("./render-prop-table");
 
 // MDX compiler (ESM) — loaded dynamically in build()
 let compileMdxModule = null;
@@ -118,33 +127,13 @@ function discoverPages() {
 // HTML helpers
 // ---------------------------------------------------------------------------
 
-function esc(text) {
-  if (typeof text !== "string") return String(text);
-  return text
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
-}
-
-function slug(text) {
-  return text
-    .replace(/<[^>]+>/g, "")
-    .replace(/[^\w\s-]/g, "")
-    .trim()
-    .replace(/[\s]+/g, "-")
-    .toLowerCase();
-}
-
-function linkToRef(ref) {
-  if (!ref) return null;
-  const match = ref.match(/\$defs\/(\w+)/);
-  return match ? match[1] : null;
-}
-
 /**
  * Build a definition index from the discovered pages.
  * Maps: defName -> { pageSlug, filename }
+ *
+ * Note: `esc`, `slug`, and `linkToRef` are imported from
+ * ./render-prop-table so the MDX shortcode preprocessor and the
+ * schema-page generator share one canonical implementation.
  */
 function buildDefIndex(pages) {
   const index = {};
@@ -161,90 +150,14 @@ let DEF_INDEX = {};
 
 // ---------------------------------------------------------------------------
 // Type description rendering
+//
+// The real implementation lives in ./render-prop-table. We wrap it here so
+// callers in this file can continue calling `describeType(prop)` without
+// threading DEF_INDEX through every invocation.
 // ---------------------------------------------------------------------------
 
-/**
- * Produce a human-readable type string from a property schema.
- */
 function describeType(prop) {
-  if (!prop || typeof prop !== "object") return "any";
-
-  // $ref
-  if (prop.$ref) {
-    const defName = linkToRef(prop.$ref);
-    if (defName) {
-      const target = DEF_INDEX[defName];
-      if (target) {
-        return `<ds-type-ref href="${target.pageSlug}.html#${slug(defName)}">${esc(defName)}</ds-type-ref>`;
-      }
-      return `<ds-code inline>${esc(defName)}</ds-code>`;
-    }
-    return `<ds-code inline>$ref</ds-code>`;
-  }
-
-  // oneOf
-  if (prop.oneOf) {
-    const parts = prop.oneOf.map((alt) => describeType(alt));
-    return parts.join(" | ");
-  }
-
-  // anyOf
-  if (prop.anyOf) {
-    const parts = prop.anyOf.map((alt) => describeType(alt));
-    return parts.join(" | ");
-  }
-
-  // array
-  if (prop.type === "array") {
-    if (prop.items) {
-      const itemType = describeType(prop.items);
-      return `${itemType}[]`;
-    }
-    return "array";
-  }
-
-  // object with additionalProperties
-  if (prop.type === "object" && prop.additionalProperties) {
-    if (typeof prop.additionalProperties === "object") {
-      const valType = describeType(prop.additionalProperties);
-      return `map&lt;string, ${valType}&gt;`;
-    }
-    return "object (open)";
-  }
-
-  // object with properties (inline sub-object)
-  if (prop.type === "object" && prop.properties) {
-    return "object";
-  }
-
-  // const
-  if (prop.const !== undefined) {
-    return `<ds-code inline>"${esc(String(prop.const))}"</ds-code>`;
-  }
-
-  // enum
-  if (prop.enum) {
-    return prop.enum
-      .map((v) => `<ds-code inline>"${esc(String(v))}"</ds-code>`)
-      .join(" | ");
-  }
-
-  // string with format
-  if (prop.type === "string" && prop.format) {
-    return `string (${esc(prop.format)})`;
-  }
-
-  // simple type
-  if (prop.type) {
-    return esc(prop.type);
-  }
-
-  // description-only (no type constraint, e.g., "value" that accepts any JSON)
-  if (prop.description) {
-    return "any";
-  }
-
-  return "any";
+  return describeTypeShared(prop, DEF_INDEX);
 }
 
 // ---------------------------------------------------------------------------
@@ -253,95 +166,12 @@ function describeType(prop) {
 
 /**
  * Render a property table for a definition's properties.
+ *
+ * Thin wrapper around ./render-prop-table so MDX preprocessing and the
+ * schema-page generator emit identical markup from the same source.
  */
 function renderPropertyTable(defSchema) {
-  const properties = defSchema.properties;
-  if (!properties || Object.keys(properties).length === 0) return "";
-
-  const required = new Set(defSchema.required || []);
-
-  // Collect anyOf/required constraints to identify "at least one" groups
-  const anyOfGroups = [];
-  if (defSchema.anyOf) {
-    for (const alt of defSchema.anyOf) {
-      if (alt.required && Array.isArray(alt.required)) {
-        anyOfGroups.push(alt.required);
-      }
-    }
-  }
-  // Build a set of all property names that participate in anyOf constraints
-  const anyOfProps = new Set();
-  for (const group of anyOfGroups) {
-    for (const name of group) {
-      anyOfProps.add(name);
-    }
-  }
-
-  // Build <ds-prop> children for <ds-prop-table>
-  const propElements = [];
-  for (const [propName, propSchema] of Object.entries(properties)) {
-    const isRequired = required.has(propName);
-    const isAnyOf = anyOfProps.has(propName);
-    const typeStr = describeType(propSchema);
-    const desc = propSchema.description || "";
-
-    // Build description with supplementary notes
-    let descHtml = esc(desc);
-
-    if (propSchema.enum && propSchema.enum.length > 8) {
-      descHtml += `<br><small>Values: ${propSchema.enum.map((v) => `<ds-code inline>${esc(String(v))}</ds-code>`).join(", ")}</small>`;
-    }
-    if (propSchema.pattern) {
-      descHtml += `<br><small>Pattern: <ds-code inline>${esc(propSchema.pattern)}</ds-code></small>`;
-    }
-    if (propSchema.minItems) {
-      descHtml += `<br><small>Min items: ${propSchema.minItems}</small>`;
-    }
-    if (propSchema.default !== undefined) {
-      const defaultVal =
-        typeof propSchema.default === "string"
-          ? `"${esc(propSchema.default)}"`
-          : String(propSchema.default);
-      descHtml += `<br><small>Default: <ds-code inline>${defaultVal}</ds-code></small>`;
-    }
-    if (
-      propSchema.type === "array" &&
-      propSchema.items &&
-      propSchema.items.format
-    ) {
-      descHtml += `<br><small>Format: ${esc(propSchema.items.format)}</small>`;
-    }
-
-    // Determine sort order and status attribute
-    let sortOrder;
-    let statusAttr = "";
-    if (isRequired) {
-      statusAttr = " required";
-      sortOrder = 0;
-    } else if (isAnyOf) {
-      statusAttr = " conditional";
-      sortOrder = 1;
-    } else {
-      sortOrder = 2;
-    }
-
-    propElements.push({
-      sortOrder,
-      html:
-        `<ds-prop name="${esc(propName)}" type="${esc(typeStr)}"${statusAttr}>` +
-        descHtml +
-        `</ds-prop>`,
-    });
-  }
-
-  // Stable sort: required → conditional → optional, preserving original order within each group
-  propElements.sort((a, b) => a.sortOrder - b.sortOrder);
-
-  return (
-    `<ds-prop-table>\n` +
-    propElements.map((p) => `  ${p.html}`).join("\n") +
-    `\n</ds-prop-table>`
-  );
+  return renderPropertyTableShared(defSchema, DEF_INDEX);
 }
 
 // ---------------------------------------------------------------------------
@@ -567,6 +397,16 @@ function renderSchemaPage(page) {
   }
 
   if (defNames.length === 0) {
+    // Root-only schemas (no $defs) can still ship an example. By convention
+    // the entire example file is treated as one root-level example document.
+    if (page.examples !== null && page.examples !== undefined) {
+      const jsonStr = JSON.stringify(page.examples, null, 2);
+      parts.push(`<ds-def-example>`);
+      parts.push(
+        `<ds-code language="json" label="example">${esc(jsonStr)}</ds-code>`,
+      );
+      parts.push(`</ds-def-example>`);
+    }
     return parts.join("\n");
   }
 
@@ -601,23 +441,41 @@ function renderSchemaPage(page) {
 // Overview page — rendered from markdown
 // ---------------------------------------------------------------------------
 
-function pageHtml(title, activeSlug, bodyHtml, hasToc, pages, layout) {
+function pageHtml(title, activeSlug, bodyHtml, hasToc, pages, layout, version) {
   const layoutCls = layout === "full" ? " content--full" : "";
   const tocCls = hasToc ? " content--with-toc" : "";
   const contentCls = "content" + layoutCls + tocCls;
+
+  // Derive the spec version from the schema if the caller didn't pass one
+  // explicitly. This keeps every `DSDS <v>` string in the rendered HTML
+  // tied to dsds.schema.json#/properties/dsdsVersion/const — the same
+  // single source of truth that the bundle script and nav use.
+  const v = version || readSpecVersion() || "";
+
+  // Skip the `— DSDS <v>` suffix when the title already names the
+  // version (e.g., the overview page title is "Design System Documentation
+  // Spec 0.2"). Otherwise the tab text reads "… Spec 0.2 — DSDS 0.2".
+  // A bare `.includes(v)` check is precise enough — a 2-character version
+  // like "0.2" is unlikely to appear coincidentally in a page title.
+  const titleHasVersion = v && title.includes(v);
+  const titleSuffix = v && !titleHasVersion ? ` — DSDS ${v}` : "";
+
+  const footerTitle = v
+    ? `Design System Documentation Spec (DSDS) ${v} — Draft Specification`
+    : "Design System Documentation Spec (DSDS) — Draft Specification";
 
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>${esc(title)} — DSDS 0.1</title>
+  <title>${esc(title)}${esc(titleSuffix)}</title>
   <link rel="stylesheet" href="tokens.css">
   <link rel="stylesheet" href="style.css">
   <script src="components.js"></script>
 </head>
 <body>
-${buildSpecNav(activeSlug, pages)}
+${buildSpecNav(activeSlug, pages, v)}
   <div class="${contentCls}">
     <main class="content__main" role="main">
       <div class="content__inner">
@@ -626,7 +484,7 @@ ${buildSpecNav(activeSlug, pages)}
         <ds-back-to-top></ds-back-to-top>
 
         <ds-footer>
-          <p>Design System Documentation Spec (DSDS) 0.1 — Draft Specification</p>
+          <p>${esc(footerTitle)}</p>
           <p><a href="https://github.com/somerandomdude/design-system-documentation-schema">GitHub</a></p>
         </ds-footer>
       </div>
@@ -645,11 +503,26 @@ ${buildSpecNav(activeSlug, pages)}
 async function build() {
   console.log("Building DSDS specification site (schema-driven)...\n");
 
-  // Clean and create dist
+  // Clean and create dist.
+  //
+  // Versioned subdirectories (`v<n>/`) hold published schema bundles whose
+  // URLs are public contracts — we MUST NOT blow them away on rebuild.
+  // Everything else under dist is regenerated each build, so we wipe it
+  // and recreate. The versioned subdirectory write step further down is
+  // also defensive (refuses to overwrite an existing versioned bundle),
+  // but this is the primary safeguard.
   if (fs.existsSync(DIST_DIR)) {
-    fs.rmSync(DIST_DIR, { recursive: true, force: true });
+    for (const entry of fs.readdirSync(DIST_DIR, { withFileTypes: true })) {
+      // Preserve site/dist/v<version>/ directories. The leading `v`
+      // followed by a digit matches v0.1, v0.2, v1.0.0, v1.0.0-beta.2,
+      // etc. without touching unrelated directories that happen to
+      // start with `v`.
+      if (entry.isDirectory() && /^v\d/.test(entry.name)) continue;
+      fs.rmSync(path.join(DIST_DIR, entry.name), { recursive: true, force: true });
+    }
+  } else {
+    fs.mkdirSync(DIST_DIR, { recursive: true });
   }
-  fs.mkdirSync(DIST_DIR, { recursive: true });
 
   // Discover all schema pages (with examples attached)
   const pages = discoverPages();
@@ -730,16 +603,43 @@ async function build() {
   // ── Samples page ────────────────────────────────────────────────────
   buildSamples();
 
-  // ── Versioned bundled schema ─────────────────────────────────────────
+  // ── Versioned bundled schema ──────────────────────────────────────
+  //
+  // Versioned dist directories (site/dist/v<n>/) hold the bundled schema
+  // at the URL it's published at — e.g., site/dist/v0.1/dsds.bundled.schema.json
+  // is served at https://designsystemdocspec.org/v0.1/dsds.bundled.schema.json.
+  //
+  // Once a versioned bundle has been published, the file at that URL is a
+  // public contract: every DSDS document that pins its $schema to that URL
+  // relies on the file there never changing. The build therefore refuses to
+  // overwrite an existing versioned bundle. To intentionally re-publish a
+  // version, delete the target file manually and rerun the build.
   const bundledSchemaPath = path.join(SCHEMA_DIR, "dsds.bundled.schema.json");
   if (fs.existsSync(bundledSchemaPath)) {
     const bundledSchema = JSON.parse(fs.readFileSync(bundledSchemaPath, "utf-8"));
     const version = bundledSchema.properties?.dsdsVersion?.const;
     if (version) {
       const versionDir = path.join(DIST_DIR, `v${version}`);
-      fs.mkdirSync(versionDir, { recursive: true });
-      fs.copyFileSync(bundledSchemaPath, path.join(versionDir, "dsds.bundled.schema.json"));
-      console.log(`  ✓  site/dist/v${version}/dsds.bundled.schema.json  ← spec/schema/dsds.bundled.schema.json\n`);
+      const versionedBundle = path.join(versionDir, "dsds.bundled.schema.json");
+      const relTarget = `site/dist/v${version}/dsds.bundled.schema.json`;
+
+      if (fs.existsSync(versionedBundle)) {
+        const existing = fs.readFileSync(versionedBundle, "utf-8");
+        const current = fs.readFileSync(bundledSchemaPath, "utf-8");
+        if (existing === current) {
+          console.log(`  =  ${relTarget} (unchanged)\n`);
+        } else {
+          console.log(
+            `  ⚠  ${relTarget} already exists and differs from the current\n` +
+              `     bundle. Skipping to preserve the published artifact. Delete the\n` +
+              `     file manually if you intend to re-publish v${version}.\n`,
+          );
+        }
+      } else {
+        fs.mkdirSync(versionDir, { recursive: true });
+        fs.copyFileSync(bundledSchemaPath, versionedBundle);
+        console.log(`  ✓  ${relTarget}  ← spec/schema/dsds.bundled.schema.json\n`);
+      }
     }
   }
 

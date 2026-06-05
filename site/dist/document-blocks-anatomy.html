@@ -3,14 +3,14 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>DSDS Anatomy Guideline — DSDS 0.1</title>
+  <title>DSDS Anatomy Guideline — DSDS 0.2.1</title>
   <link rel="stylesheet" href="tokens.css">
   <link rel="stylesheet" href="style.css">
   <script src="components.js"></script>
 </head>
 <body>
   <ds-nav-toggle target="ds-spec-nav"></ds-nav-toggle>
-  <ds-spec-nav title="Design System Documentation Spec 0.1" title-href="index.html" active="document-blocks-anatomy">
+  <ds-spec-nav title="Design System Documentation Spec 0.2.1" title-href="index.html" active="document-blocks-anatomy">
     <a href="index.html" slug="index">Overview</a>
     <a href="quickstart.html" slug="quickstart">Quick start</a>
     <a href="schema-architecture.html" slug="schema-architecture">Schema architecture</a>
@@ -19,6 +19,7 @@
       <a href="root.html" slug="root">Root schema</a>
     </ds-nav-group>
     <ds-nav-group label="Common">
+      <a href="common-agent-collection.html" slug="common-agent-collection">agent-collection</a>
       <a href="common-agents.html" slug="common-agents">agents</a>
       <a href="common-example.html" slug="common-example">example</a>
       <a href="common-extends.html" slug="common-extends">extends</a>
@@ -46,6 +47,7 @@
       <a href="document-blocks-document-blocks.html" slug="document-blocks-document-blocks">document-blocks</a>
       <a href="document-blocks-events.html" slug="document-blocks-events">events</a>
       <a href="document-blocks-guideline.html" slug="document-blocks-guideline">guideline</a>
+      <a href="document-blocks-import.html" slug="document-blocks-import">import</a>
       <a href="document-blocks-interaction.html" slug="document-blocks-interaction">interaction</a>
       <a href="document-blocks-motion.html" slug="document-blocks-motion">motion</a>
       <a href="document-blocks-principle.html" slug="document-blocks-principle">principle</a>
@@ -58,6 +60,7 @@
       <a href="metadata-category.html" slug="metadata-category">category</a>
       <a href="metadata-description.html" slug="metadata-description">description</a>
       <a href="metadata-extends.html" slug="metadata-extends">extends</a>
+      <a href="metadata-last-updated.html" slug="metadata-last-updated">last-updated</a>
       <a href="metadata-links.html" slug="metadata-links">links</a>
       <a href="metadata-metadata.html" slug="metadata-metadata">metadata</a>
       <a href="metadata-preview.html" slug="metadata-preview">preview</a>
@@ -81,11 +84,11 @@
 </ds-def-index>
 <ds-def-section name="anatomyEntry" anchor="anatomyentry" description="A named sub-element of a component's or pattern's visual structure." type="object">
 <ds-prop-table>
-  <ds-prop name="name" type="string" required>Machine-readable name of the part (e.g., 'container', 'label', 'icon', 'focus-ring').</ds-prop>
+  <ds-prop name="identifier" type="string" required>Machine-readable identifier for the part (e.g., 'container', 'label', 'icon', 'focus-ring').</ds-prop>
   <ds-prop name="description" type="&lt;ds-type-ref href=&quot;common-rich-text.html#richtext&quot;&gt;richText&lt;/ds-type-ref&gt;" required>What this part is, what it does, and any constraints on its content or appearance.</ds-prop>
   <ds-prop name="required" type="boolean" required>Whether this part is always present in the rendered output. Defaults to false. When false, the part is conditionally rendered based on props or content.<br><small>Default: <ds-code inline>false</ds-code></small></ds-prop>
-  <ds-prop name="displayName" type="string">Human-readable name (e.g., 'Container', 'Label', 'Leading Icon').</ds-prop>
-  <ds-prop name="tokens" type="map&amp;lt;string, string&amp;gt;">Design tokens applied to this part. Keys are token-purpose names describing what visual attribute the token controls (e.g., 'background', 'border-radius', 'padding-horizontal', 'text-color'). Values are the token names that provide the value (e.g., 'color-action-primary', 'radius-md', 'space-4').</ds-prop>
+  <ds-prop name="name" type="string">Human-readable name (e.g., 'Container', 'Label', 'Leading Icon').</ds-prop>
+  <ds-prop name="tokens" type="map&amp;lt;string, string&amp;gt;">Design tokens applied to this part. Keys are token-purpose names describing what visual attribute the token controls (e.g., 'background', 'border-radius', 'padding-horizontal', 'text-color'). Values are the token identifiers that provide the value (e.g., 'color-action-primary', 'radius-md', 'space-4').</ds-prop>
   <ds-prop name="links" type="&lt;ds-type-ref href=&quot;common-link.html#link&quot;&gt;link&lt;/ds-type-ref&gt;[]">Links to resources for this anatomy part — design tool nodes, source code blocks, documentation sections, or other addressable references.</ds-prop>
 </ds-prop-table>
 <ds-cross-refs><strong>References:</strong> 
@@ -94,8 +97,8 @@
 <ds-def-example>
 <ds-code language="json" label="example">[
   {
-    &quot;name&quot;: &quot;container&quot;,
-    &quot;displayName&quot;: &quot;Container&quot;,
+    &quot;identifier&quot;: &quot;container&quot;,
+    &quot;name&quot;: &quot;Container&quot;,
     &quot;description&quot;: &quot;The outer wrapper element that defines the button's clickable area and visual boundary.&quot;,
     &quot;required&quot;: true,
     &quot;tokens&quot;: {
@@ -119,8 +122,8 @@
     ]
   },
   {
-    &quot;name&quot;: &quot;label&quot;,
-    &quot;displayName&quot;: &quot;Label&quot;,
+    &quot;identifier&quot;: &quot;label&quot;,
+    &quot;name&quot;: &quot;Label&quot;,
     &quot;description&quot;: &quot;The text content of the button. Communicates the action that will occur when activated.&quot;,
     &quot;required&quot;: true,
     &quot;tokens&quot;: {
@@ -131,8 +134,8 @@
     }
   },
   {
-    &quot;name&quot;: &quot;icon&quot;,
-    &quot;displayName&quot;: &quot;Icon&quot;,
+    &quot;identifier&quot;: &quot;icon&quot;,
+    &quot;name&quot;: &quot;Icon&quot;,
     &quot;description&quot;: &quot;An optional icon displayed before (leading) or after (trailing) the label. Reinforces the label's meaning visually.&quot;,
     &quot;required&quot;: false,
     &quot;tokens&quot;: {
@@ -142,8 +145,8 @@
     }
   },
   {
-    &quot;name&quot;: &quot;focus-ring&quot;,
-    &quot;displayName&quot;: &quot;Focus Ring&quot;,
+    &quot;identifier&quot;: &quot;focus-ring&quot;,
+    &quot;name&quot;: &quot;Focus Ring&quot;,
     &quot;description&quot;: &quot;A visible outline that appears when the button receives keyboard focus. Must be visible in all color modes.&quot;,
     &quot;required&quot;: false,
     &quot;tokens&quot;: {
@@ -161,7 +164,7 @@
   <ds-prop name="parts" type="&lt;ds-type-ref href=&quot;document-blocks-anatomy.html#anatomyentry&quot;&gt;anatomyEntry&lt;/ds-type-ref&gt;[]" required>The named sub-elements of the artifact, in visual order (typically outside-in or top-to-bottom). Each part documents an element that can be styled, tested, or referenced independently.<br><small>Min items: 1</small></ds-prop>
   <ds-prop name="description" type="&lt;ds-type-ref href=&quot;common-rich-text.html#richtext&quot;&gt;richText&lt;/ds-type-ref&gt;">Prose overview of the artifact's visual structure — how the parts relate and any notable structural constraints.</ds-prop>
   <ds-prop name="preview" type="&lt;ds-type-ref href=&quot;common-example.html#example&quot;&gt;example&lt;/ds-type-ref&gt;[]">Visual previews of the anatomy — typically annotated diagrams with numbered callouts mapping to the parts array. Multiple previews allow different views (e.g., expanded vs. collapsed, with icon vs. without).</ds-prop>
-  <ds-prop name="agents" type="&lt;ds-type-ref href=&quot;common-agents.html#agents&quot;&gt;agents&lt;/ds-type-ref&gt;">Agent-optimized context for this document block. Provides structured information for AI/LLM consumption — constraints, disambiguation, anti-patterns, examples, and keywords.</ds-prop>
+  <ds-prop name="agents" type="&lt;ds-type-ref href=&quot;common-agents.html#agents&quot;&gt;agents&lt;/ds-type-ref&gt;">AI-ready context for this document block. Provides structured info for AI/LLM use: constraints, disambiguation, anti-patterns, examples, and keywords.</ds-prop>
 </ds-prop-table>
 <ds-cross-refs><strong>References:</strong> 
 <ds-type-ref href="common-rich-text.html#richtext">richText</ds-type-ref>, <ds-type-ref href="document-blocks-anatomy.html#anatomyentry">anatomyEntry</ds-type-ref>, <ds-type-ref href="common-example.html#example">example</ds-type-ref>, <ds-type-ref href="common-agents.html#agents">agents</ds-type-ref>
@@ -171,8 +174,8 @@
   &quot;description&quot;: &quot;The Button is composed of a container, a text label, and an optional leading or trailing icon. A focus ring appears on keyboard focus.&quot;,
   &quot;parts&quot;: [
     {
-      &quot;name&quot;: &quot;container&quot;,
-      &quot;displayName&quot;: &quot;Container&quot;,
+      &quot;identifier&quot;: &quot;container&quot;,
+      &quot;name&quot;: &quot;Container&quot;,
       &quot;description&quot;: &quot;The outer wrapper element that defines the button's clickable area and visual boundary.&quot;,
       &quot;required&quot;: true,
       &quot;tokens&quot;: {
@@ -182,8 +185,8 @@
       }
     },
     {
-      &quot;name&quot;: &quot;label&quot;,
-      &quot;displayName&quot;: &quot;Label&quot;,
+      &quot;identifier&quot;: &quot;label&quot;,
+      &quot;name&quot;: &quot;Label&quot;,
       &quot;description&quot;: &quot;The text content of the button.&quot;,
       &quot;required&quot;: true,
       &quot;tokens&quot;: {
@@ -192,8 +195,8 @@
       }
     },
     {
-      &quot;name&quot;: &quot;icon&quot;,
-      &quot;displayName&quot;: &quot;Icon&quot;,
+      &quot;identifier&quot;: &quot;icon&quot;,
+      &quot;name&quot;: &quot;Icon&quot;,
       &quot;description&quot;: &quot;An optional icon displayed before or after the label.&quot;,
       &quot;required&quot;: false,
       &quot;tokens&quot;: {
@@ -202,8 +205,8 @@
       }
     },
     {
-      &quot;name&quot;: &quot;focus-ring&quot;,
-      &quot;displayName&quot;: &quot;Focus Ring&quot;,
+      &quot;identifier&quot;: &quot;focus-ring&quot;,
+      &quot;name&quot;: &quot;Focus Ring&quot;,
       &quot;description&quot;: &quot;A visible outline that appears when the button receives keyboard focus.&quot;,
       &quot;required&quot;: false,
       &quot;tokens&quot;: {
@@ -220,7 +223,7 @@
         <ds-back-to-top></ds-back-to-top>
 
         <ds-footer>
-          <p>Design System Documentation Spec (DSDS) 0.1 — Draft Specification</p>
+          <p>Design System Documentation Spec (DSDS) 0.2.1 — Draft Specification</p>
           <p><a href="https://github.com/somerandomdude/design-system-documentation-schema">GitHub</a></p>
         </ds-footer>
       </div>

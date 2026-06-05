@@ -3,14 +3,14 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>DSDS Scale Guideline — DSDS 0.1</title>
+  <title>DSDS Scale Guideline — DSDS 0.2.1</title>
   <link rel="stylesheet" href="tokens.css">
   <link rel="stylesheet" href="style.css">
   <script src="components.js"></script>
 </head>
 <body>
   <ds-nav-toggle target="ds-spec-nav"></ds-nav-toggle>
-  <ds-spec-nav title="Design System Documentation Spec 0.1" title-href="index.html" active="document-blocks-scale">
+  <ds-spec-nav title="Design System Documentation Spec 0.2.1" title-href="index.html" active="document-blocks-scale">
     <a href="index.html" slug="index">Overview</a>
     <a href="quickstart.html" slug="quickstart">Quick start</a>
     <a href="schema-architecture.html" slug="schema-architecture">Schema architecture</a>
@@ -19,6 +19,7 @@
       <a href="root.html" slug="root">Root schema</a>
     </ds-nav-group>
     <ds-nav-group label="Common">
+      <a href="common-agent-collection.html" slug="common-agent-collection">agent-collection</a>
       <a href="common-agents.html" slug="common-agents">agents</a>
       <a href="common-example.html" slug="common-example">example</a>
       <a href="common-extends.html" slug="common-extends">extends</a>
@@ -46,6 +47,7 @@
       <a href="document-blocks-document-blocks.html" slug="document-blocks-document-blocks">document-blocks</a>
       <a href="document-blocks-events.html" slug="document-blocks-events">events</a>
       <a href="document-blocks-guideline.html" slug="document-blocks-guideline">guideline</a>
+      <a href="document-blocks-import.html" slug="document-blocks-import">import</a>
       <a href="document-blocks-interaction.html" slug="document-blocks-interaction">interaction</a>
       <a href="document-blocks-motion.html" slug="document-blocks-motion">motion</a>
       <a href="document-blocks-principle.html" slug="document-blocks-principle">principle</a>
@@ -58,6 +60,7 @@
       <a href="metadata-category.html" slug="metadata-category">category</a>
       <a href="metadata-description.html" slug="metadata-description">description</a>
       <a href="metadata-extends.html" slug="metadata-extends">extends</a>
+      <a href="metadata-last-updated.html" slug="metadata-last-updated">last-updated</a>
       <a href="metadata-links.html" slug="metadata-links">links</a>
       <a href="metadata-metadata.html" slug="metadata-metadata">metadata</a>
       <a href="metadata-preview.html" slug="metadata-preview">preview</a>
@@ -81,7 +84,7 @@
 </ds-def-index>
 <ds-def-section name="scaleStep" anchor="scalestep" description="A single step in an ordered scale. Each step references a design token that provides the concrete value for that position in the progression. The optional label, value, and description provide context for display without duplicating the token's authoritative definition." type="object">
 <ds-prop-table>
-  <ds-prop name="token" type="string" required>The token name for this step. MUST reference a token defined in the token schema (e.g., 'space-4', 'font-size-300', 'elevation-low'). This is the single source of truth for the step's value — the optional `value` property is a display convenience only.</ds-prop>
+  <ds-prop name="token" type="string" required>The token identifier for this step. MUST reference a token defined in the token schema (e.g., 'space-4', 'font-size-300', 'elevation-low'). This is the single source of truth for the step's value — the optional <ds-code inline>value</ds-code> property is a display convenience only.</ds-prop>
   <ds-prop name="label" type="string">A human-readable label for this step (e.g., 'sm', 'md', 'lg', '2xl', 'body', 'heading-1'). Labels provide a shorthand vocabulary that designers and engineers use to communicate about scale positions without referring to raw values.</ds-prop>
   <ds-prop name="value" type="string">The resolved value for display (e.g., '16px', '1rem', '#1a1a1a', '400'). This is a docs convenience — the authoritative value lives in the referenced token. Tools MAY populate this from the token catalog.</ds-prop>
   <ds-prop name="description" type="&lt;ds-type-ref href=&quot;common-rich-text.html#richtext&quot;&gt;richText&lt;/ds-type-ref&gt;">Usage notes for this step — when to use it, what it pairs with, and any constraints (e.g., 'The base unit. Use for default internal component padding.', 'Reserved for page-level hero sections only.').</ds-prop>
@@ -93,11 +96,11 @@
 <ds-def-section name="scale" anchor="scale" description="Documents an ordered scale — a deliberate progression of values that constrains design decisions to a harmonious, consistent set. Scales are the primary mechanism for spacing systems, type hierarchies, elevation levels, and other graduated visual attributes. The steps array is ordered from smallest/lowest to largest/highest. Tools SHOULD preserve this ordering for display." type="object">
 <ds-prop-table>
   <ds-prop name="kind" type="&lt;ds-code inline&gt;&quot;scale&quot;&lt;/ds-code&gt;" required>Identifies this guideline as a scale spec.</ds-prop>
-  <ds-prop name="name" type="string" required>Machine-readable name of the scale (e.g., 'spacing-scale', 'type-scale', 'elevation-scale'). Used for cross-referencing and tooling.</ds-prop>
+  <ds-prop name="identifier" type="string" required>Machine-readable identifier of the scale (e.g., 'spacing-scale', 'type-scale', 'elevation-scale'). Used for cross-referencing and tooling.</ds-prop>
   <ds-prop name="description" type="&lt;ds-type-ref href=&quot;common-rich-text.html#richtext&quot;&gt;richText&lt;/ds-type-ref&gt;" required>What this scale is, how it was constructed (e.g., geometric progression, modular scale), and the rules for using it. Document the scale's rationale and constraints — why these values were chosen and when deviation is appropriate.</ds-prop>
   <ds-prop name="steps" type="&lt;ds-type-ref href=&quot;document-blocks-scale.html#scalestep&quot;&gt;scaleStep&lt;/ds-type-ref&gt;[]" required>The ordered steps in the scale, from smallest/lowest to largest/highest. Ordering is significant — tools SHOULD preserve it for display. Consumers SHOULD treat adjacent steps as the natural next-smaller and next-larger options when adjusting a value.<br><small>Min items: 1</small></ds-prop>
-  <ds-prop name="displayName" type="string">Human-readable name of the scale (e.g., 'Spacing Scale', 'Type Scale', 'Elevation Levels').</ds-prop>
-  <ds-prop name="agents" type="&lt;ds-type-ref href=&quot;common-agents.html#agents&quot;&gt;agents&lt;/ds-type-ref&gt;">Agent-optimized context for this document block. Provides structured information for AI/LLM consumption — constraints, disambiguation, anti-patterns, examples, and keywords.</ds-prop>
+  <ds-prop name="name" type="string">Human-readable name of the scale (e.g., 'Spacing Scale', 'Type Scale', 'Elevation Levels').</ds-prop>
+  <ds-prop name="agents" type="&lt;ds-type-ref href=&quot;common-agents.html#agents&quot;&gt;agents&lt;/ds-type-ref&gt;">AI-ready context for this document block. Provides structured info for AI/LLM use: constraints, disambiguation, anti-patterns, examples, and keywords.</ds-prop>
 </ds-prop-table>
 <ds-cross-refs><strong>References:</strong> 
 <ds-type-ref href="common-rich-text.html#richtext">richText</ds-type-ref>, <ds-type-ref href="document-blocks-scale.html#scalestep">scaleStep</ds-type-ref>, <ds-type-ref href="common-agents.html#agents">agents</ds-type-ref>
@@ -107,7 +110,7 @@
         <ds-back-to-top></ds-back-to-top>
 
         <ds-footer>
-          <p>Design System Documentation Spec (DSDS) 0.1 — Draft Specification</p>
+          <p>Design System Documentation Spec (DSDS) 0.2.1 — Draft Specification</p>
           <p><a href="https://github.com/somerandomdude/design-system-documentation-schema">GitHub</a></p>
         </ds-footer>
       </div>

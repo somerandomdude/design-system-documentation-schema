@@ -11,9 +11,13 @@
  *   2. Preprocess: escape stray {} outside code fences
  *   3. Preprocess: convert <ds-code>…</ds-code> blocks → fenced code blocks
  *   4. Preprocess: expand <ds-example file="…" /> → inline JSON code blocks
- *   5. Compile MDX via @mdx-js/mdx
- *   6. Evaluate with string-based JSX runtime → HTML string
- *   7. Post-process: map markdown HTML elements → web components
+ *   5. Preprocess: replace <ds-prop-table schema="…" def="…" /> with a
+ *      placeholder; render the table from the schema via
+ *      ./render-prop-table; substitute the rendered HTML after MDX compiles.
+ *   6. Compile MDX via @mdx-js/mdx
+ *   7. Evaluate with string-based JSX runtime → HTML string
+ *   8. Post-process: map markdown HTML elements → web components AND
+ *      substitute the ds-prop-table placeholders with their rendered HTML.
  *
  * Dependencies:
  *   @mdx-js/mdx   — MDX compiler (required)
@@ -29,6 +33,15 @@ import { compile, run } from "@mdx-js/mdx";
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { fileURLToPath } from "node:url";
+import { createRequire } from "node:module";
+
+// Load the shared CommonJS schema-to-HTML renderer so this ESM module
+// can call the same primitives build-site.js uses for per-schema pages.
+const require = createRequire(import.meta.url);
+const {
+  renderPropertyTableForRef,
+  buildDefIndex: buildSharedDefIndex,
+} = require("./render-prop-table.js");
 
 // ---------------------------------------------------------------------------
 // Paths
@@ -38,6 +51,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "..");
 const CONTENT_DIR = path.join(ROOT, "site", "content");
 const EXAMPLES_DIR = path.join(ROOT, "spec", "examples", "minimal");
+const SCHEMA_DIR = path.join(ROOT, "spec", "schema");
 
 // ---------------------------------------------------------------------------
 // Optional remark-gfm (tables, autolinks, strikethrough)
@@ -156,15 +170,109 @@ function preprocessExamples(source) {
   );
 }
 
+// ===========================================================================
+// Schema-driven property table shortcode
+//
+//   <ds-prop-table schema="<group>/<base>" def="<defName>" />
+//
+// Examples:
+//   <ds-prop-table schema="entities/component" def="component" />
+//   <ds-prop-table schema="common/agents" def="agents" />
+//   <ds-prop-table schema="root" def="documentationGroup" />
+//
+// Pass `def="$root"` to render the schema's top-level `properties` (used
+// by schemas like common/agent-collection that put their fields at the
+// root instead of in a $defs entry).
+//
+// The rendered HTML contains void/inline elements like <br>, <small>,
+// and <ds-code> that MDX/JSX would otherwise complain about. The
+// preprocessor therefore replaces each shortcode with a self-closing
+// custom element placeholder (<ds-prop-table-slot idx="N" />) which MDX
+// preserves verbatim. After MDX finishes compiling we substitute each
+// placeholder for the rendered HTML in `postProcess`.
+// ===========================================================================
+
+// Shared cross-reference index, built lazily on first preprocess.
+let MDX_DEF_INDEX = null;
+function getMdxDefIndex() {
+  if (MDX_DEF_INDEX === null) {
+    MDX_DEF_INDEX = buildSharedDefIndex({ schemaDir: SCHEMA_DIR });
+  }
+  return MDX_DEF_INDEX;
+}
+
 /**
- * Run all preprocessing steps in order.
+ * Per-pipeline state: maps placeholder index → rendered HTML. Reset on
+ * each call to `preprocess()` so concurrent file compiles don't bleed.
+ */
+function createPropTableSlots() {
+  return [];
+}
+
+function preprocessPropTables(source, slots) {
+  // Match both self-closing (`/>`) and open/close (`></ds-prop-table>`)
+  // forms so authors can be loose with the syntax.
+  return source.replace(
+    /<ds-prop-table\s+([^>]*?)\s*(?:\/>|><\/ds-prop-table>)/g,
+    (_match, attrs) => {
+      const schemaMatch = attrs.match(/schema="([^"]+)"/);
+      const defMatch = attrs.match(/def="([^"]+)"/);
+      if (!schemaMatch || !defMatch) {
+        console.error(
+          `    ⚠  <ds-prop-table> missing required schema="…" or def="…" attribute`,
+        );
+        return `<!-- ds-prop-table: missing attributes -->`;
+      }
+      const schemaRef = schemaMatch[1];
+      const defName = defMatch[1];
+
+      const html = renderPropertyTableForRef(schemaRef, defName, {
+        schemaDir: SCHEMA_DIR,
+        defIndex: getMdxDefIndex(),
+      });
+
+      // Comments that start with `ds-prop-table:` indicate a render failure
+      // (missing schema, missing def, parse error). Pass those through
+      // directly so they remain visible in the output as a diagnostic.
+      if (html.startsWith("<!--")) return html;
+
+      const idx = slots.push(html) - 1;
+      // Self-closing custom element placeholder: MDX preserves this
+      // verbatim because the tag name is hyphenated (custom element).
+      return `<ds-prop-table-slot idx="${idx}" />`;
+    },
+  );
+}
+
+function substitutePropTablePlaceholders(html, slots) {
+  if (!slots || slots.length === 0) return html;
+  // After MDX compiles a self-closing custom element it may emit either
+  // `<ds-prop-table-slot idx="N" />` (void element form) or
+  // `<ds-prop-table-slot idx="N"></ds-prop-table-slot>` (paired form).
+  // Match both, and tolerate an optional surrounding <p>…</p> wrapper that
+  // markdown inserts around block-level content.
+  const slotRe =
+    /<p>\s*<ds-prop-table-slot\s+idx="(\d+)"\s*(?:\/>|><\/ds-prop-table-slot>)\s*<\/p>|<ds-prop-table-slot\s+idx="(\d+)"\s*(?:\/>|><\/ds-prop-table-slot>)/g;
+  return html.replace(slotRe, (match, idxA, idxB) => {
+    const idxStr = idxA !== undefined ? idxA : idxB;
+    const n = parseInt(idxStr, 10);
+    return Number.isInteger(n) && slots[n] !== undefined ? slots[n] : match;
+  });
+}
+
+/**
+ * Run all preprocessing steps in order. Returns the transformed source
+ * plus per-pipeline state (currently just the ds-prop-table slot array)
+ * that postProcess needs to finish the job.
  */
 function preprocess(source) {
+  const propTableSlots = createPropTableSlots();
   let s = source;
   s = preprocessDsCodeBlocks(s);
   s = preprocessExamples(s);
+  s = preprocessPropTables(s, propTableSlots);
   s = escapeCurlyBraces(s);
-  return s;
+  return { source: s, propTableSlots };
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -371,7 +479,7 @@ export async function compileMdxFile(filePath) {
   const { meta, body } = parseFrontmatter(raw);
 
   // 2. Preprocessing
-  const processed = preprocess(body);
+  const { source: processed, propTableSlots } = preprocess(body);
 
   // 3. Compile MDX → function-body JS string
   const remarkPlugins = remarkGfm ? [remarkGfm] : [];
@@ -413,6 +521,11 @@ export async function compileMdxFile(filePath) {
 
   // 6. Post-process: markdown HTML → web components
   html = postProcess(html);
+
+  // 7. Substitute the ds-prop-table placeholders with rendered HTML.
+  //    Done AFTER postProcess so the schema-driven markup isn't mangled
+  //    by the markdown-to-web-component transformations above.
+  html = substitutePropTablePlaceholders(html, propTableSlots);
 
   return { meta, html };
 }

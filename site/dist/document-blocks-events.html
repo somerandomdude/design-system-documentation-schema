@@ -3,14 +3,14 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>DSDS Events Document Block — DSDS 0.1</title>
+  <title>DSDS Events Document Block — DSDS 0.2.1</title>
   <link rel="stylesheet" href="tokens.css">
   <link rel="stylesheet" href="style.css">
   <script src="components.js"></script>
 </head>
 <body>
   <ds-nav-toggle target="ds-spec-nav"></ds-nav-toggle>
-  <ds-spec-nav title="Design System Documentation Spec 0.1" title-href="index.html" active="document-blocks-events">
+  <ds-spec-nav title="Design System Documentation Spec 0.2.1" title-href="index.html" active="document-blocks-events">
     <a href="index.html" slug="index">Overview</a>
     <a href="quickstart.html" slug="quickstart">Quick start</a>
     <a href="schema-architecture.html" slug="schema-architecture">Schema architecture</a>
@@ -19,6 +19,7 @@
       <a href="root.html" slug="root">Root schema</a>
     </ds-nav-group>
     <ds-nav-group label="Common">
+      <a href="common-agent-collection.html" slug="common-agent-collection">agent-collection</a>
       <a href="common-agents.html" slug="common-agents">agents</a>
       <a href="common-example.html" slug="common-example">example</a>
       <a href="common-extends.html" slug="common-extends">extends</a>
@@ -46,6 +47,7 @@
       <a href="document-blocks-document-blocks.html" slug="document-blocks-document-blocks">document-blocks</a>
       <a href="document-blocks-events.html" slug="document-blocks-events">events</a>
       <a href="document-blocks-guideline.html" slug="document-blocks-guideline">guideline</a>
+      <a href="document-blocks-import.html" slug="document-blocks-import">import</a>
       <a href="document-blocks-interaction.html" slug="document-blocks-interaction">interaction</a>
       <a href="document-blocks-motion.html" slug="document-blocks-motion">motion</a>
       <a href="document-blocks-principle.html" slug="document-blocks-principle">principle</a>
@@ -58,6 +60,7 @@
       <a href="metadata-category.html" slug="metadata-category">category</a>
       <a href="metadata-description.html" slug="metadata-description">description</a>
       <a href="metadata-extends.html" slug="metadata-extends">extends</a>
+      <a href="metadata-last-updated.html" slug="metadata-last-updated">last-updated</a>
       <a href="metadata-links.html" slug="metadata-links">links</a>
       <a href="metadata-metadata.html" slug="metadata-metadata">metadata</a>
       <a href="metadata-preview.html" slug="metadata-preview">preview</a>
@@ -79,9 +82,9 @@
 <li><a href="#events"><ds-code inline>events</ds-code></a></li>
 </ul>
 </ds-def-index>
-<ds-def-section name="eventEntry" anchor="evententry" description="A single event emitted by a component. Documents the event name, what triggers it, the return shape consumers receive, DOM propagation behavior, and lifecycle metadata." type="object">
+<ds-def-section name="eventEntry" anchor="evententry" description="A single event emitted by a component. Documents the event identifier, what triggers it, the return shape consumers receive, DOM propagation behavior, and lifecycle metadata." type="object">
 <ds-prop-table>
-  <ds-prop name="name" type="string" required>The event name as used in code (e.g., 'onClick', 'onChange', 'onDismiss', 'ds-select'). For custom events, use the full event name including any namespace prefix.</ds-prop>
+  <ds-prop name="identifier" type="string" required>The event identifier as used in code (e.g., 'onClick', 'onChange', 'onDismiss', 'ds-select'). For custom events, use the full event identifier including any namespace prefix.</ds-prop>
   <ds-prop name="description" type="&lt;ds-type-ref href=&quot;common-rich-text.html#richtext&quot;&gt;richText&lt;/ds-type-ref&gt;" required>When this event fires, what it communicates, and how consumers should respond. Include conditions under which the event does NOT fire (e.g., 'Does not fire when disabled').</ds-prop>
   <ds-prop name="returns" type="string">Human-readable description of the event return shape (e.g., '(event: MouseEvent) =&gt; void', '{ value: string, index: number }', 'CustomEvent&lt;{ selectedId: string }&gt;').</ds-prop>
   <ds-prop name="returnsSchema" type="object">Machine-readable JSON Schema (Draft 2020-12) describing the event return or detail object. Enables tooling to generate type definitions and validate event handlers.</ds-prop>
@@ -100,8 +103,8 @@
 <ds-def-section name="events" anchor="events" description="Documents the events emitted by a component as a dedicated document block. Each item describes a single event — its name, trigger conditions, return shape, DOM behavior, and lifecycle metadata. Separating events from the API block gives tooling a clear, searchable unit for event documentation and allows cross-referencing between events and the states or interactions that trigger them." type="object">
 <ds-prop-table>
   <ds-prop name="kind" type="&lt;ds-code inline&gt;&quot;events&quot;&lt;/ds-code&gt;" required>Identifies this document block as an events spec.</ds-prop>
-  <ds-prop name="items" type="&lt;ds-type-ref href=&quot;document-blocks-events.html#evententry&quot;&gt;eventEntry&lt;/ds-type-ref&gt;[]" required>The events emitted by this component. Each item documents a single event with its name, description, return shape, DOM behavior, and lifecycle metadata.<br><small>Min items: 1</small></ds-prop>
-  <ds-prop name="agents" type="&lt;ds-type-ref href=&quot;common-agents.html#agents&quot;&gt;agents&lt;/ds-type-ref&gt;">Agent-optimized context for this document block. Provides structured information for AI/LLM consumption — constraints, disambiguation, anti-patterns, examples, and keywords.</ds-prop>
+  <ds-prop name="items" type="&lt;ds-type-ref href=&quot;document-blocks-events.html#evententry&quot;&gt;eventEntry&lt;/ds-type-ref&gt;[]" required>The events emitted by this component. Each item documents a single event with its identifier, description, return shape, DOM behavior, and lifecycle metadata.<br><small>Min items: 1</small></ds-prop>
+  <ds-prop name="agents" type="&lt;ds-type-ref href=&quot;common-agents.html#agents&quot;&gt;agents&lt;/ds-type-ref&gt;">AI-ready context for this document block. Provides structured info for AI/LLM use: constraints, disambiguation, anti-patterns, examples, and keywords.</ds-prop>
 </ds-prop-table>
 <ds-cross-refs><strong>References:</strong> 
 <ds-type-ref href="document-blocks-events.html#evententry">eventEntry</ds-type-ref>, <ds-type-ref href="common-agents.html#agents">agents</ds-type-ref>
@@ -111,7 +114,7 @@
         <ds-back-to-top></ds-back-to-top>
 
         <ds-footer>
-          <p>Design System Documentation Spec (DSDS) 0.1 — Draft Specification</p>
+          <p>Design System Documentation Spec (DSDS) 0.2.1 — Draft Specification</p>
           <p><a href="https://github.com/somerandomdude/design-system-documentation-schema">GitHub</a></p>
         </ds-footer>
       </div>

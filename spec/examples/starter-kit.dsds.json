@@ -1,6 +1,6 @@
 {
   "$schema": "../schema/dsds.bundled.schema.json",
-  "dsdsVersion": "0.1",
+  "dsdsVersion": "0.2.1",
   "systemMetadata": {
     "systemName": "Acme Design System",
     "systemVersion": "2.0.0",
@@ -26,7 +26,7 @@
         "description": "When building a white-label product that must not carry the Acme brand identity.",
         "kind": "negative",
         "alternative": {
-          "name": "custom theme or independent design system",
+          "identifier": "custom theme or independent design system",
           "rationale": "The Acme Design System encodes Acme-specific brand decisions (color palette, typography, iconography). White-label products require a neutral foundation that can be re-skinned per customer. Use the token architecture as inspiration, but do not depend on Acme-branded tokens directly."
         }
       },
@@ -34,7 +34,7 @@
         "description": "When building a one-off marketing landing page with highly custom, editorial layouts that intentionally break grid and component conventions.",
         "kind": "negative",
         "alternative": {
-          "name": "bespoke implementation with brand guidelines",
+          "identifier": "bespoke implementation with brand guidelines",
           "rationale": "Marketing pages often require creative freedom that a component system constrains. Use the brand color tokens and typography scale for consistency, but do not force editorial layouts into rigid component patterns."
         }
       }
@@ -61,7 +61,8 @@
       "criteria": [
         {
           "url": "https://www.w3.org/TR/WCAG22/#resize-text",
-          "label": "1.4.4 Resize Text"
+          "label": "1.4.4 Resize Text",
+          "kind": "reference"
         }
       ]
     },
@@ -79,7 +80,8 @@
       "criteria": [
         {
           "url": "https://www.w3.org/TR/WCAG22/#keyboard",
-          "label": "2.1.1 Keyboard"
+          "label": "2.1.1 Keyboard",
+          "kind": "reference"
         }
       ]
     },
@@ -109,8 +111,8 @@
       "components": [
         {
           "kind": "component",
-          "name": "button",
-          "displayName": "Button",
+          "identifier": "button",
+          "name": "Button",
           "metadata": [
             {
               "kind": "description",
@@ -123,6 +125,11 @@
             {
               "kind": "since",
               "value": "1.0.0"
+            },
+            {
+              "kind": "last-updated",
+              "value": "2026-05-28",
+              "description": "Added focus-visible guidance and tightened tap-target language."
             },
             {
               "kind": "category",
@@ -150,40 +157,40 @@
               "items": [
                 {
                   "kind": "enum",
-                  "name": "emphasis",
-                  "displayName": "Emphasis",
+                  "identifier": "emphasis",
+                  "name": "Emphasis",
                   "description": "The visual weight of the button, indicating the relative importance of the action.",
                   "values": [
                     {
-                      "name": "primary",
+                      "identifier": "primary",
                       "description": "The highest-emphasis button. Used for the single most important action on the surface."
                     },
                     {
-                      "name": "secondary",
+                      "identifier": "secondary",
                       "description": "A medium-emphasis button with a visible border. Used alongside a primary button for secondary actions."
                     },
                     {
-                      "name": "ghost",
+                      "identifier": "ghost",
                       "description": "A low-emphasis button with no border or background. Used for tertiary actions in dense layouts."
                     }
                   ]
                 },
                 {
                   "kind": "enum",
-                  "name": "size",
-                  "displayName": "Size",
+                  "identifier": "size",
+                  "name": "Size",
                   "description": "Controls padding, font size, and minimum touch target area.",
                   "values": [
                     {
-                      "name": "small",
+                      "identifier": "small",
                       "description": "Compact size for dense layouts such as toolbars and table rows."
                     },
                     {
-                      "name": "medium",
+                      "identifier": "medium",
                       "description": "Default size for most contexts."
                     },
                     {
-                      "name": "large",
+                      "identifier": "large",
                       "description": "Large size for hero surfaces and mobile-first layouts."
                     }
                   ]
@@ -194,26 +201,26 @@
               "kind": "states",
               "items": [
                 {
-                  "name": "default",
-                  "displayName": "Default",
+                  "identifier": "default",
+                  "name": "Default",
                   "description": "The resting state of the button."
                 },
                 {
-                  "name": "hover",
-                  "displayName": "Hover",
+                  "identifier": "hover",
+                  "name": "Hover",
                   "description": "Visual feedback when the pointer is over the button.",
                   "tokens": {
                     "button-background": "color-action-primary-hover"
                   }
                 },
                 {
-                  "name": "focus",
-                  "displayName": "Focus",
+                  "identifier": "focus",
+                  "name": "Focus",
                   "description": "Visible focus ring when the button receives keyboard focus."
                 },
                 {
-                  "name": "disabled",
-                  "displayName": "Disabled",
+                  "identifier": "disabled",
+                  "name": "Disabled",
                   "description": "Non-interactive state. The button is visible but cannot be activated."
                 }
               ]
@@ -233,14 +240,19 @@
                   "description": "When the action navigates to a different page or URL.",
                   "kind": "negative",
                   "alternative": {
-                    "name": "link",
+                    "identifier": "link",
                     "rationale": "Links carry native navigation semantics. Screen readers announce them as links, and browsers support open-in-new-tab."
                   }
                 }
               ],
               "agents": {
                 "intent": "Clarify when to use Button versus Link or IconButton.",
-                "keywords": ["when to use", "action", "submit", "navigation"]
+                "keywords": [
+                  "when to use",
+                  "action",
+                  "submit",
+                  "navigation"
+                ]
               }
             },
             {
@@ -265,7 +277,8 @@
                   "category": "accessibility",
                   "criteria": [
                     {
-                      "url": "https://www.w3.org/TR/WCAG22/#name-role-value"
+                      "url": "https://www.w3.org/TR/WCAG22/#name-role-value",
+                      "kind": "reference"
                     }
                   ]
                 }
@@ -273,9 +286,16 @@
               "agents": {
                 "intent": "Enforce correct Button usage rules in generated code.",
                 "constraints": [
-                  { "rule": "Limit each surface to one primary button.", "level": "must" }
+                  {
+                    "rule": "Limit each surface to one primary button.",
+                    "level": "must"
+                  }
                 ],
-                "keywords": ["button rules", "primary", "hierarchy"]
+                "keywords": [
+                  "button rules",
+                  "primary",
+                  "hierarchy"
+                ]
               }
             },
             {
@@ -293,7 +313,13 @@
               ],
               "agents": {
                 "intent": "Provide keyboard and ARIA requirements for accessible Button implementation.",
-                "keywords": ["WCAG", "keyboard", "ARIA", "focus", "a11y"]
+                "keywords": [
+                  "WCAG",
+                  "keyboard",
+                  "ARIA",
+                  "focus",
+                  "a11y"
+                ]
               }
             }
           ],
@@ -346,8 +372,8 @@
         },
         {
           "kind": "component",
-          "name": "link",
-          "displayName": "Link",
+          "identifier": "link",
+          "name": "Link",
           "metadata": [
             {
               "kind": "description",
@@ -388,7 +414,7 @@
                   "description": "When the action triggers a state change or submits data without navigation.",
                   "kind": "negative",
                   "alternative": {
-                    "name": "button",
+                    "identifier": "button",
                     "rationale": "Buttons have action semantics. Using a link for non-navigation actions creates a mismatch between role and behavior."
                   }
                 }
@@ -404,7 +430,8 @@
                   "category": "accessibility",
                   "criteria": [
                     {
-                      "url": "https://www.w3.org/TR/WCAG22/#use-of-color"
+                      "url": "https://www.w3.org/TR/WCAG22/#use-of-color",
+                      "kind": "reference"
                     }
                   ]
                 }
@@ -460,8 +487,8 @@
         },
         {
           "kind": "component",
-          "name": "alert",
-          "displayName": "Alert",
+          "identifier": "alert",
+          "name": "Alert",
           "metadata": [
             {
               "kind": "description",
@@ -496,24 +523,24 @@
               "items": [
                 {
                   "kind": "enum",
-                  "name": "severity",
-                  "displayName": "Severity",
+                  "identifier": "severity",
+                  "name": "Severity",
                   "description": "The visual treatment and semantic meaning of the alert.",
                   "values": [
                     {
-                      "name": "info",
+                      "identifier": "info",
                       "description": "Neutral informational message."
                     },
                     {
-                      "name": "success",
+                      "identifier": "success",
                       "description": "Confirms a successful action."
                     },
                     {
-                      "name": "warning",
+                      "identifier": "warning",
                       "description": "Warns about a potential issue that doesn't block the user."
                     },
                     {
-                      "name": "error",
+                      "identifier": "error",
                       "description": "Communicates an error that requires attention."
                     }
                   ]
@@ -530,7 +557,8 @@
                   "category": "accessibility",
                   "criteria": [
                     {
-                      "url": "https://www.w3.org/TR/WCAG22/#status-messages"
+                      "url": "https://www.w3.org/TR/WCAG22/#status-messages",
+                      "kind": "reference"
                     }
                   ]
                 }
@@ -588,11 +616,11 @@
       "tokenGroups": [
         {
           "kind": "token-group",
-          "name": "tokens",
+          "identifier": "tokens",
           "children": [
             {
               "kind": "token",
-              "name": "color-action-primary",
+              "identifier": "color-action-primary",
               "metadata": [
                 {
                   "kind": "description",
@@ -647,7 +675,7 @@
             },
             {
               "kind": "token",
-              "name": "color-text-primary",
+              "identifier": "color-text-primary",
               "metadata": [
                 {
                   "kind": "description",
@@ -702,7 +730,7 @@
             },
             {
               "kind": "token",
-              "name": "space-4",
+              "identifier": "space-4",
               "metadata": [
                 {
                   "kind": "description",
@@ -779,8 +807,8 @@
       "styles": [
         {
           "kind": "style",
-          "name": "spacing",
-          "displayName": "Spacing",
+          "identifier": "spacing",
+          "name": "Spacing",
           "metadata": [
             {
               "kind": "description",
@@ -799,7 +827,7 @@
               "items": [
                 {
                   "kind": "token-group",
-                  "name": "spacing",
+                  "identifier": "spacing",
                   "role": "Provides all spatial tokens from space-0 through space-8."
                 }
               ]
@@ -820,13 +848,18 @@
               ],
               "agents": {
                 "intent": "State the foundational spacing beliefs that govern layout decisions.",
-                "keywords": ["principles", "4px grid", "rhythm", "density"]
+                "keywords": [
+                  "principles",
+                  "4px grid",
+                  "rhythm",
+                  "density"
+                ]
               }
             },
             {
               "kind": "scale",
-              "name": "spacing-scale",
-              "displayName": "Spacing Scale",
+              "identifier": "spacing-scale",
+              "name": "Spacing Scale",
               "description": "A geometric scale based on a 4px unit.",
               "steps": [
                 {
@@ -928,8 +961,8 @@
       "patterns": [
         {
           "kind": "pattern",
-          "name": "error-messaging",
-          "displayName": "Error Messaging",
+          "identifier": "error-messaging",
+          "name": "Error Messaging",
           "metadata": [
             {
               "kind": "description",
@@ -948,13 +981,13 @@
               "items": [
                 {
                   "kind": "component",
-                  "name": "alert",
+                  "identifier": "alert",
                   "role": "Page-level error summary listing all current errors.",
                   "required": true
                 },
                 {
                   "kind": "component",
-                  "name": "button",
+                  "identifier": "button",
                   "role": "Submit trigger that initiates client-side validation.",
                   "required": true
                 }
@@ -990,14 +1023,18 @@
                   "description": "When the feedback is a successful outcome.",
                   "kind": "negative",
                   "alternative": {
-                    "name": "success-messaging",
+                    "identifier": "success-messaging",
                     "rationale": "Success feedback uses success colors and icons. Reusing the error pattern for positive outcomes confuses the visual language."
                   }
                 }
               ],
               "agents": {
                 "intent": "Clarify when the error messaging pattern applies versus inline validation.",
-                "keywords": ["when to use", "form errors", "validation"]
+                "keywords": [
+                  "when to use",
+                  "form errors",
+                  "validation"
+                ]
               }
             },
             {
@@ -1016,7 +1053,8 @@
                   "category": "accessibility",
                   "criteria": [
                     {
-                      "url": "https://www.w3.org/TR/WCAG22/#error-identification"
+                      "url": "https://www.w3.org/TR/WCAG22/#error-identification",
+                      "kind": "reference"
                     }
                   ]
                 },

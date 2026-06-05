@@ -3,14 +3,14 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>DSDS Style Definitions — DSDS 0.1</title>
+  <title>DSDS Style Definitions — DSDS 0.2.1</title>
   <link rel="stylesheet" href="tokens.css">
   <link rel="stylesheet" href="style.css">
   <script src="components.js"></script>
 </head>
 <body>
   <ds-nav-toggle target="ds-spec-nav"></ds-nav-toggle>
-  <ds-spec-nav title="Design System Documentation Spec 0.1" title-href="index.html" active="entities-style">
+  <ds-spec-nav title="Design System Documentation Spec 0.2.1" title-href="index.html" active="entities-style">
     <a href="index.html" slug="index">Overview</a>
     <a href="quickstart.html" slug="quickstart">Quick start</a>
     <a href="schema-architecture.html" slug="schema-architecture">Schema architecture</a>
@@ -19,6 +19,7 @@
       <a href="root.html" slug="root">Root schema</a>
     </ds-nav-group>
     <ds-nav-group label="Common">
+      <a href="common-agent-collection.html" slug="common-agent-collection">agent-collection</a>
       <a href="common-agents.html" slug="common-agents">agents</a>
       <a href="common-example.html" slug="common-example">example</a>
       <a href="common-extends.html" slug="common-extends">extends</a>
@@ -46,6 +47,7 @@
       <a href="document-blocks-document-blocks.html" slug="document-blocks-document-blocks">document-blocks</a>
       <a href="document-blocks-events.html" slug="document-blocks-events">events</a>
       <a href="document-blocks-guideline.html" slug="document-blocks-guideline">guideline</a>
+      <a href="document-blocks-import.html" slug="document-blocks-import">import</a>
       <a href="document-blocks-interaction.html" slug="document-blocks-interaction">interaction</a>
       <a href="document-blocks-motion.html" slug="document-blocks-motion">motion</a>
       <a href="document-blocks-principle.html" slug="document-blocks-principle">principle</a>
@@ -58,6 +60,7 @@
       <a href="metadata-category.html" slug="metadata-category">category</a>
       <a href="metadata-description.html" slug="metadata-description">description</a>
       <a href="metadata-extends.html" slug="metadata-extends">extends</a>
+      <a href="metadata-last-updated.html" slug="metadata-last-updated">last-updated</a>
       <a href="metadata-links.html" slug="metadata-links">links</a>
       <a href="metadata-metadata.html" slug="metadata-metadata">metadata</a>
       <a href="metadata-preview.html" slug="metadata-preview">preview</a>
@@ -71,15 +74,15 @@
   <div class="content content--with-toc">
     <main class="content__main" role="main">
       <div class="content__inner">
-        <ds-schema-header title="DSDS Style Definitions" description="Definitions for documenting visual style guidelines — color palettes, typography systems, spacing scales, elevation levels, and other visual attributes. A style document captures the identity and metadata of a visual attribute domain. Descriptive and presentational metadata (status, tags, category, aliases, summary, thumbnail, preview, links, etc.) lives in the modular `metadata` array as typed entries. All structured docs live in the unified `documentBlock` array as typed document block objects." source="entities/style.schema.json"></ds-schema-header>
-<ds-def-section name="style" anchor="style" description="Documentation for a visual style — the principles, guidelines, scales, and token references that govern a visual attribute such as color, typography, spacing, or elevation across the system. Identity (name, displayName, description) lives at the top level. Descriptive and presentational metadata (status, tags, category, aliases, summary, thumbnail, preview, links, etc.) lives in the modular `metadata` array — each entry is a typed object with a `kind` discriminator. All structured docs live in the `documentBlock` array — each entry is a typed document block object (principle, scale, guideline, accessibility, etc.)." type="object">
+        <ds-schema-header title="DSDS Style Definitions" description="Defines documents for visual style guidelines: color palettes, typography systems, spacing scales, elevation levels, and other visual attributes. A style document holds the identity and metadata of a visual attribute domain. Typed entries in the `metadata` array carry modular metadata (status, tags, category, aliases, summary, thumbnail, preview, links, and more). Typed entries in the `documentBlock` array carry structured docs." source="entities/style.schema.json"></ds-schema-header>
+<ds-def-section name="style" anchor="style" description="The principles, guidelines, scales, and token references that govern a visual attribute across the system — color, typography, spacing, elevation, and the like. The top level holds identity: `identifier`, `name`, and `description`. The `metadata` array holds modular entries with a `kind` tag (status, tags, category, aliases, summary, thumbnail, preview, links, and more). The `documentBlock` array holds structured docs as typed entries: principle, scale, guideline, accessibility, and so on." type="object">
 <ds-prop-table>
   <ds-prop name="kind" type="&lt;ds-code inline&gt;&quot;style&quot;&lt;/ds-code&gt;" required>Identifies this entity as a style.</ds-prop>
-  <ds-prop name="name" type="string" required>Machine-readable identifier for the style (e.g., 'color', 'typography', 'spacing', 'elevation', 'motion', 'shape'). MUST be unique within the documentation group.<br><small>Pattern: <ds-code inline>^[a-z][a-z0-9-]*$</ds-code></small></ds-prop>
-  <ds-prop name="displayName" type="string" required>Human-readable name for display in docs (e.g., 'Color', 'Typography', 'Spacing', 'Elevation').</ds-prop>
-  <ds-prop name="metadata" type="&lt;ds-type-ref href=&quot;metadata-metadata.html#entitymetadata&quot;&gt;entityMetadata&lt;/ds-type-ref&gt;[]">Modular metadata entries. Each entry is a typed object with a `kind` discriminator. Types include status, since, tags, category, aliases, summary, thumbnail, preview, extends, and links.</ds-prop>
-  <ds-prop name="documentBlocks" type="&lt;ds-type-ref href=&quot;document-blocks-document-blocks.html#styledocumentblock&quot;&gt;styleDocumentBlock&lt;/ds-type-ref&gt;[]">All structured docs for this style as an ordered array of typed document block objects. Accepts style-specific types (principles, scale) and general types (guideline, use-cases, accessibility, examples). Each document block entry has a `type` property that determines its shape. Ordering is significant: tools SHOULD preserve it for display. Express internal artifact relationships (e.g., token group references) through a links metadata entry, not as document block entries.</ds-prop>
-  <ds-prop name="agents" type="&lt;ds-type-ref href=&quot;common-agents.html#agents&quot;&gt;agents&lt;/ds-type-ref&gt;">Agent-optimized context for this style — intent, constraints, disambiguation, anti-patterns, examples, and keywords for efficient agentic consumption.</ds-prop>
+  <ds-prop name="identifier" type="string" required>Machine-readable identifier for the style (e.g., 'color', 'typography', 'spacing', 'elevation', 'motion', 'shape'). MUST be unique within the documentation group.<br><small>Pattern: <ds-code inline>^[a-z][a-z0-9-]*$</ds-code></small></ds-prop>
+  <ds-prop name="name" type="string" required>Display name shown in docs (e.g., 'Color', 'Typography', 'Spacing', 'Elevation').</ds-prop>
+  <ds-prop name="metadata" type="&lt;ds-type-ref href=&quot;metadata-metadata.html#entitymetadata&quot;&gt;entityMetadata&lt;/ds-type-ref&gt;[]">Modular metadata entries. Each entry is a typed object with a <ds-code inline>kind</ds-code> tag. Kinds include status, since, tags, category, aliases, summary, thumbnail, preview, extends, and links.</ds-prop>
+  <ds-prop name="documentBlocks" type="&lt;ds-type-ref href=&quot;document-blocks-document-blocks.html#styledocumentblock&quot;&gt;styleDocumentBlock&lt;/ds-type-ref&gt;[]">All structured docs for this style, as an ordered array of typed document block objects. Accepts the style-specific kinds (principles, scale) plus the general kinds (guideline, use-cases, accessibility, examples). The <ds-code inline>type</ds-code> property on each entry sets its shape. Order matters: tools SHOULD preserve it for display. Express internal artifact links (such as token group references) through a <ds-code inline>links</ds-code> metadata entry, not as document block entries.</ds-prop>
+  <ds-prop name="agents" type="&lt;ds-type-ref href=&quot;common-agents.html#agents&quot;&gt;agents&lt;/ds-type-ref&gt;">AI-ready context for this style: intent, constraints, disambiguation, anti-patterns, examples, and keywords for efficient AI use.</ds-prop>
   <ds-prop name="$extensions" type="&lt;ds-type-ref href=&quot;common-extensions.html#extensions&quot;&gt;extensions&lt;/ds-type-ref&gt;"></ds-prop>
 </ds-prop-table>
 <ds-cross-refs><strong>References:</strong> 
@@ -88,8 +91,8 @@
 <ds-def-example>
 <ds-code language="json" label="example">{
   &quot;kind&quot;: &quot;style&quot;,
-  &quot;name&quot;: &quot;spacing&quot;,
-  &quot;displayName&quot;: &quot;Spacing&quot;,
+  &quot;identifier&quot;: &quot;spacing&quot;,
+  &quot;name&quot;: &quot;Spacing&quot;,
   &quot;metadata&quot;: [
     {
       &quot;kind&quot;: &quot;description&quot;,
@@ -102,6 +105,11 @@
     {
       &quot;kind&quot;: &quot;since&quot;,
       &quot;value&quot;: &quot;1.0.0&quot;
+    },
+    {
+      &quot;kind&quot;: &quot;last-updated&quot;,
+      &quot;value&quot;: &quot;2026-03-02&quot;,
+      &quot;description&quot;: &quot;Added the 96px step to the scale and revised the rhythm principle to clarify when to deviate.&quot;
     },
     {
       &quot;kind&quot;: &quot;tags&quot;,
@@ -127,7 +135,7 @@
       &quot;items&quot;: [
         {
           &quot;kind&quot;: &quot;token-group&quot;,
-          &quot;name&quot;: &quot;spacing&quot;,
+          &quot;identifier&quot;: &quot;spacing&quot;,
           &quot;role&quot;: &quot;Provides all spatial tokens from space-0 (0px) through space-8 (48px), built on a 4px base unit.&quot;
         },
         {
@@ -188,8 +196,8 @@
     },
     {
       &quot;kind&quot;: &quot;scale&quot;,
-      &quot;name&quot;: &quot;spacing-scale&quot;,
-      &quot;displayName&quot;: &quot;Spacing Scale&quot;,
+      &quot;identifier&quot;: &quot;spacing-scale&quot;,
+      &quot;name&quot;: &quot;Spacing Scale&quot;,
       &quot;description&quot;: &quot;A geometric spacing scale based on a 4px unit.&quot;,
       &quot;steps&quot;: [
         {
@@ -265,8 +273,8 @@
       &quot;description&quot;: &quot;Easing curves used when spacing values are animated — for example, when a container expands from space-0 to space-6 or when layout gaps transition between density settings.&quot;,
       &quot;items&quot;: [
         {
-          &quot;name&quot;: &quot;expand&quot;,
-          &quot;displayName&quot;: &quot;Expand Ease&quot;,
+          &quot;identifier&quot;: &quot;expand&quot;,
+          &quot;name&quot;: &quot;Expand Ease&quot;,
           &quot;description&quot;: &quot;Used when a spatial value increases — a container opening, a gap growing, or a panel expanding. The curve starts slow and accelerates into the final position, making the expansion feel deliberate rather than abrupt.&quot;,
           &quot;function&quot;: [
             0.05,
@@ -283,8 +291,8 @@
           }
         },
         {
-          &quot;name&quot;: &quot;collapse&quot;,
-          &quot;displayName&quot;: &quot;Collapse Ease&quot;,
+          &quot;identifier&quot;: &quot;collapse&quot;,
+          &quot;name&quot;: &quot;Collapse Ease&quot;,
           &quot;description&quot;: &quot;Used when a spatial value decreases — a container closing, a gap shrinking, or a panel collapsing. The curve accelerates early and decelerates into the final position, making the collapse feel responsive.&quot;,
           &quot;function&quot;: [
             0.3,
@@ -358,7 +366,8 @@
           &quot;category&quot;: &quot;accessibility&quot;,
           &quot;criteria&quot;: [
             {
-              &quot;url&quot;: &quot;https://www.w3.org/TR/WCAG22/#target-size-minimum&quot;
+              &quot;url&quot;: &quot;https://www.w3.org/TR/WCAG22/#target-size-minimum&quot;,
+              &quot;kind&quot;: &quot;reference&quot;
             }
           ]
         },
@@ -369,7 +378,8 @@
           &quot;category&quot;: &quot;accessibility&quot;,
           &quot;criteria&quot;: [
             {
-              &quot;url&quot;: &quot;https://www.w3.org/TR/WCAG22/#resize-text&quot;
+              &quot;url&quot;: &quot;https://www.w3.org/TR/WCAG22/#resize-text&quot;,
+              &quot;kind&quot;: &quot;reference&quot;
             }
           ]
         }
@@ -418,7 +428,7 @@
           &quot;description&quot;: &quot;When defining border widths, outline offsets, or stroke values.&quot;,
           &quot;kind&quot;: &quot;negative&quot;,
           &quot;alternative&quot;: {
-            &quot;name&quot;: &quot;border-width&quot;,
+            &quot;identifier&quot;: &quot;border-width&quot;,
             &quot;rationale&quot;: &quot;Border tokens are tuned for visual weight at sub-pixel and single-pixel sizes. Spacing tokens start at 0px and jump to values optimized for whitespace, which produce incorrect visual results when applied to borders.&quot;
           }
         },
@@ -426,7 +436,7 @@
           &quot;description&quot;: &quot;When setting font sizes or line heights.&quot;,
           &quot;kind&quot;: &quot;negative&quot;,
           &quot;alternative&quot;: {
-            &quot;name&quot;: &quot;typography&quot;,
+            &quot;identifier&quot;: &quot;typography&quot;,
             &quot;rationale&quot;: &quot;Typographic tokens follow a modular scale designed for readability and vertical rhythm. Spacing tokens follow a geometric scale designed for whitespace. The two scales serve different purposes and should not be interchanged.&quot;
           }
         },
@@ -434,7 +444,7 @@
           &quot;description&quot;: &quot;When sizing icons or illustration containers.&quot;,
           &quot;kind&quot;: &quot;negative&quot;,
           &quot;alternative&quot;: {
-            &quot;name&quot;: &quot;icon-size&quot;,
+            &quot;identifier&quot;: &quot;icon-size&quot;,
             &quot;rationale&quot;: &quot;Icon size tokens are calibrated to optical alignment with adjacent text at each type scale step. Spacing tokens do not account for optical sizing and produce misaligned icons.&quot;
           }
         }
@@ -492,7 +502,7 @@
         <ds-back-to-top></ds-back-to-top>
 
         <ds-footer>
-          <p>Design System Documentation Spec (DSDS) 0.1 — Draft Specification</p>
+          <p>Design System Documentation Spec (DSDS) 0.2.1 — Draft Specification</p>
           <p><a href="https://github.com/somerandomdude/design-system-documentation-schema">GitHub</a></p>
         </ds-footer>
       </div>

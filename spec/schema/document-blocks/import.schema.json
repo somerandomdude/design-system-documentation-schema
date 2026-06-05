@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://designsystemdocspec.org/v0.2.1/document-blocks/import.schema.json",
+  "title": "DSDS Import Document Block",
+  "description": "Documents how to import a component in code across different platforms and frameworks. Each item provides a platform-specific import statement, the package to install, and optional context. When a component is available on multiple platforms (React, Vue, Web Components, etc.), include one entry per platform.",
+  "$defs": {
+    "importEntry": {
+      "type": "object",
+      "description": "A single platform-specific import statement for a component. Pairs the platform identifier with the code needed to import and use the component.",
+      "required": ["platform", "code"],
+      "properties": {
+        "platform": {
+          "type": "string",
+          "description": "The platform or framework this import applies to (e.g., 'react', 'vue', 'angular', 'svelte', 'web-component', 'ios', 'android'). Use the same platform identifiers as the API document block."
+        },
+        "package": {
+          "type": "string",
+          "description": "The package or module to install (e.g., '@acme/ui', '@acme/ui-vue', 'AcmeUI'). Include the full package name as it appears in the package manager."
+        },
+        "code": {
+          "type": "string",
+          "description": "The import statement or code snippet. SHOULD be copy-pasteable and immediately usable. For multi-line snippets (e.g., install + import), use newlines."
+        },
+        "language": {
+          "type": "string",
+          "description": "The language or format of the code (e.g., 'tsx', 'js', 'vue', 'swift', 'kotlin'). Omit when obvious from the platform."
+        },
+        "description": {
+          "$ref": "../common/rich-text.schema.json#/$defs/richText",
+          "description": "Additional context about this import — when to use this path over alternatives, version requirements, or setup prerequisites."
+        },
+        "since": {
+          "type": "string",
+          "description": "The version in which this import path became available."
+        }
+      },
+      "additionalProperties": false
+    },
+    "import": {
+      "type": "object",
+      "description": "Documents how to import a component across platforms. Each item is a platform-specific import entry with the code needed to use the component. For components available on multiple platforms, include one entry per platform. Ordering is significant — list the primary/recommended platform first.",
+      "required": ["kind", "items"],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "const": "import",
+          "description": "Identifies this document block as an import spec."
+        },
+        "items": {
+          "type": "array",
+          "description": "Platform-specific import entries. Each item documents how to import the component on a specific platform or framework. List the primary/recommended platform first.",
+          "items": {
+            "$ref": "#/$defs/importEntry"
+          },
+          "minItems": 1
+        },
+        "agents": {
+          "$ref": "../common/agents.schema.json#/$defs/agents",
+          "description": "AI-ready context for this document block. Provides structured info for AI/LLM use: constraints, disambiguation, anti-patterns, examples, and keywords."
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

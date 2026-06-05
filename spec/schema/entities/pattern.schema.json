@@ -1,16 +1,16 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://designsystemdocspec.org/v0.1/pattern.schema.json",
+  "$id": "https://designsystemdocspec.org/v0.2.1/pattern.schema.json",
   "title": "DSDS Pattern Definitions",
-  "description": "Definitions for documenting interaction patterns \u2014 recurring solutions to common UX problems such as navigation, error messaging, form validation, empty states, loading sequences, and onboarding flows. A pattern document captures the identity of a multi-component solution. Ancillary concerns \u2014 status, category, tags, aliases, summary, thumbnail, preview, extends, and links \u2014 live in the modular `metadata` array as typed entries. All structured docs live in the unified `documentBlock` array as typed document block objects.",
+  "description": "Defines documents for interaction patterns. Patterns are repeated solutions to common UX problems: navigation, error messaging, form validation, empty states, loading sequences, and onboarding flows. A pattern document holds the identity of a multi-component solution. Typed entries in the `metadata` array carry modular metadata: status, category, tags, aliases, summary, thumbnail, preview, extends, and links. Typed entries in the `documentBlock` array carry structured docs.",
   "$defs": {
     "pattern": {
       "type": "object",
-      "description": "Documentation for an interaction pattern \u2014 a recurring, multi-component solution to a common UX problem. Patterns sit above individual components and describe how they compose to address a user need. The pattern's identity (name, displayName, description) lives at the top level. Ancillary concerns \u2014 status, category, tags, aliases, summary, thumbnail, preview, extends, and links \u2014 live in the modular `metadata` array as typed entries with a `kind` discriminator. All structured docs live in the `documentBlock` array \u2014 each entry is a typed document block object (interaction for flow steps, guideline for rules, accessibility for a11y specs, etc.).",
+      "description": "A repeated, multi-component solution to a common UX problem. Patterns sit above individual components and show how those components compose to meet a user need. The top level holds identity: `identifier`, `name`, and `description`. The `metadata` array holds modular entries with a `kind` tag — status, category, tags, aliases, summary, thumbnail, preview, extends, and links. The `documentBlock` array holds structured docs as typed entries: `interaction` for flow steps, `guideline` for rules, `accessibility` for a11y specs, and so on.",
       "required": [
         "kind",
-        "name",
-        "displayName"
+        "identifier",
+        "name"
       ],
       "properties": {
         "kind": {
@@ -18,32 +18,32 @@
           "const": "pattern",
           "description": "Identifies this entity as a pattern."
         },
-        "name": {
+        "identifier": {
           "type": "string",
           "pattern": "^[a-z][a-z0-9-]*$",
           "description": "Machine-readable identifier for the pattern (e.g., 'error-messaging', 'navigation', 'empty-state', 'form-validation'). MUST be unique within the documentation group."
         },
-        "displayName": {
+        "name": {
           "type": "string",
-          "description": "Human-readable name for display in docs (e.g., 'Error Messaging', 'Navigation', 'Empty State')."
+          "description": "Display name shown in docs (e.g., 'Error Messaging', 'Navigation', 'Empty State')."
         },
         "metadata": {
           "type": "array",
-          "description": "Modular metadata entries. Each entry is a typed object with a `kind` discriminator. Types include status, since, tags, category, aliases, summary, thumbnail, preview, extends, and links.",
+          "description": "Modular metadata entries. Each entry is a typed object with a `kind` tag. Kinds include status, since, tags, category, aliases, summary, thumbnail, preview, extends, and links.",
           "items": {
             "$ref": "../metadata/metadata.schema.json#/$defs/entityMetadata"
           }
         },
         "documentBlocks": {
           "type": "array",
-          "description": "All structured docs for this pattern as an ordered array of typed document block objects. Patterns accept pattern-specific document block types (interactions) and general types (guidelines, use-cases, accessibility, examples). Each document block entry has a `type` property that determines its shape. Ordering is significant: tools SHOULD preserve it for display. Interaction document block entries rely on ordering to represent chronological flow. Reference participating components through a links metadata entry (with type 'component', name, and role) rather than a dedicated document block type.",
+          "description": "All structured docs for this pattern, as an ordered array of typed document block objects. Patterns accept the pattern-specific kinds (interactions) plus the general kinds (guidelines, use-cases, accessibility, examples). The `type` property on each entry sets its shape. Order matters: tools SHOULD preserve it for display. Interaction entries rely on order to show the flow in time. Reference the components a pattern uses through a `links` metadata entry (type 'component', name, and role) rather than a dedicated block kind.",
           "items": {
             "$ref": "../document-blocks/document-blocks.schema.json#/$defs/patternDocumentBlock"
           }
         },
         "agents": {
           "$ref": "../common/agents.schema.json#/$defs/agents",
-          "description": "Agent-optimized context for this pattern \u2014 intent, constraints, disambiguation, anti-patterns, examples, and keywords for efficient agentic consumption."
+          "description": "AI-ready context for this pattern: intent, constraints, disambiguation, anti-patterns, examples, and keywords for efficient AI use."
         },
         "$extensions": {
           "$ref": "../common/extensions.schema.json#/$defs/extensions"

@@ -3,14 +3,14 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>DSDS States Guideline — DSDS 0.1</title>
+  <title>DSDS States Guideline — DSDS 0.2.1</title>
   <link rel="stylesheet" href="tokens.css">
   <link rel="stylesheet" href="style.css">
   <script src="components.js"></script>
 </head>
 <body>
   <ds-nav-toggle target="ds-spec-nav"></ds-nav-toggle>
-  <ds-spec-nav title="Design System Documentation Spec 0.1" title-href="index.html" active="document-blocks-state">
+  <ds-spec-nav title="Design System Documentation Spec 0.2.1" title-href="index.html" active="document-blocks-state">
     <a href="index.html" slug="index">Overview</a>
     <a href="quickstart.html" slug="quickstart">Quick start</a>
     <a href="schema-architecture.html" slug="schema-architecture">Schema architecture</a>
@@ -19,6 +19,7 @@
       <a href="root.html" slug="root">Root schema</a>
     </ds-nav-group>
     <ds-nav-group label="Common">
+      <a href="common-agent-collection.html" slug="common-agent-collection">agent-collection</a>
       <a href="common-agents.html" slug="common-agents">agents</a>
       <a href="common-example.html" slug="common-example">example</a>
       <a href="common-extends.html" slug="common-extends">extends</a>
@@ -46,6 +47,7 @@
       <a href="document-blocks-document-blocks.html" slug="document-blocks-document-blocks">document-blocks</a>
       <a href="document-blocks-events.html" slug="document-blocks-events">events</a>
       <a href="document-blocks-guideline.html" slug="document-blocks-guideline">guideline</a>
+      <a href="document-blocks-import.html" slug="document-blocks-import">import</a>
       <a href="document-blocks-interaction.html" slug="document-blocks-interaction">interaction</a>
       <a href="document-blocks-motion.html" slug="document-blocks-motion">motion</a>
       <a href="document-blocks-principle.html" slug="document-blocks-principle">principle</a>
@@ -58,6 +60,7 @@
       <a href="metadata-category.html" slug="metadata-category">category</a>
       <a href="metadata-description.html" slug="metadata-description">description</a>
       <a href="metadata-extends.html" slug="metadata-extends">extends</a>
+      <a href="metadata-last-updated.html" slug="metadata-last-updated">last-updated</a>
       <a href="metadata-links.html" slug="metadata-links">links</a>
       <a href="metadata-metadata.html" slug="metadata-metadata">metadata</a>
       <a href="metadata-preview.html" slug="metadata-preview">preview</a>
@@ -81,10 +84,10 @@
 </ds-def-index>
 <ds-def-section name="stateEntry" anchor="stateentry" description="A single interactive state of a component. States represent transient or persistent visual/behavioral changes triggered by user interaction, system events, or data conditions." type="object">
 <ds-prop-table>
-  <ds-prop name="name" type="string" required>Machine-readable state name (e.g., 'default', 'hover', 'focus', 'active', 'disabled', 'loading', 'selected', 'error', 'read-only').</ds-prop>
+  <ds-prop name="identifier" type="string" required>Machine-readable state identifier (e.g., 'default', 'hover', 'focus', 'active', 'disabled', 'loading', 'selected', 'error', 'read-only').</ds-prop>
   <ds-prop name="description" type="&lt;ds-type-ref href=&quot;common-rich-text.html#richtext&quot;&gt;richText&lt;/ds-type-ref&gt;" required>What triggers this state, how appearance and behavior change, and any constraints or side effects.</ds-prop>
-  <ds-prop name="displayName" type="string">Human-readable name (e.g., 'Default', 'Hover', 'Focus', 'Active / Pressed', 'Disabled', 'Loading').</ds-prop>
-  <ds-prop name="tokens" type="map&amp;lt;string, string&amp;gt;">Design token overrides applied when this state is active. Keys are token property names scoped to the component (e.g., 'button-background', 'button-border-color'). Values are the token names or resolved values used in this state. Only tokens that change from the default state need to be listed. Note: these token references are descriptive summaries for designers. Authoritative resolved values for each variant × state combination live in the design-specifications guideline's overrides array.</ds-prop>
+  <ds-prop name="name" type="string">Human-readable name (e.g., 'Default', 'Hover', 'Focus', 'Active / Pressed', 'Disabled', 'Loading').</ds-prop>
+  <ds-prop name="tokens" type="map&amp;lt;string, string&amp;gt;">Design token overrides applied when this state is active. Keys are token property names scoped to the component (e.g., 'button-background', 'button-border-color'). Values are the token identifiers or resolved values used in this state. Only tokens that change from the default state need to be listed. Note: these token references are descriptive summaries for designers. Authoritative resolved values for each variant × state combination live in the design-specifications guideline's overrides array.</ds-prop>
   <ds-prop name="purpose" type="&lt;ds-type-ref href=&quot;common-purpose.html#purpose&quot;&gt;purpose&lt;/ds-type-ref&gt;">Why this state exists — the user need or design rationale it addresses.</ds-prop>
   <ds-prop name="preview" type="&lt;ds-type-ref href=&quot;common-example.html#example&quot;&gt;example&lt;/ds-type-ref&gt;[]">Visual previews showing the component in this state.</ds-prop>
 </ds-prop-table>
@@ -94,13 +97,13 @@
 <ds-def-example>
 <ds-code language="json" label="example">[
   {
-    &quot;name&quot;: &quot;default&quot;,
-    &quot;displayName&quot;: &quot;Default&quot;,
+    &quot;identifier&quot;: &quot;default&quot;,
+    &quot;name&quot;: &quot;Default&quot;,
     &quot;description&quot;: &quot;The button's resting state when no interaction is occurring.&quot;
   },
   {
-    &quot;name&quot;: &quot;hover&quot;,
-    &quot;displayName&quot;: &quot;Hover&quot;,
+    &quot;identifier&quot;: &quot;hover&quot;,
+    &quot;name&quot;: &quot;Hover&quot;,
     &quot;description&quot;: &quot;Triggered when the user's pointer moves over the button. The background darkens by 8% to indicate interactivity. Not applicable on touch devices.&quot;,
     &quot;tokens&quot;: {
       &quot;button-background&quot;: &quot;color-action-primary-hover&quot;
@@ -117,16 +120,16 @@
     ]
   },
   {
-    &quot;name&quot;: &quot;active&quot;,
-    &quot;displayName&quot;: &quot;Active / Pressed&quot;,
+    &quot;identifier&quot;: &quot;active&quot;,
+    &quot;name&quot;: &quot;Active / Pressed&quot;,
     &quot;description&quot;: &quot;Triggered while the button is being pressed (mousedown or touch start). The background darkens by 16% from the default to indicate activation.&quot;,
     &quot;tokens&quot;: {
       &quot;button-background&quot;: &quot;color-action-primary-active&quot;
     }
   },
   {
-    &quot;name&quot;: &quot;focus&quot;,
-    &quot;displayName&quot;: &quot;Focus&quot;,
+    &quot;identifier&quot;: &quot;focus&quot;,
+    &quot;name&quot;: &quot;Focus&quot;,
     &quot;description&quot;: &quot;Triggered when the button receives keyboard focus. A 2px focus ring appears with a 2px offset from the container edge. The focus ring uses the system focus color.&quot;,
     &quot;tokens&quot;: {
       &quot;button-focus-ring-color&quot;: &quot;color-focus-ring&quot;,
@@ -145,8 +148,8 @@
     ]
   },
   {
-    &quot;name&quot;: &quot;disabled&quot;,
-    &quot;displayName&quot;: &quot;Disabled&quot;,
+    &quot;identifier&quot;: &quot;disabled&quot;,
+    &quot;name&quot;: &quot;Disabled&quot;,
     &quot;description&quot;: &quot;The button is non-interactive. Opacity is reduced to 0.4. Pointer events are disabled. The button remains in the tab order when using aria-disabled instead of the HTML disabled attribute.&quot;,
     &quot;purpose&quot;: {
       &quot;kind&quot;: &quot;purpose&quot;,
@@ -159,7 +162,7 @@
           &quot;description&quot;: &quot;When the button is processing an asynchronous operation.&quot;,
           &quot;kind&quot;: &quot;negative&quot;,
           &quot;alternative&quot;: {
-            &quot;name&quot;: &quot;loading&quot;,
+            &quot;identifier&quot;: &quot;loading&quot;,
             &quot;rationale&quot;: &quot;The loading state provides feedback that an action is in progress. A disabled button gives no feedback.&quot;
           }
         }
@@ -167,8 +170,8 @@
     }
   },
   {
-    &quot;name&quot;: &quot;loading&quot;,
-    &quot;displayName&quot;: &quot;Loading&quot;,
+    &quot;identifier&quot;: &quot;loading&quot;,
+    &quot;name&quot;: &quot;Loading&quot;,
     &quot;description&quot;: &quot;The button label is replaced by a spinner animation. The button is non-interactive. The button maintains its dimensions from the default state to prevent layout shift.&quot;,
     &quot;preview&quot;: [
       {
@@ -188,7 +191,7 @@
 <ds-prop-table>
   <ds-prop name="kind" type="&lt;ds-code inline&gt;&quot;states&quot;&lt;/ds-code&gt;" required>Identifies this guideline as a states spec.</ds-prop>
   <ds-prop name="items" type="&lt;ds-type-ref href=&quot;document-blocks-state.html#stateentry&quot;&gt;stateEntry&lt;/ds-type-ref&gt;[]" required>The interactive states. Each item documents a single state with its trigger, visual changes, token overrides, and optional previews. Ordering is significant — tools SHOULD display states in this order.<br><small>Min items: 1</small></ds-prop>
-  <ds-prop name="agents" type="&lt;ds-type-ref href=&quot;common-agents.html#agents&quot;&gt;agents&lt;/ds-type-ref&gt;">Agent-optimized context for this document block. Provides structured information for AI/LLM consumption — constraints, disambiguation, anti-patterns, examples, and keywords.</ds-prop>
+  <ds-prop name="agents" type="&lt;ds-type-ref href=&quot;common-agents.html#agents&quot;&gt;agents&lt;/ds-type-ref&gt;">AI-ready context for this document block. Provides structured info for AI/LLM use: constraints, disambiguation, anti-patterns, examples, and keywords.</ds-prop>
 </ds-prop-table>
 <ds-cross-refs><strong>References:</strong> 
 <ds-type-ref href="document-blocks-state.html#stateentry">stateEntry</ds-type-ref>, <ds-type-ref href="common-agents.html#agents">agents</ds-type-ref>
@@ -198,7 +201,7 @@
         <ds-back-to-top></ds-back-to-top>
 
         <ds-footer>
-          <p>Design System Documentation Spec (DSDS) 0.1 — Draft Specification</p>
+          <p>Design System Documentation Spec (DSDS) 0.2.1 — Draft Specification</p>
           <p><a href="https://github.com/somerandomdude/design-system-documentation-schema">GitHub</a></p>
         </ds-footer>
       </div>

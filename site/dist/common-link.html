@@ -3,14 +3,14 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>DSDS Link Definition — DSDS 0.1</title>
+  <title>DSDS Link Definition — DSDS 0.2.1</title>
   <link rel="stylesheet" href="tokens.css">
   <link rel="stylesheet" href="style.css">
   <script src="components.js"></script>
 </head>
 <body>
   <ds-nav-toggle target="ds-spec-nav"></ds-nav-toggle>
-  <ds-spec-nav title="Design System Documentation Spec 0.1" title-href="index.html" active="common-link">
+  <ds-spec-nav title="Design System Documentation Spec 0.2.1" title-href="index.html" active="common-link">
     <a href="index.html" slug="index">Overview</a>
     <a href="quickstart.html" slug="quickstart">Quick start</a>
     <a href="schema-architecture.html" slug="schema-architecture">Schema architecture</a>
@@ -19,6 +19,7 @@
       <a href="root.html" slug="root">Root schema</a>
     </ds-nav-group>
     <ds-nav-group label="Common">
+      <a href="common-agent-collection.html" slug="common-agent-collection">agent-collection</a>
       <a href="common-agents.html" slug="common-agents">agents</a>
       <a href="common-example.html" slug="common-example">example</a>
       <a href="common-extends.html" slug="common-extends">extends</a>
@@ -46,6 +47,7 @@
       <a href="document-blocks-document-blocks.html" slug="document-blocks-document-blocks">document-blocks</a>
       <a href="document-blocks-events.html" slug="document-blocks-events">events</a>
       <a href="document-blocks-guideline.html" slug="document-blocks-guideline">guideline</a>
+      <a href="document-blocks-import.html" slug="document-blocks-import">import</a>
       <a href="document-blocks-interaction.html" slug="document-blocks-interaction">interaction</a>
       <a href="document-blocks-motion.html" slug="document-blocks-motion">motion</a>
       <a href="document-blocks-principle.html" slug="document-blocks-principle">principle</a>
@@ -58,6 +60,7 @@
       <a href="metadata-category.html" slug="metadata-category">category</a>
       <a href="metadata-description.html" slug="metadata-description">description</a>
       <a href="metadata-extends.html" slug="metadata-extends">extends</a>
+      <a href="metadata-last-updated.html" slug="metadata-last-updated">last-updated</a>
       <a href="metadata-links.html" slug="metadata-links">links</a>
       <a href="metadata-metadata.html" slug="metadata-metadata">metadata</a>
       <a href="metadata-preview.html" slug="metadata-preview">preview</a>
@@ -71,17 +74,17 @@
   <div class="content content--with-toc">
     <main class="content__main" role="main">
       <div class="content__inner">
-        <ds-schema-header title="DSDS Link Definition" description="A typed reference to an external resource, a related artifact, or an internal DSDS entity. Used across all DSDS document types for source code, design files, docs, packages, artifact relationships, and internal cross-references. Every link requires a `kind` and at least one of `url` (for external resources) or `name` (for internal DSDS artifact references). Both can be present when an internal artifact also has an addressable URL." source="common/link.schema.json"></ds-schema-header>
-<ds-def-section name="link" anchor="link" description="A typed reference to an external resource or an internal DSDS artifact. Links point to external resources (source code, design files, docs, packages), express relationships to other DSDS artifacts by name, or combine both when an internal artifact also has an addressable URL. The `kind` property classifies the reference. Standard external types: 'source', 'design', 'storybook', 'documentation', 'package', 'repository'. Standard relationship types: 'alternative', 'parent', 'child', 'related'. Standard artifact types (for internal references): 'component', 'token', 'token-group', 'style', 'pattern', 'theme'. Custom values are permitted." type="object">
+        <ds-schema-header title="DSDS Link Definition" description="A typed pointer to an external resource, a related artifact, or another DSDS entity. Used across every DSDS document type for source code, design files, docs, packages, artifact relationships, and internal cross-references. Every link requires a `kind`, plus at least one of `url` (for external resources) or `identifier` (for internal DSDS artifact references). Both may appear together when an internal artifact also has a public URL." source="common/link.schema.json"></ds-schema-header>
+<ds-def-section name="link" anchor="link" description="A typed pointer to an external resource or another DSDS artifact. Links point to external resources (source code, design files, docs, packages), express relationships to other DSDS artifacts by identifier, or combine both when an internal artifact also has a public URL. The `kind` property classifies the reference. Standard external kinds: 'source', 'design', 'storybook', 'documentation', 'package', 'repository'. Standard relationship kinds: 'alternative', 'parent', 'child', 'related'. Standard artifact kinds (for internal references): 'component', 'token', 'token-group', 'style', 'pattern', 'theme'. Custom values are allowed." type="object">
 <ds-prop-table>
-  <ds-prop name="kind" type="string" required>The category of the linked resource or relationship. Standard external types: 'source', 'design', 'storybook', 'documentation', 'package', 'repository'. Standard relationship types: 'alternative', 'parent', 'child', 'related'. Standard artifact types (for internal references): 'component', 'token', 'token-group', 'style', 'pattern', 'theme'. Custom values are permitted and SHOULD match ^[a-z][a-z0-9-]*$.</ds-prop>
-  <ds-prop name="url" type="string (uri)" conditional>The URL of the linked resource. MUST be a valid absolute URI. Required for external resource links. Optional for internal artifact references (where `name` identifies the artifact). When both `url` and `name` are present, `url` points to the artifact's docs page and `name` is the machine-readable cross-reference.</ds-prop>
-  <ds-prop name="name" type="string" conditional>The name of a referenced DSDS artifact (e.g., 'button', 'form-field', 'color-text'). MUST match the `name` property of a documented DSDS artifact. Required for internal artifact references. Optional for external resource links. When present, tools SHOULD resolve this name against the artifact catalog to create navigable cross-references.</ds-prop>
-  <ds-prop name="label" type="string">Display text for this link — what a user sees when the link renders (e.g., 'React component source', 'Design file — variants', 'Button component'). Use for the human-readable resource name. To describe an internal artifact's functional relationship, use `role` instead.</ds-prop>
-  <ds-prop name="role" type="string">The functional relationship this artifact has to the current entity — what part it plays (e.g., 'Primary action trigger', 'Error summary container', 'Provides semantic text color tokens'). Distinct from `label`, which is display text for the link itself. Use for internal artifact references to explain *why* this artifact is linked. When omitted, the link is a general association.</ds-prop>
-  <ds-prop name="required" type="boolean">Whether this linked artifact is required for the parent entity to function. Used for internal artifact references — for example, a form-validation pattern might mark 'form-field' as required and 'toast' as optional. Defaults to false. Not applicable to external resource links.<br><small>Default: <ds-code inline>false</ds-code></small></ds-prop>
+  <ds-prop name="kind" type="string" required>The category of the linked resource or relationship. Standard external kinds: 'source', 'design', 'storybook', 'documentation', 'package', 'repository'. Standard relationship kinds: 'alternative', 'parent', 'child', 'related'. Standard artifact kinds (for internal references): 'component', 'token', 'token-group', 'style', 'pattern', 'theme'. Custom values are allowed and SHOULD match ^[a-z][a-z0-9-]*$.</ds-prop>
+  <ds-prop name="url" type="string (uri)" conditional>The URL of the linked resource. MUST be a valid absolute URI. Required for external resource links. Optional for internal artifact references (where <ds-code inline>identifier</ds-code> names the artifact). When both <ds-code inline>url</ds-code> and <ds-code inline>identifier</ds-code> are present, <ds-code inline>url</ds-code> points to the artifact's docs page and <ds-code inline>identifier</ds-code> is the machine-readable cross-reference.</ds-prop>
+  <ds-prop name="identifier" type="string" conditional>The identifier of a referenced DSDS artifact (e.g., 'button', 'form-field', 'color-text'). MUST match the <ds-code inline>identifier</ds-code> property of a documented DSDS artifact. Required for internal artifact references. Optional for external resource links. When present, tools SHOULD resolve this identifier against the artifact catalog to create navigable cross-references.</ds-prop>
+  <ds-prop name="label" type="string">Display text for this link — what a user sees when the link renders (e.g., 'React component source', 'Design file — variants', 'Button component'). Use it for the display name of the resource. To describe an internal artifact's role, use <ds-code inline>role</ds-code> instead.</ds-prop>
+  <ds-prop name="role" type="string">The functional role this artifact plays in the current entity (e.g., 'Primary action trigger', 'Error summary container', 'Provides semantic text color tokens'). Distinct from <ds-code inline>label</ds-code>, which is display text for the link itself. Use it on internal artifact references to explain *why* this artifact is linked. When omitted, the link is a general association.</ds-prop>
+  <ds-prop name="required" type="boolean">Whether this linked artifact is required for the parent entity to work. Used on internal artifact references — for example, a form-validation pattern might mark 'form-field' as required and 'toast' as optional. Defaults to false. Not used on external resource links.<br><small>Default: <ds-code inline>false</ds-code></small></ds-prop>
 </ds-prop-table>
-<ds-note variant="warning"><strong>Constraint:</strong> At least one of <ds-code inline>url</ds-code>, <ds-code inline>name</ds-code> must be present.</ds-note>
+<ds-note variant="warning"><strong>Constraint:</strong> At least one of <ds-code inline>url</ds-code>, <ds-code inline>identifier</ds-code> must be present.</ds-note>
 <ds-def-example>
 <ds-code language="json" label="example">[
   {
@@ -131,7 +134,7 @@
         <ds-back-to-top></ds-back-to-top>
 
         <ds-footer>
-          <p>Design System Documentation Spec (DSDS) 0.1 — Draft Specification</p>
+          <p>Design System Documentation Spec (DSDS) 0.2.1 — Draft Specification</p>
           <p><a href="https://github.com/somerandomdude/design-system-documentation-schema">GitHub</a></p>
         </ds-footer>
       </div>
