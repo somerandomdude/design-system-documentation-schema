@@ -61,10 +61,10 @@ const SAMPLES = [
     label: "Error Messaging Pattern",
   },
   {
-    file: "entities/style.json",
-    key: "style",
-    id: "style",
-    label: "Spacing Style",
+    file: "entities/foundation.json",
+    key: "foundation",
+    id: "foundation",
+    label: "Spacing Foundation",
   },
   {
     file: "entities/theme.json",

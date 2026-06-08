@@ -5,7 +5,7 @@ slug: quickstart
 
 ## What is DSDS?
 
-DSDS (Design System Documentation Spec) is a JSON-based format for documenting design systems. It gives every piece of documentation — components, tokens, themes, styles, patterns — in a machine-readable structure.
+DSDS (Design System Documentation Spec) is a JSON-based format for documenting design systems. It gives every piece of documentation — components, tokens, themes, foundations, patterns — in a machine-readable structure.
 
 <ds-callout>
 
@@ -33,8 +33,8 @@ Use `entity` when each component, token, or pattern lives in its own file. The `
 
 ```json
 {
-  "$schema": "https://designsystemdocspec.org/v0.2.1/dsds.bundled.schema.json",
-  "dsdsVersion": "0.2.1",
+  "$schema": "https://designsystemdocspec.org/v0.3/dsds.bundled.schema.json",
+  "dsdsVersion": "0.3",
   "entity": {
     "kind": "component",
     "identifier": "button",
@@ -54,7 +54,7 @@ Use `documentation` when you want to organize multiple entities in one file, or 
 
 ```json
 {
-  "dsdsVersion": "0.2.1",
+  "dsdsVersion": "0.3",
   "documentation": [
     {
       "name": "My Design System",
@@ -74,7 +74,7 @@ Use `documentation` when you want to organize multiple entities in one file, or 
 
 - `dsdsVersion` — always `"0.2"` for this version
 - `documentation` — array of named groups, each with typed entity arrays
-- `components`, `tokenGroups`, `themes`, `styles`, `patterns` — separate arrays for each entity type. All are optional.
+- `components`, `tokenGroups`, `themes`, `foundations`, `patterns` — separate arrays for each entity type. All are optional.
 
 ### Linking files with `$ref`
 
@@ -82,7 +82,7 @@ Entity arrays accept `$ref` objects that point to other DSDS files. This lets yo
 
 ```json
 {
-  "dsdsVersion": "0.2.1",
+  "dsdsVersion": "0.3",
   "documentation": [
     {
       "name": "Acme Design System",
@@ -115,7 +115,7 @@ Every entity has a `kind` field that tells tools what type of thing it is. There
 | token | `"token"` | A single design token — color, spacing, typography. Carries type, category, and usage rules. Link to W3C DTCG definitions via `source`. |
 | token-group | `"token-group"` | A nested group of related tokens. Recursive — groups can contain groups. |
 | theme | `"theme"` | A named set of token overrides — dark mode, high-contrast, compact density, brand variants. Lists which token names change; the DTCG file holds the actual values. |
-| style | `"style"` | A design base — color, typography, spacing, elevation. Carries principles, scales, and motion definitions. |
+| foundation | `"foundation"` | A design base — color, typography, spacing, elevation. Carries principles, scales, and motion definitions. |
 | pattern | `"pattern"` | A broad action pattern — nav, error messaging, empty states. Describes how components compose to solve a user need. |
 
 ### Common properties
@@ -136,7 +136,7 @@ Every entity shares these fields:
 | `documentBlocks` | No | Array of typed document block objects |
 | `agents` | No | Agent-optimized context for AI/LLM consumption |
 
-\* Required for component, style, and pattern. Token requires `identifier` + `tokenType`.
+\* Required for component, foundation, and pattern. Token requires `identifier` + `tokenType`.
 
 The optional `agents` object provides context written for AI/LLM consumers — `intent` for quick relevance checks, `keywords` for retrieval, `constraints` with enforcement levels and optional `evidence` and inline `examples`, `disambiguation` against similar entities (with optional `entityType`), and `antiPatterns` with corrective alternatives. The `verified` and `verifiedAgainst` fields signal data freshness.
 
@@ -182,9 +182,9 @@ Structured docs live in the `documentBlocks` array on each entity. Each document
 | `content` | component, pattern | Writing and labelling guidelines for UI text |
 | `interaction` | component, pattern | Step-by-step action flows with optional wireframes |
 | `design-specifications` | component, pattern | Concrete measurements, spacing, and sizing values for implementors |
-| `scale` | style | Named stops along a design scale (e.g. spacing-100…spacing-900) |
-| `motion` | style | Named animation/transition presets with duration, easing, and purpose |
-| `principle` | style | Guiding design principles with rationale and examples |
+| `scale` | foundation | Named stops along a design scale (e.g. spacing-100…spacing-900) |
+| `motion` | foundation | Named animation/transition presets with duration, easing, and purpose |
+| `principle` | foundation | Guiding design principles with rationale and examples |
 
 Every document block type also accepts an optional `agents` property for AI/LLM-optimized context scoped to that section. See [Schema Architecture](schema-architecture.html#block-level-agents) for details.
 
@@ -262,11 +262,11 @@ A theme provides `overrides` — an array of token names that differ from the de
 
 <ds-example file="theme.json" label="minimal theme" />
 
-### Style
+### Foundation
 
-A style documents a design base. Guidelines like `principles`, `scale`, and `motion` are specific to styles.
+A foundation documents a design base. Guidelines like `principles`, `scale`, and `motion` are specific to foundations.
 
-<ds-example file="style.json" label="minimal style" />
+<ds-example file="foundation.json" label="minimal foundation" />
 
 ### Pattern
 
@@ -292,8 +292,8 @@ Add `$schema` to get editor autocompletion and inline validation:
 
 ```json
 {
-  "$schema": "https://designsystemdocspec.org/v0.2.1/dsds.bundled.schema.json",
-  "dsdsVersion": "0.2.1",
+  "$schema": "https://designsystemdocspec.org/v0.3/dsds.bundled.schema.json",
+  "dsdsVersion": "0.3",
   "entity": {
     "kind": "component",
     "identifier": "my-component",
