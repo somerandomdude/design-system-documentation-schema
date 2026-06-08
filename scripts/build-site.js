@@ -370,12 +370,75 @@ function collectRefs(obj, seen = new Set()) {
 // ---------------------------------------------------------------------------
 
 /**
+ * Collect the names of sibling $defs that `node` references (via any `$ref`
+ * pointing at `#/$defs/<name>`). Cross-file refs are ignored by the caller,
+ * which filters against the file's own def names.
+ */
+function collectSiblingRefs(node, out) {
+  if (Array.isArray(node)) {
+    node.forEach((n) => collectSiblingRefs(n, out));
+    return;
+  }
+  if (node && typeof node === "object") {
+    for (const [key, value] of Object.entries(node)) {
+      if (key === "$ref" && typeof value === "string") {
+        const m = value.match(/\$defs\/(\w+)/);
+        if (m) out.add(m[1]);
+      } else {
+        collectSiblingRefs(value, out);
+      }
+    }
+  }
+}
+
+/**
+ * Order a file's $defs so a definition appears BEFORE the definitions it
+ * references — i.e., the top-level block/entity first, its nested entry shapes
+ * (the granular details) after. Implemented as a level-order topological sort
+ * over the in-file reference graph; ties and any reference cycles fall back to
+ * the original file order for stability.
+ */
+function orderDefsByReference(defs) {
+  const names = Object.keys(defs);
+  const nameSet = new Set(names);
+
+  const refs = {}; // def -> Set of sibling defs it references
+  const inDegree = {};
+  for (const name of names) inDegree[name] = 0;
+  for (const name of names) {
+    const found = new Set();
+    collectSiblingRefs(defs[name], found);
+    found.delete(name); // ignore self-reference (recursive defs)
+    refs[name] = new Set([...found].filter((r) => nameSet.has(r)));
+  }
+  for (const a of names) for (const b of refs[a]) inDegree[b]++;
+
+  const ordered = [];
+  const emitted = new Set();
+  let remaining = names.slice();
+  while (remaining.length) {
+    const ready = remaining.filter((n) => inDegree[n] === 0); // file order preserved
+    if (ready.length === 0) {
+      ordered.push(...remaining); // cycle — keep file order
+      break;
+    }
+    for (const n of ready) {
+      ordered.push(n);
+      emitted.add(n);
+      for (const b of refs[n]) inDegree[b]--;
+    }
+    remaining = remaining.filter((n) => !emitted.has(n));
+  }
+  return ordered;
+}
+
+/**
  * Render a full page body for a single schema file.
  */
 function renderSchemaPage(page) {
   const parts = [];
   const defs = page.data.$defs || {};
-  const defNames = Object.keys(defs);
+  const defNames = orderDefsByReference(defs);
   const examples = page.examples || {};
 
   // Page header — title, description, source

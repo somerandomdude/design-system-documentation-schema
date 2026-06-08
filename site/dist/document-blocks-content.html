@@ -81,11 +81,99 @@
 <ds-def-index>
 <p><strong>3 definitions</strong> in this file:</p>
 <ul>
+<li><a href="#content"><ds-code inline>content</ds-code></a></li>
 <li><a href="#contentlabelentry"><ds-code inline>contentLabelEntry</ds-code></a></li>
 <li><a href="#localizationentry"><ds-code inline>localizationEntry</ds-code></a></li>
-<li><a href="#content"><ds-code inline>content</ds-code></a></li>
 </ul>
 </ds-def-index>
+<ds-def-section name="content" anchor="content" description="Structured content guidelines: recommended action labels and localization considerations. The labels array is a dictionary of standard UI labels with definitions, usage context, and cross-references. The localization array covers i18n concerns like RTL behavior, text expansion, and pluralization. At least one of `labels` or `localization` is required. Content guidelines complement best-practice guidelines: best practices say 'Use sentence case' (a rule); content guidelines say 'Add: Takes an existing object and uses it in a new context' (a reference)." type="object">
+<ds-prop-table>
+  <ds-prop name="kind" type="&lt;ds-code inline&gt;&quot;content&quot;&lt;/ds-code&gt;" required>Identifies this guideline as a content spec.</ds-prop>
+  <ds-prop name="labels" type="&lt;ds-type-ref href=&quot;document-blocks-content.html#contentlabelentry&quot;&gt;contentLabelEntry&lt;/ds-type-ref&gt;[]" conditional>Recommended action labels and terminology. Each entry sets a standard label, its meaning, usage guidance, and cross-references to related terms. Order matters: tools SHOULD preserve it for display. Authors MAY order alphabetically or by frequency of use.<br><small>Min items: 1</small></ds-prop>
+  <ds-prop name="localization" type="&lt;ds-type-ref href=&quot;document-blocks-content.html#localizationentry&quot;&gt;localizationEntry&lt;/ds-type-ref&gt;[]" conditional>Localization and i18n considerations. Each entry covers a concern that affects content across languages and writing systems: RTL mirroring, text expansion during translation, pluralization rules, and other i18n concerns. Order matters: tools SHOULD display entries in this order. Authors SHOULD order by impact or frequency.<br><small>Min items: 1</small></ds-prop>
+  <ds-prop name="description" type="&lt;ds-type-ref href=&quot;common-rich-text.html#richtext&quot;&gt;richText&lt;/ds-type-ref&gt;">Overview of the content guidelines: content philosophy, voice and tone principles, or the scope of labels and localization rules covered.</ds-prop>
+  <ds-prop name="agents" type="&lt;ds-type-ref href=&quot;common-agents.html#agents&quot;&gt;agents&lt;/ds-type-ref&gt;">AI-ready context for this document block. Provides structured info for AI/LLM use: constraints, disambiguation, anti-patterns, examples, and keywords.</ds-prop>
+</ds-prop-table>
+<ds-note variant="warning"><strong>Constraint:</strong> At least one of <ds-code inline>labels</ds-code>, <ds-code inline>localization</ds-code> must be present.</ds-note>
+<ds-cross-refs><strong>References:</strong> 
+<ds-type-ref href="common-rich-text.html#richtext">richText</ds-type-ref>, <ds-type-ref href="document-blocks-content.html#contentlabelentry">contentLabelEntry</ds-type-ref>, <ds-type-ref href="document-blocks-content.html#localizationentry">localizationEntry</ds-type-ref>, <ds-type-ref href="common-agents.html#agents">agents</ds-type-ref>
+</ds-cross-refs>
+<ds-def-example>
+<ds-code language="json" label="example">{
+  &quot;kind&quot;: &quot;content&quot;,
+  &quot;description&quot;: &quot;Standard action labels and localization guidelines for the Acme Design System. All UI labels should use sentence case. Prefer the {verb} + {noun} content formula on buttons except for common actions like Done, Close, Cancel.&quot;,
+  &quot;labels&quot;: [
+    {
+      &quot;term&quot;: &quot;Add&quot;,
+      &quot;definition&quot;: &quot;Takes an existing object and uses it in a new context.&quot;,
+      &quot;usage&quot;: &quot;Combine Add with the object (e.g., Add user, Add role).&quot;,
+      &quot;alternatives&quot;: [
+        &quot;Create&quot;,
+        &quot;Insert&quot;,
+        &quot;New&quot;,
+        &quot;Upload&quot;
+      ],
+      &quot;context&quot;: &quot;Buttons, menu items&quot;
+    },
+    {
+      &quot;term&quot;: &quot;Cancel&quot;,
+      &quot;definition&quot;: &quot;Stops the current action and closes the dialog.&quot;,
+      &quot;usage&quot;: &quot;Warn the user of any possible negative consequences. Compare Reset.&quot;,
+      &quot;alternatives&quot;: [
+        &quot;Reset&quot;,
+        &quot;Close&quot;
+      ],
+      &quot;context&quot;: &quot;Dialog buttons&quot;
+    },
+    {
+      &quot;term&quot;: &quot;Create&quot;,
+      &quot;definition&quot;: &quot;Makes a new object from scratch.&quot;,
+      &quot;usage&quot;: &quot;Use New to initiate the action and Create to apply user-supplied settings.&quot;,
+      &quot;alternatives&quot;: [
+        &quot;Add&quot;,
+        &quot;Copy&quot;,
+        &quot;New&quot;
+      ],
+      &quot;context&quot;: &quot;Primary actions, page-level buttons&quot;
+    },
+    {
+      &quot;term&quot;: &quot;Delete&quot;,
+      &quot;definition&quot;: &quot;Destroys an existing object so that it no longer exists.&quot;,
+      &quot;usage&quot;: &quot;Combine Delete with the object (e.g., Delete column). Use Move to trash if recoverable.&quot;,
+      &quot;alternatives&quot;: [
+        &quot;Clear&quot;,
+        &quot;Remove&quot;
+      ],
+      &quot;context&quot;: &quot;Destructive actions, danger buttons&quot;
+    },
+    {
+      &quot;term&quot;: &quot;Save&quot;,
+      &quot;definition&quot;: &quot;Saves pending modifications. Does not close the window or panel.&quot;,
+      &quot;usage&quot;: &quot;Compare Apply and Save as.&quot;,
+      &quot;alternatives&quot;: [
+        &quot;Apply&quot;,
+        &quot;Save as&quot;
+      ],
+      &quot;context&quot;: &quot;Form actions, editing flows&quot;
+    }
+  ],
+  &quot;localization&quot;: [
+    {
+      &quot;concern&quot;: &quot;rtl&quot;,
+      &quot;description&quot;: &quot;For RTL languages, the entire component layout is mirrored horizontally. Directional icons (arrows, chevrons) must be flipped. Non-directional icons (close, checkmark) must not be flipped.&quot;
+    },
+    {
+      &quot;concern&quot;: &quot;text-expansion&quot;,
+      &quot;description&quot;: &quot;Localization can lengthen text by 20-30%. Avoid truncating labels. Stack buttons vertically when they cannot be displayed side by side.&quot;
+    },
+    {
+      &quot;concern&quot;: &quot;concatenation&quot;,
+      &quot;description&quot;: &quot;Never construct labels by concatenating strings. Use complete, translatable strings with placeholder tokens for dynamic content.&quot;
+    }
+  ]
+}</ds-code>
+</ds-def-example>
+</ds-def-section>
 <ds-def-section name="contentLabelEntry" anchor="contentlabelentry" description="A single recommended action label or term in the content dictionary. Each entry sets a standard label, its meaning, usage guidance, and cross-references to related or alternative terms. Entries follow the {verb} + {noun} content formula used by systems like Carbon and Gestalt." type="object">
 <ds-prop-table>
   <ds-prop name="term" type="string" required>The recommended label text (e.g., 'Add', 'Cancel', 'Delete', 'Save as', 'Learn more'). The canonical form as it should appear in the UI.</ds-prop>
@@ -217,94 +305,6 @@
     &quot;description&quot;: &quot;Do not assume two plural forms (singular and plural). Some languages have up to six plural forms (e.g., Arabic). Use ICU MessageFormat or equivalent pluralization libraries that support CLDR plural rules. Never use conditional logic like `count === 1 ? 'item' : 'items'`.&quot;
   }
 ]</ds-code>
-</ds-def-example>
-</ds-def-section>
-<ds-def-section name="content" anchor="content" description="Structured content guidelines: recommended action labels and localization considerations. The labels array is a dictionary of standard UI labels with definitions, usage context, and cross-references. The localization array covers i18n concerns like RTL behavior, text expansion, and pluralization. At least one of `labels` or `localization` is required. Content guidelines complement best-practice guidelines: best practices say 'Use sentence case' (a rule); content guidelines say 'Add: Takes an existing object and uses it in a new context' (a reference)." type="object">
-<ds-prop-table>
-  <ds-prop name="kind" type="&lt;ds-code inline&gt;&quot;content&quot;&lt;/ds-code&gt;" required>Identifies this guideline as a content spec.</ds-prop>
-  <ds-prop name="labels" type="&lt;ds-type-ref href=&quot;document-blocks-content.html#contentlabelentry&quot;&gt;contentLabelEntry&lt;/ds-type-ref&gt;[]" conditional>Recommended action labels and terminology. Each entry sets a standard label, its meaning, usage guidance, and cross-references to related terms. Order matters: tools SHOULD preserve it for display. Authors MAY order alphabetically or by frequency of use.<br><small>Min items: 1</small></ds-prop>
-  <ds-prop name="localization" type="&lt;ds-type-ref href=&quot;document-blocks-content.html#localizationentry&quot;&gt;localizationEntry&lt;/ds-type-ref&gt;[]" conditional>Localization and i18n considerations. Each entry covers a concern that affects content across languages and writing systems: RTL mirroring, text expansion during translation, pluralization rules, and other i18n concerns. Order matters: tools SHOULD display entries in this order. Authors SHOULD order by impact or frequency.<br><small>Min items: 1</small></ds-prop>
-  <ds-prop name="description" type="&lt;ds-type-ref href=&quot;common-rich-text.html#richtext&quot;&gt;richText&lt;/ds-type-ref&gt;">Overview of the content guidelines: content philosophy, voice and tone principles, or the scope of labels and localization rules covered.</ds-prop>
-  <ds-prop name="agents" type="&lt;ds-type-ref href=&quot;common-agents.html#agents&quot;&gt;agents&lt;/ds-type-ref&gt;">AI-ready context for this document block. Provides structured info for AI/LLM use: constraints, disambiguation, anti-patterns, examples, and keywords.</ds-prop>
-</ds-prop-table>
-<ds-note variant="warning"><strong>Constraint:</strong> At least one of <ds-code inline>labels</ds-code>, <ds-code inline>localization</ds-code> must be present.</ds-note>
-<ds-cross-refs><strong>References:</strong> 
-<ds-type-ref href="common-rich-text.html#richtext">richText</ds-type-ref>, <ds-type-ref href="document-blocks-content.html#contentlabelentry">contentLabelEntry</ds-type-ref>, <ds-type-ref href="document-blocks-content.html#localizationentry">localizationEntry</ds-type-ref>, <ds-type-ref href="common-agents.html#agents">agents</ds-type-ref>
-</ds-cross-refs>
-<ds-def-example>
-<ds-code language="json" label="example">{
-  &quot;kind&quot;: &quot;content&quot;,
-  &quot;description&quot;: &quot;Standard action labels and localization guidelines for the Acme Design System. All UI labels should use sentence case. Prefer the {verb} + {noun} content formula on buttons except for common actions like Done, Close, Cancel.&quot;,
-  &quot;labels&quot;: [
-    {
-      &quot;term&quot;: &quot;Add&quot;,
-      &quot;definition&quot;: &quot;Takes an existing object and uses it in a new context.&quot;,
-      &quot;usage&quot;: &quot;Combine Add with the object (e.g., Add user, Add role).&quot;,
-      &quot;alternatives&quot;: [
-        &quot;Create&quot;,
-        &quot;Insert&quot;,
-        &quot;New&quot;,
-        &quot;Upload&quot;
-      ],
-      &quot;context&quot;: &quot;Buttons, menu items&quot;
-    },
-    {
-      &quot;term&quot;: &quot;Cancel&quot;,
-      &quot;definition&quot;: &quot;Stops the current action and closes the dialog.&quot;,
-      &quot;usage&quot;: &quot;Warn the user of any possible negative consequences. Compare Reset.&quot;,
-      &quot;alternatives&quot;: [
-        &quot;Reset&quot;,
-        &quot;Close&quot;
-      ],
-      &quot;context&quot;: &quot;Dialog buttons&quot;
-    },
-    {
-      &quot;term&quot;: &quot;Create&quot;,
-      &quot;definition&quot;: &quot;Makes a new object from scratch.&quot;,
-      &quot;usage&quot;: &quot;Use New to initiate the action and Create to apply user-supplied settings.&quot;,
-      &quot;alternatives&quot;: [
-        &quot;Add&quot;,
-        &quot;Copy&quot;,
-        &quot;New&quot;
-      ],
-      &quot;context&quot;: &quot;Primary actions, page-level buttons&quot;
-    },
-    {
-      &quot;term&quot;: &quot;Delete&quot;,
-      &quot;definition&quot;: &quot;Destroys an existing object so that it no longer exists.&quot;,
-      &quot;usage&quot;: &quot;Combine Delete with the object (e.g., Delete column). Use Move to trash if recoverable.&quot;,
-      &quot;alternatives&quot;: [
-        &quot;Clear&quot;,
-        &quot;Remove&quot;
-      ],
-      &quot;context&quot;: &quot;Destructive actions, danger buttons&quot;
-    },
-    {
-      &quot;term&quot;: &quot;Save&quot;,
-      &quot;definition&quot;: &quot;Saves pending modifications. Does not close the window or panel.&quot;,
-      &quot;usage&quot;: &quot;Compare Apply and Save as.&quot;,
-      &quot;alternatives&quot;: [
-        &quot;Apply&quot;,
-        &quot;Save as&quot;
-      ],
-      &quot;context&quot;: &quot;Form actions, editing flows&quot;
-    }
-  ],
-  &quot;localization&quot;: [
-    {
-      &quot;concern&quot;: &quot;rtl&quot;,
-      &quot;description&quot;: &quot;For RTL languages, the entire component layout is mirrored horizontally. Directional icons (arrows, chevrons) must be flipped. Non-directional icons (close, checkmark) must not be flipped.&quot;
-    },
-    {
-      &quot;concern&quot;: &quot;text-expansion&quot;,
-      &quot;description&quot;: &quot;Localization can lengthen text by 20-30%. Avoid truncating labels. Stack buttons vertically when they cannot be displayed side by side.&quot;
-    },
-    {
-      &quot;concern&quot;: &quot;concatenation&quot;,
-      &quot;description&quot;: &quot;Never construct labels by concatenating strings. Use complete, translatable strings with placeholder tokens for dynamic content.&quot;
-    }
-  ]
-}</ds-code>
 </ds-def-example>
 </ds-def-section>
 
