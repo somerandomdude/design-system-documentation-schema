@@ -154,6 +154,21 @@ function esc(s) {
 // ═══════════════════════════════════════════════════════════════════════════
 
 /**
+ * Strip MDX/JSX comment nodes (curly-brace + slash-star … star-slash +
+ * curly-brace) outside fenced code blocks. These are authoring notes meant to
+ * be invisible. MDX would normally drop them, but because escapeCurlyBraces()
+ * escapes the leading brace, MDX never recognizes them as comments and they
+ * leak into the rendered HTML as literal text — so we remove them here first.
+ * Inside code fences they are left untouched.
+ */
+function stripJsxComments(source) {
+  const parts = source.split(/(```[\s\S]*?```)/g);
+  return parts
+    .map((part, i) => (i % 2 === 1 ? part : part.replace(/\{\/\*[\s\S]*?\*\/\}/g, "")))
+    .join("");
+}
+
+/**
  * Escape `{` and `}` outside fenced code blocks and HTML/JSX tags so MDX
  * does not try to interpret them as JSX expressions.
  *
@@ -359,6 +374,7 @@ function preprocess(source) {
   s = preprocessExamples(s);
   s = preprocessPropTables(s, propTableSlots);
   s = preprocessSummaries(s, propTableSlots);
+  s = stripJsxComments(s);
   s = escapeCurlyBraces(s);
   return { source: s, propTableSlots };
 }
