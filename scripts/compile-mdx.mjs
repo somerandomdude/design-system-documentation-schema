@@ -283,12 +283,14 @@ function preprocessPropTables(source, slots) {
       // only the properties unique to that entity.
       const isDelta = /(^|\s)delta(\s|$|=)/.test(attrs);
       const omitMatch = attrs.match(/omit="([^"]+)"/);
+      const pathMatch = attrs.match(/path="([^"]+)"/);
 
       const html = renderPropertyTableForRef(schemaRef, defName, {
         schemaDir: SCHEMA_DIR,
         defIndex: getMdxDefIndex(),
         delta: isDelta,
         omit: omitMatch ? omitMatch[1].split(",").map((s) => s.trim()) : undefined,
+        path: pathMatch ? pathMatch[1] : undefined,
       });
 
       // Comments that start with `ds-prop-table:` indicate a render failure

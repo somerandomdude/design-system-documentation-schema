@@ -420,6 +420,24 @@ function renderPropertyTableForRef(schemaRef, defName, opts = {}) {
     return `<!-- ds-prop-table: def "${defName}" not found in "${schemaRef}" -->`;
   }
 
+  // `path` navigates into a nested inline sub-schema (e.g.
+  // "constraints.items" → def.properties.constraints.items) so sub-objects
+  // that aren't their own $def can still be rendered schema-driven. Each
+  // segment is a property name, except "items" which steps into an array's
+  // item schema.
+  if (opts.path) {
+    for (const seg of String(opts.path).split(".")) {
+      if (!target || typeof target !== "object") {
+        target = null;
+        break;
+      }
+      target = seg === "items" ? target.items : (target.properties || {})[seg];
+    }
+    if (!target) {
+      return `<!-- ds-prop-table: path "${opts.path}" not found in "${defName}" -->`;
+    }
+  }
+
   const defIndex = opts.defIndex || buildDefIndex({ schemaDir });
   // `delta: true` omits the common entity envelope; an explicit `omit` array
   // takes precedence when provided.
