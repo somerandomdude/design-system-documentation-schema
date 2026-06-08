@@ -3,14 +3,14 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>DSDS Quick Start Guide — DSDS 0.3</title>
+  <title>DSDS Quick Start Guide — DSDS 0.4</title>
   <link rel="stylesheet" href="tokens.css">
   <link rel="stylesheet" href="style.css">
   <script src="components.js"></script>
 </head>
 <body>
   <ds-nav-toggle target="ds-spec-nav"></ds-nav-toggle>
-  <ds-spec-nav title="Design System Documentation Spec 0.3" title-href="index.html" active="quickstart">
+  <ds-spec-nav title="Design System Documentation Spec 0.4" title-href="index.html" active="quickstart">
     <a href="index.html" slug="index">Overview</a>
     <a href="quickstart.html" slug="quickstart">Quick start</a>
     <a href="schema-architecture.html" slug="schema-architecture">Schema architecture</a>
@@ -94,8 +94,8 @@
 <ds-heading level="3" anchor="single-entity-files">Single-entity files</ds-heading>
 <p>Use <ds-code inline>entity</ds-code> when each component, token, or pattern lives in its own file. The <ds-code inline>kind</ds-code> field on the entity identifies its type.</p>
 <ds-code language="json">{
-  "$schema": "https://designsystemdocspec.org/v0.3/dsds.bundled.schema.json",
-  "dsdsVersion": "0.3",
+  "$schema": "https://designsystemdocspec.org/v0.4/dsds.bundled.schema.json",
+  "dsdsVersion": "0.4",
   "entity": {
     "kind": "component",
     "identifier": "button",
@@ -111,7 +111,7 @@
 <ds-heading level="3" anchor="multi-entity-files">Multi-entity files</ds-heading>
 <p>Use <ds-code inline>documentation</ds-code> when you want to organize multiple entities in one file, or as a manifest that references individual entity files.</p>
 <ds-code language="json">{
-  "dsdsVersion": "0.3",
+  "dsdsVersion": "0.4",
   "documentation": [
     {
       "name": "My Design System",
@@ -129,14 +129,14 @@
 }
 </ds-code>
 <ul>
-<li><ds-code inline>dsdsVersion</ds-code> — the spec version this document targets; <ds-code inline>"0.3"</ds-code> for this release</li>
+<li><ds-code inline>dsdsVersion</ds-code> — the spec version this document targets; <ds-code inline>"0.4"</ds-code> for this release</li>
 <li><ds-code inline>documentation</ds-code> — array of named groups, each with typed entity arrays</li>
 <li><ds-code inline>components</ds-code>, <ds-code inline>tokenGroups</ds-code>, <ds-code inline>themes</ds-code>, <ds-code inline>foundations</ds-code>, <ds-code inline>patterns</ds-code>, <ds-code inline>guides</ds-code> — separate arrays for each entity type. All are optional.</li>
 </ul>
 <ds-heading level="3" anchor="linking-files-with-ref">Linking files with <ds-code inline>$ref</ds-code></ds-heading>
 <p>Entity arrays accept <ds-code inline>$ref</ds-code> objects that point to other DSDS files. This lets you keep entities in individual files while assembling them in a manifest:</p>
 <ds-code language="json">{
-  "dsdsVersion": "0.3",
+  "dsdsVersion": "0.4",
   "documentation": [
     {
       "name": "Acme Design System",
@@ -201,17 +201,17 @@
 </ds-table>
 <p>Every document block type also accepts an optional <ds-code inline>agents</ds-code> property for AI/LLM-optimized context scoped to that section. See <a href="schema-architecture.html#block-level-agents">Schema Architecture</a> for details.</p>
 <ds-heading level="3" anchor="purpose-when-to-use-it">Purpose: when to use it</ds-heading>
-<p>The <ds-code inline>purpose</ds-code> guideline lists scenarios. Each use case is <ds-code inline>"positive"</ds-code> (do use) or <ds-code inline>"negative"</ds-code> (don't use, with an option):</p>
+<p>The <ds-code inline>purpose</ds-code> block lists scenarios. Each use case has a <ds-code inline>stance</ds-code> of <ds-code inline>"recommended"</ds-code> (do use) or <ds-code inline>"discouraged"</ds-code> (don't use, with an alternative):</p>
 <ds-code language="json">{
   "kind": "purpose",
   "useCases": [
     {
       "description": "When the user needs to trigger an action such as submitting a form.",
-      "kind": "positive"
+      "stance": "recommended"
     },
     {
       "description": "When the action navigates to a different page.",
-      "kind": "negative",
+      "stance": "discouraged",
       "alternative": {
         "identifier": "link",
         "rationale": "Links carry native navigation semantics."
@@ -221,20 +221,20 @@
 }
 </ds-code>
 <ds-heading level="3" anchor="guidelines-how-to-use-it">Guidelines: how to use it</ds-heading>
-<p>Each guideline pairs a <ds-code inline>guidance</ds-code> statement with a <ds-code inline>rationale</ds-code> and an enforcement level:</p>
+<p>Each guideline pairs a <ds-code inline>guidance</ds-code> statement with a <ds-code inline>rationale</ds-code> and an RFC 2119 <ds-code inline>level</ds-code>:</p>
 <ds-code language="json">{
   "kind": "guideline",
   "items": [
     {
       "guidance": "Limit each surface to one primary button.",
       "rationale": "Multiple primary buttons dilute visual hierarchy.",
-      "kind": "MUST",
+      "level": "MUST",
       "category": "visual-design"
     }
   ]
 }
 </ds-code>
-<p>Enforcement levels, named for RFC 2119: <ds-badge>MUST</ds-badge>, <ds-badge>SHOULD</ds-badge>, <ds-badge>NEUTRAL</ds-badge> (advisory, default), <ds-badge>SHOULD_NOT</ds-badge>, <ds-badge>MUST_NOT</ds-badge>.</p>
+<p>The <ds-code inline>level</ds-code> field, named for RFC 2119: <ds-badge>MUST</ds-badge>, <ds-badge>SHOULD</ds-badge>, <ds-badge>SHOULD_NOT</ds-badge>, <ds-badge>MUST_NOT</ds-badge>. The same values are used by <ds-code inline>agents.constraints[].level</ds-code>.</p>
 <hr />
 <ds-heading level="2" anchor="minimal-examples">Minimal examples</ds-heading>
 <p>These are the smallest valid entities — the bare minimum. Copy one, fill in your content, and add document block entries as you go.</p>
@@ -264,11 +264,11 @@
       "useCases": [
         {
           "description": "When the user needs to trigger an action such as submitting a form or confirming a dialog.",
-          "kind": "positive"
+          "stance": "recommended"
         },
         {
           "description": "When the action is navigation to another page.",
-          "kind": "negative",
+          "stance": "discouraged",
           "alternative": {
             "identifier": "link",
             "rationale": "Links communicate navigation; buttons communicate actions."
@@ -289,15 +289,15 @@
     "constraints": [
       {
         "rule": "Do not use for navigating to a different page or URL.",
-        "level": "must-not"
+        "level": "MUST_NOT"
       },
       {
         "rule": "Limit each surface to one primary-emphasis button.",
-        "level": "must"
+        "level": "MUST"
       },
       {
         "rule": "Always provide an accessible label via visible text or aria-label.",
-        "level": "must"
+        "level": "MUST"
       }
     ],
     "disambiguation": [
@@ -402,7 +402,7 @@
     "constraints": [
       {
         "rule": "Do not reference base palette tokens directly in component code.",
-        "level": "must-not",
+        "level": "MUST_NOT",
         "context": "Always reference semantic tokens that point to palette values."
       }
     ],
@@ -456,11 +456,11 @@
     "constraints": [
       {
         "rule": "Always apply at the application root, not on individual components.",
-        "level": "must"
+        "level": "MUST"
       },
       {
         "rule": "Do not mix dark-mode and light-mode semantic tokens on the same surface.",
-        "level": "must-not"
+        "level": "MUST_NOT"
       }
     ],
     "disambiguation": [
@@ -525,11 +525,11 @@
     "constraints": [
       {
         "rule": "Do not substitute spacing tokens with typography or icon-size tokens.",
-        "level": "must-not"
+        "level": "MUST_NOT"
       },
       {
         "rule": "Always use the next scale step up or down rather than custom values.",
-        "level": "should"
+        "level": "SHOULD"
       }
     ],
     "disambiguation": [
@@ -594,11 +594,11 @@
     "constraints": [
       {
         "rule": "Always include both an inline field error and a summary when multiple fields fail.",
-        "level": "must"
+        "level": "MUST"
       },
       {
         "rule": "Do not use toast notifications as the sole error communication for form validation.",
-        "level": "must-not"
+        "level": "MUST_NOT"
       }
     ],
     "disambiguation": [
@@ -633,7 +633,7 @@
 <p>Here's a complete, minimal DSDS file with one of each entity type:</p>
 <ds-code language="json">{
   "$schema": "../schema/dsds.bundled.schema.json",
-  "dsdsVersion": "0.3",
+  "dsdsVersion": "0.4",
   "systemInfo": {
     "systemName": "Minimal Example"
   },
@@ -660,15 +660,15 @@
             "constraints": [
               {
                 "rule": "Do not use for navigating to a different page or URL.",
-                "level": "must-not"
+                "level": "MUST_NOT"
               },
               {
                 "rule": "Limit each surface to one primary-emphasis button.",
-                "level": "must"
+                "level": "MUST"
               },
               {
                 "rule": "Always provide an accessible label via visible text or aria-label.",
-                "level": "must"
+                "level": "MUST"
               }
             ],
             "disambiguation": [
@@ -732,7 +732,7 @@
             "constraints": [
               {
                 "rule": "Do not reference base palette tokens directly in component code.",
-                "level": "must-not",
+                "level": "MUST_NOT",
                 "context": "Always reference semantic tokens that point to palette values."
               }
             ],
@@ -778,7 +778,7 @@
             "constraints": [
               {
                 "rule": "Do not reference base palette tokens directly in component code.",
-                "level": "must-not",
+                "level": "MUST_NOT",
                 "context": "Always reference semantic tokens that point to palette values."
               }
             ],
@@ -823,11 +823,11 @@
             "constraints": [
               {
                 "rule": "Always apply at the application root, not on individual components.",
-                "level": "must"
+                "level": "MUST"
               },
               {
                 "rule": "Do not mix dark-mode and light-mode semantic tokens on the same surface.",
-                "level": "must-not"
+                "level": "MUST_NOT"
               }
             ],
             "disambiguation": [
@@ -873,11 +873,11 @@
             "constraints": [
               {
                 "rule": "Do not substitute spacing tokens with typography or icon-size tokens.",
-                "level": "must-not"
+                "level": "MUST_NOT"
               },
               {
                 "rule": "Always use the next scale step up or down rather than custom values.",
-                "level": "should"
+                "level": "SHOULD"
               }
             ],
             "disambiguation": [
@@ -919,11 +919,11 @@
             "constraints": [
               {
                 "rule": "Always include both an inline field error and a summary when multiple fields fail.",
-                "level": "must"
+                "level": "MUST"
               },
               {
                 "rule": "Do not use toast notifications as the sole error communication for form validation.",
-                "level": "must-not"
+                "level": "MUST_NOT"
               }
             ],
             "disambiguation": [
@@ -964,8 +964,8 @@
 <ds-heading level="3" anchor="using-the-bundled-schema">Using the bundled schema</ds-heading>
 <p>Add <ds-code inline>$schema</ds-code> to get editor autocompletion and inline validation:</p>
 <ds-code language="json">{
-  "$schema": "https://designsystemdocspec.org/v0.3/dsds.bundled.schema.json",
-  "dsdsVersion": "0.3",
+  "$schema": "https://designsystemdocspec.org/v0.4/dsds.bundled.schema.json",
+  "dsdsVersion": "0.4",
   "entity": {
     "kind": "component",
     "identifier": "my-component",
@@ -1000,7 +1000,7 @@ npx ajv validate -s spec/schema/dsds.bundled.schema.json -d my-system.dsds.json
         <ds-back-to-top></ds-back-to-top>
 
         <ds-footer>
-          <p>Design System Documentation Spec (DSDS) 0.3 — Draft Specification</p>
+          <p>Design System Documentation Spec (DSDS) 0.4 — Draft Specification</p>
           <p><a href="https://github.com/somerandomdude/design-system-documentation-schema">GitHub</a></p>
         </ds-footer>
       </div>
