@@ -444,6 +444,29 @@
   }
 }
 </ds-code>
+<p>The <ds-code inline>constraints</ds-code>, <ds-code inline>disambiguation</ds-code>, and <ds-code inline>antiPatterns</ds-code> arrays carry their own entry shapes:</p>
+<ds-heading level="4" anchor="constraint-entry">Constraint entry</ds-heading>
+<p>A single must/should rule for AI consumers. <ds-code inline>evidence</ds-code> holds empirical backing (test data, audit findings) and is kept separate from <ds-code inline>context</ds-code> so tools can tell test-derived rules from conventional guidance.</p>
+<ds-prop-table>
+  <ds-prop name="rule" type="string" required>The constraint statement. MUST be concrete, unambiguous, and actionable. Avoid 'use sparingly' or 'when appropriate'; state exact conditions.</ds-prop>
+  <ds-prop name="level" type="&lt;ds-code inline&gt;&quot;must&quot;&lt;/ds-code&gt; | &lt;ds-code inline&gt;&quot;must-not&quot;&lt;/ds-code&gt; | &lt;ds-code inline&gt;&quot;should&quot;&lt;/ds-code&gt; | &lt;ds-code inline&gt;&quot;should-not&quot;&lt;/ds-code&gt;" required>Enforcement level. 'must' and 'must-not' are hard constraints; violations are defects. 'should' and 'should-not' are strong recommendations; exceptions need justification.</ds-prop>
+  <ds-prop name="context" type="string">Optional scope, condition, or rationale for this constraint. Use it to say when the rule applies (e.g., 'when used inside a Dialog', 'for mobile viewports') and why it matters. Omit when the constraint applies universally and the reason is self-evident.</ds-prop>
+  <ds-prop name="evidence" type="string">Quantitative or empirical backing for this constraint: test run data, audit findings, issue references, or cited sources. Keeping evidence separate from context lets tools tell test-derived rules apart from conventional guidance. Example: '9/10 agent test runs failed touch-target minimums when height was overridden below 36px.'</ds-prop>
+  <ds-prop name="examples" type="object {description, code, language}[]">Inline examples that show this specific constraint. Use them for before/after pairs that illustrate the rule directly. Prefer these over top-level examples when the code ties tightly to one rule.<br><small>Min items: 1</small></ds-prop>
+</ds-prop-table>
+<ds-heading level="4" anchor="disambiguation-entry">Disambiguation entry</ds-heading>
+<p>Tells an agent how to tell this artifact apart from a similar one. <ds-code inline>entityType</ds-code> classifies the thing being disambiguated (e.g., another component, a pattern).</p>
+<ds-prop-table>
+  <ds-prop name="entity" type="string" required>The name of the similar or commonly confused entity (e.g., 'button', 'link', 'chip').</ds-prop>
+  <ds-prop name="distinction" type="string" required>A concrete statement of what sets this entity apart from the named entity. MUST state the deciding criterion, not just describe each entity on its own.</ds-prop>
+  <ds-prop name="entityType" type="&lt;ds-code inline&gt;&quot;component&quot;&lt;/ds-code&gt; | &lt;ds-code inline&gt;&quot;prop&quot;&lt;/ds-code&gt; | &lt;ds-code inline&gt;&quot;token&quot;&lt;/ds-code&gt; | &lt;ds-code inline&gt;&quot;pattern&quot;&lt;/ds-code&gt; | &lt;ds-code inline&gt;&quot;package&quot;&lt;/ds-code&gt; | &lt;ds-code inline&gt;&quot;concept&quot;&lt;/ds-code&gt;">The kind of entity being disambiguated. Lets tools filter or group disambiguations (e.g., show only component-level distinctions). Omit when the type is obvious from context.</ds-prop>
+</ds-prop-table>
+<ds-heading level="4" anchor="anti-pattern-entry">Anti-pattern entry</ds-heading>
+<ds-prop-table>
+  <ds-prop name="description" type="string" required>What the anti-pattern looks like — the incorrect usage to avoid.</ds-prop>
+  <ds-prop name="instead" type="string">What to do instead. SHOULD reference a concrete alternative (another entity name, a correct pattern, or a specific approach). Omitting this field is discouraged — an anti-pattern without a fix is an accusation without a remedy.</ds-prop>
+  <ds-prop name="evidence" type="string">Quantitative or empirical backing for this anti-pattern — test failure rates, bug report references, or audit data. Example: 'Raised in 10/10 agent iterations when generating form layouts.'</ds-prop>
+</ds-prop-table>
 <ds-heading level="3" anchor="block-level-agents">Block-level agents</ds-heading>
 <p>Document blocks also accept the same optional <ds-code inline>agents</ds-code> object. Block-level agent context is scoped to that specific documentation section — an anatomy block's agents might disambiguate part naming, while a guideline block's agents might provide enforcement constraints for AI code generation.</p>
 <ds-code language="json">{
@@ -638,6 +661,17 @@
 <hr />
 <ds-heading level="2" anchor="component-scoped-document-block-types">Component-scoped document block types</ds-heading>
 <p>These document block types are centered on <strong>component</strong> entities. <ds-code inline>api</ds-code> and <ds-code inline>design-specifications</ds-code> are component-only; <ds-code inline>anatomy</ds-code>, <ds-code inline>variants</ds-code>, <ds-code inline>states</ds-code>, and <ds-code inline>events</ds-code> are shared with patterns; and <ds-code inline>import</ds-code> is shared with guides (as noted in the <a href="#scoped-document-block-unions">scope table</a>).</p>
+<ds-heading level="3" anchor="import-import">Import (<ds-code inline>import</ds-code>)</ds-heading>
+<p>How to install and import the artifact across platforms — package names, import statements, and setup context. Each item documents one platform.</p>
+<ds-heading level="4" anchor="import-entry">Import entry</ds-heading>
+<ds-prop-table>
+  <ds-prop name="platform" type="string" required>The platform or framework this import applies to (e.g., 'react', 'vue', 'angular', 'svelte', 'web-component', 'ios', 'android'). Use the same platform identifiers as the API document block.</ds-prop>
+  <ds-prop name="code" type="string" required>The import statement or code snippet. SHOULD be copy-pasteable and immediately usable. For multi-line snippets (e.g., install + import), use newlines.</ds-prop>
+  <ds-prop name="package" type="string">The package or module to install (e.g., '@acme/ui', '@acme/ui-vue', 'AcmeUI'). Include the full package name as it appears in the package manager.</ds-prop>
+  <ds-prop name="language" type="string">The language or format of the code (e.g., 'tsx', 'js', 'vue', 'swift', 'kotlin'). Omit when obvious from the platform.</ds-prop>
+  <ds-prop name="description" type="&lt;ds-type-ref href=&quot;common-rich-text.html#richtext&quot;&gt;richText&lt;/ds-type-ref&gt;">Additional context about this import — when to use this path over alternatives, version requirements, or setup prerequisites.</ds-prop>
+  <ds-prop name="since" type="string">The version in which this import path became available.</ds-prop>
+</ds-prop-table>
 <ds-heading level="3" anchor="anatomy-anatomy">Anatomy (<ds-code inline>anatomy</ds-code>)</ds-heading>
 <p>Documents the visual structure of a component or pattern by listing its named sub-elements (parts). Each part can reference the design tokens that style it, bridging the entity's visual design and its token architecture.</p>
 <p>For components, parts represent rendered UI sub-elements (container, label, icon, focus-ring). For patterns, parts represent the structural sections of the pattern's visual layout (image, title, body, primary action).</p>
@@ -692,6 +726,22 @@
   <ds-prop name="description" type="&lt;ds-type-ref href=&quot;common-rich-text.html#richtext&quot;&gt;richText&lt;/ds-type-ref&gt;" required>When this event fires, what it communicates, and how consumers should respond.</ds-prop>
   <ds-prop name="returns" type="string">Description of the event return shape (e.g., '(event: MouseEvent) =&gt; void', '{ value: string, index: number }').</ds-prop>
   <ds-prop name="since" type="string">The version in which this event was introduced.</ds-prop>
+</ds-prop-table>
+<ds-heading level="3" anchor="events-events">Events (<ds-code inline>events</ds-code>)</ds-heading>
+<p>A standalone block documenting the events an artifact emits — trigger conditions, return shapes, DOM behavior (bubbling, cancelability, composed), and lifecycle metadata. Shared by components and patterns. It is richer than the <ds-code inline>api</ds-code> block's inline <ds-code inline>events</ds-code> array: use <ds-code inline>api.events</ds-code> for a quick interface listing, and the <ds-code inline>events</ds-code> block when an event's behavior warrants its own structured entry.</p>
+<ds-heading level="4" anchor="event-entry-evententry">Event entry (<ds-code inline>eventEntry</ds-code>)</ds-heading>
+<ds-prop-table>
+  <ds-prop name="identifier" type="string" required>The event identifier as used in code (e.g., 'onClick', 'onChange', 'onDismiss', 'ds-select'). For custom events, use the full event identifier including any namespace prefix.</ds-prop>
+  <ds-prop name="description" type="&lt;ds-type-ref href=&quot;common-rich-text.html#richtext&quot;&gt;richText&lt;/ds-type-ref&gt;" required>When this event fires, what it communicates, and how consumers should respond. Include conditions under which the event does NOT fire (e.g., 'Does not fire when disabled').</ds-prop>
+  <ds-prop name="returns" type="string">Human-readable description of the event return shape (e.g., '(event: MouseEvent) =&gt; void', '{ value: string, index: number }', 'CustomEvent&lt;{ selectedId: string }&gt;').</ds-prop>
+  <ds-prop name="returnsSchema" type="object">Machine-readable JSON Schema (Draft 2020-12) describing the event return or detail object. Enables tooling to generate type definitions and validate event handlers.</ds-prop>
+  <ds-prop name="bubbles" type="boolean">Whether the event bubbles up through the DOM tree. Defaults to true. Set to false for events that only fire on the target element.<br><small>Default: <ds-code inline>true</ds-code></small></ds-prop>
+  <ds-prop name="cancelable" type="boolean">Whether the event can be cancelled via preventDefault(). Defaults to false. When true, document what cancelling the event prevents.<br><small>Default: <ds-code inline>false</ds-code></small></ds-prop>
+  <ds-prop name="composed" type="boolean">Whether the event crosses shadow DOM boundaries. Defaults to false. Relevant for web components using shadow DOM encapsulation.<br><small>Default: <ds-code inline>false</ds-code></small></ds-prop>
+  <ds-prop name="since" type="string">The version in which this event was introduced.</ds-prop>
+  <ds-prop name="deprecated" type="boolean">Whether this event is deprecated. Defaults to false.<br><small>Default: <ds-code inline>false</ds-code></small></ds-prop>
+  <ds-prop name="deprecationNotice" type="string">What to use instead when this event is deprecated. Required context when deprecated is true.</ds-prop>
+  <ds-prop name="examples" type="&lt;ds-type-ref href=&quot;common-example.html#example&quot;&gt;example&lt;/ds-type-ref&gt;[]">Usage examples showing how to listen for and handle this event.</ds-prop>
 </ds-prop-table>
 <ds-heading level="3" anchor="variants-variants">Variants (<ds-code inline>variants</ds-code>)</ds-heading>
 <p>Documents all dimensions of visual or behavioral variation. Each item is a single axis of config (e.g., <ds-code inline>"size"</ds-code>, <ds-code inline>"emphasis"</ds-code>, <ds-code inline>"full-width"</ds-code>). Multiple axes document orthogonal dimensions that combine independently.</p>
