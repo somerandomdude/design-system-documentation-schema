@@ -3,14 +3,14 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>DSDS Purpose Guideline — DSDS 0.3</title>
+  <title>DSDS Purpose Guideline — DSDS 0.4</title>
   <link rel="stylesheet" href="tokens.css">
   <link rel="stylesheet" href="style.css">
   <script src="components.js"></script>
 </head>
 <body>
   <ds-nav-toggle target="ds-spec-nav"></ds-nav-toggle>
-  <ds-spec-nav title="Design System Documentation Spec 0.3" title-href="index.html" active="common-purpose">
+  <ds-spec-nav title="Design System Documentation Spec 0.4" title-href="index.html" active="common-purpose">
     <a href="index.html" slug="index">Overview</a>
     <a href="quickstart.html" slug="quickstart">Quick start</a>
     <a href="schema-architecture.html" slug="schema-architecture">Schema architecture</a>
@@ -85,7 +85,7 @@
 <li><a href="#usecase"><ds-code inline>useCase</ds-code></a></li>
 </ul>
 </ds-def-index>
-<ds-def-section name="purpose" anchor="purpose" description="Documents the purpose of an artifact — when to use it and when to choose something else. Contains a `useCases` array of scenario-driven `useCase` entries, each marked positive (when to use) or negative (when to choose an alternative). Purpose guidelines help the reader decide whether this is the right artifact *before* implementing it. For guidance on *how* to use it correctly, see best-practices. For *what* it looks like and how it behaves, see variants, states, and anatomy." type="object">
+<ds-def-section name="purpose" anchor="purpose" description="Documents the purpose of an artifact — when to use it and when to choose something else. Contains a `useCases` array of scenario-driven `useCase` entries, each marked `recommended` (when to use) or `discouraged` (when to choose an alternative). Purpose guidelines help the reader decide whether this is the right artifact *before* implementing it. For guidance on *how* to use it correctly, see best-practices. For *what* it looks like and how it behaves, see variants, states, and anatomy." type="object">
 <ds-prop-table>
   <ds-prop name="kind" type="&lt;ds-code inline&gt;&quot;purpose&quot;&lt;/ds-code&gt;" required>Identifies this guideline as a purpose spec.</ds-prop>
   <ds-prop name="useCases" type="&lt;ds-type-ref href=&quot;common-purpose.html#usecase&quot;&gt;useCase&lt;/ds-type-ref&gt;[]">Scenario-driven guidance describing when this artifact is or is not the right choice.</ds-prop>
@@ -99,15 +99,15 @@
   &quot;kind&quot;: &quot;purpose&quot;,
   &quot;useCases&quot;: [
     {
-      &quot;kind&quot;: &quot;positive&quot;,
+      &quot;stance&quot;: &quot;recommended&quot;,
       &quot;description&quot;: &quot;When the user needs to commit a destructive or high-stakes action (e.g., Save, Confirm, Delete) and that action is the primary task on the surface.&quot;
     },
     {
-      &quot;kind&quot;: &quot;positive&quot;,
+      &quot;stance&quot;: &quot;recommended&quot;,
       &quot;description&quot;: &quot;When triggering a state change inside the application — submitting a form, opening a dialog, or moving to the next step of a workflow.&quot;
     },
     {
-      &quot;kind&quot;: &quot;negative&quot;,
+      &quot;stance&quot;: &quot;discouraged&quot;,
       &quot;description&quot;: &quot;When the action navigates the user to a different page or external URL.&quot;,
       &quot;alternative&quot;: {
         &quot;identifier&quot;: &quot;link&quot;,
@@ -137,8 +137,8 @@
 <ds-def-section name="useCase" anchor="usecase" description="A single use case scenario describing when an artifact or option is or is not appropriate." type="object">
 <ds-prop-table>
   <ds-prop name="description" type="&lt;ds-type-ref href=&quot;common-rich-text.html#richtext&quot;&gt;richText&lt;/ds-type-ref&gt;" required>Describes the scenario. Should be concrete and situation-driven — describe the user's situation, not the artifact's features.</ds-prop>
-  <ds-prop name="kind" type="&lt;ds-code inline&gt;&quot;positive&quot;&lt;/ds-code&gt; | &lt;ds-code inline&gt;&quot;negative&quot;&lt;/ds-code&gt;">Whether the use case is an example to follow or to avoid.</ds-prop>
-  <ds-prop name="alternative" type="object {identifier, rationale}">The recommended alternative artifact for this scenario. Typically provided for negative use cases to direct the reader toward a more appropriate component, pattern, or token.</ds-prop>
+  <ds-prop name="stance" type="&lt;ds-code inline&gt;&quot;recommended&quot;&lt;/ds-code&gt; | &lt;ds-code inline&gt;&quot;discouraged&quot;&lt;/ds-code&gt;">Whether this scenario is one to follow ('recommended') or to avoid ('discouraged').</ds-prop>
+  <ds-prop name="alternative" type="object {identifier, rationale}">The recommended alternative artifact for this scenario. Typically provided for discouraged scenarios to direct the reader toward a more appropriate component, pattern, or token.</ds-prop>
 </ds-prop-table>
 <ds-cross-refs><strong>References:</strong> 
 <ds-type-ref href="common-rich-text.html#richtext">richText</ds-type-ref>
@@ -146,15 +146,15 @@
 <ds-def-example>
 <ds-code language="json" label="example">[
   {
-    &quot;kind&quot;: &quot;positive&quot;,
+    &quot;stance&quot;: &quot;recommended&quot;,
     &quot;description&quot;: &quot;When the user needs to commit a destructive or high-stakes action (e.g., Save, Confirm, Delete) and that action is the primary task on the surface.&quot;
   },
   {
-    &quot;kind&quot;: &quot;positive&quot;,
+    &quot;stance&quot;: &quot;recommended&quot;,
     &quot;description&quot;: &quot;When triggering a state change inside the application — submitting a form, opening a dialog, or moving to the next step of a workflow.&quot;
   },
   {
-    &quot;kind&quot;: &quot;negative&quot;,
+    &quot;stance&quot;: &quot;discouraged&quot;,
     &quot;description&quot;: &quot;When the action navigates the user to a different page or external URL.&quot;,
     &quot;alternative&quot;: {
       &quot;identifier&quot;: &quot;link&quot;,
@@ -162,7 +162,7 @@
     }
   },
   {
-    &quot;kind&quot;: &quot;negative&quot;,
+    &quot;stance&quot;: &quot;discouraged&quot;,
     &quot;description&quot;: &quot;When the surface needs a long list of inline choices that the user can toggle on and off.&quot;,
     &quot;alternative&quot;: {
       &quot;identifier&quot;: &quot;chip&quot;,
@@ -176,7 +176,7 @@
         <ds-back-to-top></ds-back-to-top>
 
         <ds-footer>
-          <p>Design System Documentation Spec (DSDS) 0.3 — Draft Specification</p>
+          <p>Design System Documentation Spec (DSDS) 0.4 — Draft Specification</p>
           <p><a href="https://github.com/somerandomdude/design-system-documentation-schema">GitHub</a></p>
         </ds-footer>
       </div>

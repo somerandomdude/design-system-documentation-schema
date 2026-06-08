@@ -133,12 +133,12 @@
               "level": {
                 "type": "string",
                 "enum": [
-                  "must",
-                  "must-not",
-                  "should",
-                  "should-not"
+                  "MUST",
+                  "SHOULD",
+                  "SHOULD_NOT",
+                  "MUST_NOT"
                 ],
-                "description": "Enforcement level. 'must' and 'must-not' are hard constraints; violations are defects. 'should' and 'should-not' are strong recommendations; exceptions need justification."
+                "description": "Enforcement level, named for RFC 2119 requirement levels and sharing the same value set as `guidelineEntry.level`: 'MUST'/'MUST_NOT' are hard constraints (violations are defects); 'SHOULD'/'SHOULD_NOT' are strong recommendations (exceptions need justification)."
               },
               "context": {
                 "type": "string",
@@ -587,17 +587,17 @@
           "$ref": "#/$defs/richText",
           "description": "Describes the scenario. Should be concrete and situation-driven — describe the user's situation, not the artifact's features."
         },
-        "kind": {
+        "stance": {
           "type": "string",
           "enum": [
-            "positive",
-            "negative"
+            "recommended",
+            "discouraged"
           ],
-          "description": "Whether the use case is an example to follow or to avoid."
+          "description": "Whether this scenario is one to follow ('recommended') or to avoid ('discouraged')."
         },
         "alternative": {
           "type": "object",
-          "description": "The recommended alternative artifact for this scenario. Typically provided for negative use cases to direct the reader toward a more appropriate component, pattern, or token.",
+          "description": "The recommended alternative artifact for this scenario. Typically provided for discouraged scenarios to direct the reader toward a more appropriate component, pattern, or token.",
           "required": [
             "identifier"
           ],
@@ -618,7 +618,7 @@
     },
     "purpose": {
       "type": "object",
-      "description": "Documents the purpose of an artifact — when to use it and when to choose something else. Contains a `useCases` array of scenario-driven `useCase` entries, each marked positive (when to use) or negative (when to choose an alternative). Purpose guidelines help the reader decide whether this is the right artifact *before* implementing it. For guidance on *how* to use it correctly, see best-practices. For *what* it looks like and how it behaves, see variants, states, and anatomy.",
+      "description": "Documents the purpose of an artifact — when to use it and when to choose something else. Contains a `useCases` array of scenario-driven `useCase` entries, each marked `recommended` (when to use) or `discouraged` (when to choose an alternative). Purpose guidelines help the reader decide whether this is the right artifact *before* implementing it. For guidance on *how* to use it correctly, see best-practices. For *what* it looks like and how it behaves, see variants, states, and anatomy.",
       "required": [
         "kind"
       ],
@@ -2405,10 +2405,10 @@
     },
     "guidelineEntry": {
       "type": "object",
-      "description": "A single piece of usage guidance. Each guideline pairs a statement with a rationale. `kind` sets the enforcement level. `category` groups by discipline. `target` points to a specific anatomy part or content area. `criteria` is a polymorphic array: each entry is either an external reference (citing WCAG or a similar standard) or an internal criterion definition (a stable, testable success criterion owned by this design system, citable via a display code that tooling manages).",
+      "description": "A single piece of usage guidance. Each guideline pairs a statement with a rationale. `level` sets the RFC 2119 enforcement level. `category` groups by discipline. `target` points to a specific anatomy part or content area. `criteria` is a polymorphic array: each entry is either an external reference (citing WCAG or a similar standard) or an internal criterion definition (a stable, testable success criterion owned by this design system, citable via a display code that tooling manages).",
       "required": [
         "guidance",
-        "kind"
+        "level"
       ],
       "properties": {
         "guidance": {
@@ -2419,17 +2419,15 @@
           "$ref": "#/$defs/richText",
           "description": "Why this guidance exists. Cite evidence, accessibility standards, or user research when available. MUST NOT restate the guidance."
         },
-        "kind": {
+        "level": {
           "type": "string",
           "enum": [
             "MUST",
             "SHOULD",
-            "NEUTRAL",
             "SHOULD_NOT",
             "MUST_NOT"
           ],
-          "default": "NEUTRAL",
-          "description": "How strictly the guideline should be followed, named for RFC 2119 requirement levels: 'MUST' (non-compliance is a defect), 'SHOULD' (follow in most cases; exceptions need justification), 'NEUTRAL' (advisory only, no enforcement expectation), 'SHOULD_NOT' (avoid unless justified), 'MUST_NOT' (violations are defects). Defaults to 'NEUTRAL'."
+          "description": "How strictly the guideline should be followed, named for RFC 2119 requirement levels: 'MUST' (non-compliance is a defect), 'SHOULD' (follow in most cases; exceptions need justification), 'SHOULD_NOT' (avoid unless justified), 'MUST_NOT' (violations are defects). Uses the same value set as `agents.constraints[].level`."
         },
         "category": {
           "type": "string",

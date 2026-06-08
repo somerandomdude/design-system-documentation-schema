@@ -145,7 +145,7 @@ The optional `purpose` property on the root document describes the design system
 | Property | Type | Required | Description |
 |---|---|---|---|
 | `description` | `richText` | No | A high-level description of the design system's purpose and goals. |
-| `useCases` | `array` | No | An array of use-case entries describing positive and negative adoption scenarios. |
+| `useCases` | `array` | No | An array of use-case entries describing recommended and discouraged adoption scenarios. |
 
 Each use-case entry has this shape:
 
@@ -158,11 +158,11 @@ Each use-case entry has this shape:
     "useCases": [
       {
         "description": "Building a new customer-facing web application on the Acme platform.",
-        "kind": "positive"
+        "stance": "recommended"
       },
       {
         "description": "Building internal tooling with specialized data-heavy dashboards.",
-        "kind": "negative",
+        "stance": "discouraged",
         "alternative": {
           "identifier": "Acme Admin Kit",
           "rationale": "Admin Kit is optimized for data-dense internal interfaces."
@@ -187,13 +187,13 @@ Each `bestPractices` entry uses the same shape as a [guideline entry](#guideline
     {
       "guidance": "Always use semantic tokens instead of raw color values.",
       "rationale": "Semantic tokens ensure consistent theming and make future design changes non-breaking.",
-      "kind": "MUST",
+      "level": "MUST",
       "category": "development"
     },
     {
       "guidance": "Test all components at 200% browser zoom.",
       "rationale": "WCAG 1.4.4 requires content to remain functional at 200% zoom.",
-      "kind": "MUST",
+      "level": "MUST",
       "category": "accessibility",
       "criteria": [
         {
@@ -205,7 +205,7 @@ Each `bestPractices` entry uses the same shape as a [guideline entry](#guideline
     {
       "guidance": "Do not override token values at the component level.",
       "rationale": "Component-level overrides break theme consistency and make system-wide updates unreliable.",
-      "kind": "MUST_NOT",
+      "level": "MUST_NOT",
       "category": "development"
     }
   ]
@@ -339,7 +339,7 @@ The optional `agents` property provides context intended exclusively for agentic
   "agents": {
     "intent": "Trigger a user action within the current view without causing page navigation.",
     "constraints": [
-      { "rule": "Do not use for navigation between pages.", "level": "must-not" }
+      { "rule": "Do not use for navigation between pages.", "level": "MUST_NOT" }
     ],
     "disambiguation": [
       { "entity": "link", "distinction": "Use button for in-page actions; use link for navigation to a URL." }
@@ -378,7 +378,7 @@ Document blocks also accept the same optional `agents` object. Block-level agent
   "agents": {
     "intent": "Enforce correct Button usage in generated UI code.",
     "constraints": [
-      { "rule": "Never place two primary buttons on the same surface.", "level": "must-not" }
+      { "rule": "Never place two primary buttons on the same surface.", "level": "MUST_NOT" }
     ],
     "keywords": ["button rules", "best practices", "usage guidelines"]
   }
@@ -397,7 +397,7 @@ For system-wide agent guidance spanning many entities, use `agent-collection.sch
     "button": {
       "intent": "Use Button for all interactive action triggers.",
       "constraints": [
-        { "rule": "Never override height below 36px.", "level": "must", "evidence": "9/10 agent test runs failed." }
+        { "rule": "Never override height below 36px.", "level": "MUST", "evidence": "9/10 agent test runs failed." }
       ],
       "verified": "2025-07-19"
     }
@@ -476,13 +476,12 @@ Documents actionable usage rules for an entity. Each item is a self-contained ru
 
 <ds-prop-table schema="document-blocks/guideline" def="guidelineEntry" />
 
-The `kind` field is named for RFC 2119 requirement levels:
+The `level` field is named for RFC 2119 requirement levels — the same value set as `agents.constraints[].level`:
 
 | Value | Meaning |
 |---|---|
 | `MUST` | Required — non-compliance is a defect. |
 | `SHOULD` | Follow in most cases; exceptions require justification. |
-| `NEUTRAL` | Advisory only, with no enforcement expectation (the default). |
 | `SHOULD_NOT` | Avoid unless justified. |
 | `MUST_NOT` | Prohibited — violations are defects. |
 
@@ -490,18 +489,18 @@ The `kind` field is named for RFC 2119 requirement levels:
 
 Documents what an entity is for — the concrete scenarios where it is the right choice and where a different entity fits better. Purpose document block entries help the reader decide _whether_ to reach for this entity before they start using it.
 
-The purpose document block type wraps the common `useCases` data model with a `kind` discriminator. `useCases` is an **array** of scenario entries, each with a `description`, a `kind` of `"positive"` (when to use) or `"negative"` (when to choose something else), and — for negative cases — an `alternative`:
+The purpose document block type wraps the common `useCases` data model with a `kind` discriminator. `useCases` is an **array** of scenario entries, each with a `description`, a `stance` of `"recommended"` (when to use) or `"discouraged"` (when to choose something else), and — for discouraged cases — an `alternative`:
 
 ```json
 {
   "kind": "purpose",
   "useCases": [
     {
-      "kind": "positive",
+      "stance": "recommended",
       "description": "When the user needs to trigger an action such as submitting a form."
     },
     {
-      "kind": "negative",
+      "stance": "discouraged",
       "description": "When the action navigates to a different page.",
       "alternative": {
         "identifier": "link",
@@ -784,16 +783,16 @@ The `useCases` data model provides scenario-driven guidance for when something i
 1. **The root [`purpose`](#root-purpose) property** — adoption guidance for the design system as a whole.
 2. **The [`purpose`](#purpose-purpose) document block** — when to reach for a specific entity.
 
-In both, `useCases` is an **array** of scenario entries. Each entry has a `description` and a `kind` of `"positive"` (when to use) or `"negative"` (when to choose something else); negative entries SHOULD include an `alternative` pointing to a more fitting entity:
+In both, `useCases` is an **array** of scenario entries. Each entry has a `description` and a `stance` of `"recommended"` (when to use) or `"discouraged"` (when to choose something else); discouraged entries SHOULD include an `alternative` pointing to a more fitting entity:
 
 ```json
 [
   {
-    "kind": "positive",
+    "stance": "recommended",
     "description": "Scenario where this is the right choice."
   },
   {
-    "kind": "negative",
+    "stance": "discouraged",
     "description": "Scenario where something else fits better.",
     "alternative": {
       "identifier": "alternative-artifact",
@@ -838,8 +837,8 @@ Each `modifications` entry has this shape:
 
 | Property | Type | Required | Description |
 |---|---|---|---|
-| `type` | `string` | Yes | `"added"`, `"modified"`, `"removed"`, or `"inherited"`. |
-| `target` | `string` | No | What was changed — a property name, guideline kind, variant name, etc. (e.g., `"variant:enterprise"`, `"prop:theme"`, `"guideline:accessibility"`). |
+| `changeType` | `string` | Yes | `"added"`, `"modified"`, `"removed"`, or `"inherited"`. |
+| `target` | `string` | No | What was changed — a property name, variant name, guideline, etc. (e.g., `"variant:enterprise"`, `"prop:theme"`, `"guideline:accessibility"`). |
 | `description` | `richText` | Yes | A human-readable description of the change. |
 
 ```json
@@ -858,9 +857,9 @@ Each `modifications` entry has this shape:
         "version": "2.0.0",
         "description": "Adds an 'enterprise' variant and a 'theme' prop for sub-brand theming.",
         "modifications": [
-          { "type": "added", "target": "variant:enterprise", "description": "High-emphasis variant using enterprise brand color." },
-          { "type": "added", "target": "prop:theme", "description": "Prop accepting 'default' or 'admin' for sub-brand palette switching." },
-          { "type": "inherited", "target": "guideline:anatomy", "description": "Anatomy inherited from core without changes." }
+          { "changeType": "added", "target": "variant:enterprise", "description": "High-emphasis variant using enterprise brand color." },
+          { "changeType": "added", "target": "prop:theme", "description": "Prop accepting 'default' or 'admin' for sub-brand palette switching." },
+          { "changeType": "inherited", "target": "guideline:anatomy", "description": "Anatomy inherited from core without changes." }
         ]
       }
     }

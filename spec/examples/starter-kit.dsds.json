@@ -1,6 +1,6 @@
 {
   "$schema": "../schema/dsds.bundled.schema.json",
-  "dsdsVersion": "0.3",
+  "dsdsVersion": "0.4",
   "systemInfo": {
     "systemName": "Acme Design System",
     "systemVersion": "2.0.0",
@@ -12,19 +12,19 @@
     "useCases": [
       {
         "description": "When building a new product or feature within the Acme product suite that must conform to the Acme brand and interaction standards.",
-        "kind": "positive"
+        "stance": "recommended"
       },
       {
         "description": "When an existing product is being redesigned or migrated to a modern front-end stack and needs a consistent component library.",
-        "kind": "positive"
+        "stance": "recommended"
       },
       {
         "description": "When contributing a new component or pattern that will be shared across multiple Acme products.",
-        "kind": "positive"
+        "stance": "recommended"
       },
       {
         "description": "When building a white-label product that must not carry the Acme brand identity.",
-        "kind": "negative",
+        "stance": "discouraged",
         "alternative": {
           "identifier": "custom theme or independent design system",
           "rationale": "The Acme Design System encodes Acme-specific brand decisions (color palette, typography, iconography). White-label products require a neutral foundation that can be re-skinned per customer. Use the token architecture as inspiration, but do not depend on Acme-branded tokens directly."
@@ -32,7 +32,7 @@
       },
       {
         "description": "When building a one-off marketing landing page with highly custom, editorial layouts that intentionally break grid and component conventions.",
-        "kind": "negative",
+        "stance": "discouraged",
         "alternative": {
           "identifier": "bespoke implementation with brand guidelines",
           "rationale": "Marketing pages often require creative freedom that a component system constrains. Use the brand color tokens and typography scale for consistency, but do not force editorial layouts into rigid component patterns."
@@ -44,19 +44,19 @@
     {
       "guidance": "Use semantic tokens instead of raw color, spacing, or typography values in all production code.",
       "rationale": "Semantic tokens abstract the intent (e.g., 'color-text-primary') from the value (e.g., '#1a1a1a'). This enables theming, dark mode, and system-wide visual changes from a single source of truth without touching component code.",
-      "kind": "MUST",
+      "level": "MUST",
       "category": "development"
     },
     {
       "guidance": "Do not modify or override design token values at the component level. Use the token as-is or request a new token.",
       "rationale": "Overriding tokens breaks the contract between the design system and consuming products. When the system updates a token value, overridden components will not pick up the change, creating visual drift.",
-      "kind": "MUST_NOT",
+      "level": "MUST_NOT",
       "category": "development"
     },
     {
       "guidance": "Test all components at 200% browser zoom to ensure content does not overflow, overlap, or become inaccessible.",
       "rationale": "WCAG 1.4.4 requires that content remains functional at 200% text size. Components that break at zoom levels below 200% fail this criterion and exclude users with low vision.",
-      "kind": "MUST",
+      "level": "MUST",
       "category": "accessibility",
       "criteria": [
         {
@@ -69,13 +69,13 @@
     {
       "guidance": "Prefer composition over customization. Combine existing components to build new patterns rather than adding configuration props to existing components.",
       "rationale": "Every prop added to a component increases its API surface, testing burden, and cognitive load. Composing simple components into larger patterns keeps each component focused and predictable.",
-      "kind": "SHOULD",
+      "level": "SHOULD",
       "category": "development"
     },
     {
       "guidance": "Every interactive component must be fully operable with a keyboard alone — no mouse or touch required.",
       "rationale": "Keyboard operability is the foundation of accessibility. Users who rely on switch devices, screen readers, or alternative input methods all depend on keyboard support as the lowest common denominator.",
-      "kind": "MUST",
+      "level": "MUST",
       "category": "accessibility",
       "criteria": [
         {
@@ -88,19 +88,19 @@
     {
       "guidance": "Pin the design system package version in production applications. Upgrade deliberately, not automatically.",
       "rationale": "Automatic upgrades can introduce visual regressions or breaking API changes. Pinning versions ensures stability while allowing teams to upgrade on their own schedule after testing.",
-      "kind": "SHOULD",
+      "level": "SHOULD",
       "category": "development"
     },
     {
       "guidance": "Do not wrap design system components in additional DOM elements that alter their semantics or accessibility tree.",
       "rationale": "Wrapping a button in a div with an onClick handler, or nesting a link inside a button, creates unexpected behavior for assistive technology. Use components as designed — their semantic structure is intentional.",
-      "kind": "MUST_NOT",
+      "level": "MUST_NOT",
       "category": "accessibility"
     },
     {
       "guidance": "When contributing a new component, provide at minimum: a purpose guideline, an API guideline, and a best-practices guideline before publishing to production.",
       "rationale": "Components without documentation are components without a contract. Consumers cannot use them correctly if the intended use cases, API, and constraints are not documented.",
-      "kind": "MUST",
+      "level": "MUST",
       "category": "content"
     }
   ],
@@ -230,15 +230,15 @@
               "useCases": [
                 {
                   "description": "When the user needs to trigger an action such as submitting a form, saving data, or opening a dialog.",
-                  "kind": "positive"
+                  "stance": "recommended"
                 },
                 {
                   "description": "When a destructive action needs to be initiated, such as deleting a record. Pair with a confirmation dialog.",
-                  "kind": "positive"
+                  "stance": "recommended"
                 },
                 {
                   "description": "When the action navigates to a different page or URL.",
-                  "kind": "negative",
+                  "stance": "discouraged",
                   "alternative": {
                     "identifier": "link",
                     "rationale": "Links carry native navigation semantics. Screen readers announce them as links, and browsers support open-in-new-tab."
@@ -261,19 +261,19 @@
                 {
                   "guidance": "Limit each surface to one primary button.",
                   "rationale": "Multiple primary buttons dilute visual hierarchy.",
-                  "kind": "MUST",
+                  "level": "MUST",
                   "category": "visual-design"
                 },
                 {
                   "guidance": "Use the loading state instead of disabling the button during async operations.",
                   "rationale": "A disabled button gives no feedback that an action is in progress.",
-                  "kind": "SHOULD",
+                  "level": "SHOULD",
                   "category": "interaction"
                 },
                 {
                   "guidance": "When using an icon-only button, provide an aria-label.",
                   "rationale": "Screen readers need a text equivalent for every interactive control.",
-                  "kind": "MUST",
+                  "level": "MUST",
                   "category": "accessibility",
                   "criteria": [
                     {
@@ -288,7 +288,7 @@
                 "constraints": [
                   {
                     "rule": "Limit each surface to one primary button.",
-                    "level": "must"
+                    "level": "MUST"
                   }
                 ],
                 "keywords": [
@@ -328,15 +328,15 @@
             "constraints": [
               {
                 "rule": "Do not use for navigating to a different page or URL.",
-                "level": "must-not"
+                "level": "MUST_NOT"
               },
               {
                 "rule": "Limit each surface to one primary-emphasis button.",
-                "level": "must"
+                "level": "MUST"
               },
               {
                 "rule": "Always provide an accessible label via visible text or aria-label.",
-                "level": "must"
+                "level": "MUST"
               }
             ],
             "disambiguation": [
@@ -408,11 +408,11 @@
               "useCases": [
                 {
                   "description": "When the action navigates the user to a different page, section, or external resource.",
-                  "kind": "positive"
+                  "stance": "recommended"
                 },
                 {
                   "description": "When the action triggers a state change or submits data without navigation.",
-                  "kind": "negative",
+                  "stance": "discouraged",
                   "alternative": {
                     "identifier": "button",
                     "rationale": "Buttons have action semantics. Using a link for non-navigation actions creates a mismatch between role and behavior."
@@ -426,7 +426,7 @@
                 {
                   "guidance": "Always pair link color with an underline for inline links within body text.",
                   "rationale": "Color alone is insufficient to distinguish links for users with color vision deficiency.",
-                  "kind": "MUST",
+                  "level": "MUST",
                   "category": "accessibility",
                   "criteria": [
                     {
@@ -443,15 +443,15 @@
             "constraints": [
               {
                 "rule": "Do not use for navigating to a different page or URL.",
-                "level": "must-not"
+                "level": "MUST_NOT"
               },
               {
                 "rule": "Limit each surface to one primary-emphasis button.",
-                "level": "must"
+                "level": "MUST"
               },
               {
                 "rule": "Always provide an accessible label via visible text or aria-label.",
-                "level": "must"
+                "level": "MUST"
               }
             ],
             "disambiguation": [
@@ -553,7 +553,7 @@
                 {
                   "guidance": "Use role='alert' or aria-live='assertive' for error alerts so screen readers announce them immediately.",
                   "rationale": "Without a live region, dynamically injected error messages are invisible to assistive technology.",
-                  "kind": "MUST",
+                  "level": "MUST",
                   "category": "accessibility",
                   "criteria": [
                     {
@@ -570,15 +570,15 @@
             "constraints": [
               {
                 "rule": "Do not use for navigating to a different page or URL.",
-                "level": "must-not"
+                "level": "MUST_NOT"
               },
               {
                 "rule": "Limit each surface to one primary-emphasis button.",
-                "level": "must"
+                "level": "MUST"
               },
               {
                 "rule": "Always provide an accessible label via visible text or aria-label.",
-                "level": "must"
+                "level": "MUST"
               }
             ],
             "disambiguation": [
@@ -645,11 +645,11 @@
                 "constraints": [
                   {
                     "rule": "Do not use on dark or colored background surfaces.",
-                    "level": "must-not"
+                    "level": "MUST_NOT"
                   },
                   {
                     "rule": "Do not override this token value at the component level.",
-                    "level": "must-not"
+                    "level": "MUST_NOT"
                   }
                 ],
                 "disambiguation": [
@@ -700,11 +700,11 @@
                 "constraints": [
                   {
                     "rule": "Do not use on dark or colored background surfaces.",
-                    "level": "must-not"
+                    "level": "MUST_NOT"
                   },
                   {
                     "rule": "Do not override this token value at the component level.",
-                    "level": "must-not"
+                    "level": "MUST_NOT"
                   }
                 ],
                 "disambiguation": [
@@ -755,11 +755,11 @@
                 "constraints": [
                   {
                     "rule": "Do not use on dark or colored background surfaces.",
-                    "level": "must-not"
+                    "level": "MUST_NOT"
                   },
                   {
                     "rule": "Do not override this token value at the component level.",
-                    "level": "must-not"
+                    "level": "MUST_NOT"
                   }
                 ],
                 "disambiguation": [
@@ -789,7 +789,7 @@
             "constraints": [
               {
                 "rule": "Do not reference base palette tokens directly in component code.",
-                "level": "must-not",
+                "level": "MUST_NOT",
                 "context": "Always reference semantic tokens that point to palette values."
               }
             ],
@@ -915,13 +915,13 @@
                 {
                   "guidance": "Components must not apply external margin. Margin between components is the responsibility of the parent layout.",
                   "rationale": "Components that own their margins create unpredictable spacing when composed.",
-                  "kind": "MUST",
+                  "level": "MUST",
                   "category": "visual-design"
                 },
                 {
                   "guidance": "Use CSS gap as the primary mechanism for spacing between sibling elements.",
                   "rationale": "Gap applies spacing uniformly without affecting the first or last child.",
-                  "kind": "SHOULD",
+                  "level": "SHOULD",
                   "category": "development"
                 }
               ]
@@ -932,11 +932,11 @@
             "constraints": [
               {
                 "rule": "Do not substitute spacing tokens with typography or icon-size tokens.",
-                "level": "must-not"
+                "level": "MUST_NOT"
               },
               {
                 "rule": "Always use the next scale step up or down rather than custom values.",
-                "level": "should"
+                "level": "SHOULD"
               }
             ],
             "disambiguation": [
@@ -1017,11 +1017,11 @@
               "useCases": [
                 {
                   "description": "When a form submission fails validation and the user needs to correct one or more fields.",
-                  "kind": "positive"
+                  "stance": "recommended"
                 },
                 {
                   "description": "When the feedback is a successful outcome.",
-                  "kind": "negative",
+                  "stance": "discouraged",
                   "alternative": {
                     "identifier": "success-messaging",
                     "rationale": "Success feedback uses success colors and icons. Reusing the error pattern for positive outcomes confuses the visual language."
@@ -1043,13 +1043,13 @@
                 {
                   "guidance": "Always display inline errors directly below the invalid field.",
                   "rationale": "Proximity eliminates the cognitive load of mapping an error message to its field.",
-                  "kind": "MUST",
+                  "level": "MUST",
                   "category": "interaction"
                 },
                 {
                   "guidance": "Move focus to the error summary when it appears.",
                   "rationale": "Screen reader users will not discover the summary unless focus is moved to it.",
-                  "kind": "MUST",
+                  "level": "MUST",
                   "category": "accessibility",
                   "criteria": [
                     {
@@ -1061,7 +1061,7 @@
                 {
                   "guidance": "Do not clear the form or reset field values when validation fails.",
                   "rationale": "Clearing the form destroys the user's work.",
-                  "kind": "MUST_NOT",
+                  "level": "MUST_NOT",
                   "category": "interaction"
                 }
               ]
@@ -1072,11 +1072,11 @@
             "constraints": [
               {
                 "rule": "Always include both an inline field error and a summary when multiple fields fail.",
-                "level": "must"
+                "level": "MUST"
               },
               {
                 "rule": "Do not use toast notifications as the sole error communication for form validation.",
-                "level": "must-not"
+                "level": "MUST_NOT"
               }
             ],
             "disambiguation": [

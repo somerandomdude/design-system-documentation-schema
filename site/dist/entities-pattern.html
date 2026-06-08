@@ -3,14 +3,14 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>DSDS Pattern Definitions — DSDS 0.3</title>
+  <title>DSDS Pattern Definitions — DSDS 0.4</title>
   <link rel="stylesheet" href="tokens.css">
   <link rel="stylesheet" href="style.css">
   <script src="components.js"></script>
 </head>
 <body>
   <ds-nav-toggle target="ds-spec-nav"></ds-nav-toggle>
-  <ds-spec-nav title="Design System Documentation Spec 0.3" title-href="index.html" active="entities-pattern">
+  <ds-spec-nav title="Design System Documentation Spec 0.4" title-href="index.html" active="entities-pattern">
     <a href="index.html" slug="index">Overview</a>
     <a href="quickstart.html" slug="quickstart">Quick start</a>
     <a href="schema-architecture.html" slug="schema-architecture">Schema architecture</a>
@@ -83,13 +83,13 @@
   <ds-prop name="kind" type="&lt;ds-code inline&gt;&quot;pattern&quot;&lt;/ds-code&gt;" required>Identifies this entity as a pattern.</ds-prop>
   <ds-prop name="identifier" type="string" required>Machine-readable identifier for the pattern (e.g., 'error-messaging', 'navigation', 'empty-state', 'form-validation'). MUST be unique within the documentation group.<br><small>Pattern: <ds-code inline>^[a-z][a-z0-9-]*$</ds-code></small></ds-prop>
   <ds-prop name="name" type="string" required>Display name shown in docs (e.g., 'Error Messaging', 'Navigation', 'Empty State').</ds-prop>
-  <ds-prop name="metadata" type="&lt;ds-type-ref href=&quot;metadata-metadata.html#entitymetadata&quot;&gt;entityMetadata&lt;/ds-type-ref&gt;[]">Modular metadata entries. Each entry is a typed object with a <ds-code inline>kind</ds-code> tag. Kinds include status, since, tags, category, aliases, summary, thumbnail, preview, extends, and links.</ds-prop>
+  <ds-prop name="metadata" type="&lt;ds-type-ref href=&quot;metadata-metadata.html#entitymetadataarray&quot;&gt;entityMetadataArray&lt;/ds-type-ref&gt;">Modular metadata entries. Each entry is a typed object with a <ds-code inline>kind</ds-code> tag. Kinds include status, since, tags, category, aliases, summary, thumbnail, preview, extends, and links.</ds-prop>
   <ds-prop name="documentBlocks" type="&lt;ds-type-ref href=&quot;document-blocks-document-blocks.html#patterndocumentblock&quot;&gt;patternDocumentBlock&lt;/ds-type-ref&gt;[]">All structured docs for this pattern, as an ordered array of typed document block objects. Patterns accept the pattern-specific kinds (interactions) plus the general kinds (guidelines, use-cases, accessibility, examples). The <ds-code inline>type</ds-code> property on each entry sets its shape. Order matters: tools SHOULD preserve it for display. Interaction entries rely on order to show the flow in time. Reference the components a pattern uses through a <ds-code inline>links</ds-code> metadata entry (type 'component', name, and role) rather than a dedicated block kind.</ds-prop>
   <ds-prop name="agents" type="&lt;ds-type-ref href=&quot;common-agents.html#agents&quot;&gt;agents&lt;/ds-type-ref&gt;">AI-ready context for this pattern: intent, constraints, disambiguation, anti-patterns, examples, and keywords for efficient AI use.</ds-prop>
   <ds-prop name="$extensions" type="&lt;ds-type-ref href=&quot;common-extensions.html#extensions&quot;&gt;extensions&lt;/ds-type-ref&gt;"></ds-prop>
 </ds-prop-table>
 <ds-cross-refs><strong>References:</strong> 
-<ds-type-ref href="metadata-metadata.html#entitymetadata">entityMetadata</ds-type-ref>, <ds-type-ref href="document-blocks-document-blocks.html#patterndocumentblock">patternDocumentBlock</ds-type-ref>, <ds-type-ref href="common-agents.html#agents">agents</ds-type-ref>, <ds-type-ref href="common-extensions.html#extensions">extensions</ds-type-ref>
+<ds-type-ref href="metadata-metadata.html#entitymetadataarray">entityMetadataArray</ds-type-ref>, <ds-type-ref href="document-blocks-document-blocks.html#patterndocumentblock">patternDocumentBlock</ds-type-ref>, <ds-type-ref href="common-agents.html#agents">agents</ds-type-ref>, <ds-type-ref href="common-extensions.html#extensions">extensions</ds-type-ref>
 </ds-cross-refs>
 <ds-def-example>
 <ds-code language="json" label="example">{
@@ -335,19 +335,19 @@
       &quot;useCases&quot;: [
         {
           &quot;description&quot;: &quot;When a user submits a form and one or more fields fail validation — whether client-side or server-side.&quot;,
-          &quot;kind&quot;: &quot;positive&quot;
+          &quot;stance&quot;: &quot;recommended&quot;
         },
         {
           &quot;description&quot;: &quot;When an asynchronous operation fails and the user needs to be informed (e.g., save failed, API error, network timeout).&quot;,
-          &quot;kind&quot;: &quot;positive&quot;
+          &quot;stance&quot;: &quot;recommended&quot;
         },
         {
           &quot;description&quot;: &quot;When the user needs to correct input before proceeding, such as during account creation, checkout, or settings changes.&quot;,
-          &quot;kind&quot;: &quot;positive&quot;
+          &quot;stance&quot;: &quot;recommended&quot;
         },
         {
           &quot;description&quot;: &quot;When the feedback is a successful outcome (e.g., 'Changes saved', 'Account created').&quot;,
-          &quot;kind&quot;: &quot;negative&quot;,
+          &quot;stance&quot;: &quot;discouraged&quot;,
           &quot;alternative&quot;: {
             &quot;identifier&quot;: &quot;success-messaging&quot;,
             &quot;rationale&quot;: &quot;Success feedback uses the success color and icon. Reusing the error pattern for positive outcomes confuses the visual language and dilutes the urgency of actual errors.&quot;
@@ -355,7 +355,7 @@
         },
         {
           &quot;description&quot;: &quot;When the feedback is an informational or warning message that does not block the user from proceeding.&quot;,
-          &quot;kind&quot;: &quot;negative&quot;,
+          &quot;stance&quot;: &quot;discouraged&quot;,
           &quot;alternative&quot;: {
             &quot;identifier&quot;: &quot;notification-messaging&quot;,
             &quot;rationale&quot;: &quot;Informational messages use a neutral or warning color. Treating them as errors creates false urgency and trains users to ignore error styling.&quot;
@@ -363,7 +363,7 @@
         },
         {
           &quot;description&quot;: &quot;When the entire page or view fails to load (e.g., 404, 503).&quot;,
-          &quot;kind&quot;: &quot;negative&quot;,
+          &quot;stance&quot;: &quot;discouraged&quot;,
           &quot;alternative&quot;: {
             &quot;identifier&quot;: &quot;empty-state&quot;,
             &quot;rationale&quot;: &quot;Full-page failures are better handled by empty state patterns that replace the entire content area with an explanation and recovery action, rather than overlaying error messages on a non-functional page.&quot;
@@ -392,31 +392,31 @@
         {
           &quot;guidance&quot;: &quot;Always display inline errors directly below the invalid field, not in a separate location or only in the summary.&quot;,
           &quot;rationale&quot;: &quot;Users scan forms top-to-bottom. An error placed away from its field forces the user to map the message to the field mentally. Proximity eliminates that cognitive load.&quot;,
-          &quot;kind&quot;: &quot;MUST&quot;,
+          &quot;level&quot;: &quot;MUST&quot;,
           &quot;category&quot;: &quot;visual-design&quot;
         },
         {
           &quot;guidance&quot;: &quot;Error messages must describe the problem and, when possible, suggest how to fix it.&quot;,
           &quot;rationale&quot;: &quot;A message like 'Invalid input' forces the user to guess what went wrong. A message like 'Enter a date in MM/DD/YYYY format' removes ambiguity and speeds correction.&quot;,
-          &quot;kind&quot;: &quot;MUST&quot;,
+          &quot;level&quot;: &quot;MUST&quot;,
           &quot;category&quot;: &quot;content&quot;
         },
         {
           &quot;guidance&quot;: &quot;When two or more fields have errors, display an error summary at the top of the form in addition to inline messages.&quot;,
           &quot;rationale&quot;: &quot;Users on long forms may not see all inline errors, especially those below the fold. The summary provides a single scannable list of everything that needs attention.&quot;,
-          &quot;kind&quot;: &quot;MUST&quot;,
+          &quot;level&quot;: &quot;MUST&quot;,
           &quot;category&quot;: &quot;visual-design&quot;
         },
         {
           &quot;guidance&quot;: &quot;Each entry in the error summary must link to the corresponding invalid field.&quot;,
           &quot;rationale&quot;: &quot;Keyboard and screen reader users need a way to navigate directly from the summary to the problematic field without tabbing through the entire form.&quot;,
-          &quot;kind&quot;: &quot;MUST&quot;,
+          &quot;level&quot;: &quot;MUST&quot;,
           &quot;category&quot;: &quot;interaction&quot;
         },
         {
           &quot;guidance&quot;: &quot;Move focus to the error summary when it appears.&quot;,
           &quot;rationale&quot;: &quot;Screen reader users will not discover the summary unless focus is moved to it. Sighted keyboard users benefit from the same behavior — their next Tab press lands them in the summary's link list.&quot;,
-          &quot;kind&quot;: &quot;MUST&quot;,
+          &quot;level&quot;: &quot;MUST&quot;,
           &quot;category&quot;: &quot;accessibility&quot;,
           &quot;criteria&quot;: [
             {
@@ -428,19 +428,19 @@
         {
           &quot;guidance&quot;: &quot;Do not clear the form or reset field values when validation fails.&quot;,
           &quot;rationale&quot;: &quot;Clearing the form destroys the user's work. They must re-enter all data, including fields that were valid. This is hostile to all users and catastrophic for users with motor impairments who rely on slow, deliberate input.&quot;,
-          &quot;kind&quot;: &quot;MUST_NOT&quot;,
+          &quot;level&quot;: &quot;MUST_NOT&quot;,
           &quot;category&quot;: &quot;interaction&quot;
         },
         {
           &quot;guidance&quot;: &quot;Use real-time inline validation only for fields where the constraint is unambiguous and immediate feedback is helpful (e.g., password strength, email format). Do not validate on every keystroke for fields that require the user to finish typing.&quot;,
           &quot;rationale&quot;: &quot;Premature validation interrupts the user. Showing 'Invalid email' while the user is still typing 'j' is noise. Wait for a blur event or a pause in typing.&quot;,
-          &quot;kind&quot;: &quot;SHOULD&quot;,
+          &quot;level&quot;: &quot;SHOULD&quot;,
           &quot;category&quot;: &quot;interaction&quot;
         },
         {
           &quot;guidance&quot;: &quot;Pair every inline error message with an error icon. Do not rely on color alone.&quot;,
           &quot;rationale&quot;: &quot;Approximately 8% of men have some form of color vision deficiency. An icon provides a second, non-color signal that the field is in an error state. WCAG 1.4.1 requires that color is not the sole means of conveying information.&quot;,
-          &quot;kind&quot;: &quot;MUST&quot;,
+          &quot;level&quot;: &quot;MUST&quot;,
           &quot;category&quot;: &quot;accessibility&quot;,
           &quot;criteria&quot;: [
             {
@@ -452,7 +452,7 @@
         {
           &quot;guidance&quot;: &quot;Each inline error message must be programmatically associated with its field using aria-describedby.&quot;,
           &quot;rationale&quot;: &quot;Screen readers announce aria-describedby content when the field receives focus. Without it, the user hears the field label but not the error, and has no way to know the field is invalid.&quot;,
-          &quot;kind&quot;: &quot;MUST&quot;,
+          &quot;level&quot;: &quot;MUST&quot;,
           &quot;category&quot;: &quot;accessibility&quot;,
           &quot;criteria&quot;: [
             {
@@ -468,7 +468,7 @@
         {
           &quot;guidance&quot;: &quot;Invalid fields must be marked with aria-invalid=\&quot;true\&quot;.&quot;,
           &quot;rationale&quot;: &quot;The aria-invalid attribute allows screen readers to announce that a field's value is not accepted. It is the standard mechanism for communicating validation state in ARIA.&quot;,
-          &quot;kind&quot;: &quot;MUST&quot;,
+          &quot;level&quot;: &quot;MUST&quot;,
           &quot;category&quot;: &quot;accessibility&quot;,
           &quot;criteria&quot;: [
             {
@@ -480,7 +480,7 @@
         {
           &quot;guidance&quot;: &quot;The error summary must use role=\&quot;alert\&quot; or be injected into an aria-live=\&quot;assertive\&quot; region so that screen readers announce it immediately when it appears.&quot;,
           &quot;rationale&quot;: &quot;Without a live region, screen readers will not announce dynamically injected content. The user will not know the summary exists unless they navigate to it manually.&quot;,
-          &quot;kind&quot;: &quot;MUST&quot;,
+          &quot;level&quot;: &quot;MUST&quot;,
           &quot;category&quot;: &quot;accessibility&quot;,
           &quot;criteria&quot;: [
             {
@@ -492,7 +492,7 @@
         {
           &quot;guidance&quot;: &quot;Error summary anchor links must move focus to the corresponding field, not just scroll to it.&quot;,
           &quot;rationale&quot;: &quot;Keyboard users rely on focus position to interact. Scrolling without moving focus leaves the keyboard cursor at the summary, requiring the user to Tab through potentially many elements to reach the field.&quot;,
-          &quot;kind&quot;: &quot;MUST&quot;,
+          &quot;level&quot;: &quot;MUST&quot;,
           &quot;category&quot;: &quot;accessibility&quot;,
           &quot;criteria&quot;: [
             {
@@ -504,7 +504,7 @@
         {
           &quot;guidance&quot;: &quot;Toast notifications for errors must persist until the user dismisses them or the error is resolved. Do not auto-dismiss error toasts.&quot;,
           &quot;rationale&quot;: &quot;Users with cognitive disabilities or screen reader users may need more time to read and understand the error. Auto-dismissing the toast removes the information before they can act on it.&quot;,
-          &quot;kind&quot;: &quot;MUST&quot;,
+          &quot;level&quot;: &quot;MUST&quot;,
           &quot;category&quot;: &quot;accessibility&quot;,
           &quot;criteria&quot;: [
             {
@@ -519,11 +519,11 @@
         &quot;constraints&quot;: [
           {
             &quot;rule&quot;: &quot;Error messages must describe what went wrong and how to fix it.&quot;,
-            &quot;level&quot;: &quot;must&quot;
+            &quot;level&quot;: &quot;MUST&quot;
           },
           {
             &quot;rule&quot;: &quot;Do not use color alone to indicate an error state.&quot;,
-            &quot;level&quot;: &quot;must-not&quot;
+            &quot;level&quot;: &quot;MUST_NOT&quot;
           }
         ],
         &quot;keywords&quot;: [
@@ -570,11 +570,11 @@
     &quot;constraints&quot;: [
       {
         &quot;rule&quot;: &quot;Always include both an inline field error and a summary when multiple fields fail.&quot;,
-        &quot;level&quot;: &quot;must&quot;
+        &quot;level&quot;: &quot;MUST&quot;
       },
       {
         &quot;rule&quot;: &quot;Do not use toast notifications as the sole error communication for form validation.&quot;,
-        &quot;level&quot;: &quot;must-not&quot;
+        &quot;level&quot;: &quot;MUST_NOT&quot;
       }
     ],
     &quot;disambiguation&quot;: [
@@ -615,7 +615,7 @@
         <ds-back-to-top></ds-back-to-top>
 
         <ds-footer>
-          <p>Design System Documentation Spec (DSDS) 0.3 — Draft Specification</p>
+          <p>Design System Documentation Spec (DSDS) 0.4 — Draft Specification</p>
           <p><a href="https://github.com/somerandomdude/design-system-documentation-schema">GitHub</a></p>
         </ds-footer>
       </div>

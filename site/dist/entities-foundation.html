@@ -3,14 +3,14 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>DSDS Foundation Definitions — DSDS 0.3</title>
+  <title>DSDS Foundation Definitions — DSDS 0.4</title>
   <link rel="stylesheet" href="tokens.css">
   <link rel="stylesheet" href="style.css">
   <script src="components.js"></script>
 </head>
 <body>
   <ds-nav-toggle target="ds-spec-nav"></ds-nav-toggle>
-  <ds-spec-nav title="Design System Documentation Spec 0.3" title-href="index.html" active="entities-foundation">
+  <ds-spec-nav title="Design System Documentation Spec 0.4" title-href="index.html" active="entities-foundation">
     <a href="index.html" slug="index">Overview</a>
     <a href="quickstart.html" slug="quickstart">Quick start</a>
     <a href="schema-architecture.html" slug="schema-architecture">Schema architecture</a>
@@ -83,13 +83,13 @@
   <ds-prop name="kind" type="&lt;ds-code inline&gt;&quot;foundation&quot;&lt;/ds-code&gt;" required>Identifies this entity as a foundation.</ds-prop>
   <ds-prop name="identifier" type="string" required>Machine-readable identifier for the foundation (e.g., 'color', 'typography', 'spacing', 'elevation', 'motion', 'shape', 'accessibility', 'content'). MUST be unique within the documentation group.<br><small>Pattern: <ds-code inline>^[a-z][a-z0-9-]*$</ds-code></small></ds-prop>
   <ds-prop name="name" type="string" required>Display name shown in docs (e.g., 'Color', 'Typography', 'Spacing', 'Elevation', 'Accessibility', 'Content').</ds-prop>
-  <ds-prop name="metadata" type="&lt;ds-type-ref href=&quot;metadata-metadata.html#entitymetadata&quot;&gt;entityMetadata&lt;/ds-type-ref&gt;[]">Modular metadata entries. Each entry is a typed object with a <ds-code inline>kind</ds-code> tag. Kinds include status, since, tags, category, aliases, summary, thumbnail, preview, extends, and links.</ds-prop>
+  <ds-prop name="metadata" type="&lt;ds-type-ref href=&quot;metadata-metadata.html#entitymetadataarray&quot;&gt;entityMetadataArray&lt;/ds-type-ref&gt;">Modular metadata entries. Each entry is a typed object with a <ds-code inline>kind</ds-code> tag. Kinds include status, since, tags, category, aliases, summary, thumbnail, preview, extends, and links.</ds-prop>
   <ds-prop name="documentBlocks" type="&lt;ds-type-ref href=&quot;document-blocks-document-blocks.html#foundationdocumentblock&quot;&gt;foundationDocumentBlock&lt;/ds-type-ref&gt;[]">All structured docs for this foundation, as an ordered array of typed document block objects. Accepts the foundation-specific kinds (principles, scale, motion) plus the general kinds (guideline, use-cases, accessibility, content, examples). The <ds-code inline>kind</ds-code> property on each entry sets its shape. Order matters: tools SHOULD preserve it for display. Express internal artifact links (such as token group references) through a <ds-code inline>links</ds-code> metadata entry, not as document block entries.</ds-prop>
   <ds-prop name="agents" type="&lt;ds-type-ref href=&quot;common-agents.html#agents&quot;&gt;agents&lt;/ds-type-ref&gt;">AI-ready context for this foundation: intent, constraints, disambiguation, anti-patterns, examples, and keywords for efficient AI use.</ds-prop>
   <ds-prop name="$extensions" type="&lt;ds-type-ref href=&quot;common-extensions.html#extensions&quot;&gt;extensions&lt;/ds-type-ref&gt;"></ds-prop>
 </ds-prop-table>
 <ds-cross-refs><strong>References:</strong> 
-<ds-type-ref href="metadata-metadata.html#entitymetadata">entityMetadata</ds-type-ref>, <ds-type-ref href="document-blocks-document-blocks.html#foundationdocumentblock">foundationDocumentBlock</ds-type-ref>, <ds-type-ref href="common-agents.html#agents">agents</ds-type-ref>, <ds-type-ref href="common-extensions.html#extensions">extensions</ds-type-ref>
+<ds-type-ref href="metadata-metadata.html#entitymetadataarray">entityMetadataArray</ds-type-ref>, <ds-type-ref href="document-blocks-document-blocks.html#foundationdocumentblock">foundationDocumentBlock</ds-type-ref>, <ds-type-ref href="common-agents.html#agents">agents</ds-type-ref>, <ds-type-ref href="common-extensions.html#extensions">extensions</ds-type-ref>
 </ds-cross-refs>
 <ds-def-example>
 <ds-code language="json" label="example">{
@@ -254,11 +254,11 @@
         &quot;constraints&quot;: [
           {
             &quot;rule&quot;: &quot;Always use scale tokens instead of arbitrary pixel values.&quot;,
-            &quot;level&quot;: &quot;must&quot;
+            &quot;level&quot;: &quot;MUST&quot;
           },
           {
             &quot;rule&quot;: &quot;Do not skip more than two scale steps between adjacent elements.&quot;,
-            &quot;level&quot;: &quot;should-not&quot;
+            &quot;level&quot;: &quot;SHOULD_NOT&quot;
           }
         ],
         &quot;keywords&quot;: [
@@ -329,43 +329,43 @@
         {
           &quot;guidance&quot;: &quot;Use the spacing scale tokens for all padding, margin, and gap properties. Do not use hard-coded values.&quot;,
           &quot;rationale&quot;: &quot;Hard-coded values create visual inconsistency and are not responsive to system-wide spacing changes. Tokens enable global adjustment of spatial density from a single source of truth.&quot;,
-          &quot;kind&quot;: &quot;MUST&quot;,
+          &quot;level&quot;: &quot;MUST&quot;,
           &quot;category&quot;: &quot;visual-design&quot;
         },
         {
           &quot;guidance&quot;: &quot;Components must not apply external margin. Margin between components is the responsibility of the parent layout.&quot;,
           &quot;rationale&quot;: &quot;Components that own their margins create unpredictable spacing when composed. A button with built-in margin-bottom behaves differently depending on what follows it. Delegating margin to layout makes spacing composable and predictable.&quot;,
-          &quot;kind&quot;: &quot;MUST&quot;,
+          &quot;level&quot;: &quot;MUST&quot;,
           &quot;category&quot;: &quot;visual-design&quot;
         },
         {
           &quot;guidance&quot;: &quot;Select spacing based on the relationship between elements, not their size. Related elements use smaller spacing. Unrelated elements use larger spacing.&quot;,
           &quot;rationale&quot;: &quot;Gestalt proximity principle: objects that are closer together are perceived as related. Spacing encodes information hierarchy. A label 4px from its input is clearly associated with it. A label 32px from an input appears disconnected.&quot;,
-          &quot;kind&quot;: &quot;SHOULD&quot;,
+          &quot;level&quot;: &quot;SHOULD&quot;,
           &quot;category&quot;: &quot;visual-design&quot;
         },
         {
           &quot;guidance&quot;: &quot;Do not use spacing tokens for non-spatial properties such as border-width, font-size, or icon-size. Use the tokens designated for those properties.&quot;,
           &quot;rationale&quot;: &quot;Spacing tokens are tuned for whitespace. A spacing scale step that works well as padding produces incorrect results as a border-width or icon-size. Using the wrong token category couples unrelated visual properties.&quot;,
-          &quot;kind&quot;: &quot;MUST_NOT&quot;,
+          &quot;level&quot;: &quot;MUST_NOT&quot;,
           &quot;category&quot;: &quot;development&quot;
         },
         {
           &quot;guidance&quot;: &quot;Use CSS gap (in Flexbox or Grid) as the primary mechanism for spacing between sibling elements. Reserve margin for spacing between non-sibling elements or layout-level offset.&quot;,
           &quot;rationale&quot;: &quot;Gap applies spacing uniformly between children without affecting the first or last child. Margin requires :first-child/:last-child overrides to prevent unwanted space at container edges.&quot;,
-          &quot;kind&quot;: &quot;SHOULD&quot;,
+          &quot;level&quot;: &quot;SHOULD&quot;,
           &quot;category&quot;: &quot;development&quot;
         },
         {
           &quot;guidance&quot;: &quot;For responsive layouts, reduce spacing density at smaller breakpoints by stepping down the scale. Do not introduce arbitrary breakpoint-specific values.&quot;,
           &quot;rationale&quot;: &quot;Stepping down the scale (e.g., space-7 at desktop becoming space-5 at mobile) maintains proportional relationships while conserving space. Arbitrary values break out of the scale and undermine system consistency.&quot;,
-          &quot;kind&quot;: &quot;SHOULD&quot;,
+          &quot;level&quot;: &quot;SHOULD&quot;,
           &quot;category&quot;: &quot;visual-design&quot;
         },
         {
           &quot;guidance&quot;: &quot;Ensure all interactive elements maintain a minimum 44x44 CSS pixel touch target, inclusive of padding.&quot;,
           &quot;rationale&quot;: &quot;Users with motor impairments and touch device users require a minimum target size to interact reliably. WCAG 2.5.8 requires 24x24px minimum and recommends 44x44px. The spacing system's role is to ensure padding contributes to meeting this target.&quot;,
-          &quot;kind&quot;: &quot;MUST&quot;,
+          &quot;level&quot;: &quot;MUST&quot;,
           &quot;category&quot;: &quot;accessibility&quot;,
           &quot;criteria&quot;: [
             {
@@ -377,7 +377,7 @@
         {
           &quot;guidance&quot;: &quot;When users increase text size to 200% via browser settings, spacing must not collapse to zero or cause content to overlap.&quot;,
           &quot;rationale&quot;: &quot;Users with low vision enlarge text. If spacing is defined in fixed pixel units that do not scale, text enlargement causes overlap and loss of content. Use rem-based spacing tokens where possible, and test all layouts at 200% text zoom.&quot;,
-          &quot;kind&quot;: &quot;MUST&quot;,
+          &quot;level&quot;: &quot;MUST&quot;,
           &quot;category&quot;: &quot;accessibility&quot;,
           &quot;criteria&quot;: [
             {
@@ -392,11 +392,11 @@
         &quot;constraints&quot;: [
           {
             &quot;rule&quot;: &quot;Use spacing tokens from the scale — never hard-code pixel values.&quot;,
-            &quot;level&quot;: &quot;must&quot;
+            &quot;level&quot;: &quot;MUST&quot;
           },
           {
             &quot;rule&quot;: &quot;Apply comfortable density by default; compact density only in data-dense views.&quot;,
-            &quot;level&quot;: &quot;should&quot;
+            &quot;level&quot;: &quot;SHOULD&quot;
           }
         ],
         &quot;keywords&quot;: [
@@ -413,23 +413,23 @@
       &quot;useCases&quot;: [
         {
           &quot;description&quot;: &quot;When defining padding, margin, or gap values for any layout or component. All spatial values in production code must reference the spacing scale.&quot;,
-          &quot;kind&quot;: &quot;positive&quot;
+          &quot;stance&quot;: &quot;recommended&quot;
         },
         {
           &quot;description&quot;: &quot;When establishing vertical rhythm between content sections, form groups, or card layouts.&quot;,
-          &quot;kind&quot;: &quot;positive&quot;
+          &quot;stance&quot;: &quot;recommended&quot;
         },
         {
           &quot;description&quot;: &quot;When setting internal padding for containers such as cards, dialogs, panels, and page regions.&quot;,
-          &quot;kind&quot;: &quot;positive&quot;
+          &quot;stance&quot;: &quot;recommended&quot;
         },
         {
           &quot;description&quot;: &quot;When controlling the gap between sibling elements in Flexbox or Grid layouts.&quot;,
-          &quot;kind&quot;: &quot;positive&quot;
+          &quot;stance&quot;: &quot;recommended&quot;
         },
         {
           &quot;description&quot;: &quot;When defining border widths, outline offsets, or stroke values.&quot;,
-          &quot;kind&quot;: &quot;negative&quot;,
+          &quot;stance&quot;: &quot;discouraged&quot;,
           &quot;alternative&quot;: {
             &quot;identifier&quot;: &quot;border-width&quot;,
             &quot;rationale&quot;: &quot;Border tokens are tuned for visual weight at sub-pixel and single-pixel sizes. Spacing tokens start at 0px and jump to values optimized for whitespace, which produce incorrect visual results when applied to borders.&quot;
@@ -437,7 +437,7 @@
         },
         {
           &quot;description&quot;: &quot;When setting font sizes or line heights.&quot;,
-          &quot;kind&quot;: &quot;negative&quot;,
+          &quot;stance&quot;: &quot;discouraged&quot;,
           &quot;alternative&quot;: {
             &quot;identifier&quot;: &quot;typography&quot;,
             &quot;rationale&quot;: &quot;Typographic tokens follow a modular scale designed for readability and vertical rhythm. Spacing tokens follow a geometric scale designed for whitespace. The two scales serve different purposes and should not be interchanged.&quot;
@@ -445,7 +445,7 @@
         },
         {
           &quot;description&quot;: &quot;When sizing icons or illustration containers.&quot;,
-          &quot;kind&quot;: &quot;negative&quot;,
+          &quot;stance&quot;: &quot;discouraged&quot;,
           &quot;alternative&quot;: {
             &quot;identifier&quot;: &quot;icon-size&quot;,
             &quot;rationale&quot;: &quot;Icon size tokens are calibrated to optical alignment with adjacent text at each type scale step. Spacing tokens do not account for optical sizing and produce misaligned icons.&quot;
@@ -474,11 +474,11 @@
     &quot;constraints&quot;: [
       {
         &quot;rule&quot;: &quot;Do not substitute spacing tokens with typography or icon-size tokens.&quot;,
-        &quot;level&quot;: &quot;must-not&quot;
+        &quot;level&quot;: &quot;MUST_NOT&quot;
       },
       {
         &quot;rule&quot;: &quot;Always use the next scale step up or down rather than custom values.&quot;,
-        &quot;level&quot;: &quot;should&quot;
+        &quot;level&quot;: &quot;SHOULD&quot;
       }
     ],
     &quot;disambiguation&quot;: [
@@ -505,7 +505,7 @@
         <ds-back-to-top></ds-back-to-top>
 
         <ds-footer>
-          <p>Design System Documentation Spec (DSDS) 0.3 — Draft Specification</p>
+          <p>Design System Documentation Spec (DSDS) 0.4 — Draft Specification</p>
           <p><a href="https://github.com/somerandomdude/design-system-documentation-schema">GitHub</a></p>
         </ds-footer>
       </div>
