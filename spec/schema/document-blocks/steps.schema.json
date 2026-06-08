@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://designsystemdocspec.org/v0.3/document-blocks/steps.schema.json",
+  "title": "DSDS Steps",
+  "description": "An ordered (or unordered) procedure: a sequence of steps a reader follows to accomplish a task. Powers getting-started flows, tutorials, contribution workflows, and migration guides. Each step pairs a short title with an instruction, optional code or visual examples, and an optional expected result so the reader can confirm progress.",
+  "$defs": {
+    "stepEntry": {
+      "type": "object",
+      "description": "A single step in a procedure. Pairs a short title with an instruction describing what to do. Examples carry the code, command, or screenshot for the step. `expectedResult` tells the reader what they should see once the step succeeds — valuable for tutorials. `optional` marks a step that can be skipped. A step MUST carry a `title`; all other fields are optional.",
+      "required": ["title"],
+      "properties": {
+        "title": {
+          "type": "string",
+          "description": "A short label for the step (e.g., 'Install the package', 'Wrap your app in the provider', 'Run the validator'). Concise enough to serve as a numbered list item or heading."
+        },
+        "instruction": {
+          "$ref": "../common/rich-text.schema.json#/$defs/richText",
+          "description": "What the reader should do in this step. Supports markdown by default. MUST be concrete and actionable — describe the action, not the goal."
+        },
+        "examples": {
+          "type": "array",
+          "description": "Illustrative material for the step: a code snippet, a terminal command, a screenshot, or a live URL. Most procedural steps carry a single code example.",
+          "items": {
+            "$ref": "../common/example.schema.json#/$defs/example"
+          }
+        },
+        "expectedResult": {
+          "$ref": "../common/rich-text.schema.json#/$defs/richText",
+          "description": "What the reader should observe once the step succeeds (e.g., 'The dev server starts on port 3000', 'A themed button renders'). Lets readers confirm progress and self-diagnose when something goes wrong. Most useful in tutorials and getting-started guides."
+        },
+        "optional": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether the step can be skipped without breaking the procedure. Defaults to false. Tools MAY render optional steps distinctly (e.g., an 'optional' label)."
+        }
+      },
+      "additionalProperties": false
+    },
+    "steps": {
+      "type": "object",
+      "description": "A procedure made up of an ordered or unordered sequence of steps. Use it for any task a reader works through start to finish — installation, a first-component tutorial, a contribution checklist, or a migration. Each item is a stepEntry with a title, instruction, optional examples, and an optional expected result.",
+      "required": ["kind", "items"],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "const": "steps",
+          "description": "Identifies this block as a procedure."
+        },
+        "title": {
+          "type": "string",
+          "description": "An optional heading for the whole procedure (e.g., 'Installation', 'Build your first component', 'Submitting a contribution')."
+        },
+        "ordered": {
+          "type": "boolean",
+          "default": true,
+          "description": "Whether the steps must be followed in order. Defaults to true (a sequential procedure). Set false for an unordered checklist where steps are independent. Tools SHOULD render ordered procedures as numbered lists and unordered ones as a checklist or bulleted list."
+        },
+        "items": {
+          "type": "array",
+          "description": "The steps, in display order. Each item is a single step with a title and optional instruction, examples, and expected result. Ordering is significant — tools MUST preserve it for ordered procedures.",
+          "items": {
+            "$ref": "#/$defs/stepEntry"
+          },
+          "minItems": 1
+        },
+        "agents": {
+          "$ref": "../common/agents.schema.json#/$defs/agents",
+          "description": "AI-ready context for this document block. Provides structured info for AI/LLM use: constraints, disambiguation, anti-patterns, examples, and keywords."
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

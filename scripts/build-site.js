@@ -220,7 +220,7 @@ function renderDefinition(defName, defSchema, exampleData) {
           const target = DEF_INDEX[refName];
           if (target) {
             parts.push(
-              `<li><a href="${target.slug}.html#${slug(refName)}">${esc(refName)}</a></li>`,
+              `<li><a href="${target.pageSlug}.html#${slug(refName)}">${esc(refName)}</a></li>`,
             );
           } else {
             parts.push(`<li><ds-code inline>${esc(refName)}</ds-code></li>`);

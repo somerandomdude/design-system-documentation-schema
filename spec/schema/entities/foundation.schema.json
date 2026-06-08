@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://designsystemdocspec.org/v0.3/foundation.schema.json",
+  "title": "DSDS Foundation Definitions",
+  "description": "Defines documents for foundations: the broad, cross-cutting design domains a system is built on — color, typography, spacing, elevation, motion, shape, accessibility, content, and the like. A foundation document holds the identity and metadata of a domain. Typed entries in the `metadata` array carry modular metadata (status, tags, category, aliases, summary, thumbnail, preview, links, and more). Typed entries in the `documentBlocks` array carry structured docs.",
+  "$defs": {
+    "foundation": {
+      "type": "object",
+      "description": "The principles, guidelines, scales, and token references that govern a broad design domain across the system — color, typography, spacing, elevation, motion, accessibility, content, and the like. Foundations are wider than a single visual attribute: a domain may be visual (color, spacing) or cross-cutting (accessibility, content). The top level holds identity: `identifier`, `name`, and `description`. The `metadata` array holds modular entries with a `kind` tag (status, tags, category, aliases, summary, thumbnail, preview, links, and more). The `documentBlocks` array holds structured docs as typed entries: principle, scale, guideline, accessibility, content, and so on.",
+      "required": [
+        "kind",
+        "identifier",
+        "name"
+      ],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "const": "foundation",
+          "description": "Identifies this entity as a foundation."
+        },
+        "identifier": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]*$",
+          "description": "Machine-readable identifier for the foundation (e.g., 'color', 'typography', 'spacing', 'elevation', 'motion', 'shape', 'accessibility', 'content'). MUST be unique within the documentation group."
+        },
+        "name": {
+          "type": "string",
+          "description": "Display name shown in docs (e.g., 'Color', 'Typography', 'Spacing', 'Elevation', 'Accessibility', 'Content')."
+        },
+        "metadata": {
+          "type": "array",
+          "description": "Modular metadata entries. Each entry is a typed object with a `kind` tag. Kinds include status, since, tags, category, aliases, summary, thumbnail, preview, extends, and links.",
+          "items": {
+            "$ref": "../metadata/metadata.schema.json#/$defs/entityMetadata"
+          }
+        },
+        "documentBlocks": {
+          "type": "array",
+          "description": "All structured docs for this foundation, as an ordered array of typed document block objects. Accepts the foundation-specific kinds (principles, scale, motion) plus the general kinds (guideline, use-cases, accessibility, content, examples). The `kind` property on each entry sets its shape. Order matters: tools SHOULD preserve it for display. Express internal artifact links (such as token group references) through a `links` metadata entry, not as document block entries.",
+          "items": {
+            "$ref": "../document-blocks/document-blocks.schema.json#/$defs/foundationDocumentBlock"
+          }
+        },
+        "agents": {
+          "$ref": "../common/agents.schema.json#/$defs/agents",
+          "description": "AI-ready context for this foundation: intent, constraints, disambiguation, anti-patterns, examples, and keywords for efficient AI use."
+        },
+        "$extensions": {
+          "$ref": "../common/extensions.schema.json#/$defs/extensions"
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

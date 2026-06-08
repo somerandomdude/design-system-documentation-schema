@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://designsystemdocspec.org/v0.2.1/dsds.schema.json",
-  "title": "Design System Documentation Spec (DSDS) v0.2.1",
-  "description": "A machine-readable format for design system documentation covering components, design tokens, token groups, themes, styles, and patterns. A DSDS document contains one or more documentation groups — named collections of typed entities. Each entity carries a `kind` discriminator identifying it as a component, token, token-group, theme, style, or pattern. Entity schemas are in entities/. Document block schemas are in document-blocks/. Common schemas are in common/.",
+  "$id": "https://designsystemdocspec.org/v0.3/dsds.schema.json",
+  "title": "Design System Documentation Spec (DSDS) v0.3",
+  "description": "A machine-readable format for design system documentation covering components, design tokens, token groups, themes, foundations, patterns, and guides. A DSDS document contains one or more documentation groups — named collections of typed entities. Each entity carries a `kind` discriminator identifying it as a component, token, token-group, theme, foundation, pattern, or guide. Entity schemas are in entities/. Document block schemas are in document-blocks/. Common schemas are in common/.",
   "type": "object",
   "required": ["dsdsVersion"],
   "anyOf": [
@@ -16,7 +16,7 @@
     },
     "dsdsVersion": {
       "type": "string",
-      "const": "0.2.1",
+      "const": "0.3",
       "description": "The DSDS spec version this document conforms to."
     },
     "systemMetadata": {
@@ -53,7 +53,7 @@
     },
     "documentation": {
       "type": "array",
-      "description": "One or more documentation groups. Each group is a named collection that organizes entities into separate typed arrays — components, tokenGroups, themes, styles, and patterns. Multiple groups let a single DSDS file organize entities into logical sections (e.g., one group for foundations, another for components). All entity arrays are optional; a group only needs a name. Items may be inlined or referenced via a $ref object pointing to another DSDS file.",
+      "description": "One or more documentation groups. Each group is a named collection that organizes entities into separate typed arrays — components, tokenGroups, themes, foundations, patterns, and guides. Multiple groups let a single DSDS file organize entities into logical sections (e.g., one group for foundations, another for components). All entity arrays are optional; a group only needs a name. Items may be inlined or referenced via a $ref object pointing to another DSDS file.",
       "items": {
         "oneOf": [
           { "$ref": "#/$defs/documentationGroup" },
@@ -63,14 +63,15 @@
       "minItems": 1
     },
     "entity": {
-      "description": "A single entity document — one component, token, token group, theme, style, or pattern. Use this instead of `documentation` when each entity lives in its own file. The `kind` field on the entity identifies its type.",
+      "description": "A single entity document — one component, token, token group, theme, foundation, pattern, or guide. Use this instead of `documentation` when each entity lives in its own file. The `kind` field on the entity identifies its type.",
       "oneOf": [
         { "$ref": "entities/component.schema.json#/$defs/component" },
         { "$ref": "entities/pattern.schema.json#/$defs/pattern" },
-        { "$ref": "entities/style.schema.json#/$defs/style" },
+        { "$ref": "entities/foundation.schema.json#/$defs/foundation" },
         { "$ref": "entities/theme.schema.json#/$defs/theme" },
         { "$ref": "entities/token.schema.json#/$defs/token" },
-        { "$ref": "entities/token.schema.json#/$defs/tokenGroup" }
+        { "$ref": "entities/token.schema.json#/$defs/tokenGroup" },
+        { "$ref": "entities/guide.schema.json#/$defs/guide" }
       ]
     },
     "$extensions": {
@@ -93,7 +94,7 @@
     },
     "documentationGroup": {
       "type": "object",
-      "description": "A named collection of design system documentation entities. Entities are organized into separate typed arrays — components, tokenGroups, themes, styles, and patterns — rather than a single mixed array. Only the group name is required; all entity arrays are optional, so a group may contain any combination of entity types.",
+      "description": "A named collection of design system documentation entities. Entities are organized into separate typed arrays — components, tokenGroups, themes, foundations, patterns, and guides — rather than a single mixed array. Only the group name is required; all entity arrays are optional, so a group may contain any combination of entity types.",
       "required": ["name"],
       "properties": {
         "name": {
@@ -133,12 +134,12 @@
             ]
           }
         },
-        "styles": {
+        "foundations": {
           "type": "array",
-          "description": "Style entities in this documentation group. Each item describes a reusable visual style — a named combination of token values that can be applied to elements (e.g., elevation levels, text styles). Items may be inlined or referenced via a $ref object pointing to another DSDS file.",
+          "description": "Foundation entities in this documentation group. Each item documents a broad, cross-cutting design domain — color, typography, spacing, elevation, motion, shape, accessibility, content, and the like — with its principles, scales, and guidelines. Items may be inlined or referenced via a $ref object pointing to another DSDS file.",
           "items": {
             "oneOf": [
-              { "$ref": "entities/style.schema.json#/$defs/style" },
+              { "$ref": "entities/foundation.schema.json#/$defs/foundation" },
               { "$ref": "#/$defs/fileRef" }
             ]
           }
@@ -149,6 +150,16 @@
           "items": {
             "oneOf": [
               { "$ref": "entities/pattern.schema.json#/$defs/pattern" },
+              { "$ref": "#/$defs/fileRef" }
+            ]
+          }
+        },
+        "guides": {
+          "type": "array",
+          "description": "Guide entities in this documentation group. Each item is a long-form, reading-oriented document — a getting-started walkthrough, a contribution guide, a tutorial, a conceptual overview, or a migration guide. Items may be inlined or referenced via a $ref object pointing to another DSDS file.",
+          "items": {
+            "oneOf": [
+              { "$ref": "entities/guide.schema.json#/$defs/guide" },
               { "$ref": "#/$defs/fileRef" }
             ]
           }

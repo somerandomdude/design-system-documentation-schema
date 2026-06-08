@@ -6,16 +6,17 @@ A standard, machine-readable format for design system documentation.
 
 ## What is DSDS?
 
-DSDS defines a JSON-based format for documenting the six entity types of a design system:
+DSDS defines a JSON-based format for documenting the seven entity types of a design system:
 
 - **Components** — Anatomy, API, variants, states, design specifications, best practices, accessibility, content
 - **Tokens** — Semantic meaning, platform mappings, contrast ratios, usage rules
 - **Token Groups** — Hierarchical organization of tokens into families and sub-families
 - **Themes** — Named sets of token value overrides for color modes, density, brand variants
-- **Styles** — Foundations for color, typography, spacing, elevation, motion, and content — with principles, scales, motion definitions, and best practices
+- **Foundations** — Broad design domains: color, typography, spacing, elevation, motion, shape, accessibility, and content — with principles, scales, motion definitions, and best practices
 - **Patterns** — Broad interaction patterns like navigation, error messaging, and empty states — with anatomy, variants, states, interactions, and content
+- **Guides** — Long-form, reading-oriented documentation like getting-started walkthroughs, contribution guides, tutorials, and migration guides — with narrative sections, step-by-step procedures, and best practices
 
-All structured documentation lives in a unified **document block** system. Each entry is a typed container identified by a `kind` tag. The kinds cover guidelines, anatomy, API specs, variants, states, accessibility, examples, design specifications, principles, scales, motion, content, and interactions.
+All structured documentation lives in a unified **document block** system. Each entry is a typed container identified by a `kind` tag. The kinds cover guidelines, anatomy, API specs, variants, states, accessibility, examples, design specifications, principles, scales, motion, content, interactions, narrative sections, and step-by-step procedures.
 
 The goal is simple: make design system documentation structured, portable, and consumable by tools. The tool can be a documentation site, a linter, a code assistant, or a human reading JSON.
 
@@ -42,7 +43,7 @@ DSDS addresses these problems by defining a standard format that is:
 
 ## Relationship to W3C Design Tokens
 
-The W3C Design Tokens Community Group defines a format for exchanging token **values** between tools. DSDS defines a format for exchanging the **documentation** that describes how to understand and apply those tokens, plus the components, styles, and patterns that use them.
+The W3C Design Tokens Community Group defines a format for exchanging token **values** between tools. DSDS defines a format for exchanging the **documentation** that describes how to understand and apply those tokens, plus the components, foundations, and patterns that use them.
 
 The two formats are designed to work together. DSDS does not duplicate token values or platform identifiers. The W3C Design Tokens Format file is the source of truth for values. Use the `source` property on a token entity to link it back to its DTCG definition.
 
@@ -55,7 +56,7 @@ Start here:
 - **[Overview](https://designsystemdocspec.org/)** — What DSDS is, the entity model, and how the pieces fit together.
 - **[Quick Start](https://designsystemdocspec.org/quickstart.html)** — Document structure, entity kinds, the document-block system, and minimal examples for every entity type.
 - **[Schema Architecture](https://designsystemdocspec.org/schema-architecture.html)** — The full schema reference. Covers document structure, entity types, the `agents` property, status, the document-block system, links, extends, extensions, naming conventions, and conformance levels, all with live property tables sourced from the schema.
-- **[Interactive Samples](https://designsystemdocspec.org/samples.html)** — Side-by-side JSON ↔ rendered docs for real-world entities (component, token, theme, style, pattern).
+- **[Interactive Samples](https://designsystemdocspec.org/samples.html)** — Side-by-side JSON ↔ rendered docs for real-world entities (component, token, theme, foundation, pattern).
 
 Per-schema reference pages live alongside the narrative pages — e.g. [entities/component](https://designsystemdocspec.org/entities-component.html), [document-blocks/guideline](https://designsystemdocspec.org/document-blocks-guideline.html), [common/agents](https://designsystemdocspec.org/common-agents.html). Every page is auto-generated from its corresponding `spec/schema/**/*.schema.json` file.
 
@@ -98,12 +99,13 @@ spec/
 │   │   └── thumbnail.schema.json                       # thumbnailMetadata
 │   ├── entities/                                       # Entity types
 │   │   ├── component.schema.json                       # component
+│   │   ├── foundation.schema.json                      # foundation
+│   │   ├── guide.schema.json                           # guide
 │   │   ├── pattern.schema.json                         # pattern
-│   │   ├── style.schema.json                           # style
 │   │   ├── theme.schema.json                           # theme, tokenOverride
 │   │   └── token.schema.json                           # token, tokenGroup
 │   └── document-blocks/                                 # Document block types
-│       ├── document-blocks.schema.json                  # Scoped unions (componentDocumentBlock, styleDocumentBlock, etc.)
+│       ├── document-blocks.schema.json                  # Scoped unions (componentDocumentBlock, foundationDocumentBlock, etc.)
 │       ├── accessibility.schema.json                   # accessibility, keyboardInteraction, ariaAttribute, colorContrast
 │       ├── anatomy.schema.json                         # anatomy, anatomyEntry
 │       ├── api.schema.json                             # api, apiProperty, apiEvent, apiSlot, etc.
@@ -116,10 +118,12 @@ spec/
 │       ├── motion.schema.json                          # motion, motionEntry, motionDuration
 │       ├── principle.schema.json                       # principles, principleEntry
 │       ├── scale.schema.json                           # scale, scaleStep
+│       ├── section.schema.json                         # section, sectionEntry
 │       ├── state.schema.json                           # states, stateEntry
+│       ├── steps.schema.json                           # steps, stepEntry
 │       └── variant.schema.json                         # variants, flagVariant, enumVariant, variantValue
 └── examples/
-    ├── starter-kit.dsds.json                           # Complete document with components, tokens, styles, patterns
+    ├── starter-kit.dsds.json                           # Complete document with components, tokens, foundations, patterns
     ├── minimal/                                        # Lightweight examples showing the floor of documentation
     ├── common/                                         # Per-definition examples for common primitives
     ├── entities/                                       # Per-definition examples for entity types (incl. empty-state pattern)
@@ -180,11 +184,11 @@ Visit [designsystemdocspec.org](https://designsystemdocspec.org/) for the canoni
 
 The [`spec/examples/`](spec/examples/) directory contains validated example files:
 
-- **[`starter-kit.dsds.json`](spec/examples/starter-kit.dsds.json)** — A complete document with components, tokens, a style, and a pattern, showing the full architecture.
+- **[`starter-kit.dsds.json`](spec/examples/starter-kit.dsds.json)** — A complete document with components, tokens, a foundation, and a pattern, showing the full architecture.
 - **[`minimal/`](spec/examples/minimal/)** — Lightweight examples (8–30 lines each) showing the floor of documentation for each entity type.
 - **[`entities/component.json`](spec/examples/entities/component.json)** — A full Button component with anatomy, API, variants (flag and enum types), states, design specs, best practices, purpose, and accessibility.
 - **[`entities/empty-state-pattern.json`](spec/examples/entities/empty-state-pattern.json)** — An Empty State pattern demonstrating anatomy, variants, states, interactions, content guidelines, and localization on a pattern entity.
-- **[`entities/style.json`](spec/examples/entities/style.json)** — A Spacing style with principles, scale, motion definitions, and best practices.
+- **[`entities/foundation.json`](spec/examples/entities/foundation.json)** — A Spacing foundation with principles, scale, motion definitions, and best practices.
 - **[`entities/token.json`](spec/examples/entities/token.json)** — A semantic color token with source reference, category, and guidelines.
 - **[`entities/token-group.json`](spec/examples/entities/token-group.json)** — A hierarchical color palette with nested hue families and grade scales.
 - **[`entities/theme.json`](spec/examples/entities/theme.json)** — A dark mode theme with token overrides, purpose, best practices, and accessibility.
@@ -207,7 +211,7 @@ To validate your own DSDS file:
 npx ajv validate -s spec/schema/dsds.bundled.schema.json -d my-system.dsds.json
 ```
 
-Reference `https://designsystemdocspec.org/v0.2.1/dsds.bundled.schema.json` from your DSDS files via the `$schema` keyword to get editor autocompletion and inline validation. See the [Quick Start docs page](https://designsystemdocspec.org/quickstart.html) for the single-entity and multi-entity document shapes.
+Reference `https://designsystemdocspec.org/v0.3/dsds.bundled.schema.json` from your DSDS files via the `$schema` keyword to get editor autocompletion and inline validation. See the [Quick Start docs page](https://designsystemdocspec.org/quickstart.html) for the single-entity and multi-entity document shapes.
 
 ### 4. Build the spec site
 
@@ -259,7 +263,7 @@ npm run build-samples
 
 This reads example JSON files from `spec/examples/` and produces `site/dist/samples.html` — a self-contained page with:
 
-- **Tabs** for each entity type: Button Component, Color Token, Error Messaging Pattern, Spacing Style, Dark Theme
+- **Tabs** for each entity type: Button Component, Color Token, Error Messaging Pattern, Spacing Foundation, Dark Theme
 - **Side-by-side layout**: raw JSON on the left, rendered documentation on the right
 - **Element-level highlighting**: hover over any rendered element to see its corresponding JSON, and vice versa
 - **Color-coded section bars** mapping JSON sections to their visual output
@@ -305,7 +309,7 @@ The Quick Start page (`site/content/quickstart.mdx`) is compiled the same way as
 The spec version lives in three coordinated places:
 
 1. **`spec/schema/dsds.schema.json#/properties/dsdsVersion/const`** — the single source of truth. The bundle script, the nav, every page title, and the versioned dist directory all derive from this value.
-2. **The `$id` URL on every schema file** — e.g., `https://designsystemdocspec.org/v0.2.1/metadata/last-updated.schema.json`. Every example document's `$schema` field and every `"dsdsVersion"` literal inside example JSON has to track the same version.
+2. **The `$id` URL on every schema file** — e.g., `https://designsystemdocspec.org/v0.3/metadata/last-updated.schema.json`. Every example document's `$schema` field and every `"dsdsVersion"` literal inside example JSON has to track the same version.
 3. **`package.json#version`** — the npm package version. Conventionally kept in lockstep with `dsdsVersion.const`.
 
 The `scripts/bump-version.js` script keeps the first two in sync across all 44 schema files, every example, the README, and the MDX content pages. `package.json` is handled separately because it's not a schema-consumer file.
@@ -332,7 +336,7 @@ This is the exact sequence for cutting a release that includes schema changes. S
 
 4. **Bump `package.json#version`** to the target version (e.g. `0.2.0` → `0.2.1`).
 
-5. **Add a CHANGELOG entry** at the top of `CHANGELOG`, mirroring the format of the prior release. Include a one-line header noting where the bundled schema is now served (e.g., "Schema files are now served at `https://designsystemdocspec.org/v0.2.1/...`") and an "Additions" or "Breaking changes" section describing every schema-visible change.
+5. **Add a CHANGELOG entry** at the top of `CHANGELOG`, mirroring the format of the prior release. Include a one-line header noting where the bundled schema is now served (e.g., "Schema files are now served at `https://designsystemdocspec.org/v0.3/...`") and an "Additions" or "Breaking changes" section describing every schema-visible change.
 
 6. **Run the version bump.** Preview the change first:
 
@@ -366,8 +370,8 @@ This is the exact sequence for cutting a release that includes schema changes. S
 
 9. **Spot-check the rendered site.** Confirm the version reads correctly in three places:
 
-   - Page `<title>` tags (e.g., `DSDS Last Updated Metadata — DSDS 0.2.1`).
-   - The nav title (`Design System Documentation Spec 0.2.1`).
+   - Page `<title>` tags (e.g., `DSDS Last Updated Metadata — DSDS 0.3`).
+   - The nav title (`Design System Documentation Spec 0.3`).
    - The footer (`Design System Documentation Spec (DSDS) 0.2.1 — Draft Specification`).
 
    The new schema page should exist at `site/dist/<group>-<name>.html` (e.g., `site/dist/metadata-last-updated.html`), and the versioned bundle should exist at `site/dist/v<new-version>/dsds.bundled.schema.json`.
