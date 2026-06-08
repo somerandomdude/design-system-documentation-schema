@@ -7,7 +7,7 @@
   "required": [
     "dsdsVersion"
   ],
-  "anyOf": [
+  "oneOf": [
     {
       "required": [
         "documentation"
@@ -396,11 +396,11 @@
           "items": {
             "type": "object",
             "required": [
-              "type",
+              "changeType",
               "description"
             ],
             "properties": {
-              "type": {
+              "changeType": {
                 "type": "string",
                 "enum": [
                   "added",
@@ -408,7 +408,7 @@
                   "removed",
                   "inherited"
                 ],
-                "description": "The change type: 'added' (not in the base), 'modified' (changed from the base), 'removed' (in the base but dropped here), 'inherited' (carried from the base unchanged — usually omitted, since inheritance is the default, but useful for docs)."
+                "description": "The kind of change: 'added' (not in the base), 'modified' (changed from the base), 'removed' (in the base but dropped here), 'inherited' (carried from the base unchanged — usually omitted, since inheritance is the default, but useful for docs)."
               },
               "target": {
                 "type": "string",
@@ -957,6 +957,183 @@
         },
         {
           "$ref": "#/$defs/linksMetadata"
+        }
+      ]
+    },
+    "entityMetadataArray": {
+      "type": "array",
+      "description": "An entity's metadata entries. Each metadata kind may appear at most once — an entity has a single description, status, summary, and so on. Zero entries of a kind is allowed; two or more of the same kind is not (it would leave no single source of truth for that field).",
+      "items": {
+        "$ref": "#/$defs/entityMetadata"
+      },
+      "allOf": [
+        {
+          "contains": {
+            "required": [
+              "kind"
+            ],
+            "properties": {
+              "kind": {
+                "const": "description"
+              }
+            }
+          },
+          "minContains": 0,
+          "maxContains": 1
+        },
+        {
+          "contains": {
+            "required": [
+              "kind"
+            ],
+            "properties": {
+              "kind": {
+                "const": "status"
+              }
+            }
+          },
+          "minContains": 0,
+          "maxContains": 1
+        },
+        {
+          "contains": {
+            "required": [
+              "kind"
+            ],
+            "properties": {
+              "kind": {
+                "const": "since"
+              }
+            }
+          },
+          "minContains": 0,
+          "maxContains": 1
+        },
+        {
+          "contains": {
+            "required": [
+              "kind"
+            ],
+            "properties": {
+              "kind": {
+                "const": "last-updated"
+              }
+            }
+          },
+          "minContains": 0,
+          "maxContains": 1
+        },
+        {
+          "contains": {
+            "required": [
+              "kind"
+            ],
+            "properties": {
+              "kind": {
+                "const": "tags"
+              }
+            }
+          },
+          "minContains": 0,
+          "maxContains": 1
+        },
+        {
+          "contains": {
+            "required": [
+              "kind"
+            ],
+            "properties": {
+              "kind": {
+                "const": "category"
+              }
+            }
+          },
+          "minContains": 0,
+          "maxContains": 1
+        },
+        {
+          "contains": {
+            "required": [
+              "kind"
+            ],
+            "properties": {
+              "kind": {
+                "const": "aliases"
+              }
+            }
+          },
+          "minContains": 0,
+          "maxContains": 1
+        },
+        {
+          "contains": {
+            "required": [
+              "kind"
+            ],
+            "properties": {
+              "kind": {
+                "const": "summary"
+              }
+            }
+          },
+          "minContains": 0,
+          "maxContains": 1
+        },
+        {
+          "contains": {
+            "required": [
+              "kind"
+            ],
+            "properties": {
+              "kind": {
+                "const": "thumbnail"
+              }
+            }
+          },
+          "minContains": 0,
+          "maxContains": 1
+        },
+        {
+          "contains": {
+            "required": [
+              "kind"
+            ],
+            "properties": {
+              "kind": {
+                "const": "preview"
+              }
+            }
+          },
+          "minContains": 0,
+          "maxContains": 1
+        },
+        {
+          "contains": {
+            "required": [
+              "kind"
+            ],
+            "properties": {
+              "kind": {
+                "const": "extends"
+              }
+            }
+          },
+          "minContains": 0,
+          "maxContains": 1
+        },
+        {
+          "contains": {
+            "required": [
+              "kind"
+            ],
+            "properties": {
+              "kind": {
+                "const": "links"
+              }
+            }
+          },
+          "minContains": 0,
+          "maxContains": 1
         }
       ]
     },
@@ -3322,11 +3499,8 @@
           "description": "Display name shown in docs (e.g., 'Button', 'Dialog', 'Form Field', 'Data Table')."
         },
         "metadata": {
-          "type": "array",
-          "description": "Modular metadata entries. Each entry is a typed object with a `kind` tag. Kinds include status, since, tags, category, aliases, summary, thumbnail, preview, extends, and links.",
-          "items": {
-            "$ref": "#/$defs/entityMetadata"
-          }
+          "$ref": "#/$defs/entityMetadataArray",
+          "description": "Modular metadata entries. Each entry is a typed object with a `kind` tag. Kinds include status, since, tags, category, aliases, summary, thumbnail, preview, extends, and links."
         },
         "documentBlocks": {
           "type": "array",
@@ -3369,11 +3543,8 @@
           "description": "Display name shown in docs (e.g., 'Color', 'Typography', 'Spacing', 'Elevation', 'Accessibility', 'Content')."
         },
         "metadata": {
-          "type": "array",
-          "description": "Modular metadata entries. Each entry is a typed object with a `kind` tag. Kinds include status, since, tags, category, aliases, summary, thumbnail, preview, extends, and links.",
-          "items": {
-            "$ref": "#/$defs/entityMetadata"
-          }
+          "$ref": "#/$defs/entityMetadataArray",
+          "description": "Modular metadata entries. Each entry is a typed object with a `kind` tag. Kinds include status, since, tags, category, aliases, summary, thumbnail, preview, extends, and links."
         },
         "documentBlocks": {
           "type": "array",
@@ -3416,11 +3587,8 @@
           "description": "Display name shown in docs (e.g., 'Getting started', 'Contributing', 'Theming tutorial', 'Migrating to v2')."
         },
         "metadata": {
-          "type": "array",
-          "description": "Modular metadata entries. Each entry is a typed object with a `kind` tag. Kinds include description, status, since, last-updated, tags, category, aliases, summary, thumbnail, preview, extends, and links. Use a `category` entry to classify the guide (e.g., 'getting-started', 'contribution', 'tutorial', 'concept', 'migration').",
-          "items": {
-            "$ref": "#/$defs/entityMetadata"
-          }
+          "$ref": "#/$defs/entityMetadataArray",
+          "description": "Modular metadata entries. Each entry is a typed object with a `kind` tag. Kinds include description, status, since, last-updated, tags, category, aliases, summary, thumbnail, preview, extends, and links. Use a `category` entry to classify the guide (e.g., 'getting-started', 'contribution', 'tutorial', 'concept', 'migration')."
         },
         "documentBlocks": {
           "type": "array",
@@ -3463,11 +3631,8 @@
           "description": "Display name shown in docs (e.g., 'Error Messaging', 'Navigation', 'Empty State')."
         },
         "metadata": {
-          "type": "array",
-          "description": "Modular metadata entries. Each entry is a typed object with a `kind` tag. Kinds include status, since, tags, category, aliases, summary, thumbnail, preview, extends, and links.",
-          "items": {
-            "$ref": "#/$defs/entityMetadata"
-          }
+          "$ref": "#/$defs/entityMetadataArray",
+          "description": "Modular metadata entries. Each entry is a typed object with a `kind` tag. Kinds include status, since, tags, category, aliases, summary, thumbnail, preview, extends, and links."
         },
         "documentBlocks": {
           "type": "array",
@@ -3528,11 +3693,8 @@
           "description": "Display name for the theme (e.g., 'Dark Mode', 'High Contrast', 'Compact Density')."
         },
         "metadata": {
-          "type": "array",
-          "description": "Modular metadata entries. Each entry is a typed object with a `kind` tag. Kinds include status, since, tags, category, aliases, summary, thumbnail, preview, extends, and links.",
-          "items": {
-            "$ref": "#/$defs/entityMetadata"
-          }
+          "$ref": "#/$defs/entityMetadataArray",
+          "description": "Modular metadata entries. Each entry is a typed object with a `kind` tag. Kinds include status, since, tags, category, aliases, summary, thumbnail, preview, extends, and links."
         },
         "source": {
           "type": "object",
@@ -3612,11 +3774,8 @@
           "additionalProperties": false
         },
         "metadata": {
-          "type": "array",
-          "description": "Modular metadata entries. Each entry is a typed object with a `kind` tag. Kinds include status, since, tags, category, aliases, summary, thumbnail, preview, extends, and links.",
-          "items": {
-            "$ref": "#/$defs/entityMetadata"
-          }
+          "$ref": "#/$defs/entityMetadataArray",
+          "description": "Modular metadata entries. Each entry is a typed object with a `kind` tag. Kinds include status, since, tags, category, aliases, summary, thumbnail, preview, extends, and links."
         },
         "documentBlocks": {
           "type": "array",
@@ -3687,11 +3846,8 @@
           "minItems": 1
         },
         "metadata": {
-          "type": "array",
-          "description": "Modular metadata entries. Each entry is a typed object with a `kind` tag. Kinds include status, since, tags, category, aliases, summary, thumbnail, preview, extends, and links.",
-          "items": {
-            "$ref": "#/$defs/entityMetadata"
-          }
+          "$ref": "#/$defs/entityMetadataArray",
+          "description": "Modular metadata entries. Each entry is a typed object with a `kind` tag. Kinds include status, since, tags, category, aliases, summary, thumbnail, preview, extends, and links."
         },
         "documentBlocks": {
           "type": "array",
