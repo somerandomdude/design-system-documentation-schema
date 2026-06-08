@@ -78,7 +78,7 @@ spec/
 │   │   ├── extends.schema.json                         # documentExtends, entityExtends
 │   │   ├── extensions.schema.json                      # $extensions
 │   │   ├── link.schema.json                            # link
-│   │   ├── system-metadata.schema.json                 # systemMetadata
+│   │   ├── system-info.schema.json                     # systemInfo
 │   │   ├── rich-text.schema.json                       # richText
 │   │   ├── presentation.schema.json                    # presentationImage, presentationVideo, presentationCode, presentationUrl
 │   │   ├── status.schema.json                          # status, statusObject, statusValue, platformStatus
@@ -312,7 +312,13 @@ The spec version lives in three coordinated places:
 2. **The `$id` URL on every schema file** — e.g., `https://designsystemdocspec.org/v0.3/metadata/last-updated.schema.json`. Every example document's `$schema` field and every `"dsdsVersion"` literal inside example JSON has to track the same version.
 3. **`package.json#version`** — the npm package version. Conventionally kept in lockstep with `dsdsVersion.const`.
 
-The `scripts/bump-version.js` script keeps the first two in sync across all 44 schema files, every example, the README, and the MDX content pages. `package.json` is handled separately because it's not a schema-consumer file.
+The `scripts/bump-version.js` script keeps the first two in sync across all 44 schema files, every example, and the README. `package.json` is handled separately because it's not a schema-consumer file.
+
+### Version templating in MDX content
+
+The MDX content pages (`site/content/*.mdx`) **never hardcode a version**. They reference it through the `{{VERSION}}` token, which `scripts/compile-mdx.mjs` substitutes at build time from `dsds.schema.json#/properties/dsdsVersion/const` — the single source of truth above. Use `{{VERSION}}` anywhere a page needs the spec version: page titles and headings, `$schema` URLs (`https://designsystemdocspec.org/v{{VERSION}}/…`), inline `"dsdsVersion": "{{VERSION}}"` examples, and prose.
+
+This means a version bump propagates to every site page on the next `npm run build` with no string rewriting — so `bump-version.js` deliberately does **not** touch the MDX files. **Do not hardcode a version in MDX**, or it will silently drift the next time the spec is bumped. (Real example documents under `spec/examples/` are the exception: they carry literal, validatable versions and are version-stamped by `bump-version.js`.)
 
 ### Release types
 
@@ -350,7 +356,7 @@ This is the exact sequence for cutting a release that includes schema changes. S
    node scripts/bump-version.js 0.2.1
    ```
 
-   This rewrites `dsdsVersion.const`, the root schema title, every `$id` URL across the 44 split schemas, every example's `$schema` URL and `"dsdsVersion"` literal, the README, and the MDX content pages — then regenerates `spec/schema/dsds.bundled.schema.json` so the bundle reflects the new version. The script is drift-tolerant: it migrates any stale `/v<X>/` URL it finds, not just the one currently in `dsdsVersion.const`.
+   This rewrites `dsdsVersion.const`, the root schema title, every `$id` URL across the 44 split schemas, every example's `$schema` URL and `"dsdsVersion"` literal, and the README — then regenerates `spec/schema/dsds.bundled.schema.json` so the bundle reflects the new version. The MDX content pages need no rewriting; they pick up the new version from `{{VERSION}}` on the next `npm run build` (see [Version templating in MDX content](#version-templating-in-mdx-content)). The script is drift-tolerant: it migrates any stale `/v<X>/` URL it finds, not just the one currently in `dsdsVersion.const`.
 
 7. **Build the site.**
 

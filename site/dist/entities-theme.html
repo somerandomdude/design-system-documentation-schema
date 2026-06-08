@@ -29,7 +29,7 @@
       <a href="common-purpose.html" slug="common-purpose">purpose</a>
       <a href="common-rich-text.html" slug="common-rich-text">rich-text</a>
       <a href="common-status.html" slug="common-status">status</a>
-      <a href="common-system-metadata.html" slug="common-system-metadata">system-metadata</a>
+      <a href="common-system-info.html" slug="common-system-info">system-info</a>
     </ds-nav-group>
     <ds-nav-group label="Entities">
       <a href="entities-component.html" slug="entities-component">component</a>
@@ -81,26 +81,17 @@
 <ds-def-index>
 <p><strong>2 definitions</strong> in this file:</p>
 <ul>
-<li><a href="#tokenoverride"><ds-code inline>tokenOverride</ds-code></a></li>
 <li><a href="#theme"><ds-code inline>theme</ds-code></a></li>
+<li><a href="#tokenoverride"><ds-code inline>tokenOverride</ds-code></a></li>
 </ul>
 </ds-def-index>
-<ds-def-section name="tokenOverride" anchor="tokenoverride" description="A single token override inside a theme: which token changes, and why. The override value itself lives in the DTCG file; this entry records the intent and reason." type="object">
-<ds-prop-table>
-  <ds-prop name="token" type="string" required>The identifier of the token being overridden. MUST match the <ds-code inline>identifier</ds-code> of a token defined elsewhere in the system. Token identifiers are unconstrained by a pattern to support DTCG and design tool naming conventions (e.g., 'color-text-primary', 'color.text.primary', 'color/text/primary').</ds-prop>
-  <ds-prop name="description" type="&lt;ds-type-ref href=&quot;common-rich-text.html#richtext&quot;&gt;richText&lt;/ds-type-ref&gt;">Says what changes for this token in this theme and why — e.g., 'Lightened to meet WCAG AAA contrast on the dark background.' The resolved value itself lives in the DTCG file.</ds-prop>
-</ds-prop-table>
-<ds-cross-refs><strong>References:</strong> 
-<ds-type-ref href="common-rich-text.html#richtext">richText</ds-type-ref>
-</ds-cross-refs>
-</ds-def-section>
 <ds-def-section name="theme" anchor="theme" description="A named context that adapts the design system's token values. DSDS captures the purpose, usage document blocks, accessibility considerations, and the list of affected tokens. The override values live in the DTCG file that `source` points to. Use themes for color modes (light, dark, high-contrast), density settings (compact, comfortable), brand variants, or product-specific customizations. The token catalog stays the source of truth for token identity, type, and docs. Typed entries in the `metadata` array carry modular metadata with a `kind` tag (status, tags, category, aliases, summary, thumbnail, preview, extends, links)." type="object">
 <ds-prop-table>
   <ds-prop name="kind" type="&lt;ds-code inline&gt;&quot;theme&quot;&lt;/ds-code&gt;" required>Identifies this entity as a theme.</ds-prop>
   <ds-prop name="identifier" type="string" required>Machine-readable identifier for the theme (e.g., 'dark', 'high-contrast', 'compact', 'brand-sub-brand').<br><small>Pattern: <ds-code inline>^[a-z][a-z0-9-]*$</ds-code></small></ds-prop>
   <ds-prop name="name" type="string" required>Display name for the theme (e.g., 'Dark Mode', 'High Contrast', 'Compact Density').</ds-prop>
   <ds-prop name="metadata" type="&lt;ds-type-ref href=&quot;metadata-metadata.html#entitymetadata&quot;&gt;entityMetadata&lt;/ds-type-ref&gt;[]">Modular metadata entries. Each entry is a typed object with a <ds-code inline>kind</ds-code> tag. Kinds include status, since, tags, category, aliases, summary, thumbnail, preview, extends, and links.</ds-prop>
-  <ds-prop name="source" type="object">Pointer to the W3C Design Tokens (DTCG) definition. DSDS does not duplicate token values — the DTCG file is the source of truth for resolved values, aliases, and type information.</ds-prop>
+  <ds-prop name="source" type="object {file, path}">Pointer to the W3C Design Tokens (DTCG) definition. DSDS does not duplicate token values — the DTCG file is the source of truth for resolved values, aliases, and type information.</ds-prop>
   <ds-prop name="overrides" type="&lt;ds-type-ref href=&quot;entities-theme.html#tokenoverride&quot;&gt;tokenOverride&lt;/ds-type-ref&gt;[]">Token overrides this theme applies. Each entry says which token changes and why. List only tokens whose values differ from the default; unlisted tokens keep their default values. The override values themselves live in the DTCG file that <ds-code inline>source</ds-code> points to.<br><small>Min items: 1</small></ds-prop>
   <ds-prop name="documentBlocks" type="&lt;ds-type-ref href=&quot;document-blocks-document-blocks.html#tokendocumentblock&quot;&gt;tokenDocumentBlock&lt;/ds-type-ref&gt;[]">All structured docs for this theme, as an ordered array of typed document block objects. Themes accept the general kinds only (guideline, use-cases, accessibility, examples). The <ds-code inline>type</ds-code> property on each entry sets its shape. Order matters: tools SHOULD preserve it for display.</ds-prop>
   <ds-prop name="agents" type="&lt;ds-type-ref href=&quot;common-agents.html#agents&quot;&gt;agents&lt;/ds-type-ref&gt;">AI-ready context for this theme: intent, constraints, disambiguation, anti-patterns, examples, and keywords for efficient AI use.</ds-prop>
@@ -411,31 +402,31 @@
         {
           &quot;guidance&quot;: &quot;Apply the dark theme at the application root when the user's system preference is `prefers-color-scheme: dark` or when they explicitly select dark mode in the application settings.&quot;,
           &quot;rationale&quot;: &quot;Respecting the user's color scheme preference improves comfort in low-light environments and can reduce eye strain. Forcing a color mode against the user's preference creates friction.&quot;,
-          &quot;kind&quot;: &quot;required&quot;,
+          &quot;kind&quot;: &quot;MUST&quot;,
           &quot;category&quot;: &quot;development&quot;
         },
         {
           &quot;guidance&quot;: &quot;In dark mode, layers become one step lighter with each added layer. Do not apply components that are darker than their background surface.&quot;,
           &quot;rationale&quot;: &quot;The dark theme's layering model uses increasing lightness to communicate depth. Reversing this — placing darker elements on lighter surfaces — breaks the spatial hierarchy and confuses the visual relationship between layers.&quot;,
-          &quot;kind&quot;: &quot;required&quot;,
+          &quot;kind&quot;: &quot;MUST&quot;,
           &quot;category&quot;: &quot;visual-design&quot;
         },
         {
           &quot;guidance&quot;: &quot;Do not mix light-mode and dark-mode semantic tokens on the same surface. Use inline theme switching if a component must appear in the opposite mode.&quot;,
           &quot;rationale&quot;: &quot;Mixing tokens from different themes produces unpredictable contrast pairings. Semantic tokens are only validated for contrast within their own theme context.&quot;,
-          &quot;kind&quot;: &quot;prohibited&quot;,
+          &quot;kind&quot;: &quot;MUST_NOT&quot;,
           &quot;category&quot;: &quot;visual-design&quot;
         },
         {
           &quot;guidance&quot;: &quot;Shadows (elevation tokens) are replaced with surface color differentiation in dark mode. Do not add custom box-shadow values to create depth.&quot;,
           &quot;rationale&quot;: &quot;Dark backgrounds absorb shadow, making traditional drop shadows invisible or visually muddy. The dark theme communicates depth through lighter surface values instead.&quot;,
-          &quot;kind&quot;: &quot;discouraged&quot;,
+          &quot;kind&quot;: &quot;SHOULD_NOT&quot;,
           &quot;category&quot;: &quot;visual-design&quot;
         },
         {
           &quot;guidance&quot;: &quot;Ensure all custom illustrations, charts, and images remain legible in dark mode. Provide dark-mode variants of images that use light backgrounds or thin strokes.&quot;,
           &quot;rationale&quot;: &quot;Illustrations designed for light backgrounds may become invisible or illegible on dark surfaces. Custom visual content requires the same level of dark-mode adaptation as UI components.&quot;,
-          &quot;kind&quot;: &quot;encouraged&quot;,
+          &quot;kind&quot;: &quot;SHOULD&quot;,
           &quot;category&quot;: &quot;visual-design&quot;
         }
       ],
@@ -558,6 +549,15 @@
   }
 }</ds-code>
 </ds-def-example>
+</ds-def-section>
+<ds-def-section name="tokenOverride" anchor="tokenoverride" description="A single token override inside a theme: which token changes, and why. The override value itself lives in the DTCG file; this entry records the intent and reason." type="object">
+<ds-prop-table>
+  <ds-prop name="token" type="string" required>The identifier of the token being overridden. MUST match the <ds-code inline>identifier</ds-code> of a token defined elsewhere in the system. Token identifiers are unconstrained by a pattern to support DTCG and design tool naming conventions (e.g., 'color-text-primary', 'color.text.primary', 'color/text/primary').</ds-prop>
+  <ds-prop name="description" type="&lt;ds-type-ref href=&quot;common-rich-text.html#richtext&quot;&gt;richText&lt;/ds-type-ref&gt;">Says what changes for this token in this theme and why — e.g., 'Lightened to meet WCAG AAA contrast on the dark background.' The resolved value itself lives in the DTCG file.</ds-prop>
+</ds-prop-table>
+<ds-cross-refs><strong>References:</strong> 
+<ds-type-ref href="common-rich-text.html#richtext">richText</ds-type-ref>
+</ds-cross-refs>
 </ds-def-section>
 
         <ds-back-to-top></ds-back-to-top>

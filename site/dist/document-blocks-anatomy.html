@@ -29,7 +29,7 @@
       <a href="common-purpose.html" slug="common-purpose">purpose</a>
       <a href="common-rich-text.html" slug="common-rich-text">rich-text</a>
       <a href="common-status.html" slug="common-status">status</a>
-      <a href="common-system-metadata.html" slug="common-system-metadata">system-metadata</a>
+      <a href="common-system-info.html" slug="common-system-info">system-info</a>
     </ds-nav-group>
     <ds-nav-group label="Entities">
       <a href="entities-component.html" slug="entities-component">component</a>
@@ -81,10 +81,71 @@
 <ds-def-index>
 <p><strong>2 definitions</strong> in this file:</p>
 <ul>
-<li><a href="#anatomyentry"><ds-code inline>anatomyEntry</ds-code></a></li>
 <li><a href="#anatomy"><ds-code inline>anatomy</ds-code></a></li>
+<li><a href="#anatomyentry"><ds-code inline>anatomyEntry</ds-code></a></li>
 </ul>
 </ds-def-index>
+<ds-def-section name="anatomy" anchor="anatomy" description="Documents the visual structure of a component or pattern by listing its named sub-elements (parts). Each part can reference the design tokens that style it, bridging visual design and token architecture. An optional preview shows an annotated diagram of the assembled structure. For components, parts are rendered UI sub-elements (e.g., container, label, icon, focus-ring). For patterns, parts are structural sections of the layout (e.g., image, title, body, primary action)." type="object">
+<ds-prop-table>
+  <ds-prop name="kind" type="&lt;ds-code inline&gt;&quot;anatomy&quot;&lt;/ds-code&gt;" required>Identifies this guideline as an anatomy spec.</ds-prop>
+  <ds-prop name="parts" type="&lt;ds-type-ref href=&quot;document-blocks-anatomy.html#anatomyentry&quot;&gt;anatomyEntry&lt;/ds-type-ref&gt;[]" required>The named sub-elements of the artifact, in visual order (typically outside-in or top-to-bottom). Each part documents an element that can be styled, tested, or referenced independently.<br><small>Min items: 1</small></ds-prop>
+  <ds-prop name="description" type="&lt;ds-type-ref href=&quot;common-rich-text.html#richtext&quot;&gt;richText&lt;/ds-type-ref&gt;">Prose overview of the artifact's visual structure — how the parts relate and any notable structural constraints.</ds-prop>
+  <ds-prop name="preview" type="&lt;ds-type-ref href=&quot;common-example.html#example&quot;&gt;example&lt;/ds-type-ref&gt;[]">Visual previews of the anatomy — typically annotated diagrams with numbered callouts mapping to the parts array. Multiple previews allow different views (e.g., expanded vs. collapsed, with icon vs. without).</ds-prop>
+  <ds-prop name="agents" type="&lt;ds-type-ref href=&quot;common-agents.html#agents&quot;&gt;agents&lt;/ds-type-ref&gt;">AI-ready context for this document block. Provides structured info for AI/LLM use: constraints, disambiguation, anti-patterns, examples, and keywords.</ds-prop>
+</ds-prop-table>
+<ds-cross-refs><strong>References:</strong> 
+<ds-type-ref href="common-rich-text.html#richtext">richText</ds-type-ref>, <ds-type-ref href="document-blocks-anatomy.html#anatomyentry">anatomyEntry</ds-type-ref>, <ds-type-ref href="common-example.html#example">example</ds-type-ref>, <ds-type-ref href="common-agents.html#agents">agents</ds-type-ref>
+</ds-cross-refs>
+<ds-def-example>
+<ds-code language="json" label="example">{
+  &quot;description&quot;: &quot;The Button is composed of a container, a text label, and an optional leading or trailing icon. A focus ring appears on keyboard focus.&quot;,
+  &quot;parts&quot;: [
+    {
+      &quot;identifier&quot;: &quot;container&quot;,
+      &quot;name&quot;: &quot;Container&quot;,
+      &quot;description&quot;: &quot;The outer wrapper element that defines the button's clickable area and visual boundary.&quot;,
+      &quot;required&quot;: true,
+      &quot;tokens&quot;: {
+        &quot;background&quot;: &quot;button-background&quot;,
+        &quot;border-color&quot;: &quot;button-border-color&quot;,
+        &quot;border-radius&quot;: &quot;button-border-radius&quot;
+      }
+    },
+    {
+      &quot;identifier&quot;: &quot;label&quot;,
+      &quot;name&quot;: &quot;Label&quot;,
+      &quot;description&quot;: &quot;The text content of the button.&quot;,
+      &quot;required&quot;: true,
+      &quot;tokens&quot;: {
+        &quot;text-color&quot;: &quot;button-text-color&quot;,
+        &quot;font-size&quot;: &quot;button-font-size&quot;
+      }
+    },
+    {
+      &quot;identifier&quot;: &quot;icon&quot;,
+      &quot;name&quot;: &quot;Icon&quot;,
+      &quot;description&quot;: &quot;An optional icon displayed before or after the label.&quot;,
+      &quot;required&quot;: false,
+      &quot;tokens&quot;: {
+        &quot;size&quot;: &quot;button-icon-size&quot;,
+        &quot;color&quot;: &quot;button-icon-color&quot;
+      }
+    },
+    {
+      &quot;identifier&quot;: &quot;focus-ring&quot;,
+      &quot;name&quot;: &quot;Focus Ring&quot;,
+      &quot;description&quot;: &quot;A visible outline that appears when the button receives keyboard focus.&quot;,
+      &quot;required&quot;: false,
+      &quot;tokens&quot;: {
+        &quot;color&quot;: &quot;button-focus-ring-color&quot;,
+        &quot;width&quot;: &quot;button-focus-ring-width&quot;
+      }
+    }
+  ],
+  &quot;kind&quot;: &quot;anatomy&quot;
+}</ds-code>
+</ds-def-example>
+</ds-def-section>
 <ds-def-section name="anatomyEntry" anchor="anatomyentry" description="A named sub-element of a component's or pattern's visual structure." type="object">
 <ds-prop-table>
   <ds-prop name="identifier" type="string" required>Machine-readable identifier for the part (e.g., 'container', 'label', 'icon', 'focus-ring').</ds-prop>
@@ -159,67 +220,6 @@
     }
   }
 ]</ds-code>
-</ds-def-example>
-</ds-def-section>
-<ds-def-section name="anatomy" anchor="anatomy" description="Documents the visual structure of a component or pattern by listing its named sub-elements (parts). Each part can reference the design tokens that style it, bridging visual design and token architecture. An optional preview shows an annotated diagram of the assembled structure. For components, parts are rendered UI sub-elements (e.g., container, label, icon, focus-ring). For patterns, parts are structural sections of the layout (e.g., image, title, body, primary action)." type="object">
-<ds-prop-table>
-  <ds-prop name="kind" type="&lt;ds-code inline&gt;&quot;anatomy&quot;&lt;/ds-code&gt;" required>Identifies this guideline as an anatomy spec.</ds-prop>
-  <ds-prop name="parts" type="&lt;ds-type-ref href=&quot;document-blocks-anatomy.html#anatomyentry&quot;&gt;anatomyEntry&lt;/ds-type-ref&gt;[]" required>The named sub-elements of the artifact, in visual order (typically outside-in or top-to-bottom). Each part documents an element that can be styled, tested, or referenced independently.<br><small>Min items: 1</small></ds-prop>
-  <ds-prop name="description" type="&lt;ds-type-ref href=&quot;common-rich-text.html#richtext&quot;&gt;richText&lt;/ds-type-ref&gt;">Prose overview of the artifact's visual structure — how the parts relate and any notable structural constraints.</ds-prop>
-  <ds-prop name="preview" type="&lt;ds-type-ref href=&quot;common-example.html#example&quot;&gt;example&lt;/ds-type-ref&gt;[]">Visual previews of the anatomy — typically annotated diagrams with numbered callouts mapping to the parts array. Multiple previews allow different views (e.g., expanded vs. collapsed, with icon vs. without).</ds-prop>
-  <ds-prop name="agents" type="&lt;ds-type-ref href=&quot;common-agents.html#agents&quot;&gt;agents&lt;/ds-type-ref&gt;">AI-ready context for this document block. Provides structured info for AI/LLM use: constraints, disambiguation, anti-patterns, examples, and keywords.</ds-prop>
-</ds-prop-table>
-<ds-cross-refs><strong>References:</strong> 
-<ds-type-ref href="common-rich-text.html#richtext">richText</ds-type-ref>, <ds-type-ref href="document-blocks-anatomy.html#anatomyentry">anatomyEntry</ds-type-ref>, <ds-type-ref href="common-example.html#example">example</ds-type-ref>, <ds-type-ref href="common-agents.html#agents">agents</ds-type-ref>
-</ds-cross-refs>
-<ds-def-example>
-<ds-code language="json" label="example">{
-  &quot;description&quot;: &quot;The Button is composed of a container, a text label, and an optional leading or trailing icon. A focus ring appears on keyboard focus.&quot;,
-  &quot;parts&quot;: [
-    {
-      &quot;identifier&quot;: &quot;container&quot;,
-      &quot;name&quot;: &quot;Container&quot;,
-      &quot;description&quot;: &quot;The outer wrapper element that defines the button's clickable area and visual boundary.&quot;,
-      &quot;required&quot;: true,
-      &quot;tokens&quot;: {
-        &quot;background&quot;: &quot;button-background&quot;,
-        &quot;border-color&quot;: &quot;button-border-color&quot;,
-        &quot;border-radius&quot;: &quot;button-border-radius&quot;
-      }
-    },
-    {
-      &quot;identifier&quot;: &quot;label&quot;,
-      &quot;name&quot;: &quot;Label&quot;,
-      &quot;description&quot;: &quot;The text content of the button.&quot;,
-      &quot;required&quot;: true,
-      &quot;tokens&quot;: {
-        &quot;text-color&quot;: &quot;button-text-color&quot;,
-        &quot;font-size&quot;: &quot;button-font-size&quot;
-      }
-    },
-    {
-      &quot;identifier&quot;: &quot;icon&quot;,
-      &quot;name&quot;: &quot;Icon&quot;,
-      &quot;description&quot;: &quot;An optional icon displayed before or after the label.&quot;,
-      &quot;required&quot;: false,
-      &quot;tokens&quot;: {
-        &quot;size&quot;: &quot;button-icon-size&quot;,
-        &quot;color&quot;: &quot;button-icon-color&quot;
-      }
-    },
-    {
-      &quot;identifier&quot;: &quot;focus-ring&quot;,
-      &quot;name&quot;: &quot;Focus Ring&quot;,
-      &quot;description&quot;: &quot;A visible outline that appears when the button receives keyboard focus.&quot;,
-      &quot;required&quot;: false,
-      &quot;tokens&quot;: {
-        &quot;color&quot;: &quot;button-focus-ring-color&quot;,
-        &quot;width&quot;: &quot;button-focus-ring-width&quot;
-      }
-    }
-  ],
-  &quot;kind&quot;: &quot;anatomy&quot;
-}</ds-code>
 </ds-def-example>
 </ds-def-section>
 

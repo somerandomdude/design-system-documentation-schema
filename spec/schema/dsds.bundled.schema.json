@@ -7,6 +7,18 @@
   "required": [
     "dsdsVersion"
   ],
+  "anyOf": [
+    {
+      "required": [
+        "documentation"
+      ]
+    },
+    {
+      "required": [
+        "entity"
+      ]
+    }
+  ],
   "properties": {
     "$schema": {
       "type": "string",
@@ -17,8 +29,8 @@
       "const": "0.3",
       "description": "The DSDS spec version this document conforms to."
     },
-    "systemMetadata": {
-      "$ref": "#/$defs/systemMetadata"
+    "systemInfo": {
+      "$ref": "#/$defs/systemInfo"
     },
     "extends": {
       "$ref": "#/$defs/documentExtends",
@@ -94,6 +106,7 @@
       "$ref": "#/$defs/extensions"
     }
   },
+  "additionalProperties": false,
   "$defs": {
     "agents": {
       "type": "object",
@@ -584,7 +597,7 @@
         },
         "alternative": {
           "type": "object",
-          "description": "The recommended alternative artifact for this scenario. Typically provided for whenNotToUse entries to direct the reader toward a more appropriate component, pattern, or token.",
+          "description": "The recommended alternative artifact for this scenario. Typically provided for negative use cases to direct the reader toward a more appropriate component, pattern, or token.",
           "required": [
             "identifier"
           ],
@@ -605,7 +618,7 @@
     },
     "purpose": {
       "type": "object",
-      "description": "Documents the purpose of an artifact — when to use it and when to choose something else. Contains a `useCases` object with whenToUse and whenNotToUse arrays of scenario-driven entries from the common useCases schema. Purpose guidelines help the reader decide whether this is the right artifact *before* implementing it. For guidance on *how* to use it correctly, see best-practices. For *what* it looks like and how it behaves, see variants, states, and anatomy.",
+      "description": "Documents the purpose of an artifact — when to use it and when to choose something else. Contains a `useCases` array of scenario-driven `useCase` entries, each marked positive (when to use) or negative (when to choose an alternative). Purpose guidelines help the reader decide whether this is the right artifact *before* implementing it. For guidance on *how* to use it correctly, see best-practices. For *what* it looks like and how it behaves, see variants, states, and anatomy.",
       "required": [
         "kind"
       ],
@@ -755,9 +768,9 @@
         }
       ]
     },
-    "systemMetadata": {
+    "systemInfo": {
       "type": "object",
-      "description": "System-level metadata about the design system.",
+      "description": "System-level identity and provenance for the design system.",
       "required": [
         "systemName"
       ],
@@ -2409,14 +2422,14 @@
         "kind": {
           "type": "string",
           "enum": [
-            "required",
-            "encouraged",
-            "informational",
-            "discouraged",
-            "prohibited"
+            "MUST",
+            "SHOULD",
+            "NEUTRAL",
+            "SHOULD_NOT",
+            "MUST_NOT"
           ],
-          "default": "informational",
-          "description": "How strictly the guideline should be followed. Values align with RFC 2119: 'required' (MUST — non-compliance is a defect), 'encouraged' (SHOULD — follow in most cases; exceptions need justification), 'informational' (MAY — advisory only), 'discouraged' (SHOULD NOT — avoid unless justified), 'prohibited' (MUST NOT — violations are defects). Defaults to 'informational'."
+          "default": "NEUTRAL",
+          "description": "How strictly the guideline should be followed, named for RFC 2119 requirement levels: 'MUST' (non-compliance is a defect), 'SHOULD' (follow in most cases; exceptions need justification), 'NEUTRAL' (advisory only, no enforcement expectation), 'SHOULD_NOT' (avoid unless justified), 'MUST_NOT' (violations are defects). Defaults to 'NEUTRAL'."
         },
         "category": {
           "type": "string",

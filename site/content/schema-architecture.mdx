@@ -10,44 +10,12 @@ The DSDS schema uses three directories plus a root schema:
 | Directory | Contents |
 |---|---|
 | `common/` | Shared primitives used across all schemas — richText, statusObject, link, example, extensions, metadata, useCases |
-| `entities/` | Entity type schemas — component, token (including tokenGroup), theme, foundation, pattern |
-| `document-blocks/` | Document block type schemas — guideline, anatomy, api, variant, state, design-specifications, accessibility, purpose, scale, principle, motion, content, interaction, plus the scoped union (document-blocks.schema.json) |
+| `entities/` | Entity type schemas — component, token (including tokenGroup), theme, foundation, pattern, guide |
+| `document-blocks/` | Document block type schemas — guideline, anatomy, api, events, import, variant, state, design-specifications, accessibility, purpose, scale, principle, motion, content, interaction, section, steps, plus the scoped union (document-blocks.schema.json) |
 
-```
-spec/schema/
-├── dsds.schema.json                    # Root document schema
-├── dsds.bundled.schema.json            # Auto-generated single-file bundle
-├── common/                             # Shared primitives
-│   ├── agent-collection.schema.json    # agentCollection (multi-entity agent context)
-│   ├── agents.schema.json              # agents (agent context for AI/LLM consumption)
-│   ├── example.schema.json             # example, examples (guideline container), presentations
-│   ├── extensions.schema.json          # $extensions
-│   ├── link.schema.json                # link (external resources + internal artifact references)
-│   ├── system-metadata.schema.json     # systemMetadata
-│   ├── rich-text.schema.json           # richText
-│   ├── purpose.schema.json             # purpose, useCase
-│   └── status.schema.json              # statusValue, statusObject, platformStatus
-├── entities/                           # Artifact types
-│   ├── component.schema.json           # component
-│   ├── pattern.schema.json             # pattern
-│   ├── foundation.schema.json               # foundation
-│   ├── theme.schema.json               # theme, tokenOverride
-│   └── token.schema.json               # token, tokenGroup
-└── document-blocks/                     # Document block types
-    ├── document-blocks.schema.json      # Scoped unions: componentDocumentBlock, foundationDocumentBlock, etc.
-    ├── accessibility.schema.json       # accessibility, keyboardInteraction, ariaAttribute, colorContrast
-    ├── anatomy.schema.json             # anatomy, anatomyEntry
-    ├── api.schema.json                 # api, apiProperty, apiEvent, apiSlot, etc.
-    ├── guideline.schema.json           # guideline, guidelineEntry
-    ├── content.schema.json             # content, contentLabelEntry, localizationEntry
-    ├── design-specifications.schema.json # designSpecifications, spacingSpec, sizingSpec, etc.
-    ├── interaction.schema.json         # interactions, interactionEntry
-    ├── motion.schema.json              # motion, motionEntry, motionDuration
-    ├── principle.schema.json           # principles, principleEntry
-    ├── scale.schema.json               # scale, scaleStep
-    ├── state.schema.json               # states, stateEntry
-    └── variant.schema.json             # variants, variantEntry, variantValue, variantExclusion
-```
+<ds-schema-tree />
+
+{/* The tree above is generated from the live contents of spec/schema/ at build time. */}
 
 ---
 
@@ -73,8 +41,8 @@ When each entity lives in its own file, use the `entity` property instead of `do
 
 ```json
 {
-  "$schema": "https://designsystemdocspec.org/v0.3/dsds.bundled.schema.json",
-  "dsdsVersion": "0.3",
+  "$schema": "https://designsystemdocspec.org/v{{VERSION}}/dsds.bundled.schema.json",
+  "dsdsVersion": "{{VERSION}}",
   "entity": {
     "kind": "component",
     "identifier": "button",
@@ -99,7 +67,7 @@ Each `$ref` object has one property: `$ref`. Its value is a URI or relative path
 **Individual entity file** (`button.dsds.json`):
 ```json
 {
-  "dsdsVersion": "0.3",
+  "dsdsVersion": "{{VERSION}}",
   "entity": {
     "kind": "component",
     "identifier": "button",
@@ -112,7 +80,7 @@ Each `$ref` object has one property: `$ref`. Its value is a URI or relative path
 **Manifest file** (`index.dsds.json`):
 ```json
 {
-  "dsdsVersion": "0.3",
+  "dsdsVersion": "{{VERSION}}",
   "documentation": [
     {
       "name": "Acme Design System",
@@ -130,18 +98,11 @@ Each `$ref` object has one property: `$ref`. Its value is a URI or relative path
 
 The `#/entity` fragment is a JSON Pointer — it pulls the `entity` value out of the referenced file. Tooling resolves all `$ref` objects into a merged document before validation, using a library such as [`json-schema-ref-parser`](https://github.com/APIDevTools/json-schema-ref-parser). The schema validates the structure of `$ref` objects; resolution and deep validation of referenced content is the responsibility of consuming tooling.
 
-### Entity type discriminators
+### Entity kind discriminator
 
-Every entity carries a `type` property that identifies its kind. The `type` is a required string const on every entity schema. Entities live in typed arrays (`components`, `tokenGroups`, `themes`, `foundations`, `patterns`), so the array name already pins the expected type. The `type` property is still required on each entity for self-description and validation.
+Every entity carries a `kind` property — a required string const naming the entity type. Entities live in typed arrays (`components`, `tokenGroups`, `themes`, `foundations`, `patterns`), so the array name already pins the expected kind. The `kind` property is still required on each entity for self-description and validation.
 
-| `type` value | Array | Entity | Defined in |
-|---|---|---|---|
-| `"component"` | `components` | A reusable UI component | `entities/component.schema.json` |
-| `"token"` | — | A single design token (nested inside token groups via `children`) | `entities/token.schema.json` |
-| `"token-group"` | `tokenGroups` | A nested group of related tokens (recursive) | `entities/token.schema.json` |
-| `"theme"` | `themes` | A named set of token value overrides | `entities/theme.schema.json` |
-| `"foundation"` | `foundations` | A broad design foundation | `entities/foundation.schema.json` |
-| `"pattern"` | `patterns` | A broad interaction pattern | `entities/pattern.schema.json` |
+<ds-entity-table />
 
 Each typed array accepts only its matching entity type. A documentation group uses as many or as few arrays as needed:
 
@@ -149,26 +110,31 @@ Each typed array accepts only its matching entity type. A documentation group us
 {
   "name": "Acme Design System",
   "components": [
-    { "type": "component", "identifier": "button", "..." }
+    { "kind": "component", "identifier": "button", "..." }
   ],
   "tokenGroups": [
-    { "type": "token-group", "identifier": "color-palette", "..." }
+    { "kind": "token-group", "identifier": "color-palette", "..." }
   ],
   "themes": [
-    { "type": "theme", "identifier": "dark", "..." }
+    { "kind": "theme", "identifier": "dark", "..." }
   ],
   "foundations": [
-    { "type": "foundation", "identifier": "spacing", "..." }
+    { "kind": "foundation", "identifier": "spacing", "..." }
   ],
   "patterns": [
-    { "type": "pattern", "identifier": "empty-state", "..." }
+    { "kind": "pattern", "identifier": "empty-state", "..." }
+  ],
+  "guides": [
+    { "kind": "guide", "identifier": "getting-started", "..." }
   ]
 }
 ```
 
-### Metadata
+### System info
 
-<ds-prop-table schema="common/system-metadata" def="systemMetadata" />
+The root `systemInfo` object holds the design system's **identity and provenance** — its name, version, organization, URL, and license. This is the system's equivalent of an entity's `identifier` and `name`. It is distinct from the descriptive `metadata` array carried by entities (see [Entity metadata](#entity-metadata)); the two are deliberately separate concepts despite both being "data about" their subject.
+
+<ds-prop-table schema="common/system-info" def="systemInfo" />
 
 ### Root purpose
 
@@ -221,13 +187,13 @@ Each `bestPractices` entry uses the same shape as a [guideline entry](#guideline
     {
       "guidance": "Always use semantic tokens instead of raw color values.",
       "rationale": "Semantic tokens ensure consistent theming and make future design changes non-breaking.",
-      "kind": "required",
+      "kind": "MUST",
       "category": "development"
     },
     {
       "guidance": "Test all components at 200% browser zoom.",
       "rationale": "WCAG 1.4.4 requires content to remain functional at 200% zoom.",
-      "kind": "required",
+      "kind": "MUST",
       "category": "accessibility",
       "criteria": [
         {
@@ -239,7 +205,7 @@ Each `bestPractices` entry uses the same shape as a [guideline entry](#guideline
     {
       "guidance": "Do not override token values at the component level.",
       "rationale": "Component-level overrides break theme consistency and make system-wide updates unreliable.",
-      "kind": "prohibited",
+      "kind": "MUST_NOT",
       "category": "development"
     }
   ]
@@ -252,100 +218,95 @@ Each `bestPractices` entry uses the same shape as a [guideline entry](#guideline
 
 ## Entity types
 
-Every entity shares a common set of identity and metadata properties, plus a `documentBlocks` array for all structured docs. The `documentBlocks` array accepts only the document block types suited to that entity type. Every entity also carries a required `type` discriminator (see [Entity Type Discriminators](#entity-type-discriminators)).
+Every entity carries the same small identity surface — a `kind` discriminator, an `identifier`, and (for most kinds) a `name` — plus a `metadata` array for descriptive fields and a `documentBlocks` array for all structured docs. Everything beyond identity (description, status, tags, and so on) lives as a typed entry in the `metadata` array rather than as a top-level property (see [Entity metadata](#entity-metadata)). The `documentBlocks` array accepts only the document block types suited to that entity type.
 
 ### Common entity properties
 
-These properties are on all entity types. **Required** fields differ by entity type — see the notes column and each entity section.
+These properties appear on every entity type. Token and token-group differ slightly — see the [Token](#token) and [Token group](#token-group) sections.
 
-{/* Hand-rolled: cross-entity summary that intentionally diverges from any single schema. */}
+{/* Hand-authored cross-entity summary of the shared entity envelope; spans all entity types rather than mirroring one schema $def. */}
 
 | Property | Type | Required | Notes |
 |---|---|---|---|
-| `type` | `string` | Yes | Entity type discriminator. |
-| `identifier` | `string` | Yes | Machine-readable identifier. Components, foundations, patterns, and themes enforce `^[a-z][a-z0-9-]*$`. Token and token-group identifiers are unconstrained by design (see [Token Identifier Exception](#token-identifier-exception)). |
-| `name` | `string` | Varies | Human-readable name. Required on component, foundation, pattern, theme. **Not present** on token or token-group — the identifier itself serves as the display label. |
-| `summary` | `string` | No | One-line plain-text summary for compact display. MUST NOT contain markup. |
-| `description` | `richText` | Varies | Description with CommonMark support. Required on component, foundation, pattern, theme. **Optional** on token and token-group. |
-| `status` | `statusObject` | Varies | Lifecycle status with optional per-platform readiness. Required on component, foundation, pattern, theme. **Optional** on token and token-group — when omitted inside a group, inherited from the parent. |
-| `since` | `string` | No | The version in which this entity first shipped. |
-| `tags` | `string[]` | No | Freeform keywords for categorization and search. |
-| `aliases` | `string[]` | No | Other names for search, migration mapping, and cross-referencing. |
-| `category` | `string` | No | Classification within the system's taxonomy. |
+| `kind` | `string` | Yes | Entity kind discriminator (see [Entity kind discriminator](#entity-kind-discriminator)). |
+| `identifier` | `string` | Yes | Machine-readable identifier. Components, foundations, patterns, themes, and guides enforce `^[a-z][a-z0-9-]*$`. Token and token-group identifiers are unconstrained by design (see [Token Identifier Exception](#token-identifier-exception)). |
+| `name` | `string` | Varies | Human-readable name. Required on component, foundation, pattern, theme, and guide. **Not present** on token or token-group — the identifier itself serves as the display label. |
+| `metadata` | `array` | No | Ordered list of typed metadata entries — description, status, tags, and more. See [Entity metadata](#entity-metadata). |
 | `documentBlocks` | `array` | No | Typed document block objects. See [Document block](#document-block). |
 | `agents` | `object` | No | Agent-optimized context for efficient agentic consumption. See [Agents](#agents). |
-| `links` | `array` | No | Typed references to external resources and internal entities. See [Links](#links). |
-| `extends` | `entityExtends` | No | Declares that this entity extends a base entity in a parent system. Available on component and token entities. See [Extends](#extends). |
 | `$extensions` | `object` | No | Vendor-specific extensions. See [Extensions](#extensions). |
+
+### Entity metadata
+
+Identity beyond `kind`, `identifier`, and `name` lives in the `metadata` array — an ordered list of typed entries, each tagged by its own `kind`. Keeping these out of the entity's top level keeps the entity surface small and lets new metadata kinds be added without changing the entity shape. All entries are optional.
+
+<ds-metadata-kinds-table />
+
+```json
+{
+  "kind": "foundation",
+  "identifier": "spacing",
+  "name": "Spacing",
+  "metadata": [
+    { "kind": "description", "value": "The spatial system governing layout rhythm and density." },
+    { "kind": "status", "status": "stable" },
+    { "kind": "tags", "items": ["layout", "spacing"] }
+  ],
+  "documentBlocks": []
+}
+```
 
 ### Component
 
 A reusable UI element. Accepts **component-scoped document block types** (anatomy, api, variants, states, design-specifications) and all general document block types.
 
-Required properties: `type`, `identifier`, `name`, `description`, `status`.
+Required properties: `kind`, `identifier`, `name`. (`description` and `status` are optional `metadata` entries — see [Entity metadata](#entity-metadata).)
 
 ### Token
 
 A single design token. Accepts **general document block types** only.
 
-Required properties: `type`, `identifier`, `tokenType`.
+Required properties: `kind`, `identifier`, `tokenType`.
 
 More properties:
 
-{/* Hand-rolled: this table is intentionally a delta of properties unique to Token beyond the common entity properties documented above, not the full Token schema. */}
-
-| Property | Type | Required | Description |
-|---|---|---|---|
-| `tokenType` | `string` | Yes | DTCG-aligned token type (e.g., `"color"`, `"dimension"`, `"fontFamily"`, `"fontWeight"`, `"duration"`, `"cubicBezier"`, `"shadow"`). |
-| `source` | `string` | No | URI or relative path to the W3C DTCG file that contains this token's authoritative definition. |
-| `category` | `string` | No | Semantic category: `"base"`, `"semantic"`, `"component"`. Custom values permitted. |
+<ds-prop-table schema="entities/token" def="token" delta />
 
 DSDS does not duplicate token values or platform identifiers. The W3C Design Tokens Format file is the source of truth for values. Use the `source` property to link tokens to their DTCG definitions.
 
 Tokens have no separate `name` property by design. The token `identifier` itself serves as the human-readable display label. Token identifier conventions (dots, slashes, kebab-case) are already human-readable in their native format.
 
-The `description` and `status` properties are optional on tokens to reduce verbosity at scale. When omitted inside a token group, `status` inherits from the parent group.
+Like every entity, a token's descriptive fields (`description`, `status`, `tags`, …) live in its optional `metadata` array — see [Entity metadata](#entity-metadata) — not as top-level properties. Tokens keep these light to reduce verbosity at scale.
 
 ### Token group
 
 A nested group of related tokens. The `children` array can hold token objects, nested token group objects, or a mix of both — forming a recursive tree of any depth. Accepts **general document block types** only.
 
-Required properties: `type`, `identifier`.
+Required properties: `kind`, `identifier`.
 
 More properties:
 
-{/* Hand-rolled: this table is intentionally a delta of properties unique to Token group beyond the common entity properties documented above, not the full Token group schema. */}
+<ds-prop-table schema="entities/token" def="tokenGroup" delta />
 
-| Property | Type | Required | Description |
-|---|---|---|---|
-| `tokenType` | `string` | No | Inherited default for children that omit their own `tokenType`. |
-| `category` | `string` | No | Inherited default for children that omit their own `category`. |
-| `children` | `array` | No | Recursive array of tokens and/or nested token groups. |
-
-Like tokens, `name`, `description`, and `status` are optional. Children inherit `tokenType`, `category`, and `status` from the parent group when they omit their own values.
+A token group has no `name`; like tokens, its descriptive fields live in the optional `metadata` array. Children inherit `tokenType` from the parent group when they omit their own value.
 
 ### Theme
 
 A named set of token overrides that adapt the system to a specific context (color mode, density, brand variant). Accepts **general document block types**.
 
-Required properties: `type`, `identifier`, `name`, `description`, `status`, `overrides`.
+Required properties: `kind`, `identifier`, `name`. A theme's substance is its `overrides` array (documented below); `description` and `status` are optional `metadata` entries.
 
 More properties:
 
-{/* Hand-rolled: this table is intentionally a delta of properties unique to Theme beyond the common entity properties documented above, not the full Theme schema. */}
+<ds-prop-table schema="entities/theme" def="theme" delta />
 
-| Property | Type | Required | Description |
-|---|---|---|---|
-| `overrides` | `tokenOverride[]` | Yes | Array of token identifiers that differ from the default in this theme. Only tokens that change need to be listed. |
-| `source` | `string` | No | URI or relative path to the W3C DTCG file that contains this theme's authoritative token values. |
-
-Each `tokenOverride` identifies a token by `token` (the token identifier). Override values live in the DTCG source file, not in DSDS.
+Each `tokenOverride` names a token via `token` (the token identifier) and may carry a `description` explaining the change. Override values live in the DTCG `source` file, not in DSDS.
 
 ### Foundation
 
 A broad design foundation governing a domain like color, typography, spacing, elevation, motion, or content. Accepts **foundation-scoped document block types** (principles, scale, motion) and all general document block types.
 
-Required properties: `type`, `identifier`, `name`, `description`, `status`.
+Required properties: `kind`, `identifier`, `name`. (`description` and `status` are optional `metadata` entries — see [Entity metadata](#entity-metadata).)
 
 Foundations document base visual attributes like color and spacing, plus cross-cutting concerns like accessibility, motion systems, and content rules. The `category` property classifies the domain (e.g., `"color"`, `"typography"`, `"spacing"`, `"motion"`, `"accessibility"`, `"content"`).
 
@@ -353,9 +314,17 @@ Foundations document base visual attributes like color and spacing, plus cross-c
 
 A broad interaction pattern — a recurring, multi-component solution to a common UX problem. Accepts **pattern-scoped document block types** (interactions) and **shared structural document block types** (anatomy, variants, states) as well as all general document block types.
 
-Required properties: `type`, `identifier`, `name`, `description`, `status`.
+Required properties: `kind`, `identifier`, `name`. (`description` and `status` are optional `metadata` entries — see [Entity metadata](#entity-metadata).)
 
-Patterns reference their participating components through the `links` array (with `type: "component"`, `identifier`, and `role`) instead of through a dedicated guideline type.
+Patterns reference their participating components through the `links` array (with `kind: "component"`, `identifier`, and `role`) instead of through a dedicated document block.
+
+### Guide
+
+A long-form, reading-oriented document — a getting-started walkthrough, contribution guide, tutorial, conceptual overview, or migration guide. Guides fill the gap left by the artifact-bound entities (which each document a single component, token, foundation, or pattern): they document a *journey* or a *concept* rather than one thing. Accepts **guide-scoped document block types** (section, steps), the `import` block, and all general document block types.
+
+Required properties: `kind`, `identifier`, `name`. (`description` and `status` are optional `metadata` entries.)
+
+The *kind* of guide (getting-started, contribution, tutorial, concept, migration) is expressed through a `category` metadata entry, keeping the entity flexible enough for any kind of guidance.
 
 ---
 
@@ -379,6 +348,24 @@ The optional `agents` property provides context intended exclusively for agentic
   }
 }
 ```
+
+The `constraints`, `disambiguation`, and `antiPatterns` arrays carry their own entry shapes:
+
+#### Constraint entry
+
+A single must/should rule for AI consumers. `evidence` holds empirical backing (test data, audit findings) and is kept separate from `context` so tools can tell test-derived rules from conventional guidance.
+
+<ds-prop-table schema="common/agents" def="agents" path="constraints.items" />
+
+#### Disambiguation entry
+
+Tells an agent how to tell this artifact apart from a similar one. `entityType` classifies the thing being disambiguated (e.g., another component, a pattern).
+
+<ds-prop-table schema="common/agents" def="agents" path="disambiguation.items" />
+
+#### Anti-pattern entry
+
+<ds-prop-table schema="common/agents" def="agents" path="antiPatterns.items" />
 
 ### Block-level agents
 
@@ -447,12 +434,13 @@ Custom values are permitted (e.g., `"sunset"`, `"archived"`, `"beta"`) and MUST 
 
 ## Document block
 
-Document block entries are the core unit of structured docs in DSDS. Every piece of docs on an entity is a document block object with a `type` discriminator. Document block types cover:
+Document block entries are the core unit of structured docs in DSDS. Every piece of docs on an entity is a document block object with a `kind` discriminator. Document block types cover:
 
-- guidelines, purpose, accessibility, examples, and content (general — all entity types)
-- anatomy, API specs, variants, states, and design specifications (component-scoped)
+- guidelines, purpose, accessibility, and content (general — all entity types)
+- anatomy, API specs, events, variants, states, design specifications, and import (component-scoped)
 - principles, scales, and motion definitions (foundation-scoped)
 - interactions (pattern-scoped)
+- narrative sections and step-by-step procedures (guide-scoped)
 
 ### Scoped document block unions
 
@@ -462,36 +450,15 @@ Each entity type accepts only the document block types relevant to it. The scopi
 - **Patterns** get structural docs without code-level details — they have visual layouts (anatomy), sub-types (variants), and states, but they are not single-component code interfaces. They do not accept `api` or `design-specifications`.
 - **Foundations** get domain-level docs — they govern a visual or cross-cutting domain through guiding principles, constrained value progressions (scales), and motion definitions.
 - **Tokens** get only general document block types — they are atomic values with usage guidance but no visual structure or interaction behavior.
+- **Guides** get reading-oriented docs — narrative `section`s and step-by-step `steps` procedures, plus `import` for setup instructions. They carry no structural or measurable specs.
 
-| Scope | Used by | Accepts |
-|---|---|---|
-| **Component** | component | import, anatomy, api, events, variants, states, design-specifications + general |
-| **Pattern** | pattern | interactions, events, anatomy, variants, states + general |
-| **Foundation** | foundation | principles, scale, motion + general |
-| **Token** | token, token-group, theme | general only |
+<ds-block-scope-table />
 
-**General** (available on all entity types): guideline, purpose, accessibility, examples, content.
+**General** (available on all entity types): guideline, purpose, accessibility, content.
 
 ### Document block types
 
-| Type value | Container property | Item type | Scope | Description |
-|---|---|---|---|---|
-| `"import"` | `items` | importEntry | Component | Platform-specific import statements — packages, code snippets, and setup context. |
-| `"guideline"` | `items` | guidelineEntry | General | Actionable usage rules with rationale and enforcement levels. |
-| `"purpose"` | `useCases` | useCases (whenToUse/whenNotToUse) | General | Scenario-driven guidance for when to use and when not to use an entity. |
-| `"accessibility"` | Named properties | various | General | Structured a11y specs — keyboard, ARIA, screen reader, contrast, motion. |
-| `"examples"` | `items` | example | General | Visual/interactive demos — images, videos, code, URLs, values. |
-| `"content"` | `labels`, `localization` | contentLabelEntry, localizationEntry | General | Recommended action labels and localization/i18n notes. |
-| `"anatomy"` | `parts` | anatomyEntry | Component, Pattern | Visual structure broken into named parts with token references. |
-| `"api"` | Named arrays | various | Component | Code-level interface — props, events, slots, CSS hooks, methods. |
-| `"events"` | `items` | eventEntry | Component, Pattern | Events emitted by the component — trigger conditions, return shapes, DOM behavior, lifecycle. |
-| `"variants"` | `items` | variantEntry | Component, Pattern | Dimensions of variation with enumerated values. Optional exclusions. |
-| `"states"` | `items` | stateEntry | Component, Pattern | Interactive states with triggers, token overrides, and previews. |
-| `"design-specifications"` | Named properties | various | Component | Token inventory, spacing, sizing, typography, responsive behavior. |
-| `"principles"` | `items` | principleEntry | Foundation | High-level guiding beliefs that shape decisions. |
-| `"scale"` | `steps` | scaleStep | Foundation | Ordered progression of token values (spacing scale, type scale, etc.). |
-| `"motion"` | `items` | motionEntry | Foundation | Named easing curves with cubic-bezier functions and recommended durations. |
-| `"interactions"` | `items` | interactionEntry | Pattern | Ordered steps in a pattern's interaction flow. |
+<ds-block-types-table />
 
 Every document block type accepts an optional `agents` property — the same structure available on entities. Use it to provide AI/LLM context scoped to a specific documentation section.
 
@@ -509,43 +476,43 @@ Documents actionable usage rules for an entity. Each item is a self-contained ru
 
 <ds-prop-table schema="document-blocks/guideline" def="guidelineEntry" />
 
-Enforcement levels align with RFC 2119 requirement levels:
+The `kind` field is named for RFC 2119 requirement levels:
 
-| Level | RFC 2119 | Meaning |
-|---|---|---|
-| `required` | MUST | Non-compliance is a defect. |
-| `encouraged` | SHOULD | Follow in most cases; exceptions require justification. |
-| `informational` | MAY | Advisory context with no enforcement expectation. |
-| `discouraged` | SHOULD NOT | Avoid unless justified. |
-| `prohibited` | MUST NOT | Violations are defects. |
+| Value | Meaning |
+|---|---|
+| `MUST` | Required — non-compliance is a defect. |
+| `SHOULD` | Follow in most cases; exceptions require justification. |
+| `NEUTRAL` | Advisory only, with no enforcement expectation (the default). |
+| `SHOULD_NOT` | Avoid unless justified. |
+| `MUST_NOT` | Prohibited — violations are defects. |
 
 ### Purpose (`purpose`)
 
 Documents what an entity is for — the concrete scenarios where it is the right choice and where a different entity fits better. Purpose document block entries help the reader decide _whether_ to reach for this entity before they start using it.
 
-The purpose document block type wraps the common `useCases` data model with a `type` discriminator:
+The purpose document block type wraps the common `useCases` data model with a `kind` discriminator. `useCases` is an **array** of scenario entries, each with a `description`, a `kind` of `"positive"` (when to use) or `"negative"` (when to choose something else), and — for negative cases — an `alternative`:
 
 ```json
 {
-  "type": "purpose",
-  "useCases": {
-    "whenToUse": [
-      { "description": "When the user needs to trigger an action such as submitting a form." }
-    ],
-    "whenNotToUse": [
-      {
-        "description": "When the action navigates to a different page.",
-        "alternative": {
-          "identifier": "link",
-          "rationale": "Links carry native navigation semantics."
-        }
+  "kind": "purpose",
+  "useCases": [
+    {
+      "kind": "positive",
+      "description": "When the user needs to trigger an action such as submitting a form."
+    },
+    {
+      "kind": "negative",
+      "description": "When the action navigates to a different page.",
+      "alternative": {
+        "identifier": "link",
+        "rationale": "Links carry native navigation semantics."
       }
-    ]
-  }
+    }
+  ]
 }
 ```
 
-This uses the same `useCases` shape as variant values and state entries (full model in [Use Cases](#use-cases)).
+This is the same `useCases` shape used by the root [`purpose`](#root-purpose) property (full model in [Use Cases](#use-cases)).
 
 ### Accessibility (`accessibility`)
 
@@ -562,9 +529,9 @@ For actionable accessibility _rules_ with rationale (e.g., "Provide an aria-labe
 
 <ds-prop-table schema="document-blocks/accessibility" def="accessibility" />
 
-### Examples (`examples`)
+### Examples (embedded, not a standalone block)
 
-Documents visual or interactive demos of an entity. Each item is a single demo — a static image, a video, a code snippet, a URL to a live demo, or a literal value.
+DSDS has no standalone `examples` document block. Instead, the reusable `example` model is **embedded** inside other blocks — most commonly the `examples` array on a [guideline entry](#guideline-guideline) and on internal success criteria, and the `examples` array on a guide's `section` and `steps` entries.
 
 Each `example` requires at least a `presentation` or a `value` (or both):
 
@@ -591,7 +558,15 @@ At least one of `labels` or `localization` must be present.
 
 ## Component-scoped document block types
 
-These document block types are only accepted on **component** entities.
+These document block types are centered on **component** entities. `api` and `design-specifications` are component-only; `anatomy`, `variants`, `states`, and `events` are shared with patterns; and `import` is shared with guides (as noted in the [scope table](#scoped-document-block-unions)).
+
+### Import (`import`)
+
+How to install and import the artifact across platforms — package names, import statements, and setup context. Each item documents one platform.
+
+#### Import entry
+
+<ds-prop-table schema="document-blocks/import" def="importEntry" />
 
 ### Anatomy (`anatomy`)
 
@@ -605,7 +580,7 @@ For components, parts represent rendered UI sub-elements (container, label, icon
 
 ### API (`api`)
 
-Documents the code-level interface of a component on a single platform. For multi-platform components, create one API guideline per platform using the `platform` property.
+Documents the code-level interface of a component on a single platform. For multi-platform components, create one API block per platform using the `platform` property.
 
 Sections:
 
@@ -638,6 +613,14 @@ For enum properties, set `type` to the base type (`"string"`) and list the accep
 
 <ds-prop-table schema="document-blocks/api" def="apiEvent" />
 
+### Events (`events`)
+
+A standalone block documenting the events an artifact emits — trigger conditions, return shapes, DOM behavior (bubbling, cancelability, composed), and lifecycle metadata. Shared by components and patterns. It is richer than the `api` block's inline `events` array: use `api.events` for a quick interface listing, and the `events` block when an event's behavior warrants its own structured entry.
+
+#### Event entry (`eventEntry`)
+
+<ds-prop-table schema="document-blocks/events" def="eventEntry" />
+
 ### Variants (`variants`)
 
 Documents all dimensions of visual or behavioral variation. Each item is a single axis of config (e.g., `"size"`, `"emphasis"`, `"full-width"`). Multiple axes document orthogonal dimensions that combine independently.
@@ -646,7 +629,7 @@ The optional `exclusions` array documents invalid combinations across dimensions
 
 ```json
 {
-  "type": "variants",
+  "kind": "variants",
   "items": [
     { "identifier": "emphasis", "description": "...", "values": [...] },
     { "identifier": "size", "description": "...", "values": [...] }
@@ -697,7 +680,7 @@ The `variantStates` array handles variant×state combinations where the state's 
 
 Each entry is self-contained — it holds the complete set of values for that condition, not a diff of the base properties. For example, a `"danger"` variant entry carries its own token names (like `"button-danger-bg"`) or raw values, independent of the base `properties`.
 
-Note: the `tokens` field on state entries (in the states guideline) is a descriptive summary for designers — it shows *which* tokens change in a given state. The authoritative resolved values for each variant × state combination live in the `design-specifications` guideline's `variants`, `states`, and `variantStates` arrays.
+Note: the `tokens` field on state entries (in the states block) is a descriptive summary for designers — it shows *which* tokens change in a given state. The authoritative resolved values for each variant × state combination live in the `design-specifications` block's `variants`, `states`, and `variantStates` arrays.
 
 ---
 
@@ -717,7 +700,7 @@ Documents an ordered progression of values forming a visual scale (type scale, s
 
 Each `scaleStep` references a design token and optionally provides a `label`, `value` (display convenience), and `description` (usage notes). Steps are ordered from smallest/lowest to largest/highest.
 
-The scale guideline requires an `identifier`, `description`, and `steps` array.
+The scale block requires an `identifier`, `description`, and `steps` array.
 
 ### Motion (`motion`)
 
@@ -740,6 +723,28 @@ Documents the interaction flow of a pattern as an ordered sequence of steps. The
 #### Interaction entry
 
 <ds-prop-table schema="document-blocks/interaction" def="interactionEntry" />
+
+---
+
+## Guide-scoped document block types
+
+These document block types are accepted on **guide** entities (which also accept `import` and all general document block types). They favor reading-oriented prose and procedures over the measurable specs used by components.
+
+### Section (`section`)
+
+Narrative prose organized into titled, optionally nested sections — the backbone of conceptual overviews, explanations, and rationale. Each `sectionEntry` pairs a `title` with an optional rich-text `body`, illustrative `examples`, related `links`, and recursive `sections` for a heading hierarchy.
+
+#### Section entry
+
+<ds-prop-table schema="document-blocks/section" def="sectionEntry" />
+
+### Steps (`steps`)
+
+An ordered (or unordered) procedure — the sequence of steps a reader follows to install, build, contribute, or migrate. The block carries an optional `title` and an `ordered` flag (default `true`); set `ordered: false` for an independent checklist.
+
+#### Step entry
+
+<ds-prop-table schema="document-blocks/steps" def="stepEntry" />
 
 ---
 
@@ -774,32 +779,29 @@ Fields that contain human-written prose use the `richText` type:
 
 ## Use cases
 
-The `useCases` data model provides scenario-driven guidance for when an entity or option is — and is not — the right choice. It appears in three places:
+The `useCases` data model provides scenario-driven guidance for when something is — and is not — the right choice. It appears in two places, with an identical shape in both:
 
-1. **Purpose document block type** — wrapped with a `type: "purpose"` discriminator to appear in the document block array.
-2. **Variant values** — inline `useCases` property on each variant value for "when to choose this value."
-3. **State entries** — inline `useCases` property on each state entry for "when this state is appropriate."
+1. **The root [`purpose`](#root-purpose) property** — adoption guidance for the design system as a whole.
+2. **The [`purpose`](#purpose-purpose) document block** — when to reach for a specific entity.
 
-In all three contexts, the shape is identical:
+In both, `useCases` is an **array** of scenario entries. Each entry has a `description` and a `kind` of `"positive"` (when to use) or `"negative"` (when to choose something else); negative entries SHOULD include an `alternative` pointing to a more fitting entity:
 
 ```json
-{
-  "whenToUse": [
-    { "description": "Scenario description..." }
-  ],
-  "whenNotToUse": [
-    {
-      "description": "Scenario description...",
-      "alternative": {
-        "identifier": "alternative-artifact",
-        "rationale": "Why the alternative is better."
-      }
+[
+  {
+    "kind": "positive",
+    "description": "Scenario where this is the right choice."
+  },
+  {
+    "kind": "negative",
+    "description": "Scenario where something else fits better.",
+    "alternative": {
+      "identifier": "alternative-artifact",
+      "rationale": "Why the alternative is better."
     }
-  ]
-}
+  }
+]
 ```
-
-Each `whenNotToUse` entry SHOULD include an `alternative` pointing to a more fitting entity.
 
 ---
 
@@ -826,7 +828,7 @@ The root `extends` property declares that the whole DSDS document inherits from 
 
 ### Entity-level extends (`entityExtends`)
 
-Components and tokens can declare that they extend a base entity from a parent system.
+An entity can declare that it extends a base entity from a parent system. This is carried as an `extends` entry in the entity's `metadata` array (`{ "kind": "extends", "extends": { … } }`) — like every other descriptive field, it lives in `metadata`, not as a top-level property. The `extends` value has this shape:
 
 <ds-prop-table schema="common/extends" def="entityExtends" />
 
@@ -844,20 +846,25 @@ Each `modifications` entry has this shape:
 {
   "kind": "component",
   "identifier": "button",
-  "extends": {
-    "identifier": "button",
-    "system": "Acme Core Design System",
-    "version": "2.0.0",
-    "description": "Adds an 'enterprise' variant and a 'theme' prop for sub-brand theming.",
-    "modifications": [
-      { "type": "added", "target": "variant:enterprise", "description": "High-emphasis variant using enterprise brand color." },
-      { "type": "added", "target": "prop:theme", "description": "Prop accepting 'default' or 'admin' for sub-brand palette switching." },
-      { "type": "inherited", "target": "guideline:anatomy", "description": "Anatomy inherited from core without changes." }
-    ]
-  },
   "name": "Button",
-  "description": "Enterprise Button extends core Button with additional variants and props.",
-  "status": "stable"
+  "metadata": [
+    { "kind": "description", "value": "Enterprise Button extends core Button with additional variants and props." },
+    { "kind": "status", "status": "stable" },
+    {
+      "kind": "extends",
+      "extends": {
+        "identifier": "button",
+        "system": "Acme Core Design System",
+        "version": "2.0.0",
+        "description": "Adds an 'enterprise' variant and a 'theme' prop for sub-brand theming.",
+        "modifications": [
+          { "type": "added", "target": "variant:enterprise", "description": "High-emphasis variant using enterprise brand color." },
+          { "type": "added", "target": "prop:theme", "description": "Prop accepting 'default' or 'admin' for sub-brand palette switching." },
+          { "type": "inherited", "target": "guideline:anatomy", "description": "Anatomy inherited from core without changes." }
+        ]
+      }
+    }
+  ]
 }
 ```
 
@@ -896,7 +903,7 @@ Most entity types enforce a strict `^[a-z][a-z0-9-]*$` pattern on the `identifie
 
 Document block type values follow two naming patterns based on their structural role:
 
-- **Plural names** for document block types that wrap a list of like items in an `items` array: `"guideline"`, `"variants"`, `"states"`, `"principles"`, `"interactions"`, `"examples"`, `"motion"`, `"content"`.
+- **Plural names** for document block types that wrap a list of like items in an `items` array: `"variants"`, `"states"`, `"principles"`, `"interactions"`, `"steps"`, `"motion"`.
 - **Singular names** for document block types that are self-contained with their own internal structure:
   - `"scale"` (has `identifier`, `steps`)
   - `"anatomy"` (has `parts`)
@@ -905,7 +912,7 @@ Document block type values follow two naming patterns based on their structural 
   - `"design-specifications"` (has `tokens`, `spacing`, etc.)
   - `"purpose"` (has `useCases`)
 
-The distinction: plural types are containers of interchangeable items where the container has no identity beyond its type. Singular types have meaningful internal structure where properties are named and semantically distinct. Note: `"guideline"` uses a singular name despite wrapping a list, because it describes the concept of providing guidelines (actionable rules with rationale) rather than being a generic plural container.
+The distinction: plural types are containers of interchangeable items where the container has no identity beyond its type. Singular types have meaningful internal structure where properties are named and semantically distinct. Note: `"guideline"` and `"section"` use singular names despite wrapping an `items` list, because each describes a concept (providing guidelines; a body of narrative sections) rather than being a generic plural container.
 
 ---
 
@@ -924,6 +931,7 @@ The distinction: plural types are containers of interchangeable items where the 
 | [`examples/entities/foundation.json`](examples/entities/foundation.json) | Foundation docs (Spacing) with scale, motion, and best practices. |
 | [`examples/entities/pattern.json`](examples/entities/pattern.json) | Pattern docs (Error Messaging). |
 | [`examples/entities/empty-state-pattern.json`](examples/entities/empty-state-pattern.json) | Pattern docs (Empty State) with anatomy, variants, states, interactions, and content. |
+| [`examples/entities/guide.json`](examples/entities/guide.json) | Guide docs (Getting started) with sections, steps, import, guidelines, and purpose. |
 | [`examples/extension-system.dsds.json`](examples/extension-system.dsds.json) | Enterprise extension system showing document-level and entity-level `extends` with modifications. |
 
 ---
@@ -932,5 +940,5 @@ The distinction: plural types are containers of interchangeable items where the 
 
 | Level | Requirement |
 |---|---|
-| **Level 1: Core** | Identity fields only. For tokens: `type`, `identifier`, `tokenType`. For all others: `type`, `identifier`, `name`, `description`, `status` (+ `overrides` for themes). |
-| **Level 2: Complete** | Level 1 + at least one substantive document block entry (anatomy/api/variants for components, principles/scale for foundations, interactions for patterns, guideline/purpose for tokens). |
+| **Level 1: Core** | Identity only. For tokens: `kind`, `identifier`, `tokenType`. For token groups: `kind`, `identifier`. For all others: `kind`, `identifier`, `name`. A `description` and `status` `metadata` entry are strongly recommended. |
+| **Level 2: Complete** | Level 1 + at least one substantive document block entry (anatomy/api/variants for components, principles/scale for foundations, interactions for patterns, section/steps for guides, guideline/purpose for tokens). |

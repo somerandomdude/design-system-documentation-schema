@@ -5,9 +5,13 @@
  * The DSDS spec version lives in `spec/schema/dsds.schema.json` at
  * `properties.dsdsVersion.const`, but it ALSO appears in the `$id` URL on
  * every split schema file (44 of them), in the root schema's title, in
- * the `$schema` URLs of example documents, and in code snippets across
- * the README and MDX content pages. This script rewrites all of those
- * places in one pass.
+ * the `$schema` URLs of example documents, and in code snippets in the
+ * README. This script rewrites all of those places in one pass.
+ *
+ * The MDX content pages (site/content/) are NOT rewritten here: they use
+ * the {{VERSION}} token, substituted at build time by compile-mdx.mjs from
+ * dsds.schema.json#/properties/dsdsVersion/const. Bumping the const is all
+ * the site pages need.
  *
  * Usage:
  *   node scripts/bump-version.js <new-version>          # bump and rebundle
@@ -48,11 +52,15 @@ const EXAMPLE_ROOTS = [
   path.join(ROOT, "test"),
 ];
 
+// NOTE: the MDX content pages under site/content/ are intentionally NOT
+// listed here. They never hardcode a version — they use the {{VERSION}}
+// token, which scripts/compile-mdx.mjs substitutes from
+// dsds.schema.json#/properties/dsdsVersion/const at build time. A bump of
+// the const therefore propagates to every page on the next `npm run build`,
+// with no string rewriting needed. README.md is a static GitHub file (not
+// built through compile-mdx), so it still gets rewritten here.
 const DOC_FILES = [
   path.join(ROOT, "README.md"),
-  path.join(ROOT, "site", "content", "overview.mdx"),
-  path.join(ROOT, "site", "content", "quickstart.mdx"),
-  path.join(ROOT, "site", "content", "schema-architecture.mdx"),
 ];
 
 // ---------------------------------------------------------------------------
