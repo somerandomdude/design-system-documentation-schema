@@ -134,7 +134,6 @@
     ├── pattern.schema.json                     # pattern
     ├── theme.schema.json                       # tokenOverride, theme
     └── token.schema.json                       # token, tokenGroup</ds-code>
-<p>{/* The tree above is generated from the live contents of spec/schema/ at build time. */}</p>
 <hr />
 <ds-heading level="2" anchor="document-structure">Document structure</ds-heading>
 <p>A DSDS file is a JSON object with a required <ds-code inline>dsdsVersion</ds-code> and exactly one of two primary shapes: a <ds-code inline>documentation</ds-code> array for multi-entity documents, or an <ds-code inline>entity</ds-code> object for single-entity files. Every valid DSDS document must have one or the other.</p>
@@ -262,7 +261,6 @@
 </ds-prop-table>
 <ds-heading level="3" anchor="root-purpose">Root purpose</ds-heading>
 <p>The optional <ds-code inline>purpose</ds-code> property on the root document describes the design system: what it is for, who it serves, and when teams should or should not adopt it. This is a <strong>system-level</strong> property; it applies to the design system as a whole, not to each entity.</p>
-<p>{/* Hand-rolled: the root <ds-code inline>purpose</ds-code> object is defined inline in <ds-code inline>dsds.schema.json</ds-code> and has no entry in <ds-code inline>$defs</ds-code>, so it can't be rendered by the shortcode. */}</p>
 <ds-table><table><thead><tr><th>Property</th><th>Type</th><th>Required</th><th>Description</th></tr></thead><tbody><tr><td><ds-code inline>description</ds-code></td><td><ds-code inline>richText</ds-code></td><td>No</td><td>A high-level description of the design system's purpose and goals.</td></tr><tr><td><ds-code inline>useCases</ds-code></td><td><ds-code inline>array</ds-code></td><td>No</td><td>An array of use-case entries describing positive and negative adoption scenarios.</td></tr></tbody></table></ds-table>
 <p>Each use-case entry has this shape:</p>
 <ds-prop-table>
@@ -340,7 +338,6 @@
 <p>Every entity carries the same small identity surface — a <ds-code inline>kind</ds-code> discriminator, an <ds-code inline>identifier</ds-code>, and (for most kinds) a <ds-code inline>name</ds-code> — plus a <ds-code inline>metadata</ds-code> array for descriptive fields and a <ds-code inline>documentBlocks</ds-code> array for all structured docs. Everything beyond identity (description, status, tags, and so on) lives as a typed entry in the <ds-code inline>metadata</ds-code> array rather than as a top-level property (see <a href="#entity-metadata">Entity metadata</a>). The <ds-code inline>documentBlocks</ds-code> array accepts only the document block types suited to that entity type.</p>
 <ds-heading level="3" anchor="common-entity-properties">Common entity properties</ds-heading>
 <p>These properties appear on every entity type. Token and token-group differ slightly — see the <a href="#token">Token</a> and <a href="#token-group">Token group</a> sections.</p>
-<p>{/* Hand-rolled: cross-entity summary that intentionally diverges from any single schema. */}</p>
 <ds-table><table><thead><tr><th>Property</th><th>Type</th><th>Required</th><th>Notes</th></tr></thead><tbody><tr><td><ds-code inline>kind</ds-code></td><td><ds-code inline>string</ds-code></td><td>Yes</td><td>Entity kind discriminator (see <a href="#entity-kind-discriminator">Entity kind discriminator</a>).</td></tr><tr><td><ds-code inline>identifier</ds-code></td><td><ds-code inline>string</ds-code></td><td>Yes</td><td>Machine-readable identifier. Components, foundations, patterns, themes, and guides enforce <ds-code inline>^[a-z][a-z0-9-]*$</ds-code>. Token and token-group identifiers are unconstrained by design (see <a href="#token-identifier-exception">Token Identifier Exception</a>).</td></tr><tr><td><ds-code inline>name</ds-code></td><td><ds-code inline>string</ds-code></td><td>Varies</td><td>Human-readable name. Required on component, foundation, pattern, theme, and guide. <strong>Not present</strong> on token or token-group — the identifier itself serves as the display label.</td></tr><tr><td><ds-code inline>metadata</ds-code></td><td><ds-code inline>array</ds-code></td><td>No</td><td>Ordered list of typed metadata entries — description, status, tags, and more. See <a href="#entity-metadata">Entity metadata</a>.</td></tr><tr><td><ds-code inline>documentBlocks</ds-code></td><td><ds-code inline>array</ds-code></td><td>No</td><td>Typed document block objects. See <a href="#document-block">Document block</a>.</td></tr><tr><td><ds-code inline>agents</ds-code></td><td><ds-code inline>object</ds-code></td><td>No</td><td>Agent-optimized context for efficient agentic consumption. See <a href="#agents">Agents</a>.</td></tr><tr><td><ds-code inline>$extensions</ds-code></td><td><ds-code inline>object</ds-code></td><td>No</td><td>Vendor-specific extensions. See <a href="#extensions">Extensions</a>.</td></tr></tbody></table></ds-table>
 <ds-heading level="3" anchor="entity-metadata">Entity metadata</ds-heading>
 <p>Identity beyond <ds-code inline>kind</ds-code>, <ds-code inline>identifier</ds-code>, and <ds-code inline>name</ds-code> lives in the <ds-code inline>metadata</ds-code> array — an ordered list of typed entries, each tagged by its own <ds-code inline>kind</ds-code>. Keeping these out of the entity's top level keeps the entity surface small and lets new metadata kinds be added without changing the entity shape. All entries are optional.</p>
@@ -413,11 +410,11 @@
 <ds-heading level="3" anchor="pattern">Pattern</ds-heading>
 <p>A broad interaction pattern — a recurring, multi-component solution to a common UX problem. Accepts <strong>pattern-scoped document block types</strong> (interactions) and <strong>shared structural document block types</strong> (anatomy, variants, states) as well as all general document block types.</p>
 <p>Required properties: <ds-code inline>kind</ds-code>, <ds-code inline>identifier</ds-code>, <ds-code inline>name</ds-code>. (<ds-code inline>description</ds-code> and <ds-code inline>status</ds-code> are optional <ds-code inline>metadata</ds-code> entries — see <a href="#entity-metadata">Entity metadata</a>.)</p>
-<p>Patterns reference their participating components through the <ds-code inline>links</ds-code> array (with <ds-code inline>kind: "component"</ds-code>, <ds-code inline>identifier</ds-code>, and <ds-code inline>role</ds-code>) instead of through a dedicated guideline type.</p>
+<p>Patterns reference their participating components through the <ds-code inline>links</ds-code> array (with <ds-code inline>kind: "component"</ds-code>, <ds-code inline>identifier</ds-code>, and <ds-code inline>role</ds-code>) instead of through a dedicated document block.</p>
 <ds-heading level="3" anchor="guide">Guide</ds-heading>
 <p>A long-form, reading-oriented document — a getting-started walkthrough, contribution guide, tutorial, conceptual overview, or migration guide. Guides fill the gap left by the artifact-bound entities (which each document a single component, token, foundation, or pattern): they document a <em>journey</em> or a <em>concept</em> rather than one thing. Accepts <strong>guide-scoped document block types</strong> (section, steps), the <ds-code inline>import</ds-code> block, and all general document block types.</p>
 <p>Required properties: <ds-code inline>kind</ds-code>, <ds-code inline>identifier</ds-code>, <ds-code inline>name</ds-code>. (<ds-code inline>description</ds-code> and <ds-code inline>status</ds-code> are optional <ds-code inline>metadata</ds-code> entries.)</p>
-<p>The <em>kind</em> of guide (getting-started, contribution, tutorial, concept, migration) is expressed through a <ds-code inline>category</ds-code> metadata entry, keeping the entity flexible enough for any guideline.</p>
+<p>The <em>kind</em> of guide (getting-started, contribution, tutorial, concept, migration) is expressed through a <ds-code inline>category</ds-code> metadata entry, keeping the entity flexible enough for any kind of guidance.</p>
 <hr />
 <ds-heading level="2" anchor="agents">Agents</ds-heading>
 <p>The optional <ds-code inline>agents</ds-code> property provides context intended exclusively for agentic (AI/LLM) consumption. All properties are optional.</p>
@@ -685,7 +682,7 @@
   <ds-prop name="links" type="&lt;ds-type-ref href=&quot;common-link.html#link&quot;&gt;link&lt;/ds-type-ref&gt;[]">Links to resources for this anatomy part — design tool nodes, source code blocks, documentation sections, or other addressable references.</ds-prop>
 </ds-prop-table>
 <ds-heading level="3" anchor="api-api">API (<ds-code inline>api</ds-code>)</ds-heading>
-<p>Documents the code-level interface of a component on a single platform. For multi-platform components, create one API guideline per platform using the <ds-code inline>platform</ds-code> property.</p>
+<p>Documents the code-level interface of a component on a single platform. For multi-platform components, create one API block per platform using the <ds-code inline>platform</ds-code> property.</p>
 <p>Sections:</p>
 <ul>
 <li><ds-code inline>properties</ds-code> (apiProperty[])</li>
@@ -808,7 +805,7 @@
 </ul>
 <p>The <ds-code inline>variantStates</ds-code> array handles variant×state combinations where the state's visual treatment differs across variants. Each entry specifies both a <ds-code inline>variant</ds-code> and a <ds-code inline>state</ds-code> along with the <ds-code inline>properties</ds-code> map for that combination.</p>
 <p>Each entry is self-contained — it holds the complete set of values for that condition, not a diff of the base properties. For example, a <ds-code inline>"danger"</ds-code> variant entry carries its own token names (like <ds-code inline>"button-danger-bg"</ds-code>) or raw values, independent of the base <ds-code inline>properties</ds-code>.</p>
-<p>Note: the <ds-code inline>tokens</ds-code> field on state entries (in the states guideline) is a descriptive summary for designers — it shows <em>which</em> tokens change in a given state. The authoritative resolved values for each variant × state combination live in the <ds-code inline>design-specifications</ds-code> guideline's <ds-code inline>variants</ds-code>, <ds-code inline>states</ds-code>, and <ds-code inline>variantStates</ds-code> arrays.</p>
+<p>Note: the <ds-code inline>tokens</ds-code> field on state entries (in the states block) is a descriptive summary for designers — it shows <em>which</em> tokens change in a given state. The authoritative resolved values for each variant × state combination live in the <ds-code inline>design-specifications</ds-code> block's <ds-code inline>variants</ds-code>, <ds-code inline>states</ds-code>, and <ds-code inline>variantStates</ds-code> arrays.</p>
 <hr />
 <ds-heading level="2" anchor="foundation-scoped-document-block-types">Foundation-scoped document block types</ds-heading>
 <p>These document block types are only accepted on <strong>foundation</strong> entities.</p>
@@ -818,7 +815,7 @@
 <ds-heading level="3" anchor="scale-scale">Scale (<ds-code inline>scale</ds-code>)</ds-heading>
 <p>Documents an ordered progression of values forming a visual scale (type scale, spacing scale, elevation scale, or similar).</p>
 <p>Each <ds-code inline>scaleStep</ds-code> references a design token and optionally provides a <ds-code inline>label</ds-code>, <ds-code inline>value</ds-code> (display convenience), and <ds-code inline>description</ds-code> (usage notes). Steps are ordered from smallest/lowest to largest/highest.</p>
-<p>The scale guideline requires an <ds-code inline>identifier</ds-code>, <ds-code inline>description</ds-code>, and <ds-code inline>steps</ds-code> array.</p>
+<p>The scale block requires an <ds-code inline>identifier</ds-code>, <ds-code inline>description</ds-code>, and <ds-code inline>steps</ds-code> array.</p>
 <ds-heading level="3" anchor="motion-motion">Motion (<ds-code inline>motion</ds-code>)</ds-heading>
 <p>Documents the motion system — named easing curves, their cubic-bezier timing functions, recommended durations, and usage guidance. Each item is a single easing definition that designers and engineers select from when adding animation or transitions.</p>
 <ds-heading level="4" anchor="motion-entry">Motion entry</ds-heading>
@@ -945,7 +942,6 @@
   <ds-prop name="description" type="&lt;ds-type-ref href=&quot;common-rich-text.html#richtext&quot;&gt;richText&lt;/ds-type-ref&gt;">What this entity adds or changes relative to the base: new variants, more props, overridden guidelines, and so on.</ds-prop>
   <ds-prop name="modifications" type="object {type, target, description}[]">Summary of what this entity changes relative to the base. Each entry describes one change. Tools MAY use these for changelog generation, diff views, or migration guides. When omitted, consuming tools must diff the entities to find changes.</ds-prop>
 </ds-prop-table>
-<p>{/* Hand-rolled: the <ds-code inline>modifications</ds-code> array items are defined inline in <ds-code inline>common/extends.schema.json</ds-code> (no $defs entry), so they can't be rendered by the shortcode. */}</p>
 <p>Each <ds-code inline>modifications</ds-code> entry has this shape:</p>
 <ds-table><table><thead><tr><th>Property</th><th>Type</th><th>Required</th><th>Description</th></tr></thead><tbody><tr><td><ds-code inline>type</ds-code></td><td><ds-code inline>string</ds-code></td><td>Yes</td><td><ds-code inline>"added"</ds-code>, <ds-code inline>"modified"</ds-code>, <ds-code inline>"removed"</ds-code>, or <ds-code inline>"inherited"</ds-code>.</td></tr><tr><td><ds-code inline>target</ds-code></td><td><ds-code inline>string</ds-code></td><td>No</td><td>What was changed — a property name, guideline kind, variant name, etc. (e.g., <ds-code inline>"variant:enterprise"</ds-code>, <ds-code inline>"prop:theme"</ds-code>, <ds-code inline>"guideline:accessibility"</ds-code>).</td></tr><tr><td><ds-code inline>description</ds-code></td><td><ds-code inline>richText</ds-code></td><td>Yes</td><td>A human-readable description of the change.</td></tr></tbody></table></ds-table>
 <ds-code language="json">{
