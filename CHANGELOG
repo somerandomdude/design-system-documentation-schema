@@ -6,7 +6,7 @@ All notable changes to the DSDS specification are documented in this file.
 
 ## [0.3] — 2026-06-08
 
-Minor release. Schema files are now served at `https://designsystemdocspec.org/v0.3/...`. All earlier bundles remain published at their original URLs for documents pinned to them. This release renames the `style` entity to `foundation` (a breaking change) and adds the `guide` entity along with the `section` and `steps` document blocks.
+Minor release. Schema files are now served at `https://designsystemdocspec.org/v0.3/...`. All earlier bundles remain published at their original URLs for documents pinned to them. This release renames the `style` entity to `foundation` and the `guidelineEntry.kind` enforcement enum to RFC 2119 levels (both breaking), and adds the `guide` entity along with the `section` and `steps` document blocks.
 
 ### Breaking changes
 
@@ -24,19 +24,33 @@ The `style` entity was too narrow — it framed every domain as a visual attribu
 
 **Migration.** In each document: change every `"kind": "style"` to `"kind": "foundation"`, and rename the `styles` array on every documentation group to `foundations`. Internal `link` references with `kind: "style"` should become `kind: "foundation"`.
 
+#### 2. `guidelineEntry.kind` enum renamed to RFC 2119 levels
+
+The enforcement-level enum on guideline entries (and root `bestPractices`) is renamed so the values *are* the RFC 2119 requirement levels rather than synonyms. The neutral/advisory level is named `NEUTRAL` (RFC 2119 has no neutral keyword). The default changes from `informational` to `NEUTRAL`.
+
+| Before | After |
+|---|---|
+| `required` | `MUST` |
+| `encouraged` | `SHOULD` |
+| `informational` (default) | `NEUTRAL` (default) |
+| `discouraged` | `SHOULD_NOT` |
+| `prohibited` | `MUST_NOT` |
+
+**Migration.** In every guideline entry and `bestPractices` entry, map each `kind` value per the table above.
+
 ### Additions
 
-#### 2. `guide` entity kind
+#### 3. `guide` entity kind
 
 A new entity documents long-form, reading-oriented guidance that is not bound to a single artifact: getting-started walkthroughs, contribution guides, tutorials, conceptual overviews, and migration guides. It fills the gap left by the artifact-bound entities (component, token, foundation, pattern), which describe a single thing rather than a journey or concept.
 
 A guide carries identity (`identifier`, `name`), a `metadata` array, a `documentBlocks` array, and `agents` context — mirroring the `foundation` entity. The *type* of guide (getting-started, contribution, tutorial, concept, migration) is expressed through a `category` metadata entry, keeping the entity flexible enough for any guideline. Guides join the single-`entity` union and a new optional `guides` array on every documentation group.
 
-#### 3. `section` document block
+#### 4. `section` document block
 
 A narrative block of titled, optionally nested prose sections — the backbone of reading-oriented documentation that the structured block kinds (api, anatomy, variants) do not capture. Each `sectionEntry` pairs a `title` with an optional rich-text `body`, `examples`, related `links`, and recursive `sections` for a heading hierarchy.
 
-#### 4. `steps` document block
+#### 5. `steps` document block
 
 An ordered (or unordered) procedure: the sequence of steps a reader follows to install, build, contribute, or migrate. Each `stepEntry` pairs a `title` with an optional `instruction`, `examples`, `expectedResult`, and an `optional` flag. The block carries an optional `title` and an `ordered` flag (default `true`).
 
