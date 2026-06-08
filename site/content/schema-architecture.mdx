@@ -349,6 +349,24 @@ The optional `agents` property provides context intended exclusively for agentic
 }
 ```
 
+The `constraints`, `disambiguation`, and `antiPatterns` arrays carry their own entry shapes:
+
+#### Constraint entry
+
+A single must/should rule for AI consumers. `evidence` holds empirical backing (test data, audit findings) and is kept separate from `context` so tools can tell test-derived rules from conventional guidance.
+
+<ds-prop-table schema="common/agents" def="agents" path="constraints.items" />
+
+#### Disambiguation entry
+
+Tells an agent how to tell this artifact apart from a similar one. `entityType` classifies the thing being disambiguated (e.g., another component, a pattern).
+
+<ds-prop-table schema="common/agents" def="agents" path="disambiguation.items" />
+
+#### Anti-pattern entry
+
+<ds-prop-table schema="common/agents" def="agents" path="antiPatterns.items" />
+
 ### Block-level agents
 
 Document blocks also accept the same optional `agents` object. Block-level agent context is scoped to that specific documentation section — an anatomy block's agents might disambiguate part naming, while a guideline block's agents might provide enforcement constraints for AI code generation.
@@ -542,6 +560,14 @@ At least one of `labels` or `localization` must be present.
 
 These document block types are centered on **component** entities. `api` and `design-specifications` are component-only; `anatomy`, `variants`, `states`, and `events` are shared with patterns; and `import` is shared with guides (as noted in the [scope table](#scoped-document-block-unions)).
 
+### Import (`import`)
+
+How to install and import the artifact across platforms — package names, import statements, and setup context. Each item documents one platform.
+
+#### Import entry
+
+<ds-prop-table schema="document-blocks/import" def="importEntry" />
+
 ### Anatomy (`anatomy`)
 
 Documents the visual structure of a component or pattern by listing its named sub-elements (parts). Each part can reference the design tokens that style it, bridging the entity's visual design and its token architecture.
@@ -586,6 +612,14 @@ For enum properties, set `type` to the base type (`"string"`) and list the accep
 #### Event entry (`apiEvent`)
 
 <ds-prop-table schema="document-blocks/api" def="apiEvent" />
+
+### Events (`events`)
+
+A standalone block documenting the events an artifact emits — trigger conditions, return shapes, DOM behavior (bubbling, cancelability, composed), and lifecycle metadata. Shared by components and patterns. It is richer than the `api` block's inline `events` array: use `api.events` for a quick interface listing, and the `events` block when an event's behavior warrants its own structured entry.
+
+#### Event entry (`eventEntry`)
+
+<ds-prop-table schema="document-blocks/events" def="eventEntry" />
 
 ### Variants (`variants`)
 
