@@ -37,6 +37,21 @@ const DEFAULT_SCHEMA_GROUPS = [
   "entities",
 ];
 
+// The common "envelope" every entity shares. A `delta` prop-table omits these
+// so a per-entity table can show only the properties unique to that entity
+// (e.g., a token's `tokenType`/`source`) without re-listing the shared fields
+// already documented in the Common entity properties section. Defined once
+// here so the notion of "common" has a single source of truth.
+const ENTITY_ENVELOPE = [
+  "kind",
+  "identifier",
+  "name",
+  "metadata",
+  "documentBlocks",
+  "agents",
+  "$extensions",
+];
+
 // ---------------------------------------------------------------------------
 // HTML escaping & slug helpers
 // ---------------------------------------------------------------------------
@@ -211,9 +226,14 @@ function describeType(prop, defIndex = {}) {
     return "object (open)";
   }
 
-  // object with properties (inline sub-object)
+  // object with properties (inline sub-object) — surface its field names so a
+  // reader sees the shape (e.g., `object {file, path}`) rather than a bare
+  // "object". Falls back to "object" for wide objects.
   if (prop.type === "object" && prop.properties) {
-    return "object";
+    const keys = Object.keys(prop.properties);
+    return keys.length && keys.length <= 4
+      ? `object {${keys.join(", ")}}`
+      : "object";
   }
 
   // const
@@ -260,11 +280,12 @@ function describeType(prop, defIndex = {}) {
  * @returns {string}          HTML fragment (`<ds-prop-table>...</ds-prop-table>`)
  *                            or the empty string when there are no properties.
  */
-function renderPropertyTable(defSchema, defIndex = {}) {
+function renderPropertyTable(defSchema, defIndex = {}, opts = {}) {
   if (!defSchema || typeof defSchema !== "object") return "";
   const properties = defSchema.properties;
   if (!properties || Object.keys(properties).length === 0) return "";
 
+  const omit = new Set(opts.omit || []);
   const required = new Set(defSchema.required || []);
 
   // Collect anyOf/required constraints to identify "at least one" groups
@@ -285,6 +306,7 @@ function renderPropertyTable(defSchema, defIndex = {}) {
 
   const propElements = [];
   for (const [propName, propSchema] of Object.entries(properties)) {
+    if (omit.has(propName)) continue;
     const isRequired = required.has(propName);
     const isAnyOf = anyOfProps.has(propName);
     const typeStr = describeType(propSchema, defIndex);
@@ -336,6 +358,10 @@ function renderPropertyTable(defSchema, defIndex = {}) {
         `</ds-prop>`,
     });
   }
+
+  // Nothing left after filtering (e.g., a delta table for an entity with no
+  // properties beyond the common envelope) — render nothing.
+  if (propElements.length === 0) return "";
 
   // Stable sort: required → conditional → optional, preserving original order
   propElements.sort((a, b) => a.sortOrder - b.sortOrder);
@@ -395,7 +421,10 @@ function renderPropertyTableForRef(schemaRef, defName, opts = {}) {
   }
 
   const defIndex = opts.defIndex || buildDefIndex({ schemaDir });
-  return renderPropertyTable(target, defIndex);
+  // `delta: true` omits the common entity envelope; an explicit `omit` array
+  // takes precedence when provided.
+  const omit = opts.omit || (opts.delta ? ENTITY_ENVELOPE : []);
+  return renderPropertyTable(target, defIndex, { omit });
 }
 
 module.exports = {
@@ -407,4 +436,5 @@ module.exports = {
   renderPropertyTable,
   renderPropertyTableForRef,
   buildDefIndex,
+  ENTITY_ENVELOPE,
 };

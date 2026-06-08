@@ -42,6 +42,20 @@ const {
   renderPropertyTableForRef,
   buildDefIndex: buildSharedDefIndex,
 } = require("./render-prop-table.js");
+const summaries = require("./render-summaries.js");
+
+// Self-closing shortcodes that render a schema-derived summary table. Each
+// maps to a generator in render-summaries.js. Like <ds-prop-table>, these
+// keep the Schema Architecture page's cross-cutting tables 1:1 with the
+// schema so they cannot drift as entities, blocks, or metadata kinds change.
+const SUMMARY_SHORTCODES = {
+  "ds-entity-table": summaries.renderEntityTable,
+  "ds-metadata-kinds-table": summaries.renderMetadataKindsTable,
+  "ds-block-scope-table": summaries.renderBlockScopeTable,
+  "ds-block-types-table": summaries.renderBlockTypesTable,
+  "ds-block-applies-table": summaries.renderBlockAppliesTable,
+  "ds-schema-tree": summaries.renderSchemaTree,
+};
 
 // ---------------------------------------------------------------------------
 // Paths
@@ -52,6 +66,44 @@ const ROOT = path.resolve(__dirname, "..");
 const CONTENT_DIR = path.join(ROOT, "site", "content");
 const EXAMPLES_DIR = path.join(ROOT, "spec", "examples", "minimal");
 const SCHEMA_DIR = path.join(ROOT, "spec", "schema");
+
+// ---------------------------------------------------------------------------
+// Canonical spec version (single source of truth)
+//
+// The DSDS version lives in spec/schema/dsds.schema.json at
+// properties.dsdsVersion.const. Content pages NEVER hardcode a version —
+// they reference it through the {{VERSION}} token, which is substituted here
+// at build time. The bundle script, nav, and footer read the same source, so
+// a single `bump-version` of the const propagates to every rendered page.
+// ---------------------------------------------------------------------------
+
+let CACHED_VERSION = null;
+function readSpecVersion() {
+  if (CACHED_VERSION !== null) return CACHED_VERSION;
+  try {
+    const rootSchema = JSON.parse(
+      fs.readFileSync(path.join(SCHEMA_DIR, "dsds.schema.json"), "utf-8"),
+    );
+    CACHED_VERSION =
+      (rootSchema.properties &&
+        rootSchema.properties.dsdsVersion &&
+        rootSchema.properties.dsdsVersion.const) ||
+      "";
+  } catch {
+    CACHED_VERSION = "";
+  }
+  return CACHED_VERSION;
+}
+
+/**
+ * Replace the {{VERSION}} token (with optional inner whitespace) with the
+ * canonical spec version. Run before any other processing so no downstream
+ * step — frontmatter parsing, code-fence handling, MDX compilation — ever
+ * sees the token.
+ */
+function substituteVersion(source) {
+  return source.replace(/\{\{\s*VERSION\s*\}\}/g, readSpecVersion());
+}
 
 // ---------------------------------------------------------------------------
 // Optional remark-gfm (tables, autolinks, strikethrough)
@@ -226,9 +278,17 @@ function preprocessPropTables(source, slots) {
       const schemaRef = schemaMatch[1];
       const defName = defMatch[1];
 
+      // Optional `delta` (omit the common entity envelope) and `omit="a,b"`
+      // (omit an explicit list) — used by per-entity tables that should show
+      // only the properties unique to that entity.
+      const isDelta = /(^|\s)delta(\s|$|=)/.test(attrs);
+      const omitMatch = attrs.match(/omit="([^"]+)"/);
+
       const html = renderPropertyTableForRef(schemaRef, defName, {
         schemaDir: SCHEMA_DIR,
         defIndex: getMdxDefIndex(),
+        delta: isDelta,
+        omit: omitMatch ? omitMatch[1].split(",").map((s) => s.trim()) : undefined,
       });
 
       // Comments that start with `ds-prop-table:` indicate a render failure
@@ -242,6 +302,31 @@ function preprocessPropTables(source, slots) {
       return `<ds-prop-table-slot idx="${idx}" />`;
     },
   );
+}
+
+/**
+ * Expand each summary shortcode (<ds-entity-table />, <ds-block-types-table />,
+ * etc.) into a rendered table, reusing the same slot/placeholder mechanism as
+ * <ds-prop-table>. The generator reads the schema directly, so the table is
+ * always current.
+ */
+function preprocessSummaries(source, slots) {
+  let s = source;
+  for (const [tag, fn] of Object.entries(SUMMARY_SHORTCODES)) {
+    const re = new RegExp(`<${tag}\\s*(?:/>|></${tag}>)`, "g");
+    s = s.replace(re, () => {
+      let html;
+      try {
+        html = fn({ schemaDir: SCHEMA_DIR, defIndex: getMdxDefIndex() });
+      } catch (e) {
+        console.error(`    ⚠  <${tag}> failed: ${e.message}`);
+        return `<!-- ${tag}: ${e.message} -->`;
+      }
+      const idx = slots.push(html) - 1;
+      return `<ds-prop-table-slot idx="${idx}" />`;
+    });
+  }
+  return s;
 }
 
 function substitutePropTablePlaceholders(html, slots) {
@@ -271,6 +356,7 @@ function preprocess(source) {
   s = preprocessDsCodeBlocks(s);
   s = preprocessExamples(s);
   s = preprocessPropTables(s, propTableSlots);
+  s = preprocessSummaries(s, propTableSlots);
   s = escapeCurlyBraces(s);
   return { source: s, propTableSlots };
 }
@@ -475,8 +561,13 @@ export async function compileMdxFile(filePath) {
     : path.resolve(process.cwd(), filePath);
   const raw = fs.readFileSync(absPath, "utf-8");
 
+  // 0. Inject the canonical spec version wherever {{VERSION}} appears
+  //    (frontmatter title, headings, example snippets, $schema URLs). Runs
+  //    first so the token never reaches frontmatter parsing or MDX compile.
+  const templated = substituteVersion(raw);
+
   // 1. Frontmatter
-  const { meta, body } = parseFrontmatter(raw);
+  const { meta, body } = parseFrontmatter(templated);
 
   // 2. Preprocessing
   const { source: processed, propTableSlots } = preprocess(body);
