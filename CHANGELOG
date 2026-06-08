@@ -6,7 +6,7 @@ All notable changes to the DSDS specification are documented in this file.
 
 ## [0.4] — 2026-06-08
 
-Minor release. Schema files are now served at `https://designsystemdocspec.org/v0.4/...`. All earlier bundles remain published at their original URLs for documents pinned to them. This release de-overloads the `kind` field — the places where `kind` (and `type`) carried a value rather than a type discriminator are renamed (`level`, `stance`, `changeType`), the guideline and agent-constraint enforcement vocabularies are unified, and several structural constraints are tightened (exactly-one root shape, at-most-one metadata entry per kind).
+Minor release. Schema files are now served at `https://designsystemdocspec.org/v0.4/...`. All earlier bundles remain published at their original URLs for documents pinned to them. This release de-overloads the `kind` field — the places where `kind` (and `type`) carried a value rather than a type discriminator are renamed (`level`, `stance`, `changeType`). `level` is then reserved for RFC 2119 enforcement, with WCAG conformance moving to `wcagLevel`; the guideline and agent-constraint enforcement vocabularies are unified; and several structural constraints are tightened (exactly-one root shape, at-most-one metadata entry per kind).
 
 ### Breaking changes
 
@@ -63,6 +63,16 @@ The change-category field is renamed from `type` to `changeType`. Its values are
 The `metadata` array enforces that each metadata kind (`description`, `status`, `tags`, …) appears **at most once** per entity, via a shared `entityMetadataArray` definition. Zero entries of a kind is still allowed; two or more of the same kind is now invalid — so an entity has a single source of truth for each field.
 
 **Migration.** Collapse any duplicate metadata entries of the same kind into one.
+
+#### 7. `colorContrast.level` → `colorContrast.wcagLevel`
+
+Finishes the `level` de-overloading. After enforcement moved onto `level`, the field still had two meanings: RFC 2119 enforcement (`MUST`…) on guidelines/agents, and WCAG conformance (`A`/`AA`/`AAA`) on `colorContrast`. The contrast field is renamed to `wcagLevel` — matching the sibling `accessibility.wcagLevel` field — so `level` means enforcement only and the two WCAG fields are named consistently. Values unchanged (`A`/`AA`/`AAA`).
+
+**Migration.** Rename `level` to `wcagLevel` on every `colorContrast` entry.
+
+---
+
+## [0.3] — 2026-06-08
 
 Minor release. Schema files are now served at `https://designsystemdocspec.org/v0.3/...`. All earlier bundles remain published at their original URLs for documents pinned to them. This release contains three breaking changes — renaming the `style` entity to `foundation`, the `guidelineEntry.kind` enforcement enum to RFC 2119 levels, and the root `systemMetadata` property to `systemInfo` — and adds the `guide` entity along with the `section` and `steps` document blocks.
 
