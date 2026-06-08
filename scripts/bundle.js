@@ -210,11 +210,17 @@ function buildBundled() {
       "a single schema document.",
   };
 
-  // Copy top-level structural properties from root, rewriting refs
-  if (root.type) bundled.type = root.type;
-  if (root.required) bundled.required = root.required;
-  if (root.properties) bundled.properties = rewriteRefs(root.properties);
-  if (root.allOf) bundled.allOf = rewriteRefs(root.allOf);
+  // Copy EVERY top-level structural keyword from the root schema (rewriting
+  // refs), except the meta fields the bundle manages itself. Copying the full
+  // set — not a hand-picked subset — keeps the bundle a faithful validator:
+  // it preserves `additionalProperties: false` (so unknown root keys are
+  // rejected) and `anyOf` (so the documentation-xor-entity requirement is
+  // enforced), both of which a partial copy silently dropped.
+  const MANAGED = new Set(["$schema", "$id", "title", "description", "$defs"]);
+  for (const [key, value] of Object.entries(root)) {
+    if (MANAGED.has(key)) continue;
+    bundled[key] = rewriteRefs(value);
+  }
 
   // Attach all definitions
   bundled.$defs = rewrittenDefs;
