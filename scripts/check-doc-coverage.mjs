@@ -15,6 +15,7 @@
  * Exits non-zero when any schema kind is missing from the rendered page.
  */
 
+import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { createRequire } from "node:module";
@@ -26,6 +27,9 @@ const { loadAllDefs } = require("./render-summaries.js");
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "..");
 const PAGE = path.join(ROOT, "site", "content", "schema-architecture.mdx");
+const SCHEMA_BLOCKS_DIR = path.join(ROOT, "spec", "schema", "document-blocks");
+const EX_BLOCKS_DIR = path.join(ROOT, "spec", "examples", "document-blocks");
+const EX_ENTITIES_DIR = path.join(ROOT, "spec", "examples", "entities");
 
 const kindConst = (def) =>
   def && def.properties && def.properties.kind && def.properties.kind.const;
@@ -75,6 +79,50 @@ for (const k of metadataKinds) if (!html.includes(bare(k))) missing.push(`metada
 const genErrors = (html.match(/<!--\s*ds-[a-z-]+:[^>]*-->/g) || []);
 
 // ---------------------------------------------------------------------------
+// 2b. Example-fixture coverage — guard the spec/examples/ tree, not just docs
+//
+//   (a) Every document-block schema must ship a matching example fixture, so a
+//       newly added block kind cannot land without a worked example.
+//   (b) Every top-level key in a document-blocks/ or entities/ fixture must map
+//       to a live $def. A key that no longer resolves is a stale fixture left
+//       behind by a renamed or removed definition (the orphan best-practice.json
+//       case). Validation silently SKIPS such keys, so the only backstop is here.
+// ---------------------------------------------------------------------------
+
+const blockSchemaBases = fs
+  .readdirSync(SCHEMA_BLOCKS_DIR)
+  .filter((f) => f.endsWith(".schema.json") && f !== "document-blocks.schema.json")
+  .map((f) => f.replace(/\.schema\.json$/, ""));
+
+const exampleMissing = [];
+for (const base of blockSchemaBases) {
+  if (!fs.existsSync(path.join(EX_BLOCKS_DIR, `${base}.json`))) {
+    exampleMissing.push(
+      `document-block "${base}" has no example fixture (expected spec/examples/document-blocks/${base}.json)`,
+    );
+  }
+}
+
+const orphanKeys = [];
+for (const dir of [EX_BLOCKS_DIR, EX_ENTITIES_DIR]) {
+  for (const file of fs.readdirSync(dir).filter((f) => f.endsWith(".json"))) {
+    let data;
+    try {
+      data = JSON.parse(fs.readFileSync(path.join(dir, file), "utf-8"));
+    } catch {
+      continue; // JSON validity is validate.js's job, not ours.
+    }
+    for (const key of Object.keys(data)) {
+      if (!defs[key]) {
+        orphanKeys.push(
+          `${path.basename(dir)}/${file} → "${key}" is not a live schema $def (stale fixture from a renamed/removed definition?)`,
+        );
+      }
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
 // 3. Report
 // ---------------------------------------------------------------------------
 
@@ -82,13 +130,16 @@ console.log("Schema Architecture doc-coverage check\n");
 console.log(
   `  Schema kinds: ${entityKinds.length} entity, ${blockKinds.length} document-block, ${metadataKinds.length} metadata`,
 );
+console.log(
+  `  Example fixtures: ${blockSchemaBases.length} document-block schema(s) checked`,
+);
 
 if (genErrors.length) {
   console.error(`\n  ✗ Generator errors on the page:`);
   for (const e of genErrors) console.error(`      ${e}`);
 }
 
-if (missing.length || genErrors.length) {
+if (missing.length || genErrors.length || exampleMissing.length || orphanKeys.length) {
   if (missing.length) {
     console.error(`\n  ✗ ${missing.length} schema kind(s) not surfaced on schema-architecture.mdx:`);
     for (const m of missing) console.error(`      ${m}`);
@@ -97,7 +148,16 @@ if (missing.length || genErrors.length) {
         `  shortcode is broken, or a shortcode was removed from the page.`,
     );
   }
+  if (exampleMissing.length) {
+    console.error(`\n  ✗ ${exampleMissing.length} document-block(s) without an example fixture:`);
+    for (const m of exampleMissing) console.error(`      ${m}`);
+  }
+  if (orphanKeys.length) {
+    console.error(`\n  ✗ ${orphanKeys.length} stale example fixture key(s):`);
+    for (const m of orphanKeys) console.error(`      ${m}`);
+  }
   process.exit(1);
 }
 
-console.log("\n  ✓ Every schema kind is surfaced on the page.\n");
+console.log("\n  ✓ Every schema kind is surfaced on the page.");
+console.log("  ✓ Every document-block has an example fixture; all fixture keys resolve.\n");
