@@ -4,6 +4,50 @@ All notable changes to the DSDS specification are documented in this file.
 
 ---
 
+## [0.4] — 2026-06-08
+
+Minor release. Schema files are now served at `https://designsystemdocspec.org/v0.4/...`. All earlier bundles remain published at their original URLs for documents pinned to them. This release de-overloads the `kind` field: the two places where `kind` carried a value instead of a type discriminator are renamed, and the guideline and agent-constraint enforcement vocabularies are unified.
+
+### Breaking changes
+
+#### 1. `guidelineEntry.kind` → `guidelineEntry.level`; `NEUTRAL` removed
+
+`kind` everywhere else in DSDS is a type discriminator (a `const`). On guideline entries (and root `bestPractices`) it instead held an enforcement level — so it is renamed to `level`. The advisory `NEUTRAL` value is removed, leaving the four RFC 2119 levels, which now exactly match `agents.constraints[].level`. `level` is required (the old `NEUTRAL` default is gone).
+
+| Before | After |
+|---|---|
+| `guidelineEntry.kind` (and `bestPractices[].kind`) | `.level` |
+| values `MUST` / `SHOULD` / `NEUTRAL` / `SHOULD_NOT` / `MUST_NOT` | `MUST` / `SHOULD` / `SHOULD_NOT` / `MUST_NOT` |
+
+**Migration.** Rename `kind` to `level` on every guideline and `bestPractices` entry; remap `NEUTRAL` to `SHOULD`.
+
+#### 2. `useCase.kind` → `useCase.stance`; values renamed
+
+The use-case polarity field is renamed from `kind` to `stance`, and its values move from `positive`/`negative` to `recommended`/`discouraged`.
+
+| Before | After |
+|---|---|
+| `useCase.kind` | `.stance` |
+| `positive` | `recommended` |
+| `negative` | `discouraged` |
+
+**Migration.** Rename `kind` to `stance` on every use case; remap `positive` → `recommended`, `negative` → `discouraged`.
+
+#### 3. `agents.constraints[].level` aligned to RFC 2119 casing
+
+The agent-constraint enforcement enum is uppercased so it matches `guidelineEntry.level` exactly — same field name, same value set — so guideline and agent enforcement levels round-trip.
+
+| Before | After |
+|---|---|
+| `must` | `MUST` |
+| `should` | `SHOULD` |
+| `should-not` | `SHOULD_NOT` |
+| `must-not` | `MUST_NOT` |
+
+**Migration.** Uppercase each agents `level` value per the table.
+
+---
+
 ## [0.3] — 2026-06-08
 
 Minor release. Schema files are now served at `https://designsystemdocspec.org/v0.3/...`. All earlier bundles remain published at their original URLs for documents pinned to them. This release contains three breaking changes — renaming the `style` entity to `foundation`, the `guidelineEntry.kind` enforcement enum to RFC 2119 levels, and the root `systemMetadata` property to `systemInfo` — and adds the `guide` entity along with the `section` and `steps` document blocks.

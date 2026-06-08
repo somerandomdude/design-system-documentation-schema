@@ -1,13 +1,13 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://designsystemdocspec.org/v0.3/document-blocks/guideline.schema.json",
+  "$id": "https://designsystemdocspec.org/v0.4/document-blocks/guideline.schema.json",
   "title": "DSDS Guideline",
   "description": "Actionable usage guidance for an artifact. Each item is a self-contained rule paired with a rationale. Guidelines tell the reader what to do (or not do) and why. They sit alongside other document block kinds in the `documentBlocks` array on any artifact.",
   "$defs": {
     "guidelineEntry": {
       "type": "object",
-      "description": "A single piece of usage guidance. Each guideline pairs a statement with a rationale. `kind` sets the enforcement level. `category` groups by discipline. `target` points to a specific anatomy part or content area. `criteria` is a polymorphic array: each entry is either an external reference (citing WCAG or a similar standard) or an internal criterion definition (a stable, testable success criterion owned by this design system, citable via a display code that tooling manages).",
-      "required": ["guidance", "kind"],
+      "description": "A single piece of usage guidance. Each guideline pairs a statement with a rationale. `level` sets the RFC 2119 enforcement level. `category` groups by discipline. `target` points to a specific anatomy part or content area. `criteria` is a polymorphic array: each entry is either an external reference (citing WCAG or a similar standard) or an internal criterion definition (a stable, testable success criterion owned by this design system, citable via a display code that tooling manages).",
+      "required": ["guidance", "level"],
       "properties": {
         "guidance": {
           "$ref": "../common/rich-text.schema.json#/$defs/richText",
@@ -17,17 +17,15 @@
           "$ref": "../common/rich-text.schema.json#/$defs/richText",
           "description": "Why this guidance exists. Cite evidence, accessibility standards, or user research when available. MUST NOT restate the guidance."
         },
-        "kind": {
+        "level": {
           "type": "string",
           "enum": [
             "MUST",
             "SHOULD",
-            "NEUTRAL",
             "SHOULD_NOT",
             "MUST_NOT"
           ],
-          "default": "NEUTRAL",
-          "description": "How strictly the guideline should be followed, named for RFC 2119 requirement levels: 'MUST' (non-compliance is a defect), 'SHOULD' (follow in most cases; exceptions need justification), 'NEUTRAL' (advisory only, no enforcement expectation), 'SHOULD_NOT' (avoid unless justified), 'MUST_NOT' (violations are defects). Defaults to 'NEUTRAL'."
+          "description": "How strictly the guideline should be followed, named for RFC 2119 requirement levels: 'MUST' (non-compliance is a defect), 'SHOULD' (follow in most cases; exceptions need justification), 'SHOULD_NOT' (avoid unless justified), 'MUST_NOT' (violations are defects). Uses the same value set as `agents.constraints[].level`."
         },
         "category": {
           "type": "string",
