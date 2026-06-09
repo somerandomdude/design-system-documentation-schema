@@ -306,6 +306,168 @@ function validateDefinitionExamples(ajv) {
 }
 
 // ---------------------------------------------------------------------------
+// Part 3: Semantic checks — normative rules JSON Schema cannot express
+// ---------------------------------------------------------------------------
+
+// Extension keys MUST use vendor-specific namespaces (reverse domain name
+// notation recommended) — enforced as "contains at least one dot separator",
+// e.g. 'com.figma', 'acme.tooling'.
+const EXTENSION_KEY_REGEX = /^[A-Za-z0-9_-]+(\.[A-Za-z0-9_-]+)+$/;
+
+/**
+ * Walk a parsed DSDS document and apply the semantic rules:
+ *   1. Entity identifiers MUST be unique within their entity group (and
+ *      token/token-group identifiers within their parent's `children`).
+ *   2. `$extensions` keys MUST be vendor-namespaced.
+ * Returns an array of { path, message } findings.
+ */
+function semanticFindings(doc) {
+  const findings = [];
+
+  function checkIdentifierScope(items, pathPrefix) {
+    const seen = new Map();
+    items.forEach((item, i) => {
+      if (!item || typeof item !== "object" || item.$ref) return;
+      const id = item.identifier;
+      if (typeof id !== "string") return;
+      if (seen.has(id)) {
+        findings.push({
+          path: `${pathPrefix}/${i}/identifier`,
+          message: `duplicate identifier '${id}' in the same scope (first used at ${pathPrefix}/${seen.get(id)})`,
+        });
+      } else {
+        seen.set(id, i);
+      }
+    });
+  }
+
+  function walk(node, nodePath) {
+    if (!node || typeof node !== "object") return;
+    if (Array.isArray(node)) {
+      node.forEach((item, i) => walk(item, `${nodePath}/${i}`));
+      return;
+    }
+    if (node.$extensions && typeof node.$extensions === "object") {
+      for (const key of Object.keys(node.$extensions)) {
+        if (!EXTENSION_KEY_REGEX.test(key)) {
+          findings.push({
+            path: `${nodePath}/$extensions`,
+            message: `extension key '${key}' is not vendor-namespaced (expected reverse-domain style, e.g. 'com.acme.tool')`,
+          });
+        }
+      }
+    }
+    if (Array.isArray(node.entities)) {
+      checkIdentifierScope(node.entities, `${nodePath}/entities`);
+    }
+    if (Array.isArray(node.children)) {
+      checkIdentifierScope(node.children, `${nodePath}/children`);
+    }
+    for (const [key, value] of Object.entries(node)) {
+      if (key === "$extensions") continue;
+      walk(value, `${nodePath}/${key}`);
+    }
+  }
+
+  walk(doc, "");
+  return findings;
+}
+
+function validateSemantics() {
+  console.log("━━━ Semantic checks (uniqueness, extension namespaces) ━━━\n");
+
+  const files = findFilesRecursive(EXAMPLES_DIR, ".dsds.json");
+  let passed = 0;
+  let failed = 0;
+  const errors = [];
+
+  for (const filePath of files) {
+    const file = path.relative(EXAMPLES_DIR, filePath);
+    let data;
+    try {
+      data = JSON.parse(fs.readFileSync(filePath, "utf-8"));
+    } catch {
+      continue; // Part 1 already reports JSON parse failures
+    }
+    const findings = semanticFindings(data);
+    if (findings.length === 0) {
+      console.log(`  ✓ ${file}`);
+      passed++;
+    } else {
+      console.error(`  ✗ ${file}`);
+      for (const f of findings) {
+        console.error(`      ${f.path || "(root)"}: ${f.message}`);
+        errors.push({ file, path: f.path, message: f.message });
+      }
+      failed++;
+    }
+  }
+
+  console.log(`\n  ${passed} passed, ${failed} failed\n`);
+  return { passed, failed, errors };
+}
+
+// ---------------------------------------------------------------------------
+// Part 4: Negative fixtures — documents that MUST fail validation
+// ---------------------------------------------------------------------------
+
+const INVALID_FIXTURES_DIR = path.join(ROOT, "test", "invalid");
+
+/**
+ * Every .dsds.json file in test/invalid/ must be rejected — either by schema
+ * validation or by the semantic checks. A fixture that validates cleanly is
+ * a regression: the guard it pins has stopped working.
+ */
+function validateNegativeFixtures(ajv) {
+  console.log("━━━ Negative fixtures (must fail) ━━━\n");
+
+  const schema = JSON.parse(fs.readFileSync(BUNDLED_SCHEMA_PATH, "utf-8"));
+  const validate = ajv.compile(schema);
+
+  const files = findFilesRecursive(INVALID_FIXTURES_DIR, ".dsds.json");
+  let passed = 0;
+  let failed = 0;
+  const errors = [];
+
+  if (files.length === 0) {
+    console.log("  (no fixtures found)\n");
+    return { passed, failed, errors };
+  }
+
+  for (const filePath of files) {
+    const file = path.relative(INVALID_FIXTURES_DIR, filePath);
+    let data;
+    try {
+      data = JSON.parse(fs.readFileSync(filePath, "utf-8"));
+    } catch (e) {
+      console.error(`  ✗ ${file}: fixture is not valid JSON — ${e.message}`);
+      failed++;
+      errors.push({ file, error: `Invalid JSON: ${e.message}` });
+      continue;
+    }
+
+    const schemaValid = validate(data);
+    const semantics = schemaValid ? semanticFindings(data) : [];
+    const rejected = !schemaValid || semantics.length > 0;
+
+    if (rejected) {
+      const via = !schemaValid ? "schema" : "semantic check";
+      console.log(`  ✓ ${file} (rejected by ${via})`);
+      passed++;
+    } else {
+      console.error(
+        `  ✗ ${file}: validated cleanly — the guard this fixture pins is broken`,
+      );
+      failed++;
+      errors.push({ file, error: "fixture unexpectedly valid" });
+    }
+  }
+
+  console.log(`\n  ${passed} correctly rejected, ${failed} failed\n`);
+  return { passed, failed, errors };
+}
+
+// ---------------------------------------------------------------------------
 // Main
 // ---------------------------------------------------------------------------
 
@@ -323,17 +485,38 @@ function main() {
   const defAjv = createValidator();
   const defResults = validateDefinitionExamples(defAjv);
 
+  // Part 3: Semantic checks on example documents
+  const semanticResults = validateSemantics();
+
+  // Part 4: Negative fixtures must fail
+  const negativeAjv = createValidator();
+  const negativeResults = validateNegativeFixtures(negativeAjv);
+
   // Summary
   console.log("━━━ Summary ━━━\n");
 
-  const totalPassed = exampleResults.passed + defResults.passed;
-  const totalFailed = exampleResults.failed + defResults.failed;
+  const totalPassed =
+    exampleResults.passed +
+    defResults.passed +
+    semanticResults.passed +
+    negativeResults.passed;
+  const totalFailed =
+    exampleResults.failed +
+    defResults.failed +
+    semanticResults.failed +
+    negativeResults.failed;
 
   console.log(
     `  Documents: ${exampleResults.passed} passed, ${exampleResults.failed} failed`,
   );
   console.log(
     `  Defs:      ${defResults.passed} passed, ${defResults.failed} failed, ${defResults.skipped} skipped`,
+  );
+  console.log(
+    `  Semantics: ${semanticResults.passed} passed, ${semanticResults.failed} failed`,
+  );
+  console.log(
+    `  Negative:  ${negativeResults.passed} correctly rejected, ${negativeResults.failed} failed`,
   );
   console.log(`  Total:     ${totalPassed} passed, ${totalFailed} failed\n`);
 
