@@ -4,6 +4,89 @@ All notable changes to the DSDS specification are documented in this file.
 
 ---
 
+## [0.6] — 2026-06-08
+
+Minor release. Schema files are now served at `https://designsystemdocspec.org/v0.6/...`. All earlier bundles remain published at their original URLs for documents pinned to them. This release reshapes the `status` metadata entry to a single, consistent structure, removes the unused `statusObject` / `status` definitions from `common`, moves system-level `purpose` / `guidelines` onto a root `documentBlocks` array, and flattens the `thumbnail` metadata entry.
+
+### Breaking changes
+
+#### 1. `status` metadata reshaped — `overall` / `platforms` replace `status` / `platformStatus`
+
+The `status` metadata entry now uses the structure `common/status` previously reserved for its (unused) `statusObject`: an `overall` status value plus a `platforms` map, instead of the former `status` and `platformStatus` siblings. `overall` is now required, and — restoring an invariant the flat shape had dropped — `deprecationNotice` is required when `overall` is `deprecated`. The redundant `statusObject` and `status` union are removed from `common/status`; the reusable `statusValue` and `platformStatus` leaves remain and are composed by the metadata entry.
+
+| Before | After |
+|---|---|
+| `status` metadata field `status` | `overall` |
+| `status` metadata field `platformStatus` | `platforms` |
+| `common/status` `statusObject` and `status` (union) | removed |
+
+**Migration.** In every `{ "kind": "status" }` metadata entry, rename `status` → `overall` and `platformStatus` → `platforms`. Add a `deprecationNotice` to any entry whose `overall` is `deprecated`. Per-platform entries inside `platforms` are unchanged — they keep their own `status` field.
+
+#### 2. Root `purpose` and `guidelines` replaced by a root `documentBlocks` array
+
+System-level documentation now uses the same `documentBlocks` mechanism as entities. The root `purpose` object and `guidelines` array are removed; in their place the root carries a `documentBlocks` array of general document blocks (`purpose`, `guideline`, `section`, `accessibility`, `content`). Scope is expressed by position — a block at the root describes the system, the same block inside an entity describes that entity — rather than by parallel root-only definitions. The system-level `purpose.description` field is dropped; use a `section` block for narrative overviews.
+
+| Before | After |
+|---|---|
+| root `purpose` (`{ description, useCases }`) | a `purpose` block in root `documentBlocks` (`useCases`); narrative → a `section` block |
+| root `guidelines` (`guidelineEntry[]`) | a `guideline` block in root `documentBlocks` |
+
+**Migration.** Move the root `purpose` into a `{ "kind": "purpose", "useCases": [...] }` entry in a new root `documentBlocks` array, and the root `guidelines` into a `{ "kind": "guideline", "items": [...] }` entry. Relocate any `purpose.description` prose into a `{ "kind": "section", "items": [...] }` block. Entity-level `documentBlocks` are unchanged.
+
+#### 3. `thumbnail` metadata inlines `url` / `alt`
+
+The `thumbnail` metadata entry no longer nests a full `presentationImage` under an `image` property. It carries `url` and `alt` directly, dropping the redundant inner `kind: "image"`. Both are now required, so an empty thumbnail no longer validates.
+
+| Before | After |
+|---|---|
+| `{ "kind": "thumbnail", "image": { "kind": "image", "url", "alt" } }` | `{ "kind": "thumbnail", "url", "alt" }` |
+
+**Migration.** Lift `image.url` and `image.alt` up onto the thumbnail entry and remove the `image` wrapper (and its inner `kind`).
+
+#### 4. `agents` removed from document blocks — entity-level only
+
+The `agents` object (AI/LLM context) is no longer accepted on individual document blocks. It remains on entities. AI context now lives once per entity rather than per block, which shrinks every block's shape — a step toward a uniform block contract.
+
+**Migration.** Remove `agents` from every document block. If a block carried AI context worth keeping, fold it into the entity's `agents` object.
+
+#### 5. `events` document block removed — events live in `api.events`
+
+The standalone `events` document block is removed. Events are documented in the API block's `events` array (`api.events`); behavioral context the events block used to carry — DOM propagation, cancelability, deprecation, when an event does *not* fire — goes in each event's `description`. In practice the block duplicated `api.events` (same identifier, description, returns), so collapsing to one home removes a fork without losing the ability to document events.
+
+**Migration.** Move each `{ "kind": "events" }` block's entries into the `events` array of the component's (or pattern's) `api` block, folding any DOM/lifecycle detail into the event `description`. Remove the `events` block.
+
+#### 6. `design-specifications` slimmed; per-variant/state values move to the variants/states blocks
+
+`design-specifications` now documents only the **baseline** spec (`properties`, `spacing`, `sizing`, `typography`, `responsive`). Its `variants`, `sizes`, `states`, and `variantStates` arrays are removed (along with the `specVariant` / `specSize` / `specState` / `specVariantState` definitions). Per-variant and per-state design values now live where the variation is defined: each variant value (and flag) and each state carries a `tokens` map. This single-sources each value and removes the `design-specifications` ↔ `variants`/`states` overlap (and the token-fork that came with it).
+
+| Before | After |
+|---|---|
+| `design-specifications.variants[]` / `.sizes[]` | a `tokens` map on each variant value / flag |
+| `design-specifications.states[]` | the `tokens` map already on each state entry |
+| `design-specifications.variantStates[]` | removed — document state-specific variant quirks in prose |
+
+**Migration.** Move each `design-specifications` variant/size entry's `properties` onto the matching variant value's new `tokens` map; per-state values already live on the states block. Then remove the `variants` / `sizes` / `states` / `variantStates` arrays from `design-specifications`, keeping `properties` / `spacing` / `sizing` / `typography` / `responsive`.
+
+### Clarifications
+
+#### Token references required where a token layer exists
+
+The design-value slots in `design-specifications` and the `tokens` maps on `anatomy` parts and `states` entries accept either a token identifier or a raw CSS value. Their descriptions now state the contract: a system that has a token layer MUST use token identifiers in these slots so documented values cannot silently fork from the token source; raw values remain available only for token-less systems. No structural schema change — existing documents still validate. A new `npm run lint:tokens` check (also run by `npm run validate`) flags fork-prone raw values in those slots in token-bearing documents; zero values (`0`, `0px`) are exempt.
+
+#### Rules for splitting a document across files
+
+Using `$ref` to spread one document across files used to leave all the details to "consuming tooling." The Schema Architecture page now spells them out plainly: a tool joins the files into one before validating; reference loops and broken links are errors, not silently skipped; `$ref` paths must be relative; and tools don't fetch from the web by default (when that's turned on, they stick to trusted sites and block local and internal addresses). The `fileRef.$ref` description now says it must be relative. Nothing structural changed — existing documents still validate.
+
+#### The document-block contract is documented
+
+The Schema Architecture page now states the shape every block follows: a `kind` plus a payload, where collection blocks use an `items` array, three blocks keep a clearer domain name (`anatomy.parts`, `scale.steps`, `purpose.useCases`), and structured blocks (`api`, `accessibility`, `content`, `design-specifications`) use named fields. Paired with the block-level `agents` removal above, this is the "one block contract" simplification — documentation only, no schema change.
+
+#### `guideline` / `purpose` / `principles` disambiguated
+
+The three guidance blocks now state, in parallel, which question each answers: `purpose` — *whether* to use an artifact (the right choice vs. an alternative); `guideline` — *how* to use it correctly (concrete rules + rationale); `principles` — *what the system believes* (the philosophy that sits above the rules, on foundations). Leftover "best-practices" wording (from the block that was renamed to `guideline`) is replaced with `guideline` throughout. Documentation only — no schema change.
+
+---
+
 ## [0.5.1] — 2026-06-08
 
 Patch release. Schema files are now served at `https://designsystemdocspec.org/v0.5.1/...`. All earlier bundles remain published at their original URLs for documents pinned to them. This release promotes the free-form `section` block to a general kind available on every entity rather than guides alone — an additive change, so a document valid under v0.5 stays valid after updating its `dsdsVersion` to `0.5.1`.

@@ -36,11 +36,29 @@
       "$ref": "#/$defs/documentExtends",
       "description": "Declares that this DSDS document inherits from another DSDS document — typically a core design system. The base document provides the foundational entities. This document layers on top, adding or extending entities. Enables systems-of-systems architectures where product- or brand-specific systems inherit from a shared core."
     },
-    "documentBlocks": {
+    "purpose": {
+      "type": "object",
+      "description": "The purpose of the design system as a whole — why it exists, what problems it solves, and who it serves. Helps stakeholders, new team members, and external consumers understand the system's intent before exploring individual components or tokens.",
+      "properties": {
+        "description": {
+          "$ref": "#/$defs/richText",
+          "description": "A high-level description of the design system's purpose and the problems it solves."
+        },
+        "useCases": {
+          "type": "array",
+          "description": "Scenario-driven guidance describing when this design system is or is not the right choice. Positive cases describe when the system should be adopted. Negative cases describe when a different approach fits better, and why.",
+          "items": {
+            "$ref": "#/$defs/useCase"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "guidelines": {
       "type": "array",
-      "description": "System-level structured documentation for the design system as a whole — its purpose (when to adopt the system), cross-cutting guidelines, and narrative overviews. Each entry is a general document block: a `purpose`, `guideline`, `section`, `accessibility`, or `content` block. This is the same `documentBlocks` mechanism entities use, scoped to the system rather than a single artifact; scope is signalled by position (root vs. inside an entity).",
+      "description": "System-level guidelines that apply across the entire design system — broad guidance for teams adopting, contributing to, or consuming the system. These are not entity-specific rules (those live in each entity's `documentBlocks` as `guideline` blocks) but cross-cutting principles like 'always use semantic tokens instead of raw values' or 'test all components at 200% zoom'. Each entry is a self-contained rule paired with a rationale, sharing the same `guidelineEntry` shape used by entity-level guideline blocks.",
       "items": {
-        "$ref": "#/$defs/generalDocumentBlock"
+        "$ref": "#/$defs/guidelineEntry"
       }
     },
     "documentation": {
@@ -600,7 +618,7 @@
     },
     "purpose": {
       "type": "object",
-      "description": "Documents the purpose of an artifact — when to use it and when to choose something else. Contains a `useCases` array of scenario-driven `useCase` entries, each marked `recommended` (when to use) or `discouraged` (when to choose an alternative). Use `purpose` to answer *whether* to use the artifact — when it is the right choice and when to pick an alternative. For *how* to use it correctly, see `guideline`; for the higher-level beliefs that shape a domain, see `principles`; for *what* it looks like and how it behaves, see variants, states, and anatomy.",
+      "description": "Documents the purpose of an artifact — when to use it and when to choose something else. Contains a `useCases` array of scenario-driven `useCase` entries, each marked `recommended` (when to use) or `discouraged` (when to choose an alternative). Purpose guidelines help the reader decide whether this is the right artifact *before* implementing it. For guidance on *how* to use it correctly, see best-practices. For *what* it looks like and how it behaves, see variants, states, and anatomy.",
       "required": [
         "kind"
       ],
@@ -616,6 +634,10 @@
           "items": {
             "$ref": "#/$defs/useCase"
           }
+        },
+        "agents": {
+          "$ref": "#/$defs/agents",
+          "description": "AI-ready context for this document block. Provides structured info for AI/LLM use: constraints, disambiguation, anti-patterns, examples, and keywords."
         }
       },
       "additionalProperties": false
@@ -1200,24 +1222,16 @@
     "thumbnailMetadata": {
       "type": "object",
       "required": [
-        "kind",
-        "url",
-        "alt"
+        "kind"
       ],
       "properties": {
         "kind": {
           "type": "string",
-          "const": "thumbnail",
-          "description": "Identifies this metadata entry as a thumbnail."
+          "const": "thumbnail"
         },
-        "url": {
-          "type": "string",
-          "format": "uri",
-          "description": "URL or relative path to the thumbnail image."
-        },
-        "alt": {
-          "type": "string",
-          "description": "Alternative text describing the thumbnail image. MUST be provided for accessibility."
+        "image": {
+          "$ref": "#/$defs/presentationImage",
+          "description": "The thumbnail image."
         }
       },
       "additionalProperties": false
@@ -1314,7 +1328,7 @@
     },
     "accessibility": {
       "type": "object",
-      "description": "Structured accessibility specs for an artifact. Documents keyboard behavior, ARIA attributes, screen reader announcements, focus management, color contrast pairs, and motion considerations. Distinct from `guideline` blocks — accessibility specs capture machine-readable data, while guidelines capture actionable rules with rationale. Both can be present on the same artifact.",
+      "description": "Structured accessibility specs for an artifact. Documents keyboard behavior, ARIA attributes, screen reader announcements, focus management, color contrast pairs, and motion considerations. Distinct from best-practice guidelines — accessibility guidelines capture machine-readable specs, while best practices capture actionable rules with rationale. Both can coexist in the same guidelines array.",
       "required": [
         "kind"
       ],
@@ -1365,6 +1379,10 @@
         "motionConsiderations": {
           "$ref": "#/$defs/richText",
           "description": "How the artifact respects the prefers-reduced-motion media query. Document what animations or transitions exist and what happens when reduced motion is preferred (e.g., 'The loading spinner is replaced with a static ellipsis indicator')."
+        },
+        "agents": {
+          "$ref": "#/$defs/agents",
+          "description": "AI-ready context for this document block. Provides structured info for AI/LLM use: constraints, disambiguation, anti-patterns, examples, and keywords."
         }
       },
       "additionalProperties": false
@@ -1397,7 +1415,7 @@
         },
         "tokens": {
           "type": "object",
-          "description": "Design tokens applied to this part. Keys are token-purpose names describing what visual attribute the token controls (e.g., 'background', 'border-radius', 'padding-horizontal', 'text-color'). Values are the token identifiers that provide the value (e.g., 'color-action-primary', 'radius-md', 'space-4'). In a system that has a token layer these MUST be token identifiers, not raw values, so the part's styling can't silently drift from the token source.",
+          "description": "Design tokens applied to this part. Keys are token-purpose names describing what visual attribute the token controls (e.g., 'background', 'border-radius', 'padding-horizontal', 'text-color'). Values are the token identifiers that provide the value (e.g., 'color-action-primary', 'radius-md', 'space-4').",
           "additionalProperties": {
             "type": "string"
           }
@@ -1443,6 +1461,10 @@
           "items": {
             "$ref": "#/$defs/example"
           }
+        },
+        "agents": {
+          "$ref": "#/$defs/agents",
+          "description": "AI-ready context for this document block. Provides structured info for AI/LLM use: constraints, disambiguation, anti-patterns, examples, and keywords."
         }
       },
       "additionalProperties": false
@@ -1525,7 +1547,7 @@
         },
         "description": {
           "$ref": "#/$defs/richText",
-          "description": "When this event fires, what it communicates, and how consumers should respond — plus any behavioral context worth noting in prose (DOM propagation, cancelability, deprecation, and conditions under which it does not fire). This is the single home for event documentation."
+          "description": "When this event fires, what it communicates, and how consumers should respond."
         },
         "returns": {
           "type": "string",
@@ -1746,6 +1768,10 @@
           "items": {
             "$ref": "#/$defs/apiMethod"
           }
+        },
+        "agents": {
+          "$ref": "#/$defs/agents",
+          "description": "AI-ready context for this document block. Provides structured info for AI/LLM use: constraints, disambiguation, anti-patterns, examples, and keywords."
         }
       },
       "additionalProperties": false
@@ -1819,7 +1845,7 @@
     },
     "content": {
       "type": "object",
-      "description": "Structured content guidelines: recommended action labels and localization considerations. The labels array is a dictionary of standard UI labels with definitions, usage context, and cross-references. The localization array covers i18n concerns like RTL behavior, text expansion, and pluralization. At least one of `labels` or `localization` is required. Content guidelines complement `guideline` blocks: a guideline says 'Use sentence case' (a rule); content guidelines say 'Add: Takes an existing object and uses it in a new context' (a reference).",
+      "description": "Structured content guidelines: recommended action labels and localization considerations. The labels array is a dictionary of standard UI labels with definitions, usage context, and cross-references. The localization array covers i18n concerns like RTL behavior, text expansion, and pluralization. At least one of `labels` or `localization` is required. Content guidelines complement best-practice guidelines: best practices say 'Use sentence case' (a rule); content guidelines say 'Add: Takes an existing object and uses it in a new context' (a reference).",
       "required": [
         "kind"
       ],
@@ -1860,12 +1886,16 @@
             "$ref": "#/$defs/localizationEntry"
           },
           "minItems": 1
+        },
+        "agents": {
+          "$ref": "#/$defs/agents",
+          "description": "AI-ready context for this document block. Provides structured info for AI/LLM use: constraints, disambiguation, anti-patterns, examples, and keywords."
         }
       },
       "additionalProperties": false
     },
     "designValue": {
-      "description": "A design value. In a system that has a token layer, this MUST be a design token identifier (e.g., 'color-action-primary', 'space-4') so the value stays single-sourced and cannot silently drift from the token system. A raw CSS value (e.g., '#0055b3', '16px', '0.4') is permitted only for systems with no token layer — do not hardcode a raw value that duplicates a token's value.",
+      "description": "A design value — either a design token name (e.g., 'color-action-primary', 'space-4') or a raw CSS value (e.g., '#0055b3', '16px', '0.4'). Systems with tokens reference token names; systems without tokens use raw values. Both are valid.",
       "type": "string"
     },
     "designProperties": {
@@ -2004,9 +2034,138 @@
       },
       "additionalProperties": false
     },
+    "specVariant": {
+      "type": "object",
+      "description": "The full set of design properties for a single variant (e.g., 'primary', 'secondary', 'ghost', 'danger'). Each variant defines its own property-to-value mappings. Values are design token identifiers or raw CSS values. Systems with variant-specific tokens (like 'button-primary-background') use those directly — this is not an override of a base token, it is the variant's own token set.",
+      "required": [
+        "identifier"
+      ],
+      "properties": {
+        "identifier": {
+          "type": "string",
+          "description": "The variant identifier. Must match a value defined in the component's variants guideline (e.g., 'primary', 'secondary', 'ghost', 'danger')."
+        },
+        "description": {
+          "$ref": "#/$defs/richText",
+          "description": "How this variant's visual treatment differs."
+        },
+        "properties": {
+          "$ref": "#/$defs/designProperties",
+          "description": "Design properties for this variant. Keys are property names (e.g., 'background', 'text-color', 'border-color'). Values are token identifiers or raw CSS values."
+        },
+        "spacing": {
+          "$ref": "#/$defs/spacingSpec",
+          "description": "Spacing adjustments for this variant, if any."
+        },
+        "sizing": {
+          "$ref": "#/$defs/sizingSpec",
+          "description": "Sizing adjustments for this variant, if any."
+        },
+        "typography": {
+          "$ref": "#/$defs/typographySpec",
+          "description": "Typography adjustments for this variant, if any."
+        }
+      },
+      "additionalProperties": false
+    },
+    "specSize": {
+      "type": "object",
+      "description": "The full set of design properties for a single size (e.g., 'small', 'medium', 'large'). Each size defines its own property-to-value mappings for dimensions, spacing, typography, and other properties that scale with size.",
+      "required": [
+        "identifier"
+      ],
+      "properties": {
+        "identifier": {
+          "type": "string",
+          "description": "The size identifier. Must match a value defined in the component's variants guideline (e.g., 'small', 'medium', 'large', 'sm', 'md', 'lg')."
+        },
+        "description": {
+          "$ref": "#/$defs/richText",
+          "description": "This size's intended use."
+        },
+        "properties": {
+          "$ref": "#/$defs/designProperties",
+          "description": "Design properties for this size. Keys are property names (e.g., 'min-height', 'font-size', 'icon-size', 'padding-horizontal'). Values are token identifiers or raw CSS values."
+        },
+        "spacing": {
+          "$ref": "#/$defs/spacingSpec",
+          "description": "Spacing for this size."
+        },
+        "sizing": {
+          "$ref": "#/$defs/sizingSpec",
+          "description": "Dimension constraints for this size."
+        },
+        "typography": {
+          "$ref": "#/$defs/typographySpec",
+          "description": "Typography settings for this size."
+        }
+      },
+      "additionalProperties": false
+    },
+    "specState": {
+      "type": "object",
+      "description": "The full set of design properties for a single interactive state (e.g., 'hover', 'focus', 'disabled'). Each state defines its own property-to-value mappings. Values may reference state-specific tokens (e.g., 'button-hover-bg') or raw values (e.g., 'rgba(0,0,0,0.08)').",
+      "required": [
+        "identifier"
+      ],
+      "properties": {
+        "identifier": {
+          "type": "string",
+          "description": "The state identifier. Must match a value defined in the component's states guideline (e.g., 'hover', 'active', 'focus', 'disabled', 'loading')."
+        },
+        "description": {
+          "$ref": "#/$defs/richText",
+          "description": "How the component changes in this state."
+        },
+        "properties": {
+          "$ref": "#/$defs/designProperties",
+          "description": "Design properties for this state. Only properties that change from the default need to be listed. Keys are property names (e.g., 'background', 'opacity', 'focus-ring-color'). Values are token identifiers or raw CSS values."
+        },
+        "spacing": {
+          "$ref": "#/$defs/spacingSpec",
+          "description": "Spacing adjustments for this state, if any."
+        },
+        "sizing": {
+          "$ref": "#/$defs/sizingSpec",
+          "description": "Sizing adjustments for this state, if any."
+        },
+        "typography": {
+          "$ref": "#/$defs/typographySpec",
+          "description": "Typography adjustments for this state, if any."
+        }
+      },
+      "additionalProperties": false
+    },
+    "specVariantState": {
+      "type": "object",
+      "description": "Design properties for a specific variant–state combination (e.g., 'primary' + 'hover', 'danger' + 'active'). Used when a state's visual treatment differs across variants — for example, a primary button darkens its fill on hover while a ghost button gains a subtle background. Values may reference variant-state-specific tokens (e.g., 'button-primary-hover-bg') or raw values.",
+      "required": [
+        "variant",
+        "state"
+      ],
+      "properties": {
+        "variant": {
+          "type": "string",
+          "description": "The variant name (e.g., 'primary', 'danger')."
+        },
+        "state": {
+          "type": "string",
+          "description": "The state name (e.g., 'hover', 'active', 'focus')."
+        },
+        "description": {
+          "$ref": "#/$defs/richText",
+          "description": "How this variant behaves in this state."
+        },
+        "properties": {
+          "$ref": "#/$defs/designProperties",
+          "description": "Design properties for this variant–state combination."
+        }
+      },
+      "additionalProperties": false
+    },
     "designSpecifications": {
       "type": "object",
-      "description": "Documents the baseline measurable visual specs of a component — the default design properties, spacing relationships, dimension constraints, typographic settings, and responsive behavior. Per-variant and per-state values are not documented here; they live on the variants and states blocks, where each variant value and each state carries its own token overrides. Values are design token identifiers (required when the system has a token layer) or raw CSS values (token-less systems only).",
+      "description": "Documents the measurable visual specs of a component — every design property, spacing relationship, dimension constraint, typographic setting, and responsive adaptation. The base-level `properties` map defines the default spec. The `variants`, `sizes`, and `states` arrays group design properties by the condition they apply to. Each group entry is a self-contained set of property-to-value mappings — not an override of a base value. Values are design token names or raw CSS values.",
       "required": [
         "kind"
       ],
@@ -2038,6 +2197,38 @@
           "items": {
             "$ref": "#/$defs/responsiveEntry"
           }
+        },
+        "variants": {
+          "type": "array",
+          "description": "Design properties grouped by variant. Each entry is a full set of property-to-value mappings for one variant. Values are the variant's own tokens (e.g., 'button-primary-bg') or raw values — not overrides of base tokens.",
+          "items": {
+            "$ref": "#/$defs/specVariant"
+          }
+        },
+        "sizes": {
+          "type": "array",
+          "description": "Design properties grouped by size. Each entry defines the dimensions, spacing, typography, and other properties that change at each size step.",
+          "items": {
+            "$ref": "#/$defs/specSize"
+          }
+        },
+        "states": {
+          "type": "array",
+          "description": "Design properties grouped by interactive state. Each entry defines properties that change when the component enters a given state. Only properties that differ from the default need to be listed.",
+          "items": {
+            "$ref": "#/$defs/specState"
+          }
+        },
+        "variantStates": {
+          "type": "array",
+          "description": "Design properties for specific variant–state combinations where the state's visual treatment differs across variants. Only needed when a single state entry cannot describe the behavior across all variants.",
+          "items": {
+            "$ref": "#/$defs/specVariantState"
+          }
+        },
+        "agents": {
+          "$ref": "#/$defs/agents",
+          "description": "AI-ready context for this document block. Provides structured info for AI/LLM use: constraints, disambiguation, anti-patterns, examples, and keywords."
         }
       },
       "anyOf": [
@@ -2064,6 +2255,26 @@
         {
           "required": [
             "responsive"
+          ]
+        },
+        {
+          "required": [
+            "variants"
+          ]
+        },
+        {
+          "required": [
+            "sizes"
+          ]
+        },
+        {
+          "required": [
+            "states"
+          ]
+        },
+        {
+          "required": [
+            "variantStates"
           ]
         }
       ],
@@ -2095,7 +2306,7 @@
       ]
     },
     "componentDocumentBlock": {
-      "description": "A document block kind accepted on component artifacts. Includes the component-specific kinds (import, anatomy, API, variants, states, design specs) plus every general kind.",
+      "description": "A document block kind accepted on component artifacts. Includes the component-specific kinds (import, anatomy, API, events, variants, states, design specs) plus every general kind.",
       "oneOf": [
         {
           "$ref": "#/$defs/import",
@@ -2108,6 +2319,10 @@
         {
           "$ref": "#/$defs/api",
           "description": "The code-level interface: properties, emitted events, content slots, CSS custom properties, CSS shadow parts, data attributes, and public methods. For multi-platform components, include one API block per platform."
+        },
+        {
+          "$ref": "#/$defs/events",
+          "description": "Events emitted by the component: trigger conditions, return shapes, DOM behavior (bubbling, cancelability, composed), and lifecycle metadata."
         },
         {
           "$ref": "#/$defs/variants",
@@ -2149,7 +2364,7 @@
       ]
     },
     "patternDocumentBlock": {
-      "description": "A document block kind accepted on pattern artifacts. Includes the pattern-specific kind (interactions), shared structural kinds (anatomy, variants, states), and every general kind.",
+      "description": "A document block kind accepted on pattern artifacts. Includes the pattern-specific kind (interactions), shared structural kinds (anatomy, variants, states, events), and every general kind.",
       "oneOf": [
         {
           "$ref": "#/$defs/interactions",
@@ -2166,6 +2381,10 @@
         {
           "$ref": "#/$defs/states",
           "description": "States the pattern can enter (populated, empty, loading, error, and so on). Each state carries its triggers, visual changes, and optional previews."
+        },
+        {
+          "$ref": "#/$defs/events",
+          "description": "Events emitted during the pattern's interaction flow: trigger conditions, return shapes, and lifecycle metadata."
         },
         {
           "$ref": "#/$defs/generalDocumentBlock",
@@ -2198,6 +2417,96 @@
           "description": "Any general block kind: guideline, purpose, accessibility, content, or a free-form section."
         }
       ]
+    },
+    "eventEntry": {
+      "type": "object",
+      "description": "A single event emitted by a component. Documents the event identifier, what triggers it, the return shape consumers receive, DOM propagation behavior, and lifecycle metadata.",
+      "required": [
+        "identifier",
+        "description"
+      ],
+      "properties": {
+        "identifier": {
+          "type": "string",
+          "description": "The event identifier as used in code (e.g., 'onClick', 'onChange', 'onDismiss', 'ds-select'). For custom events, use the full event identifier including any namespace prefix."
+        },
+        "description": {
+          "$ref": "#/$defs/richText",
+          "description": "When this event fires, what it communicates, and how consumers should respond. Include conditions under which the event does NOT fire (e.g., 'Does not fire when disabled')."
+        },
+        "returns": {
+          "type": "string",
+          "description": "Human-readable description of the event return shape (e.g., '(event: MouseEvent) => void', '{ value: string, index: number }', 'CustomEvent<{ selectedId: string }>')."
+        },
+        "returnsSchema": {
+          "type": "object",
+          "description": "Machine-readable JSON Schema (Draft 2020-12) describing the event return or detail object. Enables tooling to generate type definitions and validate event handlers."
+        },
+        "bubbles": {
+          "type": "boolean",
+          "default": true,
+          "description": "Whether the event bubbles up through the DOM tree. Defaults to true. Set to false for events that only fire on the target element."
+        },
+        "cancelable": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether the event can be cancelled via preventDefault(). Defaults to false. When true, document what cancelling the event prevents."
+        },
+        "composed": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether the event crosses shadow DOM boundaries. Defaults to false. Relevant for web components using shadow DOM encapsulation."
+        },
+        "since": {
+          "type": "string",
+          "description": "The version in which this event was introduced."
+        },
+        "deprecated": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether this event is deprecated. Defaults to false."
+        },
+        "deprecationNotice": {
+          "type": "string",
+          "description": "What to use instead when this event is deprecated. Required context when deprecated is true."
+        },
+        "examples": {
+          "type": "array",
+          "description": "Usage examples showing how to listen for and handle this event.",
+          "items": {
+            "$ref": "#/$defs/example"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "events": {
+      "type": "object",
+      "description": "Documents the events emitted by a component as a dedicated document block. Each item describes a single event — its name, trigger conditions, return shape, DOM behavior, and lifecycle metadata. Separating events from the API block gives tooling a clear, searchable unit for event documentation and allows cross-referencing between events and the states or interactions that trigger them.",
+      "required": [
+        "kind",
+        "items"
+      ],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "const": "events",
+          "description": "Identifies this document block as an events spec."
+        },
+        "items": {
+          "type": "array",
+          "description": "The events emitted by this component. Each item documents a single event with its identifier, description, return shape, DOM behavior, and lifecycle metadata.",
+          "items": {
+            "$ref": "#/$defs/eventEntry"
+          },
+          "minItems": 1
+        },
+        "agents": {
+          "$ref": "#/$defs/agents",
+          "description": "AI-ready context for this document block. Provides structured info for AI/LLM use: constraints, disambiguation, anti-patterns, examples, and keywords."
+        }
+      },
+      "additionalProperties": false
     },
     "guidelineEntry": {
       "type": "object",
@@ -2372,7 +2681,7 @@
     },
     "guideline": {
       "type": "object",
-      "description": "Actionable usage rules for an artifact. Each item pairs a guidance statement with a rationale. Categorize by discipline, target a specific anatomy part, and link to external standards like WCAG. Use `guideline` to answer *how* to use the artifact correctly — concrete do/don't rules, each with a rationale. For *whether* to use it at all, see `purpose`; for the higher-level beliefs behind the rules (on foundations), see `principles`.",
+      "description": "Actionable usage rules for an artifact. Each item pairs a guidance statement with a rationale. Categorize by discipline, target a specific anatomy part, and link to external standards like WCAG. Guidelines complement other document block kinds: use-cases say *when* to use the artifact; guidelines say *how* to use it correctly.",
       "required": [
         "kind",
         "items"
@@ -2390,6 +2699,10 @@
           "type": "string",
           "const": "guideline",
           "description": "Identifies this as a guideline spec."
+        },
+        "agents": {
+          "$ref": "#/$defs/agents",
+          "description": "AI-ready context for this document block. Provides structured info for AI/LLM use: constraints, disambiguation, anti-patterns, examples, and keywords."
         }
       },
       "additionalProperties": false
@@ -2449,6 +2762,10 @@
             "$ref": "#/$defs/importEntry"
           },
           "minItems": 1
+        },
+        "agents": {
+          "$ref": "#/$defs/agents",
+          "description": "AI-ready context for this document block. Provides structured info for AI/LLM use: constraints, disambiguation, anti-patterns, examples, and keywords."
         }
       },
       "additionalProperties": false
@@ -2505,6 +2822,10 @@
             "$ref": "#/$defs/interactionEntry"
           },
           "minItems": 1
+        },
+        "agents": {
+          "$ref": "#/$defs/agents",
+          "description": "AI-ready context for this document block. Provides structured info for AI/LLM use: constraints, disambiguation, anti-patterns, examples, and keywords."
         }
       },
       "additionalProperties": false
@@ -2581,7 +2902,7 @@
     },
     "motion": {
       "type": "object",
-      "description": "Documents the motion system for a foundation — named easing curves, timing functions, recommended durations, and usage guidance. Each item defines an easing that designers and engineers select when adding animation or transitions. Ordering is significant — tools SHOULD display easings in this order. A typical motion guideline lists easings from most common to most specialized. Scoped to foundation entities; complements the scale guideline (for duration token progressions) and `guideline` blocks (for motion rules like reduced-motion handling).",
+      "description": "Documents the motion system for a foundation — named easing curves, timing functions, recommended durations, and usage guidance. Each item defines an easing that designers and engineers select when adding animation or transitions. Ordering is significant — tools SHOULD display easings in this order. A typical motion guideline lists easings from most common to most specialized. Scoped to foundation entities; complements the scale guideline (for duration token progressions) and best-practice guidelines (for motion rules like reduced-motion handling).",
       "required": [
         "kind",
         "items"
@@ -2603,13 +2924,17 @@
             "$ref": "#/$defs/motionEntry"
           },
           "minItems": 1
+        },
+        "agents": {
+          "$ref": "#/$defs/agents",
+          "description": "AI-ready context for this document block. Provides structured info for AI/LLM use: constraints, disambiguation, anti-patterns, examples, and keywords."
         }
       },
       "additionalProperties": false
     },
     "principleEntry": {
       "type": "object",
-      "description": "A single guiding principle. Each principle has a short title and a description explaining what it means in practice and how it guides decisions. Principles are high-level — they set direction rather than prescribe specific actions. For specific, actionable rules, use a `guideline` instead; for whether to use an artifact at all, use `purpose`.",
+      "description": "A single guiding principle. Each principle has a short title and a description explaining what it means in practice and how it guides decisions. Principles are high-level — they set direction rather than prescribe specific actions. For specific, actionable rules, use best-practice guidelines instead.",
       "required": [
         "title",
         "description"
@@ -2628,7 +2953,7 @@
     },
     "principles": {
       "type": "object",
-      "description": "Documents guiding principles for a foundation or design domain. Use `principles` to answer *what the system believes* and which trade-offs it accepts — the philosophy that shapes a domain's decisions. Principles sit *above* `guideline`s: they set direction, while `guideline`s encode the specific rules. A spacing foundation might have 'Use the scale' and 'Density over decoration'; a color foundation might have 'Functional first' and 'Accessible by default'.",
+      "description": "Documents guiding principles for a foundation or design domain. Each item is a high-level belief or constraint that shapes decisions within this domain. Principles sit above individual best practices — they inform the philosophy, while best practices encode specific rules. A spacing foundation might have 'Use the scale' and 'Density over decoration'; a color foundation might have 'Functional first' and 'Accessible by default'.",
       "required": [
         "kind",
         "items"
@@ -2646,6 +2971,10 @@
             "$ref": "#/$defs/principleEntry"
           },
           "minItems": 1
+        },
+        "agents": {
+          "$ref": "#/$defs/agents",
+          "description": "AI-ready context for this document block. Provides structured info for AI/LLM use: constraints, disambiguation, anti-patterns, examples, and keywords."
         }
       },
       "additionalProperties": false
@@ -2710,6 +3039,10 @@
             "$ref": "#/$defs/scaleStep"
           },
           "minItems": 1
+        },
+        "agents": {
+          "$ref": "#/$defs/agents",
+          "description": "AI-ready context for this document block. Provides structured info for AI/LLM use: constraints, disambiguation, anti-patterns, examples, and keywords."
         }
       },
       "additionalProperties": false
@@ -2778,6 +3111,10 @@
             "$ref": "#/$defs/sectionEntry"
           },
           "minItems": 1
+        },
+        "agents": {
+          "$ref": "#/$defs/agents",
+          "description": "AI-ready context for this document block. Provides structured info for AI/LLM use: constraints, disambiguation, anti-patterns, examples, and keywords."
         }
       },
       "additionalProperties": false
@@ -2804,7 +3141,7 @@
         },
         "tokens": {
           "type": "object",
-          "description": "Design token overrides applied when this state is active. Keys are token property names scoped to the component (e.g., 'button-background', 'button-border-color'). Values are token identifiers — required when the system has a token layer, so the override can't silently drift from the token source; raw values are only for token-less systems. Only tokens that change from the default state need to be listed. Note: these token references are descriptive summaries for designers. Authoritative resolved values for each variant × state combination live in the design-specifications guideline's overrides array.",
+          "description": "Design token overrides applied when this state is active. Keys are token property names scoped to the component (e.g., 'button-background', 'button-border-color'). Values are the token identifiers or resolved values used in this state. Only tokens that change from the default state need to be listed. Note: these token references are descriptive summaries for designers. Authoritative resolved values for each variant × state combination live in the design-specifications guideline's overrides array.",
           "additionalProperties": {
             "type": "string"
           }
@@ -2843,6 +3180,10 @@
             "$ref": "#/$defs/stateEntry"
           },
           "minItems": 1
+        },
+        "agents": {
+          "$ref": "#/$defs/agents",
+          "description": "AI-ready context for this document block. Provides structured info for AI/LLM use: constraints, disambiguation, anti-patterns, examples, and keywords."
         }
       },
       "additionalProperties": false
@@ -2910,6 +3251,10 @@
             "$ref": "#/$defs/stepEntry"
           },
           "minItems": 1
+        },
+        "agents": {
+          "$ref": "#/$defs/agents",
+          "description": "AI-ready context for this document block. Provides structured info for AI/LLM use: constraints, disambiguation, anti-patterns, examples, and keywords."
         }
       },
       "additionalProperties": false
@@ -2943,13 +3288,6 @@
           "description": "Visual previews showing this variant value in isolation or in context.",
           "items": {
             "$ref": "#/$defs/example"
-          }
-        },
-        "tokens": {
-          "type": "object",
-          "description": "Design token overrides applied when this value is selected. Keys are token-purpose names (e.g., 'background', 'text-color', 'padding-horizontal'); values are token identifiers. In a system that has a token layer these MUST be token identifiers, not raw values, so the value can't silently drift from the token source.",
-          "additionalProperties": {
-            "type": "string"
           }
         }
       },
@@ -2988,13 +3326,6 @@
         "example": {
           "$ref": "#/$defs/example",
           "description": "Visual preview showing the component with this flag active."
-        },
-        "tokens": {
-          "type": "object",
-          "description": "Design token overrides applied when this flag is active. Keys are token-purpose names; values are token identifiers. In a system that has a token layer these MUST be token identifiers, not raw values, so the value can't silently drift from the token source.",
-          "additionalProperties": {
-            "type": "string"
-          }
         }
       },
       "additionalProperties": false
@@ -3064,6 +3395,10 @@
             ]
           },
           "minItems": 1
+        },
+        "agents": {
+          "$ref": "#/$defs/agents",
+          "description": "AI-ready context for this document block. Provides structured info for AI/LLM use: constraints, disambiguation, anti-patterns, examples, and keywords."
         }
       },
       "additionalProperties": false
@@ -3468,7 +3803,7 @@
       "properties": {
         "$ref": {
           "type": "string",
-          "description": "A relative reference to a DSDS file, optionally with a JSON Pointer fragment identifying the target value within that file (e.g., './button.dsds.json#/entity'). MUST be relative: absolute paths, protocol-relative references, and scheme-bearing URIs (http:, file:, …) are not permitted — a reference to another system uses `extends.url`. Resolvers MUST detect cycles, treat unresolvable files/pointers and shape mismatches as fatal, and gate any remote dereferencing behind an allow-list (see the spec's reference-resolution and security rules)."
+          "description": "A relative or absolute URI pointing to a DSDS file, optionally with a JSON Pointer fragment identifying the target value within that file."
         }
       },
       "additionalProperties": false

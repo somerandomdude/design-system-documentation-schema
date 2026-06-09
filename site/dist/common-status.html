@@ -3,14 +3,14 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>DSDS Status Definition — DSDS 0.5.1</title>
+  <title>DSDS Status Definition — DSDS 0.6</title>
   <link rel="stylesheet" href="tokens.css">
   <link rel="stylesheet" href="style.css">
   <script src="components.js"></script>
 </head>
 <body>
   <ds-nav-toggle target="ds-spec-nav"></ds-nav-toggle>
-  <ds-spec-nav title="Design System Documentation Spec 0.5.1" title-href="index.html" active="common-status">
+  <ds-spec-nav title="Design System Documentation Spec 0.6" title-href="index.html" active="common-status">
     <a href="index.html" slug="index">Overview</a>
     <a href="quickstart.html" slug="quickstart">Quick start</a>
     <a href="schema-architecture.html" slug="schema-architecture">Schema architecture</a>
@@ -46,7 +46,6 @@
       <a href="document-blocks-content.html" slug="document-blocks-content">content</a>
       <a href="document-blocks-design-specifications.html" slug="document-blocks-design-specifications">design-specifications</a>
       <a href="document-blocks-document-blocks.html" slug="document-blocks-document-blocks">document-blocks</a>
-      <a href="document-blocks-events.html" slug="document-blocks-events">events</a>
       <a href="document-blocks-guideline.html" slug="document-blocks-guideline">guideline</a>
       <a href="document-blocks-import.html" slug="document-blocks-import">import</a>
       <a href="document-blocks-interaction.html" slug="document-blocks-interaction">interaction</a>
@@ -77,129 +76,17 @@
   <div class="content content--with-toc">
     <main class="content__main" role="main">
       <div class="content__inner">
-        <ds-schema-header title="DSDS Status Definition" description="Lifecycle status of a design system artifact, with optional per-platform readiness. The `status` union accepts a plain statusValue string (e.g., &quot;stable&quot;) or a full statusObject when per-platform tracking or a deprecation notice is needed. The statusObject holds overall status, per-platform readiness, and deprecationNotice in one reusable object; deprecationNotice is required when status is 'deprecated'." source="common/status.schema.json"></ds-schema-header>
+        <ds-schema-header title="DSDS Status Definition" description="Shared status vocabulary composed by the status metadata entry. `statusValue` is the lowercase kebab-case lifecycle string (draft, experimental, stable, deprecated, plus custom values). `platformStatus` captures one platform's readiness — its lifecycle stage, the version it became available, and an optional deprecation notice — and requires a deprecationNotice when that platform is deprecated." source="common/status.schema.json"></ds-schema-header>
 <ds-def-index>
-<p><strong>4 definitions</strong> in this file:</p>
+<p><strong>2 definitions</strong> in this file:</p>
 <ul>
-<li><a href="#status"><ds-code inline>status</ds-code></a></li>
-<li><a href="#statusobject"><ds-code inline>statusObject</ds-code></a></li>
 <li><a href="#platformstatus"><ds-code inline>platformStatus</ds-code></a></li>
 <li><a href="#statusvalue"><ds-code inline>statusValue</ds-code></a></li>
 </ul>
 </ds-def-index>
-<ds-def-section name="status" anchor="status" description="Lifecycle status of an artifact. Accepts a plain status string (e.g., &quot;stable&quot;, &quot;deprecated&quot;) for the simple case, or a full status object with per-platform tracking and a deprecation notice. Tools SHOULD normalize the string form to { &quot;overall&quot;: value } for consistent processing.">
-<p><strong>Accepts one of:</strong></p>
-<ul>
-<li><a href="common-status.html#statusvalue">statusValue</a></li>
-<li><a href="common-status.html#statusobject">statusObject</a></li>
-</ul>
-<ds-cross-refs><strong>References:</strong> 
-<ds-type-ref href="common-status.html#statusvalue">statusValue</ds-type-ref>, <ds-type-ref href="common-status.html#statusobject">statusObject</ds-type-ref>
-</ds-cross-refs>
-<ds-def-example>
-<ds-code language="json" label="example">[
-  {
-    &quot;overall&quot;: &quot;stable&quot;,
-    &quot;platforms&quot;: {
-      &quot;react&quot;: {
-        &quot;status&quot;: &quot;stable&quot;,
-        &quot;since&quot;: &quot;1.0.0&quot;
-      },
-      &quot;ios&quot;: {
-        &quot;status&quot;: &quot;experimental&quot;,
-        &quot;since&quot;: &quot;3.0.0&quot;
-      }
-    }
-  }
-]</ds-code>
-</ds-def-example>
-</ds-def-section>
-<ds-def-section name="statusObject" anchor="statusobject" description="Full lifecycle status of an artifact. Holds the overall status value, optional per-platform readiness, and a conditional deprecation notice. Every status-bearing artifact uses this one object instead of separate status, platformStatus, and deprecationNotice siblings. When overall status is 'deprecated', deprecationNotice becomes required." type="object">
-<ds-prop-table>
-  <ds-prop name="overall" type="&lt;ds-type-ref href=&quot;common-status.html#statusvalue&quot;&gt;statusValue&lt;/ds-type-ref&gt;" required>Overall lifecycle status of the artifact. An editorial judgment of maturity; it need not match the most or least advanced platform status. Tools SHOULD display this as the primary status indicator.</ds-prop>
-  <ds-prop name="platforms" type="map&amp;lt;string, &lt;ds-type-ref href=&quot;common-status.html#platformstatus&quot;&gt;platformStatus&lt;/ds-type-ref&gt;&amp;gt;" required>Per-platform readiness. Keys are platform identifiers (freeform strings; common values include 'react', 'web-component', 'ios', 'android', 'flutter', 'figma', 'sketch', 'compose'). Values describe the artifact's status on that platform. An artifact MAY be 'stable' overall while individual platforms are still 'experimental' or 'draft'.</ds-prop>
-  <ds-prop name="deprecationNotice" type="string">Required when status is 'deprecated'. MUST say what to use instead and give a migration path. Tools SHOULD display this prominently next to the status indicator.</ds-prop>
-</ds-prop-table>
-<ds-note variant="warning"><strong>Conditional:</strong> When <ds-code inline>overall</ds-code> is <ds-code inline>"deprecated"</ds-code>, then <ds-code inline>deprecationNotice</ds-code> is required.</ds-note>
-<ds-cross-refs><strong>References:</strong> 
-<ds-type-ref href="common-status.html#statusvalue">statusValue</ds-type-ref>, <ds-type-ref href="common-status.html#platformstatus">platformStatus</ds-type-ref>
-</ds-cross-refs>
-<ds-def-example>
-<ds-code language="json" label="example">[
-  {
-    &quot;overall&quot;: &quot;stable&quot;,
-    &quot;platforms&quot;: {
-      &quot;react&quot;: {
-        &quot;status&quot;: &quot;stable&quot;,
-        &quot;since&quot;: &quot;1.0.0&quot;
-      },
-      &quot;web-component&quot;: {
-        &quot;status&quot;: &quot;experimental&quot;,
-        &quot;since&quot;: &quot;3.2.0&quot;,
-        &quot;description&quot;: &quot;Available as a Web Component wrapper. Native shadow DOM implementation planned for v4.&quot;
-      },
-      &quot;ios&quot;: {
-        &quot;status&quot;: &quot;stable&quot;,
-        &quot;since&quot;: &quot;2.1.0&quot;
-      },
-      &quot;android&quot;: {
-        &quot;status&quot;: &quot;draft&quot;,
-        &quot;description&quot;: &quot;Compose implementation in progress. Expected in v4.0.&quot;
-      },
-      &quot;figma&quot;: {
-        &quot;status&quot;: &quot;stable&quot;,
-        &quot;since&quot;: &quot;1.0.0&quot;
-      },
-      &quot;vue&quot;: {
-        &quot;status&quot;: &quot;deprecated&quot;,
-        &quot;since&quot;: &quot;1.5.0&quot;,
-        &quot;deprecationNotice&quot;: &quot;The Vue wrapper is deprecated. Use the Web Component directly in Vue applications.&quot;
-      }
-    }
-  },
-  {
-    &quot;overall&quot;: &quot;deprecated&quot;,
-    &quot;platforms&quot;: {
-      &quot;react&quot;: {
-        &quot;status&quot;: &quot;deprecated&quot;,
-        &quot;since&quot;: &quot;3.0.0&quot;,
-        &quot;deprecationNotice&quot;: &quot;Use NewComponent from @acme/components instead.&quot;
-      },
-      &quot;figma&quot;: {
-        &quot;status&quot;: &quot;deprecated&quot;,
-        &quot;since&quot;: &quot;3.0.0&quot;,
-        &quot;deprecationNotice&quot;: &quot;Removed from the Figma library. Use the NewComponent frame.&quot;
-      }
-    },
-    &quot;deprecationNotice&quot;: &quot;This component is deprecated. Use NewComponent instead. See the migration guide at https://design.acme.com/migrations/old-to-new.&quot;
-  },
-  {
-    &quot;overall&quot;: &quot;experimental&quot;,
-    &quot;platforms&quot;: {
-      &quot;react&quot;: {
-        &quot;status&quot;: &quot;experimental&quot;,
-        &quot;since&quot;: &quot;4.0.0-beta.1&quot;
-      },
-      &quot;figma&quot;: {
-        &quot;status&quot;: &quot;draft&quot;,
-        &quot;description&quot;: &quot;Figma component is in design review. Not yet available in the library.&quot;
-      },
-      &quot;a11y-keyboard&quot;: {
-        &quot;status&quot;: &quot;stable&quot;,
-        &quot;description&quot;: &quot;Passes all automated keyboard navigation tests.&quot;
-      },
-      &quot;a11y-screen-reader&quot;: {
-        &quot;status&quot;: &quot;stable&quot;,
-        &quot;description&quot;: &quot;Manually tested with JAWS, VoiceOver, and NVDA.&quot;
-      }
-    }
-  }
-]</ds-code>
-</ds-def-example>
-</ds-def-section>
 <ds-def-section name="platformStatus" anchor="platformstatus" description="Readiness of an artifact on one specific platform. Tracks lifecycle stage, the version where it became available, and an optional deprecation notice." type="object">
 <ds-prop-table>
-  <ds-prop name="status" type="&lt;ds-type-ref href=&quot;common-status.html#statusvalue&quot;&gt;statusValue&lt;/ds-type-ref&gt;" required>Lifecycle status of the artifact on this platform. Uses the same vocabulary as the top-level status: 'draft', 'experimental', 'stable', 'deprecated'. Custom values are allowed.</ds-prop>
+  <ds-prop name="status" type="&lt;ds-type-ref href=&quot;common-status.html#statusvalue&quot;&gt;statusValue&lt;/ds-type-ref&gt;" required>Lifecycle status of the artifact on this platform. Uses the same vocabulary as the overall status: 'draft', 'experimental', 'stable', 'deprecated'. Custom values are allowed.</ds-prop>
   <ds-prop name="since" type="string">The version in which this artifact became available on this platform.</ds-prop>
   <ds-prop name="deprecationNotice" type="string">Required when status is 'deprecated'. Says what to use instead on this platform.</ds-prop>
   <ds-prop name="description" type="string">Notes about the artifact's status on this platform (e.g., 'Available as a Web Component wrapper; native implementation planned for v4').</ds-prop>
@@ -237,7 +124,7 @@
         <ds-back-to-top></ds-back-to-top>
 
         <ds-footer>
-          <p>Design System Documentation Spec (DSDS) 0.5.1 — Draft Specification</p>
+          <p>Design System Documentation Spec (DSDS) 0.6 — Draft Specification</p>
           <p><a href="https://github.com/somerandomdude/design-system-documentation-schema">GitHub</a></p>
         </ds-footer>
       </div>

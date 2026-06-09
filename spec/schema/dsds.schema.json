@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://designsystemdocspec.org/v0.5.1/dsds.schema.json",
-  "title": "Design System Documentation Spec (DSDS) v0.5.1",
+  "$id": "https://designsystemdocspec.org/v0.6/dsds.schema.json",
+  "title": "Design System Documentation Spec (DSDS) v0.6",
   "description": "A machine-readable format for design system documentation covering components, design tokens, token groups, themes, foundations, patterns, and guides. A DSDS document contains one or more documentation groups — named collections of typed entities. Each entity carries a `kind` discriminator identifying it as a component, token, token-group, theme, foundation, pattern, or guide. Entity schemas are in entities/. Document block schemas are in document-blocks/. Common schemas are in common/.",
   "type": "object",
   "required": ["dsdsVersion"],
@@ -16,7 +16,7 @@
     },
     "dsdsVersion": {
       "type": "string",
-      "const": "0.5.1",
+      "const": "0.6",
       "description": "The DSDS spec version this document conforms to."
     },
     "systemInfo": {
@@ -26,29 +26,11 @@
       "$ref": "common/extends.schema.json#/$defs/documentExtends",
       "description": "Declares that this DSDS document inherits from another DSDS document — typically a core design system. The base document provides the foundational entities. This document layers on top, adding or extending entities. Enables systems-of-systems architectures where product- or brand-specific systems inherit from a shared core."
     },
-    "purpose": {
-      "type": "object",
-      "description": "The purpose of the design system as a whole — why it exists, what problems it solves, and who it serves. Helps stakeholders, new team members, and external consumers understand the system's intent before exploring individual components or tokens.",
-      "properties": {
-        "description": {
-          "$ref": "common/rich-text.schema.json#/$defs/richText",
-          "description": "A high-level description of the design system's purpose and the problems it solves."
-        },
-        "useCases": {
-          "type": "array",
-          "description": "Scenario-driven guidance describing when this design system is or is not the right choice. Positive cases describe when the system should be adopted. Negative cases describe when a different approach fits better, and why.",
-          "items": {
-            "$ref": "common/purpose.schema.json#/$defs/useCase"
-          }
-        }
-      },
-      "additionalProperties": false
-    },
-    "guidelines": {
+    "documentBlocks": {
       "type": "array",
-      "description": "System-level guidelines that apply across the entire design system — broad guidance for teams adopting, contributing to, or consuming the system. These are not entity-specific rules (those live in each entity's `documentBlocks` as `guideline` blocks) but cross-cutting principles like 'always use semantic tokens instead of raw values' or 'test all components at 200% zoom'. Each entry is a self-contained rule paired with a rationale, sharing the same `guidelineEntry` shape used by entity-level guideline blocks.",
+      "description": "System-level structured documentation for the design system as a whole — its purpose (when to adopt the system), cross-cutting guidelines, and narrative overviews. Each entry is a general document block: a `purpose`, `guideline`, `section`, `accessibility`, or `content` block. This is the same `documentBlocks` mechanism entities use, scoped to the system rather than a single artifact; scope is signalled by position (root vs. inside an entity).",
       "items": {
-        "$ref": "document-blocks/guideline.schema.json#/$defs/guidelineEntry"
+        "$ref": "document-blocks/document-blocks.schema.json#/$defs/generalDocumentBlock"
       }
     },
     "documentation": {
@@ -87,7 +69,7 @@
       "properties": {
         "$ref": {
           "type": "string",
-          "description": "A relative or absolute URI pointing to a DSDS file, optionally with a JSON Pointer fragment identifying the target value within that file."
+          "description": "A relative reference to a DSDS file, optionally with a JSON Pointer fragment identifying the target value within that file (e.g., './button.dsds.json#/entity'). MUST be relative: absolute paths, protocol-relative references, and scheme-bearing URIs (http:, file:, …) are not permitted — a reference to another system uses `extends.url`. Resolvers MUST detect cycles, treat unresolvable files/pointers and shape mismatches as fatal, and gate any remote dereferencing behind an allow-list (see the spec's reference-resolution and security rules)."
         }
       },
       "additionalProperties": false

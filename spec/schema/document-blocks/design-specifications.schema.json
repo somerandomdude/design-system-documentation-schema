@@ -1,11 +1,11 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://designsystemdocspec.org/v0.5.1/document-blocks/design-specifications.schema.json",
+  "$id": "https://designsystemdocspec.org/v0.6/document-blocks/design-specifications.schema.json",
   "title": "DSDS Design Specifications Guideline",
   "description": "Documents the visual design specs of a component — design properties, their values (as design tokens or raw CSS values), spacing relationships, dimension constraints, typography settings, and responsive behavior. Design specs bridge design intent and engineering implementation by making every visual decision explicit, measurable, and traceable.",
   "$defs": {
     "designValue": {
-      "description": "A design value — either a design token name (e.g., 'color-action-primary', 'space-4') or a raw CSS value (e.g., '#0055b3', '16px', '0.4'). Systems with tokens reference token names; systems without tokens use raw values. Both are valid.",
+      "description": "A design value. In a system that has a token layer, this MUST be a design token identifier (e.g., 'color-action-primary', 'space-4') so the value stays single-sourced and cannot silently drift from the token system. A raw CSS value (e.g., '#0055b3', '16px', '0.4') is permitted only for systems with no token layer — do not hardcode a raw value that duplicates a token's value.",
       "type": "string"
     },
     "designProperties": {
@@ -128,7 +128,10 @@
     "responsiveEntry": {
       "type": "object",
       "description": "A responsive behavior spec describing how the component adapts at a specific breakpoint or viewport condition.",
-      "required": ["breakpoint", "description"],
+      "required": [
+        "breakpoint",
+        "description"
+      ],
       "properties": {
         "breakpoint": {
           "type": "string",
@@ -141,130 +144,12 @@
       },
       "additionalProperties": false
     },
-    "specVariant": {
-      "type": "object",
-      "description": "The full set of design properties for a single variant (e.g., 'primary', 'secondary', 'ghost', 'danger'). Each variant defines its own property-to-value mappings. Values are design token identifiers or raw CSS values. Systems with variant-specific tokens (like 'button-primary-background') use those directly — this is not an override of a base token, it is the variant's own token set.",
-      "required": ["identifier"],
-      "properties": {
-        "identifier": {
-          "type": "string",
-          "description": "The variant identifier. Must match a value defined in the component's variants guideline (e.g., 'primary', 'secondary', 'ghost', 'danger')."
-        },
-        "description": {
-          "$ref": "../common/rich-text.schema.json#/$defs/richText",
-          "description": "How this variant's visual treatment differs."
-        },
-        "properties": {
-          "$ref": "#/$defs/designProperties",
-          "description": "Design properties for this variant. Keys are property names (e.g., 'background', 'text-color', 'border-color'). Values are token identifiers or raw CSS values."
-        },
-        "spacing": {
-          "$ref": "#/$defs/spacingSpec",
-          "description": "Spacing adjustments for this variant, if any."
-        },
-        "sizing": {
-          "$ref": "#/$defs/sizingSpec",
-          "description": "Sizing adjustments for this variant, if any."
-        },
-        "typography": {
-          "$ref": "#/$defs/typographySpec",
-          "description": "Typography adjustments for this variant, if any."
-        }
-      },
-      "additionalProperties": false
-    },
-    "specSize": {
-      "type": "object",
-      "description": "The full set of design properties for a single size (e.g., 'small', 'medium', 'large'). Each size defines its own property-to-value mappings for dimensions, spacing, typography, and other properties that scale with size.",
-      "required": ["identifier"],
-      "properties": {
-        "identifier": {
-          "type": "string",
-          "description": "The size identifier. Must match a value defined in the component's variants guideline (e.g., 'small', 'medium', 'large', 'sm', 'md', 'lg')."
-        },
-        "description": {
-          "$ref": "../common/rich-text.schema.json#/$defs/richText",
-          "description": "This size's intended use."
-        },
-        "properties": {
-          "$ref": "#/$defs/designProperties",
-          "description": "Design properties for this size. Keys are property names (e.g., 'min-height', 'font-size', 'icon-size', 'padding-horizontal'). Values are token identifiers or raw CSS values."
-        },
-        "spacing": {
-          "$ref": "#/$defs/spacingSpec",
-          "description": "Spacing for this size."
-        },
-        "sizing": {
-          "$ref": "#/$defs/sizingSpec",
-          "description": "Dimension constraints for this size."
-        },
-        "typography": {
-          "$ref": "#/$defs/typographySpec",
-          "description": "Typography settings for this size."
-        }
-      },
-      "additionalProperties": false
-    },
-    "specState": {
-      "type": "object",
-      "description": "The full set of design properties for a single interactive state (e.g., 'hover', 'focus', 'disabled'). Each state defines its own property-to-value mappings. Values may reference state-specific tokens (e.g., 'button-hover-bg') or raw values (e.g., 'rgba(0,0,0,0.08)').",
-      "required": ["identifier"],
-      "properties": {
-        "identifier": {
-          "type": "string",
-          "description": "The state identifier. Must match a value defined in the component's states guideline (e.g., 'hover', 'active', 'focus', 'disabled', 'loading')."
-        },
-        "description": {
-          "$ref": "../common/rich-text.schema.json#/$defs/richText",
-          "description": "How the component changes in this state."
-        },
-        "properties": {
-          "$ref": "#/$defs/designProperties",
-          "description": "Design properties for this state. Only properties that change from the default need to be listed. Keys are property names (e.g., 'background', 'opacity', 'focus-ring-color'). Values are token identifiers or raw CSS values."
-        },
-        "spacing": {
-          "$ref": "#/$defs/spacingSpec",
-          "description": "Spacing adjustments for this state, if any."
-        },
-        "sizing": {
-          "$ref": "#/$defs/sizingSpec",
-          "description": "Sizing adjustments for this state, if any."
-        },
-        "typography": {
-          "$ref": "#/$defs/typographySpec",
-          "description": "Typography adjustments for this state, if any."
-        }
-      },
-      "additionalProperties": false
-    },
-    "specVariantState": {
-      "type": "object",
-      "description": "Design properties for a specific variant–state combination (e.g., 'primary' + 'hover', 'danger' + 'active'). Used when a state's visual treatment differs across variants — for example, a primary button darkens its fill on hover while a ghost button gains a subtle background. Values may reference variant-state-specific tokens (e.g., 'button-primary-hover-bg') or raw values.",
-      "required": ["variant", "state"],
-      "properties": {
-        "variant": {
-          "type": "string",
-          "description": "The variant name (e.g., 'primary', 'danger')."
-        },
-        "state": {
-          "type": "string",
-          "description": "The state name (e.g., 'hover', 'active', 'focus')."
-        },
-        "description": {
-          "$ref": "../common/rich-text.schema.json#/$defs/richText",
-          "description": "How this variant behaves in this state."
-        },
-        "properties": {
-          "$ref": "#/$defs/designProperties",
-          "description": "Design properties for this variant–state combination."
-        }
-      },
-      "additionalProperties": false
-    },
     "designSpecifications": {
       "type": "object",
-      "description": "Documents the measurable visual specs of a component — every design property, spacing relationship, dimension constraint, typographic setting, and responsive adaptation. The base-level `properties` map defines the default spec. The `variants`, `sizes`, and `states` arrays group design properties by the condition they apply to. Each group entry is a self-contained set of property-to-value mappings — not an override of a base value. Values are design token names or raw CSS values.",
-      "required": ["kind"],
+      "description": "Documents the baseline measurable visual specs of a component — the default design properties, spacing relationships, dimension constraints, typographic settings, and responsive behavior. Per-variant and per-state values are not documented here; they live on the variants and states blocks, where each variant value and each state carries its own token overrides. Values are design token identifiers (required when the system has a token layer) or raw CSS values (token-less systems only).",
+      "required": [
+        "kind"
+      ],
       "properties": {
         "kind": {
           "type": "string",
@@ -293,50 +178,34 @@
           "items": {
             "$ref": "#/$defs/responsiveEntry"
           }
-        },
-        "variants": {
-          "type": "array",
-          "description": "Design properties grouped by variant. Each entry is a full set of property-to-value mappings for one variant. Values are the variant's own tokens (e.g., 'button-primary-bg') or raw values — not overrides of base tokens.",
-          "items": {
-            "$ref": "#/$defs/specVariant"
-          }
-        },
-        "sizes": {
-          "type": "array",
-          "description": "Design properties grouped by size. Each entry defines the dimensions, spacing, typography, and other properties that change at each size step.",
-          "items": {
-            "$ref": "#/$defs/specSize"
-          }
-        },
-        "states": {
-          "type": "array",
-          "description": "Design properties grouped by interactive state. Each entry defines properties that change when the component enters a given state. Only properties that differ from the default need to be listed.",
-          "items": {
-            "$ref": "#/$defs/specState"
-          }
-        },
-        "variantStates": {
-          "type": "array",
-          "description": "Design properties for specific variant–state combinations where the state's visual treatment differs across variants. Only needed when a single state entry cannot describe the behavior across all variants.",
-          "items": {
-            "$ref": "#/$defs/specVariantState"
-          }
-        },
-        "agents": {
-          "$ref": "../common/agents.schema.json#/$defs/agents",
-          "description": "AI-ready context for this document block. Provides structured info for AI/LLM use: constraints, disambiguation, anti-patterns, examples, and keywords."
         }
       },
       "anyOf": [
-        { "required": ["properties"] },
-        { "required": ["spacing"] },
-        { "required": ["sizing"] },
-        { "required": ["typography"] },
-        { "required": ["responsive"] },
-        { "required": ["variants"] },
-        { "required": ["sizes"] },
-        { "required": ["states"] },
-        { "required": ["variantStates"] }
+        {
+          "required": [
+            "properties"
+          ]
+        },
+        {
+          "required": [
+            "spacing"
+          ]
+        },
+        {
+          "required": [
+            "sizing"
+          ]
+        },
+        {
+          "required": [
+            "typography"
+          ]
+        },
+        {
+          "required": [
+            "responsive"
+          ]
+        }
       ],
       "additionalProperties": false
     }

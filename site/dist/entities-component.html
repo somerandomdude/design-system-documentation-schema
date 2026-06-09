@@ -3,14 +3,14 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>DSDS Component Definitions — DSDS 0.5.1</title>
+  <title>DSDS Component Definitions — DSDS 0.6</title>
   <link rel="stylesheet" href="tokens.css">
   <link rel="stylesheet" href="style.css">
   <script src="components.js"></script>
 </head>
 <body>
   <ds-nav-toggle target="ds-spec-nav"></ds-nav-toggle>
-  <ds-spec-nav title="Design System Documentation Spec 0.5.1" title-href="index.html" active="entities-component">
+  <ds-spec-nav title="Design System Documentation Spec 0.6" title-href="index.html" active="entities-component">
     <a href="index.html" slug="index">Overview</a>
     <a href="quickstart.html" slug="quickstart">Quick start</a>
     <a href="schema-architecture.html" slug="schema-architecture">Schema architecture</a>
@@ -46,7 +46,6 @@
       <a href="document-blocks-content.html" slug="document-blocks-content">content</a>
       <a href="document-blocks-design-specifications.html" slug="document-blocks-design-specifications">design-specifications</a>
       <a href="document-blocks-document-blocks.html" slug="document-blocks-document-blocks">document-blocks</a>
-      <a href="document-blocks-events.html" slug="document-blocks-events">events</a>
       <a href="document-blocks-guideline.html" slug="document-blocks-guideline">guideline</a>
       <a href="document-blocks-import.html" slug="document-blocks-import">import</a>
       <a href="document-blocks-interaction.html" slug="document-blocks-interaction">interaction</a>
@@ -77,7 +76,7 @@
   <div class="content content--with-toc">
     <main class="content__main" role="main">
       <div class="content__inner">
-        <ds-schema-header title="DSDS Component Definitions" description="Defines the component document. A component document holds the identity of a reusable UI element. Typed entries in the `metadata` array carry modular metadata: status, category, tags, aliases, summary, thumbnail, preview, extends, since, and links. Typed entries in the `documentBlocks` array carry structured docs: anatomy, API, variants, states, design specs, best practices, accessibility specs, use cases, and examples." source="entities/component.schema.json"></ds-schema-header>
+        <ds-schema-header title="DSDS Component Definitions" description="Defines the component document. A component document holds the identity of a reusable UI element. Typed entries in the `metadata` array carry modular metadata: status, category, tags, aliases, summary, thumbnail, preview, extends, since, and links. Typed entries in the `documentBlocks` array carry structured docs: anatomy, API, variants, states, design specs, guidelines, accessibility specs, use cases, and examples." source="entities/component.schema.json"></ds-schema-header>
 <ds-def-section name="component" anchor="component" description="A single reusable UI component. The top level holds identity: `identifier`, `name`, and `description`. The `metadata` array holds modular entries with a `kind` tag — status, category, tags, aliases, summary, thumbnail, preview, extends, since, and links. The `documentBlocks` array holds structured docs as typed entries: anatomy, api, variant, state, design-specifications, guideline, accessibility, and so on. This unified model replaces separate top-level properties for each concern." type="object">
 <ds-prop-table>
   <ds-prop name="kind" type="&lt;ds-code inline&gt;&quot;component&quot;&lt;/ds-code&gt;" required>Identifies this entity as a component.</ds-prop>
@@ -103,8 +102,8 @@
     },
     {
       &quot;kind&quot;: &quot;status&quot;,
-      &quot;status&quot;: &quot;stable&quot;,
-      &quot;platformStatus&quot;: {
+      &quot;overall&quot;: &quot;stable&quot;,
+      &quot;platforms&quot;: {
         &quot;react&quot;: {
           &quot;status&quot;: &quot;stable&quot;,
           &quot;since&quot;: &quot;1.0.0&quot;
@@ -238,17 +237,7 @@
           &quot;language&quot;: &quot;vue&quot;,
           &quot;since&quot;: &quot;2.0.0&quot;
         }
-      ],
-      &quot;agents&quot;: {
-        &quot;intent&quot;: &quot;Provide copy-pasteable import statements for the Button component across all supported platforms.&quot;,
-        &quot;keywords&quot;: [
-          &quot;import&quot;,
-          &quot;install&quot;,
-          &quot;setup&quot;,
-          &quot;package&quot;,
-          &quot;getting started&quot;
-        ]
-      }
+      ]
     },
     {
       &quot;kind&quot;: &quot;anatomy&quot;,
@@ -313,18 +302,7 @@
             &quot;alt&quot;: &quot;An annotated diagram of a primary button with numbered callouts: 1. Container, 2. Label, 3. Icon (optional), 4. Focus ring (shown in dashed outline).&quot;
           }
         }
-      ],
-      &quot;agents&quot;: {
-        &quot;intent&quot;: &quot;Describe the visual parts that compose a Button so agents can map design tokens to the correct sub-elements.&quot;,
-        &quot;keywords&quot;: [
-          &quot;parts&quot;,
-          &quot;container&quot;,
-          &quot;label&quot;,
-          &quot;icon&quot;,
-          &quot;focus ring&quot;,
-          &quot;structure&quot;
-        ]
-      }
+      ]
     },
     {
       &quot;kind&quot;: &quot;api&quot;,
@@ -451,19 +429,19 @@
       &quot;events&quot;: [
         {
           &quot;identifier&quot;: &quot;onClick&quot;,
-          &quot;description&quot;: &quot;Fires when the button is activated via mouse click, touch tap, Enter key, or Space key. Does not fire when the button is disabled or loading.&quot;,
+          &quot;description&quot;: &quot;Fires when the button is activated via mouse click, touch tap, Enter key, or Space key. Does not fire when the button is disabled or loading. Bubbles; not cancelable.&quot;,
           &quot;returns&quot;: &quot;(event: MouseEvent) =&gt; void&quot;,
           &quot;since&quot;: &quot;1.0.0&quot;
         },
         {
           &quot;identifier&quot;: &quot;onFocus&quot;,
-          &quot;description&quot;: &quot;Fires when the button receives focus.&quot;,
+          &quot;description&quot;: &quot;Fires when the button receives focus via keyboard tab, programmatic focus, or mouse click. Use to show contextual help or tooltips. Does not bubble.&quot;,
           &quot;returns&quot;: &quot;(event: FocusEvent) =&gt; void&quot;,
           &quot;since&quot;: &quot;1.0.0&quot;
         },
         {
           &quot;identifier&quot;: &quot;onBlur&quot;,
-          &quot;description&quot;: &quot;Fires when the button loses focus.&quot;,
+          &quot;description&quot;: &quot;Fires when the button loses focus. Use to dismiss contextual help or validate inline state. Does not bubble.&quot;,
           &quot;returns&quot;: &quot;(event: FocusEvent) =&gt; void&quot;,
           &quot;since&quot;: &quot;1.0.0&quot;
         }
@@ -521,74 +499,7 @@
             &quot;danger&quot;
           ]
         }
-      ],
-      &quot;agents&quot;: {
-        &quot;intent&quot;: &quot;Define the code-level interface of the Button component — properties, events, slots, and CSS hooks.&quot;,
-        &quot;constraints&quot;: [
-          {
-            &quot;rule&quot;: &quot;Always set the type attribute explicitly; never rely on the browser default.&quot;,
-            &quot;level&quot;: &quot;SHOULD&quot;
-          },
-          {
-            &quot;rule&quot;: &quot;When iconStart is used without a label, an aria-label must be provided.&quot;,
-            &quot;level&quot;: &quot;MUST&quot;
-          }
-        ],
-        &quot;keywords&quot;: [
-          &quot;props&quot;,
-          &quot;events&quot;,
-          &quot;slots&quot;,
-          &quot;CSS custom properties&quot;,
-          &quot;interface&quot;,
-          &quot;API&quot;
-        ]
-      }
-    },
-    {
-      &quot;kind&quot;: &quot;events&quot;,
-      &quot;items&quot;: [
-        {
-          &quot;identifier&quot;: &quot;onClick&quot;,
-          &quot;description&quot;: &quot;Fires when the button is activated via mouse click, touch tap, Enter key, or Space key. Does not fire when the button is disabled or loading.&quot;,
-          &quot;returns&quot;: &quot;(event: MouseEvent) =&gt; void&quot;,
-          &quot;bubbles&quot;: true,
-          &quot;cancelable&quot;: false,
-          &quot;since&quot;: &quot;1.0.0&quot;
-        },
-        {
-          &quot;identifier&quot;: &quot;onFocus&quot;,
-          &quot;description&quot;: &quot;Fires when the button receives focus via keyboard tab, programmatic focus, or mouse click. Use to show contextual help or tooltips.&quot;,
-          &quot;returns&quot;: &quot;(event: FocusEvent) =&gt; void&quot;,
-          &quot;bubbles&quot;: false,
-          &quot;cancelable&quot;: false,
-          &quot;since&quot;: &quot;1.0.0&quot;
-        },
-        {
-          &quot;identifier&quot;: &quot;onBlur&quot;,
-          &quot;description&quot;: &quot;Fires when the button loses focus. Use to dismiss contextual help or validate inline state.&quot;,
-          &quot;returns&quot;: &quot;(event: FocusEvent) =&gt; void&quot;,
-          &quot;bubbles&quot;: false,
-          &quot;cancelable&quot;: false,
-          &quot;since&quot;: &quot;1.0.0&quot;
-        }
-      ],
-      &quot;agents&quot;: {
-        &quot;intent&quot;: &quot;Document the events emitted by the Button so agents can wire up correct event handlers.&quot;,
-        &quot;constraints&quot;: [
-          {
-            &quot;rule&quot;: &quot;onClick does not fire when disabled or loading — do not attach workaround handlers.&quot;,
-            &quot;level&quot;: &quot;MUST_NOT&quot;
-          }
-        ],
-        &quot;keywords&quot;: [
-          &quot;events&quot;,
-          &quot;onClick&quot;,
-          &quot;onFocus&quot;,
-          &quot;onBlur&quot;,
-          &quot;handlers&quot;,
-          &quot;callbacks&quot;
-        ]
-      }
+      ]
     },
     {
       &quot;kind&quot;: &quot;variants&quot;,
@@ -619,6 +530,13 @@
                     }
                   }
                 ]
+              },
+              &quot;tokens&quot;: {
+                &quot;background&quot;: &quot;button-primary-bg&quot;,
+                &quot;text-color&quot;: &quot;button-primary-text&quot;,
+                &quot;border-color&quot;: &quot;transparent&quot;,
+                &quot;border-width&quot;: &quot;0px&quot;,
+                &quot;icon-color&quot;: &quot;button-primary-text&quot;
               }
             },
             {
@@ -633,6 +551,13 @@
                     &quot;stance&quot;: &quot;recommended&quot;
                   }
                 ]
+              },
+              &quot;tokens&quot;: {
+                &quot;background&quot;: &quot;transparent&quot;,
+                &quot;text-color&quot;: &quot;button-secondary-text&quot;,
+                &quot;border-color&quot;: &quot;button-secondary-border&quot;,
+                &quot;border-width&quot;: &quot;1px&quot;,
+                &quot;icon-color&quot;: &quot;button-secondary-text&quot;
               }
             },
             {
@@ -655,6 +580,13 @@
                     }
                   }
                 ]
+              },
+              &quot;tokens&quot;: {
+                &quot;background&quot;: &quot;transparent&quot;,
+                &quot;text-color&quot;: &quot;button-ghost-text&quot;,
+                &quot;border-color&quot;: &quot;transparent&quot;,
+                &quot;border-width&quot;: &quot;0px&quot;,
+                &quot;icon-color&quot;: &quot;button-ghost-text&quot;
               }
             },
             {
@@ -677,6 +609,13 @@
                     }
                   }
                 ]
+              },
+              &quot;tokens&quot;: {
+                &quot;background&quot;: &quot;button-danger-bg&quot;,
+                &quot;text-color&quot;: &quot;button-danger-text&quot;,
+                &quot;border-color&quot;: &quot;transparent&quot;,
+                &quot;border-width&quot;: &quot;0px&quot;,
+                &quot;icon-color&quot;: &quot;button-danger-text&quot;
               }
             }
           ]
@@ -704,37 +643,7 @@
             }
           ]
         }
-      ],
-      &quot;agents&quot;: {
-        &quot;intent&quot;: &quot;List the visual and behavioral dimensions along which the Button varies — emphasis and size.&quot;,
-        &quot;constraints&quot;: [
-          {
-            &quot;rule&quot;: &quot;Limit each surface to one primary variant.&quot;,
-            &quot;level&quot;: &quot;MUST&quot;
-          },
-          {
-            &quot;rule&quot;: &quot;Use danger variant only for destructive or irreversible actions.&quot;,
-            &quot;level&quot;: &quot;MUST&quot;
-          }
-        ],
-        &quot;disambiguation&quot;: [
-          {
-            &quot;entity&quot;: &quot;states&quot;,
-            &quot;distinction&quot;: &quot;Variants are static design dimensions chosen at author time; states are dynamic conditions that change at runtime in response to user interaction.&quot;
-          }
-        ],
-        &quot;keywords&quot;: [
-          &quot;emphasis&quot;,
-          &quot;primary&quot;,
-          &quot;secondary&quot;,
-          &quot;ghost&quot;,
-          &quot;danger&quot;,
-          &quot;size&quot;,
-          &quot;small&quot;,
-          &quot;medium&quot;,
-          &quot;large&quot;
-        ]
-      }
+      ]
     },
     {
       &quot;kind&quot;: &quot;states&quot;,
@@ -780,25 +689,7 @@
           &quot;name&quot;: &quot;Loading&quot;,
           &quot;description&quot;: &quot;The button label is replaced by a spinner animation. The button is non-interactive. The button maintains its dimensions from the default state to prevent layout shift.&quot;
         }
-      ],
-      &quot;agents&quot;: {
-        &quot;intent&quot;: &quot;Document the interactive states a Button can enter at runtime and the token overrides each state applies.&quot;,
-        &quot;disambiguation&quot;: [
-          {
-            &quot;entity&quot;: &quot;variants&quot;,
-            &quot;distinction&quot;: &quot;States are runtime conditions triggered by user interaction (hover, focus, disabled); variants are static design choices made at author time.&quot;
-          }
-        ],
-        &quot;keywords&quot;: [
-          &quot;hover&quot;,
-          &quot;active&quot;,
-          &quot;focus&quot;,
-          &quot;disabled&quot;,
-          &quot;loading&quot;,
-          &quot;pressed&quot;,
-          &quot;interactive&quot;
-        ]
-      }
+      ]
     },
     {
       &quot;kind&quot;: &quot;design-specifications&quot;,
@@ -856,197 +747,7 @@
           &quot;breakpoint&quot;: &quot;medium&quot;,
           &quot;description&quot;: &quot;Buttons display at their intrinsic width. Button groups display inline.&quot;
         }
-      ],
-      &quot;variants&quot;: [
-        {
-          &quot;identifier&quot;: &quot;primary&quot;,
-          &quot;description&quot;: &quot;High-emphasis filled button. Solid background with light text.&quot;,
-          &quot;properties&quot;: {
-            &quot;background&quot;: &quot;button-primary-bg&quot;,
-            &quot;text-color&quot;: &quot;button-primary-text&quot;,
-            &quot;border-color&quot;: &quot;transparent&quot;,
-            &quot;border-width&quot;: &quot;0px&quot;,
-            &quot;icon-color&quot;: &quot;button-primary-text&quot;
-          }
-        },
-        {
-          &quot;identifier&quot;: &quot;secondary&quot;,
-          &quot;description&quot;: &quot;Medium-emphasis outlined button. Transparent background with visible border.&quot;,
-          &quot;properties&quot;: {
-            &quot;background&quot;: &quot;transparent&quot;,
-            &quot;text-color&quot;: &quot;button-secondary-text&quot;,
-            &quot;border-color&quot;: &quot;button-secondary-border&quot;,
-            &quot;border-width&quot;: &quot;1px&quot;,
-            &quot;icon-color&quot;: &quot;button-secondary-text&quot;
-          }
-        },
-        {
-          &quot;identifier&quot;: &quot;ghost&quot;,
-          &quot;description&quot;: &quot;Low-emphasis button with no background or border.&quot;,
-          &quot;properties&quot;: {
-            &quot;background&quot;: &quot;transparent&quot;,
-            &quot;text-color&quot;: &quot;button-ghost-text&quot;,
-            &quot;border-color&quot;: &quot;transparent&quot;,
-            &quot;border-width&quot;: &quot;0px&quot;,
-            &quot;icon-color&quot;: &quot;button-ghost-text&quot;
-          }
-        },
-        {
-          &quot;identifier&quot;: &quot;danger&quot;,
-          &quot;description&quot;: &quot;High-emphasis destructive button.&quot;,
-          &quot;properties&quot;: {
-            &quot;background&quot;: &quot;button-danger-bg&quot;,
-            &quot;text-color&quot;: &quot;button-danger-text&quot;,
-            &quot;border-color&quot;: &quot;transparent&quot;,
-            &quot;border-width&quot;: &quot;0px&quot;,
-            &quot;icon-color&quot;: &quot;button-danger-text&quot;
-          }
-        }
-      ],
-      &quot;sizes&quot;: [
-        {
-          &quot;identifier&quot;: &quot;small&quot;,
-          &quot;description&quot;: &quot;Compact size — 32px height.&quot;,
-          &quot;properties&quot;: {
-            &quot;min-height&quot;: &quot;32px&quot;,
-            &quot;font-size&quot;: &quot;12px&quot;,
-            &quot;line-height&quot;: &quot;16px&quot;,
-            &quot;icon-size&quot;: &quot;14px&quot;,
-            &quot;icon-gap&quot;: &quot;4px&quot;,
-            &quot;padding-horizontal&quot;: &quot;space-3&quot;,
-            &quot;padding-vertical&quot;: &quot;space-1&quot;
-          },
-          &quot;spacing&quot;: {
-            &quot;internal&quot;: {
-              &quot;container-horizontal&quot;: &quot;space-3&quot;,
-              &quot;container-vertical&quot;: &quot;space-1&quot;,
-              &quot;icon-to-label&quot;: &quot;space-1&quot;
-            }
-          },
-          &quot;sizing&quot;: {
-            &quot;minWidth&quot;: &quot;44px&quot;,
-            &quot;minHeight&quot;: &quot;32px&quot;
-          },
-          &quot;typography&quot;: {
-            &quot;label&quot;: {
-              &quot;fontSize&quot;: &quot;12px&quot;,
-              &quot;fontWeight&quot;: &quot;500&quot;,
-              &quot;lineHeight&quot;: &quot;16px&quot;,
-              &quot;typeToken&quot;: &quot;$label-01&quot;
-            }
-          }
-        },
-        {
-          &quot;identifier&quot;: &quot;large&quot;,
-          &quot;description&quot;: &quot;Touch-optimized — 48px height.&quot;,
-          &quot;properties&quot;: {
-            &quot;min-height&quot;: &quot;48px&quot;,
-            &quot;font-size&quot;: &quot;16px&quot;,
-            &quot;line-height&quot;: &quot;24px&quot;,
-            &quot;icon-size&quot;: &quot;20px&quot;,
-            &quot;icon-gap&quot;: &quot;space-3&quot;,
-            &quot;padding-horizontal&quot;: &quot;space-5&quot;,
-            &quot;padding-vertical&quot;: &quot;space-3&quot;
-          },
-          &quot;spacing&quot;: {
-            &quot;internal&quot;: {
-              &quot;container-horizontal&quot;: &quot;space-5&quot;,
-              &quot;container-vertical&quot;: &quot;space-3&quot;,
-              &quot;icon-to-label&quot;: &quot;space-3&quot;
-            }
-          },
-          &quot;sizing&quot;: {
-            &quot;minWidth&quot;: &quot;80px&quot;,
-            &quot;minHeight&quot;: &quot;48px&quot;
-          },
-          &quot;typography&quot;: {
-            &quot;label&quot;: {
-              &quot;fontSize&quot;: &quot;16px&quot;,
-              &quot;fontWeight&quot;: &quot;500&quot;,
-              &quot;lineHeight&quot;: &quot;24px&quot;,
-              &quot;typeToken&quot;: &quot;$body-compact-02&quot;
-            }
-          }
-        }
-      ],
-      &quot;states&quot;: [
-        {
-          &quot;identifier&quot;: &quot;hover&quot;,
-          &quot;description&quot;: &quot;Pointer over the button. Background shifts to indicate interactivity.&quot;,
-          &quot;properties&quot;: {
-            &quot;background&quot;: &quot;button-hover-bg&quot;
-          }
-        },
-        {
-          &quot;identifier&quot;: &quot;active&quot;,
-          &quot;description&quot;: &quot;Button is being pressed.&quot;,
-          &quot;properties&quot;: {
-            &quot;background&quot;: &quot;button-active-bg&quot;
-          }
-        },
-        {
-          &quot;identifier&quot;: &quot;focus&quot;,
-          &quot;description&quot;: &quot;Keyboard focus. A 2px focus ring appears with a 2px offset.&quot;,
-          &quot;properties&quot;: {
-            &quot;focus-ring-color&quot;: &quot;color-focus&quot;,
-            &quot;focus-ring-width&quot;: &quot;2px&quot;,
-            &quot;focus-ring-offset&quot;: &quot;2px&quot;
-          }
-        },
-        {
-          &quot;identifier&quot;: &quot;disabled&quot;,
-          &quot;description&quot;: &quot;Non-interactive. Opacity reduced, pointer-events disabled. Uses aria-disabled.&quot;,
-          &quot;properties&quot;: {
-            &quot;opacity&quot;: &quot;0.4&quot;
-          }
-        },
-        {
-          &quot;identifier&quot;: &quot;loading&quot;,
-          &quot;description&quot;: &quot;Label replaced by spinner. Non-interactive but retains dimensions. Spinner respects prefers-reduced-motion.&quot;
-        }
-      ],
-      &quot;variantStates&quot;: [
-        {
-          &quot;variant&quot;: &quot;primary&quot;,
-          &quot;state&quot;: &quot;hover&quot;,
-          &quot;properties&quot;: {
-            &quot;background&quot;: &quot;button-primary-hover-bg&quot;
-          }
-        },
-        {
-          &quot;variant&quot;: &quot;primary&quot;,
-          &quot;state&quot;: &quot;active&quot;,
-          &quot;properties&quot;: {
-            &quot;background&quot;: &quot;button-primary-active-bg&quot;
-          }
-        },
-        {
-          &quot;variant&quot;: &quot;danger&quot;,
-          &quot;state&quot;: &quot;hover&quot;,
-          &quot;properties&quot;: {
-            &quot;background&quot;: &quot;button-danger-hover-bg&quot;
-          }
-        },
-        {
-          &quot;variant&quot;: &quot;danger&quot;,
-          &quot;state&quot;: &quot;active&quot;,
-          &quot;properties&quot;: {
-            &quot;background&quot;: &quot;button-danger-active-bg&quot;
-          }
-        }
-      ],
-      &quot;agents&quot;: {
-        &quot;intent&quot;: &quot;Provide concrete token values, spacing, sizing, and typography specs for implementing the Button across all variants and sizes.&quot;,
-        &quot;keywords&quot;: [
-          &quot;tokens&quot;,
-          &quot;spacing&quot;,
-          &quot;sizing&quot;,
-          &quot;typography&quot;,
-          &quot;responsive&quot;,
-          &quot;measurements&quot;,
-          &quot;implementation&quot;
-        ]
-      }
+      ]
     },
     {
       &quot;kind&quot;: &quot;purpose&quot;,
@@ -1083,27 +784,7 @@
             &quot;rationale&quot;: &quot;Icon buttons enforce an aria-label requirement and apply size adjustments for icon-only touch targets. A standard button with its label removed may fail accessibility requirements silently.&quot;
           }
         }
-      ],
-      &quot;agents&quot;: {
-        &quot;intent&quot;: &quot;Clarify when to use Button versus similar interactive elements.&quot;,
-        &quot;disambiguation&quot;: [
-          {
-            &quot;entity&quot;: &quot;link&quot;,
-            &quot;distinction&quot;: &quot;Button triggers an in-page action; Link navigates to a URL.&quot;
-          },
-          {
-            &quot;entity&quot;: &quot;icon-button&quot;,
-            &quot;distinction&quot;: &quot;Button always has a visible text label; IconButton is icon-only and requires aria-label.&quot;
-          }
-        ],
-        &quot;keywords&quot;: [
-          &quot;when to use&quot;,
-          &quot;use case&quot;,
-          &quot;action&quot;,
-          &quot;submit&quot;,
-          &quot;navigation&quot;
-        ]
-      }
+      ]
     },
     {
       &quot;kind&quot;: &quot;guideline&quot;,
@@ -1230,27 +911,7 @@
             }
           ]
         }
-      ],
-      &quot;agents&quot;: {
-        &quot;intent&quot;: &quot;Enforce correct Button usage rules in generated UI code and design decisions.&quot;,
-        &quot;constraints&quot;: [
-          {
-            &quot;rule&quot;: &quot;Never place two primary buttons on the same surface.&quot;,
-            &quot;level&quot;: &quot;MUST_NOT&quot;
-          },
-          {
-            &quot;rule&quot;: &quot;Always pair a danger button with a confirmation dialog.&quot;,
-            &quot;level&quot;: &quot;MUST&quot;
-          }
-        ],
-        &quot;keywords&quot;: [
-          &quot;rules&quot;,
-          &quot;best practices&quot;,
-          &quot;visual design&quot;,
-          &quot;accessibility&quot;,
-          &quot;content&quot;
-        ]
-      }
+      ]
     },
     {
       &quot;kind&quot;: &quot;accessibility&quot;,
@@ -1324,29 +985,7 @@
           &quot;context&quot;: &quot;Label text on danger button background in light mode.&quot;
         }
       ],
-      &quot;motionConsiderations&quot;: &quot;The loading spinner animation respects the prefers-reduced-motion media query. When reduced motion is preferred, the spinner is replaced with a static ellipsis indicator.&quot;,
-      &quot;agents&quot;: {
-        &quot;intent&quot;: &quot;Provide keyboard interaction patterns, ARIA requirements, and contrast ratios for implementing an accessible Button.&quot;,
-        &quot;constraints&quot;: [
-          {
-            &quot;rule&quot;: &quot;Use aria-disabled instead of the HTML disabled attribute when the button must remain in the tab order.&quot;,
-            &quot;level&quot;: &quot;SHOULD&quot;
-          },
-          {
-            &quot;rule&quot;: &quot;Focus ring must be visible with a minimum 3:1 contrast ratio against the surrounding background.&quot;,
-            &quot;level&quot;: &quot;MUST&quot;
-          }
-        ],
-        &quot;keywords&quot;: [
-          &quot;WCAG&quot;,
-          &quot;keyboard&quot;,
-          &quot;ARIA&quot;,
-          &quot;screen reader&quot;,
-          &quot;focus&quot;,
-          &quot;contrast&quot;,
-          &quot;a11y&quot;
-        ]
-      }
+      &quot;motionConsiderations&quot;: &quot;The loading spinner animation respects the prefers-reduced-motion media query. When reduced motion is preferred, the spinner is replaced with a static ellipsis indicator.&quot;
     }
   ],
   &quot;agents&quot;: {
@@ -1420,7 +1059,7 @@
         <ds-back-to-top></ds-back-to-top>
 
         <ds-footer>
-          <p>Design System Documentation Spec (DSDS) 0.5.1 — Draft Specification</p>
+          <p>Design System Documentation Spec (DSDS) 0.6 — Draft Specification</p>
           <p><a href="https://github.com/somerandomdude/design-system-documentation-schema">GitHub</a></p>
         </ds-footer>
       </div>

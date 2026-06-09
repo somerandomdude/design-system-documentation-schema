@@ -1,107 +1,121 @@
 {
   "$schema": "../schema/dsds.bundled.schema.json",
-  "dsdsVersion": "0.5.1",
+  "dsdsVersion": "0.6",
   "systemInfo": {
     "systemName": "Acme Design System",
     "systemVersion": "2.0.0",
     "organization": "Acme Corp",
     "url": "https://design.acme.com"
   },
-  "purpose": {
-    "description": "The Acme Design System provides a shared library of reusable components, design tokens, and patterns that enable product teams to build consistent, accessible user interfaces across web, iOS, and Android platforms. It encodes Acme's design language into a single source of truth so that designers and engineers work from the same specifications.",
-    "useCases": [
-      {
-        "description": "When building a new product or feature within the Acme product suite that must conform to the Acme brand and interaction standards.",
-        "stance": "recommended"
-      },
-      {
-        "description": "When an existing product is being redesigned or migrated to a modern front-end stack and needs a consistent component library.",
-        "stance": "recommended"
-      },
-      {
-        "description": "When contributing a new component or pattern that will be shared across multiple Acme products.",
-        "stance": "recommended"
-      },
-      {
-        "description": "When building a white-label product that must not carry the Acme brand identity.",
-        "stance": "discouraged",
-        "alternative": {
-          "identifier": "custom theme or independent design system",
-          "rationale": "The Acme Design System encodes Acme-specific brand decisions (color palette, typography, iconography). White-label products require a neutral foundation that can be re-skinned per customer. Use the token architecture as inspiration, but do not depend on Acme-branded tokens directly."
-        }
-      },
-      {
-        "description": "When building a one-off marketing landing page with highly custom, editorial layouts that intentionally break grid and component conventions.",
-        "stance": "discouraged",
-        "alternative": {
-          "identifier": "bespoke implementation with brand guidelines",
-          "rationale": "Marketing pages often require creative freedom that a component system constrains. Use the brand color tokens and typography scale for consistency, but do not force editorial layouts into rigid component patterns."
-        }
-      }
-    ]
-  },
-  "guidelines": [
+  "documentBlocks": [
     {
-      "guidance": "Use semantic tokens instead of raw color, spacing, or typography values in all production code.",
-      "rationale": "Semantic tokens abstract the intent (e.g., 'color-text-primary') from the value (e.g., '#1a1a1a'). This enables theming, dark mode, and system-wide visual changes from a single source of truth without touching component code.",
-      "level": "MUST",
-      "category": "development"
-    },
-    {
-      "guidance": "Do not modify or override design token values at the component level. Use the token as-is or request a new token.",
-      "rationale": "Overriding tokens breaks the contract between the design system and consuming products. When the system updates a token value, overridden components will not pick up the change, creating visual drift.",
-      "level": "MUST_NOT",
-      "category": "development"
-    },
-    {
-      "guidance": "Test all components at 200% browser zoom to ensure content does not overflow, overlap, or become inaccessible.",
-      "rationale": "WCAG 1.4.4 requires that content remains functional at 200% text size. Components that break at zoom levels below 200% fail this criterion and exclude users with low vision.",
-      "level": "MUST",
-      "category": "accessibility",
-      "criteria": [
+      "kind": "section",
+      "items": [
         {
-          "url": "https://www.w3.org/TR/WCAG22/#resize-text",
-          "label": "1.4.4 Resize Text",
-          "kind": "reference"
+          "title": "Overview",
+          "body": "The Acme Design System provides a shared library of reusable components, design tokens, and patterns that enable product teams to build consistent, accessible user interfaces across web, iOS, and Android platforms. It encodes Acme's design language into a single source of truth so that designers and engineers work from the same specifications."
         }
       ]
     },
     {
-      "guidance": "Prefer composition over customization. Combine existing components to build new patterns rather than adding configuration props to existing components.",
-      "rationale": "Every prop added to a component increases its API surface, testing burden, and cognitive load. Composing simple components into larger patterns keeps each component focused and predictable.",
-      "level": "SHOULD",
-      "category": "development"
-    },
-    {
-      "guidance": "Every interactive component must be fully operable with a keyboard alone — no mouse or touch required.",
-      "rationale": "Keyboard operability is the foundation of accessibility. Users who rely on switch devices, screen readers, or alternative input methods all depend on keyboard support as the lowest common denominator.",
-      "level": "MUST",
-      "category": "accessibility",
-      "criteria": [
+      "kind": "purpose",
+      "useCases": [
         {
-          "url": "https://www.w3.org/TR/WCAG22/#keyboard",
-          "label": "2.1.1 Keyboard",
-          "kind": "reference"
+          "description": "When building a new product or feature within the Acme product suite that must conform to the Acme brand and interaction standards.",
+          "stance": "recommended"
+        },
+        {
+          "description": "When an existing product is being redesigned or migrated to a modern front-end stack and needs a consistent component library.",
+          "stance": "recommended"
+        },
+        {
+          "description": "When contributing a new component or pattern that will be shared across multiple Acme products.",
+          "stance": "recommended"
+        },
+        {
+          "description": "When building a white-label product that must not carry the Acme brand identity.",
+          "stance": "discouraged",
+          "alternative": {
+            "identifier": "custom theme or independent design system",
+            "rationale": "The Acme Design System encodes Acme-specific brand decisions (color palette, typography, iconography). White-label products require a neutral foundation that can be re-skinned per customer. Use the token architecture as inspiration, but do not depend on Acme-branded tokens directly."
+          }
+        },
+        {
+          "description": "When building a one-off marketing landing page with highly custom, editorial layouts that intentionally break grid and component conventions.",
+          "stance": "discouraged",
+          "alternative": {
+            "identifier": "bespoke implementation with brand guidelines",
+            "rationale": "Marketing pages often require creative freedom that a component system constrains. Use the brand color tokens and typography scale for consistency, but do not force editorial layouts into rigid component patterns."
+          }
         }
       ]
     },
     {
-      "guidance": "Pin the design system package version in production applications. Upgrade deliberately, not automatically.",
-      "rationale": "Automatic upgrades can introduce visual regressions or breaking API changes. Pinning versions ensures stability while allowing teams to upgrade on their own schedule after testing.",
-      "level": "SHOULD",
-      "category": "development"
-    },
-    {
-      "guidance": "Do not wrap design system components in additional DOM elements that alter their semantics or accessibility tree.",
-      "rationale": "Wrapping a button in a div with an onClick handler, or nesting a link inside a button, creates unexpected behavior for assistive technology. Use components as designed — their semantic structure is intentional.",
-      "level": "MUST_NOT",
-      "category": "accessibility"
-    },
-    {
-      "guidance": "When contributing a new component, provide at minimum: a purpose guideline, an API guideline, and a best-practices guideline before publishing to production.",
-      "rationale": "Components without documentation are components without a contract. Consumers cannot use them correctly if the intended use cases, API, and constraints are not documented.",
-      "level": "MUST",
-      "category": "content"
+      "kind": "guideline",
+      "items": [
+        {
+          "guidance": "Use semantic tokens instead of raw color, spacing, or typography values in all production code.",
+          "rationale": "Semantic tokens abstract the intent (e.g., 'color-text-primary') from the value (e.g., '#1a1a1a'). This enables theming, dark mode, and system-wide visual changes from a single source of truth without touching component code.",
+          "level": "MUST",
+          "category": "development"
+        },
+        {
+          "guidance": "Do not modify or override design token values at the component level. Use the token as-is or request a new token.",
+          "rationale": "Overriding tokens breaks the contract between the design system and consuming products. When the system updates a token value, overridden components will not pick up the change, creating visual drift.",
+          "level": "MUST_NOT",
+          "category": "development"
+        },
+        {
+          "guidance": "Test all components at 200% browser zoom to ensure content does not overflow, overlap, or become inaccessible.",
+          "rationale": "WCAG 1.4.4 requires that content remains functional at 200% text size. Components that break at zoom levels below 200% fail this criterion and exclude users with low vision.",
+          "level": "MUST",
+          "category": "accessibility",
+          "criteria": [
+            {
+              "url": "https://www.w3.org/TR/WCAG22/#resize-text",
+              "label": "1.4.4 Resize Text",
+              "kind": "reference"
+            }
+          ]
+        },
+        {
+          "guidance": "Prefer composition over customization. Combine existing components to build new patterns rather than adding configuration props to existing components.",
+          "rationale": "Every prop added to a component increases its API surface, testing burden, and cognitive load. Composing simple components into larger patterns keeps each component focused and predictable.",
+          "level": "SHOULD",
+          "category": "development"
+        },
+        {
+          "guidance": "Every interactive component must be fully operable with a keyboard alone — no mouse or touch required.",
+          "rationale": "Keyboard operability is the foundation of accessibility. Users who rely on switch devices, screen readers, or alternative input methods all depend on keyboard support as the lowest common denominator.",
+          "level": "MUST",
+          "category": "accessibility",
+          "criteria": [
+            {
+              "url": "https://www.w3.org/TR/WCAG22/#keyboard",
+              "label": "2.1.1 Keyboard",
+              "kind": "reference"
+            }
+          ]
+        },
+        {
+          "guidance": "Pin the design system package version in production applications. Upgrade deliberately, not automatically.",
+          "rationale": "Automatic upgrades can introduce visual regressions or breaking API changes. Pinning versions ensures stability while allowing teams to upgrade on their own schedule after testing.",
+          "level": "SHOULD",
+          "category": "development"
+        },
+        {
+          "guidance": "Do not wrap design system components in additional DOM elements that alter their semantics or accessibility tree.",
+          "rationale": "Wrapping a button in a div with an onClick handler, or nesting a link inside a button, creates unexpected behavior for assistive technology. Use components as designed — their semantic structure is intentional.",
+          "level": "MUST_NOT",
+          "category": "accessibility"
+        },
+        {
+          "guidance": "When contributing a new component, provide at minimum: a purpose block, an API spec, and usage guidelines before publishing to production.",
+          "rationale": "Components without documentation are components without a contract. Consumers cannot use them correctly if the intended use cases, API, and constraints are not documented.",
+          "level": "MUST",
+          "category": "content"
+        }
+      ]
     }
   ],
   "documentation": [
@@ -120,7 +134,7 @@
             },
             {
               "kind": "status",
-              "status": "stable"
+              "overall": "stable"
             },
             {
               "kind": "since",
@@ -244,16 +258,7 @@
                     "rationale": "Links carry native navigation semantics. Screen readers announce them as links, and browsers support open-in-new-tab."
                   }
                 }
-              ],
-              "agents": {
-                "intent": "Clarify when to use Button versus Link or IconButton.",
-                "keywords": [
-                  "when to use",
-                  "action",
-                  "submit",
-                  "navigation"
-                ]
-              }
+              ]
             },
             {
               "kind": "guideline",
@@ -282,21 +287,7 @@
                     }
                   ]
                 }
-              ],
-              "agents": {
-                "intent": "Enforce correct Button usage rules in generated code.",
-                "constraints": [
-                  {
-                    "rule": "Limit each surface to one primary button.",
-                    "level": "MUST"
-                  }
-                ],
-                "keywords": [
-                  "button rules",
-                  "primary",
-                  "hierarchy"
-                ]
-              }
+              ]
             },
             {
               "kind": "accessibility",
@@ -310,17 +301,7 @@
                   "key": "Space",
                   "action": "Activates the button."
                 }
-              ],
-              "agents": {
-                "intent": "Provide keyboard and ARIA requirements for accessible Button implementation.",
-                "keywords": [
-                  "WCAG",
-                  "keyboard",
-                  "ARIA",
-                  "focus",
-                  "a11y"
-                ]
-              }
+              ]
             }
           ],
           "agents": {
@@ -381,7 +362,7 @@
             },
             {
               "kind": "status",
-              "status": "stable"
+              "overall": "stable"
             },
             {
               "kind": "since",
@@ -496,7 +477,7 @@
             },
             {
               "kind": "status",
-              "status": "stable"
+              "overall": "stable"
             },
             {
               "kind": "since",
@@ -628,7 +609,7 @@
                 },
                 {
                   "kind": "status",
-                  "status": "stable"
+                  "overall": "stable"
                 },
                 {
                   "kind": "category",
@@ -683,7 +664,7 @@
                 },
                 {
                   "kind": "status",
-                  "status": "stable"
+                  "overall": "stable"
                 },
                 {
                   "kind": "category",
@@ -738,7 +719,7 @@
                 },
                 {
                   "kind": "status",
-                  "status": "stable"
+                  "overall": "stable"
                 },
                 {
                   "kind": "category",
@@ -816,7 +797,7 @@
             },
             {
               "kind": "status",
-              "status": "stable"
+              "overall": "stable"
             },
             {
               "kind": "category",
@@ -845,16 +826,7 @@
                   "title": "Density over decoration",
                   "description": "Spacing exists to create clear relationships between elements, not to fill empty areas."
                 }
-              ],
-              "agents": {
-                "intent": "State the foundational spacing beliefs that govern layout decisions.",
-                "keywords": [
-                  "principles",
-                  "4px grid",
-                  "rhythm",
-                  "density"
-                ]
-              }
+              ]
             },
             {
               "kind": "scale",
@@ -970,7 +942,7 @@
             },
             {
               "kind": "status",
-              "status": "stable"
+              "overall": "stable"
             },
             {
               "kind": "category",
@@ -1027,15 +999,7 @@
                     "rationale": "Success feedback uses success colors and icons. Reusing the error pattern for positive outcomes confuses the visual language."
                   }
                 }
-              ],
-              "agents": {
-                "intent": "Clarify when the error messaging pattern applies versus inline validation.",
-                "keywords": [
-                  "when to use",
-                  "form errors",
-                  "validation"
-                ]
-              }
+              ]
             },
             {
               "kind": "guideline",
