@@ -320,7 +320,7 @@ Patterns reference their participating components through the `links` array (wit
 
 ### Guide
 
-A long-form, reading-oriented document — a getting-started walkthrough, contribution guide, tutorial, conceptual overview, or migration guide. Guides fill the gap left by the artifact-bound entities (which each document a single component, token, foundation, or pattern): they document a *journey* or a *concept* rather than one thing. Accepts **guide-scoped document block types** (section, steps), the `import` block, and all general document block types.
+A long-form, reading-oriented document — a getting-started walkthrough, contribution guide, tutorial, conceptual overview, or migration guide. Guides fill the gap left by the artifact-bound entities (which each document a single component, token, foundation, or pattern): they document a *journey* or a *concept* rather than one thing. Accepts the **guide-scoped** `steps` block, the `import` block, and all general document block types — including the free-form `section` block that forms the backbone of a guide.
 
 Required properties: `kind`, `identifier`, `name`. (`description` and `status` are optional `metadata` entries.)
 
@@ -436,11 +436,11 @@ Custom values are permitted (e.g., `"sunset"`, `"archived"`, `"beta"`) and MUST 
 
 Document block entries are the core unit of structured docs in DSDS. Every piece of docs on an entity is a document block object with a `kind` discriminator. Document block types cover:
 
-- guidelines, purpose, accessibility, and content (general — all entity types)
+- guidelines, purpose, accessibility, content, and narrative sections (general — all entity types)
 - anatomy, API specs, events, variants, states, design specifications, and import (component-scoped)
 - principles, scales, and motion definitions (foundation-scoped)
 - interactions (pattern-scoped)
-- narrative sections and step-by-step procedures (guide-scoped)
+- step-by-step procedures (guide-scoped)
 
 ### Scoped document block unions
 
@@ -450,11 +450,11 @@ Each entity type accepts only the document block types relevant to it. The scopi
 - **Patterns** get structural docs without code-level details — they have visual layouts (anatomy), sub-types (variants), and states, but they are not single-component code interfaces. They do not accept `api` or `design-specifications`.
 - **Foundations** get domain-level docs — they govern a visual or cross-cutting domain through guiding principles, constrained value progressions (scales), and motion definitions.
 - **Tokens** get only general document block types — they are atomic values with usage guidance but no visual structure or interaction behavior.
-- **Guides** get reading-oriented docs — narrative `section`s and step-by-step `steps` procedures, plus `import` for setup instructions. They carry no structural or measurable specs.
+- **Guides** get reading-oriented docs — step-by-step `steps` procedures plus `import` for setup instructions, and lean on the general `section` block for narrative prose. They carry no structural or measurable specs.
 
 <ds-block-scope-table />
 
-**General** (available on all entity types): guideline, purpose, accessibility, content.
+**General** (available on all entity types): guideline, purpose, accessibility, content, and section (free-form narrative prose).
 
 ### Document block types
 
@@ -552,6 +552,14 @@ At least one of `labels` or `localization` must be present.
 #### Localization entry
 
 <ds-prop-table schema="document-blocks/content" def="localizationEntry" />
+
+### Section (`section`)
+
+Free-form narrative prose organized into titled, optionally nested sections — the backbone of conceptual overviews, explanations, rationale, and any reading-oriented content the structured block kinds do not capture. Available on every entity type. Each `sectionEntry` pairs a `title` with an optional rich-text `body`, illustrative `examples`, related `links`, and recursive `sections` for a heading hierarchy. Reach for a structured block kind first; use `section` only for what they cannot express.
+
+#### Section entry
+
+<ds-prop-table schema="document-blocks/section" def="sectionEntry" />
 
 ---
 
@@ -727,15 +735,7 @@ Documents the interaction flow of a pattern as an ordered sequence of steps. The
 
 ## Guide-scoped document block types
 
-These document block types are accepted on **guide** entities (which also accept `import` and all general document block types). They favor reading-oriented prose and procedures over the measurable specs used by components.
-
-### Section (`section`)
-
-Narrative prose organized into titled, optionally nested sections — the backbone of conceptual overviews, explanations, and rationale. Each `sectionEntry` pairs a `title` with an optional rich-text `body`, illustrative `examples`, related `links`, and recursive `sections` for a heading hierarchy.
-
-#### Section entry
-
-<ds-prop-table schema="document-blocks/section" def="sectionEntry" />
+The `steps` block is accepted only on **guide** entities. Guides also accept `import` and every general document block type — including the free-form `section` block (documented above), which carries a guide's narrative prose.
 
 ### Steps (`steps`)
 

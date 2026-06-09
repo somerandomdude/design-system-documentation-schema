@@ -412,7 +412,7 @@
 <p>Required properties: <ds-code inline>kind</ds-code>, <ds-code inline>identifier</ds-code>, <ds-code inline>name</ds-code>. (<ds-code inline>description</ds-code> and <ds-code inline>status</ds-code> are optional <ds-code inline>metadata</ds-code> entries — see <a href="#entity-metadata">Entity metadata</a>.)</p>
 <p>Patterns reference their participating components through the <ds-code inline>links</ds-code> array (with <ds-code inline>kind: "component"</ds-code>, <ds-code inline>identifier</ds-code>, and <ds-code inline>role</ds-code>) instead of through a dedicated document block.</p>
 <ds-heading level="3" anchor="guide">Guide</ds-heading>
-<p>A long-form, reading-oriented document — a getting-started walkthrough, contribution guide, tutorial, conceptual overview, or migration guide. Guides fill the gap left by the artifact-bound entities (which each document a single component, token, foundation, or pattern): they document a <em>journey</em> or a <em>concept</em> rather than one thing. Accepts <strong>guide-scoped document block types</strong> (section, steps), the <ds-code inline>import</ds-code> block, and all general document block types.</p>
+<p>A long-form, reading-oriented document — a getting-started walkthrough, contribution guide, tutorial, conceptual overview, or migration guide. Guides fill the gap left by the artifact-bound entities (which each document a single component, token, foundation, or pattern): they document a <em>journey</em> or a <em>concept</em> rather than one thing. Accepts the <strong>guide-scoped</strong> <ds-code inline>steps</ds-code> block, the <ds-code inline>import</ds-code> block, and all general document block types — including the free-form <ds-code inline>section</ds-code> block that forms the backbone of a guide.</p>
 <p>Required properties: <ds-code inline>kind</ds-code>, <ds-code inline>identifier</ds-code>, <ds-code inline>name</ds-code>. (<ds-code inline>description</ds-code> and <ds-code inline>status</ds-code> are optional <ds-code inline>metadata</ds-code> entries.)</p>
 <p>The <em>kind</em> of guide (getting-started, contribution, tutorial, concept, migration) is expressed through a <ds-code inline>category</ds-code> metadata entry, keeping the entity flexible enough for any kind of guidance.</p>
 <hr />
@@ -517,11 +517,11 @@
 <ds-heading level="2" anchor="document-block">Document block</ds-heading>
 <p>Document block entries are the core unit of structured docs in DSDS. Every piece of docs on an entity is a document block object with a <ds-code inline>kind</ds-code> discriminator. Document block types cover:</p>
 <ul>
-<li>guidelines, purpose, accessibility, and content (general — all entity types)</li>
+<li>guidelines, purpose, accessibility, content, and narrative sections (general — all entity types)</li>
 <li>anatomy, API specs, events, variants, states, design specifications, and import (component-scoped)</li>
 <li>principles, scales, and motion definitions (foundation-scoped)</li>
 <li>interactions (pattern-scoped)</li>
-<li>narrative sections and step-by-step procedures (guide-scoped)</li>
+<li>step-by-step procedures (guide-scoped)</li>
 </ul>
 <ds-heading level="3" anchor="scoped-document-block-unions">Scoped document block unions</ds-heading>
 <p>Each entity type accepts only the document block types relevant to it. The scoping rationale:</p>
@@ -530,7 +530,7 @@
 <li><strong>Patterns</strong> get structural docs without code-level details — they have visual layouts (anatomy), sub-types (variants), and states, but they are not single-component code interfaces. They do not accept <ds-code inline>api</ds-code> or <ds-code inline>design-specifications</ds-code>.</li>
 <li><strong>Foundations</strong> get domain-level docs — they govern a visual or cross-cutting domain through guiding principles, constrained value progressions (scales), and motion definitions.</li>
 <li><strong>Tokens</strong> get only general document block types — they are atomic values with usage guidance but no visual structure or interaction behavior.</li>
-<li><strong>Guides</strong> get reading-oriented docs — narrative <ds-code inline>section</ds-code>s and step-by-step <ds-code inline>steps</ds-code> procedures, plus <ds-code inline>import</ds-code> for setup instructions. They carry no structural or measurable specs.</li>
+<li><strong>Guides</strong> get reading-oriented docs — step-by-step <ds-code inline>steps</ds-code> procedures plus <ds-code inline>import</ds-code> for setup instructions, and lean on the general <ds-code inline>section</ds-code> block for narrative prose. They carry no structural or measurable specs.</li>
 </ul>
 <ds-table>
 <table>
@@ -538,11 +538,11 @@
 <tbody><tr><td><strong>Component</strong></td><td><ds-code inline>component</ds-code></td><td><ds-code inline>import</ds-code>, <ds-code inline>anatomy</ds-code>, <ds-code inline>api</ds-code>, <ds-code inline>events</ds-code>, <ds-code inline>variants</ds-code>, <ds-code inline>states</ds-code>, <ds-code inline>design-specifications</ds-code> + general</td></tr>
 <tr><td><strong>Pattern</strong></td><td><ds-code inline>pattern</ds-code></td><td><ds-code inline>interactions</ds-code>, <ds-code inline>anatomy</ds-code>, <ds-code inline>variants</ds-code>, <ds-code inline>states</ds-code>, <ds-code inline>events</ds-code> + general</td></tr>
 <tr><td><strong>Foundation</strong></td><td><ds-code inline>foundation</ds-code></td><td><ds-code inline>principles</ds-code>, <ds-code inline>scale</ds-code>, <ds-code inline>motion</ds-code> + general</td></tr>
-<tr><td><strong>Guide</strong></td><td><ds-code inline>guide</ds-code></td><td><ds-code inline>section</ds-code>, <ds-code inline>steps</ds-code>, <ds-code inline>import</ds-code> + general</td></tr>
+<tr><td><strong>Guide</strong></td><td><ds-code inline>guide</ds-code></td><td><ds-code inline>steps</ds-code>, <ds-code inline>import</ds-code> + general</td></tr>
 <tr><td><strong>Token</strong></td><td><ds-code inline>theme</ds-code>, <ds-code inline>token</ds-code>, <ds-code inline>token-group</ds-code></td><td>general only</td></tr></tbody>
 </table>
 </ds-table>
-<p><strong>General</strong> (available on all entity types): guideline, purpose, accessibility, content.</p>
+<p><strong>General</strong> (available on all entity types): guideline, purpose, accessibility, content, and section (free-form narrative prose).</p>
 <ds-heading level="3" anchor="document-block-types">Document block types</ds-heading>
 <ds-table>
 <table>
@@ -551,6 +551,7 @@
 <tr><td><ds-code inline>&quot;content&quot;</ds-code></td><td>Named properties</td><td>various</td><td>General</td><td>Structured content guidelines: recommended action labels and localization considerations.</td></tr>
 <tr><td><ds-code inline>&quot;guideline&quot;</ds-code></td><td><ds-code inline>items</ds-code></td><td><ds-type-ref href="document-blocks-guideline.html#guidelineentry">guidelineEntry</ds-type-ref></td><td>General</td><td>Actionable usage rules for an artifact.</td></tr>
 <tr><td><ds-code inline>&quot;purpose&quot;</ds-code></td><td><ds-code inline>useCases</ds-code></td><td><ds-type-ref href="common-purpose.html#usecase">useCase</ds-type-ref></td><td>General</td><td>Documents the purpose of an artifact — when to use it and when to choose something else.</td></tr>
+<tr><td><ds-code inline>&quot;section&quot;</ds-code></td><td><ds-code inline>items</ds-code></td><td><ds-type-ref href="document-blocks-section.html#sectionentry">sectionEntry</ds-type-ref></td><td>General</td><td>A block of narrative documentation made up of one or more titled sections.</td></tr>
 <tr><td><ds-code inline>&quot;import&quot;</ds-code></td><td><ds-code inline>items</ds-code></td><td><ds-type-ref href="document-blocks-import.html#importentry">importEntry</ds-type-ref></td><td>Component, Guide</td><td>Documents how to import a component across platforms.</td></tr>
 <tr><td><ds-code inline>&quot;anatomy&quot;</ds-code></td><td>Named properties</td><td>various</td><td>Component, Pattern</td><td>Documents the visual structure of a component or pattern by listing its named sub-elements (parts).</td></tr>
 <tr><td><ds-code inline>&quot;events&quot;</ds-code></td><td><ds-code inline>items</ds-code></td><td><ds-type-ref href="document-blocks-events.html#evententry">eventEntry</ds-type-ref></td><td>Component, Pattern</td><td>Documents the events emitted by a component as a dedicated document block.</td></tr>
@@ -561,7 +562,6 @@
 <tr><td><ds-code inline>&quot;motion&quot;</ds-code></td><td><ds-code inline>items</ds-code></td><td><ds-type-ref href="document-blocks-motion.html#motionentry">motionEntry</ds-type-ref></td><td>Foundation</td><td>Documents the motion system for a foundation — named easing curves, timing functions, recommended durations, and usage guidance.</td></tr>
 <tr><td><ds-code inline>&quot;principles&quot;</ds-code></td><td><ds-code inline>items</ds-code></td><td><ds-type-ref href="document-blocks-principle.html#principleentry">principleEntry</ds-type-ref></td><td>Foundation</td><td>Documents guiding principles for a foundation or design domain.</td></tr>
 <tr><td><ds-code inline>&quot;scale&quot;</ds-code></td><td><ds-code inline>steps</ds-code></td><td><ds-type-ref href="document-blocks-scale.html#scalestep">scaleStep</ds-type-ref></td><td>Foundation</td><td>Documents an ordered scale — a deliberate progression of values that constrains design decisions to a harmonious, consistent set.</td></tr>
-<tr><td><ds-code inline>&quot;section&quot;</ds-code></td><td><ds-code inline>items</ds-code></td><td><ds-type-ref href="document-blocks-section.html#sectionentry">sectionEntry</ds-type-ref></td><td>Guide</td><td>A block of narrative documentation made up of one or more titled sections.</td></tr>
 <tr><td><ds-code inline>&quot;steps&quot;</ds-code></td><td><ds-code inline>items</ds-code></td><td><ds-type-ref href="document-blocks-steps.html#stepentry">stepEntry</ds-type-ref></td><td>Guide</td><td>A procedure made up of an ordered or unordered sequence of steps.</td></tr>
 <tr><td><ds-code inline>&quot;interactions&quot;</ds-code></td><td><ds-code inline>items</ds-code></td><td><ds-type-ref href="document-blocks-interaction.html#interactionentry">interactionEntry</ds-type-ref></td><td>Pattern</td><td>Documents the interaction flow of a pattern as an ordered sequence of steps.</td></tr></tbody>
 </table>
@@ -654,6 +654,17 @@
   <ds-prop name="concern" type="string" required>The localization concern being addressed. Standard values: 'rtl' (right-to-left layout mirroring and bidirectional text), 'text-expansion' (content lengthening during translation), 'pluralization' (plural forms varying across languages), 'date-format' (date and time formatting conventions), 'number-format' (decimal separators, grouping), 'currency' (currency symbol placement and formatting), 'text-direction' (mixed-direction content within a single string), 'icon-direction' (icons that imply directionality), 'truncation' (text overflow behavior across languages), 'sorting' (locale-specific sort order and collation), 'concatenation' (avoiding string concatenation that breaks in other languages). Custom values are allowed and SHOULD be lowercase kebab-case.</ds-prop>
   <ds-prop name="description" type="&lt;ds-type-ref href=&quot;common-rich-text.html#richtext&quot;&gt;richText&lt;/ds-type-ref&gt;" required>Guidance for handling this localization concern. Should be actionable and specific: say what changes across locales, what the author or developer must do, and what to avoid.</ds-prop>
   <ds-prop name="examples" type="&lt;ds-type-ref href=&quot;common-example.html#example&quot;&gt;example&lt;/ds-type-ref&gt;[]">Visual or code examples that illustrate the concern: before/after screenshots for RTL, samples of text expansion, or code patterns for pluralization.</ds-prop>
+</ds-prop-table>
+<ds-heading level="3" anchor="section-section">Section (<ds-code inline>section</ds-code>)</ds-heading>
+<p>Free-form narrative prose organized into titled, optionally nested sections — the backbone of conceptual overviews, explanations, rationale, and any reading-oriented content the structured block kinds do not capture. Available on every entity type. Each <ds-code inline>sectionEntry</ds-code> pairs a <ds-code inline>title</ds-code> with an optional rich-text <ds-code inline>body</ds-code>, illustrative <ds-code inline>examples</ds-code>, related <ds-code inline>links</ds-code>, and recursive <ds-code inline>sections</ds-code> for a heading hierarchy. Reach for a structured block kind first; use <ds-code inline>section</ds-code> only for what they cannot express.</p>
+<ds-heading level="4" anchor="section-entry">Section entry</ds-heading>
+<ds-prop-table>
+  <ds-prop name="title" type="string" required>The section heading (e.g., 'Installation', 'Core concepts', 'Why semantic tokens'). Concise enough to render as a heading and to anchor a deep link.</ds-prop>
+  <ds-prop name="anchor" type="string">A stable, URL-safe fragment identifier for deep-linking to this section (e.g., 'installation', 'core-concepts'). MUST be lowercase kebab-case and unique within the parent block. When omitted, tools MAY derive an anchor from the title.<br><small>Pattern: <ds-code inline>^[a-z][a-z0-9-]*$</ds-code></small></ds-prop>
+  <ds-prop name="body" type="&lt;ds-type-ref href=&quot;common-rich-text.html#richtext&quot;&gt;richText&lt;/ds-type-ref&gt;">The prose content of the section. Supports markdown by default. May be omitted when the section exists only to group sub-sections under a heading.</ds-prop>
+  <ds-prop name="examples" type="&lt;ds-type-ref href=&quot;common-example.html#example&quot;&gt;example&lt;/ds-type-ref&gt;[]">Illustrative examples for this section: code snippets, images, videos, or live URLs. Useful for showing a concept in practice within explanatory prose.</ds-prop>
+  <ds-prop name="links" type="&lt;ds-type-ref href=&quot;common-link.html#link&quot;&gt;link&lt;/ds-type-ref&gt;[]">Related links surfaced with this section — 'see also' references, source material, or pointers to other entities and external resources.</ds-prop>
+  <ds-prop name="sections" type="&lt;ds-type-ref href=&quot;document-blocks-section.html#sectionentry&quot;&gt;sectionEntry&lt;/ds-type-ref&gt;[]">Nested sub-sections beneath this one. Each item is itself a sectionEntry, allowing an arbitrarily deep heading hierarchy. Ordering is significant — tools SHOULD render sub-sections in this order.</ds-prop>
 </ds-prop-table>
 <hr />
 <ds-heading level="2" anchor="component-scoped-document-block-types">Component-scoped document block types</ds-heading>
@@ -843,18 +854,7 @@
 </ds-prop-table>
 <hr />
 <ds-heading level="2" anchor="guide-scoped-document-block-types">Guide-scoped document block types</ds-heading>
-<p>These document block types are accepted on <strong>guide</strong> entities (which also accept <ds-code inline>import</ds-code> and all general document block types). They favor reading-oriented prose and procedures over the measurable specs used by components.</p>
-<ds-heading level="3" anchor="section-section">Section (<ds-code inline>section</ds-code>)</ds-heading>
-<p>Narrative prose organized into titled, optionally nested sections — the backbone of conceptual overviews, explanations, and rationale. Each <ds-code inline>sectionEntry</ds-code> pairs a <ds-code inline>title</ds-code> with an optional rich-text <ds-code inline>body</ds-code>, illustrative <ds-code inline>examples</ds-code>, related <ds-code inline>links</ds-code>, and recursive <ds-code inline>sections</ds-code> for a heading hierarchy.</p>
-<ds-heading level="4" anchor="section-entry">Section entry</ds-heading>
-<ds-prop-table>
-  <ds-prop name="title" type="string" required>The section heading (e.g., 'Installation', 'Core concepts', 'Why semantic tokens'). Concise enough to render as a heading and to anchor a deep link.</ds-prop>
-  <ds-prop name="anchor" type="string">A stable, URL-safe fragment identifier for deep-linking to this section (e.g., 'installation', 'core-concepts'). MUST be lowercase kebab-case and unique within the parent block. When omitted, tools MAY derive an anchor from the title.<br><small>Pattern: <ds-code inline>^[a-z][a-z0-9-]*$</ds-code></small></ds-prop>
-  <ds-prop name="body" type="&lt;ds-type-ref href=&quot;common-rich-text.html#richtext&quot;&gt;richText&lt;/ds-type-ref&gt;">The prose content of the section. Supports markdown by default. May be omitted when the section exists only to group sub-sections under a heading.</ds-prop>
-  <ds-prop name="examples" type="&lt;ds-type-ref href=&quot;common-example.html#example&quot;&gt;example&lt;/ds-type-ref&gt;[]">Illustrative examples for this section: code snippets, images, videos, or live URLs. Useful for showing a concept in practice within explanatory prose.</ds-prop>
-  <ds-prop name="links" type="&lt;ds-type-ref href=&quot;common-link.html#link&quot;&gt;link&lt;/ds-type-ref&gt;[]">Related links surfaced with this section — 'see also' references, source material, or pointers to other entities and external resources.</ds-prop>
-  <ds-prop name="sections" type="&lt;ds-type-ref href=&quot;document-blocks-section.html#sectionentry&quot;&gt;sectionEntry&lt;/ds-type-ref&gt;[]">Nested sub-sections beneath this one. Each item is itself a sectionEntry, allowing an arbitrarily deep heading hierarchy. Ordering is significant — tools SHOULD render sub-sections in this order.</ds-prop>
-</ds-prop-table>
+<p>The <ds-code inline>steps</ds-code> block is accepted only on <strong>guide</strong> entities. Guides also accept <ds-code inline>import</ds-code> and every general document block type — including the free-form <ds-code inline>section</ds-code> block (documented above), which carries a guide's narrative prose.</p>
 <ds-heading level="3" anchor="steps-steps">Steps (<ds-code inline>steps</ds-code>)</ds-heading>
 <p>An ordered (or unordered) procedure — the sequence of steps a reader follows to install, build, contribute, or migrate. The block carries an optional <ds-code inline>title</ds-code> and an <ds-code inline>ordered</ds-code> flag (default <ds-code inline>true</ds-code>); set <ds-code inline>ordered: false</ds-code> for an independent checklist.</p>
 <ds-heading level="4" anchor="step-entry">Step entry</ds-heading>

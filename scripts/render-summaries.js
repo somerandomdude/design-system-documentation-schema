@@ -203,18 +203,31 @@ function blockContainer(def) {
 }
 
 // For every block def: which unions reference it → scope label.
+// Unions reference the general kinds indirectly, via a single
+// `generalDocumentBlock` branch. Expand that branch into its member kinds so
+// the general kinds (guideline, purpose, accessibility, content, section) are
+// attributed to every union that includes general, not lost one level down.
 function buildBlockScope(defs) {
   const generalNames = new Set(
-    ((defs.generalDocumentBlock && defs.generalDocumentBlock.oneOf) || []).map((o) => linkToRef(o.$ref)),
+    ((defs.generalDocumentBlock && defs.generalDocumentBlock.oneOf) || [])
+      .map((o) => linkToRef(o.$ref))
+      .filter(Boolean),
   );
   const scopeByBlock = {}; // block def name → Set of entity labels
+  const add = (block, label) => {
+    (scopeByBlock[block] = scopeByBlock[block] || new Set()).add(label);
+  };
   for (const union of UNION_ORDER) {
     const u = defs[union];
     if (!u) continue;
     for (const alt of u.oneOf || []) {
       const b = linkToRef(alt.$ref);
       if (!b) continue;
-      (scopeByBlock[b] = scopeByBlock[b] || new Set()).add(UNION_LABELS[union]);
+      if (b === "generalDocumentBlock") {
+        for (const g of generalNames) add(g, UNION_LABELS[union]);
+      } else {
+        add(b, UNION_LABELS[union]);
+      }
     }
   }
   return { generalNames, scopeByBlock };
@@ -316,10 +329,15 @@ function renderBlockScopeTable(opts = {}) {
 
   const rows = UNION_ORDER.filter((u) => defs[u]).map((union) => {
     const members = (defs[union].oneOf || []).map((o) => linkToRef(o.$ref)).filter(Boolean);
-    const nonGeneral = members.filter((m) => !generalNames.has(m));
-    const accepts = nonGeneral.length
-      ? nonGeneral.map((m) => code(kindConst(defs[m]) || m)).join(", ") + " + general"
-      : "general only";
+    // General kinds arrive via a `generalDocumentBlock` branch (or, legacy, inlined).
+    const hasGeneral =
+      members.includes("generalDocumentBlock") || members.some((m) => generalNames.has(m));
+    const specific = members.filter((m) => m !== "generalDocumentBlock" && !generalNames.has(m));
+    const accepts = specific.length
+      ? specific.map((m) => code(kindConst(defs[m]) || m)).join(", ") + (hasGeneral ? " + general" : "")
+      : hasGeneral
+        ? "general only"
+        : "—";
     return [
       `**${UNION_LABELS[union]}**`,
       (usedBy[union] || []).map(code).join(", ") || "—",
