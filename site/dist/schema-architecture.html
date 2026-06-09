@@ -77,7 +77,53 @@
   <div class="content content--with-toc">
     <main class="content__main" role="main">
       <div class="content__inner">
-        <ds-heading level="2" anchor="schema-architecture">Schema architecture</ds-heading>
+        <ds-heading level="2" anchor="start-here-the-core">Start here: the core</ds-heading>
+<p>You don't need most of this page to write good DSDS. The whole model is small:</p>
+<blockquote>
+<p>A document holds one or more <strong>entities</strong>. Each entity has <strong>metadata</strong> (short facts about it) and <strong>document blocks</strong> (its actual documentation).</p>
+</blockquote>
+<p>The handful of concepts you'll use constantly:</p>
+<ul>
+<li><strong>Document</strong> — <ds-code inline>dsdsVersion</ds-code> plus either a single <ds-code inline>entity</ds-code> or a <ds-code inline>documentation</ds-code> group of entities.</li>
+<li><strong>Entity</strong> — a <ds-code inline>kind</ds-code> (<ds-code inline>component</ds-code>, <ds-code inline>token</ds-code>, <ds-code inline>theme</ds-code>, <ds-code inline>foundation</ds-code>, <ds-code inline>pattern</ds-code>, or <ds-code inline>guide</ds-code>) with an <ds-code inline>identifier</ds-code> and a <ds-code inline>name</ds-code>.</li>
+<li><strong>Metadata</strong> — short facts in the <ds-code inline>metadata</ds-code> array; the one you'll always use is <ds-code inline>description</ds-code>.</li>
+<li><strong>Document blocks</strong> — the documentation, in the <ds-code inline>documentBlocks</ds-code> array. Two cover most needs: <strong><ds-code inline>purpose</ds-code></strong> (when to use the thing) and <strong><ds-code inline>guideline</ds-code></strong> (how to use it). <strong><ds-code inline>section</ds-code></strong> holds free-form prose for anything else.</li>
+</ul>
+<p>A complete, valid document using only the core:</p>
+<ds-code language="json">{
+  "dsdsVersion": "0.6",
+  "entity": {
+    "kind": "component",
+    "identifier": "button",
+    "name": "Button",
+    "metadata": [
+      { "kind": "description", "value": "Triggers an action such as submitting a form." }
+    ],
+    "documentBlocks": [
+      {
+        "kind": "purpose",
+        "useCases": [
+          { "description": "Submitting a form or confirming an action.", "stance": "recommended" }
+        ]
+      },
+      {
+        "kind": "guideline",
+        "items": [
+          {
+            "guidance": "Use a single primary button per view.",
+            "rationale": "Multiple primary buttons dilute the visual hierarchy.",
+            "level": "SHOULD",
+            "category": "visual-design"
+          }
+        ]
+      }
+    ]
+  }
+}
+</ds-code>
+<p>Everything else on this page — <ds-code inline>anatomy</ds-code>, <ds-code inline>api</ds-code>, <ds-code inline>variants</ds-code>, <ds-code inline>states</ds-code>, <ds-code inline>design-specifications</ds-code>, <ds-code inline>motion</ds-code>, <ds-code inline>scale</ds-code>, <ds-code inline>events</ds-code>, and the other metadata kinds — is <strong>optional</strong>. Reach for a block when you have that specific thing to document, and skip the rest. The <a href="quickstart.html">Quick Start</a> is the gentlest path in; the sections below are the complete reference.</p>
+<hr />
+<ds-heading level="2" anchor="schema-architecture">Schema architecture</ds-heading>
 <p>The DSDS schema uses three directories plus a root schema:</p>
 <ds-table><table><thead><tr><th>Directory</th><th>Contents</th></tr></thead><tbody><tr><td><ds-code inline>common/</ds-code></td><td>Shared primitives used across all schemas — richText, statusValue, platformStatus, link, example, extensions, metadata, useCases</td></tr><tr><td><ds-code inline>entities/</ds-code></td><td>Entity type schemas — component, token (including tokenGroup), theme, foundation, pattern, guide</td></tr><tr><td><ds-code inline>document-blocks/</ds-code></td><td>Document block type schemas — guideline, anatomy, api, events, import, variant, state, design-specifications, accessibility, purpose, scale, principle, motion, content, interaction, section, steps, plus the scoped union (document-blocks.schema.json)</td></tr></tbody></table></ds-table>
 <ds-code>spec/schema/
@@ -211,7 +257,19 @@
   ]
 }
 </ds-code>
-<p>The <ds-code inline>#/entity</ds-code> fragment is a JSON Pointer — it pulls the <ds-code inline>entity</ds-code> value out of the referenced file. Tooling resolves all <ds-code inline>$ref</ds-code> objects into a merged document before validation, using a library such as <a href="https://github.com/APIDevTools/json-schema-ref-parser"><ds-code inline>json-schema-ref-parser</ds-code></a>. The schema validates the structure of <ds-code inline>$ref</ds-code> objects; resolution and deep validation of referenced content is the responsibility of consuming tooling.</p>
+<p>The <ds-code inline>#/entity</ds-code> fragment is a JSON Pointer — it pulls the <ds-code inline>entity</ds-code> value out of the referenced file. Tooling resolves all <ds-code inline>$ref</ds-code> objects into a merged document before validation, using a library such as <a href="https://github.com/APIDevTools/json-schema-ref-parser"><ds-code inline>json-schema-ref-parser</ds-code></a>. The schema validates the structure of <ds-code inline>$ref</ds-code> objects; resolving and deep-validating referenced content is the responsibility of consuming tooling, which must follow the rules below.</p>
+<ds-heading level="3" anchor="splitting-a-document-across-files">Splitting a document across files</ds-heading>
+<p>The simplest DSDS document is one self-contained file — nothing to resolve. Splitting a system across files is <strong>optional</strong>; reach for it only when a system is big enough to be easier to manage in pieces.</p>
+<p>When you do split, link the pieces with <ds-code inline>$ref</ds-code> — the same pattern OpenAPI and JSON Schema use. <ds-code inline>\{ "$ref": "./components/button.dsds.json#/entity" \}</ds-code> means "use the <ds-code inline>entity</ds-code> from that file here." A tool joins all the <ds-code inline>$ref</ds-code>s into one document, then validates the result. It can also save that joined document back out as a single file — so you can <strong>author in pieces but ship one self-contained file with no <ds-code inline>$ref</ds-code>s</strong>, and whoever consumes it needs no resolver at all.</p>
+<p>The rules below apply only to tools that resolve <ds-code inline>$ref</ds-code>s — a bundled single file needs none of them. Following a <ds-code inline>$ref</ds-code> can open files or make network requests, so a tool that resolves them needs to follow a few rules:</p>
+<ul>
+<li><strong>Relative paths only.</strong> A <ds-code inline>$ref</ds-code> points to a file alongside your document. It can't be a web address or an absolute path. To point at a <em>different</em> design system, use <a href="#extends"><ds-code inline>extends</ds-code></a>.</li>
+<li><strong>Join first, then validate.</strong> Combine the files into one document, then check that against the schema. It only counts as valid afterward.</li>
+<li><strong>No loops.</strong> If two files reference each other in a circle, the tool treats it as an error.</li>
+<li><strong>A broken link stops the build.</strong> If the target file — or the spot inside it — is missing, or holds the wrong kind of thing, the tool reports an error rather than skipping it or leaving a blank.</li>
+<li><strong>No fetching from the web by default.</strong> This covers every link a tool might follow: <ds-code inline>$ref</ds-code>, <ds-code inline>extends</ds-code>, a token's <ds-code inline>source</ds-code>, and <ds-code inline>links</ds-code>. Turn it on only on purpose, limit it to sites you trust, and block local and internal addresses (like <ds-code inline>169.254.169.254</ds-code>) so a malicious file can't make your server reach systems it shouldn't. (This kind of attack is called SSRF.)</li>
+</ul>
+<p>Following these keeps different tools reading the same split-up document the same way, and stops a hostile file from using a tool to reach things it shouldn't.</p>
 <ds-heading level="3" anchor="entity-kind-discriminator">Entity kind discriminator</ds-heading>
 <p>Every entity carries a <ds-code inline>kind</ds-code> property — a required string const naming the entity type. Entities live in typed arrays (<ds-code inline>components</ds-code>, <ds-code inline>tokenGroups</ds-code>, <ds-code inline>themes</ds-code>, <ds-code inline>foundations</ds-code>, <ds-code inline>patterns</ds-code>), so the array name already pins the expected kind. The <ds-code inline>kind</ds-code> property is still required on each entity for self-description and validation.</p>
 <ds-table>
@@ -966,6 +1024,14 @@
 </ds-code>
 <hr />
 <ds-heading level="2" anchor="naming-conventions">Naming conventions</ds-heading>
+<ds-heading level="3" anchor="casing">Casing</ds-heading>
+<p>Casing follows <strong>position and provenance</strong>:</p>
+<ul>
+<li><strong>Schema identifiers</strong> — <ds-code inline>$def</ds-code> type names and property names — are <strong>camelCase</strong> (<ds-code inline>tokenGroup</ds-code>, <ds-code inline>tokenGroups</ds-code>).</li>
+<li><strong>Enumerated string values</strong> are <strong>kebab-case</strong> (<ds-code inline>token-group</ds-code>, <ds-code inline>visual-design</ds-code>, <ds-code inline>recommended</ds-code>) — except values adopted from an external standard, which keep that standard's casing: RFC 2119 requirement levels (<ds-code inline>MUST</ds-code>, <ds-code inline>SHOULD</ds-code>, <ds-code inline>SHOULD_NOT</ds-code>, <ds-code inline>MUST_NOT</ds-code>) and WCAG conformance levels (<ds-code inline>A</ds-code>, <ds-code inline>AA</ds-code>, <ds-code inline>AAA</ds-code>).</li>
+<li>Keys beginning with <ds-code inline>$</ds-code> (<ds-code inline>$schema</ds-code>, <ds-code inline>$ref</ds-code>, <ds-code inline>$extensions</ds-code>) are reserved.</li>
+</ul>
+<p>So one concept can appear in several forms — the <ds-code inline>token-group</ds-code> kind, the <ds-code inline>tokenGroup</ds-code> type, the <ds-code inline>tokenGroups</ds-code> array — because each follows its position's rule.</p>
 <ds-heading level="3" anchor="token-identifier-exception">Token identifier exception</ds-heading>
 <p>Most entity types enforce a strict <ds-code inline>^[a-z][a-z0-9-]*$</ds-code> pattern on the <ds-code inline>identifier</ds-code> property. Tokens and token groups are the exception by design. Their identifiers are unconstrained to fit the W3C Design Tokens Format Module, design tool variable systems, and existing token setups. These setups may use dots (<ds-code inline>color.text.primary</ds-code>), slashes (<ds-code inline>color/text/primary</ds-code>), or other separators. Token identifiers <em>SHOULD</em> still be lowercase and human-readable, but the schema does not enforce a pattern.</p>
 <ds-heading level="3" anchor="document-block-type-naming">Document block type naming</ds-heading>

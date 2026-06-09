@@ -3,6 +3,58 @@ title: Schema Architecture
 slug: schema-architecture
 ---
 
+## Start here: the core
+
+You don't need most of this page to write good DSDS. The whole model is small:
+
+> A document holds one or more **entities**. Each entity has **metadata** (short facts about it) and **document blocks** (its actual documentation).
+
+The handful of concepts you'll use constantly:
+
+- **Document** — `dsdsVersion` plus either a single `entity` or a `documentation` group of entities.
+- **Entity** — a `kind` (`component`, `token`, `theme`, `foundation`, `pattern`, or `guide`) with an `identifier` and a `name`.
+- **Metadata** — short facts in the `metadata` array; the one you'll always use is `description`.
+- **Document blocks** — the documentation, in the `documentBlocks` array. Two cover most needs: **`purpose`** (when to use the thing) and **`guideline`** (how to use it). **`section`** holds free-form prose for anything else.
+
+A complete, valid document using only the core:
+
+```json
+{
+  "dsdsVersion": "0.6",
+  "entity": {
+    "kind": "component",
+    "identifier": "button",
+    "name": "Button",
+    "metadata": [
+      { "kind": "description", "value": "Triggers an action such as submitting a form." }
+    ],
+    "documentBlocks": [
+      {
+        "kind": "purpose",
+        "useCases": [
+          { "description": "Submitting a form or confirming an action.", "stance": "recommended" }
+        ]
+      },
+      {
+        "kind": "guideline",
+        "items": [
+          {
+            "guidance": "Use a single primary button per view.",
+            "rationale": "Multiple primary buttons dilute the visual hierarchy.",
+            "level": "SHOULD",
+            "category": "visual-design"
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+Everything else on this page — `anatomy`, `api`, `variants`, `states`, `design-specifications`, `motion`, `scale`, `events`, and the other metadata kinds — is **optional**. Reach for a block when you have that specific thing to document, and skip the rest. The [Quick Start](quickstart.html) is the gentlest path in; the sections below are the complete reference.
+
+---
+
 ## Schema architecture
 
 The DSDS schema uses three directories plus a root schema:
@@ -96,7 +148,23 @@ Each `$ref` object has one property: `$ref`. Its value is a URI or relative path
 }
 ```
 
-The `#/entity` fragment is a JSON Pointer — it pulls the `entity` value out of the referenced file. Tooling resolves all `$ref` objects into a merged document before validation, using a library such as [`json-schema-ref-parser`](https://github.com/APIDevTools/json-schema-ref-parser). The schema validates the structure of `$ref` objects; resolution and deep validation of referenced content is the responsibility of consuming tooling.
+The `#/entity` fragment is a JSON Pointer — it pulls the `entity` value out of the referenced file. Tooling resolves all `$ref` objects into a merged document before validation, using a library such as [`json-schema-ref-parser`](https://github.com/APIDevTools/json-schema-ref-parser). The schema validates the structure of `$ref` objects; resolving and deep-validating referenced content is the responsibility of consuming tooling, which must follow the rules below.
+
+### Splitting a document across files
+
+The simplest DSDS document is one self-contained file — nothing to resolve. Splitting a system across files is **optional**; reach for it only when a system is big enough to be easier to manage in pieces.
+
+When you do split, link the pieces with `$ref` — the same pattern OpenAPI and JSON Schema use. `{ "$ref": "./components/button.dsds.json#/entity" }` means "use the `entity` from that file here." A tool joins all the `$ref`s into one document, then validates the result. It can also save that joined document back out as a single file — so you can **author in pieces but ship one self-contained file with no `$ref`s**, and whoever consumes it needs no resolver at all.
+
+The rules below apply only to tools that resolve `$ref`s — a bundled single file needs none of them. Following a `$ref` can open files or make network requests, so a tool that resolves them needs to follow a few rules:
+
+- **Relative paths only.** A `$ref` points to a file alongside your document. It can't be a web address or an absolute path. To point at a _different_ design system, use [`extends`](#extends).
+- **Join first, then validate.** Combine the files into one document, then check that against the schema. It only counts as valid afterward.
+- **No loops.** If two files reference each other in a circle, the tool treats it as an error.
+- **A broken link stops the build.** If the target file — or the spot inside it — is missing, or holds the wrong kind of thing, the tool reports an error rather than skipping it or leaving a blank.
+- **No fetching from the web by default.** This covers every link a tool might follow: `$ref`, `extends`, a token's `source`, and `links`. Turn it on only on purpose, limit it to sites you trust, and block local and internal addresses (like `169.254.169.254`) so a malicious file can't make your server reach systems it shouldn't. (This kind of attack is called SSRF.)
+
+Following these keeps different tools reading the same split-up document the same way, and stops a hostile file from using a tool to reach things it shouldn't.
 
 ### Entity kind discriminator
 
@@ -869,6 +937,16 @@ The root document, each documentation group, and each entity can carry a `$exten
 ---
 
 ## Naming conventions
+
+### Casing
+
+Casing follows **position and provenance**:
+
+- **Schema identifiers** — `$def` type names and property names — are **camelCase** (`tokenGroup`, `tokenGroups`).
+- **Enumerated string values** are **kebab-case** (`token-group`, `visual-design`, `recommended`) — except values adopted from an external standard, which keep that standard's casing: RFC 2119 requirement levels (`MUST`, `SHOULD`, `SHOULD_NOT`, `MUST_NOT`) and WCAG conformance levels (`A`, `AA`, `AAA`).
+- Keys beginning with `$` (`$schema`, `$ref`, `$extensions`) are reserved.
+
+So one concept can appear in several forms — the `token-group` kind, the `tokenGroup` type, the `tokenGroups` array — because each follows its position's rule.
 
 ### Token identifier exception
 
