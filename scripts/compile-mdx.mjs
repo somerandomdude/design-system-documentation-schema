@@ -245,10 +245,10 @@ function preprocessExamples(source) {
 // Examples:
 //   <ds-prop-table schema="entities/component" def="component" />
 //   <ds-prop-table schema="common/agents" def="agents" />
-//   <ds-prop-table schema="root" def="documentationGroup" />
+//   <ds-prop-table schema="root" def="entityGroup" />
 //
 // Pass `def="$root"` to render the schema's top-level `properties` (used
-// by schemas like common/agent-collection that put their fields at the
+// by schemas that put their fields at the
 // root instead of in a $defs entry).
 //
 // The rendered HTML contains void/inline elements like <br>, <small>,

@@ -58,7 +58,7 @@ Start here:
 - **[Schema Architecture](https://designsystemdocspec.org/schema-architecture.html)** — The full schema reference. Covers document structure, entity types, the `agents` property, status, the document-block system, links, extends, extensions, naming conventions, and conformance levels, all with live property tables sourced from the schema.
 - **[Interactive Samples](https://designsystemdocspec.org/samples.html)** — Side-by-side JSON ↔ rendered docs for real-world entities (component, token, theme, foundation, pattern).
 
-Per-schema reference pages live alongside the narrative pages — e.g. [entities/component](https://designsystemdocspec.org/entities-component.html), [document-blocks/guideline](https://designsystemdocspec.org/document-blocks-guideline.html), [common/agents](https://designsystemdocspec.org/common-agents.html). Every page is auto-generated from its corresponding `spec/schema/**/*.schema.json` file.
+Per-schema reference pages live alongside the narrative pages — e.g. [entities/component](https://designsystemdocspec.org/entities-component.html), [document-blocks/guidelines](https://designsystemdocspec.org/document-blocks-guidelines.html), [common/use-cases](https://designsystemdocspec.org/common-use-cases.html). Every page is auto-generated from its corresponding `spec/schema/**/*.schema.json` file.
 
 The site can also be built locally for offline browsing or while developing the spec — run `npm run build` and open `site/dist/index.html`.
 
@@ -69,34 +69,32 @@ This README intentionally does **not** duplicate schema field listings, document
 ```
 spec/
 ├── schema/
-│   ├── dsds.schema.json                                # Root JSON Schema
+│   ├── dsds.schema.json                                # Root JSON Schema (anyEntity, entityGroup, fileRef)
 │   ├── dsds.bundled.schema.json                        # Auto-generated single-file bundle
 │   ├── common/                                         # Shared primitives
-│   │   ├── agent-collection.schema.json                # agentCollection (multi-entity agent context file)
-│   │   ├── agents.schema.json                          # agents (agent context for AI/LLM consumption)
+│   │   ├── criterion.schema.json                       # criterion, reference (testable success criteria)
 │   │   ├── example.schema.json                         # example
 │   │   ├── extends.schema.json                         # documentExtends, entityExtends
 │   │   ├── extensions.schema.json                      # $extensions
 │   │   ├── link.schema.json                            # link
-│   │   ├── system-info.schema.json                     # systemInfo
-│   │   ├── rich-text.schema.json                       # richText
 │   │   ├── presentation.schema.json                    # presentationImage, presentationVideo, presentationCode, presentationUrl
+│   │   ├── rich-text.schema.json                       # richText (markdown string)
 │   │   ├── status.schema.json                          # statusValue, platformStatus
-│   │   └── purpose.schema.json                         # purpose, useCase
-│   ├── metadata/                                       # Modular entity metadata kinds (entityMetadata union)
-│   │   ├── metadata.schema.json                        # entityMetadata (oneOf union of every metadata kind)
-│   │   ├── aliases.schema.json                         # aliasesMetadata
-│   │   ├── category.schema.json                        # categoryMetadata
-│   │   ├── description.schema.json                     # descriptionMetadata
-│   │   ├── extends.schema.json                         # extendsMetadata
-│   │   ├── last-updated.schema.json                    # lastUpdatedMetadata
-│   │   ├── links.schema.json                           # linksMetadata
-│   │   ├── preview.schema.json                         # previewMetadata
-│   │   ├── since.schema.json                           # sinceMetadata
-│   │   ├── status.schema.json                          # statusMetadata
-│   │   ├── summary.schema.json                         # summaryMetadata
-│   │   ├── tags.schema.json                            # tagsMetadata
-│   │   └── thumbnail.schema.json                       # thumbnailMetadata
+│   │   ├── system-info.schema.json                     # systemInfo
+│   │   └── use-cases.schema.json                       # useCases, useCase
+│   ├── metadata/                                       # Entity metadata fields (one file per field)
+│   │   ├── metadata.schema.json                        # entityMetadata (the aggregating object)
+│   │   ├── aliases.schema.json                         # aliases
+│   │   ├── category.schema.json                        # category
+│   │   ├── extends.schema.json                         # extends
+│   │   ├── last-updated.schema.json                    # lastUpdated
+│   │   ├── links.schema.json                           # links
+│   │   ├── preview.schema.json                         # preview
+│   │   ├── since.schema.json                           # since
+│   │   ├── status.schema.json                          # status
+│   │   ├── summary.schema.json                         # summary
+│   │   ├── tags.schema.json                            # tags
+│   │   └── thumbnail.schema.json                       # thumbnail
 │   ├── entities/                                       # Entity types
 │   │   ├── component.schema.json                       # component
 │   │   ├── foundation.schema.json                      # foundation
@@ -104,35 +102,36 @@ spec/
 │   │   ├── pattern.schema.json                         # pattern
 │   │   ├── theme.schema.json                           # theme, tokenOverride
 │   │   └── token.schema.json                           # token, tokenGroup
-│   └── document-blocks/                                 # Document block types
-│       ├── document-blocks.schema.json                  # Scoped unions (componentDocumentBlock, foundationDocumentBlock, etc.)
+│   └── document-blocks/                                # Document block types
+│       ├── document-blocks.schema.json                 # Scoped unions (componentDocumentBlock, generalDocumentBlock, etc.)
 │       ├── accessibility.schema.json                   # accessibility, keyboardInteraction, ariaAttribute, colorContrast
 │       ├── anatomy.schema.json                         # anatomy, anatomyEntry
 │       ├── api.schema.json                             # api, apiProperty, apiEvent, apiSlot, etc.
-│       ├── guideline.schema.json                       # guideline, guidelineEntry, criterionReference, criterionDefinition
 │       ├── content.schema.json                         # content, contentLabelEntry, localizationEntry
 │       ├── design-specifications.schema.json           # designSpecifications, spacingSpec, sizingSpec, typographySpec, etc.
-│       ├── events.schema.json                          # events, eventEntry
-│       ├── import.schema.json                          # import, importEntry
-│       ├── interaction.schema.json                     # interactions, interactionEntry
+│       ├── guidelines.schema.json                      # guidelines, guidelineEntry
+│       ├── imports.schema.json                         # imports, importEntry
+│       ├── interactions.schema.json                    # interactions, interactionEntry
 │       ├── motion.schema.json                          # motion, motionEntry, motionDuration
-│       ├── principle.schema.json                       # principles, principleEntry
+│       ├── principles.schema.json                      # principles, principleEntry
 │       ├── scale.schema.json                           # scale, scaleStep
-│       ├── section.schema.json                         # section, sectionEntry
-│       ├── state.schema.json                           # states, stateEntry
+│       ├── sections.schema.json                        # sections, sectionEntry
+│       ├── states.schema.json                          # states, stateEntry
 │       ├── steps.schema.json                           # steps, stepEntry
-│       └── variant.schema.json                         # variants, flagVariant, enumVariant, variantValue
+│       └── variants.schema.json                        # variants, flagVariant, enumVariant, variantValue
 └── examples/
     ├── starter-kit.dsds.json                           # Complete document with components, tokens, foundations, patterns
     ├── minimal/                                        # Lightweight examples showing the floor of documentation
     ├── common/                                         # Per-definition examples for common primitives
+    ├── metadata/                                       # Per-field examples for entity metadata
     ├── entities/                                       # Per-definition examples for entity types (incl. empty-state pattern)
-    └── document-blocks/                                 # Per-definition examples for document block types (incl. motion, content)
+    └── document-blocks/                                # Per-definition examples for document block types (incl. motion, content)
 
 scripts/
 ├── bundle.js                                           # Generates dsds.bundled.schema.json from split schemas
 ├── validate.js                                         # Validates all example files against the bundled schema
 ├── sync-examples.js                                    # Syncs markdown dsds:include directives with example JSON
+├── migrate-to-0.7.js                                   # Migrates v0.5.x / v0.6 documents to the v0.7 shape
 ├── build-site.js                                       # Generates the static specification site (orchestrator)
 ├── build-samples.js                                    # Generates the interactive sample viewer from example JSON
 ├── render-entity.js                                    # Server-side entity rendering used by build-samples.js
@@ -211,7 +210,7 @@ To validate your own DSDS file:
 npx ajv validate -s spec/schema/dsds.bundled.schema.json -d my-system.dsds.json
 ```
 
-Reference `https://designsystemdocspec.org/v0.6/dsds.bundled.schema.json` from your DSDS files via the `$schema` keyword to get editor autocompletion and inline validation. See the [Quick Start docs page](https://designsystemdocspec.org/quickstart.html) for the single-entity and multi-entity document shapes.
+Reference `https://designsystemdocspec.org/v0.7/dsds.bundled.schema.json` from your DSDS files via the `$schema` keyword to get editor autocompletion and inline validation. See the [Quick Start docs page](https://designsystemdocspec.org/quickstart.html) for the single-entity and multi-entity document shapes.
 
 ### 4. Build the spec site
 
@@ -309,7 +308,7 @@ The Quick Start page (`site/content/quickstart.mdx`) is compiled the same way as
 The spec version lives in three coordinated places:
 
 1. **`spec/schema/dsds.schema.json#/properties/dsdsVersion/const`** — the single source of truth. The bundle script, the nav, every page title, and the versioned dist directory all derive from this value.
-2. **The `$id` URL on every schema file** — e.g., `https://designsystemdocspec.org/v0.6/metadata/last-updated.schema.json`. Every example document's `$schema` field and every `"dsdsVersion"` literal inside example JSON has to track the same version.
+2. **The `$id` URL on every schema file** — e.g., `https://designsystemdocspec.org/v0.7/metadata/last-updated.schema.json`. Every example document's `$schema` field and every `"dsdsVersion"` literal inside example JSON has to track the same version.
 3. **`package.json#version`** — the npm package version. Conventionally kept in lockstep with `dsdsVersion.const`.
 
 The `scripts/bump-version.js` script keeps the first two in sync across all 44 schema files, every example, and the README. `package.json` is handled separately because it's not a schema-consumer file.
@@ -342,7 +341,7 @@ This is the exact sequence for cutting a release that includes schema changes. S
 
 4. **Bump `package.json#version`** to the target version (e.g. `0.2.0` → `0.2.1`).
 
-5. **Add a CHANGELOG entry** at the top of `CHANGELOG`, mirroring the format of the prior release. Include a one-line header noting where the bundled schema is now served (e.g., "Schema files are now served at `https://designsystemdocspec.org/v0.6/...`") and an "Additions" or "Breaking changes" section describing every schema-visible change.
+5. **Add a CHANGELOG entry** at the top of `CHANGELOG`, mirroring the format of the prior release. Include a one-line header noting where the bundled schema is now served (e.g., "Schema files are now served at `https://designsystemdocspec.org/v0.7/...`") and an "Additions" or "Breaking changes" section describing every schema-visible change.
 
 6. **Run the version bump.** Preview the change first:
 
@@ -376,8 +375,8 @@ This is the exact sequence for cutting a release that includes schema changes. S
 
 9. **Spot-check the rendered site.** Confirm the version reads correctly in three places:
 
-   - Page `<title>` tags (e.g., `DSDS Last Updated Metadata — DSDS 0.6`).
-   - The nav title (`Design System Documentation Spec 0.6`).
+   - Page `<title>` tags (e.g., `DSDS Last Updated Metadata — DSDS 0.7`).
+   - The nav title (`Design System Documentation Spec 0.7`).
    - The footer (`Design System Documentation Spec (DSDS) 0.2.1 — Draft Specification`).
 
    The new schema page should exist at `site/dist/<group>-<name>.html` (e.g., `site/dist/metadata-last-updated.html`), and the versioned bundle should exist at `site/dist/v<new-version>/dsds.bundled.schema.json`.

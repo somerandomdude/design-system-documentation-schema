@@ -106,80 +106,71 @@ function renderTable(headers, rows) {
 // Generators
 // ---------------------------------------------------------------------------
 
-/** Entity discriminator table: `kind` value → array → entity → defining file. */
+/** Entity discriminator table: `kind` value → entity → defining file. */
 function renderEntityTable(opts = {}) {
   const schemaDir = opts.schemaDir || SCHEMA_DIR;
   const defIndex = opts.defIndex || buildDefIndex({ schemaDir });
-  const { defs, root } = loadAllDefs(schemaDir);
+  const { defs } = loadAllDefs(schemaDir);
 
-  const entityNames = ((root.properties && root.properties.entity && root.properties.entity.oneOf) || [])
+  // The single entity union: used by the root `entity` property and each
+  // documentation group's `entities` array alike.
+  const entityNames = ((defs.anyEntity && defs.anyEntity.oneOf) || [])
     .map((o) => linkToRef(o.$ref))
     .filter(Boolean);
-
-  // Map entity def name → the documentationGroup array that holds it.
-  const groupProps = (defs.documentationGroup && defs.documentationGroup.properties) || {};
-  const arrayByEntity = {};
-  for (const [arrayName, schema] of Object.entries(groupProps)) {
-    const oneOf = schema.items && schema.items.oneOf;
-    if (!oneOf) continue;
-    for (const alt of oneOf) {
-      const ref = linkToRef(alt.$ref);
-      if (ref && ref !== "fileRef") arrayByEntity[ref] = arrayName;
-    }
-  }
 
   const rows = entityNames.map((name) => {
     const def = defs[name] || {};
     const kc = kindConst(def) || name;
-    const arr = arrayByEntity[name];
     const file = (defIndex[name] && defIndex[name].filename) || "";
     const fileCell = defIndex[name]
       ? `<ds-type-ref href="${defIndex[name].pageSlug}.html">${code("entities/" + file)}</ds-type-ref>`
       : code("entities/" + file);
     return [
       code(`"${kc}"`),
-      arr ? code(arr) : "—",
       escWithCode(firstSentence(def.description)),
       fileCell,
     ];
   });
 
-  return renderTable(["`kind` value", "Array", "Entity", "Defined in"], rows);
+  return renderTable(["`kind` value", "Entity", "Defined in"], rows);
 }
 
-/** Entity metadata kinds: the entityMetadata union, with what each carries. */
+/** Entity metadata fields: the entityMetadata object, with what each carries. */
 function renderMetadataKindsTable(opts = {}) {
   const schemaDir = opts.schemaDir || SCHEMA_DIR;
   const { defs } = loadAllDefs(schemaDir);
-  const order = ((defs.entityMetadata && defs.entityMetadata.oneOf) || [])
-    .map((o) => linkToRef(o.$ref))
-    .filter(Boolean);
+  const props = (defs.entityMetadata && defs.entityMetadata.properties) || {};
 
-  // File-level descriptions give the best one-liners for metadata kinds.
-  const fileDesc = {};
-  const mdir = path.join(schemaDir, "metadata");
-  for (const f of fs.existsSync(mdir) ? fs.readdirSync(mdir) : []) {
-    if (!f.endsWith(".schema.json") || f === "metadata.schema.json") continue;
-    try {
-      const data = JSON.parse(fs.readFileSync(path.join(mdir, f), "utf-8"));
-      for (const name of Object.keys(data.$defs || {})) fileDesc[name] = data.description;
-    } catch {
-      /* ignore */
+  // Each property is a $ref to a per-field def in metadata/; resolve one
+  // level so shape and description come from the field's own schema file.
+  const resolve = (p) => (p && p.$ref ? defs[linkToRef(p.$ref)] || p : p);
+
+  // Render the value shape of a metadata field: a ref name, a scalar type,
+  // a typed array, or a "x or y" union for shorthand/full-form fields.
+  const valueShape = (p) => {
+    if (p.$ref) return code(linkToRef(p.$ref) || "object");
+    if (p.oneOf) {
+      return p.oneOf
+        .map((b) => code(b.$ref ? linkToRef(b.$ref) || "object" : b.type || "object"))
+        .join(" or ");
     }
-  }
+    if (p.type === "array") {
+      const it = p.items || {};
+      return code(`${it.$ref ? linkToRef(it.$ref) : it.type || "any"}[]`);
+    }
+    return code(p.type || "object");
+  };
 
-  const rows = order.map((name) => {
-    const def = defs[name] || {};
-    const kc = kindConst(def) || name;
-    const carries = Object.keys(def.properties || {}).filter((p) => p !== "kind");
+  const rows = Object.entries(props).map(([name, p]) => {
+    const def = resolve(p);
     return [
-      code(kc),
-      carries.map(code).join(", ") || "—",
-      escWithCode(firstSentence(fileDesc[name] || def.description)),
+      code(name),
+      valueShape(def),
+      escWithCode(firstSentence(p.description || def.description)),
     ];
   });
 
-  return renderTable(["Metadata `kind`", "Carries", "Purpose"], rows);
+  return renderTable(["Metadata field", "Value", "Purpose"], rows);
 }
 
 // Resolve a block def to its { container, itemRef } pair.
@@ -220,7 +211,8 @@ function buildBlockScope(defs) {
   for (const union of UNION_ORDER) {
     const u = defs[union];
     if (!u) continue;
-    for (const alt of u.oneOf || []) {
+    // A union may be a bare $ref alias (e.g. tokenDocumentBlock → general).
+    for (const alt of u.oneOf || (u.$ref ? [{ $ref: u.$ref }] : [])) {
       const b = linkToRef(alt.$ref);
       if (!b) continue;
       if (b === "generalDocumentBlock") {
@@ -314,7 +306,7 @@ function renderBlockScopeTable(opts = {}) {
   );
 
   // entity def name → union it uses (via its documentBlocks ref).
-  const entityNames = ((root.properties && root.properties.entity && root.properties.entity.oneOf) || [])
+  const entityNames = ((defs.anyEntity && defs.anyEntity.oneOf) || [])
     .map((o) => linkToRef(o.$ref))
     .filter(Boolean);
   const usedBy = {}; // union name → [entity kind consts]
@@ -328,7 +320,10 @@ function renderBlockScopeTable(opts = {}) {
   }
 
   const rows = UNION_ORDER.filter((u) => defs[u]).map((union) => {
-    const members = (defs[union].oneOf || []).map((o) => linkToRef(o.$ref)).filter(Boolean);
+    const u = defs[union];
+    // A union may be a bare $ref alias (e.g. tokenDocumentBlock → general).
+    const alts = u.oneOf || (u.$ref ? [{ $ref: u.$ref }] : []);
+    const members = alts.map((o) => linkToRef(o.$ref)).filter(Boolean);
     // General kinds arrive via a `generalDocumentBlock` branch (or, legacy, inlined).
     const hasGeneral =
       members.includes("generalDocumentBlock") || members.some((m) => generalNames.has(m));

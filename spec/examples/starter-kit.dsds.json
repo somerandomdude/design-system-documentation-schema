@@ -1,6 +1,6 @@
 {
   "$schema": "../schema/dsds.bundled.schema.json",
-  "dsdsVersion": "0.6",
+  "dsdsVersion": "0.7",
   "systemInfo": {
     "systemName": "Acme Design System",
     "systemVersion": "2.0.0",
@@ -9,7 +9,7 @@
   },
   "documentBlocks": [
     {
-      "kind": "section",
+      "kind": "sections",
       "items": [
         {
           "title": "Overview",
@@ -18,8 +18,8 @@
       ]
     },
     {
-      "kind": "purpose",
-      "useCases": [
+      "kind": "useCases",
+      "items": [
         {
           "description": "When building a new product or feature within the Acme product suite that must conform to the Acme brand and interaction standards.",
           "stance": "recommended"
@@ -51,7 +51,7 @@
       ]
     },
     {
-      "kind": "guideline",
+      "kind": "guidelines",
       "items": [
         {
           "guidance": "Use semantic tokens instead of raw color, spacing, or typography values in all production code.",
@@ -70,11 +70,10 @@
           "rationale": "WCAG 1.4.4 requires that content remains functional at 200% text size. Components that break at zoom levels below 200% fail this criterion and exclude users with low vision.",
           "level": "MUST",
           "category": "accessibility",
-          "criteria": [
+          "references": [
             {
               "url": "https://www.w3.org/TR/WCAG22/#resize-text",
-              "label": "1.4.4 Resize Text",
-              "kind": "reference"
+              "label": "1.4.4 Resize Text"
             }
           ]
         },
@@ -89,11 +88,10 @@
           "rationale": "Keyboard operability is the foundation of accessibility. Users who rely on switch devices, screen readers, or alternative input methods all depend on keyboard support as the lowest common denominator.",
           "level": "MUST",
           "category": "accessibility",
-          "criteria": [
+          "references": [
             {
               "url": "https://www.w3.org/TR/WCAG22/#keyboard",
-              "label": "2.1.1 Keyboard",
-              "kind": "reference"
+              "label": "2.1.1 Keyboard"
             }
           ]
         },
@@ -118,53 +116,46 @@
       ]
     }
   ],
-  "documentation": [
+  "entityGroups": [
     {
       "name": "Acme Design System — Starter Kit",
       "description": "A representative sample of components, tokens, a foundation, and a pattern demonstrating DSDS document structure.",
-      "components": [
+      "entities": [
         {
           "kind": "component",
           "identifier": "button",
           "name": "Button",
-          "metadata": [
-            {
-              "kind": "description",
-              "value": "A clickable element that triggers an action. Buttons are the primary mechanism for submitting forms, opening dialogs, confirming decisions, and initiating operations."
+          "description": "A clickable element that triggers an action. Buttons are the primary mechanism for submitting forms, opening dialogs, confirming decisions, and initiating operations.",
+          "metadata": {
+            "status": "stable",
+            "since": "1.0.0",
+            "lastUpdated": {
+              "date": "2026-05-28",
+              "note": "Added focus-visible guidance and tightened tap-target language."
             },
-            {
-              "kind": "status",
-              "overall": "stable"
-            },
-            {
-              "kind": "since",
-              "value": "1.0.0"
-            },
-            {
-              "kind": "last-updated",
-              "value": "2026-05-28",
-              "description": "Added focus-visible guidance and tightened tap-target language."
-            },
-            {
-              "kind": "category",
-              "value": "action"
-            },
-            {
-              "kind": "links",
-              "items": [
-                {
-                  "kind": "source",
-                  "url": "https://code.acme.com/design-system/src/components/button/button.tsx",
-                  "label": "Source code"
-                },
-                {
-                  "kind": "documentation",
-                  "url": "https://design.acme.com/components/button",
-                  "label": "Documentation"
-                }
-              ]
-            }
-          ],
+            "category": "action",
+            "links": [
+              {
+                "kind": "source",
+                "url": "https://code.acme.com/design-system/src/components/button/button.tsx",
+                "label": "Source code"
+              },
+              {
+                "kind": "documentation",
+                "url": "https://design.acme.com/components/button",
+                "label": "Documentation"
+              }
+            ],
+            "tags": [
+              "action",
+              "submit",
+              "click",
+              "CTA",
+              "trigger",
+              "call-to-action",
+              "interactive"
+            ]
+          },
           "documentBlocks": [
             {
               "kind": "variants",
@@ -240,8 +231,8 @@
               ]
             },
             {
-              "kind": "purpose",
-              "useCases": [
+              "kind": "useCases",
+              "items": [
                 {
                   "description": "When the user needs to trigger an action such as submitting a form, saving data, or opening a dialog.",
                   "stance": "recommended"
@@ -261,7 +252,7 @@
               ]
             },
             {
-              "kind": "guideline",
+              "kind": "guidelines",
               "items": [
                 {
                   "guidance": "Limit each surface to one primary button.",
@@ -280,10 +271,9 @@
                   "rationale": "Screen readers need a text equivalent for every interactive control.",
                   "level": "MUST",
                   "category": "accessibility",
-                  "criteria": [
+                  "references": [
                     {
-                      "url": "https://www.w3.org/TR/WCAG22/#name-role-value",
-                      "kind": "reference"
+                      "url": "https://www.w3.org/TR/WCAG22/#name-role-value"
                     }
                   ]
                 }
@@ -304,43 +294,73 @@
               ]
             }
           ],
-          "agents": {
-            "intent": "Trigger a user-initiated action within the current view without causing page navigation.",
-            "constraints": [
+          "agentDocumentBlocks": [
+            {
+              "kind": "useCases",
+              "purpose": "Trigger a user-initiated action within the current view without causing page navigation.",
+              "items": [
+                {
+                  "description": "Use button for in-page actions; use link for navigation to a URL.",
+                  "stance": "discouraged",
+                  "alternative": {
+                    "identifier": "link"
+                  }
+                },
+                {
+                  "description": "Use button when a visible text label is present; use icon-button for icon-only affordances.",
+                  "stance": "discouraged",
+                  "alternative": {
+                    "identifier": "icon-button"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "guidelines",
+              "items": [
+                {
+                  "guidance": "Do not use for navigating to a different page or URL.",
+                  "level": "MUST_NOT"
+                },
+                {
+                  "guidance": "Limit each surface to one primary-emphasis button.",
+                  "level": "MUST"
+                },
+                {
+                  "guidance": "Always provide an accessible label via visible text or aria-label.",
+                  "level": "MUST"
+                },
+                {
+                  "guidance": "Using a button to navigate to another page.",
+                  "rationale": "Instead: Use a link element with href.",
+                  "level": "MUST_NOT"
+                },
+                {
+                  "guidance": "Placing multiple primary buttons on the same surface.",
+                  "rationale": "Instead: Use one primary and one or more secondary or tertiary buttons.",
+                  "level": "MUST_NOT"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "component",
+          "identifier": "link",
+          "name": "Link",
+          "description": "A navigational element that takes the user to a different page or URL.",
+          "metadata": {
+            "status": "stable",
+            "since": "1.0.0",
+            "category": "navigation",
+            "links": [
               {
-                "rule": "Do not use for navigating to a different page or URL.",
-                "level": "MUST_NOT"
-              },
-              {
-                "rule": "Limit each surface to one primary-emphasis button.",
-                "level": "MUST"
-              },
-              {
-                "rule": "Always provide an accessible label via visible text or aria-label.",
-                "level": "MUST"
+                "kind": "documentation",
+                "url": "https://design.acme.com/components/link",
+                "label": "Documentation"
               }
             ],
-            "disambiguation": [
-              {
-                "entity": "link",
-                "distinction": "Use button for in-page actions; use link for navigation to a URL."
-              },
-              {
-                "entity": "icon-button",
-                "distinction": "Use button when a visible text label is present; use icon-button for icon-only affordances."
-              }
-            ],
-            "antiPatterns": [
-              {
-                "description": "Using a button to navigate to another page.",
-                "instead": "Use a link element with href."
-              },
-              {
-                "description": "Placing multiple primary buttons on the same surface.",
-                "instead": "Use one primary and one or more secondary or tertiary buttons."
-              }
-            ],
-            "keywords": [
+            "tags": [
               "action",
               "submit",
               "click",
@@ -349,44 +369,11 @@
               "call-to-action",
               "interactive"
             ]
-          }
-        },
-        {
-          "kind": "component",
-          "identifier": "link",
-          "name": "Link",
-          "metadata": [
-            {
-              "kind": "description",
-              "value": "A navigational element that takes the user to a different page or URL."
-            },
-            {
-              "kind": "status",
-              "overall": "stable"
-            },
-            {
-              "kind": "since",
-              "value": "1.0.0"
-            },
-            {
-              "kind": "category",
-              "value": "navigation"
-            },
-            {
-              "kind": "links",
-              "items": [
-                {
-                  "kind": "documentation",
-                  "url": "https://design.acme.com/components/link",
-                  "label": "Documentation"
-                }
-              ]
-            }
-          ],
+          },
           "documentBlocks": [
             {
-              "kind": "purpose",
-              "useCases": [
+              "kind": "useCases",
+              "items": [
                 {
                   "description": "When the action navigates the user to a different page, section, or external resource.",
                   "stance": "recommended"
@@ -402,60 +389,89 @@
               ]
             },
             {
-              "kind": "guideline",
+              "kind": "guidelines",
               "items": [
                 {
                   "guidance": "Always pair link color with an underline for inline links within body text.",
                   "rationale": "Color alone is insufficient to distinguish links for users with color vision deficiency.",
                   "level": "MUST",
                   "category": "accessibility",
-                  "criteria": [
+                  "references": [
                     {
-                      "url": "https://www.w3.org/TR/WCAG22/#use-of-color",
-                      "kind": "reference"
+                      "url": "https://www.w3.org/TR/WCAG22/#use-of-color"
                     }
                   ]
                 }
               ]
             }
           ],
-          "agents": {
-            "intent": "Trigger a user-initiated action within the current view without causing page navigation.",
-            "constraints": [
+          "agentDocumentBlocks": [
+            {
+              "kind": "useCases",
+              "purpose": "Trigger a user-initiated action within the current view without causing page navigation.",
+              "items": [
+                {
+                  "description": "Use button for in-page actions; use link for navigation to a URL.",
+                  "stance": "discouraged",
+                  "alternative": {
+                    "identifier": "link"
+                  }
+                },
+                {
+                  "description": "Use button when a visible text label is present; use icon-button for icon-only affordances.",
+                  "stance": "discouraged",
+                  "alternative": {
+                    "identifier": "icon-button"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "guidelines",
+              "items": [
+                {
+                  "guidance": "Do not use for navigating to a different page or URL.",
+                  "level": "MUST_NOT"
+                },
+                {
+                  "guidance": "Limit each surface to one primary-emphasis button.",
+                  "level": "MUST"
+                },
+                {
+                  "guidance": "Always provide an accessible label via visible text or aria-label.",
+                  "level": "MUST"
+                },
+                {
+                  "guidance": "Using a button to navigate to another page.",
+                  "rationale": "Instead: Use a link element with href.",
+                  "level": "MUST_NOT"
+                },
+                {
+                  "guidance": "Placing multiple primary buttons on the same surface.",
+                  "rationale": "Instead: Use one primary and one or more secondary or tertiary buttons.",
+                  "level": "MUST_NOT"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "component",
+          "identifier": "alert",
+          "name": "Alert",
+          "description": "A message bar that communicates status, errors, warnings, or informational messages to the user.",
+          "metadata": {
+            "status": "stable",
+            "since": "1.0.0",
+            "category": "feedback",
+            "links": [
               {
-                "rule": "Do not use for navigating to a different page or URL.",
-                "level": "MUST_NOT"
-              },
-              {
-                "rule": "Limit each surface to one primary-emphasis button.",
-                "level": "MUST"
-              },
-              {
-                "rule": "Always provide an accessible label via visible text or aria-label.",
-                "level": "MUST"
+                "kind": "documentation",
+                "url": "https://design.acme.com/components/alert",
+                "label": "Documentation"
               }
             ],
-            "disambiguation": [
-              {
-                "entity": "link",
-                "distinction": "Use button for in-page actions; use link for navigation to a URL."
-              },
-              {
-                "entity": "icon-button",
-                "distinction": "Use button when a visible text label is present; use icon-button for icon-only affordances."
-              }
-            ],
-            "antiPatterns": [
-              {
-                "description": "Using a button to navigate to another page.",
-                "instead": "Use a link element with href."
-              },
-              {
-                "description": "Placing multiple primary buttons on the same surface.",
-                "instead": "Use one primary and one or more secondary or tertiary buttons."
-              }
-            ],
-            "keywords": [
+            "tags": [
               "action",
               "submit",
               "click",
@@ -464,40 +480,7 @@
               "call-to-action",
               "interactive"
             ]
-          }
-        },
-        {
-          "kind": "component",
-          "identifier": "alert",
-          "name": "Alert",
-          "metadata": [
-            {
-              "kind": "description",
-              "value": "A message bar that communicates status, errors, warnings, or informational messages to the user."
-            },
-            {
-              "kind": "status",
-              "overall": "stable"
-            },
-            {
-              "kind": "since",
-              "value": "1.0.0"
-            },
-            {
-              "kind": "category",
-              "value": "feedback"
-            },
-            {
-              "kind": "links",
-              "items": [
-                {
-                  "kind": "documentation",
-                  "url": "https://design.acme.com/components/alert",
-                  "label": "Documentation"
-                }
-              ]
-            }
-          ],
+          },
           "documentBlocks": [
             {
               "kind": "variants",
@@ -529,72 +512,72 @@
               ]
             },
             {
-              "kind": "guideline",
+              "kind": "guidelines",
               "items": [
                 {
                   "guidance": "Use role='alert' or aria-live='assertive' for error alerts so screen readers announce them immediately.",
                   "rationale": "Without a live region, dynamically injected error messages are invisible to assistive technology.",
                   "level": "MUST",
                   "category": "accessibility",
-                  "criteria": [
+                  "references": [
                     {
-                      "url": "https://www.w3.org/TR/WCAG22/#status-messages",
-                      "kind": "reference"
+                      "url": "https://www.w3.org/TR/WCAG22/#status-messages"
                     }
                   ]
                 }
               ]
             }
           ],
-          "agents": {
-            "intent": "Trigger a user-initiated action within the current view without causing page navigation.",
-            "constraints": [
-              {
-                "rule": "Do not use for navigating to a different page or URL.",
-                "level": "MUST_NOT"
-              },
-              {
-                "rule": "Limit each surface to one primary-emphasis button.",
-                "level": "MUST"
-              },
-              {
-                "rule": "Always provide an accessible label via visible text or aria-label.",
-                "level": "MUST"
-              }
-            ],
-            "disambiguation": [
-              {
-                "entity": "link",
-                "distinction": "Use button for in-page actions; use link for navigation to a URL."
-              },
-              {
-                "entity": "icon-button",
-                "distinction": "Use button when a visible text label is present; use icon-button for icon-only affordances."
-              }
-            ],
-            "antiPatterns": [
-              {
-                "description": "Using a button to navigate to another page.",
-                "instead": "Use a link element with href."
-              },
-              {
-                "description": "Placing multiple primary buttons on the same surface.",
-                "instead": "Use one primary and one or more secondary or tertiary buttons."
-              }
-            ],
-            "keywords": [
-              "action",
-              "submit",
-              "click",
-              "CTA",
-              "trigger",
-              "call-to-action",
-              "interactive"
-            ]
-          }
-        }
-      ],
-      "tokenGroups": [
+          "agentDocumentBlocks": [
+            {
+              "kind": "useCases",
+              "purpose": "Trigger a user-initiated action within the current view without causing page navigation.",
+              "items": [
+                {
+                  "description": "Use button for in-page actions; use link for navigation to a URL.",
+                  "stance": "discouraged",
+                  "alternative": {
+                    "identifier": "link"
+                  }
+                },
+                {
+                  "description": "Use button when a visible text label is present; use icon-button for icon-only affordances.",
+                  "stance": "discouraged",
+                  "alternative": {
+                    "identifier": "icon-button"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "guidelines",
+              "items": [
+                {
+                  "guidance": "Do not use for navigating to a different page or URL.",
+                  "level": "MUST_NOT"
+                },
+                {
+                  "guidance": "Limit each surface to one primary-emphasis button.",
+                  "level": "MUST"
+                },
+                {
+                  "guidance": "Always provide an accessible label via visible text or aria-label.",
+                  "level": "MUST"
+                },
+                {
+                  "guidance": "Using a button to navigate to another page.",
+                  "rationale": "Instead: Use a link element with href.",
+                  "level": "MUST_NOT"
+                },
+                {
+                  "guidance": "Placing multiple primary buttons on the same surface.",
+                  "rationale": "Instead: Use one primary and one or more secondary or tertiary buttons.",
+                  "level": "MUST_NOT"
+                }
+              ]
+            }
+          ]
+        },
         {
           "kind": "token-group",
           "identifier": "tokens",
@@ -602,48 +585,69 @@
             {
               "kind": "token",
               "identifier": "color-action-primary",
-              "metadata": [
-                {
-                  "kind": "description",
-                  "value": "The primary interactive color. Used for primary buttons and key interactive elements."
-                },
-                {
-                  "kind": "status",
-                  "overall": "stable"
-                },
-                {
-                  "kind": "category",
-                  "value": "semantic"
-                }
-              ],
+              "description": "The primary interactive color. Used for primary buttons and key interactive elements.",
+              "metadata": {
+                "status": "stable",
+                "category": "semantic",
+                "tags": [
+                  "color",
+                  "text",
+                  "primary",
+                  "body",
+                  "heading",
+                  "label",
+                  "foreground"
+                ]
+              },
               "tokenType": "color",
               "source": {
                 "file": "tokens/color.tokens.json",
                 "path": "color.action.primary"
               },
-              "agents": {
-                "intent": "Apply the primary text color for body content, headings, and labels on default background surfaces.",
-                "constraints": [
-                  {
-                    "rule": "Do not use on dark or colored background surfaces.",
-                    "level": "MUST_NOT"
-                  },
-                  {
-                    "rule": "Do not override this token value at the component level.",
-                    "level": "MUST_NOT"
-                  }
-                ],
-                "disambiguation": [
-                  {
-                    "entity": "color-text-secondary",
-                    "distinction": "Use primary for default reading content; use secondary for supporting or reduced-emphasis text."
-                  },
-                  {
-                    "entity": "color-text-on-action",
-                    "distinction": "Use primary on default surfaces; use on-action inside filled interactive components."
-                  }
-                ],
-                "keywords": [
+              "agentDocumentBlocks": [
+                {
+                  "kind": "useCases",
+                  "purpose": "Apply the primary text color for body content, headings, and labels on default background surfaces.",
+                  "items": [
+                    {
+                      "description": "Use primary for default reading content; use secondary for supporting or reduced-emphasis text.",
+                      "stance": "discouraged",
+                      "alternative": {
+                        "identifier": "color-text-secondary"
+                      }
+                    },
+                    {
+                      "description": "Use primary on default surfaces; use on-action inside filled interactive components.",
+                      "stance": "discouraged",
+                      "alternative": {
+                        "identifier": "color-text-on-action"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "kind": "guidelines",
+                  "items": [
+                    {
+                      "guidance": "Do not use on dark or colored background surfaces.",
+                      "level": "MUST_NOT"
+                    },
+                    {
+                      "guidance": "Do not override this token value at the component level.",
+                      "level": "MUST_NOT"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "kind": "token",
+              "identifier": "color-text-primary",
+              "description": "The default text color. Used for body text, headings, and labels on standard backgrounds.",
+              "metadata": {
+                "status": "stable",
+                "category": "semantic",
+                "tags": [
                   "color",
                   "text",
                   "primary",
@@ -652,53 +656,56 @@
                   "label",
                   "foreground"
                 ]
-              }
-            },
-            {
-              "kind": "token",
-              "identifier": "color-text-primary",
-              "metadata": [
-                {
-                  "kind": "description",
-                  "value": "The default text color. Used for body text, headings, and labels on standard backgrounds."
-                },
-                {
-                  "kind": "status",
-                  "overall": "stable"
-                },
-                {
-                  "kind": "category",
-                  "value": "semantic"
-                }
-              ],
+              },
               "tokenType": "color",
               "source": {
                 "file": "tokens/color.tokens.json",
                 "path": "color.text.primary"
               },
-              "agents": {
-                "intent": "Apply the primary text color for body content, headings, and labels on default background surfaces.",
-                "constraints": [
-                  {
-                    "rule": "Do not use on dark or colored background surfaces.",
-                    "level": "MUST_NOT"
-                  },
-                  {
-                    "rule": "Do not override this token value at the component level.",
-                    "level": "MUST_NOT"
-                  }
-                ],
-                "disambiguation": [
-                  {
-                    "entity": "color-text-secondary",
-                    "distinction": "Use primary for default reading content; use secondary for supporting or reduced-emphasis text."
-                  },
-                  {
-                    "entity": "color-text-on-action",
-                    "distinction": "Use primary on default surfaces; use on-action inside filled interactive components."
-                  }
-                ],
-                "keywords": [
+              "agentDocumentBlocks": [
+                {
+                  "kind": "useCases",
+                  "purpose": "Apply the primary text color for body content, headings, and labels on default background surfaces.",
+                  "items": [
+                    {
+                      "description": "Use primary for default reading content; use secondary for supporting or reduced-emphasis text.",
+                      "stance": "discouraged",
+                      "alternative": {
+                        "identifier": "color-text-secondary"
+                      }
+                    },
+                    {
+                      "description": "Use primary on default surfaces; use on-action inside filled interactive components.",
+                      "stance": "discouraged",
+                      "alternative": {
+                        "identifier": "color-text-on-action"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "kind": "guidelines",
+                  "items": [
+                    {
+                      "guidance": "Do not use on dark or colored background surfaces.",
+                      "level": "MUST_NOT"
+                    },
+                    {
+                      "guidance": "Do not override this token value at the component level.",
+                      "level": "MUST_NOT"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "kind": "token",
+              "identifier": "space-4",
+              "description": "Base spacing unit. The most commonly used spacing value across components and layouts.",
+              "metadata": {
+                "status": "stable",
+                "category": "base",
+                "tags": [
                   "color",
                   "text",
                   "primary",
@@ -707,74 +714,51 @@
                   "label",
                   "foreground"
                 ]
-              }
-            },
-            {
-              "kind": "token",
-              "identifier": "space-4",
-              "metadata": [
-                {
-                  "kind": "description",
-                  "value": "Base spacing unit. The most commonly used spacing value across components and layouts."
-                },
-                {
-                  "kind": "status",
-                  "overall": "stable"
-                },
-                {
-                  "kind": "category",
-                  "value": "base"
-                }
-              ],
+              },
               "tokenType": "dimension",
               "source": {
                 "file": "tokens/spacing.tokens.json",
                 "path": "spacing.4"
               },
-              "agents": {
-                "intent": "Apply the primary text color for body content, headings, and labels on default background surfaces.",
-                "constraints": [
-                  {
-                    "rule": "Do not use on dark or colored background surfaces.",
-                    "level": "MUST_NOT"
-                  },
-                  {
-                    "rule": "Do not override this token value at the component level.",
-                    "level": "MUST_NOT"
-                  }
-                ],
-                "disambiguation": [
-                  {
-                    "entity": "color-text-secondary",
-                    "distinction": "Use primary for default reading content; use secondary for supporting or reduced-emphasis text."
-                  },
-                  {
-                    "entity": "color-text-on-action",
-                    "distinction": "Use primary on default surfaces; use on-action inside filled interactive components."
-                  }
-                ],
-                "keywords": [
-                  "color",
-                  "text",
-                  "primary",
-                  "body",
-                  "heading",
-                  "label",
-                  "foreground"
-                ]
-              }
+              "agentDocumentBlocks": [
+                {
+                  "kind": "useCases",
+                  "purpose": "Apply the primary text color for body content, headings, and labels on default background surfaces.",
+                  "items": [
+                    {
+                      "description": "Use primary for default reading content; use secondary for supporting or reduced-emphasis text.",
+                      "stance": "discouraged",
+                      "alternative": {
+                        "identifier": "color-text-secondary"
+                      }
+                    },
+                    {
+                      "description": "Use primary on default surfaces; use on-action inside filled interactive components.",
+                      "stance": "discouraged",
+                      "alternative": {
+                        "identifier": "color-text-on-action"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "kind": "guidelines",
+                  "items": [
+                    {
+                      "guidance": "Do not use on dark or colored background surfaces.",
+                      "level": "MUST_NOT"
+                    },
+                    {
+                      "guidance": "Do not override this token value at the component level.",
+                      "level": "MUST_NOT"
+                    }
+                  ]
+                }
+              ]
             }
           ],
-          "agents": {
-            "intent": "Define and organize a set of related design tokens, providing shared defaults for type and category.",
-            "constraints": [
-              {
-                "rule": "Do not reference base palette tokens directly in component code.",
-                "level": "MUST_NOT",
-                "context": "Always reference semantic tokens that point to palette values."
-              }
-            ],
-            "keywords": [
+          "metadata": {
+            "tags": [
               "token",
               "group",
               "palette",
@@ -782,38 +766,55 @@
               "family",
               "collection"
             ]
-          }
-        }
-      ],
-      "foundations": [
+          },
+          "agentDocumentBlocks": [
+            {
+              "kind": "sections",
+              "items": [
+                {
+                  "title": "Intent",
+                  "body": "Define and organize a set of related design tokens, providing shared defaults for type and category."
+                }
+              ]
+            },
+            {
+              "kind": "guidelines",
+              "items": [
+                {
+                  "guidance": "Do not reference base palette tokens directly in component code.",
+                  "rationale": "Always reference semantic tokens that point to palette values.",
+                  "level": "MUST_NOT"
+                }
+              ]
+            }
+          ]
+        },
         {
           "kind": "foundation",
           "identifier": "spacing",
           "name": "Spacing",
-          "metadata": [
-            {
-              "kind": "description",
-              "value": "A spatial system built on a 4px base unit for consistent whitespace across all surfaces."
-            },
-            {
-              "kind": "status",
-              "overall": "stable"
-            },
-            {
-              "kind": "category",
-              "value": "spacing"
-            },
-            {
-              "kind": "links",
-              "items": [
-                {
-                  "kind": "token-group",
-                  "identifier": "spacing",
-                  "role": "Provides all spatial tokens from space-0 through space-8."
-                }
-              ]
-            }
-          ],
+          "description": "A spatial system built on a 4px base unit for consistent whitespace across all surfaces.",
+          "metadata": {
+            "status": "stable",
+            "category": "spacing",
+            "links": [
+              {
+                "kind": "token-group",
+                "identifier": "spacing",
+                "role": "Provides all spatial tokens from space-0 through space-8."
+              }
+            ],
+            "tags": [
+              "spacing",
+              "scale",
+              "gap",
+              "padding",
+              "margin",
+              "whitespace",
+              "layout",
+              "density"
+            ]
+          },
           "documentBlocks": [
             {
               "kind": "principles",
@@ -882,7 +883,7 @@
               ]
             },
             {
-              "kind": "guideline",
+              "kind": "guidelines",
               "items": [
                 {
                   "guidance": "Components must not apply external margin. Margin between components is the responsibility of the parent layout.",
@@ -899,73 +900,67 @@
               ]
             }
           ],
-          "agents": {
-            "intent": "Document spacing scale tokens and enforce their consistent application across layout, components, and typography.",
-            "constraints": [
-              {
-                "rule": "Do not substitute spacing tokens with typography or icon-size tokens.",
-                "level": "MUST_NOT"
-              },
-              {
-                "rule": "Always use the next scale step up or down rather than custom values.",
-                "level": "SHOULD"
-              }
-            ],
-            "disambiguation": [
-              {
-                "entity": "typography foundation",
-                "distinction": "Spacing governs whitespace and layout gaps; typography governs type size, weight, and line height."
-              }
-            ],
-            "keywords": [
-              "spacing",
-              "scale",
-              "gap",
-              "padding",
-              "margin",
-              "whitespace",
-              "layout",
-              "density"
-            ]
-          }
-        }
-      ],
-      "patterns": [
+          "agentDocumentBlocks": [
+            {
+              "kind": "useCases",
+              "purpose": "Document spacing scale tokens and enforce their consistent application across layout, components, and typography.",
+              "items": [
+                {
+                  "description": "Spacing governs whitespace and layout gaps; typography governs type size, weight, and line height.",
+                  "stance": "discouraged",
+                  "alternative": {
+                    "identifier": "typography foundation"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "guidelines",
+              "items": [
+                {
+                  "guidance": "Do not substitute spacing tokens with typography or icon-size tokens.",
+                  "level": "MUST_NOT"
+                },
+                {
+                  "guidance": "Always use the next scale step up or down rather than custom values.",
+                  "level": "SHOULD"
+                }
+              ]
+            }
+          ]
+        },
         {
           "kind": "pattern",
           "identifier": "error-messaging",
           "name": "Error Messaging",
-          "metadata": [
-            {
-              "kind": "description",
-              "value": "How errors are surfaced through inline validation, summary banners, and toast notifications."
-            },
-            {
-              "kind": "status",
-              "overall": "stable"
-            },
-            {
-              "kind": "category",
-              "value": "feedback"
-            },
-            {
-              "kind": "links",
-              "items": [
-                {
-                  "kind": "component",
-                  "identifier": "alert",
-                  "role": "Page-level error summary listing all current errors.",
-                  "required": true
-                },
-                {
-                  "kind": "component",
-                  "identifier": "button",
-                  "role": "Submit trigger that initiates client-side validation.",
-                  "required": true
-                }
-              ]
-            }
-          ],
+          "description": "How errors are surfaced through inline validation, summary banners, and toast notifications.",
+          "metadata": {
+            "status": "stable",
+            "category": "feedback",
+            "links": [
+              {
+                "kind": "component",
+                "identifier": "alert",
+                "role": "Page-level error summary listing all current errors.",
+                "required": true
+              },
+              {
+                "kind": "component",
+                "identifier": "button",
+                "role": "Submit trigger that initiates client-side validation.",
+                "required": true
+              }
+            ],
+            "tags": [
+              "error",
+              "validation",
+              "form",
+              "feedback",
+              "inline-error",
+              "error-summary",
+              "alert"
+            ]
+          },
           "documentBlocks": [
             {
               "kind": "interactions",
@@ -985,8 +980,8 @@
               ]
             },
             {
-              "kind": "purpose",
-              "useCases": [
+              "kind": "useCases",
+              "items": [
                 {
                   "description": "When a form submission fails validation and the user needs to correct one or more fields.",
                   "stance": "recommended"
@@ -1002,7 +997,7 @@
               ]
             },
             {
-              "kind": "guideline",
+              "kind": "guidelines",
               "items": [
                 {
                   "guidance": "Always display inline errors directly below the invalid field.",
@@ -1015,10 +1010,9 @@
                   "rationale": "Screen reader users will not discover the summary unless focus is moved to it.",
                   "level": "MUST",
                   "category": "accessibility",
-                  "criteria": [
+                  "references": [
                     {
-                      "url": "https://www.w3.org/TR/WCAG22/#error-identification",
-                      "kind": "reference"
+                      "url": "https://www.w3.org/TR/WCAG22/#error-identification"
                     }
                   ]
                 },
@@ -1031,44 +1025,46 @@
               ]
             }
           ],
-          "agents": {
-            "intent": "Guide multi-component composition for surfacing, communicating, and resolving form validation errors.",
-            "constraints": [
-              {
-                "rule": "Always include both an inline field error and a summary when multiple fields fail.",
-                "level": "MUST"
-              },
-              {
-                "rule": "Do not use toast notifications as the sole error communication for form validation.",
-                "level": "MUST_NOT"
-              }
-            ],
-            "disambiguation": [
-              {
-                "entity": "empty-state",
-                "distinction": "Use error-messaging for validation and system errors; use empty-state for the absence of content."
-              },
-              {
-                "entity": "alert",
-                "distinction": "Use error-messaging for form validation flows; use alert for non-form system or status messages."
-              }
-            ],
-            "antiPatterns": [
-              {
-                "description": "Showing errors only on submit without inline field feedback.",
-                "instead": "Show inline errors on field blur and in a summary on submit."
-              }
-            ],
-            "keywords": [
-              "error",
-              "validation",
-              "form",
-              "feedback",
-              "inline-error",
-              "error-summary",
-              "alert"
-            ]
-          }
+          "agentDocumentBlocks": [
+            {
+              "kind": "useCases",
+              "purpose": "Guide multi-component composition for surfacing, communicating, and resolving form validation errors.",
+              "items": [
+                {
+                  "description": "Use error-messaging for validation and system errors; use empty-state for the absence of content.",
+                  "stance": "discouraged",
+                  "alternative": {
+                    "identifier": "empty-state"
+                  }
+                },
+                {
+                  "description": "Use error-messaging for form validation flows; use alert for non-form system or status messages.",
+                  "stance": "discouraged",
+                  "alternative": {
+                    "identifier": "alert"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "guidelines",
+              "items": [
+                {
+                  "guidance": "Always include both an inline field error and a summary when multiple fields fail.",
+                  "level": "MUST"
+                },
+                {
+                  "guidance": "Do not use toast notifications as the sole error communication for form validation.",
+                  "level": "MUST_NOT"
+                },
+                {
+                  "guidance": "Showing errors only on submit without inline field feedback.",
+                  "rationale": "Instead: Show inline errors on field blur and in a summary on submit.",
+                  "level": "MUST_NOT"
+                }
+              ]
+            }
+          ]
         }
       ]
     }

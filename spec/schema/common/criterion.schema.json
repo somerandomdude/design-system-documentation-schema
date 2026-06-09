@@ -1,0 +1,83 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://designsystemdocspec.org/v0.7/common/criterion.schema.json",
+  "title": "DSDS Criterion Definition",
+  "description": "Shared definitions for testable success criteria and external standard references. Criteria are the test-definition layer of DSDS documentation: each pairs a stable identifier with an objectively verifiable statement, so tooling and agents can check implementations against the docs and report pass/fail per criterion. Used by guideline entries and accessibility blocks. Observed results belong in a guideline entry's `evidence`, not here.",
+  "$defs": {
+    "reference": {
+      "type": "object",
+      "description": "A citation of an external standard or requirement — a published rule this documentation addresses (WCAG, platform guidelines, vendor compliance frameworks).",
+      "required": ["url"],
+      "properties": {
+        "url": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL to the external standard or requirement (e.g., 'https://www.w3.org/TR/WCAG22/#contrast-minimum')."
+        },
+        "label": {
+          "type": "string",
+          "description": "A display label for the citation (e.g., '1.4.3 Contrast (Minimum)', 'WCAG 2.5.8 Target Size'). When omitted, tools MAY derive a label from the URL."
+        }
+      },
+      "additionalProperties": false
+    },
+    "criterion": {
+      "type": "object",
+      "description": "A testable success criterion: an objectively verifiable condition an implementation must meet. Criteria let documentation act as a test harness — a check runs against the `statement` and reports pass/fail under the criterion's `identifier`. Pair with `techniques` (how to pass), `failures` (what failing looks like), `references` (the external standards it aligns with), and `examples` (typically a passing/failing pair).",
+      "required": ["identifier", "statement"],
+      "properties": {
+        "identifier": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]*$",
+          "description": "Stable identifier for this criterion, unique within the parent entity (e.g., 'touch-target-minimum', 'single-primary-action'). MUST be lowercase kebab-case. Test runs report pass/fail against this identifier, so it SHOULD NOT change once checks depend on it — renaming breaks result history across runs."
+        },
+        "title": {
+          "type": "string",
+          "description": "A short display name for the criterion (e.g., 'Touch Target Minimum'). Tools SHOULD render it in docs and test reports beside the identifier."
+        },
+        "statement": {
+          "$ref": "rich-text.schema.json#/$defs/richText",
+          "description": "The testable statement of what success looks like. MUST be objectively verifiable — by inspection, static analysis, or runtime measurement. Avoid vague language like 'feels right' or 'looks balanced' (e.g., 'Interactive elements present a hit area of at least 44×44 px')."
+        },
+        "techniques": {
+          "type": "array",
+          "description": "Sufficient ways to satisfy this criterion — the passing patterns (e.g., 'Apply `min-height: 44px` to every interactive element', 'Use the `<Button>` component without overriding its default height').",
+          "items": {
+            "$ref": "rich-text.schema.json#/$defs/richText"
+          },
+          "minItems": 1
+        },
+        "failures": {
+          "type": "array",
+          "description": "Known failure modes — conditions that count as failing this criterion (e.g., 'Setting `height` below 44px on an interactive element', 'Removing `aria-label` from an icon-only button').",
+          "items": {
+            "$ref": "rich-text.schema.json#/$defs/richText"
+          },
+          "minItems": 1
+        },
+        "references": {
+          "type": "array",
+          "description": "External standards this criterion aligns with or derives from (e.g., a matching WCAG success criterion, a platform guideline).",
+          "items": {
+            "$ref": "#/$defs/reference"
+          },
+          "minItems": 1
+        },
+        "examples": {
+          "type": "array",
+          "description": "Examples that illustrate the criterion — typically a before/after pair: one passing and one failing implementation.",
+          "items": {
+            "$ref": "example.schema.json#/$defs/example"
+          },
+          "minItems": 1
+        },
+        "tags": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Freeform keywords that relate criteria across guidelines and entities (e.g., 'a11y', 'contrast', 'touch-target')."
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

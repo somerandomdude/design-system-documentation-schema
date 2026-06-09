@@ -1,12 +1,12 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://designsystemdocspec.org/v0.6/entities/guide.schema.json",
+  "$id": "https://designsystemdocspec.org/v0.7/entities/guide.schema.json",
   "title": "DSDS Guide Definitions",
-  "description": "Defines documents for long-form, reading-oriented guidance that is not tied to a single component, token, foundation, or pattern. A guide covers getting-started walkthroughs, contribution instructions, tutorials, conceptual overviews, migration guides, and any other narrative documentation a design system needs. A guide document holds identity and metadata; the kind of guide (getting-started, contribution, tutorial, and so on) is carried by a `category` metadata entry, keeping the entity flexible enough for any guideline. Typed entries in the `metadata` array carry modular metadata. Typed entries in the `documentBlocks` array carry structured docs — narrative sections, procedures, guidelines, and use-cases.",
+  "description": "Defines documents for long-form, reading-oriented guidance that is not tied to a single component, token, foundation, or pattern. A guide covers getting-started walkthroughs, contribution instructions, tutorials, conceptual overviews, migration guides, and any other narrative documentation a design system needs. A guide document holds identity and metadata; the kind of guide (getting-started, contribution, tutorial, and so on) is carried by the `category` metadata field, keeping the entity flexible enough for any guideline. The `metadata` object carries optional metadata fields. Typed entries in the `documentBlocks` array carry structured docs — narrative sections, procedures, guidelines, and use-cases.",
   "$defs": {
     "guide": {
       "type": "object",
-      "description": "A long-form, reading-oriented document: a getting-started walkthrough, a contribution guide, a tutorial, a conceptual overview, a migration guide, or any narrative guidance the system needs. Guides fill the gap left by the artifact-bound entities (component, token, foundation, pattern), which document a single thing rather than a journey or a concept. The top level holds identity: `identifier`, `name`, and `description`. The `metadata` array holds modular entries with a `kind` tag — use a `category` entry (e.g., 'getting-started', 'contribution', 'tutorial', 'concept', 'migration') to classify the guide, and `tags` for finer-grained discovery. The `documentBlocks` array holds structured docs as typed entries: section (narrative prose), steps (procedures), guideline, use-cases, import, accessibility, and content.",
+      "description": "A long-form, reading-oriented document: a getting-started walkthrough, a contribution guide, a tutorial, a conceptual overview, a migration guide, or any narrative guidance the system needs. Guides fill the gap left by the artifact-bound entities (component, token, foundation, pattern), which document a single thing rather than a journey or a concept. The top level holds identity: `identifier`, `name`, and `description`. The `metadata` object holds optional metadata fields — use `category` (e.g., 'getting-started', 'contribution', 'tutorial', 'concept', 'migration') to classify the guide, and `tags` for finer-grained discovery. The `documentBlocks` array holds structured docs as typed entries: sections (narrative prose), steps (procedures), guidelines, useCases, imports, accessibility, and content.",
       "required": [
         "kind",
         "identifier",
@@ -21,26 +21,34 @@
         "identifier": {
           "type": "string",
           "pattern": "^[a-z][a-z0-9-]*$",
-          "description": "Machine-readable identifier for the guide (e.g., 'getting-started', 'contributing', 'theming-tutorial', 'migrating-to-v2'). MUST be lowercase kebab-case and unique within the documentation group."
+          "description": "Machine-readable identifier for the guide (e.g., 'getting-started', 'contributing', 'theming-tutorial', 'migrating-to-v2'). MUST be lowercase kebab-case and unique within its entity group."
         },
         "name": {
           "type": "string",
           "description": "Display name shown in docs (e.g., 'Getting started', 'Contributing', 'Theming tutorial', 'Migrating to v2')."
         },
+        "description": {
+          "$ref": "../common/rich-text.schema.json#/$defs/richText",
+          "description": "What this guide covers, who it is for, and what the reader will accomplish. CommonMark supported."
+        },
         "metadata": {
-          "$ref": "../metadata/metadata.schema.json#/$defs/entityMetadataArray",
-          "description": "Modular metadata entries. Each entry is a typed object with a `kind` tag. Kinds include description, status, since, last-updated, tags, category, aliases, summary, thumbnail, preview, extends, and links. Use a `category` entry to classify the guide (e.g., 'getting-started', 'contribution', 'tutorial', 'concept', 'migration')."
+          "$ref": "../metadata/metadata.schema.json#/$defs/entityMetadata",
+          "description": "Optional metadata fields, keyed by name: status, since, lastUpdated, category, tags, aliases, summary, thumbnail, preview, extends, and links. Use `category` to classify the guide (e.g., 'getting-started', 'contribution', 'tutorial', 'concept', 'migration')."
         },
         "documentBlocks": {
           "type": "array",
-          "description": "All structured docs for this guide, as an ordered array of typed document block objects. Accepts the guide-specific kinds (section, steps) plus reused kinds (import for setup instructions, guideline, use-cases, accessibility, content). The `kind` property on each entry sets its shape. Order matters: tools SHOULD preserve it for display, since a guide reads top to bottom. Express links to other entities and external resources through a `links` metadata entry or a section's `links`, not as document block entries.",
+          "description": "All structured docs for this guide, as an ordered array of typed document block objects. Accepts the guide-specific kinds (sections, steps) plus reused kinds (imports for setup instructions, guidelines, useCases, accessibility, content). The `kind` property on each entry sets its shape. Order matters: tools SHOULD preserve it for display, since a guide reads top to bottom. Express links to other entities and external resources through the `links` metadata field or a section's `links`, not as document block entries.",
           "items": {
             "$ref": "../document-blocks/document-blocks.schema.json#/$defs/guideDocumentBlock"
           }
         },
-        "agents": {
-          "$ref": "../common/agents.schema.json#/$defs/agents",
-          "description": "AI-ready context for this guide: intent, constraints, disambiguation, anti-patterns, examples, and keywords for efficient AI use."
+        "agentDocumentBlocks": {
+          "type": "array",
+          "description": "Structured documentation for agent (AI/LLM) consumption only — a partitioned space accepting the same document block kinds as `documentBlocks`. Use it for guidance that would be noise for human readers: generation constraints, disambiguation between confusable entities, machine-checkable rules with evidence. Tools MUST NOT render these blocks in human-facing documentation. Agents SHOULD read both arrays — human-facing blocks first, then these.",
+          "items": {
+            "$ref": "../document-blocks/document-blocks.schema.json#/$defs/guideDocumentBlock"
+          },
+          "minItems": 1
         },
         "$extensions": {
           "$ref": "../common/extensions.schema.json#/$defs/extensions"
