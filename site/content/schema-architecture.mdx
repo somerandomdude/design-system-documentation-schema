@@ -51,7 +51,7 @@ A complete, valid document using only the core:
 }
 ```
 
-Everything else on this page — `anatomy`, `api`, `variants`, `states`, `design-specifications`, `motion`, `scale`, `events`, and the other metadata kinds — is **optional**. Reach for a block when you have that specific thing to document, and skip the rest. The [Quick Start](quickstart.html) is the gentlest path in; the sections below are the complete reference.
+Everything else on this page — `anatomy`, `api`, `variants`, `states`, `design-specifications`, `motion`, `scale`, and the other metadata kinds — is **optional**. Reach for a block when you have that specific thing to document, and skip the rest. The [Quick Start](quickstart.html) is the gentlest path in; the sections below are the complete reference.
 
 ---
 
@@ -63,7 +63,7 @@ The DSDS schema uses three directories plus a root schema:
 |---|---|
 | `common/` | Shared primitives used across all schemas — richText, statusValue, platformStatus, link, example, extensions, metadata, useCases |
 | `entities/` | Entity type schemas — component, token (including tokenGroup), theme, foundation, pattern, guide |
-| `document-blocks/` | Document block type schemas — guideline, anatomy, api, events, import, variant, state, design-specifications, accessibility, purpose, scale, principle, motion, content, interaction, section, steps, plus the scoped union (document-blocks.schema.json) |
+| `document-blocks/` | Document block type schemas — guideline, anatomy, api, import, variant, state, design-specifications, accessibility, purpose, scale, principle, motion, content, interaction, section, steps, plus the scoped union (document-blocks.schema.json) |
 
 <ds-schema-tree />
 
@@ -481,10 +481,20 @@ Custom values are permitted (e.g., `"sunset"`, `"archived"`, `"beta"`) and MUST 
 Document block entries are the core unit of structured docs in DSDS. Every piece of docs on an entity is a document block object with a `kind` discriminator. Document block types cover:
 
 - guidelines, purpose, accessibility, content, and narrative sections (general — all entity types)
-- anatomy, API specs, events, variants, states, design specifications, and import (component-scoped)
+- anatomy, API specs, variants, states, design specifications, and import (component-scoped)
 - principles, scales, and motion definitions (foundation-scoped)
 - interactions (pattern-scoped)
 - step-by-step procedures (guide-scoped)
+
+### The block contract
+
+Every document block has the same skeleton — a `kind` tag plus its payload — so once you've read one, you can predict the rest:
+
+- **Collection blocks** hold a list of like entries in an `items` array: `guideline`, `section`, `states`, `variants`, `steps`, `import`, `interactions`, `motion`, `principles`.
+- **Three blocks keep a domain name** where it reads more clearly than `items` — `anatomy.parts`, `scale.steps`, and `purpose.useCases`. Same idea (a list of entries), just a clearer label.
+- **Structured blocks** don't hold a single list; they use named fields for distinct parts: `api`, `accessibility`, `content`, and `design-specifications`.
+
+AI/LLM context is not part of a block — it lives once on the entity, in [`agents`](#agents).
 
 ### Scoped document block unions
 
@@ -514,7 +524,9 @@ These document block types are available on **all** entity types.
 
 ### Guideline (`guideline`)
 
-Documents actionable usage rules for an entity. Each item is a self-contained rule pairing guidance with a rationale. Guidelines tell the reader _how_ to use the entity correctly after choosing it. For guidance on _whether_ to use it at all, see [Purpose](#purpose-purpose).
+Documents actionable usage rules for an entity. Each item is a self-contained rule pairing guidance with a rationale. Guidelines tell the reader _how_ to use the entity correctly after choosing it.
+
+> **Three flavors of guidance — pick the right one:** [`purpose`](#purpose-purpose) says *whether* to use something (the right choice vs. an alternative); `guideline` says *how* to use it correctly (concrete rules + rationale); [`principles`](#principles-principles) (foundations) says *what the system believes* — the philosophy that sits above the rules.
 
 #### Guideline entry
 
@@ -609,7 +621,7 @@ Free-form narrative prose organized into titled, optionally nested sections — 
 
 ## Component-scoped document block types
 
-These document block types are centered on **component** entities. `api` and `design-specifications` are component-only; `anatomy`, `variants`, `states`, and `events` are shared with patterns; and `import` is shared with guides (as noted in the [scope table](#scoped-document-block-unions)).
+These document block types are centered on **component** entities. `api` and `design-specifications` are component-only; `anatomy`, `variants`, and `states` are shared with patterns; and `import` is shared with guides (as noted in the [scope table](#scoped-document-block-unions)).
 
 ### Import (`import`)
 
@@ -664,17 +676,13 @@ For enum properties, set `type` to the base type (`"string"`) and list the accep
 
 <ds-prop-table schema="document-blocks/api" def="apiEvent" />
 
-### Events (`events`)
-
-A standalone block documenting the events an artifact emits — trigger conditions, return shapes, DOM behavior (bubbling, cancelability, composed), and lifecycle metadata. Shared by components and patterns. It is richer than the `api` block's inline `events` array: use `api.events` for a quick interface listing, and the `events` block when an event's behavior warrants its own structured entry.
-
-#### Event entry (`eventEntry`)
-
-<ds-prop-table schema="document-blocks/events" def="eventEntry" />
+Events are documented here, in `api.events` — there is no separate events block. Beyond the signature, put behavioral context (when it fires, how to respond, DOM propagation, cancelability, deprecation) in the event's `description`.
 
 ### Variants (`variants`)
 
 Documents all dimensions of visual or behavioral variation. Each item is a single axis of config (e.g., `"size"`, `"emphasis"`, `"full-width"`). Multiple axes document orthogonal dimensions that combine independently.
+
+Each variant value — and each flag — carries a `tokens` map: the design token overrides applied when that value is selected (or the flag is active). Per-variant design values live here, on the variants block; `design-specifications` documents only the baseline.
 
 The optional `exclusions` array documents invalid combinations across dimensions:
 
@@ -713,25 +721,13 @@ Documents all interactive states — hover, focus, active, disabled, loading, se
 
 ### Design specifications (`design-specifications`)
 
-Documents measurable visual specs — token inventory, spacing relationships, dimension constraints, typography settings, and responsive behavior. At least one section must be present.
+Documents the **baseline** measurable visual specs of a component — the default design properties, spacing relationships, dimension constraints, typography settings, and responsive behavior. At least one of these sections must be present.
 
 <ds-prop-table schema="document-blocks/design-specifications" def="designSpecifications" />
 
-#### Variants, sizes, and states
+The base-level `properties` map is the default spec — typically the primary variant at medium size in the default state. Values are design token identifiers (required when the system has a token layer) or raw CSS values (token-less systems only).
 
-The base-level `properties` map defines the default spec — typically the primary variant at medium size in the default state. Values are always strings: either design token names (e.g., `"button-background"`, `"space-4"`) or raw CSS values (e.g., `"#0055b3"`, `"16px"`, `"transparent"`). Systems that do not use tokens provide raw values directly.
-
-The remaining arrays group design properties by condition:
-
-- **`variants`** — by variant. Each entry has an `identifier` and its own `properties` map, plus optional `spacing`, `sizing`, and `typography` sections.
-- **`sizes`** — by size, including size-specific spacing, sizing, and typography.
-- **`states`** — by interactive state (e.g., hover, focus, disabled).
-
-The `variantStates` array handles variant×state combinations where the state's visual treatment differs across variants. Each entry specifies both a `variant` and a `state` along with the `properties` map for that combination.
-
-Each entry is self-contained — it holds the complete set of values for that condition, not a diff of the base properties. For example, a `"danger"` variant entry carries its own token names (like `"button-danger-bg"`) or raw values, independent of the base `properties`.
-
-Note: the `tokens` field on state entries (in the states block) is a descriptive summary for designers — it shows *which* tokens change in a given state. The authoritative resolved values for each variant × state combination live in the `design-specifications` block's `variants`, `states`, and `variantStates` arrays.
+**Per-variant and per-state values are not documented here.** They live on the [variants](#variants-variants) and [states](#states-states) blocks, where each variant value (and each state) carries its own `tokens` overrides. `design-specifications` covers only the baseline plus responsive behavior — there is no per-condition duplication to drift.
 
 ---
 
@@ -741,7 +737,7 @@ These document block types are only accepted on **foundation** entities.
 
 ### Principles (`principles`)
 
-Documents high-level guiding principles that shape decisions for a domain. Principles answer "what do we believe?" and "what constraints do we accept?" — they sit above specific best practices.
+Documents high-level guiding principles that shape decisions for a domain. Principles answer "what do we believe?" and "what constraints do we accept?" — they set direction and sit *above* specific [`guideline`](#guideline-guideline)s (which encode the concrete rules).
 
 Each `principleEntry` has a `title` (short, memorable name) and a `description` (what it means in practice).
 
@@ -981,7 +977,7 @@ The distinction: plural types are containers of interchangeable items where the 
 | [`examples/entities/token.json`](examples/entities/token.json) | Token docs with value, API, and resolution examples. |
 | [`examples/entities/token-group.json`](examples/entities/token-group.json) | Nested token group (color palette). |
 | [`examples/entities/theme.json`](examples/entities/theme.json) | Dark mode theme with token overrides. |
-| [`examples/entities/foundation.json`](examples/entities/foundation.json) | Foundation docs (Spacing) with scale, motion, and best practices. |
+| [`examples/entities/foundation.json`](examples/entities/foundation.json) | Foundation docs (Spacing) with scale, motion, and guidelines. |
 | [`examples/entities/pattern.json`](examples/entities/pattern.json) | Pattern docs (Error Messaging). |
 | [`examples/entities/empty-state-pattern.json`](examples/entities/empty-state-pattern.json) | Pattern docs (Empty State) with anatomy, variants, states, interactions, and content. |
 | [`examples/entities/guide.json`](examples/entities/guide.json) | Guide docs (Getting started) with sections, steps, import, guidelines, and purpose. |

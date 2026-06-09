@@ -129,10 +129,16 @@ function scanSpecNode(node, where, findings) {
 
 function scanBlock(block, where, findings) {
   if (block.kind === "design-specifications") {
+    // Baseline spec only — per-variant/state values live on the variants/states blocks.
     scanSpecNode(block, where, findings);
-    for (const group of ["variants", "sizes", "states", "variantStates"]) {
-      (block[group] || []).forEach((e, i) => scanSpecNode(e, `${where}.${group}[${i}]`, findings));
-    }
+  } else if (block.kind === "variants") {
+    (block.items || []).forEach((axis, i) => {
+      // flag variants carry tokens directly; enum variants carry them per value
+      scanMap(axis.tokens, `${where}.items[${i}](${axis.identifier || i}).tokens`, findings);
+      (axis.values || []).forEach((val, j) =>
+        scanMap(val.tokens, `${where}.items[${i}].values[${j}](${val.identifier || j}).tokens`, findings),
+      );
+    });
   } else if (block.kind === "anatomy") {
     (block.parts || []).forEach((p, i) =>
       scanMap(p.tokens, `${where}.parts[${i}](${p.identifier || i}).tokens`, findings),
@@ -149,7 +155,7 @@ function findBlocks(node, where, findings) {
   if (Array.isArray(node)) {
     node.forEach((x, i) => findBlocks(x, `${where}[${i}]`, findings));
   } else if (node && typeof node === "object") {
-    if (node.kind === "design-specifications" || node.kind === "anatomy" || node.kind === "states") {
+    if (["design-specifications", "variants", "anatomy", "states"].includes(node.kind)) {
       scanBlock(node, where, findings);
     }
     for (const [k, v] of Object.entries(node)) findBlocks(v, `${where}.${k}`, findings);

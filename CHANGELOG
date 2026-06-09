@@ -49,6 +49,24 @@ The `agents` object (AI/LLM context) is no longer accepted on individual documen
 
 **Migration.** Remove `agents` from every document block. If a block carried AI context worth keeping, fold it into the entity's `agents` object.
 
+#### 5. `events` document block removed — events live in `api.events`
+
+The standalone `events` document block is removed. Events are documented in the API block's `events` array (`api.events`); behavioral context the events block used to carry — DOM propagation, cancelability, deprecation, when an event does *not* fire — goes in each event's `description`. In practice the block duplicated `api.events` (same identifier, description, returns), so collapsing to one home removes a fork without losing the ability to document events.
+
+**Migration.** Move each `{ "kind": "events" }` block's entries into the `events` array of the component's (or pattern's) `api` block, folding any DOM/lifecycle detail into the event `description`. Remove the `events` block.
+
+#### 6. `design-specifications` slimmed; per-variant/state values move to the variants/states blocks
+
+`design-specifications` now documents only the **baseline** spec (`properties`, `spacing`, `sizing`, `typography`, `responsive`). Its `variants`, `sizes`, `states`, and `variantStates` arrays are removed (along with the `specVariant` / `specSize` / `specState` / `specVariantState` definitions). Per-variant and per-state design values now live where the variation is defined: each variant value (and flag) and each state carries a `tokens` map. This single-sources each value and removes the `design-specifications` ↔ `variants`/`states` overlap (and the token-fork that came with it).
+
+| Before | After |
+|---|---|
+| `design-specifications.variants[]` / `.sizes[]` | a `tokens` map on each variant value / flag |
+| `design-specifications.states[]` | the `tokens` map already on each state entry |
+| `design-specifications.variantStates[]` | removed — document state-specific variant quirks in prose |
+
+**Migration.** Move each `design-specifications` variant/size entry's `properties` onto the matching variant value's new `tokens` map; per-state values already live on the states block. Then remove the `variants` / `sizes` / `states` / `variantStates` arrays from `design-specifications`, keeping `properties` / `spacing` / `sizing` / `typography` / `responsive`.
+
 ### Clarifications
 
 #### Token references required where a token layer exists
@@ -58,6 +76,14 @@ The design-value slots in `design-specifications` and the `tokens` maps on `anat
 #### Rules for splitting a document across files
 
 Using `$ref` to spread one document across files used to leave all the details to "consuming tooling." The Schema Architecture page now spells them out plainly: a tool joins the files into one before validating; reference loops and broken links are errors, not silently skipped; `$ref` paths must be relative; and tools don't fetch from the web by default (when that's turned on, they stick to trusted sites and block local and internal addresses). The `fileRef.$ref` description now says it must be relative. Nothing structural changed — existing documents still validate.
+
+#### The document-block contract is documented
+
+The Schema Architecture page now states the shape every block follows: a `kind` plus a payload, where collection blocks use an `items` array, three blocks keep a clearer domain name (`anatomy.parts`, `scale.steps`, `purpose.useCases`), and structured blocks (`api`, `accessibility`, `content`, `design-specifications`) use named fields. Paired with the block-level `agents` removal above, this is the "one block contract" simplification — documentation only, no schema change.
+
+#### `guideline` / `purpose` / `principles` disambiguated
+
+The three guidance blocks now state, in parallel, which question each answers: `purpose` — *whether* to use an artifact (the right choice vs. an alternative); `guideline` — *how* to use it correctly (concrete rules + rationale); `principles` — *what the system believes* (the philosophy that sits above the rules, on foundations). Leftover "best-practices" wording (from the block that was renamed to `guideline`) is replaced with `guideline` throughout. Documentation only — no schema change.
 
 ---
 
