@@ -36,29 +36,11 @@
       "$ref": "#/$defs/documentExtends",
       "description": "Declares that this DSDS document inherits from another DSDS document — typically a core design system. The base document provides the foundational entities. This document layers on top, adding or extending entities. Enables systems-of-systems architectures where product- or brand-specific systems inherit from a shared core."
     },
-    "purpose": {
-      "type": "object",
-      "description": "The purpose of the design system as a whole — why it exists, what problems it solves, and who it serves. Helps stakeholders, new team members, and external consumers understand the system's intent before exploring individual components or tokens.",
-      "properties": {
-        "description": {
-          "$ref": "#/$defs/richText",
-          "description": "A high-level description of the design system's purpose and the problems it solves."
-        },
-        "useCases": {
-          "type": "array",
-          "description": "Scenario-driven guidance describing when this design system is or is not the right choice. Positive cases describe when the system should be adopted. Negative cases describe when a different approach fits better, and why.",
-          "items": {
-            "$ref": "#/$defs/useCase"
-          }
-        }
-      },
-      "additionalProperties": false
-    },
-    "guidelines": {
+    "documentBlocks": {
       "type": "array",
-      "description": "System-level guidelines that apply across the entire design system — broad guidance for teams adopting, contributing to, or consuming the system. These are not entity-specific rules (those live in each entity's `documentBlocks` as `guideline` blocks) but cross-cutting principles like 'always use semantic tokens instead of raw values' or 'test all components at 200% zoom'. Each entry is a self-contained rule paired with a rationale, sharing the same `guidelineEntry` shape used by entity-level guideline blocks.",
+      "description": "System-level structured documentation for the design system as a whole — its purpose (when to adopt the system), cross-cutting guidelines, and narrative overviews. Each entry is a general document block: a `purpose`, `guideline`, `section`, `accessibility`, or `content` block. This is the same `documentBlocks` mechanism entities use, scoped to the system rather than a single artifact; scope is signalled by position (root vs. inside an entity).",
       "items": {
-        "$ref": "#/$defs/guidelineEntry"
+        "$ref": "#/$defs/generalDocumentBlock"
       }
     },
     "documentation": {
@@ -1222,16 +1204,24 @@
     "thumbnailMetadata": {
       "type": "object",
       "required": [
-        "kind"
+        "kind",
+        "url",
+        "alt"
       ],
       "properties": {
         "kind": {
           "type": "string",
-          "const": "thumbnail"
+          "const": "thumbnail",
+          "description": "Identifies this metadata entry as a thumbnail."
         },
-        "image": {
-          "$ref": "#/$defs/presentationImage",
-          "description": "The thumbnail image."
+        "url": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL or relative path to the thumbnail image."
+        },
+        "alt": {
+          "type": "string",
+          "description": "Alternative text describing the thumbnail image. MUST be provided for accessibility."
         }
       },
       "additionalProperties": false

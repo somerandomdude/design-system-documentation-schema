@@ -405,7 +405,7 @@ No changelog entry, no version bump, no new `/v<n>/` artifact. Commit the regene
 
 ## Contributing
 
-This is an early-stage specification (v0.1). Feedback is welcome:
+This is an early-stage specification (v0.6). Feedback is welcome:
 
 - **Open an issue** for questions, suggestions, or problems with the spec.
 - **Open a PR** for proposed changes to the spec, schema, or examples.

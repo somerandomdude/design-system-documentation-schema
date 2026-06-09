@@ -136,83 +136,55 @@ The root `systemInfo` object holds the design system's **identity and provenance
 
 <ds-prop-table schema="common/system-info" def="systemInfo" />
 
-### Root purpose
+### Root document blocks
 
-The optional `purpose` property on the root document describes the design system: what it is for, who it serves, and when teams should or should not adopt it. This is a **system-level** property; it applies to the design system as a whole, not to each entity.
+System-level documentation lives in an optional `documentBlocks` array on the root document — the same mechanism entities use, scoped to the design system as a whole rather than a single artifact. **Scope is signalled by position:** a `purpose` or `guideline` block at the root describes the _system_; the same block inside an entity describes that _entity_. Both levels reuse one block definition.
 
-{/* Hand-rolled: the root `purpose` object is defined inline in `dsds.schema.json` and has no entry in `$defs`, so it can't be rendered by the shortcode. */}
-
-| Property | Type | Required | Description |
-|---|---|---|---|
-| `description` | `richText` | No | A high-level description of the design system's purpose and goals. |
-| `useCases` | `array` | No | An array of use-case entries describing recommended and discouraged adoption scenarios. |
-
-Each use-case entry has this shape:
-
-<ds-prop-table schema="common/purpose" def="useCase" />
+The root accepts the [general document block types](#general-document-block-types): `purpose` (when to adopt the system), `guideline` (cross-cutting rules like "always use semantic tokens"), `section` (free-form narrative overviews), `accessibility`, and `content`.
 
 ```json
 {
-  "purpose": {
-    "description": "Acme DS provides a unified component library for all customer-facing web products.",
-    "useCases": [
-      {
-        "description": "Building a new customer-facing web application on the Acme platform.",
-        "stance": "recommended"
-      },
-      {
-        "description": "Building internal tooling with specialized data-heavy dashboards.",
-        "stance": "discouraged",
-        "alternative": {
-          "identifier": "Acme Admin Kit",
-          "rationale": "Admin Kit is optimized for data-dense internal interfaces."
-        }
-      }
-    ]
-  }
-}
-```
-
-### Root guidelines
-
-The optional `guidelines` property on the root document defines cross-cutting rules for the whole design system — not for any single entity. These are system-wide conventions like "always use semantic tokens" or "test all components at 200% zoom."
-
-Each `guidelines` entry uses the same shape as a [guideline entry](#guideline-guideline) (`guidelineEntry`):
-
-<ds-prop-table schema="document-blocks/guideline" def="guidelineEntry" />
-
-```json
-{
-  "guidelines": [
+  "documentBlocks": [
     {
-      "guidance": "Always use semantic tokens instead of raw color values.",
-      "rationale": "Semantic tokens ensure consistent theming and make future design changes non-breaking.",
-      "level": "MUST",
-      "category": "development"
-    },
-    {
-      "guidance": "Test all components at 200% browser zoom.",
-      "rationale": "WCAG 1.4.4 requires content to remain functional at 200% zoom.",
-      "level": "MUST",
-      "category": "accessibility",
-      "criteria": [
+      "kind": "section",
+      "items": [
         {
-          "url": "https://www.w3.org/TR/WCAG22/#resize-text",
-          "label": "WCAG 1.4.4 Resize Text"
+          "title": "Overview",
+          "body": "Acme DS provides a unified component library for all customer-facing web products."
         }
       ]
     },
     {
-      "guidance": "Do not override token values at the component level.",
-      "rationale": "Component-level overrides break theme consistency and make system-wide updates unreliable.",
-      "level": "MUST_NOT",
-      "category": "development"
+      "kind": "purpose",
+      "useCases": [
+        {
+          "description": "Building a new customer-facing web application on the Acme platform.",
+          "stance": "recommended"
+        },
+        {
+          "description": "Building internal tooling with specialized data-heavy dashboards.",
+          "stance": "discouraged",
+          "alternative": {
+            "identifier": "Acme Admin Kit",
+            "rationale": "Admin Kit is optimized for data-dense internal interfaces."
+          }
+        }
+      ]
+    },
+    {
+      "kind": "guideline",
+      "items": [
+        {
+          "guidance": "Always use semantic tokens instead of raw color values.",
+          "rationale": "Semantic tokens ensure consistent theming and make future design changes non-breaking.",
+          "level": "MUST",
+          "category": "development"
+        }
+      ]
     }
   ]
 }
 ```
-
-> **System-level vs. entity-level:** The root `purpose` and `guidelines` properties describe the design system _as a whole_. They differ from the entity-level `purpose` and `guideline` document block types inside each entity's `documentBlocks` array. Entity-level document block entries describe when and how to use a specific component, token, or pattern. System-level properties describe when and how to use the design system itself. Both levels follow the same structure but serve different audiences and scopes.
 
 ---
 
@@ -515,7 +487,7 @@ The purpose document block type wraps the common `useCases` data model with a `k
 }
 ```
 
-This is the same `useCases` shape used by the root [`purpose`](#root-purpose) property (full model in [Use Cases](#use-cases)).
+The root document uses this same `purpose` block for system-level adoption guidance — see [Root document blocks](#root-document-blocks). Full model in [Use Cases](#use-cases).
 
 ### Accessibility (`accessibility`)
 
@@ -782,10 +754,10 @@ Fields that contain human-written prose use the `richText` type:
 
 ## Use cases
 
-The `useCases` data model provides scenario-driven guidance for when something is — and is not — the right choice. It appears in two places, with an identical shape in both:
+The `useCases` data model provides scenario-driven guidance for when something is — and is not — the right choice. It appears wherever a `purpose` block does, with an identical shape:
 
-1. **The root [`purpose`](#root-purpose) property** — adoption guidance for the design system as a whole.
-2. **The [`purpose`](#purpose-purpose) document block** — when to reach for a specific entity.
+1. **A root `purpose` block** ([root document blocks](#root-document-blocks)) — adoption guidance for the design system as a whole.
+2. **An entity's [`purpose`](#purpose-purpose) document block** — when to reach for a specific entity.
 
 In both, `useCases` is an **array** of scenario entries. Each entry has a `description` and a `stance` of `"recommended"` (when to use) or `"discouraged"` (when to choose something else); discouraged entries SHOULD include an `alternative` pointing to a more fitting entity:
 

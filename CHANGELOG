@@ -6,7 +6,7 @@ All notable changes to the DSDS specification are documented in this file.
 
 ## [0.6] — 2026-06-08
 
-Minor release. Schema files are now served at `https://designsystemdocspec.org/v0.6/...`. All earlier bundles remain published at their original URLs for documents pinned to them. This release reshapes the `status` metadata entry to a single, consistent structure and removes the unused `statusObject` / `status` definitions from `common`.
+Minor release. Schema files are now served at `https://designsystemdocspec.org/v0.6/...`. All earlier bundles remain published at their original URLs for documents pinned to them. This release reshapes the `status` metadata entry to a single, consistent structure, removes the unused `statusObject` / `status` definitions from `common`, moves system-level `purpose` / `guidelines` onto a root `documentBlocks` array, and flattens the `thumbnail` metadata entry.
 
 ### Breaking changes
 
@@ -21,6 +21,27 @@ The `status` metadata entry now uses the structure `common/status` previously re
 | `common/status` `statusObject` and `status` (union) | removed |
 
 **Migration.** In every `{ "kind": "status" }` metadata entry, rename `status` → `overall` and `platformStatus` → `platforms`. Add a `deprecationNotice` to any entry whose `overall` is `deprecated`. Per-platform entries inside `platforms` are unchanged — they keep their own `status` field.
+
+#### 2. Root `purpose` and `guidelines` replaced by a root `documentBlocks` array
+
+System-level documentation now uses the same `documentBlocks` mechanism as entities. The root `purpose` object and `guidelines` array are removed; in their place the root carries a `documentBlocks` array of general document blocks (`purpose`, `guideline`, `section`, `accessibility`, `content`). Scope is expressed by position — a block at the root describes the system, the same block inside an entity describes that entity — rather than by parallel root-only definitions. The system-level `purpose.description` field is dropped; use a `section` block for narrative overviews.
+
+| Before | After |
+|---|---|
+| root `purpose` (`{ description, useCases }`) | a `purpose` block in root `documentBlocks` (`useCases`); narrative → a `section` block |
+| root `guidelines` (`guidelineEntry[]`) | a `guideline` block in root `documentBlocks` |
+
+**Migration.** Move the root `purpose` into a `{ "kind": "purpose", "useCases": [...] }` entry in a new root `documentBlocks` array, and the root `guidelines` into a `{ "kind": "guideline", "items": [...] }` entry. Relocate any `purpose.description` prose into a `{ "kind": "section", "items": [...] }` block. Entity-level `documentBlocks` are unchanged.
+
+#### 3. `thumbnail` metadata inlines `url` / `alt`
+
+The `thumbnail` metadata entry no longer nests a full `presentationImage` under an `image` property. It carries `url` and `alt` directly, dropping the redundant inner `kind: "image"`. Both are now required, so an empty thumbnail no longer validates.
+
+| Before | After |
+|---|---|
+| `{ "kind": "thumbnail", "image": { "kind": "image", "url", "alt" } }` | `{ "kind": "thumbnail", "url", "alt" }` |
+
+**Migration.** Lift `image.url` and `image.alt` up onto the thumbnail entry and remove the `image` wrapper (and its inner `kind`).
 
 ---
 
