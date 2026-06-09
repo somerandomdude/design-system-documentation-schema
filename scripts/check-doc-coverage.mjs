@@ -41,7 +41,7 @@ const refName = (ref) => (ref && ref.match(/\$defs\/(\w+)/) || [])[1];
 
 const { defs, root } = loadAllDefs();
 
-const entityKinds = ((root.properties && root.properties.entity && root.properties.entity.oneOf) || [])
+const entityKinds = ((defs.anyEntity && defs.anyEntity.oneOf) || [])
   .map((o) => kindConst(defs[refName(o.$ref)]))
   .filter(Boolean);
 

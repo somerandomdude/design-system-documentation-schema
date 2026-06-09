@@ -1,13 +1,16 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://designsystemdocspec.org/v0.6/document-blocks/accessibility.schema.json",
+  "$id": "https://designsystemdocspec.org/v0.7/document-blocks/accessibility.schema.json",
   "title": "DSDS Accessibility Guideline",
   "description": "Documents accessibility specs for an artifact — keyboard interactions, ARIA attributes, screen reader behavior, focus management, color contrast pairs, and motion considerations. Captures structured, machine-readable accessibility data. For actionable accessibility rules with rationale, use a `guideline` with category 'accessibility' instead.",
   "$defs": {
     "keyboardInteraction": {
       "type": "object",
       "description": "A keyboard interaction spec documenting what happens when a specific key or key combination is pressed.",
-      "required": ["key", "action"],
+      "required": [
+        "key",
+        "action"
+      ],
       "properties": {
         "key": {
           "type": "string",
@@ -27,7 +30,10 @@
     "ariaAttribute": {
       "type": "object",
       "description": "An ARIA attribute used by the artifact — what it communicates and when to apply it.",
-      "required": ["attribute", "description"],
+      "required": [
+        "attribute",
+        "description"
+      ],
       "properties": {
         "attribute": {
           "type": "string",
@@ -52,7 +58,12 @@
     "colorContrast": {
       "type": "object",
       "description": "A color contrast spec: the measured contrast ratio between a foreground and background color pair and the WCAG conformance level it meets.",
-      "required": ["foreground", "background", "contrastRatio", "wcagLevel"],
+      "required": [
+        "foreground",
+        "background",
+        "contrastRatio",
+        "wcagLevel"
+      ],
       "properties": {
         "foreground": {
           "type": "string",
@@ -69,7 +80,11 @@
         },
         "wcagLevel": {
           "type": "string",
-          "enum": ["A", "AA", "AAA"],
+          "enum": [
+            "A",
+            "AA",
+            "AAA"
+          ],
           "description": "The WCAG conformance level met by this contrast ratio (matches the block-level `wcagLevel` field). AA requires 4.5:1 for normal text and 3:1 for large text. AAA requires 7:1 for normal text and 4.5:1 for large text."
         },
         "context": {
@@ -82,7 +97,9 @@
     "accessibility": {
       "type": "object",
       "description": "Structured accessibility specs for an artifact. Documents keyboard behavior, ARIA attributes, screen reader announcements, focus management, color contrast pairs, and motion considerations. Distinct from `guideline` blocks — accessibility specs capture machine-readable data, while guidelines capture actionable rules with rationale. Both can be present on the same artifact.",
-      "required": ["kind"],
+      "required": [
+        "kind"
+      ],
       "properties": {
         "kind": {
           "type": "string",
@@ -91,8 +108,20 @@
         },
         "wcagLevel": {
           "type": "string",
-          "enum": ["A", "AA", "AAA"],
+          "enum": [
+            "A",
+            "AA",
+            "AAA"
+          ],
           "description": "The minimum WCAG conformance level targeted by this artifact. Most design systems target AA. Set to AAA when the artifact exceeds standard requirements."
+        },
+        "criteria": {
+          "type": "array",
+          "description": "Testable accessibility success criteria for this artifact (e.g., 'All interactive targets present a hit area of at least 44×44 px'). Each criterion pairs a stable identifier with an objectively verifiable statement, so accessibility checks can run against the docs and report pass/fail. The structured data below (keyboard interactions, ARIA attributes, contrast pairs) demonstrates how these conditions are met.",
+          "items": {
+            "$ref": "../common/criterion.schema.json#/$defs/criterion"
+          },
+          "minItems": 1
         },
         "keyboardInteraction": {
           "type": "array",

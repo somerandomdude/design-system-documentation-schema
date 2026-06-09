@@ -39,10 +39,8 @@ Use `entity` when each component, token, or pattern lives in its own file. The `
     "kind": "component",
     "identifier": "button",
     "name": "Button",
-    "metadata": [
-      { "kind": "description", "value": "An interactive element that triggers an action." },
-      { "kind": "status", "status": "stable" }
-    ],
+    "description": "An interactive element that triggers an action.",
+    "metadata": { "status": "stable" },
     "documentBlocks": []
   }
 }
@@ -50,22 +48,19 @@ Use `entity` when each component, token, or pattern lives in its own file. The `
 
 ### Multi-entity files
 
-Use `documentation` when you want to organize multiple entities in one file, or as a manifest that references individual entity files.
+Use `entityGroups` when you want to organize multiple entities in one file, or as a manifest that references individual entity files.
 
 ```json
 {
   "dsdsVersion": "{{VERSION}}",
-  "documentation": [
+  "entityGroups": [
     {
       "name": "My Design System",
-      "components": [
+      "entities": [
+        { "kind": "foundation", "identifier": "spacing", "...": "" },
+        { "kind": "token-group", "identifier": "color-palette", "...": "" },
+        { "kind": "theme", "identifier": "dark", "...": "" },
         { "kind": "component", "identifier": "button", "...": "" }
-      ],
-      "tokenGroups": [
-        { "kind": "token-group", "identifier": "color-palette", "...": "" }
-      ],
-      "themes": [
-        { "kind": "theme", "identifier": "dark", "...": "" }
       ]
     }
   ]
@@ -73,8 +68,8 @@ Use `documentation` when you want to organize multiple entities in one file, or 
 ```
 
 - `dsdsVersion` — the spec version this document targets; `"{{VERSION}}"` for this release
-- `documentation` — array of named groups, each with typed entity arrays
-- `components`, `tokenGroups`, `themes`, `foundations`, `patterns`, `guides` — separate arrays for each entity type. All are optional.
+- `entityGroups` — array of named groups
+- `entities` — one array per group, mixing entity kinds freely in display order; each entity's `kind` identifies its type
 
 ### Linking files with `$ref`
 
@@ -83,10 +78,10 @@ Entity arrays accept `$ref` objects that point to other DSDS files. This lets yo
 ```json
 {
   "dsdsVersion": "{{VERSION}}",
-  "documentation": [
+  "entityGroups": [
     {
       "name": "Acme Design System",
-      "components": [
+      "entities": [
         { "$ref": "./button.dsds.json#/entity" },
         { "$ref": "./link.dsds.json#/entity" }
       ]
@@ -130,29 +125,27 @@ Every entity shares these fields:
 | `kind` | Yes | Entity type |
 | `identifier` | Yes\* | Machine-readable identifier (`^[a-z][a-z0-9-]*$`, except tokens) |
 | `name` | Yes\* | Human-readable label |
-| `description` | Yes\* | What this entity is and does (CommonMark supported) |
-| `status` | No | `"stable"`, `"experimental"`, `"draft"`, `"deprecated"` — or an object with per-platform status |
-| `since` | No | Version when this entity first shipped |
-| `tags` | No | Array of freeform category tags |
+| `description` | No | What this entity is and does (CommonMark supported) |
+| `metadata` | No | Object of optional fields — `status`, `since`, `tags`, `category`, `links`, and more |
 | `documentBlocks` | No | Array of typed document block objects |
-| `agents` | No | Agent-optimized context for AI/LLM consumption |
+| `agentDocumentBlocks` | No | Document blocks for agent (AI/LLM) consumption only — same kinds, never rendered for humans |
 
-\* Required for component, foundation, and pattern. Token requires `identifier` + `tokenType`.
+\* Required for component, foundation, pattern, theme, and guide. Token requires `identifier` + `tokenType`.
 
-The optional `agents` object provides context written for AI/LLM consumers — `intent` for quick relevance checks, `keywords` for retrieval, `constraints` with enforcement levels and optional `evidence` and inline `examples`, `disambiguation` against similar entities (with optional `entityType`), and `antiPatterns` with corrective alternatives. The `verified` and `verifiedAgainst` fields signal data freshness.
+The optional `agentDocumentBlocks` array is a partitioned space for agent-only documentation — generation constraints with `evidence`, disambiguation against similar entities — using the same block kinds as `documentBlocks`. Tools never render it for humans; agents read both arrays.
 
 ### Status: string or object
 
-For the simple case, status is a string:
+For the simple case, status is a string in `metadata`:
 
 ```json
-{ "status": "stable" }
+"metadata": { "status": "stable" }
 ```
 
 When you need per-platform tracking:
 
 ```json
-{
+"metadata": {
   "status": {
     "overall": "stable",
     "platforms": {
@@ -171,16 +164,15 @@ Structured docs live in the `documentBlocks` array on each entity. Each document
 
 <ds-block-applies-table />
 
-Every document block type also accepts an optional `agents` property for AI/LLM-optimized context scoped to that section. See [Schema Architecture](schema-architecture.html#block-level-agents) for details.
+### Use cases: when to use it
 
-### Purpose: when to use it
-
-The `purpose` block lists scenarios. Each use case has a `stance` of `"recommended"` (do use) or `"discouraged"` (don't use, with an alternative):
+The `useCases` block lists scenarios. An optional `purpose` statement gives the umbrella answer; each item has a `stance` of `"recommended"` (do use) or `"discouraged"` (don't use, with an alternative):
 
 ```json
 {
-  "kind": "purpose",
-  "useCases": [
+  "kind": "useCases",
+  "purpose": "Buttons trigger immediate actions within a surface.",
+  "items": [
     {
       "description": "When the user needs to trigger an action such as submitting a form.",
       "stance": "recommended"
@@ -203,7 +195,7 @@ Each guideline pairs a `guidance` statement with a `rationale` and an RFC 2119 `
 
 ```json
 {
-  "kind": "guideline",
+  "kind": "guidelines",
   "items": [
     {
       "guidance": "Limit each surface to one primary button.",
@@ -215,7 +207,7 @@ Each guideline pairs a `guidance` statement with a `rationale` and an RFC 2119 `
 }
 ```
 
-The `level` field, named for RFC 2119: <ds-badge>MUST</ds-badge>, <ds-badge>SHOULD</ds-badge>, <ds-badge>SHOULD_NOT</ds-badge>, <ds-badge>MUST_NOT</ds-badge>. The same values are used by `agents.constraints[].level`.
+The `level` field, named for RFC 2119: <ds-badge>MUST</ds-badge>, <ds-badge>SHOULD</ds-badge>, <ds-badge>SHOULD_NOT</ds-badge>, <ds-badge>MUST_NOT</ds-badge>. Agents treat `MUST`/`MUST_NOT` as hard constraints; optional `evidence` records empirical backing, and `criteria` define testable success conditions checks can run against.
 
 ---
 
@@ -283,7 +275,7 @@ Add `$schema` to get editor autocompletion and inline validation:
     "kind": "component",
     "identifier": "my-component",
     "name": "My Component",
-    "metadata": []
+    "description": "What this component is and does."
   }
 }
 ```

@@ -3,14 +3,14 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>DSDS Quick Start Guide — DSDS 0.6</title>
+  <title>DSDS Quick Start Guide — DSDS 0.7</title>
   <link rel="stylesheet" href="tokens.css">
   <link rel="stylesheet" href="style.css">
   <script src="components.js"></script>
 </head>
 <body>
   <ds-nav-toggle target="ds-spec-nav"></ds-nav-toggle>
-  <ds-spec-nav title="Design System Documentation Spec 0.6" title-href="index.html" active="quickstart">
+  <ds-spec-nav title="Design System Documentation Spec 0.7" title-href="index.html" active="quickstart">
     <a href="index.html" slug="index">Overview</a>
     <a href="quickstart.html" slug="quickstart">Quick start</a>
     <a href="schema-architecture.html" slug="schema-architecture">Schema architecture</a>
@@ -19,17 +19,16 @@
       <a href="root.html" slug="root">Root schema</a>
     </ds-nav-group>
     <ds-nav-group label="Common">
-      <a href="common-agent-collection.html" slug="common-agent-collection">agent-collection</a>
-      <a href="common-agents.html" slug="common-agents">agents</a>
+      <a href="common-criterion.html" slug="common-criterion">criterion</a>
       <a href="common-example.html" slug="common-example">example</a>
       <a href="common-extends.html" slug="common-extends">extends</a>
       <a href="common-extensions.html" slug="common-extensions">extensions</a>
       <a href="common-link.html" slug="common-link">link</a>
       <a href="common-presentation.html" slug="common-presentation">presentation</a>
-      <a href="common-purpose.html" slug="common-purpose">purpose</a>
       <a href="common-rich-text.html" slug="common-rich-text">rich-text</a>
       <a href="common-status.html" slug="common-status">status</a>
       <a href="common-system-info.html" slug="common-system-info">system-info</a>
+      <a href="common-use-cases.html" slug="common-use-cases">use-cases</a>
     </ds-nav-group>
     <ds-nav-group label="Entities">
       <a href="entities-component.html" slug="entities-component">component</a>
@@ -46,21 +45,20 @@
       <a href="document-blocks-content.html" slug="document-blocks-content">content</a>
       <a href="document-blocks-design-specifications.html" slug="document-blocks-design-specifications">design-specifications</a>
       <a href="document-blocks-document-blocks.html" slug="document-blocks-document-blocks">document-blocks</a>
-      <a href="document-blocks-guideline.html" slug="document-blocks-guideline">guideline</a>
-      <a href="document-blocks-import.html" slug="document-blocks-import">import</a>
-      <a href="document-blocks-interaction.html" slug="document-blocks-interaction">interaction</a>
+      <a href="document-blocks-guidelines.html" slug="document-blocks-guidelines">guidelines</a>
+      <a href="document-blocks-imports.html" slug="document-blocks-imports">imports</a>
+      <a href="document-blocks-interactions.html" slug="document-blocks-interactions">interactions</a>
       <a href="document-blocks-motion.html" slug="document-blocks-motion">motion</a>
-      <a href="document-blocks-principle.html" slug="document-blocks-principle">principle</a>
+      <a href="document-blocks-principles.html" slug="document-blocks-principles">principles</a>
       <a href="document-blocks-scale.html" slug="document-blocks-scale">scale</a>
-      <a href="document-blocks-section.html" slug="document-blocks-section">section</a>
-      <a href="document-blocks-state.html" slug="document-blocks-state">state</a>
+      <a href="document-blocks-sections.html" slug="document-blocks-sections">sections</a>
+      <a href="document-blocks-states.html" slug="document-blocks-states">states</a>
       <a href="document-blocks-steps.html" slug="document-blocks-steps">steps</a>
-      <a href="document-blocks-variant.html" slug="document-blocks-variant">variant</a>
+      <a href="document-blocks-variants.html" slug="document-blocks-variants">variants</a>
     </ds-nav-group>
     <ds-nav-group label="Metadata">
       <a href="metadata-aliases.html" slug="metadata-aliases">aliases</a>
       <a href="metadata-category.html" slug="metadata-category">category</a>
-      <a href="metadata-description.html" slug="metadata-description">description</a>
       <a href="metadata-extends.html" slug="metadata-extends">extends</a>
       <a href="metadata-last-updated.html" slug="metadata-last-updated">last-updated</a>
       <a href="metadata-links.html" slug="metadata-links">links</a>
@@ -93,53 +91,48 @@
 <ds-heading level="3" anchor="single-entity-files">Single-entity files</ds-heading>
 <p>Use <ds-code inline>entity</ds-code> when each component, token, or pattern lives in its own file. The <ds-code inline>kind</ds-code> field on the entity identifies its type.</p>
 <ds-code language="json">{
-  "$schema": "https://designsystemdocspec.org/v0.6/dsds.bundled.schema.json",
-  "dsdsVersion": "0.6",
+  "$schema": "https://designsystemdocspec.org/v0.7/dsds.bundled.schema.json",
+  "dsdsVersion": "0.7",
   "entity": {
     "kind": "component",
     "identifier": "button",
     "name": "Button",
-    "metadata": [
-      { "kind": "description", "value": "An interactive element that triggers an action." },
-      { "kind": "status", "status": "stable" }
-    ],
+    "description": "An interactive element that triggers an action.",
+    "metadata": { "status": "stable" },
     "documentBlocks": []
   }
 }
 </ds-code>
 <ds-heading level="3" anchor="multi-entity-files">Multi-entity files</ds-heading>
-<p>Use <ds-code inline>documentation</ds-code> when you want to organize multiple entities in one file, or as a manifest that references individual entity files.</p>
+<p>Use <ds-code inline>entityGroups</ds-code> when you want to organize multiple entities in one file, or as a manifest that references individual entity files.</p>
 <ds-code language="json">{
-  "dsdsVersion": "0.6",
-  "documentation": [
+  "dsdsVersion": "0.7",
+  "entityGroups": [
     {
       "name": "My Design System",
-      "components": [
+      "entities": [
+        { "kind": "foundation", "identifier": "spacing", "...": "" },
+        { "kind": "token-group", "identifier": "color-palette", "...": "" },
+        { "kind": "theme", "identifier": "dark", "...": "" },
         { "kind": "component", "identifier": "button", "...": "" }
-      ],
-      "tokenGroups": [
-        { "kind": "token-group", "identifier": "color-palette", "...": "" }
-      ],
-      "themes": [
-        { "kind": "theme", "identifier": "dark", "...": "" }
       ]
     }
   ]
 }
 </ds-code>
 <ul>
-<li><ds-code inline>dsdsVersion</ds-code> — the spec version this document targets; <ds-code inline>"0.6"</ds-code> for this release</li>
-<li><ds-code inline>documentation</ds-code> — array of named groups, each with typed entity arrays</li>
-<li><ds-code inline>components</ds-code>, <ds-code inline>tokenGroups</ds-code>, <ds-code inline>themes</ds-code>, <ds-code inline>foundations</ds-code>, <ds-code inline>patterns</ds-code>, <ds-code inline>guides</ds-code> — separate arrays for each entity type. All are optional.</li>
+<li><ds-code inline>dsdsVersion</ds-code> — the spec version this document targets; <ds-code inline>"0.7"</ds-code> for this release</li>
+<li><ds-code inline>entityGroups</ds-code> — array of named groups</li>
+<li><ds-code inline>entities</ds-code> — one array per group, mixing entity kinds freely in display order; each entity's <ds-code inline>kind</ds-code> identifies its type</li>
 </ul>
 <ds-heading level="3" anchor="linking-files-with-ref">Linking files with <ds-code inline>$ref</ds-code></ds-heading>
 <p>Entity arrays accept <ds-code inline>$ref</ds-code> objects that point to other DSDS files. This lets you keep entities in individual files while assembling them in a manifest:</p>
 <ds-code language="json">{
-  "dsdsVersion": "0.6",
-  "documentation": [
+  "dsdsVersion": "0.7",
+  "entityGroups": [
     {
       "name": "Acme Design System",
-      "components": [
+      "entities": [
         { "$ref": "./button.dsds.json#/entity" },
         { "$ref": "./link.dsds.json#/entity" }
       ]
@@ -155,15 +148,15 @@
 <ds-table><table><thead><tr><th>Kind</th><th>Code</th><th>Description</th></tr></thead><tbody><tr><td>component</td><td><ds-code inline>"component"</ds-code></td><td>A reusable UI element — buttons, inputs, modals. Supports anatomy, API, variants, states, and design specs.</td></tr><tr><td>token</td><td><ds-code inline>"token"</ds-code></td><td>A single design token — color, spacing, typography. Carries type, category, and usage rules. Link to W3C DTCG definitions via <ds-code inline>source</ds-code>.</td></tr><tr><td>token-group</td><td><ds-code inline>"token-group"</ds-code></td><td>A nested group of related tokens. Recursive — groups can contain groups.</td></tr><tr><td>theme</td><td><ds-code inline>"theme"</ds-code></td><td>A named set of token overrides — dark mode, high-contrast, compact density, brand variants. Lists which token names change; the DTCG file holds the actual values.</td></tr><tr><td>foundation</td><td><ds-code inline>"foundation"</ds-code></td><td>A design base — color, typography, spacing, elevation. Carries principles, scales, and motion definitions.</td></tr><tr><td>pattern</td><td><ds-code inline>"pattern"</ds-code></td><td>A broad action pattern — nav, error messaging, empty states. Describes how components compose to solve a user need.</td></tr><tr><td>guide</td><td><ds-code inline>"guide"</ds-code></td><td>A long-form, reading-oriented document — getting-started, contribution, tutorial, migration. Carries narrative sections and step-by-step procedures.</td></tr></tbody></table></ds-table>
 <ds-heading level="3" anchor="common-properties">Common properties</ds-heading>
 <p>Every entity shares these fields:</p>
-<ds-table><table><thead><tr><th>Property</th><th>Required</th><th>Description</th></tr></thead><tbody><tr><td><ds-code inline>kind</ds-code></td><td>Yes</td><td>Entity type</td></tr><tr><td><ds-code inline>identifier</ds-code></td><td>Yes*</td><td>Machine-readable identifier (<ds-code inline>^[a-z][a-z0-9-]*$</ds-code>, except tokens)</td></tr><tr><td><ds-code inline>name</ds-code></td><td>Yes*</td><td>Human-readable label</td></tr><tr><td><ds-code inline>description</ds-code></td><td>Yes*</td><td>What this entity is and does (CommonMark supported)</td></tr><tr><td><ds-code inline>status</ds-code></td><td>No</td><td><ds-code inline>"stable"</ds-code>, <ds-code inline>"experimental"</ds-code>, <ds-code inline>"draft"</ds-code>, <ds-code inline>"deprecated"</ds-code> — or an object with per-platform status</td></tr><tr><td><ds-code inline>since</ds-code></td><td>No</td><td>Version when this entity first shipped</td></tr><tr><td><ds-code inline>tags</ds-code></td><td>No</td><td>Array of freeform category tags</td></tr><tr><td><ds-code inline>documentBlocks</ds-code></td><td>No</td><td>Array of typed document block objects</td></tr><tr><td><ds-code inline>agents</ds-code></td><td>No</td><td>Agent-optimized context for AI/LLM consumption</td></tr></tbody></table></ds-table>
-<p>* Required for component, foundation, and pattern. Token requires <ds-code inline>identifier</ds-code> + <ds-code inline>tokenType</ds-code>.</p>
-<p>The optional <ds-code inline>agents</ds-code> object provides context written for AI/LLM consumers — <ds-code inline>intent</ds-code> for quick relevance checks, <ds-code inline>keywords</ds-code> for retrieval, <ds-code inline>constraints</ds-code> with enforcement levels and optional <ds-code inline>evidence</ds-code> and inline <ds-code inline>examples</ds-code>, <ds-code inline>disambiguation</ds-code> against similar entities (with optional <ds-code inline>entityType</ds-code>), and <ds-code inline>antiPatterns</ds-code> with corrective alternatives. The <ds-code inline>verified</ds-code> and <ds-code inline>verifiedAgainst</ds-code> fields signal data freshness.</p>
+<ds-table><table><thead><tr><th>Property</th><th>Required</th><th>Description</th></tr></thead><tbody><tr><td><ds-code inline>kind</ds-code></td><td>Yes</td><td>Entity type</td></tr><tr><td><ds-code inline>identifier</ds-code></td><td>Yes*</td><td>Machine-readable identifier (<ds-code inline>^[a-z][a-z0-9-]*$</ds-code>, except tokens)</td></tr><tr><td><ds-code inline>name</ds-code></td><td>Yes*</td><td>Human-readable label</td></tr><tr><td><ds-code inline>description</ds-code></td><td>No</td><td>What this entity is and does (CommonMark supported)</td></tr><tr><td><ds-code inline>metadata</ds-code></td><td>No</td><td>Object of optional fields — <ds-code inline>status</ds-code>, <ds-code inline>since</ds-code>, <ds-code inline>tags</ds-code>, <ds-code inline>category</ds-code>, <ds-code inline>links</ds-code>, and more</td></tr><tr><td><ds-code inline>documentBlocks</ds-code></td><td>No</td><td>Array of typed document block objects</td></tr><tr><td><ds-code inline>agentDocumentBlocks</ds-code></td><td>No</td><td>Document blocks for agent (AI/LLM) consumption only — same kinds, never rendered for humans</td></tr></tbody></table></ds-table>
+<p>* Required for component, foundation, pattern, theme, and guide. Token requires <ds-code inline>identifier</ds-code> + <ds-code inline>tokenType</ds-code>.</p>
+<p>The optional <ds-code inline>agentDocumentBlocks</ds-code> array is a partitioned space for agent-only documentation — generation constraints with <ds-code inline>evidence</ds-code>, disambiguation against similar entities — using the same block kinds as <ds-code inline>documentBlocks</ds-code>. Tools never render it for humans; agents read both arrays.</p>
 <ds-heading level="3" anchor="status-string-or-object">Status: string or object</ds-heading>
-<p>For the simple case, status is a string:</p>
-<ds-code language="json">{ "status": "stable" }
+<p>For the simple case, status is a string in <ds-code inline>metadata</ds-code>:</p>
+<ds-code language="json">"metadata": { "status": "stable" }
 </ds-code>
 <p>When you need per-platform tracking:</p>
-<ds-code language="json">{
+<ds-code language="json">"metadata": {
   "status": {
     "overall": "stable",
     "platforms": {
@@ -181,10 +174,10 @@
 <thead><tr><th>Kind</th><th>Applies To</th><th>Description</th></tr></thead>
 <tbody><tr><td><ds-code inline>accessibility</ds-code></td><td>all</td><td>Structured accessibility specs for an artifact.</td></tr>
 <tr><td><ds-code inline>content</ds-code></td><td>all</td><td>Structured content guidelines: recommended action labels and localization considerations.</td></tr>
-<tr><td><ds-code inline>guideline</ds-code></td><td>all</td><td>Actionable usage rules for an artifact.</td></tr>
-<tr><td><ds-code inline>purpose</ds-code></td><td>all</td><td>Documents the purpose of an artifact — when to use it and when to choose something else.</td></tr>
-<tr><td><ds-code inline>section</ds-code></td><td>all</td><td>A block of narrative documentation made up of one or more titled sections.</td></tr>
-<tr><td><ds-code inline>import</ds-code></td><td>component, guide</td><td>Documents how to import a component across platforms.</td></tr>
+<tr><td><ds-code inline>guidelines</ds-code></td><td>all</td><td>Actionable usage rules for an artifact.</td></tr>
+<tr><td><ds-code inline>sections</ds-code></td><td>all</td><td>A block of narrative documentation made up of one or more titled sections.</td></tr>
+<tr><td><ds-code inline>useCases</ds-code></td><td>all</td><td>Documents what an artifact is used for — when it is the right choice and when to choose something else.</td></tr>
+<tr><td><ds-code inline>imports</ds-code></td><td>component, guide</td><td>Documents how to import a component across platforms.</td></tr>
 <tr><td><ds-code inline>anatomy</ds-code></td><td>component, pattern</td><td>Documents the visual structure of a component or pattern by listing its named sub-elements (parts).</td></tr>
 <tr><td><ds-code inline>states</ds-code></td><td>component, pattern</td><td>Documents all interactive states of a component.</td></tr>
 <tr><td><ds-code inline>variants</ds-code></td><td>component, pattern</td><td>Documents all dimensions of visual or behavioral variation on a component.</td></tr>
@@ -197,12 +190,12 @@
 <tr><td><ds-code inline>interactions</ds-code></td><td>pattern</td><td>Documents the interaction flow of a pattern as an ordered sequence of steps.</td></tr></tbody>
 </table>
 </ds-table>
-<p>Every document block type also accepts an optional <ds-code inline>agents</ds-code> property for AI/LLM-optimized context scoped to that section. See <a href="schema-architecture.html#block-level-agents">Schema Architecture</a> for details.</p>
-<ds-heading level="3" anchor="purpose-when-to-use-it">Purpose: when to use it</ds-heading>
-<p>The <ds-code inline>purpose</ds-code> block lists scenarios. Each use case has a <ds-code inline>stance</ds-code> of <ds-code inline>"recommended"</ds-code> (do use) or <ds-code inline>"discouraged"</ds-code> (don't use, with an alternative):</p>
+<ds-heading level="3" anchor="use-cases-when-to-use-it">Use cases: when to use it</ds-heading>
+<p>The <ds-code inline>useCases</ds-code> block lists scenarios. An optional <ds-code inline>purpose</ds-code> statement gives the umbrella answer; each item has a <ds-code inline>stance</ds-code> of <ds-code inline>"recommended"</ds-code> (do use) or <ds-code inline>"discouraged"</ds-code> (don't use, with an alternative):</p>
 <ds-code language="json">{
-  "kind": "purpose",
-  "useCases": [
+  "kind": "useCases",
+  "purpose": "Buttons trigger immediate actions within a surface.",
+  "items": [
     {
       "description": "When the user needs to trigger an action such as submitting a form.",
       "stance": "recommended"
@@ -221,7 +214,7 @@
 <ds-heading level="3" anchor="guidelines-how-to-use-it">Guidelines: how to use it</ds-heading>
 <p>Each guideline pairs a <ds-code inline>guidance</ds-code> statement with a <ds-code inline>rationale</ds-code> and an RFC 2119 <ds-code inline>level</ds-code>:</p>
 <ds-code language="json">{
-  "kind": "guideline",
+  "kind": "guidelines",
   "items": [
     {
       "guidance": "Limit each surface to one primary button.",
@@ -232,7 +225,7 @@
   ]
 }
 </ds-code>
-<p>The <ds-code inline>level</ds-code> field, named for RFC 2119: <ds-badge>MUST</ds-badge>, <ds-badge>SHOULD</ds-badge>, <ds-badge>SHOULD_NOT</ds-badge>, <ds-badge>MUST_NOT</ds-badge>. The same values are used by <ds-code inline>agents.constraints[].level</ds-code>.</p>
+<p>The <ds-code inline>level</ds-code> field, named for RFC 2119: <ds-badge>MUST</ds-badge>, <ds-badge>SHOULD</ds-badge>, <ds-badge>SHOULD_NOT</ds-badge>, <ds-badge>MUST_NOT</ds-badge>. Agents treat <ds-code inline>MUST</ds-code>/<ds-code inline>MUST_NOT</ds-code> as hard constraints; optional <ds-code inline>evidence</ds-code> records empirical backing, and <ds-code inline>criteria</ds-code> define testable success conditions checks can run against.</p>
 <hr />
 <ds-heading level="2" anchor="minimal-examples">Minimal examples</ds-heading>
 <p>These are the smallest valid entities — the bare minimum. Copy one, fill in your content, and add document block entries as you go.</p>
@@ -242,24 +235,24 @@
   "kind": "component",
   "identifier": "button",
   "name": "Button",
-  "metadata": [
-    {
-      "kind": "description",
-      "value": "A clickable element that triggers an action."
-    },
-    {
-      "kind": "status",
-      "overall": "stable"
-    },
-    {
-      "kind": "category",
-      "value": "action"
-    }
-  ],
+  "description": "A clickable element that triggers an action.",
+  "metadata": {
+    "status": "stable",
+    "category": "action",
+    "tags": [
+      "action",
+      "submit",
+      "click",
+      "CTA",
+      "trigger",
+      "call-to-action",
+      "interactive"
+    ]
+  },
   "documentBlocks": [
     {
-      "kind": "purpose",
-      "useCases": [
+      "kind": "useCases",
+      "items": [
         {
           "description": "When the user needs to trigger an action such as submitting a form or confirming a dialog.",
           "stance": "recommended"
@@ -275,52 +268,55 @@
       ]
     }
   ],
-  "agents": {
-    "intent": "Trigger a user-initiated action within the current view without causing page navigation.",
-    "constraints": [
-      {
-        "rule": "Do not use for navigating to a different page or URL.",
-        "level": "MUST_NOT"
-      },
-      {
-        "rule": "Limit each surface to one primary-emphasis button.",
-        "level": "MUST"
-      },
-      {
-        "rule": "Always provide an accessible label via visible text or aria-label.",
-        "level": "MUST"
-      }
-    ],
-    "disambiguation": [
-      {
-        "entity": "link",
-        "distinction": "Use button for in-page actions; use link for navigation to a URL."
-      },
-      {
-        "entity": "icon-button",
-        "distinction": "Use button when a visible text label is present; use icon-button for icon-only affordances."
-      }
-    ],
-    "antiPatterns": [
-      {
-        "description": "Using a button to navigate to another page.",
-        "instead": "Use a link element with href."
-      },
-      {
-        "description": "Placing multiple primary buttons on the same surface.",
-        "instead": "Use one primary and one or more secondary or tertiary buttons."
-      }
-    ],
-    "keywords": [
-      "action",
-      "submit",
-      "click",
-      "CTA",
-      "trigger",
-      "call-to-action",
-      "interactive"
-    ]
-  }
+  "agentDocumentBlocks": [
+    {
+      "kind": "useCases",
+      "purpose": "Trigger a user-initiated action within the current view without causing page navigation.",
+      "items": [
+        {
+          "description": "Use button for in-page actions; use link for navigation to a URL.",
+          "stance": "discouraged",
+          "alternative": {
+            "identifier": "link"
+          }
+        },
+        {
+          "description": "Use button when a visible text label is present; use icon-button for icon-only affordances.",
+          "stance": "discouraged",
+          "alternative": {
+            "identifier": "icon-button"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "guidelines",
+      "items": [
+        {
+          "guidance": "Do not use for navigating to a different page or URL.",
+          "level": "MUST_NOT"
+        },
+        {
+          "guidance": "Limit each surface to one primary-emphasis button.",
+          "level": "MUST"
+        },
+        {
+          "guidance": "Always provide an accessible label via visible text or aria-label.",
+          "level": "MUST"
+        },
+        {
+          "guidance": "Using a button to navigate to another page.",
+          "rationale": "Instead: Use a link element with href.",
+          "level": "MUST_NOT"
+        },
+        {
+          "guidance": "Placing multiple primary buttons on the same surface.",
+          "rationale": "Instead: Use one primary and one or more secondary or tertiary buttons.",
+          "level": "MUST_NOT"
+        }
+      ]
+    }
+  ]
 }
 </ds-code>
 <ds-heading level="3" anchor="token">Token</ds-heading>
@@ -340,20 +336,19 @@
 <ds-code language="json">{
   "kind": "token-group",
   "identifier": "color-text",
-  "metadata": [
-    {
-      "kind": "description",
-      "value": "Semantic text color tokens."
-    },
-    {
-      "kind": "status",
-      "overall": "stable"
-    },
-    {
-      "kind": "category",
-      "value": "semantic"
-    }
-  ],
+  "description": "Semantic text color tokens.",
+  "metadata": {
+    "status": "stable",
+    "category": "semantic",
+    "tags": [
+      "token",
+      "group",
+      "palette",
+      "scale",
+      "family",
+      "collection"
+    ]
+  },
   "tokenType": "color",
   "source": {
     "file": "tokens/color.tokens.json",
@@ -388,24 +383,27 @@
       }
     }
   ],
-  "agents": {
-    "intent": "Define and organize a set of related design tokens, providing shared defaults for type and category.",
-    "constraints": [
-      {
-        "rule": "Do not reference base palette tokens directly in component code.",
-        "level": "MUST_NOT",
-        "context": "Always reference semantic tokens that point to palette values."
-      }
-    ],
-    "keywords": [
-      "token",
-      "group",
-      "palette",
-      "scale",
-      "family",
-      "collection"
-    ]
-  }
+  "agentDocumentBlocks": [
+    {
+      "kind": "sections",
+      "items": [
+        {
+          "title": "Intent",
+          "body": "Define and organize a set of related design tokens, providing shared defaults for type and category."
+        }
+      ]
+    },
+    {
+      "kind": "guidelines",
+      "items": [
+        {
+          "guidance": "Do not reference base palette tokens directly in component code.",
+          "rationale": "Always reference semantic tokens that point to palette values.",
+          "level": "MUST_NOT"
+        }
+      ]
+    }
+  ]
 }
 </ds-code>
 <ds-heading level="3" anchor="theme">Theme</ds-heading>
@@ -414,20 +412,19 @@
   "kind": "theme",
   "identifier": "dark",
   "name": "Dark Mode",
-  "metadata": [
-    {
-      "kind": "description",
-      "value": "Dark color mode for reduced-light environments."
-    },
-    {
-      "kind": "status",
-      "overall": "stable"
-    },
-    {
-      "kind": "category",
-      "value": "color-mode"
-    }
-  ],
+  "description": "Dark color mode for reduced-light environments.",
+  "metadata": {
+    "status": "stable",
+    "category": "color-mode",
+    "tags": [
+      "dark-mode",
+      "color-mode",
+      "night",
+      "low-light",
+      "theme",
+      "override"
+    ]
+  },
   "overrides": [
     {
       "token": "color-background-default",
@@ -442,39 +439,39 @@
       "description": "Subtle border visible on dark backgrounds."
     }
   ],
-  "agents": {
-    "intent": "Apply a dark color palette for low-light environments and user preference, maintaining WCAG AA contrast throughout.",
-    "constraints": [
-      {
-        "rule": "Always apply at the application root, not on individual components.",
-        "level": "MUST"
-      },
-      {
-        "rule": "Do not mix dark-mode and light-mode semantic tokens on the same surface.",
-        "level": "MUST_NOT"
-      }
-    ],
-    "disambiguation": [
-      {
-        "entity": "high-contrast",
-        "distinction": "Use dark for low-light comfort; use high-contrast for users with low vision requiring maximum contrast."
-      }
-    ],
-    "antiPatterns": [
-      {
-        "description": "Applying dark theme only to part of a page while the rest remains light.",
-        "instead": "Use inline theme switching for isolated components; apply the theme at the root for global coverage."
-      }
-    ],
-    "keywords": [
-      "dark-mode",
-      "color-mode",
-      "night",
-      "low-light",
-      "theme",
-      "override"
-    ]
-  }
+  "agentDocumentBlocks": [
+    {
+      "kind": "useCases",
+      "purpose": "Apply a dark color palette for low-light environments and user preference, maintaining WCAG AA contrast throughout.",
+      "items": [
+        {
+          "description": "Use dark for low-light comfort; use high-contrast for users with low vision requiring maximum contrast.",
+          "stance": "discouraged",
+          "alternative": {
+            "identifier": "high-contrast"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "guidelines",
+      "items": [
+        {
+          "guidance": "Always apply at the application root, not on individual components.",
+          "level": "MUST"
+        },
+        {
+          "guidance": "Do not mix dark-mode and light-mode semantic tokens on the same surface.",
+          "level": "MUST_NOT"
+        },
+        {
+          "guidance": "Applying dark theme only to part of a page while the rest remains light.",
+          "rationale": "Instead: Use inline theme switching for isolated components; apply the theme at the root for global coverage.",
+          "level": "MUST_NOT"
+        }
+      ]
+    }
+  ]
 }
 </ds-code>
 <ds-heading level="3" anchor="foundation">Foundation</ds-heading>
@@ -483,16 +480,20 @@
   "kind": "foundation",
   "identifier": "spacing",
   "name": "Spacing",
-  "metadata": [
-    {
-      "kind": "description",
-      "value": "The spatial system governing layout rhythm and component density."
-    },
-    {
-      "kind": "status",
-      "overall": "stable"
-    }
-  ],
+  "description": "The spatial system governing layout rhythm and component density.",
+  "metadata": {
+    "status": "stable",
+    "tags": [
+      "spacing",
+      "scale",
+      "gap",
+      "padding",
+      "margin",
+      "whitespace",
+      "layout",
+      "density"
+    ]
+  },
   "documentBlocks": [
     {
       "kind": "principles",
@@ -504,35 +505,34 @@
       ]
     }
   ],
-  "agents": {
-    "intent": "Document spacing scale tokens and enforce their consistent application across layout, components, and typography.",
-    "constraints": [
-      {
-        "rule": "Do not substitute spacing tokens with typography or icon-size tokens.",
-        "level": "MUST_NOT"
-      },
-      {
-        "rule": "Always use the next scale step up or down rather than custom values.",
-        "level": "SHOULD"
-      }
-    ],
-    "disambiguation": [
-      {
-        "entity": "typography foundation",
-        "distinction": "Spacing governs whitespace and layout gaps; typography governs type size, weight, and line height."
-      }
-    ],
-    "keywords": [
-      "spacing",
-      "scale",
-      "gap",
-      "padding",
-      "margin",
-      "whitespace",
-      "layout",
-      "density"
-    ]
-  }
+  "agentDocumentBlocks": [
+    {
+      "kind": "useCases",
+      "purpose": "Document spacing scale tokens and enforce their consistent application across layout, components, and typography.",
+      "items": [
+        {
+          "description": "Spacing governs whitespace and layout gaps; typography governs type size, weight, and line height.",
+          "stance": "discouraged",
+          "alternative": {
+            "identifier": "typography foundation"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "guidelines",
+      "items": [
+        {
+          "guidance": "Do not substitute spacing tokens with typography or icon-size tokens.",
+          "level": "MUST_NOT"
+        },
+        {
+          "guidance": "Always use the next scale step up or down rather than custom values.",
+          "level": "SHOULD"
+        }
+      ]
+    }
+  ]
 }
 </ds-code>
 <ds-heading level="3" anchor="pattern">Pattern</ds-heading>
@@ -541,67 +541,29 @@
   "kind": "pattern",
   "identifier": "form-validation",
   "name": "Form Validation",
-  "metadata": [
-    {
-      "kind": "description",
-      "value": "Validates user input on form submission and communicates errors inline."
-    },
-    {
-      "kind": "status",
-      "overall": "stable"
-    },
-    {
-      "kind": "links",
-      "items": [
-        {
-          "kind": "component",
-          "identifier": "form-field",
-          "role": "Displays inline error messages",
-          "required": true
-        },
-        {
-          "kind": "component",
-          "identifier": "button",
-          "role": "Triggers form submission",
-          "required": true
-        },
-        {
-          "kind": "component",
-          "identifier": "toast",
-          "role": "Confirms successful submission"
-        }
-      ]
-    }
-  ],
-  "agents": {
-    "intent": "Guide multi-component composition for surfacing, communicating, and resolving form validation errors.",
-    "constraints": [
+  "description": "Validates user input on form submission and communicates errors inline.",
+  "metadata": {
+    "status": "stable",
+    "links": [
       {
-        "rule": "Always include both an inline field error and a summary when multiple fields fail.",
-        "level": "MUST"
+        "kind": "component",
+        "identifier": "form-field",
+        "role": "Displays inline error messages",
+        "required": true
       },
       {
-        "rule": "Do not use toast notifications as the sole error communication for form validation.",
-        "level": "MUST_NOT"
-      }
-    ],
-    "disambiguation": [
-      {
-        "entity": "empty-state",
-        "distinction": "Use error-messaging for validation and system errors; use empty-state for the absence of content."
+        "kind": "component",
+        "identifier": "button",
+        "role": "Triggers form submission",
+        "required": true
       },
       {
-        "entity": "alert",
-        "distinction": "Use error-messaging for form validation flows; use alert for non-form system or status messages."
+        "kind": "component",
+        "identifier": "toast",
+        "role": "Confirms successful submission"
       }
     ],
-    "antiPatterns": [
-      {
-        "description": "Showing errors only on submit without inline field feedback.",
-        "instead": "Show inline errors on field blur and in a summary on submit."
-      }
-    ],
-    "keywords": [
+    "tags": [
       "error",
       "validation",
       "form",
@@ -610,72 +572,69 @@
       "error-summary",
       "alert"
     ]
-  }
+  },
+  "agentDocumentBlocks": [
+    {
+      "kind": "useCases",
+      "purpose": "Guide multi-component composition for surfacing, communicating, and resolving form validation errors.",
+      "items": [
+        {
+          "description": "Use error-messaging for validation and system errors; use empty-state for the absence of content.",
+          "stance": "discouraged",
+          "alternative": {
+            "identifier": "empty-state"
+          }
+        },
+        {
+          "description": "Use error-messaging for form validation flows; use alert for non-form system or status messages.",
+          "stance": "discouraged",
+          "alternative": {
+            "identifier": "alert"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "guidelines",
+      "items": [
+        {
+          "guidance": "Always include both an inline field error and a summary when multiple fields fail.",
+          "level": "MUST"
+        },
+        {
+          "guidance": "Do not use toast notifications as the sole error communication for form validation.",
+          "level": "MUST_NOT"
+        },
+        {
+          "guidance": "Showing errors only on submit without inline field feedback.",
+          "rationale": "Instead: Show inline errors on field blur and in a summary on submit.",
+          "level": "MUST_NOT"
+        }
+      ]
+    }
+  ]
 }
 </ds-code>
 <ds-heading level="3" anchor="full-document-minimal">Full document {#minimal}</ds-heading>
 <p>Here's a complete, minimal DSDS file with one of each entity type:</p>
 <ds-code language="json">{
   "$schema": "../schema/dsds.bundled.schema.json",
-  "dsdsVersion": "0.6",
+  "dsdsVersion": "0.7",
   "systemInfo": {
     "systemName": "Minimal Example"
   },
-  "documentation": [
+  "entityGroups": [
     {
       "name": "Minimal Design System",
-      "components": [
+      "entities": [
         {
           "kind": "component",
           "identifier": "button",
           "name": "Button",
-          "metadata": [
-            {
-              "kind": "description",
-              "value": "A clickable button for triggering actions."
-            },
-            {
-              "kind": "status",
-              "overall": "stable"
-            }
-          ],
-          "agents": {
-            "intent": "Trigger a user-initiated action within the current view without causing page navigation.",
-            "constraints": [
-              {
-                "rule": "Do not use for navigating to a different page or URL.",
-                "level": "MUST_NOT"
-              },
-              {
-                "rule": "Limit each surface to one primary-emphasis button.",
-                "level": "MUST"
-              },
-              {
-                "rule": "Always provide an accessible label via visible text or aria-label.",
-                "level": "MUST"
-              }
-            ],
-            "disambiguation": [
-              {
-                "entity": "link",
-                "distinction": "Use button for in-page actions; use link for navigation to a URL."
-              },
-              {
-                "entity": "icon-button",
-                "distinction": "Use button when a visible text label is present; use icon-button for icon-only affordances."
-              }
-            ],
-            "antiPatterns": [
-              {
-                "description": "Using a button to navigate to another page.",
-                "instead": "Use a link element with href."
-              },
-              {
-                "description": "Placing multiple primary buttons on the same surface.",
-                "instead": "Use one primary and one or more secondary or tertiary buttons."
-              }
-            ],
-            "keywords": [
+          "description": "A clickable button for triggering actions.",
+          "metadata": {
+            "status": "stable",
+            "tags": [
               "action",
               "submit",
               "click",
@@ -684,10 +643,57 @@
               "call-to-action",
               "interactive"
             ]
-          }
-        }
-      ],
-      "tokenGroups": [
+          },
+          "agentDocumentBlocks": [
+            {
+              "kind": "useCases",
+              "purpose": "Trigger a user-initiated action within the current view without causing page navigation.",
+              "items": [
+                {
+                  "description": "Use button for in-page actions; use link for navigation to a URL.",
+                  "stance": "discouraged",
+                  "alternative": {
+                    "identifier": "link"
+                  }
+                },
+                {
+                  "description": "Use button when a visible text label is present; use icon-button for icon-only affordances.",
+                  "stance": "discouraged",
+                  "alternative": {
+                    "identifier": "icon-button"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "guidelines",
+              "items": [
+                {
+                  "guidance": "Do not use for navigating to a different page or URL.",
+                  "level": "MUST_NOT"
+                },
+                {
+                  "guidance": "Limit each surface to one primary-emphasis button.",
+                  "level": "MUST"
+                },
+                {
+                  "guidance": "Always provide an accessible label via visible text or aria-label.",
+                  "level": "MUST"
+                },
+                {
+                  "guidance": "Using a button to navigate to another page.",
+                  "rationale": "Instead: Use a link element with href.",
+                  "level": "MUST_NOT"
+                },
+                {
+                  "guidance": "Placing multiple primary buttons on the same surface.",
+                  "rationale": "Instead: Use one primary and one or more secondary or tertiary buttons.",
+                  "level": "MUST_NOT"
+                }
+              ]
+            }
+          ]
+        },
         {
           "kind": "token-group",
           "identifier": "tokens",
@@ -711,16 +717,8 @@
               }
             }
           ],
-          "agents": {
-            "intent": "Define and organize a set of related design tokens, providing shared defaults for type and category.",
-            "constraints": [
-              {
-                "rule": "Do not reference base palette tokens directly in component code.",
-                "level": "MUST_NOT",
-                "context": "Always reference semantic tokens that point to palette values."
-              }
-            ],
-            "keywords": [
+          "metadata": {
+            "tags": [
               "token",
               "group",
               "palette",
@@ -728,7 +726,28 @@
               "family",
               "collection"
             ]
-          }
+          },
+          "agentDocumentBlocks": [
+            {
+              "kind": "sections",
+              "items": [
+                {
+                  "title": "Intent",
+                  "body": "Define and organize a set of related design tokens, providing shared defaults for type and category."
+                }
+              ]
+            },
+            {
+              "kind": "guidelines",
+              "items": [
+                {
+                  "guidance": "Do not reference base palette tokens directly in component code.",
+                  "rationale": "Always reference semantic tokens that point to palette values.",
+                  "level": "MUST_NOT"
+                }
+              ]
+            }
+          ]
         },
         {
           "kind": "token-group",
@@ -757,16 +776,8 @@
               }
             }
           ],
-          "agents": {
-            "intent": "Define and organize a set of related design tokens, providing shared defaults for type and category.",
-            "constraints": [
-              {
-                "rule": "Do not reference base palette tokens directly in component code.",
-                "level": "MUST_NOT",
-                "context": "Always reference semantic tokens that point to palette values."
-              }
-            ],
-            "keywords": [
+          "metadata": {
+            "tags": [
               "token",
               "group",
               "palette",
@@ -774,24 +785,45 @@
               "family",
               "collection"
             ]
-          }
-        }
-      ],
-      "themes": [
+          },
+          "agentDocumentBlocks": [
+            {
+              "kind": "sections",
+              "items": [
+                {
+                  "title": "Intent",
+                  "body": "Define and organize a set of related design tokens, providing shared defaults for type and category."
+                }
+              ]
+            },
+            {
+              "kind": "guidelines",
+              "items": [
+                {
+                  "guidance": "Do not reference base palette tokens directly in component code.",
+                  "rationale": "Always reference semantic tokens that point to palette values.",
+                  "level": "MUST_NOT"
+                }
+              ]
+            }
+          ]
+        },
         {
           "kind": "theme",
           "identifier": "dark",
           "name": "Dark Mode",
-          "metadata": [
-            {
-              "kind": "description",
-              "value": "Dark color mode for low-light environments."
-            },
-            {
-              "kind": "status",
-              "overall": "stable"
-            }
-          ],
+          "description": "Dark color mode for low-light environments.",
+          "metadata": {
+            "status": "stable",
+            "tags": [
+              "dark-mode",
+              "color-mode",
+              "night",
+              "low-light",
+              "theme",
+              "override"
+            ]
+          },
           "overrides": [
             {
               "token": "color-text-primary",
@@ -802,75 +834,48 @@
               "description": "Muted text for secondary content in dark mode."
             }
           ],
-          "agents": {
-            "intent": "Apply a dark color palette for low-light environments and user preference, maintaining WCAG AA contrast throughout.",
-            "constraints": [
-              {
-                "rule": "Always apply at the application root, not on individual components.",
-                "level": "MUST"
-              },
-              {
-                "rule": "Do not mix dark-mode and light-mode semantic tokens on the same surface.",
-                "level": "MUST_NOT"
-              }
-            ],
-            "disambiguation": [
-              {
-                "entity": "high-contrast",
-                "distinction": "Use dark for low-light comfort; use high-contrast for users with low vision requiring maximum contrast."
-              }
-            ],
-            "antiPatterns": [
-              {
-                "description": "Applying dark theme only to part of a page while the rest remains light.",
-                "instead": "Use inline theme switching for isolated components; apply the theme at the root for global coverage."
-              }
-            ],
-            "keywords": [
-              "dark-mode",
-              "color-mode",
-              "night",
-              "low-light",
-              "theme",
-              "override"
-            ]
-          }
-        }
-      ],
-      "foundations": [
+          "agentDocumentBlocks": [
+            {
+              "kind": "useCases",
+              "purpose": "Apply a dark color palette for low-light environments and user preference, maintaining WCAG AA contrast throughout.",
+              "items": [
+                {
+                  "description": "Use dark for low-light comfort; use high-contrast for users with low vision requiring maximum contrast.",
+                  "stance": "discouraged",
+                  "alternative": {
+                    "identifier": "high-contrast"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "guidelines",
+              "items": [
+                {
+                  "guidance": "Always apply at the application root, not on individual components.",
+                  "level": "MUST"
+                },
+                {
+                  "guidance": "Do not mix dark-mode and light-mode semantic tokens on the same surface.",
+                  "level": "MUST_NOT"
+                },
+                {
+                  "guidance": "Applying dark theme only to part of a page while the rest remains light.",
+                  "rationale": "Instead: Use inline theme switching for isolated components; apply the theme at the root for global coverage.",
+                  "level": "MUST_NOT"
+                }
+              ]
+            }
+          ]
+        },
         {
           "kind": "foundation",
           "identifier": "color",
           "name": "Color",
-          "metadata": [
-            {
-              "kind": "description",
-              "value": "The color system governing palette usage, semantic mapping, and accessibility."
-            },
-            {
-              "kind": "status",
-              "overall": "stable"
-            }
-          ],
-          "agents": {
-            "intent": "Document spacing scale tokens and enforce their consistent application across layout, components, and typography.",
-            "constraints": [
-              {
-                "rule": "Do not substitute spacing tokens with typography or icon-size tokens.",
-                "level": "MUST_NOT"
-              },
-              {
-                "rule": "Always use the next scale step up or down rather than custom values.",
-                "level": "SHOULD"
-              }
-            ],
-            "disambiguation": [
-              {
-                "entity": "typography foundation",
-                "distinction": "Spacing governs whitespace and layout gaps; typography governs type size, weight, and line height."
-              }
-            ],
-            "keywords": [
+          "description": "The color system governing palette usage, semantic mapping, and accessibility.",
+          "metadata": {
+            "status": "stable",
+            "tags": [
               "spacing",
               "scale",
               "gap",
@@ -880,53 +885,44 @@
               "layout",
               "density"
             ]
-          }
-        }
-      ],
-      "patterns": [
+          },
+          "agentDocumentBlocks": [
+            {
+              "kind": "useCases",
+              "purpose": "Document spacing scale tokens and enforce their consistent application across layout, components, and typography.",
+              "items": [
+                {
+                  "description": "Spacing governs whitespace and layout gaps; typography governs type size, weight, and line height.",
+                  "stance": "discouraged",
+                  "alternative": {
+                    "identifier": "typography foundation"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "guidelines",
+              "items": [
+                {
+                  "guidance": "Do not substitute spacing tokens with typography or icon-size tokens.",
+                  "level": "MUST_NOT"
+                },
+                {
+                  "guidance": "Always use the next scale step up or down rather than custom values.",
+                  "level": "SHOULD"
+                }
+              ]
+            }
+          ]
+        },
         {
           "kind": "pattern",
           "identifier": "form-validation",
           "name": "Form Validation",
-          "metadata": [
-            {
-              "kind": "description",
-              "value": "Validates user input and communicates errors on form submission."
-            },
-            {
-              "kind": "status",
-              "overall": "stable"
-            }
-          ],
-          "agents": {
-            "intent": "Guide multi-component composition for surfacing, communicating, and resolving form validation errors.",
-            "constraints": [
-              {
-                "rule": "Always include both an inline field error and a summary when multiple fields fail.",
-                "level": "MUST"
-              },
-              {
-                "rule": "Do not use toast notifications as the sole error communication for form validation.",
-                "level": "MUST_NOT"
-              }
-            ],
-            "disambiguation": [
-              {
-                "entity": "empty-state",
-                "distinction": "Use error-messaging for validation and system errors; use empty-state for the absence of content."
-              },
-              {
-                "entity": "alert",
-                "distinction": "Use error-messaging for form validation flows; use alert for non-form system or status messages."
-              }
-            ],
-            "antiPatterns": [
-              {
-                "description": "Showing errors only on submit without inline field feedback.",
-                "instead": "Show inline errors on field blur and in a summary on submit."
-              }
-            ],
-            "keywords": [
+          "description": "Validates user input and communicates errors on form submission.",
+          "metadata": {
+            "status": "stable",
+            "tags": [
               "error",
               "validation",
               "form",
@@ -935,7 +931,47 @@
               "error-summary",
               "alert"
             ]
-          }
+          },
+          "agentDocumentBlocks": [
+            {
+              "kind": "useCases",
+              "purpose": "Guide multi-component composition for surfacing, communicating, and resolving form validation errors.",
+              "items": [
+                {
+                  "description": "Use error-messaging for validation and system errors; use empty-state for the absence of content.",
+                  "stance": "discouraged",
+                  "alternative": {
+                    "identifier": "empty-state"
+                  }
+                },
+                {
+                  "description": "Use error-messaging for form validation flows; use alert for non-form system or status messages.",
+                  "stance": "discouraged",
+                  "alternative": {
+                    "identifier": "alert"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "guidelines",
+              "items": [
+                {
+                  "guidance": "Always include both an inline field error and a summary when multiple fields fail.",
+                  "level": "MUST"
+                },
+                {
+                  "guidance": "Do not use toast notifications as the sole error communication for form validation.",
+                  "level": "MUST_NOT"
+                },
+                {
+                  "guidance": "Showing errors only on submit without inline field feedback.",
+                  "rationale": "Instead: Show inline errors on field blur and in a summary on submit.",
+                  "level": "MUST_NOT"
+                }
+              ]
+            }
+          ]
         }
       ]
     }
@@ -948,13 +984,13 @@
 <ds-heading level="3" anchor="using-the-bundled-schema">Using the bundled schema</ds-heading>
 <p>Add <ds-code inline>$schema</ds-code> to get editor autocompletion and inline validation:</p>
 <ds-code language="json">{
-  "$schema": "https://designsystemdocspec.org/v0.6/dsds.bundled.schema.json",
-  "dsdsVersion": "0.6",
+  "$schema": "https://designsystemdocspec.org/v0.7/dsds.bundled.schema.json",
+  "dsdsVersion": "0.7",
   "entity": {
     "kind": "component",
     "identifier": "my-component",
     "name": "My Component",
-    "metadata": []
+    "description": "What this component is and does."
   }
 }
 </ds-code>
@@ -984,7 +1020,7 @@ npx ajv validate -s spec/schema/dsds.bundled.schema.json -d my-system.dsds.json
         <ds-back-to-top></ds-back-to-top>
 
         <ds-footer>
-          <p>Design System Documentation Spec (DSDS) 0.6 — Draft Specification</p>
+          <p>Design System Documentation Spec (DSDS) 0.7 — Draft Specification</p>
           <p><a href="https://github.com/somerandomdude/design-system-documentation-schema">GitHub</a></p>
         </ds-footer>
       </div>

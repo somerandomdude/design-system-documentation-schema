@@ -4,6 +4,109 @@ All notable changes to the DSDS specification are documented in this file.
 
 ---
 
+## [0.7] — 2026-06-09
+
+Major simplification release. The spec's core sentence — *a document holds one `entity` or many `entityGroups`; a group holds `entities`; an entity is identity plus metadata plus kind-tagged blocks; list blocks are plural and hold `items`* — is now enforced everywhere. Every breaking change below is automated by `scripts/migrate-to-0.7.js`, which accepts v0.5.x and v0.6 documents and emits warnings wherever a conversion deserves human review.
+
+### Breaking changes
+
+#### 1. Entity `metadata` is a plain object, not an array of kind-tagged entries
+
+Metadata is keyed by field name; each kind's wrapper object and the array's uniqueness machinery are gone. `status` and `lastUpdated` accept a string shorthand for the common case and an object form for detail.
+
+| Before | After |
+|---|---|
+| `"metadata": [{ "kind": "tags", "items": [...] }]` | `"metadata": { "tags": [...] }` |
+| `{ "kind": "status", "overall": "stable" }` | `"status": "stable"` (or object with `overall`/`platforms`) |
+| `{ "kind": "last-updated", "value": "...", "description": "..." }` | `"lastUpdated": "..."` (or `{ "date", "note" }`) |
+| `{ "kind": "thumbnail", "url": ..., "alt": ... }` | `"thumbnail": { "url", "alt" }` |
+| `{ "kind": "preview", "presentation": {...} }` | `"preview": { ...presentation... }` |
+| `{ "kind": "extends", "extends": {...} }` | `"extends": { ... }` |
+
+**Migration.** Automatic. Each metadata field's schema now lives in its own file under `metadata/`, aggregated by `metadata.schema.json`.
+
+#### 2. `description` is entity identity, not metadata
+
+The `description` metadata entry is gone; `description` is a top-level entity property beside `identifier` and `name`, on all seven entity types.
+
+**Migration.** Automatic — the entry's value hoists to the entity top level.
+
+#### 3. `richText` is a markdown string
+
+The `{ "value", "format" }` object form and the `format` property are removed. Rich text is a string interpreted as CommonMark; plain text and inline HTML are both valid markdown.
+
+**Migration.** Automatic — structured values collapse to their bare string.
+
+#### 4. Root `documentation` → `entityGroups`; typed entity arrays → one `entities` array
+
+A group is `{ "name", "description", "entities": [...] }`. The six per-type arrays (`components`, `tokenGroups`, `themes`, `foundations`, `patterns`, `guides`) are removed; entities mix freely in display order, discriminated by `kind`. The entity union is defined once (`anyEntity`) and shared by the root `entity` property and group `entities` — groups may now also hold bare `token` entities. JSON Pointer fragments `#/documentation/...` become `#/entityGroups/...`.
+
+**Migration.** Automatic, including `$ref` fragment rewriting.
+
+#### 5. One examples vocabulary
+
+`variantValue.example` (array), `flagVariant.example` (single object), `stateEntry.preview`, and `anatomy.preview` are all `examples` — always plural, always an array of the common example model. The entity-level `preview` metadata field (a single teaser presentation) is unchanged.
+
+**Migration.** Automatic — bare objects are wrapped.
+
+#### 6. List-shaped block kinds are plural
+
+The rule: if a block's payload is `items`, its kind is plural. `guideline` → `guidelines`, `section` → `sections`, `import` → `imports`. Schema file names now match their primary definitions (`variants.schema.json` defines `variants`, and so on).
+
+**Migration.** Automatic kind rename.
+
+#### 7. The `purpose` block is now `useCases`
+
+Kind `purpose` → `useCases`; its `useCases` payload → `items` (now required, minItems 1); the freed `purpose` name is an optional richText umbrella statement on the block ("what is this for"), framing the scenario items beneath it.
+
+**Migration.** Automatic. Blocks that were legally empty under 0.6 (no use cases) fail the new floor and are flagged.
+
+#### 8. Nested `purpose` on variant values, flags, and states is `rationale`
+
+The embedded kind-tagged block is replaced by a richText `rationale` ("why does this option exist"). Comparative when-to-use guidance belongs in the entity's `useCases` block.
+
+**Migration.** Automatic best-effort — nested use cases fold into markdown bullets preserving stances and alternatives, with a warning per conversion for wording review.
+
+#### 9. `agents` is replaced by `agentDocumentBlocks`
+
+The agents object (intent, constraints, antiPatterns, examples, disambiguation, keywords, verified, verifiedAgainst) is removed. In its place, every entity accepts `agentDocumentBlocks` — an array taking the **same document block kinds** as `documentBlocks`, intended for agent (AI/LLM) consumption only. Tools MUST NOT render it for humans; agents read both arrays. One block grammar, two audiences.
+
+| Before (`agents.…`) | After |
+|---|---|
+| `intent` + `disambiguation` | an agent `useCases` block (intent as `purpose`; disambiguations as discouraged items with alternatives) |
+| `constraints` / `antiPatterns` | an agent `guidelines` block (anti-patterns become `MUST_NOT` entries) |
+| `examples` | an agent `sections` block (common example model) |
+| `keywords` | merged into metadata `tags` |
+| `verified` / `verifiedAgainst` | dropped (no v0.7 home) |
+
+**Migration.** Automatic, with a warning per entity; verified data is dropped with its own warning.
+
+#### 10. The agent-collection format is retired
+
+`common/agent-collection.schema.json` is removed. Cross-entity agent guidance lives in the relevant entities' `agentDocumentBlocks` (or a `guide` entity's agent blocks).
+
+**Migration.** Manual — the migrator flags agent-collection files; move scope content into entities by hand.
+
+#### 11. Guideline criteria are a shared, testable model
+
+The polymorphic `criteria` array (kind-tagged `criterionReference` / `criterionDefinition`) splits into two plain arrays on a guideline entry: `criteria` — testable success criteria using the new shared `common/criterion` definition (required `identifier` + objectively verifiable `statement`, optional title, techniques, failures, references, examples, tags) — and `references` — bare `{ "url", "label" }` citations of external standards. The display-code/registry apparatus is removed; identifier stability now serves test-history continuity. The `accessibility` block also accepts a `criteria` array.
+
+**Migration.** Automatic — references lose their kind tag; criterion entries rename `successCriterion` → `statement`.
+
+#### 12. Mechanical tightenings
+
+- `guidelineEntry` gains optional `evidence` (empirical backing: test runs, audits), formerly on agents constraints.
+- `apiProperty` no longer lists `required` in its required array (its `default: false` stands).
+- The `api` block requires at least one content array (properties, events, slots, cssCustomProperties, cssParts, dataAttributes, or methods).
+- `tokenDocumentBlock` is a direct alias of `generalDocumentBlock` (single-branch `oneOf` removed).
+- Scoped block unions are bare `$ref` lists; each kind is described once, in its own schema file.
+
+### Migration tooling
+
+`node scripts/migrate-to-0.7.js <file-or-dir>` applies every transform above to v0.5.x and v0.6 documents in place (`--check` for a dry run). The script is idempotent; conversions that merit review (rationale foldings, agents conversions, dropped data) emit warnings.
+
+---
+
 ## [0.6] — 2026-06-08
 
 Minor release. Schema files are now served at `https://designsystemdocspec.org/v0.6/...`. All earlier bundles remain published at their original URLs for documents pinned to them. This release reshapes the `status` metadata entry to a single, consistent structure, removes the unused `statusObject` / `status` definitions from `common`, moves system-level `purpose` / `guidelines` onto a root `documentBlocks` array, and flattens the `thumbnail` metadata entry.

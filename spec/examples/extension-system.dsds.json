@@ -1,6 +1,6 @@
 {
   "$schema": "../schema/dsds.bundled.schema.json",
-  "dsdsVersion": "0.6",
+  "dsdsVersion": "0.7",
   "systemInfo": {
     "systemName": "Acme Enterprise Extension",
     "systemVersion": "1.0.0",
@@ -15,7 +15,7 @@
   },
   "documentBlocks": [
     {
-      "kind": "section",
+      "kind": "sections",
       "items": [
         {
           "title": "Overview",
@@ -24,8 +24,8 @@
       ]
     },
     {
-      "kind": "purpose",
-      "useCases": [
+      "kind": "useCases",
+      "items": [
         {
           "description": "When building an enterprise product within the Acme suite that requires data tables, advanced form patterns, or admin-specific UI.",
           "stance": "recommended"
@@ -41,7 +41,7 @@
       ]
     },
     {
-      "kind": "guideline",
+      "kind": "guidelines",
       "items": [
         {
           "guidance": "Always install the core design system as a peer dependency alongside the enterprise extension. Do not use the extension without the core.",
@@ -60,22 +60,21 @@
           "rationale": "Enterprise customers include government agencies and regulated industries that contractually require AA compliance. Weakening inherited accessibility behavior (e.g., removing aria attributes, reducing contrast) violates these contracts.",
           "level": "MUST",
           "category": "accessibility",
-          "criteria": [
+          "references": [
             {
               "url": "https://www.w3.org/TR/WCAG22/",
-              "label": "WCAG 2.2",
-              "kind": "reference"
+              "label": "WCAG 2.2"
             }
           ]
         }
       ]
     }
   ],
-  "documentation": [
+  "entityGroups": [
     {
       "name": "Enterprise Components",
       "description": "Components that extend or specialize core components for enterprise use cases, plus net-new enterprise-only components.",
-      "components": [
+      "entities": [
         {
           "kind": "component",
           "identifier": "button",
@@ -135,6 +134,15 @@
                 "url": "https://enterprise-storybook.acme.com/?path=/docs/components-button--docs",
                 "label": "Enterprise Storybook"
               }
+            ],
+            "tags": [
+              "action",
+              "submit",
+              "click",
+              "CTA",
+              "trigger",
+              "call-to-action",
+              "interactive"
             ]
           },
           "documentBlocks": [
@@ -171,23 +179,7 @@
                       "identifier": "enterprise",
                       "name": "Enterprise",
                       "description": "Added by extension. A high-emphasis variant using the enterprise teal palette. Used for primary actions in admin dashboards where the standard primary blue conflicts with informational status indicators.",
-                      "purpose": {
-                        "kind": "purpose",
-                        "useCases": [
-                          {
-                            "description": "When the primary action sits alongside blue informational badges or status indicators in admin interfaces, and the standard primary blue would not be visually distinct.",
-                            "stance": "recommended"
-                          },
-                          {
-                            "description": "When building consumer-facing UI that uses the standard Acme brand palette.",
-                            "stance": "discouraged",
-                            "alternative": {
-                              "identifier": "primary",
-                              "rationale": "The enterprise variant's teal color is specific to the admin sub-brand. Consumer products use the standard primary blue."
-                            }
-                          }
-                        ]
-                      },
+                      "rationale": "- Use when: When the primary action sits alongside blue informational badges or status indicators in admin interfaces, and the standard primary blue would not be visually distinct.\n- Avoid when: When building consumer-facing UI that uses the standard Acme brand palette. Use `primary` instead — The enterprise variant's teal color is specific to the admin sub-brand. Consumer products use the standard primary blue.",
                       "tokens": {
                         "background": "button-enterprise-bg",
                         "text-color": "button-enterprise-text",
@@ -237,7 +229,7 @@
               }
             },
             {
-              "kind": "guideline",
+              "kind": "guidelines",
               "items": [
                 {
                   "guidance": "Use action verbs from the enterprise approved terminology list for all button labels in admin interfaces.",
@@ -255,52 +247,55 @@
               ]
             }
           ],
-          "agents": {
-            "intent": "Trigger a user-initiated action within the current view without causing page navigation.",
-            "constraints": [
-              {
-                "rule": "Do not use for navigating to a different page or URL.",
-                "level": "MUST_NOT"
-              },
-              {
-                "rule": "Limit each surface to one primary-emphasis button.",
-                "level": "MUST"
-              },
-              {
-                "rule": "Always provide an accessible label via visible text or aria-label.",
-                "level": "MUST"
-              }
-            ],
-            "disambiguation": [
-              {
-                "entity": "link",
-                "distinction": "Use button for in-page actions; use link for navigation to a URL."
-              },
-              {
-                "entity": "icon-button",
-                "distinction": "Use button when a visible text label is present; use icon-button for icon-only affordances."
-              }
-            ],
-            "antiPatterns": [
-              {
-                "description": "Using a button to navigate to another page.",
-                "instead": "Use a link element with href."
-              },
-              {
-                "description": "Placing multiple primary buttons on the same surface.",
-                "instead": "Use one primary and one or more secondary or tertiary buttons."
-              }
-            ],
-            "keywords": [
-              "action",
-              "submit",
-              "click",
-              "CTA",
-              "trigger",
-              "call-to-action",
-              "interactive"
-            ]
-          }
+          "agentDocumentBlocks": [
+            {
+              "kind": "useCases",
+              "purpose": "Trigger a user-initiated action within the current view without causing page navigation.",
+              "items": [
+                {
+                  "description": "Use button for in-page actions; use link for navigation to a URL.",
+                  "stance": "discouraged",
+                  "alternative": {
+                    "identifier": "link"
+                  }
+                },
+                {
+                  "description": "Use button when a visible text label is present; use icon-button for icon-only affordances.",
+                  "stance": "discouraged",
+                  "alternative": {
+                    "identifier": "icon-button"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "guidelines",
+              "items": [
+                {
+                  "guidance": "Do not use for navigating to a different page or URL.",
+                  "level": "MUST_NOT"
+                },
+                {
+                  "guidance": "Limit each surface to one primary-emphasis button.",
+                  "level": "MUST"
+                },
+                {
+                  "guidance": "Always provide an accessible label via visible text or aria-label.",
+                  "level": "MUST"
+                },
+                {
+                  "guidance": "Using a button to navigate to another page.",
+                  "rationale": "Instead: Use a link element with href.",
+                  "level": "MUST_NOT"
+                },
+                {
+                  "guidance": "Placing multiple primary buttons on the same surface.",
+                  "rationale": "Instead: Use one primary and one or more secondary or tertiary buttons.",
+                  "level": "MUST_NOT"
+                }
+              ]
+            }
+          ]
         },
         {
           "kind": "component",
@@ -316,7 +311,14 @@
               "data",
               "enterprise",
               "admin",
-              "virtualized"
+              "virtualized",
+              "action",
+              "submit",
+              "click",
+              "CTA",
+              "trigger",
+              "call-to-action",
+              "interactive"
             ],
             "links": [
               {
@@ -333,8 +335,8 @@
           },
           "documentBlocks": [
             {
-              "kind": "purpose",
-              "useCases": [
+              "kind": "useCases",
+              "items": [
                 {
                   "description": "When displaying datasets with more than 50 rows that require sorting, filtering, pagination, or inline editing.",
                   "stance": "recommended"
@@ -399,59 +401,62 @@
               ]
             }
           ],
-          "agents": {
-            "intent": "Trigger a user-initiated action within the current view without causing page navigation.",
-            "constraints": [
-              {
-                "rule": "Do not use for navigating to a different page or URL.",
-                "level": "MUST_NOT"
-              },
-              {
-                "rule": "Limit each surface to one primary-emphasis button.",
-                "level": "MUST"
-              },
-              {
-                "rule": "Always provide an accessible label via visible text or aria-label.",
-                "level": "MUST"
-              }
-            ],
-            "disambiguation": [
-              {
-                "entity": "link",
-                "distinction": "Use button for in-page actions; use link for navigation to a URL."
-              },
-              {
-                "entity": "icon-button",
-                "distinction": "Use button when a visible text label is present; use icon-button for icon-only affordances."
-              }
-            ],
-            "antiPatterns": [
-              {
-                "description": "Using a button to navigate to another page.",
-                "instead": "Use a link element with href."
-              },
-              {
-                "description": "Placing multiple primary buttons on the same surface.",
-                "instead": "Use one primary and one or more secondary or tertiary buttons."
-              }
-            ],
-            "keywords": [
-              "action",
-              "submit",
-              "click",
-              "CTA",
-              "trigger",
-              "call-to-action",
-              "interactive"
-            ]
-          }
+          "agentDocumentBlocks": [
+            {
+              "kind": "useCases",
+              "purpose": "Trigger a user-initiated action within the current view without causing page navigation.",
+              "items": [
+                {
+                  "description": "Use button for in-page actions; use link for navigation to a URL.",
+                  "stance": "discouraged",
+                  "alternative": {
+                    "identifier": "link"
+                  }
+                },
+                {
+                  "description": "Use button when a visible text label is present; use icon-button for icon-only affordances.",
+                  "stance": "discouraged",
+                  "alternative": {
+                    "identifier": "icon-button"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "guidelines",
+              "items": [
+                {
+                  "guidance": "Do not use for navigating to a different page or URL.",
+                  "level": "MUST_NOT"
+                },
+                {
+                  "guidance": "Limit each surface to one primary-emphasis button.",
+                  "level": "MUST"
+                },
+                {
+                  "guidance": "Always provide an accessible label via visible text or aria-label.",
+                  "level": "MUST"
+                },
+                {
+                  "guidance": "Using a button to navigate to another page.",
+                  "rationale": "Instead: Use a link element with href.",
+                  "level": "MUST_NOT"
+                },
+                {
+                  "guidance": "Placing multiple primary buttons on the same surface.",
+                  "rationale": "Instead: Use one primary and one or more secondary or tertiary buttons.",
+                  "level": "MUST_NOT"
+                }
+              ]
+            }
+          ]
         }
       ]
     },
     {
       "name": "Enterprise Tokens",
       "description": "Tokens that extend or override core tokens for the enterprise product line.",
-      "tokenGroups": [
+      "entities": [
         {
           "kind": "token-group",
           "identifier": "tokens",
@@ -495,7 +500,16 @@
                       "description": "All platform API mappings (CSS custom property, SCSS variable, JS constant, iOS/Android tokens) inherited from core."
                     }
                   ]
-                }
+                },
+                "tags": [
+                  "color",
+                  "text",
+                  "primary",
+                  "body",
+                  "heading",
+                  "label",
+                  "foreground"
+                ]
               },
               "tokenType": "color",
               "source": {
@@ -504,8 +518,8 @@
               },
               "documentBlocks": [
                 {
-                  "kind": "purpose",
-                  "useCases": [
+                  "kind": "useCases",
+                  "items": [
                     {
                       "description": "When applying the primary action color to buttons, links, and interactive controls in enterprise admin interfaces.",
                       "stance": "recommended"
@@ -521,119 +535,106 @@
                   ]
                 }
               ],
-              "agents": {
-                "intent": "Apply the primary text color for body content, headings, and labels on default background surfaces.",
-                "constraints": [
-                  {
-                    "rule": "Do not use on dark or colored background surfaces.",
-                    "level": "MUST_NOT"
-                  },
-                  {
-                    "rule": "Do not override this token value at the component level.",
-                    "level": "MUST_NOT"
-                  }
-                ],
-                "disambiguation": [
-                  {
-                    "entity": "color-text-secondary",
-                    "distinction": "Use primary for default reading content; use secondary for supporting or reduced-emphasis text."
-                  },
-                  {
-                    "entity": "color-text-on-action",
-                    "distinction": "Use primary on default surfaces; use on-action inside filled interactive components."
-                  }
-                ],
-                "keywords": [
-                  "color",
-                  "text",
-                  "primary",
-                  "body",
-                  "heading",
-                  "label",
-                  "foreground"
-                ]
-              }
+              "agentDocumentBlocks": [
+                {
+                  "kind": "useCases",
+                  "purpose": "Apply the primary text color for body content, headings, and labels on default background surfaces.",
+                  "items": [
+                    {
+                      "description": "Use primary for default reading content; use secondary for supporting or reduced-emphasis text.",
+                      "stance": "discouraged",
+                      "alternative": {
+                        "identifier": "color-text-secondary"
+                      }
+                    },
+                    {
+                      "description": "Use primary on default surfaces; use on-action inside filled interactive components.",
+                      "stance": "discouraged",
+                      "alternative": {
+                        "identifier": "color-text-on-action"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "kind": "guidelines",
+                  "items": [
+                    {
+                      "guidance": "Do not use on dark or colored background surfaces.",
+                      "level": "MUST_NOT"
+                    },
+                    {
+                      "guidance": "Do not override this token value at the component level.",
+                      "level": "MUST_NOT"
+                    }
+                  ]
+                }
+              ]
             },
             {
               "kind": "token",
               "identifier": "color-action-enterprise-hover",
               "metadata": {
                 "category": "semantic",
-                "summary": "Hover state for the enterprise action color."
+                "summary": "Hover state for the enterprise action color.",
+                "tags": [
+                  "color",
+                  "text",
+                  "primary",
+                  "body",
+                  "heading",
+                  "label",
+                  "foreground"
+                ]
               },
               "tokenType": "color",
               "source": {
                 "file": "tokens/color.tokens.json",
                 "path": "color.action.enterprise-hover"
               },
-              "agents": {
-                "intent": "Apply the primary text color for body content, headings, and labels on default background surfaces.",
-                "constraints": [
-                  {
-                    "rule": "Do not use on dark or colored background surfaces.",
-                    "level": "MUST_NOT"
-                  },
-                  {
-                    "rule": "Do not override this token value at the component level.",
-                    "level": "MUST_NOT"
-                  }
-                ],
-                "disambiguation": [
-                  {
-                    "entity": "color-text-secondary",
-                    "distinction": "Use primary for default reading content; use secondary for supporting or reduced-emphasis text."
-                  },
-                  {
-                    "entity": "color-text-on-action",
-                    "distinction": "Use primary on default surfaces; use on-action inside filled interactive components."
-                  }
-                ],
-                "keywords": [
-                  "color",
-                  "text",
-                  "primary",
-                  "body",
-                  "heading",
-                  "label",
-                  "foreground"
-                ]
-              }
+              "agentDocumentBlocks": [
+                {
+                  "kind": "useCases",
+                  "purpose": "Apply the primary text color for body content, headings, and labels on default background surfaces.",
+                  "items": [
+                    {
+                      "description": "Use primary for default reading content; use secondary for supporting or reduced-emphasis text.",
+                      "stance": "discouraged",
+                      "alternative": {
+                        "identifier": "color-text-secondary"
+                      }
+                    },
+                    {
+                      "description": "Use primary on default surfaces; use on-action inside filled interactive components.",
+                      "stance": "discouraged",
+                      "alternative": {
+                        "identifier": "color-text-on-action"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "kind": "guidelines",
+                  "items": [
+                    {
+                      "guidance": "Do not use on dark or colored background surfaces.",
+                      "level": "MUST_NOT"
+                    },
+                    {
+                      "guidance": "Do not override this token value at the component level.",
+                      "level": "MUST_NOT"
+                    }
+                  ]
+                }
+              ]
             },
             {
               "kind": "token",
               "identifier": "color-action-enterprise-active",
               "metadata": {
                 "category": "semantic",
-                "summary": "Active/pressed state for the enterprise action color."
-              },
-              "tokenType": "color",
-              "source": {
-                "file": "tokens/color.tokens.json",
-                "path": "color.action.enterprise-active"
-              },
-              "agents": {
-                "intent": "Apply the primary text color for body content, headings, and labels on default background surfaces.",
-                "constraints": [
-                  {
-                    "rule": "Do not use on dark or colored background surfaces.",
-                    "level": "MUST_NOT"
-                  },
-                  {
-                    "rule": "Do not override this token value at the component level.",
-                    "level": "MUST_NOT"
-                  }
-                ],
-                "disambiguation": [
-                  {
-                    "entity": "color-text-secondary",
-                    "distinction": "Use primary for default reading content; use secondary for supporting or reduced-emphasis text."
-                  },
-                  {
-                    "entity": "color-text-on-action",
-                    "distinction": "Use primary on default surfaces; use on-action inside filled interactive components."
-                  }
-                ],
-                "keywords": [
+                "summary": "Active/pressed state for the enterprise action color.",
+                "tags": [
                   "color",
                   "text",
                   "primary",
@@ -642,7 +643,47 @@
                   "label",
                   "foreground"
                 ]
-              }
+              },
+              "tokenType": "color",
+              "source": {
+                "file": "tokens/color.tokens.json",
+                "path": "color.action.enterprise-active"
+              },
+              "agentDocumentBlocks": [
+                {
+                  "kind": "useCases",
+                  "purpose": "Apply the primary text color for body content, headings, and labels on default background surfaces.",
+                  "items": [
+                    {
+                      "description": "Use primary for default reading content; use secondary for supporting or reduced-emphasis text.",
+                      "stance": "discouraged",
+                      "alternative": {
+                        "identifier": "color-text-secondary"
+                      }
+                    },
+                    {
+                      "description": "Use primary on default surfaces; use on-action inside filled interactive components.",
+                      "stance": "discouraged",
+                      "alternative": {
+                        "identifier": "color-text-on-action"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "kind": "guidelines",
+                  "items": [
+                    {
+                      "guidance": "Do not use on dark or colored background surfaces.",
+                      "level": "MUST_NOT"
+                    },
+                    {
+                      "guidance": "Do not override this token value at the component level.",
+                      "level": "MUST_NOT"
+                    }
+                  ]
+                }
+              ]
             },
             {
               "kind": "token",
@@ -661,171 +702,179 @@
                       "description": "Changed from core primary blue to enterprise teal."
                     }
                   ]
-                }
+                },
+                "tags": [
+                  "color",
+                  "text",
+                  "primary",
+                  "body",
+                  "heading",
+                  "label",
+                  "foreground"
+                ]
               },
               "tokenType": "color",
               "source": {
                 "file": "tokens/components/button.tokens.json",
                 "path": "button.enterprise.bg"
               },
-              "agents": {
-                "intent": "Apply the primary text color for body content, headings, and labels on default background surfaces.",
-                "constraints": [
-                  {
-                    "rule": "Do not use on dark or colored background surfaces.",
-                    "level": "MUST_NOT"
-                  },
-                  {
-                    "rule": "Do not override this token value at the component level.",
-                    "level": "MUST_NOT"
-                  }
-                ],
-                "disambiguation": [
-                  {
-                    "entity": "color-text-secondary",
-                    "distinction": "Use primary for default reading content; use secondary for supporting or reduced-emphasis text."
-                  },
-                  {
-                    "entity": "color-text-on-action",
-                    "distinction": "Use primary on default surfaces; use on-action inside filled interactive components."
-                  }
-                ],
-                "keywords": [
-                  "color",
-                  "text",
-                  "primary",
-                  "body",
-                  "heading",
-                  "label",
-                  "foreground"
-                ]
-              }
+              "agentDocumentBlocks": [
+                {
+                  "kind": "useCases",
+                  "purpose": "Apply the primary text color for body content, headings, and labels on default background surfaces.",
+                  "items": [
+                    {
+                      "description": "Use primary for default reading content; use secondary for supporting or reduced-emphasis text.",
+                      "stance": "discouraged",
+                      "alternative": {
+                        "identifier": "color-text-secondary"
+                      }
+                    },
+                    {
+                      "description": "Use primary on default surfaces; use on-action inside filled interactive components.",
+                      "stance": "discouraged",
+                      "alternative": {
+                        "identifier": "color-text-on-action"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "kind": "guidelines",
+                  "items": [
+                    {
+                      "guidance": "Do not use on dark or colored background surfaces.",
+                      "level": "MUST_NOT"
+                    },
+                    {
+                      "guidance": "Do not override this token value at the component level.",
+                      "level": "MUST_NOT"
+                    }
+                  ]
+                }
+              ]
             },
             {
               "kind": "token",
               "identifier": "button-enterprise-text",
               "metadata": {
                 "category": "component",
-                "summary": "Text color for the enterprise button variant."
+                "summary": "Text color for the enterprise button variant.",
+                "tags": [
+                  "color",
+                  "text",
+                  "primary",
+                  "body",
+                  "heading",
+                  "label",
+                  "foreground"
+                ]
               },
               "tokenType": "color",
               "source": {
                 "file": "tokens/components/button.tokens.json",
                 "path": "button.enterprise.text"
               },
-              "agents": {
-                "intent": "Apply the primary text color for body content, headings, and labels on default background surfaces.",
-                "constraints": [
-                  {
-                    "rule": "Do not use on dark or colored background surfaces.",
-                    "level": "MUST_NOT"
-                  },
-                  {
-                    "rule": "Do not override this token value at the component level.",
-                    "level": "MUST_NOT"
-                  }
-                ],
-                "disambiguation": [
-                  {
-                    "entity": "color-text-secondary",
-                    "distinction": "Use primary for default reading content; use secondary for supporting or reduced-emphasis text."
-                  },
-                  {
-                    "entity": "color-text-on-action",
-                    "distinction": "Use primary on default surfaces; use on-action inside filled interactive components."
-                  }
-                ],
-                "keywords": [
-                  "color",
-                  "text",
-                  "primary",
-                  "body",
-                  "heading",
-                  "label",
-                  "foreground"
-                ]
-              }
+              "agentDocumentBlocks": [
+                {
+                  "kind": "useCases",
+                  "purpose": "Apply the primary text color for body content, headings, and labels on default background surfaces.",
+                  "items": [
+                    {
+                      "description": "Use primary for default reading content; use secondary for supporting or reduced-emphasis text.",
+                      "stance": "discouraged",
+                      "alternative": {
+                        "identifier": "color-text-secondary"
+                      }
+                    },
+                    {
+                      "description": "Use primary on default surfaces; use on-action inside filled interactive components.",
+                      "stance": "discouraged",
+                      "alternative": {
+                        "identifier": "color-text-on-action"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "kind": "guidelines",
+                  "items": [
+                    {
+                      "guidance": "Do not use on dark or colored background surfaces.",
+                      "level": "MUST_NOT"
+                    },
+                    {
+                      "guidance": "Do not override this token value at the component level.",
+                      "level": "MUST_NOT"
+                    }
+                  ]
+                }
+              ]
             },
             {
               "kind": "token",
               "identifier": "button-enterprise-hover-bg",
               "metadata": {
                 "category": "component",
-                "summary": "Hover background for the enterprise button variant."
+                "summary": "Hover background for the enterprise button variant.",
+                "tags": [
+                  "color",
+                  "text",
+                  "primary",
+                  "body",
+                  "heading",
+                  "label",
+                  "foreground"
+                ]
               },
               "tokenType": "color",
               "source": {
                 "file": "tokens/components/button.tokens.json",
                 "path": "button.enterprise.hover.bg"
               },
-              "agents": {
-                "intent": "Apply the primary text color for body content, headings, and labels on default background surfaces.",
-                "constraints": [
-                  {
-                    "rule": "Do not use on dark or colored background surfaces.",
-                    "level": "MUST_NOT"
-                  },
-                  {
-                    "rule": "Do not override this token value at the component level.",
-                    "level": "MUST_NOT"
-                  }
-                ],
-                "disambiguation": [
-                  {
-                    "entity": "color-text-secondary",
-                    "distinction": "Use primary for default reading content; use secondary for supporting or reduced-emphasis text."
-                  },
-                  {
-                    "entity": "color-text-on-action",
-                    "distinction": "Use primary on default surfaces; use on-action inside filled interactive components."
-                  }
-                ],
-                "keywords": [
-                  "color",
-                  "text",
-                  "primary",
-                  "body",
-                  "heading",
-                  "label",
-                  "foreground"
-                ]
-              }
+              "agentDocumentBlocks": [
+                {
+                  "kind": "useCases",
+                  "purpose": "Apply the primary text color for body content, headings, and labels on default background surfaces.",
+                  "items": [
+                    {
+                      "description": "Use primary for default reading content; use secondary for supporting or reduced-emphasis text.",
+                      "stance": "discouraged",
+                      "alternative": {
+                        "identifier": "color-text-secondary"
+                      }
+                    },
+                    {
+                      "description": "Use primary on default surfaces; use on-action inside filled interactive components.",
+                      "stance": "discouraged",
+                      "alternative": {
+                        "identifier": "color-text-on-action"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "kind": "guidelines",
+                  "items": [
+                    {
+                      "guidance": "Do not use on dark or colored background surfaces.",
+                      "level": "MUST_NOT"
+                    },
+                    {
+                      "guidance": "Do not override this token value at the component level.",
+                      "level": "MUST_NOT"
+                    }
+                  ]
+                }
+              ]
             },
             {
               "kind": "token",
               "identifier": "button-enterprise-active-bg",
               "metadata": {
                 "category": "component",
-                "summary": "Active/pressed background for the enterprise button variant."
-              },
-              "tokenType": "color",
-              "source": {
-                "file": "tokens/components/button.tokens.json",
-                "path": "button.enterprise.active.bg"
-              },
-              "agents": {
-                "intent": "Apply the primary text color for body content, headings, and labels on default background surfaces.",
-                "constraints": [
-                  {
-                    "rule": "Do not use on dark or colored background surfaces.",
-                    "level": "MUST_NOT"
-                  },
-                  {
-                    "rule": "Do not override this token value at the component level.",
-                    "level": "MUST_NOT"
-                  }
-                ],
-                "disambiguation": [
-                  {
-                    "entity": "color-text-secondary",
-                    "distinction": "Use primary for default reading content; use secondary for supporting or reduced-emphasis text."
-                  },
-                  {
-                    "entity": "color-text-on-action",
-                    "distinction": "Use primary on default surfaces; use on-action inside filled interactive components."
-                  }
-                ],
-                "keywords": [
+                "summary": "Active/pressed background for the enterprise button variant.",
+                "tags": [
                   "color",
                   "text",
                   "primary",
@@ -834,7 +883,47 @@
                   "label",
                   "foreground"
                 ]
-              }
+              },
+              "tokenType": "color",
+              "source": {
+                "file": "tokens/components/button.tokens.json",
+                "path": "button.enterprise.active.bg"
+              },
+              "agentDocumentBlocks": [
+                {
+                  "kind": "useCases",
+                  "purpose": "Apply the primary text color for body content, headings, and labels on default background surfaces.",
+                  "items": [
+                    {
+                      "description": "Use primary for default reading content; use secondary for supporting or reduced-emphasis text.",
+                      "stance": "discouraged",
+                      "alternative": {
+                        "identifier": "color-text-secondary"
+                      }
+                    },
+                    {
+                      "description": "Use primary on default surfaces; use on-action inside filled interactive components.",
+                      "stance": "discouraged",
+                      "alternative": {
+                        "identifier": "color-text-on-action"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "kind": "guidelines",
+                  "items": [
+                    {
+                      "guidance": "Do not use on dark or colored background surfaces.",
+                      "level": "MUST_NOT"
+                    },
+                    {
+                      "guidance": "Do not override this token value at the component level.",
+                      "level": "MUST_NOT"
+                    }
+                  ]
+                }
+              ]
             },
             {
               "kind": "token",
@@ -842,126 +931,122 @@
               "description": "A subtle background color that distinguishes the header row from data rows. Enterprise-only token — no core equivalent.",
               "metadata": {
                 "category": "component",
-                "summary": "Background color for data grid column headers."
+                "summary": "Background color for data grid column headers.",
+                "tags": [
+                  "color",
+                  "text",
+                  "primary",
+                  "body",
+                  "heading",
+                  "label",
+                  "foreground"
+                ]
               },
               "tokenType": "color",
               "source": {
                 "file": "tokens/components/data-grid.tokens.json",
                 "path": "data-grid.header.bg"
               },
-              "agents": {
-                "intent": "Apply the primary text color for body content, headings, and labels on default background surfaces.",
-                "constraints": [
-                  {
-                    "rule": "Do not use on dark or colored background surfaces.",
-                    "level": "MUST_NOT"
-                  },
-                  {
-                    "rule": "Do not override this token value at the component level.",
-                    "level": "MUST_NOT"
-                  }
-                ],
-                "disambiguation": [
-                  {
-                    "entity": "color-text-secondary",
-                    "distinction": "Use primary for default reading content; use secondary for supporting or reduced-emphasis text."
-                  },
-                  {
-                    "entity": "color-text-on-action",
-                    "distinction": "Use primary on default surfaces; use on-action inside filled interactive components."
-                  }
-                ],
-                "keywords": [
-                  "color",
-                  "text",
-                  "primary",
-                  "body",
-                  "heading",
-                  "label",
-                  "foreground"
-                ]
-              }
+              "agentDocumentBlocks": [
+                {
+                  "kind": "useCases",
+                  "purpose": "Apply the primary text color for body content, headings, and labels on default background surfaces.",
+                  "items": [
+                    {
+                      "description": "Use primary for default reading content; use secondary for supporting or reduced-emphasis text.",
+                      "stance": "discouraged",
+                      "alternative": {
+                        "identifier": "color-text-secondary"
+                      }
+                    },
+                    {
+                      "description": "Use primary on default surfaces; use on-action inside filled interactive components.",
+                      "stance": "discouraged",
+                      "alternative": {
+                        "identifier": "color-text-on-action"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "kind": "guidelines",
+                  "items": [
+                    {
+                      "guidance": "Do not use on dark or colored background surfaces.",
+                      "level": "MUST_NOT"
+                    },
+                    {
+                      "guidance": "Do not override this token value at the component level.",
+                      "level": "MUST_NOT"
+                    }
+                  ]
+                }
+              ]
             },
             {
               "kind": "token",
               "identifier": "color-data-grid-row-hover",
               "metadata": {
                 "category": "component",
-                "summary": "Hover background for data grid rows."
+                "summary": "Hover background for data grid rows.",
+                "tags": [
+                  "color",
+                  "text",
+                  "primary",
+                  "body",
+                  "heading",
+                  "label",
+                  "foreground"
+                ]
               },
               "tokenType": "color",
               "source": {
                 "file": "tokens/components/data-grid.tokens.json",
                 "path": "data-grid.row.hover"
               },
-              "agents": {
-                "intent": "Apply the primary text color for body content, headings, and labels on default background surfaces.",
-                "constraints": [
-                  {
-                    "rule": "Do not use on dark or colored background surfaces.",
-                    "level": "MUST_NOT"
-                  },
-                  {
-                    "rule": "Do not override this token value at the component level.",
-                    "level": "MUST_NOT"
-                  }
-                ],
-                "disambiguation": [
-                  {
-                    "entity": "color-text-secondary",
-                    "distinction": "Use primary for default reading content; use secondary for supporting or reduced-emphasis text."
-                  },
-                  {
-                    "entity": "color-text-on-action",
-                    "distinction": "Use primary on default surfaces; use on-action inside filled interactive components."
-                  }
-                ],
-                "keywords": [
-                  "color",
-                  "text",
-                  "primary",
-                  "body",
-                  "heading",
-                  "label",
-                  "foreground"
-                ]
-              }
+              "agentDocumentBlocks": [
+                {
+                  "kind": "useCases",
+                  "purpose": "Apply the primary text color for body content, headings, and labels on default background surfaces.",
+                  "items": [
+                    {
+                      "description": "Use primary for default reading content; use secondary for supporting or reduced-emphasis text.",
+                      "stance": "discouraged",
+                      "alternative": {
+                        "identifier": "color-text-secondary"
+                      }
+                    },
+                    {
+                      "description": "Use primary on default surfaces; use on-action inside filled interactive components.",
+                      "stance": "discouraged",
+                      "alternative": {
+                        "identifier": "color-text-on-action"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "kind": "guidelines",
+                  "items": [
+                    {
+                      "guidance": "Do not use on dark or colored background surfaces.",
+                      "level": "MUST_NOT"
+                    },
+                    {
+                      "guidance": "Do not override this token value at the component level.",
+                      "level": "MUST_NOT"
+                    }
+                  ]
+                }
+              ]
             },
             {
               "kind": "token",
               "identifier": "color-data-grid-row-selected",
               "metadata": {
                 "category": "component",
-                "summary": "Background for selected data grid rows."
-              },
-              "tokenType": "color",
-              "source": {
-                "file": "tokens/components/data-grid.tokens.json",
-                "path": "data-grid.row.selected"
-              },
-              "agents": {
-                "intent": "Apply the primary text color for body content, headings, and labels on default background surfaces.",
-                "constraints": [
-                  {
-                    "rule": "Do not use on dark or colored background surfaces.",
-                    "level": "MUST_NOT"
-                  },
-                  {
-                    "rule": "Do not override this token value at the component level.",
-                    "level": "MUST_NOT"
-                  }
-                ],
-                "disambiguation": [
-                  {
-                    "entity": "color-text-secondary",
-                    "distinction": "Use primary for default reading content; use secondary for supporting or reduced-emphasis text."
-                  },
-                  {
-                    "entity": "color-text-on-action",
-                    "distinction": "Use primary on default surfaces; use on-action inside filled interactive components."
-                  }
-                ],
-                "keywords": [
+                "summary": "Background for selected data grid rows.",
+                "tags": [
                   "color",
                   "text",
                   "primary",
@@ -970,19 +1055,51 @@
                   "label",
                   "foreground"
                 ]
-              }
+              },
+              "tokenType": "color",
+              "source": {
+                "file": "tokens/components/data-grid.tokens.json",
+                "path": "data-grid.row.selected"
+              },
+              "agentDocumentBlocks": [
+                {
+                  "kind": "useCases",
+                  "purpose": "Apply the primary text color for body content, headings, and labels on default background surfaces.",
+                  "items": [
+                    {
+                      "description": "Use primary for default reading content; use secondary for supporting or reduced-emphasis text.",
+                      "stance": "discouraged",
+                      "alternative": {
+                        "identifier": "color-text-secondary"
+                      }
+                    },
+                    {
+                      "description": "Use primary on default surfaces; use on-action inside filled interactive components.",
+                      "stance": "discouraged",
+                      "alternative": {
+                        "identifier": "color-text-on-action"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "kind": "guidelines",
+                  "items": [
+                    {
+                      "guidance": "Do not use on dark or colored background surfaces.",
+                      "level": "MUST_NOT"
+                    },
+                    {
+                      "guidance": "Do not override this token value at the component level.",
+                      "level": "MUST_NOT"
+                    }
+                  ]
+                }
+              ]
             }
           ],
-          "agents": {
-            "intent": "Define and organize a set of related design tokens, providing shared defaults for type and category.",
-            "constraints": [
-              {
-                "rule": "Do not reference base palette tokens directly in component code.",
-                "level": "MUST_NOT",
-                "context": "Always reference semantic tokens that point to palette values."
-              }
-            ],
-            "keywords": [
+          "metadata": {
+            "tags": [
               "token",
               "group",
               "palette",
@@ -990,7 +1107,28 @@
               "family",
               "collection"
             ]
-          }
+          },
+          "agentDocumentBlocks": [
+            {
+              "kind": "sections",
+              "items": [
+                {
+                  "title": "Intent",
+                  "body": "Define and organize a set of related design tokens, providing shared defaults for type and category."
+                }
+              ]
+            },
+            {
+              "kind": "guidelines",
+              "items": [
+                {
+                  "guidance": "Do not reference base palette tokens directly in component code.",
+                  "rationale": "Always reference semantic tokens that point to palette values.",
+                  "level": "MUST_NOT"
+                }
+              ]
+            }
+          ]
         }
       ]
     }

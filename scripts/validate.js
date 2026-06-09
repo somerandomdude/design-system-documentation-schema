@@ -36,6 +36,7 @@ const SCHEMA_DIR = path.join(ROOT, "spec/schema");
 // Directories containing keyed per-definition example files ({ defName: value })
 const KEYED_EXAMPLE_DIRS = ["common", "document-blocks", "entities", "metadata"];
 
+
 // Directories containing bare entity example files ({ type: "component", ... })
 const BARE_ENTITY_DIRS = ["minimal"];
 

@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://designsystemdocspec.org/v0.6/common/purpose.schema.json",
-  "title": "DSDS Purpose Guideline",
-  "description": "Documents what an artifact is used for — when it is the right choice and when a different artifact fits better. Wraps the common useCases data model with a guideline `type` discriminator so it can appear in any entity's guidelines array.",
+  "$id": "https://designsystemdocspec.org/v0.7/common/use-cases.schema.json",
+  "title": "DSDS Use Cases Document Block",
+  "description": "Documents what an artifact is used for — when it is the right choice and when a different artifact fits better. An optional `purpose` statement gives the umbrella answer; `items` holds scenario-driven use cases, each marked 'recommended' or 'discouraged'.",
   "$defs": {
     "useCase": {
       "type": "object",
@@ -37,22 +37,27 @@
       },
       "additionalProperties": false
     },
-    "purpose": {
+    "useCases": {
       "type": "object",
-      "description": "Documents the purpose of an artifact — when to use it and when to choose something else. Contains a `useCases` array of scenario-driven `useCase` entries, each marked `recommended` (when to use) or `discouraged` (when to choose an alternative). Use `purpose` to answer *whether* to use the artifact — when it is the right choice and when to pick an alternative. For *how* to use it correctly, see `guideline`; for the higher-level beliefs that shape a domain, see `principles`; for *what* it looks like and how it behaves, see variants, states, and anatomy.",
-      "required": ["kind"],
+      "description": "Documents what an artifact is used for — when it is the right choice and when to choose something else. The optional `purpose` statement is the umbrella answer: a short summary of what the artifact is for, framing the use cases beneath it. `items` holds scenario-driven `useCase` entries, each marked 'recommended' (when to use) or 'discouraged' (when to choose an alternative). Use `useCases` to answer *whether* to use the artifact; for *how* to use it correctly, see `guidelines`; for the higher-level beliefs that shape a domain, see `principles`; for *what* it looks like and how it behaves, see variants, states, and anatomy.",
+      "required": ["kind", "items"],
       "properties": {
         "kind": {
           "type": "string",
-          "const": "purpose",
-          "description": "Identifies this guideline as a purpose spec."
+          "const": "useCases",
+          "description": "Identifies this document block as a use-cases spec."
         },
-        "useCases": {
+        "purpose": {
+          "$ref": "rich-text.schema.json#/$defs/richText",
+          "description": "The umbrella purpose statement for the artifact — one or two sentences saying what it is for, framing the use cases in `items` (e.g., 'Buttons trigger immediate actions. They are the primary mechanism for initiating changes within a surface.')."
+        },
+        "items": {
           "type": "array",
-          "description": "Scenario-driven guidance describing when this artifact is or is not the right choice.",
+          "description": "Scenario-driven use cases describing when this artifact is or is not the right choice. Order matters: tools SHOULD preserve it for display. Authors SHOULD lead with recommended scenarios.",
           "items": {
             "$ref": "#/$defs/useCase"
-          }
+          },
+          "minItems": 1
         }
       },
       "additionalProperties": false

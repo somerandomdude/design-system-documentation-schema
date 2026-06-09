@@ -1,64 +1,52 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://designsystemdocspec.org/v0.6/document-blocks/document-blocks.schema.json",
+  "$id": "https://designsystemdocspec.org/v0.7/document-blocks/document-blocks.schema.json",
   "title": "DSDS Document Block — Scoped Unions",
-  "description": "Defines scoped document block unions, one per artifact type. Each piece of structured docs attached to an artifact is a document block object with a `kind` tag. Each artifact type accepts its own specialized block kinds plus every general kind (see `generalDocumentBlock`). General kinds — including the free-form `section` block — are available on every artifact; specialized kinds are scoped so irrelevant docs (such as an API spec on a foundation) cannot be attached. Express internal artifact links through the unified `links` array on each entity, not through a dedicated block kind.",
+  "description": "Defines scoped document block unions, one per artifact type. Each piece of structured docs attached to an artifact is a document block object with a `kind` tag. Each artifact type accepts its own specialized block kinds plus every general kind (see `generalDocumentBlock`). General kinds — including the free-form `sections` block — are available on every artifact; specialized kinds are scoped so irrelevant docs (such as an API spec on a foundation) cannot be attached. Express internal artifact links through the unified `links` array on each entity, not through a dedicated block kind.",
   "$defs": {
     "generalDocumentBlock": {
       "description": "A document block kind available on every artifact type. General blocks cover cross-cutting concerns that apply to any artifact, including free-form narrative prose. Every scoped union includes these kinds by referencing this definition.",
       "oneOf": [
         {
-          "$ref": "guideline.schema.json#/$defs/guideline",
-          "description": "Actionable usage rules paired with rationale. Tells the reader what to do (or not do) and why."
+          "$ref": "guidelines.schema.json#/$defs/guidelines"
         },
         {
-          "$ref": "../common/purpose.schema.json#/$defs/purpose",
-          "description": "Scenario-driven guidance for when to use and when not to use the artifact."
+          "$ref": "../common/use-cases.schema.json#/$defs/useCases"
         },
         {
-          "$ref": "accessibility.schema.json#/$defs/accessibility",
-          "description": "Structured accessibility specs: keyboard interactions, ARIA attributes, screen reader behavior, focus management, color contrast, and motion considerations."
+          "$ref": "accessibility.schema.json#/$defs/accessibility"
         },
         {
-          "$ref": "content.schema.json#/$defs/content",
-          "description": "Structured content guidelines: recommended action labels with definitions, usage context, and cross-references, plus localization and i18n considerations."
+          "$ref": "content.schema.json#/$defs/content"
         },
         {
-          "$ref": "section.schema.json#/$defs/section",
-          "description": "Free-form narrative prose organized into titled, optionally nested sections — for conceptual content the structured block kinds do not capture: rationale, background, decision history, and FAQs. Reach for a structured block kind first; use `section` only for what they cannot express."
+          "$ref": "sections.schema.json#/$defs/sections"
         }
       ]
     },
     "componentDocumentBlock": {
-      "description": "A document block kind accepted on component artifacts. Includes the component-specific kinds (import, anatomy, API, variants, states, design specs) plus every general kind.",
+      "description": "A document block kind accepted on component artifacts. Includes the component-specific kinds (imports, anatomy, API, variants, states, design specs) plus every general kind.",
       "oneOf": [
         {
-          "$ref": "import.schema.json#/$defs/import",
-          "description": "How to import the component across platforms — package names, import statements, and setup context."
+          "$ref": "imports.schema.json#/$defs/imports"
         },
         {
-          "$ref": "anatomy.schema.json#/$defs/anatomy",
-          "description": "The visual structure of the component: named sub-elements (parts), their design tokens, and optional annotated diagrams."
+          "$ref": "anatomy.schema.json#/$defs/anatomy"
         },
         {
-          "$ref": "api.schema.json#/$defs/api",
-          "description": "The code-level interface: properties, emitted events, content slots, CSS custom properties, CSS shadow parts, data attributes, and public methods. For multi-platform components, include one API block per platform."
+          "$ref": "api.schema.json#/$defs/api"
         },
         {
-          "$ref": "variant.schema.json#/$defs/variants",
-          "description": "All dimensions of visual or behavioral variation. Each axis (size, emphasis, and so on) carries its values, token overrides, previews, and purpose. Optional exclusions document invalid combinations."
+          "$ref": "variants.schema.json#/$defs/variants"
         },
         {
-          "$ref": "state.schema.json#/$defs/states",
-          "description": "All interactive states the component can enter (hover, focus, active, disabled, loading, and the like). Each state carries its triggers, token overrides, and previews."
+          "$ref": "states.schema.json#/$defs/states"
         },
         {
-          "$ref": "design-specifications.schema.json#/$defs/designSpecifications",
-          "description": "Measurable visual specs: token inventory, spacing relationships, dimension constraints, typography settings, and responsive behavior."
+          "$ref": "design-specifications.schema.json#/$defs/designSpecifications"
         },
         {
-          "$ref": "#/$defs/generalDocumentBlock",
-          "description": "Any general block kind: guideline, purpose, accessibility, content, or a free-form section."
+          "$ref": "#/$defs/generalDocumentBlock"
         }
       ]
     },
@@ -66,20 +54,16 @@
       "description": "A document block kind accepted on foundation artifacts. Includes the foundation-specific kinds (principles, scales, motion) plus every general kind.",
       "oneOf": [
         {
-          "$ref": "principle.schema.json#/$defs/principles",
-          "description": "High-level principles that shape decisions for the visual domain: what the system believes and which trade-offs it accepts."
+          "$ref": "principles.schema.json#/$defs/principles"
         },
         {
-          "$ref": "scale.schema.json#/$defs/scale",
-          "description": "An ordered sequence of values forming a visual scale: a type scale, spacing scale, elevation scale, or similar progression. Each step references a design token."
+          "$ref": "scale.schema.json#/$defs/scale"
         },
         {
-          "$ref": "motion.schema.json#/$defs/motion",
-          "description": "Named easing curves with cubic-bezier functions (aligned with the DTCG cubicBezier type), recommended durations, and usage guidance for the motion system."
+          "$ref": "motion.schema.json#/$defs/motion"
         },
         {
-          "$ref": "#/$defs/generalDocumentBlock",
-          "description": "Any general block kind: guideline, purpose, accessibility, content, or a free-form section."
+          "$ref": "#/$defs/generalDocumentBlock"
         }
       ]
     },
@@ -87,50 +71,37 @@
       "description": "A document block kind accepted on pattern artifacts. Includes the pattern-specific kind (interactions), shared structural kinds (anatomy, variants, states), and every general kind.",
       "oneOf": [
         {
-          "$ref": "interaction.schema.json#/$defs/interactions",
-          "description": "The interaction flow of the pattern: an ordered sequence of steps describing triggers, system responses, and component behavior."
+          "$ref": "interactions.schema.json#/$defs/interactions"
         },
         {
-          "$ref": "anatomy.schema.json#/$defs/anatomy",
-          "description": "The visual structure of the pattern: named sub-elements (image, title, body, primary action, and so on), their design tokens, and optional annotated diagrams."
+          "$ref": "anatomy.schema.json#/$defs/anatomy"
         },
         {
-          "$ref": "variant.schema.json#/$defs/variants",
-          "description": "Dimensions of variation within the pattern: sub-types, modes, or configurations (e.g., 'no-data', 'user-action', 'error-management'). Optional exclusions document invalid combinations."
+          "$ref": "variants.schema.json#/$defs/variants"
         },
         {
-          "$ref": "state.schema.json#/$defs/states",
-          "description": "States the pattern can enter (populated, empty, loading, error, and so on). Each state carries its triggers, visual changes, and optional previews."
+          "$ref": "states.schema.json#/$defs/states"
         },
         {
-          "$ref": "#/$defs/generalDocumentBlock",
-          "description": "Any general block kind: guideline, purpose, accessibility, content, or a free-form section."
+          "$ref": "#/$defs/generalDocumentBlock"
         }
       ]
     },
     "tokenDocumentBlock": {
-      "description": "A document block kind accepted on token and token group artifacts. Tokens carry no component-, foundation-, or pattern-specific docs — only the general kinds (guideline, purpose, accessibility, content, and free-form sections).",
-      "oneOf": [
-        {
-          "$ref": "#/$defs/generalDocumentBlock",
-          "description": "Any general block kind: guideline, purpose, accessibility, content, or a free-form section."
-        }
-      ]
+      "description": "A document block kind accepted on token, token-group, and theme artifacts — the general kinds only (see `generalDocumentBlock`).",
+      "$ref": "#/$defs/generalDocumentBlock"
     },
     "guideDocumentBlock": {
-      "description": "A document block kind accepted on guide artifacts. Includes the guide-specific procedure kind (steps), the reused import kind (setup and install instructions), and every general kind — among them the free-form `section` block that forms the backbone of conceptual guides. Guides are reading-oriented, so their blocks favor prose and procedures over the measurable specs (api, anatomy, design specs) used by components.",
+      "description": "A document block kind accepted on guide artifacts. Includes the guide-specific procedure kind (steps), the reused imports kind (setup and install instructions), and every general kind — among them the free-form `sections` block that forms the backbone of conceptual guides. Guides are reading-oriented, so their blocks favor prose and procedures over the measurable specs (api, anatomy, design specs) used by components.",
       "oneOf": [
         {
-          "$ref": "steps.schema.json#/$defs/steps",
-          "description": "An ordered or unordered procedure: the sequence of steps a reader follows to install, build, contribute, or migrate."
+          "$ref": "steps.schema.json#/$defs/steps"
         },
         {
-          "$ref": "import.schema.json#/$defs/import",
-          "description": "How to install and import the system or a package across platforms — package names, import statements, and setup context. Useful in getting-started guides."
+          "$ref": "imports.schema.json#/$defs/imports"
         },
         {
-          "$ref": "#/$defs/generalDocumentBlock",
-          "description": "Any general block kind: guideline, purpose, accessibility, content, or a free-form section."
+          "$ref": "#/$defs/generalDocumentBlock"
         }
       ]
     }

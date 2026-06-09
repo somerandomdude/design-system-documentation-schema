@@ -1,12 +1,12 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://designsystemdocspec.org/v0.6/entities/component.schema.json",
+  "$id": "https://designsystemdocspec.org/v0.7/entities/component.schema.json",
   "title": "DSDS Component Definitions",
   "description": "Defines the component document. A component document holds the identity of a reusable UI element. The `metadata` object carries optional metadata fields: status, since, lastUpdated, category, tags, aliases, summary, thumbnail, preview, extends, and links. Typed entries in the `documentBlocks` array carry structured docs: anatomy, API, variants, states, design specs, guidelines, accessibility specs, use cases, and examples.",
   "$defs": {
     "component": {
       "type": "object",
-      "description": "A single reusable UI component. The top level holds identity: `identifier`, `name`, and `description`. The `metadata` object holds optional metadata fields — status, since, lastUpdated, category, tags, aliases, summary, thumbnail, preview, extends, and links. The `documentBlocks` array holds structured docs as typed entries: anatomy, api, variant, state, design-specifications, guideline, accessibility, and so on.",
+      "description": "A single reusable UI component. The top level holds identity: `identifier`, `name`, and `description`. The `metadata` object holds optional metadata fields — status, since, lastUpdated, category, tags, aliases, summary, thumbnail, preview, extends, and links. The `documentBlocks` array holds structured docs as typed entries: anatomy, api, variants, states, design-specifications, guidelines, accessibility, and so on.",
       "required": [
         "kind",
         "identifier",
@@ -21,7 +21,7 @@
         "identifier": {
           "type": "string",
           "pattern": "^[a-z][a-z0-9-]*$",
-          "description": "Machine-readable identifier (e.g., 'button', 'dialog', 'form-field', 'data-table'). MUST be unique within the documentation group."
+          "description": "Machine-readable identifier (e.g., 'button', 'dialog', 'form-field', 'data-table'). MUST be unique within its entity group."
         },
         "name": {
           "type": "string",
@@ -37,14 +37,18 @@
         },
         "documentBlocks": {
           "type": "array",
-          "description": "All structured docs for this component, as an ordered array of typed document block objects. Accepts the component-specific kinds (anatomy, api, variants, states, design-specifications) plus the general kinds (guideline, purpose, accessibility, examples). The `type` property on each entry sets its shape. Order matters: tools SHOULD preserve it for display.",
+          "description": "All structured docs for this component, as an ordered array of typed document block objects. Accepts the component-specific kinds (imports, anatomy, api, variants, states, design-specifications) plus the general kinds (guidelines, useCases, accessibility, content, sections). The `type` property on each entry sets its shape. Order matters: tools SHOULD preserve it for display.",
           "items": {
             "$ref": "../document-blocks/document-blocks.schema.json#/$defs/componentDocumentBlock"
           }
         },
-        "agents": {
-          "$ref": "../common/agents.schema.json#/$defs/agents",
-          "description": "AI-ready context for this component: intent, constraints, disambiguation, anti-patterns, examples, and keywords for efficient AI use."
+        "agentDocumentBlocks": {
+          "type": "array",
+          "description": "Structured documentation for agent (AI/LLM) consumption only — a partitioned space accepting the same document block kinds as `documentBlocks`. Use it for guidance that would be noise for human readers: generation constraints, disambiguation between confusable entities, machine-checkable rules with evidence. Tools MUST NOT render these blocks in human-facing documentation. Agents SHOULD read both arrays — human-facing blocks first, then these.",
+          "items": {
+            "$ref": "../document-blocks/document-blocks.schema.json#/$defs/componentDocumentBlock"
+          },
+          "minItems": 1
         },
         "$extensions": {
           "$ref": "../common/extensions.schema.json#/$defs/extensions"

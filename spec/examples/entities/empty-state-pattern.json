@@ -25,7 +25,13 @@
         "first-use",
         "errors",
         "onboarding",
-        "data"
+        "data",
+        "error",
+        "validation",
+        "form",
+        "inline-error",
+        "error-summary",
+        "alert"
       ],
       "aliases": [
         "blank-state",
@@ -136,7 +142,7 @@
             }
           }
         ],
-        "preview": [
+        "examples": [
           {
             "title": "Annotated anatomy — large empty state",
             "presentation": {
@@ -160,59 +166,19 @@
                 "identifier": "no-data",
                 "name": "No Data",
                 "description": "The most common first-use empty state. Explains what will be available in the space when data has been added, and provides guidance for the next step the user can take to populate it.",
-                "purpose": {
-                  "kind": "purpose",
-                  "useCases": [
-                    {
-                      "description": "When the user has not yet created or added any data to this area of the product.",
-                      "stance": "recommended"
-                    },
-                    {
-                      "description": "When the user has cleared or deleted all data from a previously populated space.",
-                      "stance": "recommended"
-                    }
-                  ]
-                }
+                "rationale": "- Use when: When the user has not yet created or added any data to this area of the product.\n- Use when: When the user has cleared or deleted all data from a previously populated space."
               },
               {
                 "identifier": "user-action",
                 "name": "User Action",
                 "description": "Occurs as a result of a user action — for example, a search with no results or a success confirmation after completing a process. Explains the reason for the empty state and provides follow-up steps.",
-                "purpose": {
-                  "kind": "purpose",
-                  "useCases": [
-                    {
-                      "description": "When a search or filter returns no matching results.",
-                      "stance": "recommended"
-                    },
-                    {
-                      "description": "When a user has successfully completed a process and there is nothing further to act on (e.g., all alerts resolved, inbox empty).",
-                      "stance": "recommended"
-                    }
-                  ]
-                }
+                "rationale": "- Use when: When a search or filter returns no matching results.\n- Use when: When a user has successfully completed a process and there is nothing further to act on (e.g., all alerts resolved, inbox empty)."
               },
               {
                 "identifier": "error-management",
                 "name": "Error Management",
                 "description": "Occurs when data exists but cannot be surfaced — permissions issues, system failures, or missing configuration. A higher level of specificity is needed so the user can address the issue themselves. Express error messages in plain language, precisely indicate the problem, and constructively suggest a solution.",
-                "purpose": {
-                  "kind": "purpose",
-                  "useCases": [
-                    {
-                      "description": "When the user does not have permission to view the data.",
-                      "stance": "recommended"
-                    },
-                    {
-                      "description": "When a connected system or service is preventing data from loading.",
-                      "stance": "recommended"
-                    },
-                    {
-                      "description": "When further configuration is required before data can appear.",
-                      "stance": "recommended"
-                    }
-                  ]
-                }
+                "rationale": "- Use when: When the user does not have permission to view the data.\n- Use when: When a connected system or service is preventing data from loading.\n- Use when: When further configuration is required before data can appear."
               }
             ]
           },
@@ -314,8 +280,8 @@
         ]
       },
       {
-        "kind": "purpose",
-        "useCases": [
+        "kind": "useCases",
+        "items": [
           {
             "description": "When a page, tile, data table, side panel, or other content area has no data to display — whether because the user hasn't added any yet, a search returned no results, or a system issue is preventing data from appearing.",
             "stance": "recommended"
@@ -351,7 +317,7 @@
         ]
       },
       {
-        "kind": "guideline",
+        "kind": "guidelines",
         "items": [
           {
             "guidance": "The empty state MUST replace the element that would ordinarily show. For example, an empty state for a table replaces the table — column headers and footer should not be present.",
@@ -400,10 +366,9 @@
             "rationale": "Empty state illustrations are decorative — they do not convey information that isn't already present in the title and body text. Announcing them wastes screen reader users' time.",
             "level": "MUST",
             "category": "accessibility",
-            "criteria": [
+            "references": [
               {
-                "url": "https://www.w3.org/TR/WCAG22/#non-text-content",
-                "kind": "reference"
+                "url": "https://www.w3.org/TR/WCAG22/#non-text-content"
               }
             ]
           }
@@ -496,48 +461,50 @@
         ]
       }
     ],
-    "agents": {
-      "intent": "Guide multi-component composition for surfacing, communicating, and resolving form validation errors.",
-      "constraints": [
-        {
-          "rule": "Always include both an inline field error and a summary when multiple fields fail.",
-          "level": "MUST"
-        },
-        {
-          "rule": "Do not use toast notifications as the sole error communication for form validation.",
-          "level": "MUST_NOT"
-        }
-      ],
-      "disambiguation": [
-        {
-          "entity": "empty-state",
-          "distinction": "Use error-messaging for validation and system errors; use empty-state for the absence of content."
-        },
-        {
-          "entity": "alert",
-          "distinction": "Use error-messaging for form validation flows; use alert for non-form system or status messages."
-        }
-      ],
-      "antiPatterns": [
-        {
-          "description": "Showing errors only on submit without inline field feedback.",
-          "instead": "Show inline errors on field blur and in a summary on submit."
-        }
-      ],
-      "keywords": [
-        "error",
-        "validation",
-        "form",
-        "feedback",
-        "inline-error",
-        "error-summary",
-        "alert"
-      ]
-    },
     "$extensions": {
       "com.designTool": {
         "patternId": "4000:1"
       }
-    }
+    },
+    "agentDocumentBlocks": [
+      {
+        "kind": "useCases",
+        "purpose": "Guide multi-component composition for surfacing, communicating, and resolving form validation errors.",
+        "items": [
+          {
+            "description": "Use error-messaging for validation and system errors; use empty-state for the absence of content.",
+            "stance": "discouraged",
+            "alternative": {
+              "identifier": "empty-state"
+            }
+          },
+          {
+            "description": "Use error-messaging for form validation flows; use alert for non-form system or status messages.",
+            "stance": "discouraged",
+            "alternative": {
+              "identifier": "alert"
+            }
+          }
+        ]
+      },
+      {
+        "kind": "guidelines",
+        "items": [
+          {
+            "guidance": "Always include both an inline field error and a summary when multiple fields fail.",
+            "level": "MUST"
+          },
+          {
+            "guidance": "Do not use toast notifications as the sole error communication for form validation.",
+            "level": "MUST_NOT"
+          },
+          {
+            "guidance": "Showing errors only on submit without inline field feedback.",
+            "rationale": "Instead: Show inline errors on field blur and in a summary on submit.",
+            "level": "MUST_NOT"
+          }
+        ]
+      }
+    ]
   }
 }

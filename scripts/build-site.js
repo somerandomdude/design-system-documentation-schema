@@ -451,7 +451,7 @@ function renderSchemaPage(page) {
   );
 
   // Always render top-level properties when they exist (e.g., the root schema
-  // has both its own properties AND $defs like documentationGroup)
+  // has both its own properties AND $defs like entityGroup)
   if (page.data.properties) {
     parts.push(
       `<ds-heading level="2" anchor="properties-heading">Root Properties</ds-heading>`,
