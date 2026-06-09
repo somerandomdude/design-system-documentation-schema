@@ -4,6 +4,26 @@ All notable changes to the DSDS specification are documented in this file.
 
 ---
 
+## [0.6] — 2026-06-08
+
+Minor release. Schema files are now served at `https://designsystemdocspec.org/v0.6/...`. All earlier bundles remain published at their original URLs for documents pinned to them. This release reshapes the `status` metadata entry to a single, consistent structure and removes the unused `statusObject` / `status` definitions from `common`.
+
+### Breaking changes
+
+#### 1. `status` metadata reshaped — `overall` / `platforms` replace `status` / `platformStatus`
+
+The `status` metadata entry now uses the structure `common/status` previously reserved for its (unused) `statusObject`: an `overall` status value plus a `platforms` map, instead of the former `status` and `platformStatus` siblings. `overall` is now required, and — restoring an invariant the flat shape had dropped — `deprecationNotice` is required when `overall` is `deprecated`. The redundant `statusObject` and `status` union are removed from `common/status`; the reusable `statusValue` and `platformStatus` leaves remain and are composed by the metadata entry.
+
+| Before | After |
+|---|---|
+| `status` metadata field `status` | `overall` |
+| `status` metadata field `platformStatus` | `platforms` |
+| `common/status` `statusObject` and `status` (union) | removed |
+
+**Migration.** In every `{ "kind": "status" }` metadata entry, rename `status` → `overall` and `platformStatus` → `platforms`. Add a `deprecationNotice` to any entry whose `overall` is `deprecated`. Per-platform entries inside `platforms` are unchanged — they keep their own `status` field.
+
+---
+
 ## [0.5.1] — 2026-06-08
 
 Patch release. Schema files are now served at `https://designsystemdocspec.org/v0.5.1/...`. All earlier bundles remain published at their original URLs for documents pinned to them. This release promotes the free-form `section` block to a general kind available on every entity rather than guides alone — an additive change, so a document valid under v0.5 stays valid after updating its `dsdsVersion` to `0.5.1`.

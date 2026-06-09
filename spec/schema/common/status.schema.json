@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://designsystemdocspec.org/v0.5.1/common/status.schema.json",
+  "$id": "https://designsystemdocspec.org/v0.6/common/status.schema.json",
   "title": "DSDS Status Definition",
-  "description": "Lifecycle status of a design system artifact, with optional per-platform readiness. The `status` union accepts a plain statusValue string (e.g., \"stable\") or a full statusObject when per-platform tracking or a deprecation notice is needed. The statusObject holds overall status, per-platform readiness, and deprecationNotice in one reusable object; deprecationNotice is required when status is 'deprecated'.",
+  "description": "Shared status vocabulary composed by the status metadata entry. `statusValue` is the lowercase kebab-case lifecycle string (draft, experimental, stable, deprecated, plus custom values). `platformStatus` captures one platform's readiness — its lifecycle stage, the version it became available, and an optional deprecation notice — and requires a deprecationNotice when that platform is deprecated.",
   "$defs": {
     "statusValue": {
       "type": "string",
@@ -16,7 +16,7 @@
       "properties": {
         "status": {
           "$ref": "#/$defs/statusValue",
-          "description": "Lifecycle status of the artifact on this platform. Uses the same vocabulary as the top-level status: 'draft', 'experimental', 'stable', 'deprecated'. Custom values are allowed."
+          "description": "Lifecycle status of the artifact on this platform. Uses the same vocabulary as the overall status: 'draft', 'experimental', 'stable', 'deprecated'. Custom values are allowed."
         },
         "since": {
           "type": "string",
@@ -42,50 +42,6 @@
         "required": ["deprecationNotice"]
       },
       "additionalProperties": false
-    },
-    "statusObject": {
-      "type": "object",
-      "description": "Full lifecycle status of an artifact. Holds the overall status value, optional per-platform readiness, and a conditional deprecation notice. Every status-bearing artifact uses this one object instead of separate status, platformStatus, and deprecationNotice siblings. When overall status is 'deprecated', deprecationNotice becomes required.",
-      "required": ["overall", "platforms"],
-      "properties": {
-        "overall": {
-          "$ref": "#/$defs/statusValue",
-          "description": "Overall lifecycle status of the artifact. An editorial judgment of maturity; it need not match the most or least advanced platform status. Tools SHOULD display this as the primary status indicator."
-        },
-        "platforms": {
-          "type": "object",
-          "description": "Per-platform readiness. Keys are platform identifiers (freeform strings; common values include 'react', 'web-component', 'ios', 'android', 'flutter', 'figma', 'sketch', 'compose'). Values describe the artifact's status on that platform. An artifact MAY be 'stable' overall while individual platforms are still 'experimental' or 'draft'.",
-          "additionalProperties": {
-            "$ref": "#/$defs/platformStatus"
-          }
-        },
-        "deprecationNotice": {
-          "type": "string",
-          "description": "Required when status is 'deprecated'. MUST say what to use instead and give a migration path. Tools SHOULD display this prominently next to the status indicator."
-        }
-      },
-      "if": {
-        "properties": {
-          "overall": {
-            "const": "deprecated"
-          }
-        }
-      },
-      "then": {
-        "required": ["deprecationNotice"]
-      },
-      "additionalProperties": false
-    },
-    "status": {
-      "description": "Lifecycle status of an artifact. Accepts a plain status string (e.g., \"stable\", \"deprecated\") for the simple case, or a full status object with per-platform tracking and a deprecation notice. Tools SHOULD normalize the string form to { \"overall\": value } for consistent processing.",
-      "oneOf": [
-        {
-          "$ref": "#/$defs/statusValue"
-        },
-        {
-          "$ref": "#/$defs/statusObject"
-        }
-      ]
     }
   }
 }

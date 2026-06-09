@@ -3,14 +3,14 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Schema Architecture — DSDS 0.5.1</title>
+  <title>Schema Architecture — DSDS 0.6</title>
   <link rel="stylesheet" href="tokens.css">
   <link rel="stylesheet" href="style.css">
   <script src="components.js"></script>
 </head>
 <body>
   <ds-nav-toggle target="ds-spec-nav"></ds-nav-toggle>
-  <ds-spec-nav title="Design System Documentation Spec 0.5.1" title-href="index.html" active="schema-architecture">
+  <ds-spec-nav title="Design System Documentation Spec 0.6" title-href="index.html" active="schema-architecture">
     <a href="index.html" slug="index">Overview</a>
     <a href="quickstart.html" slug="quickstart">Quick start</a>
     <a href="schema-architecture.html" slug="schema-architecture">Schema architecture</a>
@@ -79,7 +79,7 @@
       <div class="content__inner">
         <ds-heading level="2" anchor="schema-architecture">Schema architecture</ds-heading>
 <p>The DSDS schema uses three directories plus a root schema:</p>
-<ds-table><table><thead><tr><th>Directory</th><th>Contents</th></tr></thead><tbody><tr><td><ds-code inline>common/</ds-code></td><td>Shared primitives used across all schemas — richText, statusObject, link, example, extensions, metadata, useCases</td></tr><tr><td><ds-code inline>entities/</ds-code></td><td>Entity type schemas — component, token (including tokenGroup), theme, foundation, pattern, guide</td></tr><tr><td><ds-code inline>document-blocks/</ds-code></td><td>Document block type schemas — guideline, anatomy, api, events, import, variant, state, design-specifications, accessibility, purpose, scale, principle, motion, content, interaction, section, steps, plus the scoped union (document-blocks.schema.json)</td></tr></tbody></table></ds-table>
+<ds-table><table><thead><tr><th>Directory</th><th>Contents</th></tr></thead><tbody><tr><td><ds-code inline>common/</ds-code></td><td>Shared primitives used across all schemas — richText, statusValue, platformStatus, link, example, extensions, metadata, useCases</td></tr><tr><td><ds-code inline>entities/</ds-code></td><td>Entity type schemas — component, token (including tokenGroup), theme, foundation, pattern, guide</td></tr><tr><td><ds-code inline>document-blocks/</ds-code></td><td>Document block type schemas — guideline, anatomy, api, events, import, variant, state, design-specifications, accessibility, purpose, scale, principle, motion, content, interaction, section, steps, plus the scoped union (document-blocks.schema.json)</td></tr></tbody></table></ds-table>
 <ds-code>spec/schema/
 ├── dsds.schema.json                    # Root document schema
 ├── dsds.bundled.schema.json            # Auto-generated single-file bundle
@@ -93,7 +93,7 @@
 │   ├── presentation.schema.json                # presentationImage, presentationVideo, presentationCode, presentationUrl
 │   ├── purpose.schema.json                     # useCase, purpose
 │   ├── rich-text.schema.json                   # richText
-│   ├── status.schema.json                      # statusValue, platformStatus, statusObject, status
+│   ├── status.schema.json                      # statusValue, platformStatus
 │   └── system-info.schema.json                 # systemInfo
 ├── metadata/
 │   ├── aliases.schema.json                     # aliasesMetadata
@@ -139,7 +139,7 @@
 <p>A DSDS file is a JSON object with a required <ds-code inline>dsdsVersion</ds-code> and exactly one of two primary shapes: a <ds-code inline>documentation</ds-code> array for multi-entity documents, or an <ds-code inline>entity</ds-code> object for single-entity files. Every valid DSDS document must have one or the other.</p>
 <ds-heading level="3" anchor="root-properties">Root properties</ds-heading>
 <ds-prop-table>
-  <ds-prop name="dsdsVersion" type="&lt;ds-code inline&gt;&quot;0.5.1&quot;&lt;/ds-code&gt;" required>The DSDS spec version this document conforms to.</ds-prop>
+  <ds-prop name="dsdsVersion" type="&lt;ds-code inline&gt;&quot;0.6&quot;&lt;/ds-code&gt;" required>The DSDS spec version this document conforms to.</ds-prop>
   <ds-prop name="$schema" type="string">URI reference to the DSDS JSON Schema for validation.</ds-prop>
   <ds-prop name="systemInfo" type="&lt;ds-type-ref href=&quot;common-system-info.html#systeminfo&quot;&gt;systemInfo&lt;/ds-type-ref&gt;"></ds-prop>
   <ds-prop name="extends" type="&lt;ds-type-ref href=&quot;common-extends.html#documentextends&quot;&gt;documentExtends&lt;/ds-type-ref&gt;">Declares that this DSDS document inherits from another DSDS document — typically a core design system. The base document provides the foundational entities. This document layers on top, adding or extending entities. Enables systems-of-systems architectures where product- or brand-specific systems inherit from a shared core.</ds-prop>
@@ -166,8 +166,8 @@
 <ds-heading level="3" anchor="single-entity-documents">Single-entity documents</ds-heading>
 <p>When each entity lives in its own file, use the <ds-code inline>entity</ds-code> property instead of <ds-code inline>documentation</ds-code>. The <ds-code inline>kind</ds-code> field on the entity identifies its type.</p>
 <ds-code language="json">{
-  "$schema": "https://designsystemdocspec.org/v0.5.1/dsds.bundled.schema.json",
-  "dsdsVersion": "0.5.1",
+  "$schema": "https://designsystemdocspec.org/v0.6/dsds.bundled.schema.json",
+  "dsdsVersion": "0.6",
   "entity": {
     "kind": "component",
     "identifier": "button",
@@ -186,7 +186,7 @@
 <p>Each <ds-code inline>$ref</ds-code> object has one property: <ds-code inline>$ref</ds-code>. Its value is a URI or relative path to a DSDS file, optionally followed by a JSON Pointer fragment that targets a specific value within that file.</p>
 <p><strong>Individual entity file</strong> (<ds-code inline>button.dsds.json</ds-code>):</p>
 <ds-code language="json">{
-  "dsdsVersion": "0.5.1",
+  "dsdsVersion": "0.6",
   "entity": {
     "kind": "component",
     "identifier": "button",
@@ -197,7 +197,7 @@
 </ds-code>
 <p><strong>Manifest file</strong> (<ds-code inline>index.dsds.json</ds-code>):</p>
 <ds-code language="json">{
-  "dsdsVersion": "0.5.1",
+  "dsdsVersion": "0.6",
   "documentation": [
     {
       "name": "Acme Design System",
@@ -345,7 +345,7 @@
 <table>
 <thead><tr><th>Metadata `kind`</th><th>Carries</th><th>Purpose</th></tr></thead>
 <tbody><tr><td><ds-code inline>description</ds-code></td><td><ds-code inline>value</ds-code></td><td>A rich-text description of the entity — what it is, what it does, and its role in the design system.</td></tr>
-<tr><td><ds-code inline>status</ds-code></td><td><ds-code inline>status</ds-code>, <ds-code inline>platformStatus</ds-code>, <ds-code inline>deprecationNotice</ds-code></td><td>Lifecycle status with optional per-platform readiness.</td></tr>
+<tr><td><ds-code inline>status</ds-code></td><td><ds-code inline>overall</ds-code>, <ds-code inline>platforms</ds-code>, <ds-code inline>deprecationNotice</ds-code></td><td>Lifecycle status of an entity, expressed as a metadata entry.</td></tr>
 <tr><td><ds-code inline>since</ds-code></td><td><ds-code inline>value</ds-code></td><td>The design system version in which this entity was introduced.</td></tr>
 <tr><td><ds-code inline>last-updated</ds-code></td><td><ds-code inline>value</ds-code>, <ds-code inline>description</ds-code></td><td>The date this entity's documentation was last updated, with an optional note describing what changed.</td></tr>
 <tr><td><ds-code inline>tags</ds-code></td><td><ds-code inline>items</ds-code></td><td>Freeform keywords for categorization and search.</td></tr>
@@ -496,11 +496,19 @@
 </ds-code>
 <hr />
 <ds-heading level="2" anchor="status">Status</ds-heading>
-<p>The <ds-code inline>statusObject</ds-code> groups lifecycle status, per-platform readiness, and deprecation notices into a single object. Every entity that carries status uses this object instead of a bare string.</p>
+<p>Lifecycle status is recorded as a <ds-code inline>status</ds-code> metadata entry on an entity (<ds-code inline>kind: "status"</ds-code>). It carries an <ds-code inline>overall</ds-code> status value, optional per-platform readiness, and a deprecation notice that becomes required when <ds-code inline>overall</ds-code> is <ds-code inline>deprecated</ds-code>. An entity can be <ds-code inline>stable</ds-code> overall while individual platforms are still <ds-code inline>experimental</ds-code> or <ds-code inline>draft</ds-code>.</p>
 <ds-prop-table>
-  <ds-prop name="overall" type="&lt;ds-type-ref href=&quot;common-status.html#statusvalue&quot;&gt;statusValue&lt;/ds-type-ref&gt;" required>Overall lifecycle status of the artifact. An editorial judgment of maturity; it need not match the most or least advanced platform status. Tools SHOULD display this as the primary status indicator.</ds-prop>
-  <ds-prop name="platforms" type="map&amp;lt;string, &lt;ds-type-ref href=&quot;common-status.html#platformstatus&quot;&gt;platformStatus&lt;/ds-type-ref&gt;&amp;gt;" required>Per-platform readiness. Keys are platform identifiers (freeform strings; common values include 'react', 'web-component', 'ios', 'android', 'flutter', 'figma', 'sketch', 'compose'). Values describe the artifact's status on that platform. An artifact MAY be 'stable' overall while individual platforms are still 'experimental' or 'draft'.</ds-prop>
-  <ds-prop name="deprecationNotice" type="string">Required when status is 'deprecated'. MUST say what to use instead and give a migration path. Tools SHOULD display this prominently next to the status indicator.</ds-prop>
+  <ds-prop name="kind" type="&lt;ds-code inline&gt;&quot;status&quot;&lt;/ds-code&gt;" required>Identifies this metadata entry as a status entry.</ds-prop>
+  <ds-prop name="overall" type="&lt;ds-type-ref href=&quot;common-status.html#statusvalue&quot;&gt;statusValue&lt;/ds-type-ref&gt;" required>Overall lifecycle status of the entity. An editorial judgment of maturity; it need not match the most or least advanced platform status. Tools SHOULD display this as the primary status indicator.</ds-prop>
+  <ds-prop name="platforms" type="map&amp;lt;string, &lt;ds-type-ref href=&quot;common-status.html#platformstatus&quot;&gt;platformStatus&lt;/ds-type-ref&gt;&amp;gt;">Per-platform readiness. Keys are platform identifiers (freeform strings; common values include 'react', 'web-component', 'ios', 'android', 'flutter', 'figma', 'sketch', 'compose'). Values describe the entity's status on that platform.</ds-prop>
+  <ds-prop name="deprecationNotice" type="string">Required when overall status is 'deprecated'. MUST say what to use instead and give a migration path. Tools SHOULD display this prominently next to the status indicator.</ds-prop>
+</ds-prop-table>
+<p>Per-platform readiness uses the shared <ds-code inline>platformStatus</ds-code> shape:</p>
+<ds-prop-table>
+  <ds-prop name="status" type="&lt;ds-type-ref href=&quot;common-status.html#statusvalue&quot;&gt;statusValue&lt;/ds-type-ref&gt;" required>Lifecycle status of the artifact on this platform. Uses the same vocabulary as the overall status: 'draft', 'experimental', 'stable', 'deprecated'. Custom values are allowed.</ds-prop>
+  <ds-prop name="since" type="string">The version in which this artifact became available on this platform.</ds-prop>
+  <ds-prop name="deprecationNotice" type="string">Required when status is 'deprecated'. Says what to use instead on this platform.</ds-prop>
+  <ds-prop name="description" type="string">Notes about the artifact's status on this platform (e.g., 'Available as a Web Component wrapper; native implementation planned for v4').</ds-prop>
 </ds-prop-table>
 <ds-heading level="3" anchor="status-values">Status values</ds-heading>
 <p>Status values MUST be lowercase kebab-case (pattern: <ds-code inline>^[a-z][a-z0-9-]*$</ds-code>). The four standard values are:</p>
@@ -508,7 +516,7 @@
 <p>Custom values are permitted (e.g., <ds-code inline>"sunset"</ds-code>, <ds-code inline>"archived"</ds-code>, <ds-code inline>"beta"</ds-code>) and MUST follow the same pattern.</p>
 <ds-heading level="3" anchor="platform-status-entry">Platform status entry</ds-heading>
 <ds-prop-table>
-  <ds-prop name="status" type="&lt;ds-type-ref href=&quot;common-status.html#statusvalue&quot;&gt;statusValue&lt;/ds-type-ref&gt;" required>Lifecycle status of the artifact on this platform. Uses the same vocabulary as the top-level status: 'draft', 'experimental', 'stable', 'deprecated'. Custom values are allowed.</ds-prop>
+  <ds-prop name="status" type="&lt;ds-type-ref href=&quot;common-status.html#statusvalue&quot;&gt;statusValue&lt;/ds-type-ref&gt;" required>Lifecycle status of the artifact on this platform. Uses the same vocabulary as the overall status: 'draft', 'experimental', 'stable', 'deprecated'. Custom values are allowed.</ds-prop>
   <ds-prop name="since" type="string">The version in which this artifact became available on this platform.</ds-prop>
   <ds-prop name="deprecationNotice" type="string">Required when status is 'deprecated'. Says what to use instead on this platform.</ds-prop>
   <ds-prop name="description" type="string">Notes about the artifact's status on this platform (e.g., 'Available as a Web Component wrapper; native implementation planned for v4').</ds-prop>
@@ -1016,7 +1024,7 @@
         <ds-back-to-top></ds-back-to-top>
 
         <ds-footer>
-          <p>Design System Documentation Spec (DSDS) 0.5.1 — Draft Specification</p>
+          <p>Design System Documentation Spec (DSDS) 0.6 — Draft Specification</p>
           <p><a href="https://github.com/somerandomdude/design-system-documentation-schema">GitHub</a></p>
         </ds-footer>
       </div>

@@ -9,7 +9,7 @@ The DSDS schema uses three directories plus a root schema:
 
 | Directory | Contents |
 |---|---|
-| `common/` | Shared primitives used across all schemas — richText, statusObject, link, example, extensions, metadata, useCases |
+| `common/` | Shared primitives used across all schemas — richText, statusValue, platformStatus, link, example, extensions, metadata, useCases |
 | `entities/` | Entity type schemas — component, token (including tokenGroup), theme, foundation, pattern, guide |
 | `document-blocks/` | Document block type schemas — guideline, anatomy, api, events, import, variant, state, design-specifications, accessibility, purpose, scale, principle, motion, content, interaction, section, steps, plus the scoped union (document-blocks.schema.json) |
 
@@ -409,9 +409,13 @@ For system-wide agent guidance spanning many entities, use `agent-collection.sch
 
 ## Status
 
-The `statusObject` groups lifecycle status, per-platform readiness, and deprecation notices into a single object. Every entity that carries status uses this object instead of a bare string.
+Lifecycle status is recorded as a `status` metadata entry on an entity (`kind: "status"`). It carries an `overall` status value, optional per-platform readiness, and a deprecation notice that becomes required when `overall` is `deprecated`. An entity can be `stable` overall while individual platforms are still `experimental` or `draft`.
 
-<ds-prop-table schema="common/status" def="statusObject" />
+<ds-prop-table schema="metadata/status" def="statusMetadata" />
+
+Per-platform readiness uses the shared `platformStatus` shape:
+
+<ds-prop-table schema="common/status" def="platformStatus" />
 
 ### Status values
 

@@ -1,25 +1,42 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://designsystemdocspec.org/v0.5.1/metadata/status.schema.json",
+  "$id": "https://designsystemdocspec.org/v0.6/metadata/status.schema.json",
   "title": "DSDS Status Metadata",
-  "description": "Lifecycle status with optional per-platform readiness.",
+  "description": "Lifecycle status of an entity, expressed as a metadata entry. Mirrors the reusable status structure in common/status: an overall status value, optional per-platform readiness, and a conditional deprecation notice. When overall status is 'deprecated', deprecationNotice is required.",
   "$defs": {
     "statusMetadata": {
       "type": "object",
-      "required": ["kind"],
+      "description": "Lifecycle status of an entity. Holds the overall status value, optional per-platform readiness, and a conditional deprecation notice. An entity MAY be 'stable' overall while individual platforms are still 'experimental' or 'draft'. When overall status is 'deprecated', deprecationNotice becomes required and MUST say what to use instead.",
+      "required": ["kind", "overall"],
       "properties": {
-        "kind": { "type": "string", "const": "status" },
-        "status": { "$ref": "../common/status.schema.json#/$defs/statusValue" },
-        "platformStatus": {
+        "kind": {
+          "type": "string",
+          "const": "status",
+          "description": "Identifies this metadata entry as a status entry."
+        },
+        "overall": {
+          "$ref": "../common/status.schema.json#/$defs/statusValue",
+          "description": "Overall lifecycle status of the entity. An editorial judgment of maturity; it need not match the most or least advanced platform status. Tools SHOULD display this as the primary status indicator."
+        },
+        "platforms": {
           "type": "object",
+          "description": "Per-platform readiness. Keys are platform identifiers (freeform strings; common values include 'react', 'web-component', 'ios', 'android', 'flutter', 'figma', 'sketch', 'compose'). Values describe the entity's status on that platform.",
           "additionalProperties": {
             "$ref": "../common/status.schema.json#/$defs/platformStatus"
           }
         },
         "deprecationNotice": {
           "type": "string",
-          "description": "Required when status is deprecated. MUST explain what to use instead."
+          "description": "Required when overall status is 'deprecated'. MUST say what to use instead and give a migration path. Tools SHOULD display this prominently next to the status indicator."
         }
+      },
+      "if": {
+        "properties": {
+          "overall": { "const": "deprecated" }
+        }
+      },
+      "then": {
+        "required": ["deprecationNotice"]
       },
       "additionalProperties": false
     }
