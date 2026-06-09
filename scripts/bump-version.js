@@ -63,6 +63,12 @@ const DOC_FILES = [
   path.join(ROOT, "README.md"),
 ];
 
+// The one MDX file the bump does touch: the overview page carries the
+// spec's publication date ("Draft Specification — 9 June 2026:"), which
+// moves with every cut of the spec rather than with every site build.
+const OVERVIEW_MDX = path.join(ROOT, "site", "content", "overview.mdx");
+const PUBLICATION_DATE_REGEX = /(\*\*Draft Specification — )[^:*]+(:\*\*)/;
+
 // ---------------------------------------------------------------------------
 // CLI
 // ---------------------------------------------------------------------------
@@ -359,6 +365,34 @@ for (const file of exampleFiles) {
 // `Design System Documentation Spec <v>` / `DSDS <v>` display strings.
 for (const file of docFiles) {
   if (processFile(file, false, { rewriteDisplayNames: true })) totalFiles++;
+}
+
+// Publication date: stamp the overview page's "Draft Specification — <date>:"
+// line with today's date. Cutting a version is the spec's publication
+// moment, so the date moves here rather than at build time (a rebuild
+// without content changes shouldn't re-date the spec).
+if (!SCHEMAS_ONLY && fs.existsSync(OVERVIEW_MDX)) {
+  const text = fs.readFileSync(OVERVIEW_MDX, "utf-8");
+  const today = new Date().toLocaleDateString("en-GB", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+  const updated = text.replace(PUBLICATION_DATE_REGEX, `$1${today}$2`);
+  if (updated !== text) {
+    totalFiles++;
+    totalReplacements++;
+    changedFiles.push(
+      path.relative(ROOT, OVERVIEW_MDX) + ` (publication date → ${today})`,
+    );
+    if (!DRY_RUN) fs.writeFileSync(OVERVIEW_MDX, updated, "utf-8");
+  } else if (!PUBLICATION_DATE_REGEX.test(text)) {
+    console.log(
+      "  ⚠  Could not find the \"**Draft Specification — <date>:**\" line in " +
+        path.relative(ROOT, OVERVIEW_MDX) +
+        " — publication date not updated.",
+    );
+  }
 }
 
 // ---------------------------------------------------------------------------

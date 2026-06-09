@@ -45,6 +45,13 @@ async function loadMdxCompiler() {
 
 const ROOT = path.resolve(__dirname, "..");
 const SPEC_DIR = path.join(ROOT, "spec");
+
+// Canonical site origin and the fallback description used by pages that
+// don't declare their own (MDX frontmatter `description`, or a schema
+// file's top-level `description`).
+const SITE_URL = "https://designsystemdocspec.org";
+const DEFAULT_DESCRIPTION =
+  "A machine-readable format for design system documentation. DSDS structures components, tokens, themes, foundations, patterns, and guides as a single source of truth for humans, parsers, and agents.";
 const SCHEMA_DIR = path.join(SPEC_DIR, "schema");
 const SITE_DIR = path.join(ROOT, "site");
 const DIST_DIR = path.join(SITE_DIR, "dist");
@@ -504,7 +511,16 @@ function renderSchemaPage(page) {
 // Overview page — rendered from markdown
 // ---------------------------------------------------------------------------
 
-function pageHtml(title, activeSlug, bodyHtml, hasToc, pages, layout, version) {
+function pageHtml(
+  title,
+  activeSlug,
+  bodyHtml,
+  hasToc,
+  pages,
+  layout,
+  version,
+  description,
+) {
   const layoutCls = layout === "full" ? " content--full" : "";
   const tocCls = hasToc ? " content--with-toc" : "";
   const contentCls = "content" + layoutCls + tocCls;
@@ -527,20 +543,37 @@ function pageHtml(title, activeSlug, bodyHtml, hasToc, pages, layout, version) {
     ? `Design System Documentation Spec (DSDS) ${v} — Draft Specification`
     : "Design System Documentation Spec (DSDS) — Draft Specification";
 
+  // The live server resolves extensionless paths; the root page is the
+  // bare origin rather than /index.
+  const pageUrl =
+    activeSlug === "index" ? `${SITE_URL}/` : `${SITE_URL}/${activeSlug}`;
+  const desc = description || DEFAULT_DESCRIPTION;
+  const fullTitle = `${title}${titleSuffix}`;
+
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>${esc(title)}${esc(titleSuffix)}</title>
+  <title>${esc(fullTitle)}</title>
+  <meta name="description" content="${esc(desc)}">
+  <link rel="canonical" href="${pageUrl}">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Design System Documentation Spec">
+  <meta property="og:title" content="${esc(fullTitle)}">
+  <meta property="og:description" content="${esc(desc)}">
+  <meta property="og:url" content="${pageUrl}">
+  <meta name="twitter:card" content="summary">
   <link rel="stylesheet" href="tokens.css">
   <link rel="stylesheet" href="style.css">
   <script src="components.js"></script>
 </head>
 <body>
+  <a class="skip-link" href="#main-content">Skip to content</a>
 ${buildSpecNav(activeSlug, pages, v)}
   <div class="${contentCls}">
-    <main class="content__main" role="main">
+    <main class="content__main" id="main-content" role="main">
       <div class="content__inner">
         ${bodyHtml}
 
@@ -607,6 +640,12 @@ async function build() {
     path.join(DIST_DIR, "tokens.css"),
   );
 
+  // Copy favicon
+  fs.copyFileSync(
+    path.join(SITE_DIR, "favicon.svg"),
+    path.join(DIST_DIR, "favicon.svg"),
+  );
+
   // Copy stylesheets
   fs.copyFileSync(
     path.join(SITE_DIR, "style.css"),
@@ -644,7 +683,16 @@ async function build() {
       );
     }
 
-    const html = pageHtml(title, slug, body, true, pages, layout);
+    const html = pageHtml(
+      title,
+      slug,
+      body,
+      true,
+      pages,
+      layout,
+      undefined,
+      mdxPage.meta.description,
+    );
     fs.writeFileSync(path.join(DIST_DIR, `${slug}.html`), html, "utf-8");
   }
   console.log(`  ${mdxPages.length} MDX page(s) compiled.\n`);
@@ -652,7 +700,16 @@ async function build() {
   // ── Schema-driven pages ───────────────────────────────────────────────
   for (const page of pages) {
     const body = renderSchemaPage(page);
-    const html = pageHtml(page.title, page.slug, body, true, pages);
+    const html = pageHtml(
+      page.title,
+      page.slug,
+      body,
+      true,
+      pages,
+      null,
+      undefined,
+      page.data.description,
+    );
 
     const outPath = path.join(DIST_DIR, `${page.slug}.html`);
     fs.writeFileSync(outPath, html, "utf-8");
