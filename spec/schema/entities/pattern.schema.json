@@ -2,11 +2,11 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://designsystemdocspec.org/v0.6/entities/pattern.schema.json",
   "title": "DSDS Pattern Definitions",
-  "description": "Defines documents for interaction patterns. Patterns are repeated solutions to common UX problems: navigation, error messaging, form validation, empty states, loading sequences, and onboarding flows. A pattern document holds the identity of a multi-component solution. Typed entries in the `metadata` array carry modular metadata: status, category, tags, aliases, summary, thumbnail, preview, extends, and links. Typed entries in the `documentBlock` array carry structured docs.",
+  "description": "Defines documents for interaction patterns. Patterns are repeated solutions to common UX problems: navigation, error messaging, form validation, empty states, loading sequences, and onboarding flows. A pattern document holds the identity of a multi-component solution. The `metadata` object carries optional metadata fields: status, since, lastUpdated, category, tags, aliases, summary, thumbnail, preview, extends, and links. Typed entries in the `documentBlock` array carry structured docs.",
   "$defs": {
     "pattern": {
       "type": "object",
-      "description": "A repeated, multi-component solution to a common UX problem. Patterns sit above individual components and show how those components compose to meet a user need. The top level holds identity: `identifier`, `name`, and `description`. The `metadata` array holds modular entries with a `kind` tag — status, category, tags, aliases, summary, thumbnail, preview, extends, and links. The `documentBlock` array holds structured docs as typed entries: `interaction` for flow steps, `guideline` for rules, `accessibility` for a11y specs, and so on.",
+      "description": "A repeated, multi-component solution to a common UX problem. Patterns sit above individual components and show how those components compose to meet a user need. The top level holds identity: `identifier`, `name`, and `description`. The `metadata` object holds optional metadata fields — status, since, lastUpdated, category, tags, aliases, summary, thumbnail, preview, extends, and links. The `documentBlock` array holds structured docs as typed entries: `interaction` for flow steps, `guideline` for rules, `accessibility` for a11y specs, and so on.",
       "required": [
         "kind",
         "identifier",
@@ -27,13 +27,17 @@
           "type": "string",
           "description": "Display name shown in docs (e.g., 'Error Messaging', 'Navigation', 'Empty State')."
         },
+        "description": {
+          "$ref": "../common/rich-text.schema.json#/$defs/richText",
+          "description": "What this pattern is, the UX problem it solves, and how its components compose to meet a user need. CommonMark supported."
+        },
         "metadata": {
-          "$ref": "../metadata/metadata.schema.json#/$defs/entityMetadataArray",
-          "description": "Modular metadata entries. Each entry is a typed object with a `kind` tag. Kinds include status, since, tags, category, aliases, summary, thumbnail, preview, extends, and links."
+          "$ref": "../metadata/metadata.schema.json#/$defs/entityMetadata",
+          "description": "Optional metadata fields, keyed by name: status, since, lastUpdated, category, tags, aliases, summary, thumbnail, preview, extends, and links."
         },
         "documentBlocks": {
           "type": "array",
-          "description": "All structured docs for this pattern, as an ordered array of typed document block objects. Patterns accept the pattern-specific kinds (interactions) plus the general kinds (guidelines, use-cases, accessibility, examples). The `type` property on each entry sets its shape. Order matters: tools SHOULD preserve it for display. Interaction entries rely on order to show the flow in time. Reference the components a pattern uses through a `links` metadata entry (type 'component', name, and role) rather than a dedicated block kind.",
+          "description": "All structured docs for this pattern, as an ordered array of typed document block objects. Patterns accept the pattern-specific kinds (interactions) plus the general kinds (guidelines, use-cases, accessibility, examples). The `type` property on each entry sets its shape. Order matters: tools SHOULD preserve it for display. Interaction entries rely on order to show the flow in time. Reference the components a pattern uses through the `links` metadata field (type 'component', name, and role) rather than a dedicated block kind.",
           "items": {
             "$ref": "../document-blocks/document-blocks.schema.json#/$defs/patternDocumentBlock"
           }

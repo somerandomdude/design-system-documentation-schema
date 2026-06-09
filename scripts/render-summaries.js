@@ -147,39 +147,42 @@ function renderEntityTable(opts = {}) {
   return renderTable(["`kind` value", "Array", "Entity", "Defined in"], rows);
 }
 
-/** Entity metadata kinds: the entityMetadata union, with what each carries. */
+/** Entity metadata fields: the entityMetadata object, with what each carries. */
 function renderMetadataKindsTable(opts = {}) {
   const schemaDir = opts.schemaDir || SCHEMA_DIR;
   const { defs } = loadAllDefs(schemaDir);
-  const order = ((defs.entityMetadata && defs.entityMetadata.oneOf) || [])
-    .map((o) => linkToRef(o.$ref))
-    .filter(Boolean);
+  const props = (defs.entityMetadata && defs.entityMetadata.properties) || {};
 
-  // File-level descriptions give the best one-liners for metadata kinds.
-  const fileDesc = {};
-  const mdir = path.join(schemaDir, "metadata");
-  for (const f of fs.existsSync(mdir) ? fs.readdirSync(mdir) : []) {
-    if (!f.endsWith(".schema.json") || f === "metadata.schema.json") continue;
-    try {
-      const data = JSON.parse(fs.readFileSync(path.join(mdir, f), "utf-8"));
-      for (const name of Object.keys(data.$defs || {})) fileDesc[name] = data.description;
-    } catch {
-      /* ignore */
+  // Each property is a $ref to a per-field def in metadata/; resolve one
+  // level so shape and description come from the field's own schema file.
+  const resolve = (p) => (p && p.$ref ? defs[linkToRef(p.$ref)] || p : p);
+
+  // Render the value shape of a metadata field: a ref name, a scalar type,
+  // a typed array, or a "x or y" union for shorthand/full-form fields.
+  const valueShape = (p) => {
+    if (p.$ref) return code(linkToRef(p.$ref) || "object");
+    if (p.oneOf) {
+      return p.oneOf
+        .map((b) => code(b.$ref ? linkToRef(b.$ref) || "object" : b.type || "object"))
+        .join(" or ");
     }
-  }
+    if (p.type === "array") {
+      const it = p.items || {};
+      return code(`${it.$ref ? linkToRef(it.$ref) : it.type || "any"}[]`);
+    }
+    return code(p.type || "object");
+  };
 
-  const rows = order.map((name) => {
-    const def = defs[name] || {};
-    const kc = kindConst(def) || name;
-    const carries = Object.keys(def.properties || {}).filter((p) => p !== "kind");
+  const rows = Object.entries(props).map(([name, p]) => {
+    const def = resolve(p);
     return [
-      code(kc),
-      carries.map(code).join(", ") || "—",
-      escWithCode(firstSentence(fileDesc[name] || def.description)),
+      code(name),
+      valueShape(def),
+      escWithCode(firstSentence(p.description || def.description)),
     ];
   });
 
-  return renderTable(["Metadata `kind`", "Carries", "Purpose"], rows);
+  return renderTable(["Metadata field", "Value", "Purpose"], rows);
 }
 
 // Resolve a block def to its { container, itemRef } pair.

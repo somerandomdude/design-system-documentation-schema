@@ -55,9 +55,9 @@ const blockKinds = [
   ),
 ];
 
-const metadataKinds = ((defs.entityMetadata && defs.entityMetadata.oneOf) || [])
-  .map((o) => kindConst(defs[refName(o.$ref)]))
-  .filter(Boolean);
+const metadataKinds = Object.keys(
+  (defs.entityMetadata && defs.entityMetadata.properties) || {},
+);
 
 // ---------------------------------------------------------------------------
 // 2. Render the page and check coverage

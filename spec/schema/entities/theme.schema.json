@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://designsystemdocspec.org/v0.6/entities/theme.schema.json",
   "title": "DSDS Theme Definition",
-  "description": "A theme documents an alternative token-value context: a color mode, a density setting, or a brand variant. DSDS captures the purpose, document blocks, and relationships of a theme. The override values themselves live in the W3C Design Tokens (DTCG) file that the `source` property points to. Typed entries in the `metadata` array carry modular metadata (status, tags, category, aliases, summary, thumbnail, preview, extends, links). Express internal artifact links through metadata link entries, not a dedicated document block kind.",
+  "description": "A theme documents an alternative token-value context: a color mode, a density setting, or a brand variant. DSDS captures the purpose, document blocks, and relationships of a theme. The override values themselves live in the W3C Design Tokens (DTCG) file that the `source` property points to. The `metadata` object carries optional metadata fields (status, since, lastUpdated, category, tags, aliases, summary, thumbnail, preview, extends, links). Express internal artifact links through the `links` metadata field, not a dedicated document block kind.",
   "$defs": {
     "tokenOverride": {
       "type": "object",
@@ -24,7 +24,7 @@
     },
     "theme": {
       "type": "object",
-      "description": "A named context that adapts the design system's token values. DSDS captures the purpose, usage document blocks, accessibility considerations, and the list of affected tokens. The override values live in the DTCG file that `source` points to. Use themes for color modes (light, dark, high-contrast), density settings (compact, comfortable), brand variants, or product-specific customizations. The token catalog stays the source of truth for token identity, type, and docs. Typed entries in the `metadata` array carry modular metadata with a `kind` tag (status, tags, category, aliases, summary, thumbnail, preview, extends, links).",
+      "description": "A named context that adapts the design system's token values. DSDS captures the purpose, usage document blocks, accessibility considerations, and the list of affected tokens. The override values live in the DTCG file that `source` points to. Use themes for color modes (light, dark, high-contrast), density settings (compact, comfortable), brand variants, or product-specific customizations. The token catalog stays the source of truth for token identity, type, and docs. The `metadata` object carries optional metadata fields (status, since, lastUpdated, category, tags, aliases, summary, thumbnail, preview, extends, links).",
       "required": [
         "kind",
         "identifier",
@@ -45,9 +45,13 @@
           "type": "string",
           "description": "Display name for the theme (e.g., 'Dark Mode', 'High Contrast', 'Compact Density')."
         },
+        "description": {
+          "$ref": "../common/rich-text.schema.json#/$defs/richText",
+          "description": "What this theme is for, the context it adapts the system to, and when to apply it. CommonMark supported."
+        },
         "metadata": {
-          "$ref": "../metadata/metadata.schema.json#/$defs/entityMetadataArray",
-          "description": "Modular metadata entries. Each entry is a typed object with a `kind` tag. Kinds include status, since, tags, category, aliases, summary, thumbnail, preview, extends, and links."
+          "$ref": "../metadata/metadata.schema.json#/$defs/entityMetadata",
+          "description": "Optional metadata fields, keyed by name: status, since, lastUpdated, category, tags, aliases, summary, thumbnail, preview, extends, and links."
         },
         "source": {
           "type": "object",

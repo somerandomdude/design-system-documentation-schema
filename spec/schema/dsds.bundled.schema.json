@@ -728,488 +728,189 @@
       },
       "additionalProperties": false
     },
-    "aliasesMetadata": {
-      "type": "object",
-      "required": [
-        "kind",
-        "items"
-      ],
-      "properties": {
-        "kind": {
-          "type": "string",
-          "const": "aliases"
-        },
-        "items": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "minItems": 1,
-          "description": "Alternative names across teams, tools, or legacy systems."
-        }
+    "aliases": {
+      "type": "array",
+      "items": {
+        "type": "string"
       },
-      "additionalProperties": false
+      "minItems": 1,
+      "description": "Alternative names for this entity across teams, tools, or legacy systems. Used for search, migration, and cross-referencing."
     },
-    "categoryMetadata": {
-      "type": "object",
-      "required": [
-        "kind",
-        "value"
-      ],
-      "properties": {
-        "kind": {
-          "type": "string",
-          "const": "category"
-        },
-        "value": {
-          "type": "string",
-          "pattern": "^[a-z][a-z0-9-]*$",
-          "description": "Taxonomy category (e.g., 'action', 'navigation', 'feedback', 'base', 'semantic')."
-        }
-      },
-      "additionalProperties": false
+    "category": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]*$",
+      "description": "Classification within the design system's taxonomy (e.g., 'action', 'navigation', 'feedback', 'base', 'semantic'). MUST be lowercase kebab-case."
     },
-    "descriptionMetadata": {
-      "type": "object",
-      "required": [
-        "kind",
-        "value"
-      ],
-      "properties": {
-        "kind": {
-          "type": "string",
-          "const": "description"
-        },
-        "value": {
-          "$ref": "#/$defs/richText",
-          "description": "A description of the entity. CommonMark supported."
-        }
-      },
-      "additionalProperties": false
+    "extends": {
+      "$ref": "#/$defs/entityExtends",
+      "description": "Declares that this entity inherits from a base entity in a parent design system."
     },
-    "extendsMetadata": {
-      "type": "object",
-      "required": [
-        "kind"
-      ],
-      "properties": {
-        "kind": {
-          "type": "string",
-          "const": "extends"
-        },
-        "extends": {
-          "$ref": "#/$defs/entityExtends",
-          "description": "The inheritance declaration."
-        }
-      },
-      "additionalProperties": false
-    },
-    "lastUpdatedMetadata": {
-      "type": "object",
-      "required": [
-        "kind",
-        "value"
-      ],
-      "properties": {
-        "kind": {
-          "type": "string",
-          "const": "last-updated"
-        },
-        "value": {
+    "lastUpdated": {
+      "description": "When this entity's documentation last changed. A bare ISO 8601 date string ('2026-05-28') covers the common case. Use the object form to add a note describing what changed.",
+      "oneOf": [
+        {
           "type": "string",
           "format": "date",
           "description": "ISO 8601 date (YYYY-MM-DD) of the most recent update to this entity's documentation."
         },
-        "description": {
-          "type": "string",
-          "description": "Optional plain-text note summarizing what changed in the most recent update (e.g., 'Added focus-visible guidance', 'Revised contrast requirements for inverse surfaces'). MUST NOT contain markup."
-        }
-      },
-      "additionalProperties": false
-    },
-    "linksMetadata": {
-      "type": "object",
-      "required": [
-        "kind",
-        "items"
-      ],
-      "properties": {
-        "kind": {
-          "type": "string",
-          "const": "links"
-        },
-        "items": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/link"
+        {
+          "type": "object",
+          "description": "Full lastUpdated form: the date plus a note describing what changed.",
+          "required": [
+            "date"
+          ],
+          "properties": {
+            "date": {
+              "type": "string",
+              "format": "date",
+              "description": "ISO 8601 date (YYYY-MM-DD) of the most recent update to this entity's documentation."
+            },
+            "note": {
+              "type": "string",
+              "description": "Plain-text note summarizing what changed in the most recent update (e.g., 'Added focus-visible guidance', 'Revised contrast requirements for inverse surfaces'). MUST NOT contain markup."
+            }
           },
-          "minItems": 1,
-          "description": "Links to source code, design files, related entities, etc."
+          "additionalProperties": false
         }
+      ]
+    },
+    "links": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/link"
       },
-      "additionalProperties": false
+      "minItems": 1,
+      "description": "External resource links, internal artifact references, and entity relationships — source code, design files, docs pages, related entities."
     },
     "entityMetadata": {
+      "type": "object",
+      "description": "Optional metadata for an entity, keyed by field name. Include only the fields that apply. Covers lifecycle (status, since, lastUpdated), classification and discovery (category, tags, aliases), compact display (summary, thumbnail, preview), inheritance (extends), and references (links).",
+      "properties": {
+        "status": {
+          "$ref": "#/$defs/status"
+        },
+        "since": {
+          "$ref": "#/$defs/since"
+        },
+        "lastUpdated": {
+          "$ref": "#/$defs/lastUpdated"
+        },
+        "category": {
+          "$ref": "#/$defs/category"
+        },
+        "tags": {
+          "$ref": "#/$defs/tags"
+        },
+        "aliases": {
+          "$ref": "#/$defs/aliases"
+        },
+        "summary": {
+          "$ref": "#/$defs/summary"
+        },
+        "thumbnail": {
+          "$ref": "#/$defs/thumbnail"
+        },
+        "preview": {
+          "$ref": "#/$defs/preview"
+        },
+        "extends": {
+          "$ref": "#/$defs/extends"
+        },
+        "links": {
+          "$ref": "#/$defs/links"
+        }
+      },
+      "additionalProperties": false
+    },
+    "preview": {
+      "description": "A visual or interactive preview of the entity — an image, video, code snippet, or URL. The value is a presentation object; its `kind` tag selects the media type.",
       "oneOf": [
         {
-          "$ref": "#/$defs/descriptionMetadata"
+          "$ref": "#/$defs/presentationImage"
         },
         {
-          "$ref": "#/$defs/statusMetadata"
+          "$ref": "#/$defs/presentationVideo"
         },
         {
-          "$ref": "#/$defs/sinceMetadata"
+          "$ref": "#/$defs/presentationCode"
         },
         {
-          "$ref": "#/$defs/lastUpdatedMetadata"
-        },
-        {
-          "$ref": "#/$defs/tagsMetadata"
-        },
-        {
-          "$ref": "#/$defs/categoryMetadata"
-        },
-        {
-          "$ref": "#/$defs/aliasesMetadata"
-        },
-        {
-          "$ref": "#/$defs/summaryMetadata"
-        },
-        {
-          "$ref": "#/$defs/thumbnailMetadata"
-        },
-        {
-          "$ref": "#/$defs/previewMetadata"
-        },
-        {
-          "$ref": "#/$defs/extendsMetadata"
-        },
-        {
-          "$ref": "#/$defs/linksMetadata"
+          "$ref": "#/$defs/presentationUrl"
         }
       ]
     },
-    "entityMetadataArray": {
-      "type": "array",
-      "description": "An entity's metadata entries. Each metadata kind may appear at most once — an entity has a single description, status, summary, and so on. Zero entries of a kind is allowed; two or more of the same kind is not (it would leave no single source of truth for that field).",
-      "items": {
-        "$ref": "#/$defs/entityMetadata"
-      },
-      "allOf": [
-        {
-          "contains": {
-            "required": [
-              "kind"
-            ],
-            "properties": {
-              "kind": {
-                "const": "description"
-              }
-            }
-          },
-          "minContains": 0,
-          "maxContains": 1
-        },
-        {
-          "contains": {
-            "required": [
-              "kind"
-            ],
-            "properties": {
-              "kind": {
-                "const": "status"
-              }
-            }
-          },
-          "minContains": 0,
-          "maxContains": 1
-        },
-        {
-          "contains": {
-            "required": [
-              "kind"
-            ],
-            "properties": {
-              "kind": {
-                "const": "since"
-              }
-            }
-          },
-          "minContains": 0,
-          "maxContains": 1
-        },
-        {
-          "contains": {
-            "required": [
-              "kind"
-            ],
-            "properties": {
-              "kind": {
-                "const": "last-updated"
-              }
-            }
-          },
-          "minContains": 0,
-          "maxContains": 1
-        },
-        {
-          "contains": {
-            "required": [
-              "kind"
-            ],
-            "properties": {
-              "kind": {
-                "const": "tags"
-              }
-            }
-          },
-          "minContains": 0,
-          "maxContains": 1
-        },
-        {
-          "contains": {
-            "required": [
-              "kind"
-            ],
-            "properties": {
-              "kind": {
-                "const": "category"
-              }
-            }
-          },
-          "minContains": 0,
-          "maxContains": 1
-        },
-        {
-          "contains": {
-            "required": [
-              "kind"
-            ],
-            "properties": {
-              "kind": {
-                "const": "aliases"
-              }
-            }
-          },
-          "minContains": 0,
-          "maxContains": 1
-        },
-        {
-          "contains": {
-            "required": [
-              "kind"
-            ],
-            "properties": {
-              "kind": {
-                "const": "summary"
-              }
-            }
-          },
-          "minContains": 0,
-          "maxContains": 1
-        },
-        {
-          "contains": {
-            "required": [
-              "kind"
-            ],
-            "properties": {
-              "kind": {
-                "const": "thumbnail"
-              }
-            }
-          },
-          "minContains": 0,
-          "maxContains": 1
-        },
-        {
-          "contains": {
-            "required": [
-              "kind"
-            ],
-            "properties": {
-              "kind": {
-                "const": "preview"
-              }
-            }
-          },
-          "minContains": 0,
-          "maxContains": 1
-        },
-        {
-          "contains": {
-            "required": [
-              "kind"
-            ],
-            "properties": {
-              "kind": {
-                "const": "extends"
-              }
-            }
-          },
-          "minContains": 0,
-          "maxContains": 1
-        },
-        {
-          "contains": {
-            "required": [
-              "kind"
-            ],
-            "properties": {
-              "kind": {
-                "const": "links"
-              }
-            }
-          },
-          "minContains": 0,
-          "maxContains": 1
-        }
-      ]
+    "since": {
+      "type": "string",
+      "description": "The design system version in which this entity was introduced (e.g., '1.0.0', '2.3.0')."
     },
-    "previewMetadata": {
-      "type": "object",
-      "required": [
-        "kind"
-      ],
-      "properties": {
-        "kind": {
-          "type": "string",
-          "const": "preview"
-        },
-        "presentation": {
-          "description": "The preview content.",
-          "oneOf": [
-            {
-              "$ref": "#/$defs/presentationImage"
-            },
-            {
-              "$ref": "#/$defs/presentationVideo"
-            },
-            {
-              "$ref": "#/$defs/presentationCode"
-            },
-            {
-              "$ref": "#/$defs/presentationUrl"
-            }
-          ]
-        }
-      },
-      "additionalProperties": false
-    },
-    "sinceMetadata": {
-      "type": "object",
-      "required": [
-        "kind",
-        "value"
-      ],
-      "properties": {
-        "kind": {
-          "type": "string",
-          "const": "since"
-        },
-        "value": {
-          "type": "string",
-          "description": "Version string (e.g., '1.0.0', '2.3.0')."
-        }
-      },
-      "additionalProperties": false
-    },
-    "statusMetadata": {
-      "type": "object",
-      "description": "Lifecycle status of an entity. Holds the overall status value, optional per-platform readiness, and a conditional deprecation notice. An entity MAY be 'stable' overall while individual platforms are still 'experimental' or 'draft'. When overall status is 'deprecated', deprecationNotice becomes required and MUST say what to use instead.",
-      "required": [
-        "kind",
-        "overall"
-      ],
-      "properties": {
-        "kind": {
-          "type": "string",
-          "const": "status",
-          "description": "Identifies this metadata entry as a status entry."
-        },
-        "overall": {
+    "status": {
+      "description": "Lifecycle status of the entity. A bare string sets the overall status (e.g., 'stable', 'beta') and covers the common case. Use the object form to add per-platform readiness or a deprecation notice. A deprecated entity MUST use the object form, because deprecation requires a deprecationNotice saying what to use instead.",
+      "oneOf": [
+        {
           "$ref": "#/$defs/statusValue",
-          "description": "Overall lifecycle status of the entity. An editorial judgment of maturity; it need not match the most or least advanced platform status. Tools SHOULD display this as the primary status indicator."
-        },
-        "platforms": {
-          "type": "object",
-          "description": "Per-platform readiness. Keys are platform identifiers (freeform strings; common values include 'react', 'web-component', 'ios', 'android', 'flutter', 'figma', 'sketch', 'compose'). Values describe the entity's status on that platform.",
-          "additionalProperties": {
-            "$ref": "#/$defs/platformStatus"
-          }
-        },
-        "deprecationNotice": {
-          "type": "string",
-          "description": "Required when overall status is 'deprecated'. MUST say what to use instead and give a migration path. Tools SHOULD display this prominently next to the status indicator."
-        }
-      },
-      "if": {
-        "properties": {
-          "overall": {
+          "not": {
             "const": "deprecated"
           }
-        }
-      },
-      "then": {
-        "required": [
-          "deprecationNotice"
-        ]
-      },
-      "additionalProperties": false
-    },
-    "summaryMetadata": {
-      "type": "object",
-      "required": [
-        "kind",
-        "value"
-      ],
-      "properties": {
-        "kind": {
-          "type": "string",
-          "const": "summary"
         },
-        "value": {
-          "type": "string",
-          "description": "One-line plain-text summary. MUST NOT contain markup."
-        }
-      },
-      "additionalProperties": false
-    },
-    "tagsMetadata": {
-      "type": "object",
-      "required": [
-        "kind",
-        "items"
-      ],
-      "properties": {
-        "kind": {
-          "type": "string",
-          "const": "tags"
-        },
-        "items": {
-          "type": "array",
-          "items": {
-            "type": "string"
+        {
+          "type": "object",
+          "description": "Full status form: overall lifecycle value, optional per-platform readiness, and a conditional deprecation notice. An entity MAY be 'stable' overall while individual platforms are still 'experimental' or 'draft'.",
+          "required": [
+            "overall"
+          ],
+          "properties": {
+            "overall": {
+              "$ref": "#/$defs/statusValue",
+              "description": "Overall lifecycle status of the entity. An editorial judgment of maturity; it need not match the most or least advanced platform status. Tools SHOULD display this as the primary status indicator."
+            },
+            "platforms": {
+              "type": "object",
+              "description": "Per-platform readiness. Keys are platform identifiers (freeform strings; common values include 'react', 'web-component', 'ios', 'android', 'flutter', 'figma', 'sketch', 'compose'). Values describe the entity's status on that platform.",
+              "additionalProperties": {
+                "$ref": "#/$defs/platformStatus"
+              }
+            },
+            "deprecationNotice": {
+              "type": "string",
+              "description": "Required when overall status is 'deprecated'. MUST say what to use instead and give a migration path. Tools SHOULD display this prominently next to the status indicator."
+            }
           },
-          "minItems": 1,
-          "description": "Keywords for categorization, search, and cross-referencing."
+          "if": {
+            "properties": {
+              "overall": {
+                "const": "deprecated"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "deprecationNotice"
+            ]
+          },
+          "additionalProperties": false
         }
-      },
-      "additionalProperties": false
+      ]
     },
-    "thumbnailMetadata": {
+    "summary": {
+      "type": "string",
+      "description": "One-line plain-text summary for compact display contexts (list views, search results, hover cards). MUST NOT contain markup."
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "description": "Freeform keywords for categorization, search, and cross-referencing."
+    },
+    "thumbnail": {
       "type": "object",
+      "description": "A visual thumbnail for compact display contexts — a single image carried as a URL plus required alt text.",
       "required": [
-        "kind",
         "url",
         "alt"
       ],
       "properties": {
-        "kind": {
-          "type": "string",
-          "const": "thumbnail",
-          "description": "Identifies this metadata entry as a thumbnail."
-        },
         "url": {
           "type": "string",
           "format": "uri",
@@ -3070,7 +2771,7 @@
     },
     "component": {
       "type": "object",
-      "description": "A single reusable UI component. The top level holds identity: `identifier`, `name`, and `description`. The `metadata` array holds modular entries with a `kind` tag — status, category, tags, aliases, summary, thumbnail, preview, extends, since, and links. The `documentBlocks` array holds structured docs as typed entries: anatomy, api, variant, state, design-specifications, guideline, accessibility, and so on. This unified model replaces separate top-level properties for each concern.",
+      "description": "A single reusable UI component. The top level holds identity: `identifier`, `name`, and `description`. The `metadata` object holds optional metadata fields — status, since, lastUpdated, category, tags, aliases, summary, thumbnail, preview, extends, and links. The `documentBlocks` array holds structured docs as typed entries: anatomy, api, variant, state, design-specifications, guideline, accessibility, and so on.",
       "required": [
         "kind",
         "identifier",
@@ -3091,9 +2792,13 @@
           "type": "string",
           "description": "Display name shown in docs (e.g., 'Button', 'Dialog', 'Form Field', 'Data Table')."
         },
+        "description": {
+          "$ref": "#/$defs/richText",
+          "description": "What this component is, what it does, and its role in the design system. CommonMark supported."
+        },
         "metadata": {
-          "$ref": "#/$defs/entityMetadataArray",
-          "description": "Modular metadata entries. Each entry is a typed object with a `kind` tag. Kinds include status, since, tags, category, aliases, summary, thumbnail, preview, extends, and links."
+          "$ref": "#/$defs/entityMetadata",
+          "description": "Optional metadata fields, keyed by name: status, since, lastUpdated, category, tags, aliases, summary, thumbnail, preview, extends, and links."
         },
         "documentBlocks": {
           "type": "array",
@@ -3114,7 +2819,7 @@
     },
     "foundation": {
       "type": "object",
-      "description": "The principles, guidelines, scales, and token references that govern a broad design domain across the system — color, typography, spacing, elevation, motion, accessibility, content, and the like. Foundations are wider than a single visual attribute: a domain may be visual (color, spacing) or cross-cutting (accessibility, content). The top level holds identity: `identifier`, `name`, and `description`. The `metadata` array holds modular entries with a `kind` tag (status, tags, category, aliases, summary, thumbnail, preview, links, and more). The `documentBlocks` array holds structured docs as typed entries: principle, scale, guideline, accessibility, content, and so on.",
+      "description": "The principles, guidelines, scales, and token references that govern a broad design domain across the system — color, typography, spacing, elevation, motion, accessibility, content, and the like. Foundations are wider than a single visual attribute: a domain may be visual (color, spacing) or cross-cutting (accessibility, content). The top level holds identity: `identifier`, `name`, and `description`. The `metadata` object holds optional metadata fields (status, since, lastUpdated, category, tags, aliases, summary, thumbnail, preview, extends, and links). The `documentBlocks` array holds structured docs as typed entries: principle, scale, guideline, accessibility, content, and so on.",
       "required": [
         "kind",
         "identifier",
@@ -3135,13 +2840,17 @@
           "type": "string",
           "description": "Display name shown in docs (e.g., 'Color', 'Typography', 'Spacing', 'Elevation', 'Accessibility', 'Content')."
         },
+        "description": {
+          "$ref": "#/$defs/richText",
+          "description": "What this foundation covers, the design domain it governs, and its role in the system. CommonMark supported."
+        },
         "metadata": {
-          "$ref": "#/$defs/entityMetadataArray",
-          "description": "Modular metadata entries. Each entry is a typed object with a `kind` tag. Kinds include status, since, tags, category, aliases, summary, thumbnail, preview, extends, and links."
+          "$ref": "#/$defs/entityMetadata",
+          "description": "Optional metadata fields, keyed by name: status, since, lastUpdated, category, tags, aliases, summary, thumbnail, preview, extends, and links."
         },
         "documentBlocks": {
           "type": "array",
-          "description": "All structured docs for this foundation, as an ordered array of typed document block objects. Accepts the foundation-specific kinds (principles, scale, motion) plus the general kinds (guideline, use-cases, accessibility, content, examples). The `kind` property on each entry sets its shape. Order matters: tools SHOULD preserve it for display. Express internal artifact links (such as token group references) through a `links` metadata entry, not as document block entries.",
+          "description": "All structured docs for this foundation, as an ordered array of typed document block objects. Accepts the foundation-specific kinds (principles, scale, motion) plus the general kinds (guideline, use-cases, accessibility, content, examples). The `kind` property on each entry sets its shape. Order matters: tools SHOULD preserve it for display. Express internal artifact links (such as token group references) through the `links` metadata field, not as document block entries.",
           "items": {
             "$ref": "#/$defs/foundationDocumentBlock"
           }
@@ -3158,7 +2867,7 @@
     },
     "guide": {
       "type": "object",
-      "description": "A long-form, reading-oriented document: a getting-started walkthrough, a contribution guide, a tutorial, a conceptual overview, a migration guide, or any narrative guidance the system needs. Guides fill the gap left by the artifact-bound entities (component, token, foundation, pattern), which document a single thing rather than a journey or a concept. The top level holds identity: `identifier`, `name`, and `description`. The `metadata` array holds modular entries with a `kind` tag — use a `category` entry (e.g., 'getting-started', 'contribution', 'tutorial', 'concept', 'migration') to classify the guide, and `tags` for finer-grained discovery. The `documentBlocks` array holds structured docs as typed entries: section (narrative prose), steps (procedures), guideline, use-cases, import, accessibility, and content.",
+      "description": "A long-form, reading-oriented document: a getting-started walkthrough, a contribution guide, a tutorial, a conceptual overview, a migration guide, or any narrative guidance the system needs. Guides fill the gap left by the artifact-bound entities (component, token, foundation, pattern), which document a single thing rather than a journey or a concept. The top level holds identity: `identifier`, `name`, and `description`. The `metadata` object holds optional metadata fields — use `category` (e.g., 'getting-started', 'contribution', 'tutorial', 'concept', 'migration') to classify the guide, and `tags` for finer-grained discovery. The `documentBlocks` array holds structured docs as typed entries: section (narrative prose), steps (procedures), guideline, use-cases, import, accessibility, and content.",
       "required": [
         "kind",
         "identifier",
@@ -3179,13 +2888,17 @@
           "type": "string",
           "description": "Display name shown in docs (e.g., 'Getting started', 'Contributing', 'Theming tutorial', 'Migrating to v2')."
         },
+        "description": {
+          "$ref": "#/$defs/richText",
+          "description": "What this guide covers, who it is for, and what the reader will accomplish. CommonMark supported."
+        },
         "metadata": {
-          "$ref": "#/$defs/entityMetadataArray",
-          "description": "Modular metadata entries. Each entry is a typed object with a `kind` tag. Kinds include description, status, since, last-updated, tags, category, aliases, summary, thumbnail, preview, extends, and links. Use a `category` entry to classify the guide (e.g., 'getting-started', 'contribution', 'tutorial', 'concept', 'migration')."
+          "$ref": "#/$defs/entityMetadata",
+          "description": "Optional metadata fields, keyed by name: status, since, lastUpdated, category, tags, aliases, summary, thumbnail, preview, extends, and links. Use `category` to classify the guide (e.g., 'getting-started', 'contribution', 'tutorial', 'concept', 'migration')."
         },
         "documentBlocks": {
           "type": "array",
-          "description": "All structured docs for this guide, as an ordered array of typed document block objects. Accepts the guide-specific kinds (section, steps) plus reused kinds (import for setup instructions, guideline, use-cases, accessibility, content). The `kind` property on each entry sets its shape. Order matters: tools SHOULD preserve it for display, since a guide reads top to bottom. Express links to other entities and external resources through a `links` metadata entry or a section's `links`, not as document block entries.",
+          "description": "All structured docs for this guide, as an ordered array of typed document block objects. Accepts the guide-specific kinds (section, steps) plus reused kinds (import for setup instructions, guideline, use-cases, accessibility, content). The `kind` property on each entry sets its shape. Order matters: tools SHOULD preserve it for display, since a guide reads top to bottom. Express links to other entities and external resources through the `links` metadata field or a section's `links`, not as document block entries.",
           "items": {
             "$ref": "#/$defs/guideDocumentBlock"
           }
@@ -3202,7 +2915,7 @@
     },
     "pattern": {
       "type": "object",
-      "description": "A repeated, multi-component solution to a common UX problem. Patterns sit above individual components and show how those components compose to meet a user need. The top level holds identity: `identifier`, `name`, and `description`. The `metadata` array holds modular entries with a `kind` tag — status, category, tags, aliases, summary, thumbnail, preview, extends, and links. The `documentBlock` array holds structured docs as typed entries: `interaction` for flow steps, `guideline` for rules, `accessibility` for a11y specs, and so on.",
+      "description": "A repeated, multi-component solution to a common UX problem. Patterns sit above individual components and show how those components compose to meet a user need. The top level holds identity: `identifier`, `name`, and `description`. The `metadata` object holds optional metadata fields — status, since, lastUpdated, category, tags, aliases, summary, thumbnail, preview, extends, and links. The `documentBlock` array holds structured docs as typed entries: `interaction` for flow steps, `guideline` for rules, `accessibility` for a11y specs, and so on.",
       "required": [
         "kind",
         "identifier",
@@ -3223,13 +2936,17 @@
           "type": "string",
           "description": "Display name shown in docs (e.g., 'Error Messaging', 'Navigation', 'Empty State')."
         },
+        "description": {
+          "$ref": "#/$defs/richText",
+          "description": "What this pattern is, the UX problem it solves, and how its components compose to meet a user need. CommonMark supported."
+        },
         "metadata": {
-          "$ref": "#/$defs/entityMetadataArray",
-          "description": "Modular metadata entries. Each entry is a typed object with a `kind` tag. Kinds include status, since, tags, category, aliases, summary, thumbnail, preview, extends, and links."
+          "$ref": "#/$defs/entityMetadata",
+          "description": "Optional metadata fields, keyed by name: status, since, lastUpdated, category, tags, aliases, summary, thumbnail, preview, extends, and links."
         },
         "documentBlocks": {
           "type": "array",
-          "description": "All structured docs for this pattern, as an ordered array of typed document block objects. Patterns accept the pattern-specific kinds (interactions) plus the general kinds (guidelines, use-cases, accessibility, examples). The `type` property on each entry sets its shape. Order matters: tools SHOULD preserve it for display. Interaction entries rely on order to show the flow in time. Reference the components a pattern uses through a `links` metadata entry (type 'component', name, and role) rather than a dedicated block kind.",
+          "description": "All structured docs for this pattern, as an ordered array of typed document block objects. Patterns accept the pattern-specific kinds (interactions) plus the general kinds (guidelines, use-cases, accessibility, examples). The `type` property on each entry sets its shape. Order matters: tools SHOULD preserve it for display. Interaction entries rely on order to show the flow in time. Reference the components a pattern uses through the `links` metadata field (type 'component', name, and role) rather than a dedicated block kind.",
           "items": {
             "$ref": "#/$defs/patternDocumentBlock"
           }
@@ -3264,7 +2981,7 @@
     },
     "theme": {
       "type": "object",
-      "description": "A named context that adapts the design system's token values. DSDS captures the purpose, usage document blocks, accessibility considerations, and the list of affected tokens. The override values live in the DTCG file that `source` points to. Use themes for color modes (light, dark, high-contrast), density settings (compact, comfortable), brand variants, or product-specific customizations. The token catalog stays the source of truth for token identity, type, and docs. Typed entries in the `metadata` array carry modular metadata with a `kind` tag (status, tags, category, aliases, summary, thumbnail, preview, extends, links).",
+      "description": "A named context that adapts the design system's token values. DSDS captures the purpose, usage document blocks, accessibility considerations, and the list of affected tokens. The override values live in the DTCG file that `source` points to. Use themes for color modes (light, dark, high-contrast), density settings (compact, comfortable), brand variants, or product-specific customizations. The token catalog stays the source of truth for token identity, type, and docs. The `metadata` object carries optional metadata fields (status, since, lastUpdated, category, tags, aliases, summary, thumbnail, preview, extends, links).",
       "required": [
         "kind",
         "identifier",
@@ -3285,9 +3002,13 @@
           "type": "string",
           "description": "Display name for the theme (e.g., 'Dark Mode', 'High Contrast', 'Compact Density')."
         },
+        "description": {
+          "$ref": "#/$defs/richText",
+          "description": "What this theme is for, the context it adapts the system to, and when to apply it. CommonMark supported."
+        },
         "metadata": {
-          "$ref": "#/$defs/entityMetadataArray",
-          "description": "Modular metadata entries. Each entry is a typed object with a `kind` tag. Kinds include status, since, tags, category, aliases, summary, thumbnail, preview, extends, and links."
+          "$ref": "#/$defs/entityMetadata",
+          "description": "Optional metadata fields, keyed by name: status, since, lastUpdated, category, tags, aliases, summary, thumbnail, preview, extends, and links."
         },
         "source": {
           "type": "object",
@@ -3331,7 +3052,7 @@
     },
     "token": {
       "type": "object",
-      "description": "Docs for a single design token: identifier, type, use cases, guidelines, and accessibility considerations. The display `name` property is absent — the `identifier` itself serves as the display label. Description and status are optional. Typed entries in the modular `metadata` array carry shared properties (status, since, tags, category, aliases, summary, thumbnail, preview, extends, links). When a token sits inside a token group and omits its own status metadata entry, the parent group's status applies.",
+      "description": "Docs for a single design token: identifier, type, use cases, guidelines, and accessibility considerations. The display `name` property is absent — the `identifier` itself serves as the display label. Description and status are optional. The `metadata` object carries optional metadata fields (status, since, lastUpdated, category, tags, aliases, summary, thumbnail, preview, extends, links). When a token sits inside a token group and omits its own status metadata field, the parent group's status applies.",
       "required": [
         "kind",
         "identifier",
@@ -3351,6 +3072,10 @@
           "type": "string",
           "description": "The type of token aligned with the DTCG spec (e.g., 'color', 'dimension', 'fontFamily', 'fontWeight', 'duration', 'cubicBezier', 'shadow')."
         },
+        "description": {
+          "$ref": "#/$defs/richText",
+          "description": "What this token represents and when to use it. Optional — keep terse at scale. CommonMark supported."
+        },
         "source": {
           "type": "object",
           "description": "Pointer to the W3C Design Tokens (DTCG) definition. DSDS does not duplicate token values — the DTCG file is the source of truth for resolved values, aliases, and type information.",
@@ -3367,8 +3092,8 @@
           "additionalProperties": false
         },
         "metadata": {
-          "$ref": "#/$defs/entityMetadataArray",
-          "description": "Modular metadata entries. Each entry is a typed object with a `kind` tag. Kinds include status, since, tags, category, aliases, summary, thumbnail, preview, extends, and links."
+          "$ref": "#/$defs/entityMetadata",
+          "description": "Optional metadata fields, keyed by name: status, since, lastUpdated, category, tags, aliases, summary, thumbnail, preview, extends, and links."
         },
         "documentBlocks": {
           "type": "array",
@@ -3389,7 +3114,7 @@
     },
     "tokenGroup": {
       "type": "object",
-      "description": "A group of related design tokens. Token groups are flexible organizational units: a full collection, a family (e.g., all color tokens), a sub-family (e.g., a single hue with its grade scale), or any other logical grouping. Groups can nest to form a deep hierarchy. A top-level group might represent 'color' and hold child groups for 'color-text', 'color-background', and 'color-border', each with individual tokens. This recursive structure mirrors how real design systems organize tokens into families and sub-families. The display `name` property is absent — the `identifier` itself serves as the display label. Description and status are optional. Typed entries in the modular `metadata` array carry shared properties (status, since, tags, category, aliases, summary, thumbnail, preview, links). When a child omits its own status metadata entry, the parent group's status applies.",
+      "description": "A group of related design tokens. Token groups are flexible organizational units: a full collection, a family (e.g., all color tokens), a sub-family (e.g., a single hue with its grade scale), or any other logical grouping. Groups can nest to form a deep hierarchy. A top-level group might represent 'color' and hold child groups for 'color-text', 'color-background', and 'color-border', each with individual tokens. This recursive structure mirrors how real design systems organize tokens into families and sub-families. The display `name` property is absent — the `identifier` itself serves as the display label. Description and status are optional. The `metadata` object carries optional metadata fields (status, since, lastUpdated, category, tags, aliases, summary, thumbnail, preview, links). When a child omits its own status metadata field, the parent group's status applies.",
       "required": [
         "kind",
         "identifier"
@@ -3403,6 +3128,10 @@
         "identifier": {
           "type": "string",
           "description": "The token group identifier. Unconstrained by a pattern to accommodate DTCG and design tool naming conventions (e.g., 'color-text', 'color.text', 'color/text'). Also serves as the human-readable display label."
+        },
+        "description": {
+          "$ref": "#/$defs/richText",
+          "description": "What this token group covers and how it is organized. Optional — keep terse at scale. CommonMark supported."
         },
         "tokenType": {
           "type": "string",
@@ -3439,8 +3168,8 @@
           "minItems": 1
         },
         "metadata": {
-          "$ref": "#/$defs/entityMetadataArray",
-          "description": "Modular metadata entries. Each entry is a typed object with a `kind` tag. Kinds include status, since, tags, category, aliases, summary, thumbnail, preview, extends, and links."
+          "$ref": "#/$defs/entityMetadata",
+          "description": "Optional metadata fields, keyed by name: status, since, lastUpdated, category, tags, aliases, summary, thumbnail, preview, extends, and links."
         },
         "documentBlocks": {
           "type": "array",
