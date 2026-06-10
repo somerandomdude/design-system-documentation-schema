@@ -1,12 +1,12 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://designsystemdocspec.org/v0.7.1/entities/foundation.schema.json",
+  "$id": "https://designsystemdocspec.org/v0.7.2/entities/foundation.schema.json",
   "title": "DSDS Foundation Definitions",
-  "description": "Defines documents for foundations: the broad, cross-cutting design domains a system is built on — color, typography, spacing, elevation, motion, shape, accessibility, content, and the like. A foundation document holds the identity and metadata of a domain. The `metadata` object carries optional metadata fields (status, since, lastUpdated, category, tags, aliases, summary, thumbnail, preview, extends, and links). Typed entries in the `documentBlocks` array carry structured docs.",
+  "description": "Defines documents for foundations: the broad, cross-cutting design domains a system is built on, such as color, typography, spacing, elevation, motion, shape, accessibility, and content. A foundation document holds the identity and metadata of a domain. The `metadata` object holds optional fields: status, since, lastUpdated, category, tags, aliases, summary, thumbnail, preview, extends, and links. The `documentBlocks` array holds structured docs as typed entries.",
   "$defs": {
     "foundation": {
       "type": "object",
-      "description": "The principles, guidelines, scales, and token references that govern a broad design domain across the system — color, typography, spacing, elevation, motion, accessibility, content, and the like. Foundations are wider than a single visual attribute: a domain may be visual (color, spacing) or cross-cutting (accessibility, content). The top level holds identity: `identifier`, `name`, and `description`. The `metadata` object holds optional metadata fields (status, since, lastUpdated, category, tags, aliases, summary, thumbnail, preview, extends, and links). The `documentBlocks` array holds structured docs as typed entries: principles, scale, motion, guidelines, accessibility, content, and so on.",
+      "description": "The principles, guidelines, scales, and token references that govern a broad design domain across the system, such as color, typography, spacing, elevation, motion, accessibility, and content. Foundations are wider than a single visual attribute. A domain may be visual (color, spacing) or cross-cutting (accessibility, content). The top level holds its identity: `identifier`, `name`, and `description`. The `metadata` object holds optional fields: status, since, lastUpdated, category, tags, aliases, summary, thumbnail, preview, extends, and links. The `documentBlocks` array holds structured docs as typed entries: principles, scale, motion, guidelines, accessibility, content, and so on.",
       "required": [
         "kind",
         "identifier",
@@ -37,14 +37,14 @@
         },
         "documentBlocks": {
           "type": "array",
-          "description": "All structured docs for this foundation, as an ordered array of typed document block objects. Accepts the foundation-specific kinds (principles, scale, motion) plus the general kinds (guidelines, useCases, accessibility, content, sections). The `kind` property on each entry sets its shape. Order matters: tools SHOULD preserve it for display. Express internal artifact links (such as token group references) through the `links` metadata field, not as document block entries.",
+          "description": "All structured docs for this foundation, as an ordered array of typed document block objects. It accepts the foundation-specific kinds (principles, scale, motion) plus the general kinds (guidelines, useCases, accessibility, content, sections). The `kind` property on each entry sets its shape. Order matters, so tools SHOULD keep it for display. Put internal artifact links (such as token group references) in the `links` metadata field, not in document block entries.",
           "items": {
             "$ref": "../document-blocks/document-blocks.schema.json#/$defs/foundationDocumentBlock"
           }
         },
         "agentDocumentBlocks": {
           "type": "array",
-          "description": "Structured documentation for agent (AI/LLM) consumption only — a partitioned space accepting the same document block kinds as `documentBlocks`. Use it for guidance that would be noise for human readers: generation constraints, disambiguation between confusable entities, machine-checkable rules with evidence. Tools MUST NOT render these blocks in human-facing documentation. Agents SHOULD read both arrays — human-facing blocks first, then these.",
+          "description": "Structured docs for agents (AI/LLM) only. This is a separate space that accepts the same document block kinds as `documentBlocks`. Use it for guidance that would be noise for human readers: generation limits, ways to tell confusable entities apart, and machine-checkable rules with evidence. Tools MUST NOT render these blocks in human-facing docs. Agents SHOULD read both arrays — human-facing blocks first, then these.",
           "items": {
             "$ref": "../document-blocks/document-blocks.schema.json#/$defs/foundationDocumentBlock"
           }

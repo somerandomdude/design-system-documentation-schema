@@ -1,6 +1,6 @@
 {
   "$schema": "../schema/dsds.bundled.schema.json",
-  "dsdsVersion": "0.7.1",
+  "dsdsVersion": "0.7.2",
   "systemInfo": {
     "systemName": "Minimal Example"
   },
@@ -51,15 +51,18 @@
               "items": [
                 {
                   "guidance": "Do not use for navigating to a different page or URL.",
-                  "level": "MUST_NOT"
+                  "level": "MUST_NOT",
+                  "rationale": "Buttons signal actions and links signal navigation. Assistive technology announces each differently, and users rely on that distinction to predict what a control will do."
                 },
                 {
                   "guidance": "Limit each surface to one primary-emphasis button.",
-                  "level": "MUST"
+                  "level": "MUST",
+                  "rationale": "A single primary action keeps the visual hierarchy clear. When several buttons compete at primary emphasis, the intended next step becomes ambiguous."
                 },
                 {
                   "guidance": "Always provide an accessible label via visible text or aria-label.",
-                  "level": "MUST"
+                  "level": "MUST",
+                  "rationale": "Icon-only buttons without an accessible name are unusable with screen readers and fail WCAG 4.1.2 (Name, Role, Value)."
                 },
                 {
                   "guidance": "Using a button to navigate to another page.",
@@ -70,6 +73,21 @@
                   "guidance": "Placing multiple primary buttons on the same surface.",
                   "rationale": "Instead: Use one primary and one or more secondary or tertiary buttons.",
                   "level": "MUST_NOT"
+                }
+              ]
+            }
+          ],
+          "documentBlocks": [
+            {
+              "kind": "useCases",
+              "items": [
+                {
+                  "description": "When the user needs to trigger an action such as submitting a form, saving data, or opening a dialog.",
+                  "stance": "recommended"
+                },
+                {
+                  "description": "When the action navigates to a different page or URL — use a link instead, which carries native navigation semantics.",
+                  "stance": "discouraged"
                 }
               ]
             }
@@ -234,11 +252,13 @@
               "items": [
                 {
                   "guidance": "Always apply at the application root, not on individual components.",
-                  "level": "MUST"
+                  "level": "MUST",
+                  "rationale": "Scoping the theme to the root keeps every surface consistent. Per-component theming produces mixed-mode screens and doubles the testing surface."
                 },
                 {
                   "guidance": "Do not mix dark-mode and light-mode semantic tokens on the same surface.",
-                  "level": "MUST_NOT"
+                  "level": "MUST_NOT",
+                  "rationale": "Semantic tokens are tuned for contrast within one mode. Mixing modes breaks those tuned pairings unpredictably."
                 },
                 {
                   "guidance": "Applying dark theme only to part of a page while the rest remains light.",
@@ -286,11 +306,13 @@
               "items": [
                 {
                   "guidance": "Do not hard-code hex values; reference semantic color tokens instead.",
-                  "level": "MUST_NOT"
+                  "level": "MUST_NOT",
+                  "rationale": "Hard-coded values escape theming, dark mode, and audits — the palette can no longer change in one place."
                 },
                 {
                   "guidance": "Maintain WCAG AA contrast for text and interactive elements on every surface.",
-                  "level": "MUST"
+                  "level": "MUST",
+                  "rationale": "AA is the system's compliance floor: 4.5:1 for normal text, 3:1 for large text and interactive components."
                 }
               ]
             }
@@ -339,16 +361,29 @@
               "items": [
                 {
                   "guidance": "Always include both an inline field error and a summary when multiple fields fail.",
-                  "level": "MUST"
+                  "level": "MUST",
+                  "rationale": "The summary gives screen reader users one announcement point and an error count; inline errors give sighted users fix-it-here proximity. Each alone strands one audience."
                 },
                 {
                   "guidance": "Do not use toast notifications as the sole error communication for form validation.",
-                  "level": "MUST_NOT"
+                  "level": "MUST_NOT",
+                  "rationale": "Toasts dismiss themselves and are not tied to the failing field. Once gone, the user has no path back to what went wrong."
                 },
                 {
                   "guidance": "Showing errors only on submit without inline field feedback.",
                   "rationale": "Instead: Show inline errors on field blur and in a summary on submit.",
                   "level": "MUST_NOT"
+                }
+              ]
+            }
+          ],
+          "documentBlocks": [
+            {
+              "kind": "useCases",
+              "items": [
+                {
+                  "description": "When a form submission can fail per field and the user must fix specific inputs before continuing.",
+                  "stance": "recommended"
                 }
               ]
             }

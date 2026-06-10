@@ -4,6 +4,67 @@ All notable changes to the DSDS specification are documented in this file.
 
 ---
 
+## [0.7.2] — 2026-06-09
+
+Editorial-quality release. One tightening (use cases must declare a stance), one loosening (anatomy parts no longer force a `required` flag), author-facing validation errors, and a new non-blocking documentation lint. Schema files are served at `https://designsystemdocspec.org/v0.7.2/...`.
+
+### Breaking changes
+
+#### 1. `useCases` items require `stance`
+
+Every use case item must declare `"stance": "recommended"` or `"stance": "discouraged"`. Previously `stance` was optional, and an item without one read ambiguously — there was no defined meaning for the silence.
+
+**Migration.** Add a `stance` to any use case item that omits one. Items written as positive scenarios are almost always `"recommended"`.
+
+### Other changes
+
+#### Anatomy parts: `required` is now optional
+
+`anatomyEntry.required` is no longer in the required array; its declared `default: false` now applies. Authors only write `"required": true` for parts that are always present, instead of hand-writing `"required": false` on every conditional part. Existing documents are unaffected — explicit values remain valid.
+
+### Tooling
+
+- **Readable validation errors.** `scripts/validate.js` now reports against the `kind` discriminator instead of dumping every failed union branch. A typo'd block kind produces one line — `unknown kind 'guideline' — did you mean 'guidelines'?` — instead of several hundred raw errors. Misplaced blocks report as placement errors ("'api' is valid on its own but not allowed here"), and field errors report against the matched kind only.
+- **Documentation lint (warning tier).** `npm run lint:docs` (`scripts/lint-docs.js`) flags quality gaps without ever failing the build: guideline entries with neither `rationale` nor `evidence`, components and patterns without a `useCases` block, and entities without a `description` (tokens and token groups exempt by design). It accepts file or directory arguments for linting your own documents.
+- New negative fixture `use-case-missing-stance` pins the stance guard.
+
+### Examples
+
+All example documents now pass the lint: agent-facing guidance is entity-appropriate (link, alert, data-grid, and spacing-token guidance replace copy-pasted button and color boilerplate), every guideline entry carries a `rationale` or `evidence`, and every component and pattern declares its use cases.
+
+---
+
+## [0.7.1] — 2026-06-09
+
+Terminology and validation-hardening release, documented retroactively. Schema files are served at `https://designsystemdocspec.org/v0.7.1/...`.
+
+### Breaking changes
+
+#### 1. `keyboardInteraction` → `keyboardInteractions`
+
+The accessibility block's keyboard interaction array is now plural, matching its sibling arrays (`ariaAttributes`, `cssParts`, `dataAttributes`).
+
+**Migration.** Rename the property; entries are unchanged.
+
+#### 2. Accessibility blocks must carry content
+
+`{ "kind": "accessibility" }` with no other fields no longer validates. The block requires at least one of its content fields, matching the guard the other structured blocks (`api`, `content`, `design-specifications`) already had.
+
+**Migration.** Add content to empty accessibility blocks, or remove them.
+
+### Other changes
+
+- `agentDocumentBlocks` accepts an empty array, matching `documentBlocks` (the `minItems: 1` floor is removed from all entity types).
+- Schema titles standardized: document block schemas are titled "DSDS *Kind* Document Block", and residual pre-0.7 wording that called blocks "guidelines" is corrected throughout — including `kind` descriptions that misnamed the discriminator as `type`.
+
+### Tooling
+
+- **Semantic checks** in `scripts/validate.js` enforce two normative rules JSON Schema cannot express: entity identifiers must be unique within their entity group (and within token-group `children`), and `$extensions` keys must be vendor-namespaced (e.g. `com.acme.tool`).
+- **Negative fixture suite** at `test/invalid/` — documents that MUST fail validation, one per guard, asserted by the validation run. A fixture that validates cleanly fails the build.
+- `scripts/bump-version.js` stamps the spec's publication date on the overview page at each version cut.
+
+---
+
 ## [0.7] — 2026-06-09
 
 Major simplification release. The spec's core sentence — *a document holds one `entity` or many `entityGroups`; a group holds `entities`; an entity is identity plus metadata plus kind-tagged blocks; list blocks are plural and hold `items`* — is now enforced everywhere. Every breaking change below is automated by `scripts/migrate-to-0.7.js`, which accepts v0.5.x and v0.6 documents and emits warnings wherever a conversion deserves human review.

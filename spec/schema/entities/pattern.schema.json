@@ -1,12 +1,12 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://designsystemdocspec.org/v0.7.1/entities/pattern.schema.json",
+  "$id": "https://designsystemdocspec.org/v0.7.2/entities/pattern.schema.json",
   "title": "DSDS Pattern Definitions",
-  "description": "Defines documents for interaction patterns. Patterns are repeated solutions to common UX problems: navigation, error messaging, form validation, empty states, loading sequences, and onboarding flows. A pattern document holds the identity of a multi-component solution. The `metadata` object carries optional metadata fields: status, since, lastUpdated, category, tags, aliases, summary, thumbnail, preview, extends, and links. Typed entries in the `documentBlock` array carry structured docs.",
+  "description": "Defines documents for interaction patterns. A pattern is a repeated answer to a common UX problem — navigation, error messaging, form validation, empty states, loading, and onboarding. A pattern document holds the identity of a multi-component solution. The `metadata` object holds optional fields like status, tags, and links. The `documentBlocks` array holds structured docs as typed entries.",
   "$defs": {
     "pattern": {
       "type": "object",
-      "description": "A repeated, multi-component solution to a common UX problem. Patterns sit above individual components and show how those components compose to meet a user need. The top level holds identity: `identifier`, `name`, and `description`. The `metadata` object holds optional metadata fields — status, since, lastUpdated, category, tags, aliases, summary, thumbnail, preview, extends, and links. The `documentBlock` array holds structured docs as typed entries: `interactions` for flow steps, `guidelines` for rules, `accessibility` for a11y specs, and so on.",
+      "description": "A repeated, multi-component solution to a common UX problem. Patterns sit above individual components. They show how those components combine to meet a user need. The top level holds its identity: `identifier`, `name`, and `description`. The `metadata` object holds optional fields: status, since, lastUpdated, category, tags, aliases, summary, thumbnail, preview, extends, and links. The `documentBlock` array holds structured docs as typed entries: `interactions` for flow steps, `guidelines` for rules, `accessibility` for a11y specs, and so on.",
       "required": [
         "kind",
         "identifier",
@@ -37,14 +37,14 @@
         },
         "documentBlocks": {
           "type": "array",
-          "description": "All structured docs for this pattern, as an ordered array of typed document block objects. Patterns accept the pattern-specific kinds (interactions) plus the general kinds (guidelines, useCases, accessibility, content, sections). The `kind` property on each entry sets its shape. Order matters: tools SHOULD preserve it for display. Interaction entries rely on order to show the flow in time. Reference the components a pattern uses through the `links` metadata field (kind 'component', name, and role) rather than a dedicated block kind.",
+          "description": "All structured docs for this pattern, as an ordered array of typed document block objects. Patterns accept the pattern-specific kinds (interactions) plus the general kinds (guidelines, useCases, accessibility, content, sections). The `kind` property on each entry sets its shape. Order matters, so tools SHOULD keep it for display. Interaction entries rely on order to show the flow over time. List the components a pattern uses in the `links` metadata field (kind 'component', name, and role), not in a dedicated block kind.",
           "items": {
             "$ref": "../document-blocks/document-blocks.schema.json#/$defs/patternDocumentBlock"
           }
         },
         "agentDocumentBlocks": {
           "type": "array",
-          "description": "Structured documentation for agent (AI/LLM) consumption only — a partitioned space accepting the same document block kinds as `documentBlocks`. Use it for guidance that would be noise for human readers: generation constraints, disambiguation between confusable entities, machine-checkable rules with evidence. Tools MUST NOT render these blocks in human-facing documentation. Agents SHOULD read both arrays — human-facing blocks first, then these.",
+          "description": "Structured docs for agents (AI/LLM) only. This is a separate space that accepts the same document block kinds as `documentBlocks`. Use it for guidance that would be noise for human readers: generation limits, ways to tell confusable entities apart, and machine-checkable rules with evidence. Tools MUST NOT render these blocks in human-facing docs. Agents SHOULD read both arrays — human-facing blocks first, then these.",
           "items": {
             "$ref": "../document-blocks/document-blocks.schema.json#/$defs/patternDocumentBlock"
           }

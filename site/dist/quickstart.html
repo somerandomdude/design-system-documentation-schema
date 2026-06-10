@@ -3,13 +3,13 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>DSDS Quick Start Guide — DSDS 0.7.1</title>
+  <title>DSDS Quick Start Guide — DSDS 0.7.2</title>
   <meta name="description" content="Get started with DSDS — document structure, entity types, the document block system, and minimal examples you can copy.">
   <link rel="canonical" href="https://designsystemdocspec.org/quickstart">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Design System Documentation Spec">
-  <meta property="og:title" content="DSDS Quick Start Guide — DSDS 0.7.1">
+  <meta property="og:title" content="DSDS Quick Start Guide — DSDS 0.7.2">
   <meta property="og:description" content="Get started with DSDS — document structure, entity types, the document block system, and minimal examples you can copy.">
   <meta property="og:url" content="https://designsystemdocspec.org/quickstart">
   <meta name="twitter:card" content="summary">
@@ -20,7 +20,7 @@
 <body>
   <a class="skip-link" href="#main-content">Skip to content</a>
   <ds-nav-toggle target="ds-spec-nav"></ds-nav-toggle>
-  <ds-spec-nav title="Design System Documentation Spec 0.7.1" title-href="index.html" active="quickstart">
+  <ds-spec-nav title="Design System Documentation Spec 0.7.2" title-href="index.html" active="quickstart">
     <a href="index.html" slug="index">Overview</a>
     <a href="quickstart.html" slug="quickstart">Quick start</a>
     <a href="schema-architecture.html" slug="schema-architecture">Schema architecture</a>
@@ -85,7 +85,7 @@
     <main class="content__main" id="main-content" role="main">
       <div class="content__inner">
         <ds-heading level="2" anchor="what-is-dsds">What is DSDS?</ds-heading>
-<p>DSDS (Design System Documentation Spec) is a JSON-based format for documenting design systems. It gives every piece of documentation — components, tokens, themes, foundations, patterns — in a machine-readable structure.</p>
+<p>DSDS (Design System Documentation Spec) is a JSON format for documenting design systems. It puts every piece of docs — components, tokens, themes, foundations, patterns — in a machine-readable shape.</p>
 <ds-callout><p><strong>Key idea:</strong> DSDS documents the <em>how and why</em> of your design system — not the token values themselves. It complements the <a href="https://www.w3.org/community/reports/design-tokens/CG-FINAL-format-20251028/">W3C Design Tokens Format</a> which handles the <em>what</em>.</p></ds-callout>
 <ds-heading level="3" anchor="what-you-get">What you get</ds-heading>
 <ul>
@@ -101,8 +101,8 @@
 <ds-heading level="3" anchor="single-entity-files">Single-entity files</ds-heading>
 <p>Use <ds-code inline>entity</ds-code> when each component, token, or pattern lives in its own file. The <ds-code inline>kind</ds-code> field on the entity identifies its type.</p>
 <ds-code language="json">{
-  "$schema": "https://designsystemdocspec.org/v0.7.1/dsds.bundled.schema.json",
-  "dsdsVersion": "0.7.1",
+  "$schema": "https://designsystemdocspec.org/v0.7.2/dsds.bundled.schema.json",
+  "dsdsVersion": "0.7.2",
   "entity": {
     "kind": "component",
     "identifier": "button",
@@ -114,9 +114,9 @@
 }
 </ds-code>
 <ds-heading level="3" anchor="multi-entity-files">Multi-entity files</ds-heading>
-<p>Use <ds-code inline>entityGroups</ds-code> when you want to organize multiple entities in one file, or as a manifest that references individual entity files.</p>
+<p>Use <ds-code inline>entityGroups</ds-code> to put several entities in one file, or as a manifest that points to separate entity files.</p>
 <ds-code language="json">{
-  "dsdsVersion": "0.7.1",
+  "dsdsVersion": "0.7.2",
   "entityGroups": [
     {
       "name": "My Design System",
@@ -131,14 +131,14 @@
 }
 </ds-code>
 <ul>
-<li><ds-code inline>dsdsVersion</ds-code> — the spec version this document targets; <ds-code inline>"0.7.1"</ds-code> for this release</li>
+<li><ds-code inline>dsdsVersion</ds-code> — the spec version this document targets; <ds-code inline>"0.7.2"</ds-code> for this release</li>
 <li><ds-code inline>entityGroups</ds-code> — array of named groups</li>
-<li><ds-code inline>entities</ds-code> — one array per group, mixing entity kinds freely in display order; each entity's <ds-code inline>kind</ds-code> identifies its type</li>
+<li><ds-code inline>entities</ds-code> — one array per group; mix kinds freely in display order. Each entity's <ds-code inline>kind</ds-code> says what type it is</li>
 </ul>
 <ds-heading level="3" anchor="linking-files-with-ref">Linking files with <ds-code inline>$ref</ds-code></ds-heading>
-<p>Entity arrays accept <ds-code inline>$ref</ds-code> objects that point to other DSDS files. This lets you keep entities in individual files while assembling them in a manifest:</p>
+<p>Entity arrays accept <ds-code inline>$ref</ds-code> objects that point to other DSDS files. This lets you keep entities in their own files and pull them together in a manifest:</p>
 <ds-code language="json">{
-  "dsdsVersion": "0.7.1",
+  "dsdsVersion": "0.7.2",
   "entityGroups": [
     {
       "name": "Acme Design System",
@@ -150,15 +150,15 @@
   ]
 }
 </ds-code>
-<p>The <ds-code inline>#/entity</ds-code> fragment is a JSON Pointer targeting the <ds-code inline>entity</ds-code> value in the referenced file. Tooling resolves <ds-code inline>$ref</ds-code> objects before validation using a library like <a href="https://github.com/APIDevTools/json-schema-ref-parser"><ds-code inline>json-schema-ref-parser</ds-code></a>.</p>
-<ds-callout variant="tip"><p><strong>Tip:</strong> Use single-entity files + a <ds-code inline>$ref</ds-code> manifest for large systems where each component is owned by a different team. Use a single multi-entity file for smaller systems or when you want everything in one place.</p></ds-callout>
+<p>The <ds-code inline>#/entity</ds-code> fragment is a JSON Pointer. It targets the <ds-code inline>entity</ds-code> value in the linked file. Tools resolve <ds-code inline>$ref</ds-code> objects before they validate, with a library like <a href="https://github.com/APIDevTools/json-schema-ref-parser"><ds-code inline>json-schema-ref-parser</ds-code></a>.</p>
+<ds-callout variant="tip"><p><strong>Tip:</strong> Use single-entity files plus a <ds-code inline>$ref</ds-code> manifest for large systems where a different team owns each component. Use one multi-entity file for smaller systems, or when you want everything in one place.</p></ds-callout>
 <hr />
 <ds-heading level="2" anchor="entity-types">Entity types</ds-heading>
 <p>Every entity has a <ds-code inline>kind</ds-code> field that tells tools what type of thing it is. There are seven kinds.</p>
-<ds-table><table><thead><tr><th>Kind</th><th>Code</th><th>Description</th></tr></thead><tbody><tr><td>component</td><td><ds-code inline>"component"</ds-code></td><td>A reusable UI element — buttons, inputs, modals. Supports anatomy, API, variants, states, and design specs.</td></tr><tr><td>token</td><td><ds-code inline>"token"</ds-code></td><td>A single design token — color, spacing, typography. Carries type, category, and usage rules. Link to W3C DTCG definitions via <ds-code inline>source</ds-code>.</td></tr><tr><td>token-group</td><td><ds-code inline>"token-group"</ds-code></td><td>A nested group of related tokens. Recursive — groups can contain groups.</td></tr><tr><td>theme</td><td><ds-code inline>"theme"</ds-code></td><td>A named set of token overrides — dark mode, high-contrast, compact density, brand variants. Lists which token names change; the DTCG file holds the actual values.</td></tr><tr><td>foundation</td><td><ds-code inline>"foundation"</ds-code></td><td>A design base — color, typography, spacing, elevation. Carries principles, scales, and motion definitions.</td></tr><tr><td>pattern</td><td><ds-code inline>"pattern"</ds-code></td><td>A broad action pattern — nav, error messaging, empty states. Describes how components compose to solve a user need.</td></tr><tr><td>guide</td><td><ds-code inline>"guide"</ds-code></td><td>A long-form, reading-oriented document — getting-started, contribution, tutorial, migration. Carries narrative sections and step-by-step procedures.</td></tr></tbody></table></ds-table>
+<ds-table><table><thead><tr><th>Kind</th><th>Code</th><th>Description</th></tr></thead><tbody><tr><td>component</td><td><ds-code inline>"component"</ds-code></td><td>A reusable UI element — buttons, inputs, modals. Supports anatomy, API, variants, states, and design specs.</td></tr><tr><td>token</td><td><ds-code inline>"token"</ds-code></td><td>A single design token — color, spacing, typography. Carries type, category, and usage rules. Link to W3C DTCG definitions via <ds-code inline>source</ds-code>.</td></tr><tr><td>token-group</td><td><ds-code inline>"token-group"</ds-code></td><td>A nested group of related tokens. Recursive — groups can contain groups.</td></tr><tr><td>theme</td><td><ds-code inline>"theme"</ds-code></td><td>A named set of token overrides — dark mode, high-contrast, compact density, brand variants. It lists which token names change; the DTCG file holds the values.</td></tr><tr><td>foundation</td><td><ds-code inline>"foundation"</ds-code></td><td>A design base — color, typography, spacing, elevation. Carries principles, scales, and motion definitions.</td></tr><tr><td>pattern</td><td><ds-code inline>"pattern"</ds-code></td><td>A broad action pattern — nav, error messaging, empty states. It shows how components combine to solve a user need.</td></tr><tr><td>guide</td><td><ds-code inline>"guide"</ds-code></td><td>A long-form, reading-oriented document — getting-started, contribution, tutorial, migration. It carries prose sections and step-by-step procedures.</td></tr></tbody></table></ds-table>
 <ds-heading level="3" anchor="common-properties">Common properties</ds-heading>
 <p>Every entity shares the same envelope: <ds-code inline>kind</ds-code>, <ds-code inline>identifier</ds-code>, <ds-code inline>name</ds-code>, optional <ds-code inline>description</ds-code> and <ds-code inline>metadata</ds-code>, plus <ds-code inline>documentBlocks</ds-code> and <ds-code inline>agentDocumentBlocks</ds-code>. See <a href="schema-architecture.html#common-entity-properties">Common entity properties</a> for the full table, including the token exceptions.</p>
-<p>The optional <ds-code inline>agentDocumentBlocks</ds-code> array is a partitioned space for agent-only documentation — generation constraints with <ds-code inline>evidence</ds-code>, disambiguation against similar entities — using the same block kinds as <ds-code inline>documentBlocks</ds-code>. Tools never render it for humans; agents read both arrays.</p>
+<p>The optional <ds-code inline>agentDocumentBlocks</ds-code> array is a separate space for agent-only docs. It holds generation limits with <ds-code inline>evidence</ds-code> and notes that tell apart similar entities. It uses the same block kinds as <ds-code inline>documentBlocks</ds-code>. Tools never show it to humans; agents read both arrays.</p>
 <ds-heading level="3" anchor="status-string-or-object">Status: string or object</ds-heading>
 <p>For the simple case, status is a string in <ds-code inline>metadata</ds-code>:</p>
 <ds-code language="json">"metadata": { "status": "stable" }
@@ -181,7 +181,7 @@
 <table>
 <thead><tr><th>Kind</th><th>Applies To</th><th>Description</th></tr></thead>
 <tbody><tr><td><ds-code inline>accessibility</ds-code></td><td>all</td><td>Structured accessibility specs for an artifact.</td></tr>
-<tr><td><ds-code inline>content</ds-code></td><td>all</td><td>Structured content guidelines: recommended action labels and localization considerations.</td></tr>
+<tr><td><ds-code inline>content</ds-code></td><td>all</td><td>Structured content guidelines: recommended action labels and localization notes.</td></tr>
 <tr><td><ds-code inline>guidelines</ds-code></td><td>all</td><td>Actionable usage rules for an artifact.</td></tr>
 <tr><td><ds-code inline>sections</ds-code></td><td>all</td><td>A block of narrative documentation made up of one or more titled sections.</td></tr>
 <tr><td><ds-code inline>useCases</ds-code></td><td>all</td><td>Documents what an artifact is used for — when it is the right choice and when to choose something else.</td></tr>
@@ -190,16 +190,16 @@
 <tr><td><ds-code inline>states</ds-code></td><td>component, pattern</td><td>Documents all interactive states of a component.</td></tr>
 <tr><td><ds-code inline>variants</ds-code></td><td>component, pattern</td><td>Documents all dimensions of visual or behavioral variation on a component.</td></tr>
 <tr><td><ds-code inline>api</ds-code></td><td>component</td><td>Documents the code-level interface of a component on a single platform.</td></tr>
-<tr><td><ds-code inline>design-specifications</ds-code></td><td>component</td><td>Documents the baseline measurable visual specs of a component — the default design properties, spacing relationships, dimension constraints, typographic settings, and responsive behavior.</td></tr>
-<tr><td><ds-code inline>motion</ds-code></td><td>foundation</td><td>Documents the motion system for a foundation — named easing curves, timing functions, recommended durations, and usage guidance.</td></tr>
+<tr><td><ds-code inline>design-specifications</ds-code></td><td>component</td><td>Documents the baseline measurable visual specs of a component: the default design properties, spacing relationships, dimension limits, typographic settings, and responsive behavior.</td></tr>
+<tr><td><ds-code inline>motion</ds-code></td><td>foundation</td><td>Documents the motion system for a foundation: named easing curves, timing functions, recommended durations, and usage guidance.</td></tr>
 <tr><td><ds-code inline>principles</ds-code></td><td>foundation</td><td>Documents guiding principles for a foundation or design domain.</td></tr>
-<tr><td><ds-code inline>scale</ds-code></td><td>foundation</td><td>Documents an ordered scale — a deliberate progression of values that constrains design decisions to a harmonious, consistent set.</td></tr>
+<tr><td><ds-code inline>scale</ds-code></td><td>foundation</td><td>Documents an ordered scale: a deliberate progression of values that limits design decisions to a harmonious, consistent set.</td></tr>
 <tr><td><ds-code inline>steps</ds-code></td><td>guide</td><td>A procedure made up of an ordered or unordered sequence of steps.</td></tr>
 <tr><td><ds-code inline>interactions</ds-code></td><td>pattern</td><td>Documents the interaction flow of a pattern as an ordered sequence of steps.</td></tr></tbody>
 </table>
 </ds-table>
 <ds-heading level="3" anchor="use-cases-when-to-use-it">Use cases: when to use it</ds-heading>
-<p>The <ds-code inline>useCases</ds-code> block lists scenarios. An optional <ds-code inline>purpose</ds-code> statement gives the umbrella answer; each item has a <ds-code inline>stance</ds-code> of <ds-code inline>"recommended"</ds-code> (do use) or <ds-code inline>"discouraged"</ds-code> (don't use, with an alternative):</p>
+<p>The <ds-code inline>useCases</ds-code> block lists scenarios. An optional <ds-code inline>purpose</ds-code> statement gives the broad answer. Each item has a <ds-code inline>stance</ds-code>: <ds-code inline>"recommended"</ds-code> (do use) or <ds-code inline>"discouraged"</ds-code> (don't use, with an alternative):</p>
 <ds-code language="json">{
   "kind": "useCases",
   "purpose": "Buttons trigger immediate actions within a surface.",
@@ -233,7 +233,7 @@
   ]
 }
 </ds-code>
-<p>The <ds-code inline>level</ds-code> field, named for RFC 2119: <ds-badge>MUST</ds-badge>, <ds-badge>SHOULD</ds-badge>, <ds-badge>SHOULD_NOT</ds-badge>, <ds-badge>MUST_NOT</ds-badge>. Agents treat <ds-code inline>MUST</ds-code>/<ds-code inline>MUST_NOT</ds-code> as hard constraints; optional <ds-code inline>evidence</ds-code> records empirical backing, and <ds-code inline>criteria</ds-code> define testable success conditions checks can run against.</p>
+<p>The <ds-code inline>level</ds-code> field is named for RFC 2119: <ds-badge>MUST</ds-badge>, <ds-badge>SHOULD</ds-badge>, <ds-badge>SHOULD_NOT</ds-badge>, <ds-badge>MUST_NOT</ds-badge>. Agents treat <ds-code inline>MUST</ds-code>/<ds-code inline>MUST_NOT</ds-code> as hard limits. Optional <ds-code inline>evidence</ds-code> records the backing, and <ds-code inline>criteria</ds-code> define testable success conditions that checks can run against.</p>
 <hr />
 <ds-heading level="2" anchor="minimal-examples">Minimal examples</ds-heading>
 <p>These are the smallest valid entities — the bare minimum. Copy one, fill in your content, and add document block entries as you go.</p>
@@ -328,7 +328,7 @@
 }
 </ds-code>
 <ds-heading level="3" anchor="token">Token</ds-heading>
-<p>A token needs <ds-code inline>kind</ds-code>, <ds-code inline>identifier</ds-code>, and <ds-code inline>tokenType</ds-code>. Use the optional <ds-code inline>source</ds-code> property to link back to the W3C DTCG file that holds the authoritative value.</p>
+<p>A token needs <ds-code inline>kind</ds-code>, <ds-code inline>identifier</ds-code>, and <ds-code inline>tokenType</ds-code>. Use the optional <ds-code inline>source</ds-code> property to link back to the W3C DTCG file that holds the real value.</p>
 <ds-code language="json">{
   "kind": "token",
   "identifier": "color-text-primary",
@@ -415,7 +415,7 @@
 }
 </ds-code>
 <ds-heading level="3" anchor="theme">Theme</ds-heading>
-<p>A theme provides <ds-code inline>overrides</ds-code> — an array of token names that differ from the default. The DTCG file holds the actual override values.</p>
+<p>A theme provides <ds-code inline>overrides</ds-code> — an array of token names that differ from the default. The DTCG file holds the real override values.</p>
 <ds-code language="json">{
   "kind": "theme",
   "identifier": "dark",
@@ -544,7 +544,7 @@
 }
 </ds-code>
 <ds-heading level="3" anchor="pattern">Pattern</ds-heading>
-<p>A pattern describes how components compose to solve a user need. It supports <ds-code inline>interactions</ds-code> for flow steps.</p>
+<p>A pattern shows how components combine to solve a user need. It supports <ds-code inline>interactions</ds-code> for flow steps.</p>
 <ds-code language="json">{
   "kind": "pattern",
   "identifier": "form-validation",
@@ -627,7 +627,7 @@
 <p>Here's a complete, minimal DSDS file with one of each entity type:</p>
 <ds-code language="json">{
   "$schema": "../schema/dsds.bundled.schema.json",
-  "dsdsVersion": "0.7.1",
+  "dsdsVersion": "0.7.2",
   "systemInfo": {
     "systemName": "Minimal Example"
   },
@@ -678,15 +678,18 @@
               "items": [
                 {
                   "guidance": "Do not use for navigating to a different page or URL.",
-                  "level": "MUST_NOT"
+                  "level": "MUST_NOT",
+                  "rationale": "Buttons signal actions and links signal navigation. Assistive technology announces each differently, and users rely on that distinction to predict what a control will do."
                 },
                 {
                   "guidance": "Limit each surface to one primary-emphasis button.",
-                  "level": "MUST"
+                  "level": "MUST",
+                  "rationale": "A single primary action keeps the visual hierarchy clear. When several buttons compete at primary emphasis, the intended next step becomes ambiguous."
                 },
                 {
                   "guidance": "Always provide an accessible label via visible text or aria-label.",
-                  "level": "MUST"
+                  "level": "MUST",
+                  "rationale": "Icon-only buttons without an accessible name are unusable with screen readers and fail WCAG 4.1.2 (Name, Role, Value)."
                 },
                 {
                   "guidance": "Using a button to navigate to another page.",
@@ -697,6 +700,21 @@
                   "guidance": "Placing multiple primary buttons on the same surface.",
                   "rationale": "Instead: Use one primary and one or more secondary or tertiary buttons.",
                   "level": "MUST_NOT"
+                }
+              ]
+            }
+          ],
+          "documentBlocks": [
+            {
+              "kind": "useCases",
+              "items": [
+                {
+                  "description": "When the user needs to trigger an action such as submitting a form, saving data, or opening a dialog.",
+                  "stance": "recommended"
+                },
+                {
+                  "description": "When the action navigates to a different page or URL — use a link instead, which carries native navigation semantics.",
+                  "stance": "discouraged"
                 }
               ]
             }
@@ -861,11 +879,13 @@
               "items": [
                 {
                   "guidance": "Always apply at the application root, not on individual components.",
-                  "level": "MUST"
+                  "level": "MUST",
+                  "rationale": "Scoping the theme to the root keeps every surface consistent. Per-component theming produces mixed-mode screens and doubles the testing surface."
                 },
                 {
                   "guidance": "Do not mix dark-mode and light-mode semantic tokens on the same surface.",
-                  "level": "MUST_NOT"
+                  "level": "MUST_NOT",
+                  "rationale": "Semantic tokens are tuned for contrast within one mode. Mixing modes breaks those tuned pairings unpredictably."
                 },
                 {
                   "guidance": "Applying dark theme only to part of a page while the rest remains light.",
@@ -913,11 +933,13 @@
               "items": [
                 {
                   "guidance": "Do not hard-code hex values; reference semantic color tokens instead.",
-                  "level": "MUST_NOT"
+                  "level": "MUST_NOT",
+                  "rationale": "Hard-coded values escape theming, dark mode, and audits — the palette can no longer change in one place."
                 },
                 {
                   "guidance": "Maintain WCAG AA contrast for text and interactive elements on every surface.",
-                  "level": "MUST"
+                  "level": "MUST",
+                  "rationale": "AA is the system's compliance floor: 4.5:1 for normal text, 3:1 for large text and interactive components."
                 }
               ]
             }
@@ -966,16 +988,29 @@
               "items": [
                 {
                   "guidance": "Always include both an inline field error and a summary when multiple fields fail.",
-                  "level": "MUST"
+                  "level": "MUST",
+                  "rationale": "The summary gives screen reader users one announcement point and an error count; inline errors give sighted users fix-it-here proximity. Each alone strands one audience."
                 },
                 {
                   "guidance": "Do not use toast notifications as the sole error communication for form validation.",
-                  "level": "MUST_NOT"
+                  "level": "MUST_NOT",
+                  "rationale": "Toasts dismiss themselves and are not tied to the failing field. Once gone, the user has no path back to what went wrong."
                 },
                 {
                   "guidance": "Showing errors only on submit without inline field feedback.",
                   "rationale": "Instead: Show inline errors on field blur and in a summary on submit.",
                   "level": "MUST_NOT"
+                }
+              ]
+            }
+          ],
+          "documentBlocks": [
+            {
+              "kind": "useCases",
+              "items": [
+                {
+                  "description": "When a form submission can fail per field and the user must fix specific inputs before continuing.",
+                  "stance": "recommended"
                 }
               ]
             }
@@ -992,8 +1027,8 @@
 <ds-heading level="3" anchor="using-the-bundled-schema">Using the bundled schema</ds-heading>
 <p>Add <ds-code inline>$schema</ds-code> to get editor autocompletion and inline validation:</p>
 <ds-code language="json">{
-  "$schema": "https://designsystemdocspec.org/v0.7.1/dsds.bundled.schema.json",
-  "dsdsVersion": "0.7.1",
+  "$schema": "https://designsystemdocspec.org/v0.7.2/dsds.bundled.schema.json",
+  "dsdsVersion": "0.7.2",
   "entity": {
     "kind": "component",
     "identifier": "my-component",
@@ -1028,7 +1063,7 @@ npx ajv validate -s spec/schema/dsds.bundled.schema.json -d my-system.dsds.json
         <ds-back-to-top></ds-back-to-top>
 
         <ds-footer>
-          <p>Design System Documentation Spec (DSDS) 0.7.1 — Draft Specification</p>
+          <p>Design System Documentation Spec (DSDS) 0.7.2 — Draft Specification</p>
           <p><a href="https://github.com/somerandomdude/design-system-documentation-schema">GitHub</a></p>
         </ds-footer>
       </div>

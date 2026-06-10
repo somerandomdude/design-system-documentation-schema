@@ -1,12 +1,12 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://designsystemdocspec.org/v0.7.1/common/criterion.schema.json",
+  "$id": "https://designsystemdocspec.org/v0.7.2/common/criterion.schema.json",
   "title": "DSDS Criterion Definition",
-  "description": "Shared definitions for testable success criteria and external standard references. Criteria are the test-definition layer of DSDS documentation: each pairs a stable identifier with an objectively verifiable statement, so tooling and agents can check implementations against the docs and report pass/fail per criterion. Used by guideline entries and accessibility blocks. Observed results belong in a guideline entry's `evidence`, not here.",
+  "description": "Shared definitions for testable success criteria and links to external standards. Criteria are the test-definition layer of DSDS docs. Each one pairs a stable identifier with a statement you can verify objectively. Tools and agents check implementations against the docs and report pass or fail for each criterion. Used by guideline entries and accessibility blocks. Observed results go in a guideline entry's `evidence`, not here.",
   "$defs": {
     "reference": {
       "type": "object",
-      "description": "A citation of an external standard or requirement — a published rule this documentation addresses (WCAG, platform guidelines, vendor compliance frameworks).",
+      "description": "A citation of an external standard or requirement. This is a published rule the docs address (WCAG, platform guidelines, vendor compliance frameworks).",
       "required": ["url"],
       "properties": {
         "url": {
@@ -16,20 +16,20 @@
         },
         "label": {
           "type": "string",
-          "description": "A display label for the citation (e.g., '1.4.3 Contrast (Minimum)', 'WCAG 2.5.8 Target Size'). When omitted, tools MAY derive a label from the URL."
+          "description": "A display label for the citation (e.g., '1.4.3 Contrast (Minimum)', 'WCAG 2.5.8 Target Size'). When omitted, tools MAY build a label from the URL."
         }
       },
       "additionalProperties": false
     },
     "criterion": {
       "type": "object",
-      "description": "A testable success criterion: an objectively verifiable condition an implementation must meet. Criteria let documentation act as a test harness — a check runs against the `statement` and reports pass/fail under the criterion's `identifier`. Pair with `techniques` (how to pass), `failures` (what failing looks like), `references` (the external standards it aligns with), and `examples` (typically a passing/failing pair).",
+      "description": "A testable success criterion: a condition an implementation must meet that you can verify objectively. Criteria let docs act as a test harness. A check runs against the `statement` and reports pass or fail under the criterion's `identifier`. Pair it with `techniques` (how to pass), `failures` (what failing looks like), `references` (the external standards it aligns with), and `examples` (usually a passing and a failing case).",
       "required": ["identifier", "statement"],
       "properties": {
         "identifier": {
           "type": "string",
           "pattern": "^[a-z][a-z0-9-]*$",
-          "description": "Stable identifier for this criterion, unique within the parent entity (e.g., 'touch-target-minimum', 'single-primary-action'). MUST be lowercase kebab-case. Test runs report pass/fail against this identifier, so it SHOULD NOT change once checks depend on it — renaming breaks result history across runs."
+          "description": "Stable identifier for this criterion, unique within the parent entity (e.g., 'touch-target-minimum', 'single-primary-action'). MUST be lowercase kebab-case. Test runs report pass or fail against this identifier. It SHOULD NOT change once checks depend on it. Renaming breaks result history across runs."
         },
         "title": {
           "type": "string",
@@ -37,11 +37,11 @@
         },
         "statement": {
           "$ref": "rich-text.schema.json#/$defs/richText",
-          "description": "The testable statement of what success looks like. MUST be objectively verifiable — by inspection, static analysis, or runtime measurement. Avoid vague language like 'feels right' or 'looks balanced' (e.g., 'Interactive elements present a hit area of at least 44×44 px')."
+          "description": "The testable statement of what success looks like. You MUST be able to verify it objectively — by inspection, static analysis, or runtime measurement. Avoid vague language like 'feels right' or 'looks balanced' (e.g., 'Interactive elements present a hit area of at least 44×44 px')."
         },
         "techniques": {
           "type": "array",
-          "description": "Sufficient ways to satisfy this criterion — the passing patterns (e.g., 'Apply `min-height: 44px` to every interactive element', 'Use the `<Button>` component without overriding its default height').",
+          "description": "Ways to satisfy this criterion — the passing patterns (e.g., 'Apply `min-height: 44px` to every interactive element', 'Use the `<Button>` component without overriding its default height').",
           "items": {
             "$ref": "rich-text.schema.json#/$defs/richText"
           },
@@ -65,7 +65,7 @@
         },
         "examples": {
           "type": "array",
-          "description": "Examples that illustrate the criterion — typically a before/after pair: one passing and one failing implementation.",
+          "description": "Examples that show the criterion — usually a before/after pair: one passing and one failing implementation.",
           "items": {
             "$ref": "example.schema.json#/$defs/example"
           },
@@ -74,7 +74,7 @@
         "tags": {
           "type": "array",
           "items": { "type": "string" },
-          "description": "Freeform keywords that relate criteria across guidelines and entities (e.g., 'a11y', 'contrast', 'touch-target')."
+          "description": "Freeform keywords that link criteria across guidelines and entities (e.g., 'a11y', 'contrast', 'touch-target')."
         }
       },
       "additionalProperties": false

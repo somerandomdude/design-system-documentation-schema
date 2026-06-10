@@ -55,6 +55,163 @@ function createValidator() {
 }
 
 // ---------------------------------------------------------------------------
+// Friendly errors — discriminator-aware reporting
+//
+// A `oneOf` union over 16+ block kinds makes raw Ajv output useless: one
+// typo'd `kind` yields hundreds of errors, one per branch the object failed
+// to match. Instead of dumping those, walk each error up to the nearest
+// object carrying a `kind` discriminator and report against that:
+//   - unknown kind        → "unknown kind 'x' — did you mean 'y'?"
+//   - known kind          → validate against that kind's schema only
+//   - valid in isolation  → the problem is placement (kind not allowed here)
+// ---------------------------------------------------------------------------
+
+/** Map of kind const → $defs name, built from the bundled schema. */
+function buildKindIndex(schema) {
+  const index = {};
+  for (const [name, def] of Object.entries(schema.$defs || {})) {
+    const kindConst =
+      def && def.properties && def.properties.kind && def.properties.kind.const;
+    if (typeof kindConst === "string") index[kindConst] = name;
+  }
+  return index;
+}
+
+function getAtPointer(doc, pointer) {
+  if (!pointer) return doc;
+  let node = doc;
+  for (const raw of pointer.split("/").slice(1)) {
+    const key = raw.replace(/~1/g, "/").replace(/~0/g, "~");
+    if (node == null) return undefined;
+    node = Array.isArray(node) ? node[Number(key)] : node[key];
+  }
+  return node;
+}
+
+function editDistance(a, b) {
+  const m = Array.from({ length: a.length + 1 }, (_, i) => [i]);
+  for (let j = 1; j <= b.length; j++) m[0][j] = j;
+  for (let i = 1; i <= a.length; i++) {
+    for (let j = 1; j <= b.length; j++) {
+      m[i][j] = Math.min(
+        m[i - 1][j] + 1,
+        m[i][j - 1] + 1,
+        m[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1),
+      );
+    }
+  }
+  return m[a.length][b.length];
+}
+
+function closestKind(kind, knownKinds) {
+  let best = null;
+  let bestDist = Infinity;
+  for (const k of knownKinds) {
+    const d = editDistance(kind, k);
+    if (d < bestDist) {
+      bestDist = d;
+      best = k;
+    }
+  }
+  // Only suggest when plausibly a typo (small edit distance).
+  return bestDist <= Math.max(2, Math.floor(kind.length / 3)) ? best : null;
+}
+
+/**
+ * Translate raw Ajv errors into a short, actionable list. Returns an array
+ * of "path: message" strings; empty if no kind-bearing context was found
+ * (caller should fall back to raw errors).
+ */
+function friendlyErrors(doc, rawErrors, schema, ajv) {
+  const kindIndex = buildKindIndex(schema);
+  const knownKinds = Object.keys(kindIndex);
+  const defValidators = {};
+  const compileDef = (name) => {
+    if (!(name in defValidators)) {
+      try {
+        defValidators[name] = ajv.compile({
+          $schema: "https://json-schema.org/draft/2020-12/schema",
+          $defs: schema.$defs,
+          ...schema.$defs[name],
+        });
+      } catch {
+        defValidators[name] = null;
+      }
+    }
+    return defValidators[name];
+  };
+
+  // Group every raw error under the nearest ancestor that carries `kind`.
+  const contexts = new Map(); // pointer -> node
+  for (const err of rawErrors) {
+    let p = err.instancePath || "";
+    let found = null;
+    while (true) {
+      const node = getAtPointer(doc, p);
+      if (
+        node &&
+        typeof node === "object" &&
+        !Array.isArray(node) &&
+        typeof node.kind === "string"
+      ) {
+        found = p;
+        break;
+      }
+      if (!p) break;
+      p = p.slice(0, p.lastIndexOf("/"));
+    }
+    if (found !== null) contexts.set(found, getAtPointer(doc, found));
+  }
+  if (contexts.size === 0) return [];
+
+  // Deepest contexts first: a parent context (e.g. the entity) re-validates
+  // its whole subtree, so any of its errors that fall inside a child context
+  // (e.g. a block) are noise already explained at the child. Track reported
+  // pointers and filter parent errors that land inside them.
+  const ordered = Array.from(contexts.keys()).sort(
+    (a, b) => b.split("/").length - a.split("/").length,
+  );
+  const reported = [];
+  const inReported = (absPath) =>
+    reported.some((r) => absPath === r || absPath.startsWith(`${r}/`));
+
+  const messages = new Set();
+  for (const pointer of ordered) {
+    const node = contexts.get(pointer);
+    const where = pointer || "(root)";
+    if (!knownKinds.includes(node.kind)) {
+      const suggestion = closestKind(node.kind, knownKinds);
+      messages.add(
+        `${where}: unknown kind '${node.kind}'` +
+          (suggestion ? ` — did you mean '${suggestion}'?` : ""),
+      );
+      reported.push(pointer);
+      continue;
+    }
+    const validateDef = compileDef(kindIndex[node.kind]);
+    if (!validateDef) continue;
+    if (validateDef(node)) {
+      if (!inReported(pointer)) {
+        messages.add(
+          `${where}: '${node.kind}' is valid on its own but not allowed here — check which kinds this position accepts`,
+        );
+        reported.push(pointer);
+      }
+    } else {
+      let emitted = 0;
+      for (const e of validateDef.errors) {
+        const abs = `${pointer}${e.instancePath}`;
+        if (inReported(abs)) continue;
+        messages.add(`${abs || "(root)"}: ${e.message}`);
+        if (++emitted >= 5) break;
+      }
+      if (emitted > 0) reported.push(pointer);
+    }
+  }
+  return Array.from(messages);
+}
+
+// ---------------------------------------------------------------------------
 // Part 1: Validate example .dsds.json files against the bundled schema
 // ---------------------------------------------------------------------------
 
@@ -113,11 +270,24 @@ function validateExamples(ajv) {
       passed++;
     } else {
       console.error(`  ✗ ${file}`);
-      for (const err of validate.errors) {
-        const loc = err.instancePath || "(root)";
-        const msg = err.message || JSON.stringify(err.params);
-        console.error(`      ${loc}: ${msg}`);
-        errors.push({ file, path: loc, message: msg });
+      const friendly = friendlyErrors(data, validate.errors, schema, ajv);
+      if (friendly.length > 0) {
+        for (const msg of friendly) {
+          console.error(`      ${msg}`);
+          errors.push({ file, message: msg });
+        }
+      } else {
+        for (const err of validate.errors.slice(0, 8)) {
+          const loc = err.instancePath || "(root)";
+          const msg = err.message || JSON.stringify(err.params);
+          console.error(`      ${loc}: ${msg}`);
+          errors.push({ file, path: loc, message: msg });
+        }
+        if (validate.errors.length > 8) {
+          console.error(
+            `      … ${validate.errors.length - 8} more (raw validator output)`,
+          );
+        }
       }
       failed++;
     }

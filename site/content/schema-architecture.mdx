@@ -50,7 +50,7 @@ A complete, valid document using only the core:
 }
 ```
 
-Everything else on this page — `anatomy`, `api`, `variants`, `states`, `design-specifications`, `motion`, `scale`, and the metadata fields — is **optional**. Reach for a block when you have that specific thing to document, and skip the rest. The [Quick Start](quickstart.html) is the gentlest path in; the sections below are the complete reference.
+Everything else on this page — `anatomy`, `api`, `variants`, `states`, `design-specifications`, `motion`, `scale`, and the metadata fields — is **optional**. Reach for a block when you have that specific thing to document. Skip the rest. The [Quick Start](quickstart.html) is the gentlest way in. The sections below are the full reference.
 
 ---
 
@@ -60,9 +60,9 @@ The DSDS schema uses three directories plus a root schema:
 
 | Directory | Contents |
 |---|---|
-| `common/` | Shared primitives used across all schemas — richText, statusValue, platformStatus, link, example, extensions, metadata, useCases |
-| `entities/` | Entity type schemas — component, token (including tokenGroup), theme, foundation, pattern, guide |
-| `document-blocks/` | Document block type schemas — guidelines, anatomy, api, imports, variants, states, design-specifications, accessibility, scale, principles, motion, content, interactions, sections, steps, plus the scoped union (document-blocks.schema.json) |
+| `common/` | Shared pieces used by every schema — richText, statusValue, platformStatus, link, example, extensions, metadata, useCases |
+| `entities/` | Entity schemas — component, token (with tokenGroup), theme, foundation, pattern, guide |
+| `document-blocks/` | Block schemas — guidelines, anatomy, api, imports, variants, states, design-specifications, accessibility, scale, principles, motion, content, interactions, sections, steps, plus the scoped union (document-blocks.schema.json) |
 
 <ds-schema-tree />
 
@@ -72,7 +72,7 @@ The DSDS schema uses three directories plus a root schema:
 
 ## Document structure
 
-A DSDS file is a JSON object with a required `dsdsVersion` and exactly one of two primary shapes: an `entityGroups` array for multi-entity documents, or an `entity` object for single-entity files. Every valid DSDS document must have one or the other.
+A DSDS file is a JSON object. It needs a `dsdsVersion`. It also needs one of two shapes: an `entityGroups` array for many entities, or an `entity` object for a single one. Every valid file uses one or the other.
 
 ### Root properties
 
@@ -80,9 +80,9 @@ A DSDS file is a JSON object with a required `dsdsVersion` and exactly one of tw
 
 ### Entity groups
 
-Each entry in `entityGroups` is a named collection of entities — an entity group. All entities live in a single `entities` array, in display order, mixing entity kinds freely — each entity's required `kind` identifies its type.
+Each entry in `entityGroups` is a named group of entities. All of them live in one `entities` array, in display order. You can mix kinds freely. Each entity's required `kind` says what type it is.
 
-The `entities` array accepts either inline entity objects or `$ref` objects pointing to external DSDS files (see [Multi-file documents](#multi-file-documents)). The `entityGroups` array itself also accepts `$ref` objects, allowing whole groups to be defined in separate files.
+The `entities` array takes inline entity objects or `$ref` objects. A `$ref` points to an outside DSDS file (see [Multi-file documents](#multi-file-documents)). The `entityGroups` array also takes `$ref` objects, so a whole group can live in its own file.
 
 <ds-prop-table schema="root" def="entityGroup" />
 
@@ -111,9 +111,9 @@ Valid `kind` values for `entity`: `"component"`, `"token"`, `"token-group"`, `"t
 
 ### Multi-file documents
 
-Entity arrays support `$ref` JSON Reference objects alongside inline entities. This allows large design systems to split documentation across individual files while maintaining a single manifest that assembles them.
+Entity arrays take `$ref` objects next to inline entities. This lets a large system split its docs across files. One manifest then ties those files together.
 
-Each `$ref` object has one property: `$ref`. Its value is a URI or relative path to a DSDS file, optionally followed by a JSON Pointer fragment that targets a specific value within that file.
+Each `$ref` object has one property: `$ref`. Its value is a path to a DSDS file. You can add a JSON Pointer fragment to target one value inside that file.
 
 **Individual entity file** (`button.dsds.json`):
 ```json
@@ -145,27 +145,27 @@ Each `$ref` object has one property: `$ref`. Its value is a URI or relative path
 }
 ```
 
-The `#/entity` fragment is a JSON Pointer — it pulls the `entity` value out of the referenced file. Tooling resolves all `$ref` objects into a merged document before validation, using a library such as [`json-schema-ref-parser`](https://github.com/APIDevTools/json-schema-ref-parser). The schema validates the structure of `$ref` objects; resolving and deep-validating referenced content is the responsibility of consuming tooling, which must follow the rules below.
+The `#/entity` fragment is a JSON Pointer. It pulls the `entity` value out of the linked file. Tools merge all `$ref` objects into one document before they validate it. A library such as [`json-schema-ref-parser`](https://github.com/APIDevTools/json-schema-ref-parser) can do this. The schema checks the shape of each `$ref` object. Resolving and checking the linked content is the tool's job, and it must follow the rules below.
 
 ### Splitting a document across files
 
-The simplest DSDS document is one self-contained file — nothing to resolve. Splitting a system across files is **optional**; reach for it only when a system is big enough to be easier to manage in pieces.
+The simplest DSDS document is one file on its own — nothing to resolve. Splitting a system across files is **optional**. Reach for it only when the system is large enough that pieces are easier to manage.
 
-When you do split, link the pieces with `$ref` — the same pattern OpenAPI and JSON Schema use. `{ "$ref": "./components/button.dsds.json#/entity" }` means "use the `entity` from that file here." A tool joins all the `$ref`s into one document, then validates the result. It can also save that joined document back out as a single file — so you can **author in pieces but ship one self-contained file with no `$ref`s**, and whoever consumes it needs no resolver at all.
+When you split, link the pieces with `$ref` — the same pattern OpenAPI and JSON Schema use. `{ "$ref": "./components/button.dsds.json#/entity" }` means "use the `entity` from that file here." A tool joins all the `$ref`s into one document, then validates it. It can also save that joined document as a single file. So you can **author in pieces but ship one self-contained file with no `$ref`s**. Whoever reads it then needs no resolver at all.
 
-The rules below apply only to tools that resolve `$ref`s — a bundled single file needs none of them. Following a `$ref` can open files or make network requests, so a tool that resolves them needs to follow a few rules:
+The rules below apply only to tools that resolve `$ref`s. A bundled single file needs none of them. Following a `$ref` can open files or make network requests, so a tool that resolves them must follow a few rules:
 
 - **Relative paths only.** A `$ref` points to a file alongside your document. It can't be a web address or an absolute path. To point at a _different_ design system, use [`extends`](#extends).
 - **Join first, then validate.** Combine the files into one document, then check that against the schema. It only counts as valid afterward.
 - **No loops.** If two files reference each other in a circle, the tool treats it as an error.
-- **A broken link stops the build.** If the target file — or the spot inside it — is missing, or holds the wrong kind of thing, the tool reports an error rather than skipping it or leaving a blank.
-- **No fetching from the web by default.** This covers every link a tool might follow: `$ref`, `extends`, a token's `source`, and `links`. Turn it on only on purpose, limit it to sites you trust, and block local and internal addresses (like `169.254.169.254`) so a malicious file can't make your server reach systems it shouldn't. (This kind of attack is called SSRF.)
+- **A broken link stops the build.** The target file, or the spot inside it, may be missing or hold the wrong thing. When that happens, the tool reports an error. It does not skip the link or leave a blank.
+- **No fetching from the web by default.** This covers every link a tool might follow: `$ref`, `extends`, a token's `source`, and `links`. Turn it on only on purpose. Limit it to sites you trust. Block local and internal addresses (like `169.254.169.254`). That way a hostile file can't make your server reach systems it shouldn't. (This attack is called SSRF.)
 
-Following these keeps different tools reading the same split-up document the same way, and stops a hostile file from using a tool to reach things it shouldn't.
+These rules keep every tool reading the same split-up document the same way. They also stop a hostile file from using a tool to reach things it shouldn't.
 
 ### Entity kind discriminator
 
-Every entity carries a `kind` property — a required string const naming the entity type and selecting its schema. There are no per-type arrays: an entity group holds all its entities in one `entities` array, in display order, mixing kinds freely.
+Every entity carries a `kind` property. It is a required string that names the entity type and picks its schema. There are no per-type arrays. An entity group holds all its entities in one `entities` array, in display order, and you can mix kinds freely.
 
 <ds-entity-table />
 
@@ -185,15 +185,15 @@ Every entity carries a `kind` property — a required string const naming the en
 
 ### System info
 
-The root `systemInfo` object holds the design system's **identity and provenance** — its name, version, organization, URL, and license. This is the system's equivalent of an entity's `identifier` and `name`. It is distinct from the descriptive `metadata` object carried by entities (see [Entity metadata](#entity-metadata)); the two are deliberately separate concepts despite both being "data about" their subject.
+The root `systemInfo` object holds the design system's **identity** — its name, version, organization, URL, and license. It is the system's version of an entity's `identifier` and `name`. It is not the same as the `metadata` object on entities (see [Entity metadata](#entity-metadata)). The two are kept apart on purpose, even though both hold "data about" their subject.
 
 <ds-prop-table schema="common/system-info" def="systemInfo" />
 
 ### Root document blocks
 
-System-level documentation lives in an optional `documentBlocks` array on the root document — the same mechanism entities use, scoped to the design system as a whole rather than a single artifact. **Scope is signalled by position:** a `useCases` or `guidelines` block at the root describes the _system_; the same block inside an entity describes that _entity_. Both levels reuse one block definition.
+System-wide docs live in an optional `documentBlocks` array on the root document. It works just like the one on entities, but it covers the whole system rather than a single artifact. **Position sets the scope.** A `useCases` or `guidelines` block at the root describes the _system_. The same block inside an entity describes that _entity_. Both levels reuse one block definition.
 
-The root accepts the [general document block types](#general-document-block-types): `useCases` (when to adopt the system), `guidelines` (cross-cutting rules like "always use semantic tokens"), `sections` (free-form narrative overviews), `accessibility`, and `content`.
+The root accepts the [general document block types](#general-document-block-types). These are `useCases` (when to adopt the system), `guidelines` (system-wide rules like "always use semantic tokens"), `sections` (free-form overviews), `accessibility`, and `content`.
 
 ```json
 {
@@ -243,7 +243,7 @@ The root accepts the [general document block types](#general-document-block-type
 
 ## Entity types
 
-Every entity carries the same small identity surface — a `kind` discriminator, an `identifier`, (for most kinds) a `name`, and an optional `description` — plus a `metadata` object for descriptive fields and a `documentBlocks` array for all structured docs. Everything beyond identity and description (status, tags, and so on) lives as a field in the `metadata` object rather than as a top-level property (see [Entity metadata](#entity-metadata)). The `documentBlocks` array accepts only the document block types suited to that entity type.
+Every entity shares the same small identity surface: a `kind`, an `identifier`, (for most kinds) a `name`, and an optional `description`. It also has a `metadata` object for descriptive fields and a `documentBlocks` array for structured docs. Everything past identity and description — status, tags, and so on — lives as a field in `metadata`, not as a top-level property (see [Entity metadata](#entity-metadata)). The `documentBlocks` array accepts only the block types that suit that entity type.
 
 ### Common entity properties
 
@@ -254,19 +254,19 @@ These properties appear on every entity type. Token and token-group differ sligh
 | Property | Type | Required | Notes |
 |---|---|---|---|
 | `kind` | `string` | Yes | Entity kind discriminator (see [Entity kind discriminator](#entity-kind-discriminator)). |
-| `identifier` | `string` | Yes | Machine-readable identifier. Components, foundations, patterns, themes, and guides enforce `^[a-z][a-z0-9-]*$`. Token and token-group identifiers are unconstrained by design (see [Token Identifier Exception](#token-identifier-exception)). |
-| `name` | `string` | Varies | Human-readable name. Required on component, foundation, pattern, theme, and guide. **Not present** on token or token-group — the identifier itself serves as the display label. |
+| `identifier` | `string` | Yes | Machine-readable id. Components, foundations, patterns, themes, and guides enforce `^[a-z][a-z0-9-]*$`. Token and token-group ids are free by design (see [Token Identifier Exception](#token-identifier-exception)). |
+| `name` | `string` | Varies | Human-readable name. Required on component, foundation, pattern, theme, and guide. Tokens and token-groups have none; the identifier serves as the label. |
 | `description` | `richText` | No | What the entity is, what it does, and its role in the system. |
 | `metadata` | `object` | No | Optional metadata fields keyed by name — status, tags, links, and more. See [Entity metadata](#entity-metadata). |
 | `documentBlocks` | `array` | No | Typed document block objects. See [Document block](#document-block). |
-| `agentDocumentBlocks` | `array` | No | Document blocks for agent (AI/LLM) consumption only — same kinds as `documentBlocks`, never rendered for humans. See [Agent document blocks](#agent-document-blocks). |
+| `agentDocumentBlocks` | `array` | No | Blocks for agents (AI/LLM) only. Same kinds as `documentBlocks`, but never shown to humans. See [Agent document blocks](#agent-document-blocks). |
 | `$extensions` | `object` | No | Vendor-specific extensions. See [Extensions](#extensions). |
 
 ### Entity metadata
 
-Descriptive fields beyond `kind`, `identifier`, `name`, and `description` live in the `metadata` object — a plain object keyed by field name. Keeping these out of the entity's top level keeps the entity surface small and lets new metadata fields be added without changing the entity shape. Every field is optional, and each can appear at most once because objects cannot repeat keys.
+Descriptive fields past `kind`, `identifier`, `name`, and `description` live in the `metadata` object, keyed by field name. Keeping them out of the top level keeps the entity small. It also lets new fields arrive without changing the entity shape. Every field is optional. Each appears at most once, since an object cannot repeat a key.
 
-Two fields offer a string shorthand for the common case: `status` accepts a bare status value (`"stable"`) or an object with per-platform readiness, and `lastUpdated` accepts a bare ISO date (`"2026-05-28"`) or an object with a note describing what changed.
+Two fields offer a string shorthand for the common case. `status` takes a bare value (`"stable"`) or an object with per-platform readiness. `lastUpdated` takes a bare ISO date (`"2026-05-28"`) or an object with a note about what changed.
 
 <ds-metadata-kinds-table />
 
@@ -302,13 +302,13 @@ More properties:
 
 DSDS does not duplicate token values or platform identifiers. The W3C Design Tokens Format file is the source of truth for values. Use the `source` property to link tokens to their DTCG definitions.
 
-Tokens have no separate `name` property by design. The token `identifier` itself serves as the human-readable display label. Token identifier conventions (dots, slashes, kebab-case) are already human-readable in their native format.
+Tokens have no separate `name` by design. The `identifier` serves as the display label. Token id styles — dots, slashes, kebab-case — already read well on their own.
 
-Like every entity, a token carries an optional top-level `description`, and its other descriptive fields (`status`, `tags`, …) live in its optional `metadata` object — see [Entity metadata](#entity-metadata). Tokens keep these light to reduce verbosity at scale.
+Like every entity, a token has an optional top-level `description`. Its other fields (`status`, `tags`, …) live in the optional `metadata` object — see [Entity metadata](#entity-metadata). Tokens keep these light to stay terse at scale.
 
 ### Token group
 
-A nested group of related tokens. The `children` array can hold token objects, nested token group objects, or a mix of both — forming a recursive tree of any depth. Accepts **general document block types** only.
+A nested group of related tokens. The `children` array can hold tokens, nested token groups, or a mix of both. This forms a tree of any depth. Accepts **general document block types** only.
 
 Required properties: `kind`, `identifier`.
 
@@ -316,51 +316,51 @@ More properties:
 
 <ds-prop-table schema="entities/token" def="tokenGroup" delta />
 
-A token group has no `name`; like tokens, it carries an optional top-level `description`, with other descriptive fields in the optional `metadata` object. Children inherit `tokenType` from the parent group when they omit their own value.
+A token group has no `name`. Like a token, it has an optional top-level `description`, with other fields in the optional `metadata` object. Children inherit `tokenType` from the parent when they leave their own value out.
 
 ### Theme
 
-A named set of token overrides that adapt the system to a specific context (color mode, density, brand variant). Accepts **general document block types**.
+A named set of token overrides. It adapts the system to a context such as color mode, density, or brand variant. Accepts **general document block types**.
 
-Required properties: `kind`, `identifier`, `name`. A theme's substance is its `overrides` array (documented below); `description` is an optional top-level property and `status` is an optional `metadata` field.
+Required properties: `kind`, `identifier`, `name`. A theme's substance is its `overrides` array (below). `description` is an optional top-level property, and `status` is an optional `metadata` field.
 
 More properties:
 
 <ds-prop-table schema="entities/theme" def="theme" delta />
 
-Each `tokenOverride` names a token via `token` (the token identifier) and may carry a `description` explaining the change. Override values live in the DTCG `source` file, not in DSDS.
+Each `tokenOverride` names a token through `token` (the token id). It may carry a `description` of the change. The override values live in the DTCG `source` file, not in DSDS.
 
 ### Foundation
 
-A broad design foundation governing a domain like color, typography, spacing, elevation, motion, or content. Accepts **foundation-scoped document block types** (principles, scale, motion) and all general document block types.
+A broad foundation that governs one domain — color, typography, spacing, elevation, motion, or content. Accepts **foundation-scoped document block types** (principles, scale, motion) and all general document block types.
 
 Required properties: `kind`, `identifier`, `name`. (`description` is an optional top-level property; `status` is an optional `metadata` field — see [Entity metadata](#entity-metadata).)
 
-Foundations document base visual attributes like color and spacing, plus cross-cutting concerns like accessibility, motion systems, and content rules. The `category` property classifies the domain (e.g., `"color"`, `"typography"`, `"spacing"`, `"motion"`, `"accessibility"`, `"content"`).
+Foundations document base visual traits like color and spacing. They also cover cross-cutting concerns like accessibility, motion, and content rules. The `category` property names the domain (e.g., `"color"`, `"typography"`, `"spacing"`, `"motion"`, `"accessibility"`, `"content"`).
 
 ### Pattern
 
-A broad interaction pattern — a recurring, multi-component solution to a common UX problem. Accepts **pattern-scoped document block types** (interactions) and **shared structural document block types** (anatomy, variants, states) as well as all general document block types.
+A broad interaction pattern — a repeating, multi-component answer to a common UX problem. Accepts the **pattern-scoped** `interactions` block, the **shared structural** blocks (anatomy, variants, states), and all general document block types.
 
 Required properties: `kind`, `identifier`, `name`. (`description` is an optional top-level property; `status` is an optional `metadata` field — see [Entity metadata](#entity-metadata).)
 
-Patterns reference their participating components through the `links` array (with `kind: "component"`, `identifier`, and `role`) instead of through a dedicated document block.
+A pattern points to its components through the `links` array (with `kind: "component"`, `identifier`, and `role`), not through a dedicated block.
 
 ### Guide
 
-A long-form, reading-oriented document — a getting-started walkthrough, contribution guide, tutorial, conceptual overview, or migration guide. Guides fill the gap left by the artifact-bound entities (which each document a single component, token, foundation, or pattern): they document a *journey* or a *concept* rather than one thing. Accepts the **guide-scoped** `steps` block, the `imports` block, and all general document block types — including the free-form `sections` block that forms the backbone of a guide.
+A long-form, reading-oriented document — a getting-started walkthrough, contribution guide, tutorial, overview, or migration guide. Other entities each document one artifact: a component, token, foundation, or pattern. A guide fills the gap they leave. It documents a *journey* or a *concept* rather than one thing. Accepts the **guide-scoped** `steps` block, the `imports` block, and all general document block types — including the free-form `sections` block that forms its backbone.
 
 Required properties: `kind`, `identifier`, `name`. (`description` is an optional top-level property; `status` is an optional `metadata` field.)
 
-The *kind* of guide (getting-started, contribution, tutorial, concept, migration) is expressed through the `category` metadata field, keeping the entity flexible enough for any kind of guidance.
+The `category` metadata field names the *kind* of guide — getting-started, contribution, tutorial, concept, or migration. This keeps the entity open to any kind of guidance.
 
 ---
 
 ## Agent document blocks
 
-The optional `agentDocumentBlocks` property is a **partitioned space for agent-only documentation**. It lives on entities, beside `documentBlocks`, and accepts exactly the same document block kinds — guidelines, useCases, sections, and the rest of the entity's scoped union. The difference is audience: tools MUST NOT render these blocks in human-facing documentation, and agents SHOULD read both arrays (human-facing blocks first, then these).
+The optional `agentDocumentBlocks` property is a **separate space for agent-only docs**. It lives on entities, next to `documentBlocks`. It accepts the same block kinds — guidelines, useCases, sections, and the rest of the entity's scoped union. Only the audience differs. Tools MUST NOT render these blocks for humans. Agents SHOULD read both arrays: human blocks first, then these.
 
-Use it for guidance that would be noise for human readers — generation constraints with test-run `evidence`, disambiguation against confusable entities, machine-targeted examples:
+Use it for guidance that would be noise to a human reader. Think generation limits with test-run `evidence`, notes that tell apart similar entities, and machine-aimed examples:
 
 ```json
 {
@@ -388,7 +388,7 @@ Use it for guidance that would be noise for human readers — generation constra
 }
 ```
 
-Because agent content speaks the same block language, everything carries over: RFC 2119 `level`s, `evidence`, rationale, and the common example model. There is no separate agent grammar to learn or maintain. Retrieval keywords belong in the entity's `tags`/`aliases` metadata — useful to humans and agents alike. For agent guidance that spans entities (system-wide generation rules, cross-cutting checklists), use `agentDocumentBlocks` on the root document's relevant entities, or a `guide` entity whose blocks live in its `agentDocumentBlocks`.
+Agent content uses the same block language, so everything carries over: RFC 2119 `level`s, `evidence`, rationale, and the common example model. There is no separate agent grammar to learn. Search keywords belong in the entity's `tags`/`aliases` metadata, which help humans and agents alike. Some agent guidance spans entities — system-wide generation rules or cross-cutting checklists. For that, put `agentDocumentBlocks` on the right entities in the root document, or use a `guide` entity whose blocks live in its `agentDocumentBlocks`.
 
 ---
 
@@ -400,13 +400,13 @@ Lifecycle status is recorded in the `status` field of an entity's `metadata` obj
 "metadata": { "status": "stable" }
 ```
 
-The object form adds per-platform readiness and a deprecation notice that becomes required when `overall` is `deprecated`. An entity can be `stable` overall while individual platforms are still `experimental` or `draft`.
+The object form adds per-platform readiness. It also adds a deprecation notice, which becomes required when `overall` is `deprecated`. An entity can be `stable` overall while some platforms are still `experimental` or `draft`.
 
 {/* Hand-rolled: the status object form is defined inline in metadata/metadata.schema.json (no $defs entry), so it can't be rendered by the shortcode. */}
 
 | Property | Type | Required | Description |
 |---|---|---|---|
-| `overall` | `statusValue` | Yes | Overall lifecycle status. An editorial judgment of maturity; it need not match the most or least advanced platform status. |
+| `overall` | `statusValue` | Yes | Overall lifecycle status. An editorial call on maturity. It need not match the highest or lowest platform status. |
 | `platforms` | `object` | No | Per-platform readiness, keyed by platform identifier (`react`, `ios`, `figma`, …). Values use the shared `platformStatus` shape. |
 | `deprecationNotice` | `string` | No* | Required when `overall` is `deprecated`. MUST say what to use instead and give a migration path. |
 
@@ -435,7 +435,7 @@ Custom values are permitted (e.g., `"sunset"`, `"archived"`, `"beta"`) and MUST 
 
 ## Document block
 
-Document block entries are the core unit of structured docs in DSDS. Every piece of docs on an entity is a document block object with a `kind` discriminator. Document block types cover:
+Document block entries are the core unit of structured docs in DSDS. Every piece of docs on an entity is a block object with a `kind` field. The block types cover:
 
 - guidelines, useCases, accessibility, content, and narrative sections (general — all entity types)
 - anatomy, API specs, variants, states, design specifications, and import (component-scoped)
@@ -445,23 +445,23 @@ Document block entries are the core unit of structured docs in DSDS. Every piece
 
 ### The block contract
 
-Every document block has the same skeleton — a `kind` tag plus its payload — so once you've read one, you can predict the rest:
+Every block has the same skeleton — a `kind` tag plus its payload. Read one and you can predict the rest:
 
-- **Collection blocks** hold a list of like entries in an `items` array: `guidelines`, `sections`, `states`, `variants`, `steps`, `imports`, `interactions`, `motion`, `principles`, `useCases`. List-shaped blocks have plural kind names.
+- **Collection blocks** hold a list of like entries in an `items` array: `guidelines`, `sections`, `states`, `variants`, `steps`, `imports`, `interactions`, `motion`, `principles`, `useCases`. List-shaped blocks have plural names.
 - **Two blocks keep a domain name** where it reads more clearly than `items` — `anatomy.parts` and `scale.steps`. Same idea (a list of entries), just a clearer label.
-- **Structured blocks** don't hold a single list; they use named fields for distinct parts: `api`, `accessibility`, `content`, and `design-specifications`.
+- **Structured blocks** hold no single list. They use named fields for distinct parts: `api`, `accessibility`, `content`, and `design-specifications`.
 
-AI/LLM-only content is not mixed into blocks — it lives in the entity's separate [`agentDocumentBlocks`](#agent-document-blocks) array, which accepts these same block kinds.
+AI/LLM-only content is never mixed into these blocks. It lives in the entity's separate [`agentDocumentBlocks`](#agent-document-blocks) array, which takes the same block kinds.
 
 ### Scoped document block unions
 
-Each entity type accepts only the document block types relevant to it. The scoping rationale:
+Each entity type accepts only the block types that fit it. Here is why:
 
-- **Components** get full structural docs. They are rendered UI elements with code-level interfaces, visual anatomy, configurable dimensions, interactive states, and measurable design specs.
-- **Patterns** get structural docs without code-level details — they have visual layouts (anatomy), sub-types (variants), and states, but they are not single-component code interfaces. They do not accept `api` or `design-specifications`.
-- **Foundations** get domain-level docs — they govern a visual or cross-cutting domain through guiding principles, constrained value progressions (scales), and motion definitions.
-- **Tokens** get only general document block types — they are atomic values with usage guidance but no visual structure or interaction behavior.
-- **Guides** get reading-oriented docs — step-by-step `steps` procedures plus `imports` for setup instructions, and lean on the general `sections` block for narrative prose. They carry no structural or measurable specs.
+- **Components** get full structural docs. They are rendered UI elements with a code interface, visual anatomy, set dimensions, interactive states, and measurable specs.
+- **Patterns** get structural docs without code detail. They have visual layouts (anatomy), sub-types (variants), and states. They are not single-component code interfaces, so they take no `api` or `design-specifications`.
+- **Foundations** get domain-level docs. They govern a domain through principles, value scales, and motion definitions.
+- **Tokens** get only general block types. They are single values with usage notes but no visual structure or behavior.
+- **Guides** get reading-oriented docs: `steps` procedures, `imports` for setup, and the general `sections` block for prose. They carry no structural or measurable specs.
 
 <ds-block-scope-table />
 
@@ -479,15 +479,15 @@ These document block types are available on **all** entity types.
 
 ### Guidelines (`guidelines`)
 
-Documents actionable usage rules for an entity. Each item is a self-contained rule pairing guidance with a rationale. Guidelines tell the reader _how_ to use the entity correctly after choosing it.
+Documents usage rules you can act on. Each item is a self-contained rule that pairs guidance with a rationale. Guidelines tell the reader _how_ to use the entity well once they have chosen it.
 
-> **Three flavors of guidance — pick the right one:** [`useCases`](#use-cases-usecases) says *whether* to use something (the right choice vs. an alternative); `guidelines` says *how* to use it correctly (concrete rules + rationale); [`principles`](#principles-principles) (foundations) says *what the system believes* — the philosophy that sits above the rules.
+> **Three flavors of guidance — pick the right one.** [`useCases`](#use-cases-usecases) says *whether* to use something: the right choice vs. an alternative. `guidelines` says *how* to use it well: concrete rules plus rationale. [`principles`](#principles-principles) (foundations) says *what the system believes* — the philosophy above the rules.
 
 #### Guideline entry
 
 <ds-prop-table schema="document-blocks/guidelines" def="guidelineEntry" />
 
-The `level` field is named for RFC 2119 requirement levels. Agents treat `MUST`/`MUST_NOT` entries as hard constraints when generating or reviewing code; `evidence` carries the empirical backing (test runs, audits) that distinguishes data-derived rules from conventional guidance:
+The `level` field is named for RFC 2119 requirement levels. Agents treat `MUST`/`MUST_NOT` entries as hard limits when they write or review code. The `evidence` field carries the backing — test runs, audits — that sets data-driven rules apart from convention:
 
 | Value | Meaning |
 |---|---|
@@ -496,13 +496,13 @@ The `level` field is named for RFC 2119 requirement levels. Agents treat `MUST`/
 | `SHOULD_NOT` | Avoid unless justified. |
 | `MUST_NOT` | Prohibited — violations are defects. |
 
-Two related arrays make a guideline checkable: `criteria` holds **testable success criteria** — each a stable `identifier` plus an objectively verifiable `statement`, so tooling and agents can run checks against the documentation and report pass/fail per criterion — and `references` cites the external standards (WCAG, platform guidelines) the rule addresses. The shared criterion model also appears on the [`accessibility`](#accessibility-accessibility) block. Criteria define the tests; observed results belong in `evidence`.
+Two arrays make a guideline checkable. `criteria` holds **testable success criteria**. Each has a stable `identifier` and a `statement` you can verify. So tools and agents can run checks and report pass or fail per criterion. `references` cites the outside standards the rule meets, such as WCAG or platform guidelines. The same criterion model also appears on the [`accessibility`](#accessibility-accessibility) block. Criteria define the tests; results belong in `evidence`.
 
 ### Use cases (`useCases`)
 
-Documents what an entity is for — the concrete scenarios where it is the right choice and where a different entity fits better. Purpose document block entries help the reader decide _whether_ to reach for this entity before they start using it.
+Documents what an entity is for — the scenarios where it is the right choice and where another fits better. These entries help the reader decide _whether_ to reach for the entity before they use it.
 
-The `useCases` document block holds an optional `purpose` statement — the umbrella answer for what the artifact is for — and an `items` array of scenario entries, each with a `description`, a `stance` of `"recommended"` (when to use) or `"discouraged"` (when to choose something else), and — for discouraged cases — an `alternative`:
+The `useCases` block holds an optional `purpose` statement — the broad answer for what the artifact is for. It also holds an `items` array of scenarios. Each item has a `description` and a `stance`: `"recommended"` (when to use) or `"discouraged"` (when to pick something else). Discouraged items add an `alternative`:
 
 ```json
 {
@@ -537,13 +537,13 @@ Documents structured accessibility specs. It captures _machine-readable specs_ f
 - color contrast pairs
 - motion concerns
 
-For actionable accessibility _rules_ with rationale (e.g., "Provide an aria-label for icon-only buttons"), use a guideline entry with `category: "accessibility"` instead.
+For accessibility _rules_ with rationale (e.g., "Provide an aria-label for icon-only buttons"), use a guideline entry with `category: "accessibility"` instead.
 
 <ds-prop-table schema="document-blocks/accessibility" def="accessibility" />
 
 ### Examples (embedded, not a standalone block)
 
-DSDS has no standalone `examples` document block. Instead, the reusable `example` model is **embedded** inside other blocks — most commonly the `examples` array on a [guideline entry](#guidelines-guidelines) and on its success criteria, and the `examples` array on a guide's `sections` and `steps` entries.
+DSDS has no standalone `examples` document block. Instead, the reusable `example` model sits **inside** other blocks. You will see it most on a [guideline entry](#guidelines-guidelines) and its success criteria, and on a guide's `sections` and `steps` entries.
 
 Each `example` requires at least a `presentation` or a `value` (or both):
 
@@ -554,7 +554,7 @@ Optional `title` and `description` provide context.
 
 ### Content (`content`)
 
-Documents structured content documentation — recommended action labels and localization/i18n concerns. Content document block entries complement guideline document block entries: guidelines say "Use sentence case" (a _rule_), content entries say "Add: Takes an existing object and uses it in a new context" (a _reference_).
+Documents content — suggested action labels and localization (i18n) notes. Content entries pair with guideline entries. A guideline says "Use sentence case" (a _rule_). A content entry says "Add: Takes an existing object and uses it in a new context" (a _reference_).
 
 At least one of `labels` or `localization` must be present.
 
@@ -568,7 +568,7 @@ At least one of `labels` or `localization` must be present.
 
 ### Sections (`sections`)
 
-Free-form narrative prose organized into titled, optionally nested sections — the backbone of conceptual overviews, explanations, rationale, and any reading-oriented content the structured block kinds do not capture. Available on every entity type. Each `sectionEntry` pairs a `title` with an optional rich-text `body`, illustrative `examples`, related `links`, and recursive `sections` for a heading hierarchy. Reach for a structured block kind first; use `sections` only for what they cannot express.
+Free-form prose in titled, optionally nested sections. It is the backbone for overviews, explanations, rationale, and any reading-oriented content the structured blocks miss. It is available on every entity type. Each `sectionEntry` pairs a `title` with an optional rich-text `body`, `examples`, `links`, and nested `sections` for a heading tree. Reach for a structured block first. Use `sections` only for what they cannot express.
 
 #### Section entry
 
@@ -578,7 +578,7 @@ Free-form narrative prose organized into titled, optionally nested sections — 
 
 ## Component-scoped document block types
 
-These document block types are centered on **component** entities. `api` and `design-specifications` are component-only; `anatomy`, `variants`, and `states` are shared with patterns; and `imports` is shared with guides (as noted in the [scope table](#scoped-document-block-unions)).
+These block types center on **component** entities. `api` and `design-specifications` are component-only. `anatomy`, `variants`, and `states` are shared with patterns. `imports` is shared with guides (see the [scope table](#scoped-document-block-unions)).
 
 ### Imports (`imports`)
 
@@ -590,7 +590,7 @@ How to install and import the artifact across platforms — package names, impor
 
 ### Anatomy (`anatomy`)
 
-Documents the visual structure of a component or pattern by listing its named sub-elements (parts). Each part can reference the design tokens that style it, bridging the entity's visual design and its token architecture.
+Documents the visual structure of a component or pattern. It lists the named sub-elements (parts). Each part can point to the design tokens that style it, linking the visual design to the token layer.
 
 For components, parts represent rendered UI sub-elements (container, label, icon, focus-ring). For patterns, parts represent the structural sections of the pattern's visual layout (image, title, body, primary action).
 
@@ -600,7 +600,7 @@ For components, parts represent rendered UI sub-elements (container, label, icon
 
 ### API (`api`)
 
-Documents the code-level interface of a component on a single platform. For multi-platform components, create one API block per platform using the `platform` property.
+Documents the code interface of a component on one platform. For multi-platform components, add one API block per platform with the `platform` property.
 
 Sections:
 
@@ -633,13 +633,13 @@ For enum properties, set `type` to the base type (`"string"`) and list the accep
 
 <ds-prop-table schema="document-blocks/api" def="apiEvent" />
 
-Events are documented here, in `api.events` — there is no separate events block. Beyond the signature, put behavioral context (when it fires, how to respond, DOM propagation, cancelability, deprecation) in the event's `description`.
+Events live here, in `api.events` — there is no separate events block. Past the signature, put behavior in the event's `description`: when it fires, how to respond, DOM propagation, cancelability, and deprecation.
 
 ### Variants (`variants`)
 
-Documents all dimensions of visual or behavioral variation. Each item is a single axis of config (e.g., `"size"`, `"emphasis"`, `"full-width"`). Multiple axes document orthogonal dimensions that combine independently.
+Documents every dimension of visual or behavioral variation. Each item is one axis of config (e.g., `"size"`, `"emphasis"`, `"full-width"`). Several axes document separate dimensions that combine on their own.
 
-Each variant value — and each flag — carries a `tokens` map: the design token overrides applied when that value is selected (or the flag is active). Per-variant design values live here, on the variants block; `design-specifications` documents only the baseline.
+Each variant value — and each flag — carries a `tokens` map. These are the token overrides applied when that value is chosen (or the flag is on). Per-variant values live here, on the variants block. `design-specifications` documents only the baseline.
 
 The optional `exclusions` array documents invalid combinations across dimensions:
 
@@ -662,7 +662,7 @@ The optional `exclusions` array documents invalid combinations across dimensions
 }
 ```
 
-Each exclusion requires at least two conditions. A single condition would exclude a whole value, which should be removed from the dimension's values array instead.
+Each exclusion needs at least two conditions. A single condition would rule out a whole value, which you should drop from the dimension's values array instead.
 
 #### Variant value
 
@@ -678,13 +678,13 @@ Documents all interactive states — hover, focus, active, disabled, loading, se
 
 ### Design specifications (`design-specifications`)
 
-Documents the **baseline** measurable visual specs of a component — the default design properties, spacing relationships, dimension constraints, typography settings, and responsive behavior. At least one of these sections must be present.
+Documents the **baseline** measurable specs of a component: default design properties, spacing, dimension limits, typography, and responsive behavior. At least one of these sections must be present.
 
 <ds-prop-table schema="document-blocks/design-specifications" def="designSpecifications" />
 
-The base-level `properties` map is the default spec — typically the primary variant at medium size in the default state. Values are design token identifiers (required when the system has a token layer) or raw CSS values (token-less systems only).
+The base `properties` map is the default spec — usually the primary variant at medium size in the default state. Values are design token ids (required when the system has a token layer) or raw CSS values (token-less systems only).
 
-**Per-variant and per-state values are not documented here.** They live on the [variants](#variants-variants) and [states](#states-states) blocks, where each variant value (and each state) carries its own `tokens` overrides. `design-specifications` covers only the baseline plus responsive behavior — there is no per-condition duplication to drift.
+**Per-variant and per-state values are not documented here.** They live on the [variants](#variants-variants) and [states](#states-states) blocks. Each value there carries its own `tokens` overrides. `design-specifications` covers only the baseline and responsive behavior, so nothing is duplicated and nothing can drift.
 
 ---
 
@@ -694,21 +694,21 @@ These document block types are only accepted on **foundation** entities.
 
 ### Principles (`principles`)
 
-Documents high-level guiding principles that shape decisions for a domain. Principles answer "what do we believe?" and "what constraints do we accept?" — they set direction and sit *above* specific [`guidelines`](#guidelines-guidelines) (which encode the concrete rules).
+Documents the high-level principles that shape decisions for a domain. They answer "what do we believe?" and "what limits do we accept?" They set direction and sit *above* specific [`guidelines`](#guidelines-guidelines), which hold the concrete rules.
 
 Each `principleEntry` has a `title` (short, memorable name) and a `description` (what it means in practice).
 
 ### Scale (`scale`)
 
-Documents an ordered progression of values forming a visual scale (type scale, spacing scale, elevation scale, or similar).
+Documents an ordered run of values that forms a visual scale — type, spacing, elevation, or similar.
 
-Each `scaleStep` references a design token and optionally provides a `label`, `value` (display convenience), and `description` (usage notes). Steps are ordered from smallest/lowest to largest/highest.
+Each `scaleStep` points to a design token. It may add a `label`, a `value` (for display), and a `description` (usage notes). Steps run from smallest to largest.
 
 The scale block requires an `identifier`, `description`, and `steps` array.
 
 ### Motion (`motion`)
 
-Documents the motion system — named easing curves, their cubic-bezier timing functions, recommended durations, and usage guidance. Each item is a single easing definition that designers and engineers select from when adding animation or transitions.
+Documents the motion system — named easing curves, their cubic-bezier timing, suggested durations, and usage notes. Each item is one easing definition that designers and engineers pick from when they add animation or transitions.
 
 #### Motion entry
 
@@ -722,7 +722,7 @@ These document block types are only accepted on **pattern** entities (in additio
 
 ### Interactions (`interactions`)
 
-Documents the interaction flow of a pattern as an ordered sequence of steps. The ordering is critical: it represents the chronological flow of the user journey.
+Documents the interaction flow of a pattern as an ordered set of steps. The order matters: it is the time sequence of the user journey.
 
 #### Interaction entry
 
@@ -732,11 +732,11 @@ Documents the interaction flow of a pattern as an ordered sequence of steps. The
 
 ## Guide-scoped document block types
 
-The `steps` block is accepted only on **guide** entities. Guides also accept `imports` and every general document block type — including the free-form `sections` block (documented above), which carries a guide's narrative prose.
+Only **guide** entities accept the `steps` block. Guides also accept `imports` and every general block type, including the free-form `sections` block (above), which carries a guide's prose.
 
 ### Steps (`steps`)
 
-An ordered (or unordered) procedure — the sequence of steps a reader follows to install, build, contribute, or migrate. The block carries an optional `title` and an `ordered` flag (default `true`); set `ordered: false` for an independent checklist.
+An ordered or unordered procedure — the steps a reader follows to install, build, contribute, or migrate. The block has an optional `title` and an `ordered` flag (default `true`). Set `ordered: false` for a plain checklist.
 
 #### Step entry
 
@@ -746,9 +746,9 @@ An ordered (or unordered) procedure — the sequence of steps a reader follows t
 
 ## Links
 
-The `links` array provides typed references to external resources and internal DSDS entity relationships. Links combine external URL references and internal entity references into a single model.
+The `links` array holds typed references to outside resources and to other DSDS entities. One model covers both URL links and entity links.
 
-Every link requires a `kind` and at least one of `url` (for external resources) or `identifier` (for internal DSDS entity references). Both can be present when an internal entity also has an addressable URL.
+Every link needs a `kind` and at least one of `url` (for outside resources) or `identifier` (for DSDS entities). Both can appear when an entity also has a URL.
 
 <ds-prop-table schema="common/link" def="link" />
 
@@ -766,18 +766,18 @@ Custom values are permitted and SHOULD be lowercase strings matching `^[a-z][a-z
 
 ## Rich text
 
-Fields that contain human-written prose use the `richText` type: a string interpreted as CommonMark markdown (0.27 minimum). There is no format flag — plain sentences and inline HTML are both valid markdown, so write whichever the content requires and tools render the value as markdown.
+Fields that hold human prose use the `richText` type: a string read as CommonMark markdown (0.27 or newer). There is no format flag. Plain sentences and inline HTML are both valid markdown, so write whichever fits, and tools render the value as markdown.
 
 ---
 
 ## Use cases
 
-The `useCase` data model provides scenario-driven guidance for when something is — and is not — the right choice. It appears wherever a `useCases` block does:
+The `useCase` model gives scenario guidance for when something is — and is not — the right choice. It appears wherever a `useCases` block does:
 
 1. **A root `useCases` block** ([root document blocks](#root-document-blocks)) — adoption guidance for the design system as a whole.
 2. **An entity's [`useCases`](#use-cases-usecases) document block** — when to reach for a specific entity.
 
-In both, `items` is an **array** of `useCase` entries. Each entry has a `description` and a `stance` of `"recommended"` (when to use) or `"discouraged"` (when to choose something else); discouraged entries SHOULD include an `alternative` pointing to a more fitting entity:
+In both, `items` is an **array** of `useCase` entries. Each has a `description` and a `stance`: `"recommended"` (when to use) or `"discouraged"` (when to pick something else). A discouraged entry SHOULD add an `alternative` that points to a better fit:
 
 ```json
 [
@@ -800,7 +800,7 @@ In both, `items` is an **array** of `useCase` entries. Each entry has a `descrip
 
 ## Extends
 
-The `extends` mechanism enables **systems-of-systems** architectures — where an extension design system inherits from a core system. It operates at two levels:
+The `extends` mechanism enables **systems of systems** — where an extension design system inherits from a core one. It works at two levels:
 
 ### Document-level extends (`documentExtends`)
 
@@ -821,7 +821,7 @@ The root `extends` property declares that the whole DSDS document inherits from 
 
 ### Entity-level extends (`entityExtends`)
 
-An entity can declare that it extends a base entity from a parent system. This is carried in the `extends` field of the entity's `metadata` object — like every other descriptive field, it lives in `metadata`, not as a top-level property. The `extends` value has this shape:
+An entity can say it extends a base entity from a parent system. This lives in the `extends` field of the entity's `metadata` object, like every other descriptive field — not as a top-level property. The `extends` value has this shape:
 
 <ds-prop-table schema="common/extends" def="entityExtends" />
 
@@ -858,15 +858,15 @@ Each `modifications` entry has this shape:
 }
 ```
 
-> **Merge semantics are tooling's responsibility.** The `extends` declaration defines the _relationship_ between systems and entities. How properties, guidelines, and tokens are merged, overridden, or inherited is up to consuming tooling — the schema does not prescribe resolution rules. The `modifications` array provides a human-readable changelog that tooling MAY use for diff views, migration guides, or docs generation.
+> **Merge rules are the tool's job.** The `extends` declaration sets the _relationship_ between systems and entities. How properties, guidelines, and tokens merge, override, or inherit is up to the consuming tool. The schema sets no resolution rules. The `modifications` array gives a readable changelog that a tool MAY use for diff views, migration guides, or docs.
 
-See [`examples/extension-system.dsds.json`](examples/extension-system.dsds.json) for a complete enterprise extension system showing both document-level and entity-level extends with modifications.
+See [`examples/extension-system.dsds.json`](examples/extension-system.dsds.json) for a full enterprise extension system. It shows both document-level and entity-level extends with modifications.
 
 ---
 
 ## Extensions
 
-The root document, each entity group, and each entity can carry a `$extensions` property. Keys MUST use vendor-specific namespaces (reverse domain name notation recommended). Tools that do not recognize an extension MUST preserve it. Extension data SHOULD NOT duplicate info already in core schema fields.
+The root document, each entity group, and each entity can carry a `$extensions` property. Keys MUST use vendor namespaces; reverse domain notation is recommended. A tool that does not know an extension MUST keep it. Extension data SHOULD NOT repeat info already in core fields.
 
 ```json
 {
@@ -890,21 +890,21 @@ The root document, each entity group, and each entity can carry a `$extensions` 
 Casing follows **position and provenance**:
 
 - **Schema identifiers** — `$def` type names and property names — are **camelCase** (`tokenGroup`, `documentBlocks`).
-- **Enumerated string values** are **kebab-case** (`token-group`, `visual-design`, `recommended`) — except values adopted from an external standard, which keep that standard's casing: RFC 2119 requirement levels (`MUST`, `SHOULD`, `SHOULD_NOT`, `MUST_NOT`) and WCAG conformance levels (`A`, `AA`, `AAA`).
+- **Enumerated string values** are **kebab-case** (`token-group`, `visual-design`, `recommended`). Values taken from an outside standard keep that standard's casing: RFC 2119 levels (`MUST`, `SHOULD`, `SHOULD_NOT`, `MUST_NOT`) and WCAG levels (`A`, `AA`, `AAA`).
 - Keys beginning with `$` (`$schema`, `$ref`, `$extensions`) are reserved.
 
 So one concept can appear in several forms — the `token-group` kind and the `tokenGroup` type — because each follows its position's rule.
 
 ### Token identifier exception
 
-Most entity types enforce a strict `^[a-z][a-z0-9-]*$` pattern on the `identifier` property. Tokens and token groups are the exception by design. Their identifiers are unconstrained to fit the W3C Design Tokens Format Module, design tool variable systems, and existing token setups. These setups may use dots (`color.text.primary`), slashes (`color/text/primary`), or other separators. Token identifiers _SHOULD_ still be lowercase and human-readable, but the schema does not enforce a pattern.
+Most entity types enforce a strict `^[a-z][a-z0-9-]*$` pattern on `identifier`. Tokens and token groups are the exception by design. Their ids are left free to fit the W3C Design Tokens Format Module, design tool variables, and existing token setups. Those setups may use dots (`color.text.primary`), slashes (`color/text/primary`), or other separators. Token ids _SHOULD_ still be lowercase and readable, but the schema enforces no pattern.
 
 ### Document block type naming
 
 Document block type values follow two naming patterns based on their structural role:
 
-- **Plural names** for document block types that wrap a list of like items in an `items` array: `"variants"`, `"states"`, `"principles"`, `"interactions"`, `"steps"`, `"motion"`.
-- **Singular names** for document block types that are self-contained with their own internal structure:
+- **Plural names** for block types that wrap a list of like items in an `items` array: `"variants"`, `"states"`, `"principles"`, `"interactions"`, `"steps"`, `"motion"`.
+- **Singular names** for block types that are self-contained with their own structure:
   - `"scale"` (has `identifier`, `steps`)
   - `"anatomy"` (has `parts`)
   - `"api"` (has `properties`, `events`, etc.)
@@ -912,7 +912,7 @@ Document block type values follow two naming patterns based on their structural 
   - `"design-specifications"` (has `tokens`, `spacing`, etc.)
   - `"useCases"` (has `items` and an optional `purpose` statement)
 
-The distinction: plural types are containers of interchangeable items where the container has no identity beyond its type. Singular types have meaningful internal structure where properties are named and semantically distinct. Note: `"guideline"` and `"section"` use singular names despite wrapping an `items` list, because each describes a concept (providing guidelines; a body of narrative sections) rather than being a generic plural container.
+The split: a plural type is a container of like items, with no identity beyond its type. A singular type has real inner structure, where properties are named and distinct. Note: `"guideline"` and `"section"` use singular names even though they wrap an `items` list. Each names a concept — a body of guidelines, or a body of sections — rather than a generic container.
 
 ---
 
@@ -940,5 +940,5 @@ The distinction: plural types are containers of interchangeable items where the 
 
 | Level | Requirement |
 |---|---|
-| **Level 1: Core** | Identity only. For tokens: `kind`, `identifier`, `tokenType`. For token groups: `kind`, `identifier`. For all others: `kind`, `identifier`, `name`. A top-level `description` and a `status` metadata field are strongly recommended. |
-| **Level 2: Complete** | Level 1 + at least one substantive document block entry (anatomy/api/variants for components, principles/scale for foundations, interactions for patterns, sections/steps for guides, guidelines/useCases for tokens). |
+| **Level 1: Core** | Identity only. Tokens: `kind`, `identifier`, `tokenType`. Token groups: `kind`, `identifier`. All others: `kind`, `identifier`, `name`. A top-level `description` and a `status` metadata field are strongly recommended. |
+| **Level 2: Complete** | Level 1 plus at least one real document block entry: anatomy/api/variants for components, principles/scale for foundations, interactions for patterns, sections/steps for guides, guidelines/useCases for tokens. |

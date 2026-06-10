@@ -16,20 +16,20 @@ DSDS defines a JSON-based format for documenting the seven entity types of a des
 - **Patterns** — Broad interaction patterns like navigation, error messaging, and empty states — with anatomy, variants, states, interactions, and content
 - **Guides** — Long-form, reading-oriented documentation like getting-started walkthroughs, contribution guides, tutorials, and migration guides — with narrative sections, step-by-step procedures, and best practices
 
-All structured documentation lives in a unified **document block** system. Each entry is a typed container identified by a `kind` tag. The kinds cover guidelines, anatomy, API specs, variants, states, accessibility, examples, design specifications, principles, scales, motion, content, interactions, narrative sections, and step-by-step procedures.
+All structured docs live in one **document block** system. Each entry is a typed container with a `kind` tag. The kinds cover guidelines, anatomy, API specs, variants, states, accessibility, examples, design specifications, principles, scales, motion, content, interactions, narrative sections, and step-by-step procedures.
 
-The goal is simple: make design system documentation structured, portable, and consumable by tools. The tool can be a documentation site, a linter, a code assistant, or a human reading JSON.
+The goal is simple: make design system docs structured, portable, and easy for tools to read. The tool can be a docs site, a linter, a code assistant, or a person reading JSON.
 
 ## Why?
 
-Design system documentation today is trapped in tools. It lives in Notion, Storybook, Zeroheight, Confluence, or custom-built sites. Each has its own structure, its own conventions, and no interoperability between them.
+Design system documentation today is trapped in tools. It lives in Notion, Storybook, Zeroheight, Confluence, or custom-built sites. Each one has its own structure and its own rules, and none of them work together.
 
 This creates real problems:
 
-- **Migration is expensive.** Switching documentation tools means restructuring everything from scratch.
-- **Consistency is accidental.** Without a shared structure, every team invents its own format. Consumers must relearn what to expect every time.
-- **Tooling can't help.** Tools can't reliably consume documentation from other tools because there's no shared schema to build against.
-- **AI needs structure.** LLMs and code assistants work dramatically better with structured, predictable documentation than with ad hoc prose.
+- **Migration is expensive.** Switching docs tools means rebuilding everything from scratch.
+- **Consistency is accidental.** With no shared structure, every team invents its own format. Readers must relearn what to expect each time.
+- **Tooling can't help.** Tools can't reliably read docs from other tools, since there is no shared schema to build against.
+- **AI needs structure.** LLMs and code assistants work far better with structured, predictable docs than with loose prose.
 
 DSDS addresses these problems by defining a standard format that is:
 
@@ -43,13 +43,13 @@ DSDS addresses these problems by defining a standard format that is:
 
 ## Relationship to W3C Design Tokens
 
-The W3C Design Tokens Community Group defines a format for exchanging token **values** between tools. DSDS defines a format for exchanging the **documentation** that describes how to understand and apply those tokens, plus the components, foundations, and patterns that use them.
+The W3C Design Tokens Community Group defines a format for trading token **values** between tools. DSDS defines a format for the **documentation** around them — how to read and apply those tokens, plus the components, foundations, and patterns that use them.
 
-The two formats are designed to work together. DSDS does not duplicate token values or platform identifiers. The W3C Design Tokens Format file is the source of truth for values. Use the `source` property on a token entity to link it back to its DTCG definition.
+The two formats are built to work together. DSDS does not duplicate token values or platform identifiers. The W3C Design Tokens Format file is the source of truth for values. Use the `source` property on a token entity to link it back to its DTCG definition.
 
 ## Documentation
 
-The authoritative reference for every schema, field, and document-block type is the **documentation site at [designsystemdocspec.org](https://designsystemdocspec.org/)**. Property tables there are generated directly from the schema JSON — they cannot drift from the implementation.
+The authoritative reference for every schema, field, and document-block type is the **documentation site at [designsystemdocspec.org](https://designsystemdocspec.org/)**. Property tables there come straight from the schema JSON, so they cannot drift from the code.
 
 Start here:
 
@@ -58,11 +58,11 @@ Start here:
 - **[Schema Architecture](https://designsystemdocspec.org/schema-architecture.html)** — The full schema reference. Covers document structure, entity types, the `agents` property, status, the document-block system, links, extends, extensions, naming conventions, and conformance levels, all with live property tables sourced from the schema.
 - **[Interactive Samples](https://designsystemdocspec.org/samples.html)** — Side-by-side JSON ↔ rendered docs for real-world entities (component, token, theme, foundation, pattern).
 
-Per-schema reference pages live alongside the narrative pages — e.g. [entities/component](https://designsystemdocspec.org/entities-component.html), [document-blocks/guidelines](https://designsystemdocspec.org/document-blocks-guidelines.html), [common/use-cases](https://designsystemdocspec.org/common-use-cases.html). Every page is auto-generated from its corresponding `spec/schema/**/*.schema.json` file.
+Per-schema reference pages sit next to the narrative pages — e.g. [entities/component](https://designsystemdocspec.org/entities-component.html), [document-blocks/guidelines](https://designsystemdocspec.org/document-blocks-guidelines.html), [common/use-cases](https://designsystemdocspec.org/common-use-cases.html). Each page is built from its matching `spec/schema/**/*.schema.json` file.
 
-The site can also be built locally for offline browsing or while developing the spec — run `npm run build` and open `site/dist/index.html`.
+You can also build the site locally to browse offline or while you work on the spec. Run `npm run build` and open `site/dist/index.html`.
 
-This README intentionally does **not** duplicate schema field listings, document-block type catalogs, default values, enforcement levels, or example payloads. Those live on the documentation site as a single source of truth.
+This README leaves out schema field listings, document-block catalogs, default values, enforcement levels, and example payloads on purpose. Those live on the documentation site as a single source of truth.
 
 ## Project Structure
 
@@ -210,7 +210,16 @@ To validate your own DSDS file:
 npx ajv validate -s spec/schema/dsds.bundled.schema.json -d my-system.dsds.json
 ```
 
-Reference `https://designsystemdocspec.org/v0.7.1/dsds.bundled.schema.json` from your DSDS files via the `$schema` keyword to get editor autocompletion and inline validation. See the [Quick Start docs page](https://designsystemdocspec.org/quickstart.html) for the single-entity and multi-entity document shapes.
+Reference `https://designsystemdocspec.org/v0.7.2/dsds.bundled.schema.json` from your DSDS files via the `$schema` keyword to get editor autocompletion and inline validation. See the [Quick Start docs page](https://designsystemdocspec.org/quickstart.html) for the single-entity and multi-entity document shapes.
+
+#### Editorial lint (warnings, never blocking)
+
+Schema validation answers "is this document allowed?" The doc lint answers "is this documentation good?" It flags quality gaps — guidelines without a rationale or evidence, components and patterns without use cases, entities without a description — and always exits 0:
+
+```bash
+npm run lint:docs                       # lints spec/examples/
+node scripts/lint-docs.js my-system.dsds.json   # lint your own files or directories
+```
 
 ### 4. Build the spec site
 
@@ -308,7 +317,7 @@ The Quick Start page (`site/content/quickstart.mdx`) is compiled the same way as
 The spec version lives in three coordinated places:
 
 1. **`spec/schema/dsds.schema.json#/properties/dsdsVersion/const`** — the single source of truth. The bundle script, the nav, every page title, and the versioned dist directory all derive from this value.
-2. **The `$id` URL on every schema file** — e.g., `https://designsystemdocspec.org/v0.7.1/metadata/last-updated.schema.json`. Every example document's `$schema` field and every `"dsdsVersion"` literal inside example JSON has to track the same version.
+2. **The `$id` URL on every schema file** — e.g., `https://designsystemdocspec.org/v0.7.2/metadata/last-updated.schema.json`. Every example document's `$schema` field and every `"dsdsVersion"` literal inside example JSON has to track the same version.
 3. **`package.json#version`** — the npm package version. Conventionally kept in lockstep with `dsdsVersion.const`.
 
 The `scripts/bump-version.js` script keeps the first two in sync across all 44 schema files, every example, and the README. `package.json` is handled separately because it's not a schema-consumer file.
@@ -341,7 +350,7 @@ This is the exact sequence for cutting a release that includes schema changes. S
 
 4. **Bump `package.json#version`** to the target version (e.g. `0.2.0` → `0.2.1`).
 
-5. **Add a CHANGELOG entry** at the top of `CHANGELOG`, mirroring the format of the prior release. Include a one-line header noting where the bundled schema is now served (e.g., "Schema files are now served at `https://designsystemdocspec.org/v0.7.1/...`") and an "Additions" or "Breaking changes" section describing every schema-visible change.
+5. **Add a CHANGELOG entry** at the top of `CHANGELOG`, mirroring the format of the prior release. Include a one-line header noting where the bundled schema is now served (e.g., "Schema files are now served at `https://designsystemdocspec.org/v0.7.2/...`") and an "Additions" or "Breaking changes" section describing every schema-visible change.
 
 6. **Run the version bump.** Preview the change first:
 
@@ -375,8 +384,8 @@ This is the exact sequence for cutting a release that includes schema changes. S
 
 9. **Spot-check the rendered site.** Confirm the version reads correctly in three places:
 
-   - Page `<title>` tags (e.g., `DSDS Last Updated Metadata — DSDS 0.7.1`).
-   - The nav title (`Design System Documentation Spec 0.7.1`).
+   - Page `<title>` tags (e.g., `DSDS Last Updated Metadata — DSDS 0.7.2`).
+   - The nav title (`Design System Documentation Spec 0.7.2`).
    - The footer (`Design System Documentation Spec (DSDS) 0.2.1 — Draft Specification`).
 
    The new schema page should exist at `site/dist/<group>-<name>.html` (e.g., `site/dist/metadata-last-updated.html`), and the versioned bundle should exist at `site/dist/v<new-version>/dsds.bundled.schema.json`.
@@ -395,12 +404,12 @@ No changelog entry, no version bump, no new `/v<n>/` artifact. Commit the regene
 
 ## Design Principles
 
-1. **Structure enables quality.** A defined format creates a floor of quality and completeness.
+1. **Structure enables quality.** A defined format sets a floor for quality and completeness.
 2. **Guidance without justification is incomplete.** Every best practice must answer "why?"
-3. **Documentation should be portable.** Teams change tools. Documentation should survive the transition.
+3. **Documentation should be portable.** Teams change tools. Docs should survive the move.
 4. **Education is a responsibility.** Explain *what*, *why*, and *how*.
 5. **Specificity over subjectivity.** "Use sparingly" is not guidance. "Limit to one per surface" is.
-6. **Schema is the source of truth.** Property tables are generated from schema JSON, not hand-written. Prose provides context; schemas provide structure.
+6. **Schema is the source of truth.** Property tables come from schema JSON, not hand-written copy. Prose gives context; schemas give structure.
 
 ## Contributing
 
