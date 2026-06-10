@@ -3,14 +3,14 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>DSDS Criterion Definition — DSDS 0.7.2</title>
-  <meta name="description" content="Shared definitions for testable success criteria and links to external standards. Criteria are the test-definition layer of DSDS docs. Each one pairs a stable identifier with a statement you can verify objectively. Tools and agents check implementations against the docs and report pass or fail for each criterion. Used by guideline entries and accessibility blocks. Observed results go in a guideline entry's `evidence`, not here.">
+  <title>DSDS Criterion Definitions — DSDS 0.8.0</title>
+  <meta name="description" content="Shared definitions for testable success criteria, conformance, and external standard references. Criteria are the test-definition layer of DSDS documentation: each pairs a stable identifier with an objectively verifiable statement, an optional conformance `level`, a `verification` mode (automated, assisted, manual, or custom), and an optional machine-dispatchable `check`. Fixtures with declared outcomes make criteria self-verifying. Used by guideline entries and accessibility blocks. Observed results belong in a guideline entry's `evidence`, not here.">
   <link rel="canonical" href="https://designsystemdocspec.org/common-criterion">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Design System Documentation Spec">
-  <meta property="og:title" content="DSDS Criterion Definition — DSDS 0.7.2">
-  <meta property="og:description" content="Shared definitions for testable success criteria and links to external standards. Criteria are the test-definition layer of DSDS docs. Each one pairs a stable identifier with a statement you can verify objectively. Tools and agents check implementations against the docs and report pass or fail for each criterion. Used by guideline entries and accessibility blocks. Observed results go in a guideline entry's `evidence`, not here.">
+  <meta property="og:title" content="DSDS Criterion Definitions — DSDS 0.8.0">
+  <meta property="og:description" content="Shared definitions for testable success criteria, conformance, and external standard references. Criteria are the test-definition layer of DSDS documentation: each pairs a stable identifier with an objectively verifiable statement, an optional conformance `level`, a `verification` mode (automated, assisted, manual, or custom), and an optional machine-dispatchable `check`. Fixtures with declared outcomes make criteria self-verifying. Used by guideline entries and accessibility blocks. Observed results belong in a guideline entry's `evidence`, not here.">
   <meta property="og:url" content="https://designsystemdocspec.org/common-criterion">
   <meta name="twitter:card" content="summary">
   <link rel="stylesheet" href="tokens.css">
@@ -20,7 +20,7 @@
 <body>
   <a class="skip-link" href="#main-content">Skip to content</a>
   <ds-nav-toggle target="ds-spec-nav"></ds-nav-toggle>
-  <ds-spec-nav title="Design System Documentation Spec 0.7.2" title-href="index.html" active="common-criterion">
+  <ds-spec-nav title="Design System Documentation Spec 0.8.0" title-href="index.html" active="common-criterion">
     <a href="index.html" slug="index">Overview</a>
     <a href="quickstart.html" slug="quickstart">Quick start</a>
     <a href="schema-architecture.html" slug="schema-architecture">Schema architecture</a>
@@ -84,27 +84,35 @@
   <div class="content content--with-toc">
     <main class="content__main" id="main-content" role="main">
       <div class="content__inner">
-        <ds-schema-header title="DSDS Criterion Definition" description="Shared definitions for testable success criteria and links to external standards. Criteria are the test-definition layer of DSDS docs. Each one pairs a stable identifier with a statement you can verify objectively. Tools and agents check implementations against the docs and report pass or fail for each criterion. Used by guideline entries and accessibility blocks. Observed results go in a guideline entry's `evidence`, not here." source="common/criterion.schema.json"></ds-schema-header>
+        <ds-schema-header title="DSDS Criterion Definitions" description="Shared definitions for testable success criteria, conformance, and external standard references. Criteria are the test-definition layer of DSDS documentation: each pairs a stable identifier with an objectively verifiable statement, an optional conformance `level`, a `verification` mode (automated, assisted, manual, or custom), and an optional machine-dispatchable `check`. Fixtures with declared outcomes make criteria self-verifying. Used by guideline entries and accessibility blocks. Observed results belong in a guideline entry's `evidence`, not here." source="common/criterion.schema.json"></ds-schema-header>
 <ds-def-index>
-<p><strong>2 definitions</strong> in this file:</p>
+<p><strong>6 definitions</strong> in this file:</p>
 <ul>
 <li><a href="#criterion"><ds-code inline>criterion</ds-code></a></li>
+<li><a href="#conformancelevel"><ds-code inline>conformanceLevel</ds-code></a></li>
+<li><a href="#verificationmode"><ds-code inline>verificationMode</ds-code></a></li>
+<li><a href="#criterioncheck"><ds-code inline>criterionCheck</ds-code></a></li>
+<li><a href="#criterionfixture"><ds-code inline>criterionFixture</ds-code></a></li>
 <li><a href="#reference"><ds-code inline>reference</ds-code></a></li>
 </ul>
 </ds-def-index>
-<ds-def-section name="criterion" anchor="criterion" description="A testable success criterion: a condition an implementation must meet that you can verify objectively. Criteria let docs act as a test harness. A check runs against the `statement` and reports pass or fail under the criterion's `identifier`. Pair it with `techniques` (how to pass), `failures` (what failing looks like), `references` (the external standards it aligns with), and `examples` (usually a passing and a failing case)." type="object">
+<ds-def-section name="criterion" anchor="criterion" description="A testable success criterion: an objectively verifiable condition an implementation must meet. Criteria let documentation act as a test harness — a result is produced per `verification` mode and reported under the criterion's `identifier`. `statement` is the normative, human-readable source of truth; `check`, when present, is its machine-dispatchable shadow and never replaces it. Pair with `techniques` (how to pass), `failures` (what failing looks like), `references` (external standards), and `examples` (fixtures with declared outcomes)." type="object">
 <ds-prop-table>
-  <ds-prop name="identifier" type="string" required>Stable identifier for this criterion, unique within the parent entity (e.g., 'touch-target-minimum', 'single-primary-action'). MUST be lowercase kebab-case. Test runs report pass or fail against this identifier. It SHOULD NOT change once checks depend on it. Renaming breaks result history across runs.<br><small>Pattern: <ds-code inline>^[a-z][a-z0-9-]*$</ds-code></small></ds-prop>
-  <ds-prop name="statement" type="&lt;ds-type-ref href=&quot;common-rich-text.html#richtext&quot;&gt;richText&lt;/ds-type-ref&gt;" required>The testable statement of what success looks like. You MUST be able to verify it objectively — by inspection, static analysis, or runtime measurement. Avoid vague language like 'feels right' or 'looks balanced' (e.g., 'Interactive elements present a hit area of at least 44×44 px').</ds-prop>
+  <ds-prop name="identifier" type="string" required>Stable identifier for this criterion, unique within the parent entity (e.g., 'touch-target-minimum', 'single-primary-action'). MUST be lowercase kebab-case. Test runs report pass/fail against this identifier, so it SHOULD NOT change once checks depend on it — renaming breaks result history across runs.<br><small>Pattern: <ds-code inline>^[a-z][a-z0-9-]*$</ds-code></small></ds-prop>
+  <ds-prop name="statement" type="&lt;ds-type-ref href=&quot;common-rich-text.html#richtext&quot;&gt;richText&lt;/ds-type-ref&gt;" required>The testable statement of what success looks like. MUST be objectively verifiable — by inspection, static analysis, or runtime measurement. Avoid vague language like 'feels right' or 'looks balanced' (e.g., 'Interactive elements present a hit area of at least 44×44 px').</ds-prop>
   <ds-prop name="title" type="string">A short display name for the criterion (e.g., 'Touch Target Minimum'). Tools SHOULD render it in docs and test reports beside the identifier.</ds-prop>
-  <ds-prop name="techniques" type="&lt;ds-type-ref href=&quot;common-rich-text.html#richtext&quot;&gt;richText&lt;/ds-type-ref&gt;[]">Ways to satisfy this criterion — the passing patterns (e.g., 'Apply <ds-code inline>min-height: 44px</ds-code> to every interactive element', 'Use the <ds-code inline>&lt;Button&gt;</ds-code> component without overriding its default height').<br><small>Min items: 1</small></ds-prop>
+  <ds-prop name="techniques" type="&lt;ds-type-ref href=&quot;common-rich-text.html#richtext&quot;&gt;richText&lt;/ds-type-ref&gt;[]">Sufficient ways to satisfy this criterion — the passing patterns (e.g., 'Apply <ds-code inline>min-height: 44px</ds-code> to every interactive element', 'Use the <ds-code inline>&lt;Button&gt;</ds-code> component without overriding its default height').<br><small>Min items: 1</small></ds-prop>
   <ds-prop name="failures" type="&lt;ds-type-ref href=&quot;common-rich-text.html#richtext&quot;&gt;richText&lt;/ds-type-ref&gt;[]">Known failure modes — conditions that count as failing this criterion (e.g., 'Setting <ds-code inline>height</ds-code> below 44px on an interactive element', 'Removing <ds-code inline>aria-label</ds-code> from an icon-only button').<br><small>Min items: 1</small></ds-prop>
   <ds-prop name="references" type="&lt;ds-type-ref href=&quot;common-criterion.html#reference&quot;&gt;reference&lt;/ds-type-ref&gt;[]">External standards this criterion aligns with or derives from (e.g., a matching WCAG success criterion, a platform guideline).<br><small>Min items: 1</small></ds-prop>
-  <ds-prop name="examples" type="&lt;ds-type-ref href=&quot;common-example.html#example&quot;&gt;example&lt;/ds-type-ref&gt;[]">Examples that show the criterion — usually a before/after pair: one passing and one failing implementation.<br><small>Min items: 1</small></ds-prop>
-  <ds-prop name="tags" type="string[]">Freeform keywords that link criteria across guidelines and entities (e.g., 'a11y', 'contrast', 'touch-target').</ds-prop>
+  <ds-prop name="examples" type="&lt;ds-type-ref href=&quot;common-criterion.html#criterionfixture&quot;&gt;criterionFixture&lt;/ds-type-ref&gt;[]">Verification fixtures — typically one passing and one failing implementation, each with a declared <ds-code inline>outcome</ds-code>.<br><small>Min items: 1</small></ds-prop>
+  <ds-prop name="tags" type="string[]">Freeform keywords that relate criteria across guidelines and entities (e.g., 'a11y', 'contrast', 'touch-target').</ds-prop>
+  <ds-prop name="level" type="&lt;ds-type-ref href=&quot;common-criterion.html#conformancelevel&quot;&gt;conformanceLevel&lt;/ds-type-ref&gt;">The conformance level of this criterion. A criterion referenced by a guideline SHOULD inherit the guideline's <ds-code inline>level</ds-code> when omitted; a standalone criterion SHOULD declare its own.</ds-prop>
+  <ds-prop name="verification" type="&lt;ds-type-ref href=&quot;common-criterion.html#verificationmode&quot;&gt;verificationMode&lt;/ds-type-ref&gt;"></ds-prop>
+  <ds-prop name="check" type="&lt;ds-type-ref href=&quot;common-criterion.html#criterioncheck&quot;&gt;criterionCheck&lt;/ds-type-ref&gt;"></ds-prop>
+  <ds-prop name="since" type="string">The design system version in which this criterion was introduced (e.g., '1.0.0', '2.3.0'). Criterion identifiers are stable: once published, an identifier MUST NOT be reused for a different requirement — deprecate and mint a new one instead.</ds-prop>
 </ds-prop-table>
 <ds-cross-refs><strong>References:</strong> 
-<ds-type-ref href="common-rich-text.html#richtext">richText</ds-type-ref>, <ds-type-ref href="common-criterion.html#reference">reference</ds-type-ref>, <ds-type-ref href="common-example.html#example">example</ds-type-ref>
+<ds-type-ref href="common-rich-text.html#richtext">richText</ds-type-ref>, <ds-type-ref href="common-criterion.html#reference">reference</ds-type-ref>, <ds-type-ref href="common-criterion.html#criterionfixture">criterionFixture</ds-type-ref>, <ds-type-ref href="common-criterion.html#conformancelevel">conformanceLevel</ds-type-ref>, <ds-type-ref href="common-criterion.html#verificationmode">verificationMode</ds-type-ref>, <ds-type-ref href="common-criterion.html#criterioncheck">criterionCheck</ds-type-ref>
 </ds-cross-refs>
 <ds-def-example>
 <ds-code language="json" label="example">[
@@ -131,6 +139,164 @@
       &quot;touch-target&quot;,
       &quot;governance&quot;
     ]
+  },
+  {
+    &quot;identifier&quot;: &quot;icon-button-name-present&quot;,
+    &quot;title&quot;: &quot;Icon Button Accessible Name Present&quot;,
+    &quot;statement&quot;: &quot;Every icon-only button exposes a non-empty accessible name.&quot;,
+    &quot;level&quot;: &quot;MUST&quot;,
+    &quot;verification&quot;: &quot;automated&quot;,
+    &quot;check&quot;: {
+      &quot;scheme&quot;: &quot;axe-core&quot;,
+      &quot;rule&quot;: &quot;button-name&quot;
+    },
+    &quot;since&quot;: &quot;2.0.0&quot;,
+    &quot;techniques&quot;: [
+      &quot;Set `aria-label` on the button (e.g., `aria-label=\&quot;Close dialog\&quot;`).&quot;,
+      &quot;Use visually hidden text inside the button instead of `aria-label`.&quot;
+    ],
+    &quot;failures&quot;: [
+      &quot;Rendering an icon-only button whose accessible name resolves to an empty string.&quot;
+    ],
+    &quot;examples&quot;: [
+      {
+        &quot;title&quot;: &quot;Labelled icon button&quot;,
+        &quot;outcome&quot;: &quot;pass&quot;,
+        &quot;presentation&quot;: {
+          &quot;kind&quot;: &quot;code&quot;,
+          &quot;code&quot;: &quot;&lt;Button aria-label=\&quot;Close dialog\&quot;&gt;&lt;CloseIcon /&gt;&lt;/Button&gt;&quot;,
+          &quot;language&quot;: &quot;jsx&quot;
+        }
+      },
+      {
+        &quot;title&quot;: &quot;Unlabelled icon button&quot;,
+        &quot;outcome&quot;: &quot;fail&quot;,
+        &quot;presentation&quot;: {
+          &quot;kind&quot;: &quot;code&quot;,
+          &quot;code&quot;: &quot;&lt;Button&gt;&lt;CloseIcon /&gt;&lt;/Button&gt;&quot;,
+          &quot;language&quot;: &quot;jsx&quot;
+        }
+      }
+    ]
+  },
+  {
+    &quot;identifier&quot;: &quot;icon-button-name-length&quot;,
+    &quot;title&quot;: &quot;Icon Button Name Is Concise&quot;,
+    &quot;statement&quot;: &quot;Icon-only button accessible names are 40 characters or fewer.&quot;,
+    &quot;level&quot;: &quot;SHOULD&quot;,
+    &quot;verification&quot;: &quot;assisted&quot;,
+    &quot;check&quot;: {
+      &quot;scheme&quot;: &quot;com.acme.a11y-lint&quot;,
+      &quot;rule&quot;: &quot;label-length&quot;,
+      &quot;maxLength&quot;: 40
+    },
+    &quot;techniques&quot;: [
+      &quot;Name the action, not the icon (e.g., 'Close dialog', not 'X mark symbol button').&quot;
+    ],
+    &quot;failures&quot;: [
+      &quot;Accessible names that read as sentences rather than action labels.&quot;
+    ]
+  },
+  {
+    &quot;identifier&quot;: &quot;icon-button-name-describes-action&quot;,
+    &quot;title&quot;: &quot;Icon Button Name Describes the Action&quot;,
+    &quot;statement&quot;: &quot;Every icon-only button's accessible name describes the action the button performs, not the icon's appearance.&quot;,
+    &quot;level&quot;: &quot;MUST&quot;,
+    &quot;verification&quot;: &quot;manual&quot;,
+    &quot;techniques&quot;: [
+      &quot;Name the outcome of activation (e.g., 'Close dialog', 'Copy link', 'Delete row').&quot;,
+      &quot;Review names alongside the rendered UI so the action context is visible.&quot;
+    ],
+    &quot;failures&quot;: [
+      &quot;Names that describe the glyph (e.g., 'X icon', 'Trash can') rather than the action.&quot;,
+      &quot;The same generic name (e.g., 'Button') on multiple buttons that perform different actions.&quot;
+    ],
+    &quot;examples&quot;: [
+      {
+        &quot;title&quot;: &quot;Action-describing name&quot;,
+        &quot;outcome&quot;: &quot;pass&quot;,
+        &quot;value&quot;: &quot;aria-label=\&quot;Copy link\&quot;&quot;
+      },
+      {
+        &quot;title&quot;: &quot;Appearance-describing name&quot;,
+        &quot;outcome&quot;: &quot;fail&quot;,
+        &quot;value&quot;: &quot;aria-label=\&quot;Chain icon\&quot;&quot;
+      }
+    ]
+  }
+]</ds-code>
+</ds-def-example>
+</ds-def-section>
+<ds-def-section name="conformanceLevel" anchor="conformancelevel" description="RFC 2119 conformance level. MUST/MUST_NOT are absolute requirements; SHOULD/SHOULD_NOT are strong defaults that valid exceptions may override when the implications are understood. Shared by guideline entries and criteria so reports aggregate on one severity vocabulary." type="string">
+<p><strong>Allowed values:</strong></p>
+<ul class="enum-list">
+<li><ds-code inline>MUST</ds-code></li>
+<li><ds-code inline>SHOULD</ds-code></li>
+<li><ds-code inline>SHOULD_NOT</ds-code></li>
+<li><ds-code inline>MUST_NOT</ds-code></li>
+</ul>
+</ds-def-section>
+<ds-def-section name="verificationMode" anchor="verificationmode" description="How a result for this criterion is produced — who decides the outcome. 'automated': a runner fully decides; a `check` MUST be present. 'assisted': a tool surfaces candidates but a human decides; `check` diagnostics are advisory. 'manual': pure human judgment; no `check` applies — `techniques` and `failures` serve as the reviewer's procedure. This is a closed set: the axis is who decides, and named procedures (e.g. a design review) are the 'how', which belongs in `techniques`. When omitted, tools MUST NOT assume the criterion is automatable." type="string">
+<p><strong>Allowed values:</strong></p>
+<ul class="enum-list">
+<li><ds-code inline>automated</ds-code></li>
+<li><ds-code inline>assisted</ds-code></li>
+<li><ds-code inline>manual</ds-code></li>
+</ul>
+</ds-def-section>
+<ds-def-section name="criterionCheck" anchor="criterioncheck" description="A dispatch envelope for automated or assisted verification. DSDS defines only the envelope: `scheme` names the runner or rule system (open vocabulary, e.g. 'axe-core', 'vitest', 'stylelint', 'lighthouse'); all other properties are scheme-specific configuration owned by the named tool. A runner that does not recognize the scheme MUST report the criterion as skipped, never as passing. Like `extensions`, this object is intentionally open: execution semantics live in tools, not in this specification." type="object">
+<ds-prop-table>
+  <ds-prop name="scheme" type="string" required>Identifier of the rule system or runner this check dispatches to. MUST be lowercase; dots permitted for namespacing (e.g. 'com.acme.contract-tests').<br><small>Pattern: <ds-code inline>^[a-z][a-z0-9.-]*$</ds-code></small></ds-prop>
+</ds-prop-table>
+<ds-def-example>
+<ds-code language="json" label="example">[
+  {
+    &quot;scheme&quot;: &quot;axe-core&quot;,
+    &quot;rule&quot;: &quot;button-name&quot;
+  },
+  {
+    &quot;scheme&quot;: &quot;vitest&quot;,
+    &quot;suite&quot;: &quot;button.contract.test.ts&quot;,
+    &quot;testName&quot;: &quot;renders a minimum 44px hit area&quot;
+  },
+  {
+    &quot;scheme&quot;: &quot;com.acme.contract-tests&quot;,
+    &quot;endpoint&quot;: &quot;https://ci.acme.com/checks/touch-target&quot;
+  }
+]</ds-code>
+</ds-def-example>
+</ds-def-section>
+<ds-def-section name="criterionFixture" anchor="criterionfixture" description="An example with a declared outcome, used as a verification fixture for a criterion. Identical to `example` plus a required `outcome`. NOTE: this is an intentional copy of the `example` shape, not a composition — `example` is a closed schema (additionalProperties: false), so allOf-extension cannot add `outcome`. When `example` changes, change this definition to match (example.schema.json carries the mirror note). Fixtures make criteria self-verifying: a conformance runner SHOULD execute the criterion's `check` (when present) against each fixture and confirm the declared outcome is reproduced — a 'fail' fixture that passes means the check no longer detects what it claims to." type="object">
+<ds-prop-table>
+  <ds-prop name="value" type="any" conditional>A literal value carried by the example. Use it for API property examples, where the content is a concrete value rather than a visual demo. It can display code that reflects the example. Accepts any JSON type: string, number, boolean, object, array, or null. When given without a presentation, this value alone is the example. Do not use <ds-code inline>value</ds-code> for display text — use <ds-code inline>title</ds-code> for captions and <ds-code inline>description</ds-code> for explanations.</ds-prop>
+  <ds-prop name="presentation" type="&lt;ds-type-ref href=&quot;common-presentation.html#presentationimage&quot;&gt;presentationImage&lt;/ds-type-ref&gt; | &lt;ds-type-ref href=&quot;common-presentation.html#presentationvideo&quot;&gt;presentationVideo&lt;/ds-type-ref&gt; | &lt;ds-type-ref href=&quot;common-presentation.html#presentationcode&quot;&gt;presentationCode&lt;/ds-type-ref&gt; | &lt;ds-type-ref href=&quot;common-presentation.html#presentationurl&quot;&gt;presentationUrl&lt;/ds-type-ref&gt;" conditional>The visual or interactive presentation for the example. Required when no <ds-code inline>value</ds-code> is set. Optional when <ds-code inline>value</ds-code> is present. Value-only examples are concrete data points that tools render as table rows or inline displays.</ds-prop>
+  <ds-prop name="outcome" type="&lt;ds-code inline&gt;&quot;pass&quot;&lt;/ds-code&gt; | &lt;ds-code inline&gt;&quot;fail&quot;&lt;/ds-code&gt;" conditional>Whether this fixture satisfies ('pass') or violates ('fail') the criterion. Replaces encoding pass/fail in <ds-code inline>title</ds-code> prose, which tools cannot rely on.</ds-prop>
+  <ds-prop name="title" type="string">A human-readable caption for the example (e.g., 'Primary button in default state'). For API property examples, use <ds-code inline>value</ds-code> for the literal content and <ds-code inline>title</ds-code> for the display label.</ds-prop>
+  <ds-prop name="description" type="string">An explanation of the example — why it is encouraged, discouraged, or notable.</ds-prop>
+</ds-prop-table>
+<ds-note variant="warning"><strong>Constraint:</strong> At least one of <ds-code inline>presentation</ds-code>, <ds-code inline>outcome</ds-code>, <ds-code inline>value</ds-code>, <ds-code inline>outcome</ds-code> must be present.</ds-note>
+<ds-cross-refs><strong>References:</strong> 
+<ds-type-ref href="common-presentation.html#presentationimage">presentationImage</ds-type-ref>, <ds-type-ref href="common-presentation.html#presentationvideo">presentationVideo</ds-type-ref>, <ds-type-ref href="common-presentation.html#presentationcode">presentationCode</ds-type-ref>, <ds-type-ref href="common-presentation.html#presentationurl">presentationUrl</ds-type-ref>
+</ds-cross-refs>
+<ds-def-example>
+<ds-code language="json" label="example">[
+  {
+    &quot;title&quot;: &quot;Icon-only button with an accessible name&quot;,
+    &quot;outcome&quot;: &quot;pass&quot;,
+    &quot;presentation&quot;: {
+      &quot;kind&quot;: &quot;code&quot;,
+      &quot;code&quot;: &quot;&lt;Button aria-label=\&quot;Close dialog\&quot;&gt;&lt;CloseIcon /&gt;&lt;/Button&gt;&quot;,
+      &quot;language&quot;: &quot;jsx&quot;
+    }
+  },
+  {
+    &quot;title&quot;: &quot;Icon-only button with no accessible name&quot;,
+    &quot;outcome&quot;: &quot;fail&quot;,
+    &quot;presentation&quot;: {
+      &quot;kind&quot;: &quot;code&quot;,
+      &quot;code&quot;: &quot;&lt;Button&gt;&lt;CloseIcon /&gt;&lt;/Button&gt;&quot;,
+      &quot;language&quot;: &quot;jsx&quot;
+    }
   }
 ]</ds-code>
 </ds-def-example>
@@ -153,7 +319,7 @@
         <ds-back-to-top></ds-back-to-top>
 
         <ds-footer>
-          <p>Design System Documentation Spec (DSDS) 0.7.2 — Draft Specification</p>
+          <p>Design System Documentation Spec (DSDS) 0.8.0 — Draft Specification</p>
           <p><a href="https://github.com/somerandomdude/design-system-documentation-schema">GitHub</a></p>
         </ds-footer>
       </div>

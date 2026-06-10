@@ -196,6 +196,44 @@ Each guideline pairs a `guidance` statement with a `rationale` and an RFC 2119 `
 
 The `level` field is named for RFC 2119: <ds-badge>MUST</ds-badge>, <ds-badge>SHOULD</ds-badge>, <ds-badge>SHOULD_NOT</ds-badge>, <ds-badge>MUST_NOT</ds-badge>. Agents treat `MUST`/`MUST_NOT` as hard limits. Optional `evidence` records the backing, and `criteria` define testable success conditions that checks can run against.
 
+### Criteria: how to verify it
+
+A criterion turns a guideline into something checkable. Each one pairs a stable `identifier` with a testable `statement`. Test runs report pass or fail against the identifier.
+
+The `verification` field says how a result is produced:
+
+- **`automated`** — a runner decides the outcome. A `check` names the tool (its `scheme`) and carries that tool's config. Required for this mode.
+- **`assisted`** — a tool surfaces candidates; a human decides.
+- **`manual`** — pure human judgment. No `check` applies; `techniques` and `failures` act as the reviewer's procedure.
+
+When `verification` is omitted, tools must not assume the criterion is automatable. The set is closed — it answers *who decides*. A named procedure such as a design review is the *how*; put it in `techniques` on a `manual` criterion.
+
+`examples` on a criterion are fixtures. Each declares an `outcome` — `"pass"` or `"fail"` — so a runner can confirm the check still detects what it claims to:
+
+```json
+{
+  "identifier": "icon-button-name-present",
+  "statement": "Every icon-only button exposes a non-empty accessible name.",
+  "level": "MUST",
+  "verification": "automated",
+  "check": { "scheme": "axe-core", "rule": "button-name" },
+  "examples": [
+    {
+      "title": "Labelled icon button",
+      "outcome": "pass",
+      "presentation": { "kind": "code", "code": "<Button aria-label=\"Close dialog\"><CloseIcon /></Button>", "language": "jsx" }
+    },
+    {
+      "title": "Unlabelled icon button",
+      "outcome": "fail",
+      "presentation": { "kind": "code", "code": "<Button><CloseIcon /></Button>", "language": "jsx" }
+    }
+  ]
+}
+```
+
+The `statement` is always the source of truth. The `check` is its executable shadow — execution semantics belong to the named tool, not to DSDS.
+
 ---
 
 ## Minimal examples

@@ -1,0 +1,93 @@
+# DSDS quality rules catalog
+#
+# The catalog of record for quality rules that sit above schema validation.
+# Each rule has a stable ID; once published, an ID is never reused for a
+# different rule. `enforcement` names where the rule runs:
+#
+#   json-schema  — enforced structurally by the schema; pinned by a negative
+#                  fixture in test/invalid/
+#   semantic     — enforced by the semantic checks in scripts/validate.js
+#                  (blocking, exit non-zero)
+#   lint         — enforced by scripts/lint-docs.js (warning tier, never
+#                  blocking for documentation findings)
+#   none         — normative in spec prose only; not yet machine-checked
+#
+# This file is load-bearing for the lint: scripts/lint-docs.js reads it at
+# startup and runs exactly the rules marked `enforcement: lint`, joined to
+# its check implementations by `name`. Adding a lint rule here without an
+# implementation — or removing one that is still implemented — makes the
+# lint exit non-zero with a drift error. Setting a rule's enforcement to
+# `none` disables it without touching code (the orphaned implementation
+# must then be removed, or the drift guard fires).
+#
+# Structural rules that the schema can express are NOT listed here — the
+# schema is their catalog (see test/invalid/README.md for the fixture list).
+# Exception: rules that began life as catalog candidates are noted below for
+# traceability even when they graduated to the schema.
+
+rules:
+  - id: DSDS-001
+    name: guideline-rationale-restates-guidance
+    statement: A guideline's `rationale` MUST NOT restate its `guidance`.
+    rationale: >
+      The rationale exists to say why the rule is worth following. A
+      restatement spends the reader's attention and teaches authors that the
+      field is ceremony.
+    level: MUST_NOT
+    enforcement: lint
+
+  - id: DSDS-002
+    name: criterion-identifier-reuse
+    statement: >
+      A criterion identifier MUST NOT be reused for a different requirement —
+      neither across versions (deprecate and mint a new one instead) nor for
+      two criteria within the same entity.
+    rationale: >
+      Test runs report pass/fail against the identifier. Reuse silently
+      rebinds historical results to a different requirement.
+    level: MUST_NOT
+    enforcement: semantic
+    note: >
+      The static check enforces uniqueness within an entity. The
+      across-versions half is temporal and cannot be checked in a single
+      document; it remains normative prose on `criterion.since`.
+
+  - id: DSDS-003
+    name: criterion-missing-verification
+    statement: Criteria SHOULD declare a `verification` mode.
+    rationale: >
+      When `verification` is omitted, tools MUST NOT assume the criterion is
+      automatable — an undeclared criterion is invisible to conformance
+      dashboards.
+    level: SHOULD
+    enforcement: lint
+
+  - id: DSDS-004
+    name: guideline-missing-rationale
+    statement: Guideline entries SHOULD carry a `rationale` or `evidence`.
+    rationale: Rules with stated reasons get followed.
+    level: SHOULD
+    enforcement: lint
+
+  - id: DSDS-005
+    name: entity-missing-description
+    statement: >
+      Components, patterns, foundations, guides, and themes SHOULD carry a
+      `description`. Tokens and token groups are exempt — the spec keeps them
+      terse at scale by design.
+    rationale: Readers meet the name with no idea what it is or when it applies.
+    level: SHOULD
+    enforcement: lint
+
+  - id: DSDS-006
+    name: entity-missing-use-cases
+    statement: Components and patterns SHOULD carry a `useCases` block.
+    rationale: '"When do I use this?" is the first question documentation must answer.'
+    level: SHOULD
+    enforcement: lint
+
+  # Graduated to the schema (kept for traceability; do not reuse the IDs):
+  # DSDS-007 criterion-automated-requires-check — json-schema
+  #   (allOf/if-then on `criterion`; fixture criterion-automated-without-check)
+  # DSDS-008 criterion-manual-forbids-check — json-schema
+  #   (allOf/if-then on `criterion`; fixture criterion-manual-with-check)

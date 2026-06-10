@@ -4,6 +4,34 @@ All notable changes to the DSDS specification are documented in this file.
 
 ---
 
+## [0.8.0] — 2026-06-10
+
+Conformance release. Criteria gain a conformance `level`, a `verification` mode, a machine-dispatchable `check`, and self-verifying fixtures with declared outcomes — a Spectrum-style layered model where the schema carries the test definitions and named tools carry execution. Schema files are served at `https://designsystemdocspec.org/v0.8.0/...`. Design and verification record: `proposals/criterion-conformance.md`.
+
+### Breaking changes
+
+#### 1. Criterion fixtures require a declared `outcome`
+
+A criterion's `examples` are now fixtures — the `example` shape plus a required `outcome` of `"pass"` or `"fail"`. Encoding outcomes in title prose ("Correct — …") is replaced by the machine-readable field, which lets runners confirm a check still detects what it claims to (a 'fail' fixture that passes is a broken check).
+
+**Migration.** Run `node scripts/migrate-to-0.8.js <files>` — it bumps `dsdsVersion`, rewrites `$schema` URLs, and infers `outcome` from common title prefixes (Correct/Incorrect, Pass/Fail, Do/Don't). Fixtures it cannot infer are reported for a human decision.
+
+### Additions
+
+- **Conformance vocabulary on `criterion`** (all optional — existing criteria stay valid): `level` (RFC 2119, shared with guideline entries via the new `conformanceLevel` def), `verification` (a closed enum — `automated` / `assisted` / `manual` — answering who decides the outcome; named procedures belong in `techniques`; omitted ⇒ tools MUST NOT assume automatability), `check` (a dispatch envelope: required open-vocabulary `scheme`, all other properties owned by the named tool; unrecognized scheme ⇒ skipped, never passing), and `since` (criterion identifiers are stable — never reuse one for a different requirement).
+- **Two structural guards**, pinned by negative fixtures: `verification: automated` requires a `check`; `verification: manual` forbids one.
+- **Quality rules catalog** at `rules/rules.yaml` — the catalog of record with stable IDs (DSDS-001…006) covering the doc lint's rules and the semantic checks. New: DSDS-001 (rationale must not restate guidance, lint), DSDS-002 (criterion identifier reuse, blocking semantic check for the within-entity half), DSDS-003 (criteria SHOULD declare `verification`, lint).
+- `guidelineEntry.level` now references the shared `conformanceLevel` definition (same values; no document impact).
+- Quickstart: new "Criteria: how to verify it" section.
+
+### Tooling
+
+- `scripts/migrate-to-0.8.js` — the outcome codemod.
+- `scripts/bump-version.js` now keeps `package.json` in step with the spec version.
+- `scripts/validate.js` now also validates the real-world documents in `test/` (`test/invalid/` keeps its own must-fail pass); `test/sanity-ui-button.dsds.json` was migrated from its pre-0.7 shape into the validated corpus, with its legacy per-variant design-spec tables preserved under `$extensions`.
+
+---
+
 ## [0.7.2] — 2026-06-09
 
 Editorial-quality release. One tightening (use cases must declare a stance), one loosening (anatomy parts no longer force a `required` flag), author-facing validation errors, and a new non-blocking documentation lint. Schema files are served at `https://designsystemdocspec.org/v0.7.2/...`.

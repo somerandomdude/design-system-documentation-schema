@@ -246,7 +246,13 @@ function validateExamples(ajv) {
 
   const validate = ajv.compile(schema);
 
-  const files = findFilesRecursive(EXAMPLES_DIR, ".dsds.json");
+  // Examples plus the real-world documents in test/ (test/invalid/ has its
+  // own must-fail pass in Part 4).
+  const files = findFilesRecursive(EXAMPLES_DIR, ".dsds.json").concat(
+    findFilesRecursive(path.join(ROOT, "test"), ".dsds.json").filter(
+      (f) => !f.includes(`${path.sep}invalid${path.sep}`),
+    ),
+  );
 
   let passed = 0;
   let failed = 0;
@@ -489,10 +495,55 @@ const EXTENSION_KEY_REGEX = /^[A-Za-z0-9_-]+(\.[A-Za-z0-9_-]+)+$/;
  *   1. Entity identifiers MUST be unique within their entity group (and
  *      token/token-group identifiers within their parent's `children`).
  *   2. `$extensions` keys MUST be vendor-namespaced.
+ *   3. Criterion identifiers MUST be unique within their entity
+ *      (rules/rules.yaml DSDS-002 — test runs report against them).
  * Returns an array of { path, message } findings.
  */
+const ENTITY_KIND_SET = new Set([
+  "component",
+  "pattern",
+  "foundation",
+  "guide",
+  "theme",
+  "token",
+  "token-group",
+]);
+
 function semanticFindings(doc) {
   const findings = [];
+
+  // DSDS-002 (static half): within one entity, no two criteria share an
+  // identifier. Nested token-group children are their own entity scopes.
+  function checkCriterionScope(entity, entityPath) {
+    const seen = new Map();
+    function scan(node, p) {
+      if (Array.isArray(node)) {
+        node.forEach((v, i) => scan(v, `${p}/${i}`));
+        return;
+      }
+      if (!node || typeof node !== "object") return;
+      if (node !== entity && ENTITY_KIND_SET.has(node.kind)) return; // child entity = own scope
+      if (Array.isArray(node.criteria)) {
+        node.criteria.forEach((c, i) => {
+          const id = c && c.identifier;
+          if (typeof id !== "string") return;
+          if (seen.has(id)) {
+            findings.push({
+              path: `${p}/criteria/${i}/identifier`,
+              message: `criterion identifier '${id}' is reused within the same entity (first used at ${seen.get(id)}) — test results report against this identifier (DSDS-002)`,
+            });
+          } else {
+            seen.set(id, `${p}/criteria/${i}`);
+          }
+        });
+      }
+      for (const [k, v] of Object.entries(node)) {
+        if (k === "criteria") continue;
+        scan(v, `${p}/${k}`);
+      }
+    }
+    scan(entity, entityPath);
+  }
 
   function checkIdentifierScope(items, pathPrefix) {
     const seen = new Map();
@@ -516,6 +567,9 @@ function semanticFindings(doc) {
     if (Array.isArray(node)) {
       node.forEach((item, i) => walk(item, `${nodePath}/${i}`));
       return;
+    }
+    if (ENTITY_KIND_SET.has(node.kind) && typeof node.identifier === "string") {
+      checkCriterionScope(node, nodePath);
     }
     if (node.$extensions && typeof node.$extensions === "object") {
       for (const key of Object.keys(node.$extensions)) {
@@ -546,7 +600,11 @@ function semanticFindings(doc) {
 function validateSemantics() {
   console.log("━━━ Semantic checks (uniqueness, extension namespaces) ━━━\n");
 
-  const files = findFilesRecursive(EXAMPLES_DIR, ".dsds.json");
+  const files = findFilesRecursive(EXAMPLES_DIR, ".dsds.json").concat(
+    findFilesRecursive(path.join(ROOT, "test"), ".dsds.json").filter(
+      (f) => !f.includes(`${path.sep}invalid${path.sep}`),
+    ),
+  );
   let passed = 0;
   let failed = 0;
   const errors = [];

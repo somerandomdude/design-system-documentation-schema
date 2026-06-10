@@ -367,6 +367,22 @@ for (const file of docFiles) {
   if (processFile(file, false, { rewriteDisplayNames: true })) totalFiles++;
 }
 
+// package.json: the repo's own version tracks the spec version (claude.md:
+// "Make sure package.json version is aligned with CHANGELOG").
+if (!SCHEMAS_ONLY) {
+  const pkgPath = path.join(ROOT, "package.json");
+  const pkg = JSON.parse(fs.readFileSync(pkgPath, "utf-8"));
+  if (pkg.version !== NEW_VERSION) {
+    pkg.version = NEW_VERSION;
+    totalFiles++;
+    totalReplacements++;
+    changedFiles.push(`package.json (version → ${NEW_VERSION})`);
+    if (!DRY_RUN) {
+      fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + "\n", "utf-8");
+    }
+  }
+}
+
 // Publication date: stamp the overview page's "Draft Specification — <date>:"
 // line with today's date. Cutting a version is the spec's publication
 // moment, so the date moves here rather than at build time (a rebuild
