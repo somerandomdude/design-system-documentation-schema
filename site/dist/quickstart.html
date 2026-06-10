@@ -3,13 +3,13 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>DSDS Quick Start Guide — DSDS 0.7.1</title>
+  <title>DSDS Quick Start Guide — DSDS 0.7.2</title>
   <meta name="description" content="Get started with DSDS — document structure, entity types, the document block system, and minimal examples you can copy.">
   <link rel="canonical" href="https://designsystemdocspec.org/quickstart">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Design System Documentation Spec">
-  <meta property="og:title" content="DSDS Quick Start Guide — DSDS 0.7.1">
+  <meta property="og:title" content="DSDS Quick Start Guide — DSDS 0.7.2">
   <meta property="og:description" content="Get started with DSDS — document structure, entity types, the document block system, and minimal examples you can copy.">
   <meta property="og:url" content="https://designsystemdocspec.org/quickstart">
   <meta name="twitter:card" content="summary">
@@ -20,7 +20,7 @@
 <body>
   <a class="skip-link" href="#main-content">Skip to content</a>
   <ds-nav-toggle target="ds-spec-nav"></ds-nav-toggle>
-  <ds-spec-nav title="Design System Documentation Spec 0.7.1" title-href="index.html" active="quickstart">
+  <ds-spec-nav title="Design System Documentation Spec 0.7.2" title-href="index.html" active="quickstart">
     <a href="index.html" slug="index">Overview</a>
     <a href="quickstart.html" slug="quickstart">Quick start</a>
     <a href="schema-architecture.html" slug="schema-architecture">Schema architecture</a>
@@ -101,8 +101,8 @@
 <ds-heading level="3" anchor="single-entity-files">Single-entity files</ds-heading>
 <p>Use <ds-code inline>entity</ds-code> when each component, token, or pattern lives in its own file. The <ds-code inline>kind</ds-code> field on the entity identifies its type.</p>
 <ds-code language="json">{
-  "$schema": "https://designsystemdocspec.org/v0.7.1/dsds.bundled.schema.json",
-  "dsdsVersion": "0.7.1",
+  "$schema": "https://designsystemdocspec.org/v0.7.2/dsds.bundled.schema.json",
+  "dsdsVersion": "0.7.2",
   "entity": {
     "kind": "component",
     "identifier": "button",
@@ -116,7 +116,7 @@
 <ds-heading level="3" anchor="multi-entity-files">Multi-entity files</ds-heading>
 <p>Use <ds-code inline>entityGroups</ds-code> to put several entities in one file, or as a manifest that points to separate entity files.</p>
 <ds-code language="json">{
-  "dsdsVersion": "0.7.1",
+  "dsdsVersion": "0.7.2",
   "entityGroups": [
     {
       "name": "My Design System",
@@ -131,14 +131,14 @@
 }
 </ds-code>
 <ul>
-<li><ds-code inline>dsdsVersion</ds-code> — the spec version this document targets; <ds-code inline>"0.7.1"</ds-code> for this release</li>
+<li><ds-code inline>dsdsVersion</ds-code> — the spec version this document targets; <ds-code inline>"0.7.2"</ds-code> for this release</li>
 <li><ds-code inline>entityGroups</ds-code> — array of named groups</li>
 <li><ds-code inline>entities</ds-code> — one array per group; mix kinds freely in display order. Each entity's <ds-code inline>kind</ds-code> says what type it is</li>
 </ul>
 <ds-heading level="3" anchor="linking-files-with-ref">Linking files with <ds-code inline>$ref</ds-code></ds-heading>
 <p>Entity arrays accept <ds-code inline>$ref</ds-code> objects that point to other DSDS files. This lets you keep entities in their own files and pull them together in a manifest:</p>
 <ds-code language="json">{
-  "dsdsVersion": "0.7.1",
+  "dsdsVersion": "0.7.2",
   "entityGroups": [
     {
       "name": "Acme Design System",
@@ -627,7 +627,7 @@
 <p>Here's a complete, minimal DSDS file with one of each entity type:</p>
 <ds-code language="json">{
   "$schema": "../schema/dsds.bundled.schema.json",
-  "dsdsVersion": "0.7.1",
+  "dsdsVersion": "0.7.2",
   "systemInfo": {
     "systemName": "Minimal Example"
   },
@@ -678,15 +678,18 @@
               "items": [
                 {
                   "guidance": "Do not use for navigating to a different page or URL.",
-                  "level": "MUST_NOT"
+                  "level": "MUST_NOT",
+                  "rationale": "Buttons signal actions and links signal navigation. Assistive technology announces each differently, and users rely on that distinction to predict what a control will do."
                 },
                 {
                   "guidance": "Limit each surface to one primary-emphasis button.",
-                  "level": "MUST"
+                  "level": "MUST",
+                  "rationale": "A single primary action keeps the visual hierarchy clear. When several buttons compete at primary emphasis, the intended next step becomes ambiguous."
                 },
                 {
                   "guidance": "Always provide an accessible label via visible text or aria-label.",
-                  "level": "MUST"
+                  "level": "MUST",
+                  "rationale": "Icon-only buttons without an accessible name are unusable with screen readers and fail WCAG 4.1.2 (Name, Role, Value)."
                 },
                 {
                   "guidance": "Using a button to navigate to another page.",
@@ -697,6 +700,21 @@
                   "guidance": "Placing multiple primary buttons on the same surface.",
                   "rationale": "Instead: Use one primary and one or more secondary or tertiary buttons.",
                   "level": "MUST_NOT"
+                }
+              ]
+            }
+          ],
+          "documentBlocks": [
+            {
+              "kind": "useCases",
+              "items": [
+                {
+                  "description": "When the user needs to trigger an action such as submitting a form, saving data, or opening a dialog.",
+                  "stance": "recommended"
+                },
+                {
+                  "description": "When the action navigates to a different page or URL — use a link instead, which carries native navigation semantics.",
+                  "stance": "discouraged"
                 }
               ]
             }
@@ -861,11 +879,13 @@
               "items": [
                 {
                   "guidance": "Always apply at the application root, not on individual components.",
-                  "level": "MUST"
+                  "level": "MUST",
+                  "rationale": "Scoping the theme to the root keeps every surface consistent. Per-component theming produces mixed-mode screens and doubles the testing surface."
                 },
                 {
                   "guidance": "Do not mix dark-mode and light-mode semantic tokens on the same surface.",
-                  "level": "MUST_NOT"
+                  "level": "MUST_NOT",
+                  "rationale": "Semantic tokens are tuned for contrast within one mode. Mixing modes breaks those tuned pairings unpredictably."
                 },
                 {
                   "guidance": "Applying dark theme only to part of a page while the rest remains light.",
@@ -913,11 +933,13 @@
               "items": [
                 {
                   "guidance": "Do not hard-code hex values; reference semantic color tokens instead.",
-                  "level": "MUST_NOT"
+                  "level": "MUST_NOT",
+                  "rationale": "Hard-coded values escape theming, dark mode, and audits — the palette can no longer change in one place."
                 },
                 {
                   "guidance": "Maintain WCAG AA contrast for text and interactive elements on every surface.",
-                  "level": "MUST"
+                  "level": "MUST",
+                  "rationale": "AA is the system's compliance floor: 4.5:1 for normal text, 3:1 for large text and interactive components."
                 }
               ]
             }
@@ -966,16 +988,29 @@
               "items": [
                 {
                   "guidance": "Always include both an inline field error and a summary when multiple fields fail.",
-                  "level": "MUST"
+                  "level": "MUST",
+                  "rationale": "The summary gives screen reader users one announcement point and an error count; inline errors give sighted users fix-it-here proximity. Each alone strands one audience."
                 },
                 {
                   "guidance": "Do not use toast notifications as the sole error communication for form validation.",
-                  "level": "MUST_NOT"
+                  "level": "MUST_NOT",
+                  "rationale": "Toasts dismiss themselves and are not tied to the failing field. Once gone, the user has no path back to what went wrong."
                 },
                 {
                   "guidance": "Showing errors only on submit without inline field feedback.",
                   "rationale": "Instead: Show inline errors on field blur and in a summary on submit.",
                   "level": "MUST_NOT"
+                }
+              ]
+            }
+          ],
+          "documentBlocks": [
+            {
+              "kind": "useCases",
+              "items": [
+                {
+                  "description": "When a form submission can fail per field and the user must fix specific inputs before continuing.",
+                  "stance": "recommended"
                 }
               ]
             }
@@ -992,8 +1027,8 @@
 <ds-heading level="3" anchor="using-the-bundled-schema">Using the bundled schema</ds-heading>
 <p>Add <ds-code inline>$schema</ds-code> to get editor autocompletion and inline validation:</p>
 <ds-code language="json">{
-  "$schema": "https://designsystemdocspec.org/v0.7.1/dsds.bundled.schema.json",
-  "dsdsVersion": "0.7.1",
+  "$schema": "https://designsystemdocspec.org/v0.7.2/dsds.bundled.schema.json",
+  "dsdsVersion": "0.7.2",
   "entity": {
     "kind": "component",
     "identifier": "my-component",
@@ -1028,7 +1063,7 @@ npx ajv validate -s spec/schema/dsds.bundled.schema.json -d my-system.dsds.json
         <ds-back-to-top></ds-back-to-top>
 
         <ds-footer>
-          <p>Design System Documentation Spec (DSDS) 0.7.1 — Draft Specification</p>
+          <p>Design System Documentation Spec (DSDS) 0.7.2 — Draft Specification</p>
           <p><a href="https://github.com/somerandomdude/design-system-documentation-schema">GitHub</a></p>
         </ds-footer>
       </div>
