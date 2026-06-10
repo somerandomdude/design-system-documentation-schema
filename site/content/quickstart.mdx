@@ -117,21 +117,7 @@ Every entity has a `kind` field that tells tools what type of thing it is. There
 
 ### Common properties
 
-Every entity shares these fields:
-
-{/* Hand-authored cross-entity summary of the shared entity envelope; spans all entity types rather than mirroring one schema $def. */}
-
-| Property | Required | Description |
-|----------|----------|-------------|
-| `kind` | Yes | Entity type |
-| `identifier` | Yes\* | Machine-readable identifier (`^[a-z][a-z0-9-]*$`, except tokens) |
-| `name` | Yes\* | Human-readable label |
-| `description` | No | What this entity is and does (CommonMark supported) |
-| `metadata` | No | Object of optional fields — `status`, `since`, `tags`, `category`, `links`, and more |
-| `documentBlocks` | No | Array of typed document block objects |
-| `agentDocumentBlocks` | No | Document blocks for agent (AI/LLM) consumption only — same kinds, never rendered for humans |
-
-\* Required for component, foundation, pattern, theme, and guide. Token requires `identifier` + `tokenType`.
+Every entity shares the same envelope: `kind`, `identifier`, `name`, optional `description` and `metadata`, plus `documentBlocks` and `agentDocumentBlocks`. See [Common entity properties](schema-architecture.html#common-entity-properties) for the full table, including the token exceptions.
 
 The optional `agentDocumentBlocks` array is a partitioned space for agent-only documentation — generation constraints with `evidence`, disambiguation against similar entities — using the same block kinds as `documentBlocks`. Tools never render it for humans; agents read both arrays.
 
@@ -252,7 +238,7 @@ A pattern describes how components compose to solve a user need. It supports `in
 
 <ds-example file="pattern.json" label="minimal pattern" />
 
-### Full document {#minimal}
+### Full document
 
 Here's a complete, minimal DSDS file with one of each entity type:
 
@@ -314,7 +300,7 @@ You've seen the basics. Here's where to go deeper.
 
 **Getting started recipe:**
 
-1. Copy the [minimal document](#minimal) above
+1. Copy the [minimal document](#full-document) above
 2. Replace the example entities with your own design system's components and tokens
 3. Add `documentBlocks` entries to each entity as your docs grow
 4. Validate with `npm run validate` to catch schema errors early

@@ -154,12 +154,10 @@
 <ds-callout variant="tip"><p><strong>Tip:</strong> Use single-entity files + a <ds-code inline>$ref</ds-code> manifest for large systems where each component is owned by a different team. Use a single multi-entity file for smaller systems or when you want everything in one place.</p></ds-callout>
 <hr />
 <ds-heading level="2" anchor="entity-types">Entity types</ds-heading>
-<p>Every entity has a <ds-code inline>kind</ds-code> field that tells tools what type of thing it is. There are six kinds.</p>
+<p>Every entity has a <ds-code inline>kind</ds-code> field that tells tools what type of thing it is. There are seven kinds.</p>
 <ds-table><table><thead><tr><th>Kind</th><th>Code</th><th>Description</th></tr></thead><tbody><tr><td>component</td><td><ds-code inline>"component"</ds-code></td><td>A reusable UI element — buttons, inputs, modals. Supports anatomy, API, variants, states, and design specs.</td></tr><tr><td>token</td><td><ds-code inline>"token"</ds-code></td><td>A single design token — color, spacing, typography. Carries type, category, and usage rules. Link to W3C DTCG definitions via <ds-code inline>source</ds-code>.</td></tr><tr><td>token-group</td><td><ds-code inline>"token-group"</ds-code></td><td>A nested group of related tokens. Recursive — groups can contain groups.</td></tr><tr><td>theme</td><td><ds-code inline>"theme"</ds-code></td><td>A named set of token overrides — dark mode, high-contrast, compact density, brand variants. Lists which token names change; the DTCG file holds the actual values.</td></tr><tr><td>foundation</td><td><ds-code inline>"foundation"</ds-code></td><td>A design base — color, typography, spacing, elevation. Carries principles, scales, and motion definitions.</td></tr><tr><td>pattern</td><td><ds-code inline>"pattern"</ds-code></td><td>A broad action pattern — nav, error messaging, empty states. Describes how components compose to solve a user need.</td></tr><tr><td>guide</td><td><ds-code inline>"guide"</ds-code></td><td>A long-form, reading-oriented document — getting-started, contribution, tutorial, migration. Carries narrative sections and step-by-step procedures.</td></tr></tbody></table></ds-table>
 <ds-heading level="3" anchor="common-properties">Common properties</ds-heading>
-<p>Every entity shares these fields:</p>
-<ds-table><table><thead><tr><th>Property</th><th>Required</th><th>Description</th></tr></thead><tbody><tr><td><ds-code inline>kind</ds-code></td><td>Yes</td><td>Entity type</td></tr><tr><td><ds-code inline>identifier</ds-code></td><td>Yes*</td><td>Machine-readable identifier (<ds-code inline>^[a-z][a-z0-9-]*$</ds-code>, except tokens)</td></tr><tr><td><ds-code inline>name</ds-code></td><td>Yes*</td><td>Human-readable label</td></tr><tr><td><ds-code inline>description</ds-code></td><td>No</td><td>What this entity is and does (CommonMark supported)</td></tr><tr><td><ds-code inline>metadata</ds-code></td><td>No</td><td>Object of optional fields — <ds-code inline>status</ds-code>, <ds-code inline>since</ds-code>, <ds-code inline>tags</ds-code>, <ds-code inline>category</ds-code>, <ds-code inline>links</ds-code>, and more</td></tr><tr><td><ds-code inline>documentBlocks</ds-code></td><td>No</td><td>Array of typed document block objects</td></tr><tr><td><ds-code inline>agentDocumentBlocks</ds-code></td><td>No</td><td>Document blocks for agent (AI/LLM) consumption only — same kinds, never rendered for humans</td></tr></tbody></table></ds-table>
-<p>* Required for component, foundation, pattern, theme, and guide. Token requires <ds-code inline>identifier</ds-code> + <ds-code inline>tokenType</ds-code>.</p>
+<p>Every entity shares the same envelope: <ds-code inline>kind</ds-code>, <ds-code inline>identifier</ds-code>, <ds-code inline>name</ds-code>, optional <ds-code inline>description</ds-code> and <ds-code inline>metadata</ds-code>, plus <ds-code inline>documentBlocks</ds-code> and <ds-code inline>agentDocumentBlocks</ds-code>. See <a href="schema-architecture.html#common-entity-properties">Common entity properties</a> for the full table, including the token exceptions.</p>
 <p>The optional <ds-code inline>agentDocumentBlocks</ds-code> array is a partitioned space for agent-only documentation — generation constraints with <ds-code inline>evidence</ds-code>, disambiguation against similar entities — using the same block kinds as <ds-code inline>documentBlocks</ds-code>. Tools never render it for humans; agents read both arrays.</p>
 <ds-heading level="3" anchor="status-string-or-object">Status: string or object</ds-heading>
 <p>For the simple case, status is a string in <ds-code inline>metadata</ds-code>:</p>
@@ -625,7 +623,7 @@
   ]
 }
 </ds-code>
-<ds-heading level="3" anchor="full-document-minimal">Full document {#minimal}</ds-heading>
+<ds-heading level="3" anchor="full-document">Full document</ds-heading>
 <p>Here's a complete, minimal DSDS file with one of each entity type:</p>
 <ds-code language="json">{
   "$schema": "../schema/dsds.bundled.schema.json",
@@ -886,26 +884,26 @@
           "metadata": {
             "status": "stable",
             "tags": [
-              "spacing",
-              "scale",
-              "gap",
-              "padding",
-              "margin",
-              "whitespace",
-              "layout",
-              "density"
+              "color",
+              "palette",
+              "semantic",
+              "contrast",
+              "accessibility",
+              "background",
+              "text",
+              "theme"
             ]
           },
           "agentDocumentBlocks": [
             {
               "kind": "useCases",
-              "purpose": "Document spacing scale tokens and enforce their consistent application across layout, components, and typography.",
+              "purpose": "Document semantic color tokens and enforce their consistent, accessible application across surfaces, text, and interactive states.",
               "items": [
                 {
-                  "description": "Spacing governs whitespace and layout gaps; typography governs type size, weight, and line height.",
+                  "description": "Color governs palette and semantic role mapping; theme entities govern how the palette shifts per mode.",
                   "stance": "discouraged",
                   "alternative": {
-                    "identifier": "typography foundation"
+                    "identifier": "dark"
                   }
                 }
               ]
@@ -914,12 +912,12 @@
               "kind": "guidelines",
               "items": [
                 {
-                  "guidance": "Do not substitute spacing tokens with typography or icon-size tokens.",
+                  "guidance": "Do not hard-code hex values; reference semantic color tokens instead.",
                   "level": "MUST_NOT"
                 },
                 {
-                  "guidance": "Always use the next scale step up or down rather than custom values.",
-                  "level": "SHOULD"
+                  "guidance": "Maintain WCAG AA contrast for text and interactive elements on every surface.",
+                  "level": "MUST"
                 }
               ]
             }
@@ -1021,7 +1019,7 @@ npx ajv validate -s spec/schema/dsds.bundled.schema.json -d my-system.dsds.json
 <p>You've seen the basics. Here's where to go deeper.</p>
 <ds-table><table><thead><tr><th>Resource</th><th>Description</th></tr></thead><tbody><tr><td><a href="index.html">Full Spec</a></td><td>Complete schema reference for every field and constraint</td></tr><tr><td><a href="samples.html">Interactive Samples</a></td><td>Side-by-side JSON ↔ rendered documentation for real-world entities</td></tr><tr><td><a href="https://github.com/somerandomdude/design-system-documentation-schema/tree/main/spec/schema">JSON Schema</a></td><td>The raw <ds-code inline>.schema.json</ds-code> files — use for editor autocompletion</td></tr><tr><td><a href="https://github.com/somerandomdude/design-system-documentation-schema/tree/main/spec/examples">Example Files</a></td><td>Complete, valid example documents for every entity and guideline type</td></tr><tr><td><a href="https://github.com/somerandomdude/design-system-documentation-schema/discussions">GitHub Discussions</a></td><td>Ask questions, share ideas, propose changes</td></tr></tbody></table></ds-table>
 <ds-callout variant="tip"><p><strong>Getting started recipe:</strong></p><ol>
-<li>Copy the <a href="#minimal">minimal document</a> above</li>
+<li>Copy the <a href="#full-document">minimal document</a> above</li>
 <li>Replace the example entities with your own design system's components and tokens</li>
 <li>Add <ds-code inline>documentBlocks</ds-code> entries to each entity as your docs grow</li>
 <li>Validate with <ds-code inline>npm run validate</ds-code> to catch schema errors early</li>
