@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://designsystemdocspec.org/v0.7.1/dsds.schema.json",
   "title": "Design System Documentation Spec (DSDS) v0.7.1",
-  "description": "A machine-readable format for design system documentation covering components, design tokens, token groups, themes, foundations, patterns, and guides. A DSDS document contains a single entity or one or more entity groups — named collections of entities. Each entity carries a `kind` discriminator identifying it as a component, token, token-group, theme, foundation, pattern, or guide. Entity schemas are in entities/. Document block schemas are in document-blocks/. Common schemas are in common/.",
+  "description": "A machine-readable format for design system documentation. It covers components, design tokens, token groups, themes, foundations, patterns, and guides. A DSDS document holds a single entity or one or more entity groups — named collections of entities. Each entity carries a `kind` discriminator that marks it as a component, token, token-group, theme, foundation, pattern, or guide. Entity schemas are in entities/. Document block schemas are in document-blocks/. Common schemas are in common/.",
   "type": "object",
   "required": ["dsdsVersion"],
   "oneOf": [
@@ -24,18 +24,18 @@
     },
     "extends": {
       "$ref": "common/extends.schema.json#/$defs/documentExtends",
-      "description": "Declares that this DSDS document inherits from another DSDS document — typically a core design system. The base document provides the foundational entities. This document layers on top, adding or extending entities. Enables systems-of-systems architectures where product- or brand-specific systems inherit from a shared core."
+      "description": "Declares that this DSDS document inherits from another DSDS document — usually a core design system. The base document provides the core entities. This document layers on top, adding or extending entities. It supports systems-of-systems architectures, where product- or brand-specific systems inherit from a shared core."
     },
     "documentBlocks": {
       "type": "array",
-      "description": "System-level structured documentation for the design system as a whole — its purpose (when to adopt the system), cross-cutting guidelines, and narrative overviews. Each entry is a general document block: a `useCases`, `guidelines`, `sections`, `accessibility`, or `content` block. This is the same `documentBlocks` mechanism entities use, scoped to the system rather than a single artifact; scope is signalled by position (root vs. inside an entity).",
+      "description": "System-level structured documentation for the design system as a whole — its purpose (when to adopt the system), cross-cutting guidelines, and narrative overviews. Each entry is a general document block: a `useCases`, `guidelines`, `sections`, `accessibility`, or `content` block. This is the same `documentBlocks` mechanism entities use, scoped to the system rather than a single artifact. Position signals the scope (root vs. inside an entity).",
       "items": {
         "$ref": "document-blocks/document-blocks.schema.json#/$defs/generalDocumentBlock"
       }
     },
     "entityGroups": {
       "type": "array",
-      "description": "One or more entity groups. Each group is a named collection with a single `entities` array holding any mix of entity types — components, tokens, token groups, themes, foundations, patterns, and guides — in display order; each entity's `kind` identifies its type. Multiple groups let a single DSDS file organize entities into logical sections (e.g., one group for foundations, another for components). Groups may be inlined or referenced via a $ref object pointing to another DSDS file.",
+      "description": "One or more entity groups. Each group is a named collection with a single `entities` array. That array holds any mix of entity types — components, tokens, token groups, themes, foundations, patterns, and guides — in display order. Each entity's `kind` identifies its type. Multiple groups let one DSDS file organize entities into logical sections (e.g., one group for foundations, another for components). Groups may be inlined or referenced through a $ref object that points to another DSDS file.",
       "items": {
         "oneOf": [
           { "$ref": "#/$defs/entityGroup" },
@@ -55,7 +55,7 @@
   "additionalProperties": false,
   "$defs": {
     "anyEntity": {
-      "description": "Any DSDS entity — component, token, token group, theme, foundation, pattern, or guide. The required `kind` property identifies the entity type and selects its schema. This is the single entity union: the root `entity` property and each entity group's `entities` array both accept it.",
+      "description": "Any DSDS entity — component, token, token group, theme, foundation, pattern, or guide. The required `kind` property identifies the entity type and selects its schema. This is the single entity union. The root `entity` property and each entity group's `entities` array both accept it.",
       "oneOf": [
         { "$ref": "entities/component.schema.json#/$defs/component" },
         { "$ref": "entities/pattern.schema.json#/$defs/pattern" },
@@ -73,14 +73,14 @@
       "properties": {
         "$ref": {
           "type": "string",
-          "description": "A relative reference to a DSDS file, optionally with a JSON Pointer fragment identifying the target value within that file (e.g., './button.dsds.json#/entity'). MUST be relative: absolute paths, protocol-relative references, and scheme-bearing URIs (http:, file:, …) are not permitted — a reference to another system uses `extends.url`. Resolvers MUST detect cycles, treat unresolvable files/pointers and shape mismatches as fatal, and gate any remote dereferencing behind an allow-list (see the spec's reference-resolution and security rules)."
+          "description": "A relative reference to a DSDS file, optionally with a JSON Pointer fragment that identifies the target value within that file (e.g., './button.dsds.json#/entity'). MUST be relative. Absolute paths, protocol-relative references, and scheme-bearing URIs (http:, file:, …) are not permitted. A reference to another system uses `extends.url`. Resolvers MUST detect cycles. They MUST treat unresolvable files or pointers and shape mismatches as fatal. They MUST gate any remote dereferencing behind an allow-list (see the spec's reference-resolution and security rules)."
         }
       },
       "additionalProperties": false
     },
     "entityGroup": {
       "type": "object",
-      "description": "A named collection of design system entities. All entities live in a single `entities` array, in display order, mixing entity types freely — each entity's required `kind` identifies its type, so no per-type arrays are needed. Only the group name is required.",
+      "description": "A named collection of design system entities. All entities live in a single `entities` array, in display order, mixing entity types freely. Each entity's required `kind` identifies its type, so no per-type arrays are needed. Only the group name is required.",
       "required": ["name"],
       "properties": {
         "name": {
@@ -92,7 +92,7 @@
         },
         "entities": {
           "type": "array",
-          "description": "The entities in this group, in display order. Any mix of entity kinds — components, tokens, token groups, themes, foundations, patterns, and guides. Each item's `kind` identifies its type. Items may be inlined or referenced via a $ref object pointing to another DSDS file. Ordering is significant: tools SHOULD preserve it for display.",
+          "description": "The entities in this group, in display order. Any mix of entity kinds — components, tokens, token groups, themes, foundations, patterns, and guides. Each item's `kind` identifies its type. Items may be inlined or referenced through a $ref object that points to another DSDS file. Order is significant: tools SHOULD keep it for display.",
           "items": {
             "oneOf": [
               { "$ref": "#/$defs/anyEntity" },

@@ -2,11 +2,11 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://designsystemdocspec.org/v0.7.1/entities/component.schema.json",
   "title": "DSDS Component Definitions",
-  "description": "Defines the component document. A component document holds the identity of a reusable UI element. The `metadata` object carries optional metadata fields: status, since, lastUpdated, category, tags, aliases, summary, thumbnail, preview, extends, and links. Typed entries in the `documentBlocks` array carry structured docs: the component-scoped kinds (imports, anatomy, api, variants, states, design-specifications) plus the general kinds (guidelines, useCases, accessibility, content, sections).",
+  "description": "Defines the component document. A component document holds the identity of a reusable UI element. The `metadata` object holds optional fields: status, since, lastUpdated, category, tags, aliases, summary, thumbnail, preview, extends, and links. The `documentBlocks` array holds structured docs as typed entries. It accepts the component-scoped kinds (imports, anatomy, api, variants, states, design-specifications) plus the general kinds (guidelines, useCases, accessibility, content, sections).",
   "$defs": {
     "component": {
       "type": "object",
-      "description": "A single reusable UI component. The top level holds identity: `identifier`, `name`, and `description`. The `metadata` object holds optional metadata fields — status, since, lastUpdated, category, tags, aliases, summary, thumbnail, preview, extends, and links. The `documentBlocks` array holds structured docs as typed entries: imports, anatomy, api, variants, states, design-specifications, plus the general kinds.",
+      "description": "A single reusable UI component. The top level holds its identity: `identifier`, `name`, and `description`. The `metadata` object holds optional fields: status, since, lastUpdated, category, tags, aliases, summary, thumbnail, preview, extends, and links. The `documentBlocks` array holds structured docs as typed entries: imports, anatomy, api, variants, states, design-specifications, plus the general kinds.",
       "required": [
         "kind",
         "identifier",
@@ -37,14 +37,14 @@
         },
         "documentBlocks": {
           "type": "array",
-          "description": "All structured docs for this component, as an ordered array of typed document block objects. Accepts the component-specific kinds (imports, anatomy, api, variants, states, design-specifications) plus the general kinds (guidelines, useCases, accessibility, content, sections). The `kind` property on each entry sets its shape. Order matters: tools SHOULD preserve it for display.",
+          "description": "All structured docs for this component, as an ordered array of typed document block objects. It accepts the component-specific kinds (imports, anatomy, api, variants, states, design-specifications) plus the general kinds (guidelines, useCases, accessibility, content, sections). The `kind` property on each entry sets its shape. Order matters, so tools SHOULD keep it for display.",
           "items": {
             "$ref": "../document-blocks/document-blocks.schema.json#/$defs/componentDocumentBlock"
           }
         },
         "agentDocumentBlocks": {
           "type": "array",
-          "description": "Structured documentation for agent (AI/LLM) consumption only — a partitioned space accepting the same document block kinds as `documentBlocks`. Use it for guidance that would be noise for human readers: generation constraints, disambiguation between confusable entities, machine-checkable rules with evidence. Tools MUST NOT render these blocks in human-facing documentation. Agents SHOULD read both arrays — human-facing blocks first, then these.",
+          "description": "Structured docs for agents (AI/LLM) only. This is a separate space that accepts the same document block kinds as `documentBlocks`. Use it for guidance that would be noise for human readers: generation limits, ways to tell confusable entities apart, and machine-checkable rules with evidence. Tools MUST NOT render these blocks in human-facing docs. Agents SHOULD read both arrays — human-facing blocks first, then these.",
           "items": {
             "$ref": "../document-blocks/document-blocks.schema.json#/$defs/componentDocumentBlock"
           }

@@ -85,7 +85,7 @@
     <main class="content__main" id="main-content" role="main">
       <div class="content__inner">
         <ds-heading level="2" anchor="what-is-dsds">What is DSDS?</ds-heading>
-<p>DSDS (Design System Documentation Spec) is a JSON-based format for documenting design systems. It gives every piece of documentation — components, tokens, themes, foundations, patterns — in a machine-readable structure.</p>
+<p>DSDS (Design System Documentation Spec) is a JSON format for documenting design systems. It puts every piece of docs — components, tokens, themes, foundations, patterns — in a machine-readable shape.</p>
 <ds-callout><p><strong>Key idea:</strong> DSDS documents the <em>how and why</em> of your design system — not the token values themselves. It complements the <a href="https://www.w3.org/community/reports/design-tokens/CG-FINAL-format-20251028/">W3C Design Tokens Format</a> which handles the <em>what</em>.</p></ds-callout>
 <ds-heading level="3" anchor="what-you-get">What you get</ds-heading>
 <ul>
@@ -114,7 +114,7 @@
 }
 </ds-code>
 <ds-heading level="3" anchor="multi-entity-files">Multi-entity files</ds-heading>
-<p>Use <ds-code inline>entityGroups</ds-code> when you want to organize multiple entities in one file, or as a manifest that references individual entity files.</p>
+<p>Use <ds-code inline>entityGroups</ds-code> to put several entities in one file, or as a manifest that points to separate entity files.</p>
 <ds-code language="json">{
   "dsdsVersion": "0.7.1",
   "entityGroups": [
@@ -133,10 +133,10 @@
 <ul>
 <li><ds-code inline>dsdsVersion</ds-code> — the spec version this document targets; <ds-code inline>"0.7.1"</ds-code> for this release</li>
 <li><ds-code inline>entityGroups</ds-code> — array of named groups</li>
-<li><ds-code inline>entities</ds-code> — one array per group, mixing entity kinds freely in display order; each entity's <ds-code inline>kind</ds-code> identifies its type</li>
+<li><ds-code inline>entities</ds-code> — one array per group; mix kinds freely in display order. Each entity's <ds-code inline>kind</ds-code> says what type it is</li>
 </ul>
 <ds-heading level="3" anchor="linking-files-with-ref">Linking files with <ds-code inline>$ref</ds-code></ds-heading>
-<p>Entity arrays accept <ds-code inline>$ref</ds-code> objects that point to other DSDS files. This lets you keep entities in individual files while assembling them in a manifest:</p>
+<p>Entity arrays accept <ds-code inline>$ref</ds-code> objects that point to other DSDS files. This lets you keep entities in their own files and pull them together in a manifest:</p>
 <ds-code language="json">{
   "dsdsVersion": "0.7.1",
   "entityGroups": [
@@ -150,15 +150,15 @@
   ]
 }
 </ds-code>
-<p>The <ds-code inline>#/entity</ds-code> fragment is a JSON Pointer targeting the <ds-code inline>entity</ds-code> value in the referenced file. Tooling resolves <ds-code inline>$ref</ds-code> objects before validation using a library like <a href="https://github.com/APIDevTools/json-schema-ref-parser"><ds-code inline>json-schema-ref-parser</ds-code></a>.</p>
-<ds-callout variant="tip"><p><strong>Tip:</strong> Use single-entity files + a <ds-code inline>$ref</ds-code> manifest for large systems where each component is owned by a different team. Use a single multi-entity file for smaller systems or when you want everything in one place.</p></ds-callout>
+<p>The <ds-code inline>#/entity</ds-code> fragment is a JSON Pointer. It targets the <ds-code inline>entity</ds-code> value in the linked file. Tools resolve <ds-code inline>$ref</ds-code> objects before they validate, with a library like <a href="https://github.com/APIDevTools/json-schema-ref-parser"><ds-code inline>json-schema-ref-parser</ds-code></a>.</p>
+<ds-callout variant="tip"><p><strong>Tip:</strong> Use single-entity files plus a <ds-code inline>$ref</ds-code> manifest for large systems where a different team owns each component. Use one multi-entity file for smaller systems, or when you want everything in one place.</p></ds-callout>
 <hr />
 <ds-heading level="2" anchor="entity-types">Entity types</ds-heading>
 <p>Every entity has a <ds-code inline>kind</ds-code> field that tells tools what type of thing it is. There are seven kinds.</p>
-<ds-table><table><thead><tr><th>Kind</th><th>Code</th><th>Description</th></tr></thead><tbody><tr><td>component</td><td><ds-code inline>"component"</ds-code></td><td>A reusable UI element — buttons, inputs, modals. Supports anatomy, API, variants, states, and design specs.</td></tr><tr><td>token</td><td><ds-code inline>"token"</ds-code></td><td>A single design token — color, spacing, typography. Carries type, category, and usage rules. Link to W3C DTCG definitions via <ds-code inline>source</ds-code>.</td></tr><tr><td>token-group</td><td><ds-code inline>"token-group"</ds-code></td><td>A nested group of related tokens. Recursive — groups can contain groups.</td></tr><tr><td>theme</td><td><ds-code inline>"theme"</ds-code></td><td>A named set of token overrides — dark mode, high-contrast, compact density, brand variants. Lists which token names change; the DTCG file holds the actual values.</td></tr><tr><td>foundation</td><td><ds-code inline>"foundation"</ds-code></td><td>A design base — color, typography, spacing, elevation. Carries principles, scales, and motion definitions.</td></tr><tr><td>pattern</td><td><ds-code inline>"pattern"</ds-code></td><td>A broad action pattern — nav, error messaging, empty states. Describes how components compose to solve a user need.</td></tr><tr><td>guide</td><td><ds-code inline>"guide"</ds-code></td><td>A long-form, reading-oriented document — getting-started, contribution, tutorial, migration. Carries narrative sections and step-by-step procedures.</td></tr></tbody></table></ds-table>
+<ds-table><table><thead><tr><th>Kind</th><th>Code</th><th>Description</th></tr></thead><tbody><tr><td>component</td><td><ds-code inline>"component"</ds-code></td><td>A reusable UI element — buttons, inputs, modals. Supports anatomy, API, variants, states, and design specs.</td></tr><tr><td>token</td><td><ds-code inline>"token"</ds-code></td><td>A single design token — color, spacing, typography. Carries type, category, and usage rules. Link to W3C DTCG definitions via <ds-code inline>source</ds-code>.</td></tr><tr><td>token-group</td><td><ds-code inline>"token-group"</ds-code></td><td>A nested group of related tokens. Recursive — groups can contain groups.</td></tr><tr><td>theme</td><td><ds-code inline>"theme"</ds-code></td><td>A named set of token overrides — dark mode, high-contrast, compact density, brand variants. It lists which token names change; the DTCG file holds the values.</td></tr><tr><td>foundation</td><td><ds-code inline>"foundation"</ds-code></td><td>A design base — color, typography, spacing, elevation. Carries principles, scales, and motion definitions.</td></tr><tr><td>pattern</td><td><ds-code inline>"pattern"</ds-code></td><td>A broad action pattern — nav, error messaging, empty states. It shows how components combine to solve a user need.</td></tr><tr><td>guide</td><td><ds-code inline>"guide"</ds-code></td><td>A long-form, reading-oriented document — getting-started, contribution, tutorial, migration. It carries prose sections and step-by-step procedures.</td></tr></tbody></table></ds-table>
 <ds-heading level="3" anchor="common-properties">Common properties</ds-heading>
 <p>Every entity shares the same envelope: <ds-code inline>kind</ds-code>, <ds-code inline>identifier</ds-code>, <ds-code inline>name</ds-code>, optional <ds-code inline>description</ds-code> and <ds-code inline>metadata</ds-code>, plus <ds-code inline>documentBlocks</ds-code> and <ds-code inline>agentDocumentBlocks</ds-code>. See <a href="schema-architecture.html#common-entity-properties">Common entity properties</a> for the full table, including the token exceptions.</p>
-<p>The optional <ds-code inline>agentDocumentBlocks</ds-code> array is a partitioned space for agent-only documentation — generation constraints with <ds-code inline>evidence</ds-code>, disambiguation against similar entities — using the same block kinds as <ds-code inline>documentBlocks</ds-code>. Tools never render it for humans; agents read both arrays.</p>
+<p>The optional <ds-code inline>agentDocumentBlocks</ds-code> array is a separate space for agent-only docs. It holds generation limits with <ds-code inline>evidence</ds-code> and notes that tell apart similar entities. It uses the same block kinds as <ds-code inline>documentBlocks</ds-code>. Tools never show it to humans; agents read both arrays.</p>
 <ds-heading level="3" anchor="status-string-or-object">Status: string or object</ds-heading>
 <p>For the simple case, status is a string in <ds-code inline>metadata</ds-code>:</p>
 <ds-code language="json">"metadata": { "status": "stable" }
@@ -199,7 +199,7 @@
 </table>
 </ds-table>
 <ds-heading level="3" anchor="use-cases-when-to-use-it">Use cases: when to use it</ds-heading>
-<p>The <ds-code inline>useCases</ds-code> block lists scenarios. An optional <ds-code inline>purpose</ds-code> statement gives the umbrella answer; each item has a <ds-code inline>stance</ds-code> of <ds-code inline>"recommended"</ds-code> (do use) or <ds-code inline>"discouraged"</ds-code> (don't use, with an alternative):</p>
+<p>The <ds-code inline>useCases</ds-code> block lists scenarios. An optional <ds-code inline>purpose</ds-code> statement gives the broad answer. Each item has a <ds-code inline>stance</ds-code>: <ds-code inline>"recommended"</ds-code> (do use) or <ds-code inline>"discouraged"</ds-code> (don't use, with an alternative):</p>
 <ds-code language="json">{
   "kind": "useCases",
   "purpose": "Buttons trigger immediate actions within a surface.",
@@ -233,7 +233,7 @@
   ]
 }
 </ds-code>
-<p>The <ds-code inline>level</ds-code> field, named for RFC 2119: <ds-badge>MUST</ds-badge>, <ds-badge>SHOULD</ds-badge>, <ds-badge>SHOULD_NOT</ds-badge>, <ds-badge>MUST_NOT</ds-badge>. Agents treat <ds-code inline>MUST</ds-code>/<ds-code inline>MUST_NOT</ds-code> as hard constraints; optional <ds-code inline>evidence</ds-code> records empirical backing, and <ds-code inline>criteria</ds-code> define testable success conditions checks can run against.</p>
+<p>The <ds-code inline>level</ds-code> field is named for RFC 2119: <ds-badge>MUST</ds-badge>, <ds-badge>SHOULD</ds-badge>, <ds-badge>SHOULD_NOT</ds-badge>, <ds-badge>MUST_NOT</ds-badge>. Agents treat <ds-code inline>MUST</ds-code>/<ds-code inline>MUST_NOT</ds-code> as hard limits. Optional <ds-code inline>evidence</ds-code> records the backing, and <ds-code inline>criteria</ds-code> define testable success conditions that checks can run against.</p>
 <hr />
 <ds-heading level="2" anchor="minimal-examples">Minimal examples</ds-heading>
 <p>These are the smallest valid entities — the bare minimum. Copy one, fill in your content, and add document block entries as you go.</p>
@@ -328,7 +328,7 @@
 }
 </ds-code>
 <ds-heading level="3" anchor="token">Token</ds-heading>
-<p>A token needs <ds-code inline>kind</ds-code>, <ds-code inline>identifier</ds-code>, and <ds-code inline>tokenType</ds-code>. Use the optional <ds-code inline>source</ds-code> property to link back to the W3C DTCG file that holds the authoritative value.</p>
+<p>A token needs <ds-code inline>kind</ds-code>, <ds-code inline>identifier</ds-code>, and <ds-code inline>tokenType</ds-code>. Use the optional <ds-code inline>source</ds-code> property to link back to the W3C DTCG file that holds the real value.</p>
 <ds-code language="json">{
   "kind": "token",
   "identifier": "color-text-primary",
@@ -415,7 +415,7 @@
 }
 </ds-code>
 <ds-heading level="3" anchor="theme">Theme</ds-heading>
-<p>A theme provides <ds-code inline>overrides</ds-code> — an array of token names that differ from the default. The DTCG file holds the actual override values.</p>
+<p>A theme provides <ds-code inline>overrides</ds-code> — an array of token names that differ from the default. The DTCG file holds the real override values.</p>
 <ds-code language="json">{
   "kind": "theme",
   "identifier": "dark",
@@ -544,7 +544,7 @@
 }
 </ds-code>
 <ds-heading level="3" anchor="pattern">Pattern</ds-heading>
-<p>A pattern describes how components compose to solve a user need. It supports <ds-code inline>interactions</ds-code> for flow steps.</p>
+<p>A pattern shows how components combine to solve a user need. It supports <ds-code inline>interactions</ds-code> for flow steps.</p>
 <ds-code language="json">{
   "kind": "pattern",
   "identifier": "form-validation",

@@ -2,29 +2,29 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://designsystemdocspec.org/v0.7.1/entities/theme.schema.json",
   "title": "DSDS Theme Definitions",
-  "description": "A theme documents an alternative token-value context: a color mode, a density setting, or a brand variant. DSDS captures the purpose, document blocks, and relationships of a theme. The override values themselves live in the W3C Design Tokens (DTCG) file that the `source` property points to. The `metadata` object carries optional metadata fields (status, since, lastUpdated, category, tags, aliases, summary, thumbnail, preview, extends, links). Express internal artifact links through the `links` metadata field, not a dedicated document block kind.",
+  "description": "A theme documents an alternative set of token values: a color mode, a density setting, or a brand variant. DSDS captures the purpose, document blocks, and relationships of a theme. The override values live in the W3C Design Tokens (DTCG) file that the `source` property points to. The `metadata` object holds optional fields: status, since, lastUpdated, category, tags, aliases, summary, thumbnail, preview, extends, and links. Put internal artifact links in the `links` metadata field, not in a dedicated document block kind.",
   "$defs": {
     "tokenOverride": {
       "type": "object",
-      "description": "A single token override inside a theme: which token changes, and why. The override value itself lives in the DTCG file; this entry records the intent and reason.",
+      "description": "A single token override inside a theme: which token changes, and why. The override value lives in the DTCG file. This entry records the intent and reason.",
       "required": [
         "token"
       ],
       "properties": {
         "token": {
           "type": "string",
-          "description": "The identifier of the token being overridden. MUST match the `identifier` of a token defined elsewhere in the system. Token identifiers are unconstrained by a pattern to support DTCG and design tool naming conventions (e.g., 'color-text-primary', 'color.text.primary', 'color/text/primary')."
+          "description": "The identifier of the token being overridden. MUST match the `identifier` of a token defined elsewhere in the system. Token identifiers follow no fixed pattern, so they can support DTCG and design tool naming styles (e.g., 'color-text-primary', 'color.text.primary', 'color/text/primary')."
         },
         "description": {
           "$ref": "../common/rich-text.schema.json#/$defs/richText",
-          "description": "Says what changes for this token in this theme and why — e.g., 'Lightened to meet WCAG AAA contrast on the dark background.' The resolved value itself lives in the DTCG file."
+          "description": "Says what changes for this token in this theme and why (e.g., 'Lightened to meet WCAG AAA contrast on the dark background'). The resolved value lives in the DTCG file."
         }
       },
       "additionalProperties": false
     },
     "theme": {
       "type": "object",
-      "description": "A named context that adapts the design system's token values. DSDS captures the purpose, usage document blocks, accessibility considerations, and the list of affected tokens. The override values live in the DTCG file that `source` points to. Use themes for color modes (light, dark, high-contrast), density settings (compact, comfortable), brand variants, or product-specific customizations. The token catalog stays the source of truth for token identity, type, and docs. The `metadata` object carries optional metadata fields (status, since, lastUpdated, category, tags, aliases, summary, thumbnail, preview, extends, links).",
+      "description": "A named context that adapts the design system's token values. DSDS captures the purpose, usage document blocks, accessibility notes, and the list of affected tokens. The override values live in the DTCG file that `source` points to. Use themes for color modes (light, dark, high-contrast), density settings (compact, comfortable), brand variants, or product-specific tweaks. The token catalog stays the source of truth for token identity, type, and docs. The `metadata` object holds optional fields: status, since, lastUpdated, category, tags, aliases, summary, thumbnail, preview, extends, and links.",
       "required": [
         "kind",
         "identifier",
@@ -55,7 +55,7 @@
         },
         "source": {
           "type": "object",
-          "description": "Pointer to the W3C Design Tokens (DTCG) definition. DSDS does not duplicate token values — the DTCG file is the source of truth for resolved values, aliases, and type information.",
+          "description": "Points to the W3C Design Tokens (DTCG) definition. DSDS does not copy token values. The DTCG file is the source of truth for resolved values, aliases, and type info.",
           "properties": {
             "file": {
               "type": "string",
@@ -70,7 +70,7 @@
         },
         "overrides": {
           "type": "array",
-          "description": "Token overrides this theme applies. Each entry says which token changes and why. List only tokens whose values differ from the default; unlisted tokens keep their default values. The override values themselves live in the DTCG file that `source` points to.",
+          "description": "Token overrides this theme applies. Each entry says which token changes and why. List only tokens whose values differ from the default. Unlisted tokens keep their default values. The override values live in the DTCG file that `source` points to.",
           "items": {
             "$ref": "#/$defs/tokenOverride"
           },
@@ -78,14 +78,14 @@
         },
         "documentBlocks": {
           "type": "array",
-          "description": "All structured docs for this theme, as an ordered array of typed document block objects. Themes accept the general kinds only (guidelines, useCases, accessibility, content, sections). The `kind` property on each entry sets its shape. Order matters: tools SHOULD preserve it for display.",
+          "description": "All structured docs for this theme, as an ordered array of typed document block objects. Themes accept the general kinds only (guidelines, useCases, accessibility, content, sections). The `kind` property on each entry sets its shape. Order matters, so tools SHOULD keep it for display.",
           "items": {
             "$ref": "../document-blocks/document-blocks.schema.json#/$defs/tokenDocumentBlock"
           }
         },
         "agentDocumentBlocks": {
           "type": "array",
-          "description": "Structured documentation for agent (AI/LLM) consumption only — a partitioned space accepting the same document block kinds as `documentBlocks`. Use it for guidance that would be noise for human readers: generation constraints, disambiguation between confusable entities, machine-checkable rules with evidence. Tools MUST NOT render these blocks in human-facing documentation. Agents SHOULD read both arrays — human-facing blocks first, then these.",
+          "description": "Structured docs for agents (AI/LLM) only. This is a separate space that accepts the same document block kinds as `documentBlocks`. Use it for guidance that would be noise for human readers: generation limits, ways to tell confusable entities apart, and machine-checkable rules with evidence. Tools MUST NOT render these blocks in human-facing docs. Agents SHOULD read both arrays — human-facing blocks first, then these.",
           "items": {
             "$ref": "../document-blocks/document-blocks.schema.json#/$defs/tokenDocumentBlock"
           }

@@ -6,7 +6,7 @@ description: "Get started with DSDS — document structure, entity types, the do
 
 ## What is DSDS?
 
-DSDS (Design System Documentation Spec) is a JSON-based format for documenting design systems. It gives every piece of documentation — components, tokens, themes, foundations, patterns — in a machine-readable structure.
+DSDS (Design System Documentation Spec) is a JSON format for documenting design systems. It puts every piece of docs — components, tokens, themes, foundations, patterns — in a machine-readable shape.
 
 <ds-callout>
 
@@ -49,7 +49,7 @@ Use `entity` when each component, token, or pattern lives in its own file. The `
 
 ### Multi-entity files
 
-Use `entityGroups` when you want to organize multiple entities in one file, or as a manifest that references individual entity files.
+Use `entityGroups` to put several entities in one file, or as a manifest that points to separate entity files.
 
 ```json
 {
@@ -70,11 +70,11 @@ Use `entityGroups` when you want to organize multiple entities in one file, or a
 
 - `dsdsVersion` — the spec version this document targets; `"{{VERSION}}"` for this release
 - `entityGroups` — array of named groups
-- `entities` — one array per group, mixing entity kinds freely in display order; each entity's `kind` identifies its type
+- `entities` — one array per group; mix kinds freely in display order. Each entity's `kind` says what type it is
 
 ### Linking files with `$ref`
 
-Entity arrays accept `$ref` objects that point to other DSDS files. This lets you keep entities in individual files while assembling them in a manifest:
+Entity arrays accept `$ref` objects that point to other DSDS files. This lets you keep entities in their own files and pull them together in a manifest:
 
 ```json
 {
@@ -91,11 +91,11 @@ Entity arrays accept `$ref` objects that point to other DSDS files. This lets yo
 }
 ```
 
-The `#/entity` fragment is a JSON Pointer targeting the `entity` value in the referenced file. Tooling resolves `$ref` objects before validation using a library like [`json-schema-ref-parser`](https://github.com/APIDevTools/json-schema-ref-parser).
+The `#/entity` fragment is a JSON Pointer. It targets the `entity` value in the linked file. Tools resolve `$ref` objects before they validate, with a library like [`json-schema-ref-parser`](https://github.com/APIDevTools/json-schema-ref-parser).
 
 <ds-callout variant="tip">
 
-**Tip:** Use single-entity files + a `$ref` manifest for large systems where each component is owned by a different team. Use a single multi-entity file for smaller systems or when you want everything in one place.
+**Tip:** Use single-entity files plus a `$ref` manifest for large systems where a different team owns each component. Use one multi-entity file for smaller systems, or when you want everything in one place.
 
 </ds-callout>
 
@@ -110,16 +110,16 @@ Every entity has a `kind` field that tells tools what type of thing it is. There
 | component | `"component"` | A reusable UI element — buttons, inputs, modals. Supports anatomy, API, variants, states, and design specs. |
 | token | `"token"` | A single design token — color, spacing, typography. Carries type, category, and usage rules. Link to W3C DTCG definitions via `source`. |
 | token-group | `"token-group"` | A nested group of related tokens. Recursive — groups can contain groups. |
-| theme | `"theme"` | A named set of token overrides — dark mode, high-contrast, compact density, brand variants. Lists which token names change; the DTCG file holds the actual values. |
+| theme | `"theme"` | A named set of token overrides — dark mode, high-contrast, compact density, brand variants. It lists which token names change; the DTCG file holds the values. |
 | foundation | `"foundation"` | A design base — color, typography, spacing, elevation. Carries principles, scales, and motion definitions. |
-| pattern | `"pattern"` | A broad action pattern — nav, error messaging, empty states. Describes how components compose to solve a user need. |
-| guide | `"guide"` | A long-form, reading-oriented document — getting-started, contribution, tutorial, migration. Carries narrative sections and step-by-step procedures. |
+| pattern | `"pattern"` | A broad action pattern — nav, error messaging, empty states. It shows how components combine to solve a user need. |
+| guide | `"guide"` | A long-form, reading-oriented document — getting-started, contribution, tutorial, migration. It carries prose sections and step-by-step procedures. |
 
 ### Common properties
 
 Every entity shares the same envelope: `kind`, `identifier`, `name`, optional `description` and `metadata`, plus `documentBlocks` and `agentDocumentBlocks`. See [Common entity properties](schema-architecture.html#common-entity-properties) for the full table, including the token exceptions.
 
-The optional `agentDocumentBlocks` array is a partitioned space for agent-only documentation — generation constraints with `evidence`, disambiguation against similar entities — using the same block kinds as `documentBlocks`. Tools never render it for humans; agents read both arrays.
+The optional `agentDocumentBlocks` array is a separate space for agent-only docs. It holds generation limits with `evidence` and notes that tell apart similar entities. It uses the same block kinds as `documentBlocks`. Tools never show it to humans; agents read both arrays.
 
 ### Status: string or object
 
@@ -153,7 +153,7 @@ Structured docs live in the `documentBlocks` array on each entity. Each document
 
 ### Use cases: when to use it
 
-The `useCases` block lists scenarios. An optional `purpose` statement gives the umbrella answer; each item has a `stance` of `"recommended"` (do use) or `"discouraged"` (don't use, with an alternative):
+The `useCases` block lists scenarios. An optional `purpose` statement gives the broad answer. Each item has a `stance`: `"recommended"` (do use) or `"discouraged"` (don't use, with an alternative):
 
 ```json
 {
@@ -194,7 +194,7 @@ Each guideline pairs a `guidance` statement with a `rationale` and an RFC 2119 `
 }
 ```
 
-The `level` field, named for RFC 2119: <ds-badge>MUST</ds-badge>, <ds-badge>SHOULD</ds-badge>, <ds-badge>SHOULD_NOT</ds-badge>, <ds-badge>MUST_NOT</ds-badge>. Agents treat `MUST`/`MUST_NOT` as hard constraints; optional `evidence` records empirical backing, and `criteria` define testable success conditions checks can run against.
+The `level` field is named for RFC 2119: <ds-badge>MUST</ds-badge>, <ds-badge>SHOULD</ds-badge>, <ds-badge>SHOULD_NOT</ds-badge>, <ds-badge>MUST_NOT</ds-badge>. Agents treat `MUST`/`MUST_NOT` as hard limits. Optional `evidence` records the backing, and `criteria` define testable success conditions that checks can run against.
 
 ---
 
@@ -210,7 +210,7 @@ A component needs `kind`, `identifier`, `name`, and `description`. Everything el
 
 ### Token
 
-A token needs `kind`, `identifier`, and `tokenType`. Use the optional `source` property to link back to the W3C DTCG file that holds the authoritative value.
+A token needs `kind`, `identifier`, and `tokenType`. Use the optional `source` property to link back to the W3C DTCG file that holds the real value.
 
 <ds-example file="token.json" label="minimal token" />
 
@@ -222,7 +222,7 @@ Groups arrange tokens in a tree. The `children` array can contain tokens or nest
 
 ### Theme
 
-A theme provides `overrides` — an array of token names that differ from the default. The DTCG file holds the actual override values.
+A theme provides `overrides` — an array of token names that differ from the default. The DTCG file holds the real override values.
 
 <ds-example file="theme.json" label="minimal theme" />
 
@@ -234,7 +234,7 @@ A foundation documents a design base. Guidelines like `principles`, `scale`, and
 
 ### Pattern
 
-A pattern describes how components compose to solve a user need. It supports `interactions` for flow steps.
+A pattern shows how components combine to solve a user need. It supports `interactions` for flow steps.
 
 <ds-example file="pattern.json" label="minimal pattern" />
 
