@@ -1,36 +1,332 @@
 {
   "$schema": "../spec/schema/dsds.bundled.schema.json",
-  "dsdsVersion": "0.7.2",
+  "dsdsVersion": "0.8.0",
   "systemInfo": {
     "systemName": "Sanity UI",
     "systemVersion": "2.x",
     "organization": "Sanity",
     "url": "https://www.sanity.io/ui"
   },
-  "documentation": [
+  "entityGroups": [
     {
       "name": "Sanity UI — Button Design Spec Test",
       "description": "A test harness that validates the DSDS design-specifications schema against a real-world component: the Sanity UI Button. This component uses a mode×tone variant model rather than a single 'variant' dimension, plus numeric spacing/radius/fontSize scales instead of named sizes — testing the schema's flexibility against a non-trivial real component.",
-      "items": [
+      "entities": [
         {
           "kind": "component",
           "identifier": "button",
           "name": "Button",
-          "summary": "An interactive element that triggers an action when activated.",
           "description": "An interactive element that triggers an action when activated. Buttons communicate what will happen when the user interacts with them. Sanity UI's Button uses a two-dimensional variant model: `mode` controls the visual treatment (filled, ghost, bleed) while `tone` controls the color intent (default, positive, caution, critical, etc.). Sizing is controlled via numeric scale props (`fontSize`, `padding`, `space`, `radius`) rather than named size presets.",
-          "status": "stable",
-          "since": "1.0.0",
-          "category": "action",
-          "tags": [
-            "action",
-            "form",
-            "interactive",
-            "primitive"
-          ],
-          "aliases": [
-            "btn"
-          ],
-          "guidelines": [
+          "$extensions": {
+            "com.sanity.ui": {
+              "primitiveType": "button",
+              "styledComponent": true,
+              "themeColorPath": "theme.color.button[mode][tone][state]",
+              "dataUi": "Button"
+            },
+            "com.sanity.legacy-design-specs": {
+              "variants": [
+                {
+                  "identifier": "default",
+                  "description": "Filled mode — solid background, border derived from card system.",
+                  "properties": {
+                    "background-color": "var(--card-bg-color) from theme.button.default[tone].enabled",
+                    "border-width": "1px (theme.button.border.width)",
+                    "border-style": "solid",
+                    "box-shadow": "inset 0 0 0 1px var(--card-border-color)"
+                  }
+                },
+                {
+                  "identifier": "ghost",
+                  "description": "Transparent background with visible border. Gets an additional default box-shadow treatment.",
+                  "properties": {
+                    "background-color": "transparent (from theme.button.ghost[tone].enabled)",
+                    "border-width": "1px (theme.button.border.width)",
+                    "border-style": "solid",
+                    "border-color": "var(--card-border-color)",
+                    "box-shadow": "inset 0 0 0 1px var(--card-border-color)"
+                  }
+                },
+                {
+                  "identifier": "bleed",
+                  "description": "Fully transparent — no background, no border, no visual boundary in the enabled state.",
+                  "properties": {
+                    "background-color": "transparent",
+                    "border-width": "0",
+                    "border-color": "transparent"
+                  }
+                }
+              ],
+              "sizes": [
+                {
+                  "identifier": "compact",
+                  "description": "A common compact configuration using fontSize=1, padding=2, space=2, radius=2. Not a named size in the API — composed from numeric scale props.",
+                  "properties": {
+                    "font-size": "13px (theme.font.text.sizes[1].fontSize)",
+                    "line-height": "19px (theme.font.text.sizes[1].lineHeight)",
+                    "icon-size": "21px (theme.font.text.sizes[1].iconSize)",
+                    "ascender-height": "5px (theme.font.text.sizes[1].ascenderHeight)",
+                    "descender-height": "5px (theme.font.text.sizes[1].descenderHeight)",
+                    "padding": "8px (theme.space[2])",
+                    "gap": "8px (theme.space[2])",
+                    "border-radius": "3px (theme.radius[2])",
+                    "text-overflow": "ellipsis"
+                  },
+                  "spacing": {
+                    "internal": {
+                      "content-padding": "theme.space[2]",
+                      "icon-to-text-gap": "theme.space[2]"
+                    }
+                  }
+                },
+                {
+                  "identifier": "default",
+                  "description": "The default configuration: fontSize=1, padding=3, space=3, radius=2.",
+                  "properties": {
+                    "font-size": "13px (theme.font.text.sizes[1].fontSize)",
+                    "line-height": "19px (theme.font.text.sizes[1].lineHeight)",
+                    "icon-size": "21px (theme.font.text.sizes[1].iconSize)",
+                    "ascender-height": "5px (theme.font.text.sizes[1].ascenderHeight)",
+                    "descender-height": "5px (theme.font.text.sizes[1].descenderHeight)",
+                    "padding": "12px (theme.space[3])",
+                    "gap": "12px (theme.space[3])",
+                    "border-radius": "3px (theme.radius[2])",
+                    "text-overflow": "ellipsis"
+                  },
+                  "spacing": {
+                    "internal": {
+                      "content-padding": "theme.space[3]",
+                      "icon-to-text-gap": "theme.space[3]"
+                    }
+                  }
+                },
+                {
+                  "identifier": "large",
+                  "description": "A common large configuration: fontSize=2, padding=4, space=3, radius=3.",
+                  "properties": {
+                    "font-size": "15px (theme.font.text.sizes[2].fontSize)",
+                    "line-height": "23px (theme.font.text.sizes[2].lineHeight)",
+                    "icon-size": "25px (theme.font.text.sizes[2].iconSize)",
+                    "ascender-height": "6px (theme.font.text.sizes[2].ascenderHeight)",
+                    "descender-height": "6px (theme.font.text.sizes[2].descenderHeight)",
+                    "padding": "20px (theme.space[4])",
+                    "gap": "12px (theme.space[3])",
+                    "border-radius": "6px (theme.radius[3])",
+                    "text-overflow": "ellipsis"
+                  },
+                  "spacing": {
+                    "internal": {
+                      "content-padding": "theme.space[4]",
+                      "icon-to-text-gap": "theme.space[3]"
+                    }
+                  }
+                }
+              ],
+              "states": [
+                {
+                  "identifier": "hovered",
+                  "description": "Background and foreground shift to the hovered state colors from the mode×tone matrix. Applied via @media (hover: hover) to avoid sticky hover on touch devices. Also triggered programmatically via data-hovered attribute.",
+                  "properties": {
+                    "background-color": "var(--card-bg-color) from theme.button[mode][tone].hovered.bg",
+                    "color": "var(--card-fg-color) from theme.button[mode][tone].hovered.fg",
+                    "border-color": "var(--card-border-color) from theme.button[mode][tone].hovered.border",
+                    "icon-color": "var(--card-icon-color) from theme.button[mode][tone].hovered.icon",
+                    "media-query": "@media (hover: hover)"
+                  }
+                },
+                {
+                  "identifier": "pressed",
+                  "description": "Background darkens further for the pressed/active state. Also applied when data-selected is present.",
+                  "properties": {
+                    "background-color": "var(--card-bg-color) from theme.button[mode][tone].pressed.bg",
+                    "color": "var(--card-fg-color) from theme.button[mode][tone].pressed.fg",
+                    "border-color": "var(--card-border-color) from theme.button[mode][tone].pressed.border",
+                    "icon-color": "var(--card-icon-color) from theme.button[mode][tone].pressed.icon"
+                  }
+                },
+                {
+                  "identifier": "focused",
+                  "description": "A focus ring appears around the button. Implemented as a composite box-shadow using the theme's focusRing config (offset: -1, width: 1). The ring is inset because offset is negative. Hidden on :focus:not(:focus-visible) to only show for keyboard navigation — mouse clicks reset to the normal box-shadow.",
+                  "properties": {
+                    "box-shadow": "focusRingStyle({ base, border: { width: 2, color: baseColor.bg }, focusRing: { offset: -1, width: 1 } })",
+                    "focus-ring-offset": "-1px (inset — theme.button.focusRing.offset)",
+                    "focus-ring-width": "1px (theme.button.focusRing.width)",
+                    "focus-ring-color": "var(--card-focus-ring-color)",
+                    "focus-visible-only": "true (:focus:not(:focus-visible) resets box-shadow to border-only)"
+                  }
+                },
+                {
+                  "identifier": "disabled",
+                  "description": "Colors shift to the disabled state set via CSS selector &:disabled, &[data-disabled='true']. Unlike opacity-based disabling, Sanity UI uses distinct disabled colors from the theme. The HTML disabled attribute is set, removing the element from tab order.",
+                  "properties": {
+                    "background-color": "var(--card-bg-color) from theme.button[mode][tone].disabled.bg",
+                    "color": "var(--card-fg-color) from theme.button[mode][tone].disabled.fg",
+                    "border-color": "var(--card-border-color) from theme.button[mode][tone].disabled.border",
+                    "icon-color": "var(--card-icon-color) from theme.button[mode][tone].disabled.icon",
+                    "muted-bg-color": "var(--card-muted-bg-color) from theme.button[mode][tone].disabled.muted.bg",
+                    "muted-fg-color": "var(--card-muted-fg-color) from theme.button[mode][tone].disabled.muted.fg",
+                    "cursor": "default (browser default for disabled button)",
+                    "pointer-events": "none (via HTML disabled attribute)"
+                  }
+                },
+                {
+                  "identifier": "loading",
+                  "description": "An absolutely-positioned overlay covers the button with a Spinner centered inside. The overlay uses var(--card-bg-color) as background, inherits border-radius, and has z-index: 1.",
+                  "properties": {
+                    "overlay-position": "absolute",
+                    "overlay-inset": "0",
+                    "overlay-background": "var(--card-bg-color)",
+                    "overlay-display": "flex",
+                    "overlay-align-items": "center",
+                    "overlay-justify-content": "center",
+                    "overlay-border-radius": "inherit",
+                    "overlay-z-index": "1"
+                  }
+                }
+              ],
+              "variantStates": [
+                {
+                  "variant": "default",
+                  "state": "hovered",
+                  "description": "Default mode hover: the filled background shifts to the hovered color from the tone's color set. All CSS custom properties from _cardColorStyle are updated.",
+                  "properties": {
+                    "background-color": "theme.button.default[tone].hovered.bg",
+                    "color": "theme.button.default[tone].hovered.fg",
+                    "border-color": "theme.button.default[tone].hovered.border",
+                    "icon-color": "theme.button.default[tone].hovered.icon",
+                    "accent-fg-color": "theme.button.default[tone].hovered.accent.fg",
+                    "link-fg-color": "theme.button.default[tone].hovered.link.fg",
+                    "muted-bg-color": "theme.button.default[tone].hovered.muted.bg",
+                    "muted-fg-color": "theme.button.default[tone].hovered.muted.fg"
+                  }
+                },
+                {
+                  "variant": "ghost",
+                  "state": "hovered",
+                  "description": "Ghost mode hover: a subtle background fill appears where there was previously only a border. The box-shadow retains the border inset.",
+                  "properties": {
+                    "background-color": "theme.button.ghost[tone].hovered.bg",
+                    "color": "theme.button.ghost[tone].hovered.fg",
+                    "border-color": "theme.button.ghost[tone].hovered.border",
+                    "icon-color": "theme.button.ghost[tone].hovered.icon"
+                  }
+                },
+                {
+                  "variant": "bleed",
+                  "state": "hovered",
+                  "description": "Bleed mode hover: a subtle background fill appears where there was previously nothing — the button becomes 'visible' on hover. No box-shadow or border.",
+                  "properties": {
+                    "background-color": "theme.button.bleed[tone].hovered.bg",
+                    "color": "theme.button.bleed[tone].hovered.fg",
+                    "icon-color": "theme.button.bleed[tone].hovered.icon"
+                  }
+                },
+                {
+                  "variant": "default",
+                  "state": "pressed",
+                  "properties": {
+                    "background-color": "theme.button.default[tone].pressed.bg",
+                    "color": "theme.button.default[tone].pressed.fg",
+                    "border-color": "theme.button.default[tone].pressed.border"
+                  }
+                },
+                {
+                  "variant": "ghost",
+                  "state": "pressed",
+                  "properties": {
+                    "background-color": "theme.button.ghost[tone].pressed.bg",
+                    "color": "theme.button.ghost[tone].pressed.fg",
+                    "border-color": "theme.button.ghost[tone].pressed.border"
+                  }
+                },
+                {
+                  "variant": "bleed",
+                  "state": "pressed",
+                  "properties": {
+                    "background-color": "theme.button.bleed[tone].pressed.bg",
+                    "color": "theme.button.bleed[tone].pressed.fg"
+                  }
+                },
+                {
+                  "variant": "default",
+                  "state": "focused",
+                  "description": "Default mode focus: focus ring as composite box-shadow with inset border retained.",
+                  "properties": {
+                    "box-shadow": "inset 0 0 0 1px var(--card-border-color), focusRingStyle"
+                  }
+                },
+                {
+                  "variant": "ghost",
+                  "state": "focused",
+                  "description": "Ghost mode focus: focus ring with the ghost border shadow retained underneath.",
+                  "properties": {
+                    "box-shadow": "inset 0 0 0 1px var(--card-border-color), focusRingStyle"
+                  }
+                },
+                {
+                  "variant": "bleed",
+                  "state": "focused",
+                  "description": "Bleed mode focus: focus ring only — no border shadow since bleed has no border.",
+                  "properties": {
+                    "box-shadow": "focusRingStyle (no inset border)"
+                  }
+                }
+              ]
+            }
+          },
+          "metadata": {
+            "status": "stable",
+            "since": "1.0.0",
+            "category": "action",
+            "tags": [
+              "action",
+              "form",
+              "interactive",
+              "primitive"
+            ],
+            "aliases": [
+              "btn"
+            ],
+            "summary": "An interactive element that triggers an action when activated.",
+            "links": [
+              {
+                "kind": "source",
+                "url": "https://github.com/sanity-io/ui/blob/main/src/core/primitives/button/button.tsx",
+                "label": "Button component source"
+              },
+              {
+                "kind": "source",
+                "url": "https://github.com/sanity-io/ui/blob/main/src/core/primitives/button/styles.ts",
+                "label": "Button styles source"
+              },
+              {
+                "kind": "source",
+                "url": "https://github.com/sanity-io/ui/blob/main/src/theme/system/color/button.ts",
+                "label": "Button color system"
+              },
+              {
+                "kind": "design",
+                "url": "https://www.figma.com/design/5mhVqXlldJEEB2VWZeKQ4i/%F0%9F%A7%AC-Sanity-UI?node-id=25-769",
+                "label": "Figma component — Button"
+              },
+              {
+                "kind": "storybook",
+                "url": "https://storybook.sanity.build/?path=/docs/primitives-button--docs",
+                "label": "Storybook documentation"
+              },
+              {
+                "kind": "documentation",
+                "url": "https://www.sanity.io/ui/docs/component/button",
+                "label": "Sanity UI documentation"
+              },
+              {
+                "kind": "package",
+                "url": "https://www.npmjs.com/package/@sanity/ui",
+                "label": "npm package"
+              }
+            ]
+          },
+          "documentBlocks": [
             {
               "kind": "anatomy",
               "description": "The Button is composed of a styled button element containing an optional leading icon, a text label, an optional trailing icon, and a loading overlay with a spinner.",
@@ -462,258 +758,11 @@
                   "breakpoint": "hover",
                   "description": "Hover styles are guarded by @media (hover: hover) to prevent sticky hover states on touch devices. On devices without hover capability, the hovered state is never applied."
                 }
-              ],
-              "variants": [
-                {
-                  "identifier": "default",
-                  "description": "Filled mode — solid background, border derived from card system.",
-                  "properties": {
-                    "background-color": "var(--card-bg-color) from theme.button.default[tone].enabled",
-                    "border-width": "1px (theme.button.border.width)",
-                    "border-style": "solid",
-                    "box-shadow": "inset 0 0 0 1px var(--card-border-color)"
-                  }
-                },
-                {
-                  "identifier": "ghost",
-                  "description": "Transparent background with visible border. Gets an additional default box-shadow treatment.",
-                  "properties": {
-                    "background-color": "transparent (from theme.button.ghost[tone].enabled)",
-                    "border-width": "1px (theme.button.border.width)",
-                    "border-style": "solid",
-                    "border-color": "var(--card-border-color)",
-                    "box-shadow": "inset 0 0 0 1px var(--card-border-color)"
-                  }
-                },
-                {
-                  "identifier": "bleed",
-                  "description": "Fully transparent — no background, no border, no visual boundary in the enabled state.",
-                  "properties": {
-                    "background-color": "transparent",
-                    "border-width": "0",
-                    "border-color": "transparent"
-                  }
-                }
-              ],
-              "sizes": [
-                {
-                  "identifier": "compact",
-                  "description": "A common compact configuration using fontSize=1, padding=2, space=2, radius=2. Not a named size in the API — composed from numeric scale props.",
-                  "properties": {
-                    "font-size": "13px (theme.font.text.sizes[1].fontSize)",
-                    "line-height": "19px (theme.font.text.sizes[1].lineHeight)",
-                    "icon-size": "21px (theme.font.text.sizes[1].iconSize)",
-                    "ascender-height": "5px (theme.font.text.sizes[1].ascenderHeight)",
-                    "descender-height": "5px (theme.font.text.sizes[1].descenderHeight)",
-                    "padding": "8px (theme.space[2])",
-                    "gap": "8px (theme.space[2])",
-                    "border-radius": "3px (theme.radius[2])",
-                    "text-overflow": "ellipsis"
-                  },
-                  "spacing": {
-                    "internal": {
-                      "content-padding": "theme.space[2]",
-                      "icon-to-text-gap": "theme.space[2]"
-                    }
-                  }
-                },
-                {
-                  "identifier": "default",
-                  "description": "The default configuration: fontSize=1, padding=3, space=3, radius=2.",
-                  "properties": {
-                    "font-size": "13px (theme.font.text.sizes[1].fontSize)",
-                    "line-height": "19px (theme.font.text.sizes[1].lineHeight)",
-                    "icon-size": "21px (theme.font.text.sizes[1].iconSize)",
-                    "ascender-height": "5px (theme.font.text.sizes[1].ascenderHeight)",
-                    "descender-height": "5px (theme.font.text.sizes[1].descenderHeight)",
-                    "padding": "12px (theme.space[3])",
-                    "gap": "12px (theme.space[3])",
-                    "border-radius": "3px (theme.radius[2])",
-                    "text-overflow": "ellipsis"
-                  },
-                  "spacing": {
-                    "internal": {
-                      "content-padding": "theme.space[3]",
-                      "icon-to-text-gap": "theme.space[3]"
-                    }
-                  }
-                },
-                {
-                  "identifier": "large",
-                  "description": "A common large configuration: fontSize=2, padding=4, space=3, radius=3.",
-                  "properties": {
-                    "font-size": "15px (theme.font.text.sizes[2].fontSize)",
-                    "line-height": "23px (theme.font.text.sizes[2].lineHeight)",
-                    "icon-size": "25px (theme.font.text.sizes[2].iconSize)",
-                    "ascender-height": "6px (theme.font.text.sizes[2].ascenderHeight)",
-                    "descender-height": "6px (theme.font.text.sizes[2].descenderHeight)",
-                    "padding": "20px (theme.space[4])",
-                    "gap": "12px (theme.space[3])",
-                    "border-radius": "6px (theme.radius[3])",
-                    "text-overflow": "ellipsis"
-                  },
-                  "spacing": {
-                    "internal": {
-                      "content-padding": "theme.space[4]",
-                      "icon-to-text-gap": "theme.space[3]"
-                    }
-                  }
-                }
-              ],
-              "states": [
-                {
-                  "identifier": "hovered",
-                  "description": "Background and foreground shift to the hovered state colors from the mode×tone matrix. Applied via @media (hover: hover) to avoid sticky hover on touch devices. Also triggered programmatically via data-hovered attribute.",
-                  "properties": {
-                    "background-color": "var(--card-bg-color) from theme.button[mode][tone].hovered.bg",
-                    "color": "var(--card-fg-color) from theme.button[mode][tone].hovered.fg",
-                    "border-color": "var(--card-border-color) from theme.button[mode][tone].hovered.border",
-                    "icon-color": "var(--card-icon-color) from theme.button[mode][tone].hovered.icon",
-                    "media-query": "@media (hover: hover)"
-                  }
-                },
-                {
-                  "identifier": "pressed",
-                  "description": "Background darkens further for the pressed/active state. Also applied when data-selected is present.",
-                  "properties": {
-                    "background-color": "var(--card-bg-color) from theme.button[mode][tone].pressed.bg",
-                    "color": "var(--card-fg-color) from theme.button[mode][tone].pressed.fg",
-                    "border-color": "var(--card-border-color) from theme.button[mode][tone].pressed.border",
-                    "icon-color": "var(--card-icon-color) from theme.button[mode][tone].pressed.icon"
-                  }
-                },
-                {
-                  "identifier": "focused",
-                  "description": "A focus ring appears around the button. Implemented as a composite box-shadow using the theme's focusRing config (offset: -1, width: 1). The ring is inset because offset is negative. Hidden on :focus:not(:focus-visible) to only show for keyboard navigation — mouse clicks reset to the normal box-shadow.",
-                  "properties": {
-                    "box-shadow": "focusRingStyle({ base, border: { width: 2, color: baseColor.bg }, focusRing: { offset: -1, width: 1 } })",
-                    "focus-ring-offset": "-1px (inset — theme.button.focusRing.offset)",
-                    "focus-ring-width": "1px (theme.button.focusRing.width)",
-                    "focus-ring-color": "var(--card-focus-ring-color)",
-                    "focus-visible-only": "true (:focus:not(:focus-visible) resets box-shadow to border-only)"
-                  }
-                },
-                {
-                  "identifier": "disabled",
-                  "description": "Colors shift to the disabled state set via CSS selector &:disabled, &[data-disabled='true']. Unlike opacity-based disabling, Sanity UI uses distinct disabled colors from the theme. The HTML disabled attribute is set, removing the element from tab order.",
-                  "properties": {
-                    "background-color": "var(--card-bg-color) from theme.button[mode][tone].disabled.bg",
-                    "color": "var(--card-fg-color) from theme.button[mode][tone].disabled.fg",
-                    "border-color": "var(--card-border-color) from theme.button[mode][tone].disabled.border",
-                    "icon-color": "var(--card-icon-color) from theme.button[mode][tone].disabled.icon",
-                    "muted-bg-color": "var(--card-muted-bg-color) from theme.button[mode][tone].disabled.muted.bg",
-                    "muted-fg-color": "var(--card-muted-fg-color) from theme.button[mode][tone].disabled.muted.fg",
-                    "cursor": "default (browser default for disabled button)",
-                    "pointer-events": "none (via HTML disabled attribute)"
-                  }
-                },
-                {
-                  "identifier": "loading",
-                  "description": "An absolutely-positioned overlay covers the button with a Spinner centered inside. The overlay uses var(--card-bg-color) as background, inherits border-radius, and has z-index: 1.",
-                  "properties": {
-                    "overlay-position": "absolute",
-                    "overlay-inset": "0",
-                    "overlay-background": "var(--card-bg-color)",
-                    "overlay-display": "flex",
-                    "overlay-align-items": "center",
-                    "overlay-justify-content": "center",
-                    "overlay-border-radius": "inherit",
-                    "overlay-z-index": "1"
-                  }
-                }
-              ],
-              "variantStates": [
-                {
-                  "variant": "default",
-                  "state": "hovered",
-                  "description": "Default mode hover: the filled background shifts to the hovered color from the tone's color set. All CSS custom properties from _cardColorStyle are updated.",
-                  "properties": {
-                    "background-color": "theme.button.default[tone].hovered.bg",
-                    "color": "theme.button.default[tone].hovered.fg",
-                    "border-color": "theme.button.default[tone].hovered.border",
-                    "icon-color": "theme.button.default[tone].hovered.icon",
-                    "accent-fg-color": "theme.button.default[tone].hovered.accent.fg",
-                    "link-fg-color": "theme.button.default[tone].hovered.link.fg",
-                    "muted-bg-color": "theme.button.default[tone].hovered.muted.bg",
-                    "muted-fg-color": "theme.button.default[tone].hovered.muted.fg"
-                  }
-                },
-                {
-                  "variant": "ghost",
-                  "state": "hovered",
-                  "description": "Ghost mode hover: a subtle background fill appears where there was previously only a border. The box-shadow retains the border inset.",
-                  "properties": {
-                    "background-color": "theme.button.ghost[tone].hovered.bg",
-                    "color": "theme.button.ghost[tone].hovered.fg",
-                    "border-color": "theme.button.ghost[tone].hovered.border",
-                    "icon-color": "theme.button.ghost[tone].hovered.icon"
-                  }
-                },
-                {
-                  "variant": "bleed",
-                  "state": "hovered",
-                  "description": "Bleed mode hover: a subtle background fill appears where there was previously nothing — the button becomes 'visible' on hover. No box-shadow or border.",
-                  "properties": {
-                    "background-color": "theme.button.bleed[tone].hovered.bg",
-                    "color": "theme.button.bleed[tone].hovered.fg",
-                    "icon-color": "theme.button.bleed[tone].hovered.icon"
-                  }
-                },
-                {
-                  "variant": "default",
-                  "state": "pressed",
-                  "properties": {
-                    "background-color": "theme.button.default[tone].pressed.bg",
-                    "color": "theme.button.default[tone].pressed.fg",
-                    "border-color": "theme.button.default[tone].pressed.border"
-                  }
-                },
-                {
-                  "variant": "ghost",
-                  "state": "pressed",
-                  "properties": {
-                    "background-color": "theme.button.ghost[tone].pressed.bg",
-                    "color": "theme.button.ghost[tone].pressed.fg",
-                    "border-color": "theme.button.ghost[tone].pressed.border"
-                  }
-                },
-                {
-                  "variant": "bleed",
-                  "state": "pressed",
-                  "properties": {
-                    "background-color": "theme.button.bleed[tone].pressed.bg",
-                    "color": "theme.button.bleed[tone].pressed.fg"
-                  }
-                },
-                {
-                  "variant": "default",
-                  "state": "focused",
-                  "description": "Default mode focus: focus ring as composite box-shadow with inset border retained.",
-                  "properties": {
-                    "box-shadow": "inset 0 0 0 1px var(--card-border-color), focusRingStyle"
-                  }
-                },
-                {
-                  "variant": "ghost",
-                  "state": "focused",
-                  "description": "Ghost mode focus: focus ring with the ghost border shadow retained underneath.",
-                  "properties": {
-                    "box-shadow": "inset 0 0 0 1px var(--card-border-color), focusRingStyle"
-                  }
-                },
-                {
-                  "variant": "bleed",
-                  "state": "focused",
-                  "description": "Bleed mode focus: focus ring only — no border shadow since bleed has no border.",
-                  "properties": {
-                    "box-shadow": "focusRingStyle (no inset border)"
-                  }
-                }
               ]
             },
             {
-              "kind": "purpose",
-              "useCases": [
+              "kind": "useCases",
+              "items": [
                 {
                   "description": "When the user needs to trigger an action such as saving, publishing, submitting a form, or confirming a decision.",
                   "stance": "recommended"
@@ -745,7 +794,7 @@
               ]
             },
             {
-              "kind": "best-practices",
+              "kind": "guidelines",
               "items": [
                 {
                   "guidance": "Use mode='default' with an appropriate tone for the primary action on a surface. Limit to one filled button per surface.",
@@ -776,11 +825,10 @@
                   "rationale": "Without visible text, there is no accessible name. Screen readers will announce the button without context.",
                   "level": "MUST",
                   "category": "accessibility",
-                  "criteria": [
+                  "references": [
                     {
                       "url": "https://www.w3.org/TR/WCAG22/#name-role-value",
-                      "label": "4.1.2 Name, Role, Value",
-                      "kind": "reference"
+                      "label": "4.1.2 Name, Role, Value"
                     }
                   ]
                 },
@@ -843,52 +891,7 @@
               "focusManagement": "The button participates in the normal tab order. When disabled, it is removed from the tab order via the HTML disabled attribute (unlike the DSDS example component which uses aria-disabled). The focus ring is implemented as a composite box-shadow and only appears on :focus-visible. On :focus:not(:focus-visible), the box-shadow resets to the normal border-only shadow, hiding the ring for mouse interactions.",
               "motionConsiderations": "The button root has a CSS transition of 'background-color 100ms, border-color 100ms, color 100ms' for smooth state changes. The loading spinner uses CSS animation. Sanity UI provides a usePrefersReducedMotion hook, but the spinner does not currently auto-disable animation based on this preference."
             }
-          ],
-          "links": [
-            {
-              "kind": "source",
-              "url": "https://github.com/sanity-io/ui/blob/main/src/core/primitives/button/button.tsx",
-              "label": "Button component source"
-            },
-            {
-              "kind": "source",
-              "url": "https://github.com/sanity-io/ui/blob/main/src/core/primitives/button/styles.ts",
-              "label": "Button styles source"
-            },
-            {
-              "kind": "source",
-              "url": "https://github.com/sanity-io/ui/blob/main/src/theme/system/color/button.ts",
-              "label": "Button color system"
-            },
-            {
-              "kind": "design",
-              "url": "https://www.figma.com/design/5mhVqXlldJEEB2VWZeKQ4i/%F0%9F%A7%AC-Sanity-UI?node-id=25-769",
-              "label": "Figma component — Button"
-            },
-            {
-              "kind": "storybook",
-              "url": "https://storybook.sanity.build/?path=/docs/primitives-button--docs",
-              "label": "Storybook documentation"
-            },
-            {
-              "kind": "documentation",
-              "url": "https://www.sanity.io/ui/docs/component/button",
-              "label": "Sanity UI documentation"
-            },
-            {
-              "kind": "package",
-              "url": "https://www.npmjs.com/package/@sanity/ui",
-              "label": "npm package"
-            }
-          ],
-          "$extensions": {
-            "com.sanity.ui": {
-              "primitiveType": "button",
-              "styledComponent": true,
-              "themeColorPath": "theme.color.button[mode][tone][state]",
-              "dataUi": "Button"
-            }
-          }
+          ]
         }
       ]
     }

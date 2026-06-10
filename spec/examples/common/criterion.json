@@ -23,12 +23,140 @@
         "touch-target",
         "governance"
       ]
+    },
+    {
+      "identifier": "icon-button-name-present",
+      "title": "Icon Button Accessible Name Present",
+      "statement": "Every icon-only button exposes a non-empty accessible name.",
+      "level": "MUST",
+      "verification": "automated",
+      "check": {
+        "scheme": "axe-core",
+        "rule": "button-name"
+      },
+      "since": "2.0.0",
+      "techniques": [
+        "Set `aria-label` on the button (e.g., `aria-label=\"Close dialog\"`).",
+        "Use visually hidden text inside the button instead of `aria-label`."
+      ],
+      "failures": [
+        "Rendering an icon-only button whose accessible name resolves to an empty string."
+      ],
+      "examples": [
+        {
+          "title": "Labelled icon button",
+          "outcome": "pass",
+          "presentation": {
+            "kind": "code",
+            "code": "<Button aria-label=\"Close dialog\"><CloseIcon /></Button>",
+            "language": "jsx"
+          }
+        },
+        {
+          "title": "Unlabelled icon button",
+          "outcome": "fail",
+          "presentation": {
+            "kind": "code",
+            "code": "<Button><CloseIcon /></Button>",
+            "language": "jsx"
+          }
+        }
+      ]
+    },
+    {
+      "identifier": "icon-button-name-length",
+      "title": "Icon Button Name Is Concise",
+      "statement": "Icon-only button accessible names are 40 characters or fewer.",
+      "level": "SHOULD",
+      "verification": "assisted",
+      "check": {
+        "scheme": "com.acme.a11y-lint",
+        "rule": "label-length",
+        "maxLength": 40
+      },
+      "techniques": [
+        "Name the action, not the icon (e.g., 'Close dialog', not 'X mark symbol button')."
+      ],
+      "failures": [
+        "Accessible names that read as sentences rather than action labels."
+      ]
+    },
+    {
+      "identifier": "icon-button-name-describes-action",
+      "title": "Icon Button Name Describes the Action",
+      "statement": "Every icon-only button's accessible name describes the action the button performs, not the icon's appearance.",
+      "level": "MUST",
+      "verification": "manual",
+      "techniques": [
+        "Name the outcome of activation (e.g., 'Close dialog', 'Copy link', 'Delete row').",
+        "Review names alongside the rendered UI so the action context is visible."
+      ],
+      "failures": [
+        "Names that describe the glyph (e.g., 'X icon', 'Trash can') rather than the action.",
+        "The same generic name (e.g., 'Button') on multiple buttons that perform different actions."
+      ],
+      "examples": [
+        {
+          "title": "Action-describing name",
+          "outcome": "pass",
+          "value": "aria-label=\"Copy link\""
+        },
+        {
+          "title": "Appearance-describing name",
+          "outcome": "fail",
+          "value": "aria-label=\"Chain icon\""
+        }
+      ]
     }
   ],
   "reference": [
     {
       "url": "https://www.w3.org/TR/WCAG22/#contrast-minimum",
       "label": "WCAG 1.4.3 Contrast (Minimum)"
+    }
+  ],
+  "conformanceLevel": [
+    "MUST",
+    "SHOULD"
+  ],
+  "verificationMode": [
+    "automated",
+    "assisted",
+    "manual"
+  ],
+  "criterionCheck": [
+    {
+      "scheme": "axe-core",
+      "rule": "button-name"
+    },
+    {
+      "scheme": "vitest",
+      "suite": "button.contract.test.ts",
+      "testName": "renders a minimum 44px hit area"
+    },
+    {
+      "scheme": "com.acme.contract-tests",
+      "endpoint": "https://ci.acme.com/checks/touch-target"
+    }
+  ],
+  "criterionFixture": [
+    {
+      "title": "Icon-only button with an accessible name",
+      "outcome": "pass",
+      "presentation": {
+        "kind": "code",
+        "code": "<Button aria-label=\"Close dialog\"><CloseIcon /></Button>",
+        "language": "jsx"
+      }
+    },
+    {
+      "title": "Icon-only button with no accessible name",
+      "outcome": "fail",
+      "presentation": {
+        "kind": "code",
+        "code": "<Button><CloseIcon /></Button>",
+        "language": "jsx"
+      }
     }
   ]
 }

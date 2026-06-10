@@ -3,13 +3,13 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Schema Architecture — DSDS 0.7.2</title>
+  <title>Schema Architecture — DSDS 0.8.0</title>
   <meta name="description" content="The full DSDS schema reference — document structure, entity properties, document block types, and all shared models.">
   <link rel="canonical" href="https://designsystemdocspec.org/schema-architecture">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Design System Documentation Spec">
-  <meta property="og:title" content="Schema Architecture — DSDS 0.7.2">
+  <meta property="og:title" content="Schema Architecture — DSDS 0.8.0">
   <meta property="og:description" content="The full DSDS schema reference — document structure, entity properties, document block types, and all shared models.">
   <meta property="og:url" content="https://designsystemdocspec.org/schema-architecture">
   <meta name="twitter:card" content="summary">
@@ -20,7 +20,7 @@
 <body>
   <a class="skip-link" href="#main-content">Skip to content</a>
   <ds-nav-toggle target="ds-spec-nav"></ds-nav-toggle>
-  <ds-spec-nav title="Design System Documentation Spec 0.7.2" title-href="index.html" active="schema-architecture">
+  <ds-spec-nav title="Design System Documentation Spec 0.8.0" title-href="index.html" active="schema-architecture">
     <a href="index.html" slug="index">Overview</a>
     <a href="quickstart.html" slug="quickstart">Quick start</a>
     <a href="schema-architecture.html" slug="schema-architecture">Schema architecture</a>
@@ -98,7 +98,7 @@
 </ul>
 <p>A complete, valid document using only the core:</p>
 <ds-code language="json">{
-  "dsdsVersion": "0.7.2",
+  "dsdsVersion": "0.8.0",
   "entity": {
     "kind": "component",
     "identifier": "button",
@@ -135,7 +135,7 @@
 ├── dsds.schema.json                    # Root document schema
 ├── dsds.bundled.schema.json            # Auto-generated single-file bundle
 ├── common/
-│   ├── criterion.schema.json                   # reference, criterion
+│   ├── criterion.schema.json                   # conformanceLevel, verificationMode, criterionCheck, criterionFixture, reference, criterion
 │   ├── example.schema.json                     # example
 │   ├── extends.schema.json                     # documentExtends, entityExtends
 │   ├── extensions.schema.json                  # extensions
@@ -187,7 +187,7 @@
 <p>A DSDS file is a JSON object. It needs a <ds-code inline>dsdsVersion</ds-code>. It also needs one of two shapes: an <ds-code inline>entityGroups</ds-code> array for many entities, or an <ds-code inline>entity</ds-code> object for a single one. Every valid file uses one or the other.</p>
 <ds-heading level="3" anchor="root-properties">Root properties</ds-heading>
 <ds-prop-table>
-  <ds-prop name="dsdsVersion" type="&lt;ds-code inline&gt;&quot;0.7.2&quot;&lt;/ds-code&gt;" required>The DSDS spec version this document conforms to.</ds-prop>
+  <ds-prop name="dsdsVersion" type="&lt;ds-code inline&gt;&quot;0.8.0&quot;&lt;/ds-code&gt;" required>The DSDS spec version this document conforms to.</ds-prop>
   <ds-prop name="$schema" type="string">URI reference to the DSDS JSON Schema for validation.</ds-prop>
   <ds-prop name="systemInfo" type="&lt;ds-type-ref href=&quot;common-system-info.html#systeminfo&quot;&gt;systemInfo&lt;/ds-type-ref&gt;"></ds-prop>
   <ds-prop name="extends" type="&lt;ds-type-ref href=&quot;common-extends.html#documentextends&quot;&gt;documentExtends&lt;/ds-type-ref&gt;">Declares that this DSDS document inherits from another DSDS document — usually a core design system. The base document provides the core entities. This document layers on top, adding or extending entities. It supports systems-of-systems architectures, where product- or brand-specific systems inherit from a shared core.</ds-prop>
@@ -208,8 +208,8 @@
 <ds-heading level="3" anchor="single-entity-documents">Single-entity documents</ds-heading>
 <p>When each entity lives in its own file, use the <ds-code inline>entity</ds-code> property instead of <ds-code inline>entityGroups</ds-code>. The <ds-code inline>kind</ds-code> field on the entity identifies its type.</p>
 <ds-code language="json">{
-  "$schema": "https://designsystemdocspec.org/v0.7.2/dsds.bundled.schema.json",
-  "dsdsVersion": "0.7.2",
+  "$schema": "https://designsystemdocspec.org/v0.8.0/dsds.bundled.schema.json",
+  "dsdsVersion": "0.8.0",
   "entity": {
     "kind": "component",
     "identifier": "button",
@@ -228,7 +228,7 @@
 <p>Each <ds-code inline>$ref</ds-code> object has one property: <ds-code inline>$ref</ds-code>. Its value is a path to a DSDS file. You can add a JSON Pointer fragment to target one value inside that file.</p>
 <p><strong>Individual entity file</strong> (<ds-code inline>button.dsds.json</ds-code>):</p>
 <ds-code language="json">{
-  "dsdsVersion": "0.7.2",
+  "dsdsVersion": "0.8.0",
   "entity": {
     "kind": "component",
     "identifier": "button",
@@ -239,7 +239,7 @@
 </ds-code>
 <p><strong>Manifest file</strong> (<ds-code inline>index.dsds.json</ds-code>):</p>
 <ds-code language="json">{
-  "dsdsVersion": "0.7.2",
+  "dsdsVersion": "0.8.0",
   "entityGroups": [
     {
       "name": "Acme Design System",
@@ -558,7 +558,7 @@
 <ds-heading level="4" anchor="guideline-entry">Guideline entry</ds-heading>
 <ds-prop-table>
   <ds-prop name="guidance" type="&lt;ds-type-ref href=&quot;common-rich-text.html#richtext&quot;&gt;richText&lt;/ds-type-ref&gt;" required>The guidance statement. MUST be concrete and unambiguous. Avoid vague phrases like 'use sparingly' or 'when possible'.</ds-prop>
-  <ds-prop name="level" type="&lt;ds-code inline&gt;&quot;MUST&quot;&lt;/ds-code&gt; | &lt;ds-code inline&gt;&quot;SHOULD&quot;&lt;/ds-code&gt; | &lt;ds-code inline&gt;&quot;SHOULD_NOT&quot;&lt;/ds-code&gt; | &lt;ds-code inline&gt;&quot;MUST_NOT&quot;&lt;/ds-code&gt;" required>How strictly the guideline should be followed, named for RFC 2119 requirement levels: 'MUST' (non-compliance is a defect), 'SHOULD' (follow in most cases; exceptions need justification), 'SHOULD_NOT' (avoid unless justified), 'MUST_NOT' (violations are defects). Agents treat MUST/MUST_NOT entries as hard limits when generating or reviewing code.</ds-prop>
+  <ds-prop name="level" type="&lt;ds-type-ref href=&quot;common-criterion.html#conformancelevel&quot;&gt;conformanceLevel&lt;/ds-type-ref&gt;" required>How strictly the guideline should be followed, named for RFC 2119 requirement levels: 'MUST' (non-compliance is a defect), 'SHOULD' (follow in most cases; exceptions need justification), 'SHOULD_NOT' (avoid unless justified), 'MUST_NOT' (violations are defects). Agents treat MUST/MUST_NOT entries as hard limits when generating or reviewing code.</ds-prop>
   <ds-prop name="rationale" type="&lt;ds-type-ref href=&quot;common-rich-text.html#richtext&quot;&gt;richText&lt;/ds-type-ref&gt;">Why this guidance exists. Cite evidence, accessibility standards, or user research when available. MUST NOT restate the guidance.</ds-prop>
   <ds-prop name="evidence" type="string">Quantitative or empirical backing for this guideline: test run data, audit findings, issue references, or cited sources. Keeping evidence separate from rationale lets tools tell test-derived rules apart from conventional guidance. Example: '9/10 agent test runs failed touch-target minimums when height was overridden below 36px.'</ds-prop>
   <ds-prop name="category" type="string">The discipline this guideline belongs to. Used to group guidelines by concern. Standard values: 'visual-design' (color, typography, spacing, layout), 'interaction' (behavior, animation, transitions, gestures), 'accessibility' (inclusive design, assistive tech, WCAG), 'content' (text, imagery, tone, voice, labeling), 'motion' (animation timing, easing, reduced-motion), 'development' (implementation patterns, performance, code conventions). Custom values are allowed and SHOULD be lowercase kebab-case.</ds-prop>
@@ -976,7 +976,7 @@
         <ds-back-to-top></ds-back-to-top>
 
         <ds-footer>
-          <p>Design System Documentation Spec (DSDS) 0.7.2 — Draft Specification</p>
+          <p>Design System Documentation Spec (DSDS) 0.8.0 — Draft Specification</p>
           <p><a href="https://github.com/somerandomdude/design-system-documentation-schema">GitHub</a></p>
         </ds-footer>
       </div>

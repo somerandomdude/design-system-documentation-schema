@@ -3,13 +3,13 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>DSDS Quick Start Guide — DSDS 0.7.2</title>
+  <title>DSDS Quick Start Guide — DSDS 0.8.0</title>
   <meta name="description" content="Get started with DSDS — document structure, entity types, the document block system, and minimal examples you can copy.">
   <link rel="canonical" href="https://designsystemdocspec.org/quickstart">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Design System Documentation Spec">
-  <meta property="og:title" content="DSDS Quick Start Guide — DSDS 0.7.2">
+  <meta property="og:title" content="DSDS Quick Start Guide — DSDS 0.8.0">
   <meta property="og:description" content="Get started with DSDS — document structure, entity types, the document block system, and minimal examples you can copy.">
   <meta property="og:url" content="https://designsystemdocspec.org/quickstart">
   <meta name="twitter:card" content="summary">
@@ -20,7 +20,7 @@
 <body>
   <a class="skip-link" href="#main-content">Skip to content</a>
   <ds-nav-toggle target="ds-spec-nav"></ds-nav-toggle>
-  <ds-spec-nav title="Design System Documentation Spec 0.7.2" title-href="index.html" active="quickstart">
+  <ds-spec-nav title="Design System Documentation Spec 0.8.0" title-href="index.html" active="quickstart">
     <a href="index.html" slug="index">Overview</a>
     <a href="quickstart.html" slug="quickstart">Quick start</a>
     <a href="schema-architecture.html" slug="schema-architecture">Schema architecture</a>
@@ -101,8 +101,8 @@
 <ds-heading level="3" anchor="single-entity-files">Single-entity files</ds-heading>
 <p>Use <ds-code inline>entity</ds-code> when each component, token, or pattern lives in its own file. The <ds-code inline>kind</ds-code> field on the entity identifies its type.</p>
 <ds-code language="json">{
-  "$schema": "https://designsystemdocspec.org/v0.7.2/dsds.bundled.schema.json",
-  "dsdsVersion": "0.7.2",
+  "$schema": "https://designsystemdocspec.org/v0.8.0/dsds.bundled.schema.json",
+  "dsdsVersion": "0.8.0",
   "entity": {
     "kind": "component",
     "identifier": "button",
@@ -116,7 +116,7 @@
 <ds-heading level="3" anchor="multi-entity-files">Multi-entity files</ds-heading>
 <p>Use <ds-code inline>entityGroups</ds-code> to put several entities in one file, or as a manifest that points to separate entity files.</p>
 <ds-code language="json">{
-  "dsdsVersion": "0.7.2",
+  "dsdsVersion": "0.8.0",
   "entityGroups": [
     {
       "name": "My Design System",
@@ -131,14 +131,14 @@
 }
 </ds-code>
 <ul>
-<li><ds-code inline>dsdsVersion</ds-code> — the spec version this document targets; <ds-code inline>"0.7.2"</ds-code> for this release</li>
+<li><ds-code inline>dsdsVersion</ds-code> — the spec version this document targets; <ds-code inline>"0.8.0"</ds-code> for this release</li>
 <li><ds-code inline>entityGroups</ds-code> — array of named groups</li>
 <li><ds-code inline>entities</ds-code> — one array per group; mix kinds freely in display order. Each entity's <ds-code inline>kind</ds-code> says what type it is</li>
 </ul>
 <ds-heading level="3" anchor="linking-files-with-ref">Linking files with <ds-code inline>$ref</ds-code></ds-heading>
 <p>Entity arrays accept <ds-code inline>$ref</ds-code> objects that point to other DSDS files. This lets you keep entities in their own files and pull them together in a manifest:</p>
 <ds-code language="json">{
-  "dsdsVersion": "0.7.2",
+  "dsdsVersion": "0.8.0",
   "entityGroups": [
     {
       "name": "Acme Design System",
@@ -234,6 +234,37 @@
 }
 </ds-code>
 <p>The <ds-code inline>level</ds-code> field is named for RFC 2119: <ds-badge>MUST</ds-badge>, <ds-badge>SHOULD</ds-badge>, <ds-badge>SHOULD_NOT</ds-badge>, <ds-badge>MUST_NOT</ds-badge>. Agents treat <ds-code inline>MUST</ds-code>/<ds-code inline>MUST_NOT</ds-code> as hard limits. Optional <ds-code inline>evidence</ds-code> records the backing, and <ds-code inline>criteria</ds-code> define testable success conditions that checks can run against.</p>
+<ds-heading level="3" anchor="criteria-how-to-verify-it">Criteria: how to verify it</ds-heading>
+<p>A criterion turns a guideline into something checkable. Each one pairs a stable <ds-code inline>identifier</ds-code> with a testable <ds-code inline>statement</ds-code>. Test runs report pass or fail against the identifier.</p>
+<p>The <ds-code inline>verification</ds-code> field says how a result is produced:</p>
+<ul>
+<li><strong><ds-code inline>automated</ds-code></strong> — a runner decides the outcome. A <ds-code inline>check</ds-code> names the tool (its <ds-code inline>scheme</ds-code>) and carries that tool's config. Required for this mode.</li>
+<li><strong><ds-code inline>assisted</ds-code></strong> — a tool surfaces candidates; a human decides.</li>
+<li><strong><ds-code inline>manual</ds-code></strong> — pure human judgment. No <ds-code inline>check</ds-code> applies; <ds-code inline>techniques</ds-code> and <ds-code inline>failures</ds-code> act as the reviewer's procedure.</li>
+</ul>
+<p>When <ds-code inline>verification</ds-code> is omitted, tools must not assume the criterion is automatable. The set is closed — it answers <em>who decides</em>. A named procedure such as a design review is the <em>how</em>; put it in <ds-code inline>techniques</ds-code> on a <ds-code inline>manual</ds-code> criterion.</p>
+<p><ds-code inline>examples</ds-code> on a criterion are fixtures. Each declares an <ds-code inline>outcome</ds-code> — <ds-code inline>"pass"</ds-code> or <ds-code inline>"fail"</ds-code> — so a runner can confirm the check still detects what it claims to:</p>
+<ds-code language="json">{
+  "identifier": "icon-button-name-present",
+  "statement": "Every icon-only button exposes a non-empty accessible name.",
+  "level": "MUST",
+  "verification": "automated",
+  "check": { "scheme": "axe-core", "rule": "button-name" },
+  "examples": [
+    {
+      "title": "Labelled icon button",
+      "outcome": "pass",
+      "presentation": { "kind": "code", "code": "<Button aria-label=\"Close dialog\"><CloseIcon /></Button>", "language": "jsx" }
+    },
+    {
+      "title": "Unlabelled icon button",
+      "outcome": "fail",
+      "presentation": { "kind": "code", "code": "<Button><CloseIcon /></Button>", "language": "jsx" }
+    }
+  ]
+}
+</ds-code>
+<p>The <ds-code inline>statement</ds-code> is always the source of truth. The <ds-code inline>check</ds-code> is its executable shadow — execution semantics belong to the named tool, not to DSDS.</p>
 <hr />
 <ds-heading level="2" anchor="minimal-examples">Minimal examples</ds-heading>
 <p>These are the smallest valid entities — the bare minimum. Copy one, fill in your content, and add document block entries as you go.</p>
@@ -627,7 +658,7 @@
 <p>Here's a complete, minimal DSDS file with one of each entity type:</p>
 <ds-code language="json">{
   "$schema": "../schema/dsds.bundled.schema.json",
-  "dsdsVersion": "0.7.2",
+  "dsdsVersion": "0.8.0",
   "systemInfo": {
     "systemName": "Minimal Example"
   },
@@ -1027,8 +1058,8 @@
 <ds-heading level="3" anchor="using-the-bundled-schema">Using the bundled schema</ds-heading>
 <p>Add <ds-code inline>$schema</ds-code> to get editor autocompletion and inline validation:</p>
 <ds-code language="json">{
-  "$schema": "https://designsystemdocspec.org/v0.7.2/dsds.bundled.schema.json",
-  "dsdsVersion": "0.7.2",
+  "$schema": "https://designsystemdocspec.org/v0.8.0/dsds.bundled.schema.json",
+  "dsdsVersion": "0.8.0",
   "entity": {
     "kind": "component",
     "identifier": "my-component",
@@ -1063,7 +1094,7 @@ npx ajv validate -s spec/schema/dsds.bundled.schema.json -d my-system.dsds.json
         <ds-back-to-top></ds-back-to-top>
 
         <ds-footer>
-          <p>Design System Documentation Spec (DSDS) 0.7.2 — Draft Specification</p>
+          <p>Design System Documentation Spec (DSDS) 0.8.0 — Draft Specification</p>
           <p><a href="https://github.com/somerandomdude/design-system-documentation-schema">GitHub</a></p>
         </ds-footer>
       </div>
