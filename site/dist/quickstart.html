@@ -3,13 +3,13 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>DSDS Quick Start Guide — DSDS 0.8.0</title>
+  <title>DSDS Quick Start Guide — DSDS 0.9.0</title>
   <meta name="description" content="Get started with DSDS — document structure, entity types, the document block system, and minimal examples you can copy.">
   <link rel="canonical" href="https://designsystemdocspec.org/quickstart">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Design System Documentation Spec">
-  <meta property="og:title" content="DSDS Quick Start Guide — DSDS 0.8.0">
+  <meta property="og:title" content="DSDS Quick Start Guide — DSDS 0.9.0">
   <meta property="og:description" content="Get started with DSDS — document structure, entity types, the document block system, and minimal examples you can copy.">
   <meta property="og:url" content="https://designsystemdocspec.org/quickstart">
   <meta name="twitter:card" content="summary">
@@ -20,7 +20,7 @@
 <body>
   <a class="skip-link" href="#main-content">Skip to content</a>
   <ds-nav-toggle target="ds-spec-nav"></ds-nav-toggle>
-  <ds-spec-nav title="Design System Documentation Spec 0.8.0" title-href="index.html" active="quickstart">
+  <ds-spec-nav title="Design System Documentation Spec 0.9.0" title-href="index.html" active="quickstart">
     <a href="index.html" slug="index">Overview</a>
     <a href="quickstart.html" slug="quickstart">Quick start</a>
     <a href="schema-architecture.html" slug="schema-architecture">Schema architecture</a>
@@ -30,6 +30,7 @@
     </ds-nav-group>
     <ds-nav-group label="Common">
       <a href="common-criterion.html" slug="common-criterion">criterion</a>
+      <a href="common-entity-ref.html" slug="common-entity-ref">entity-ref</a>
       <a href="common-example.html" slug="common-example">example</a>
       <a href="common-extends.html" slug="common-extends">extends</a>
       <a href="common-extensions.html" slug="common-extensions">extensions</a>
@@ -101,8 +102,8 @@
 <ds-heading level="3" anchor="single-entity-files">Single-entity files</ds-heading>
 <p>Use <ds-code inline>entity</ds-code> when each component, token, or pattern lives in its own file. The <ds-code inline>kind</ds-code> field on the entity identifies its type.</p>
 <ds-code language="json">{
-  "$schema": "https://designsystemdocspec.org/v0.8.0/dsds.bundled.schema.json",
-  "dsdsVersion": "0.8.0",
+  "$schema": "https://designsystemdocspec.org/v0.9.0/dsds.bundled.schema.json",
+  "dsdsVersion": "0.9.0",
   "entity": {
     "kind": "component",
     "identifier": "button",
@@ -116,7 +117,7 @@
 <ds-heading level="3" anchor="multi-entity-files">Multi-entity files</ds-heading>
 <p>Use <ds-code inline>entityGroups</ds-code> to put several entities in one file, or as a manifest that points to separate entity files.</p>
 <ds-code language="json">{
-  "dsdsVersion": "0.8.0",
+  "dsdsVersion": "0.9.0",
   "entityGroups": [
     {
       "name": "My Design System",
@@ -131,14 +132,14 @@
 }
 </ds-code>
 <ul>
-<li><ds-code inline>dsdsVersion</ds-code> — the spec version this document targets; <ds-code inline>"0.8.0"</ds-code> for this release</li>
+<li><ds-code inline>dsdsVersion</ds-code> — the spec version this document targets; <ds-code inline>"0.9.0"</ds-code> for this release</li>
 <li><ds-code inline>entityGroups</ds-code> — array of named groups</li>
 <li><ds-code inline>entities</ds-code> — one array per group; mix kinds freely in display order. Each entity's <ds-code inline>kind</ds-code> says what type it is</li>
 </ul>
 <ds-heading level="3" anchor="linking-files-with-ref">Linking files with <ds-code inline>$ref</ds-code></ds-heading>
 <p>Entity arrays accept <ds-code inline>$ref</ds-code> objects that point to other DSDS files. This lets you keep entities in their own files and pull them together in a manifest:</p>
 <ds-code language="json">{
-  "dsdsVersion": "0.8.0",
+  "dsdsVersion": "0.9.0",
   "entityGroups": [
     {
       "name": "Acme Design System",
@@ -227,13 +228,13 @@
     {
       "guidance": "Limit each surface to one primary button.",
       "rationale": "Multiple primary buttons dilute visual hierarchy.",
-      "level": "MUST",
+      "level": "must",
       "category": "visual-design"
     }
   ]
 }
 </ds-code>
-<p>The <ds-code inline>level</ds-code> field is named for RFC 2119: <ds-badge>MUST</ds-badge>, <ds-badge>SHOULD</ds-badge>, <ds-badge>SHOULD_NOT</ds-badge>, <ds-badge>MUST_NOT</ds-badge>. Agents treat <ds-code inline>MUST</ds-code>/<ds-code inline>MUST_NOT</ds-code> as hard limits. Optional <ds-code inline>evidence</ds-code> records the backing, and <ds-code inline>criteria</ds-code> define testable success conditions that checks can run against.</p>
+<p>The <ds-code inline>level</ds-code> field is named for RFC 2119. Its values are lowercase kebab-case like every DSDS vocabulary — <ds-code inline>"must"</ds-code>, <ds-code inline>"should"</ds-code>, <ds-code inline>"should-not"</ds-code>, <ds-code inline>"must-not"</ds-code> — and tools display them as badges: <ds-badge>MUST</ds-badge>, <ds-badge>SHOULD</ds-badge>, <ds-badge>SHOULD NOT</ds-badge>, <ds-badge>MUST NOT</ds-badge>. Agents treat must/must-not entries as hard limits. Optional <ds-code inline>evidence</ds-code> records the backing, and <ds-code inline>criteria</ds-code> define testable success conditions that checks can run against.</p>
 <ds-heading level="3" anchor="criteria-how-to-verify-it">Criteria: how to verify it</ds-heading>
 <p>A criterion turns a guideline into something checkable. Each one pairs a stable <ds-code inline>identifier</ds-code> with a testable <ds-code inline>statement</ds-code>. Test runs report pass or fail against the identifier.</p>
 <p>The <ds-code inline>verification</ds-code> field says how a result is produced:</p>
@@ -247,7 +248,7 @@
 <ds-code language="json">{
   "identifier": "icon-button-name-present",
   "statement": "Every icon-only button exposes a non-empty accessible name.",
-  "level": "MUST",
+  "level": "must",
   "verification": "automated",
   "check": { "scheme": "axe-core", "rule": "button-name" },
   "examples": [
@@ -265,6 +266,18 @@
 }
 </ds-code>
 <p>The <ds-code inline>statement</ds-code> is always the source of truth. The <ds-code inline>check</ds-code> is its executable shadow — execution semantics belong to the named tool, not to DSDS.</p>
+<hr />
+<ds-heading level="2" anchor="conventions-and-traps">Conventions and traps</ds-heading>
+<p>Four conventions catch most first-time authors. Knowing them up front saves a validation round-trip.</p>
+<p><strong><ds-code inline>status</ds-code> has exactly two shapes.</strong> A bare string, or an object with <ds-code inline>overall</ds-code>. There is no <ds-code inline>value</ds-code> property:</p>
+<ds-code language="json">"status": "stable"
+"status": { "overall": "stable", "platforms": { "react": { "status": "stable" } } }
+</ds-code>
+<p><strong>It's always <ds-code inline>identifier</ds-code>, never <ds-code inline>name</ds-code>, for machine keys.</strong> API properties, anatomy parts, criteria, variants — the machine-readable key is <ds-code inline>identifier</ds-code> everywhere. <ds-code inline>name</ds-code> is only ever a display name.</p>
+<p><strong><ds-code inline>tokens</ds-code> is a purpose-keyed map, not an array.</strong> Keys say what the token controls; values name the token:</p>
+<ds-code language="json">"tokens": { "text-color": "color-button-fg", "background": "color-button-bg" }
+</ds-code>
+<p><strong>Flag vs. enum variants.</strong> A boolean on/off dimension is a <ds-code inline>flag</ds-code> variant. A set of named options is an <ds-code inline>enum</ds-code> variant — and a single-entry enum is valid (dimensions often ship one value at a time).</p>
 <hr />
 <ds-heading level="2" anchor="minimal-examples">Minimal examples</ds-heading>
 <p>These are the smallest valid entities — the bare minimum. Copy one, fill in your content, and add document block entries as you go.</p>
@@ -333,25 +346,25 @@
       "items": [
         {
           "guidance": "Do not use for navigating to a different page or URL.",
-          "level": "MUST_NOT"
+          "level": "must-not"
         },
         {
           "guidance": "Limit each surface to one primary-emphasis button.",
-          "level": "MUST"
+          "level": "must"
         },
         {
           "guidance": "Always provide an accessible label via visible text or aria-label.",
-          "level": "MUST"
+          "level": "must"
         },
         {
           "guidance": "Using a button to navigate to another page.",
           "rationale": "Instead: Use a link element with href.",
-          "level": "MUST_NOT"
+          "level": "must-not"
         },
         {
           "guidance": "Placing multiple primary buttons on the same surface.",
           "rationale": "Instead: Use one primary and one or more secondary or tertiary buttons.",
-          "level": "MUST_NOT"
+          "level": "must-not"
         }
       ]
     }
@@ -438,7 +451,7 @@
         {
           "guidance": "Do not reference base palette tokens directly in component code.",
           "rationale": "Always reference semantic tokens that point to palette values.",
-          "level": "MUST_NOT"
+          "level": "must-not"
         }
       ]
     }
@@ -497,16 +510,16 @@
       "items": [
         {
           "guidance": "Always apply at the application root, not on individual components.",
-          "level": "MUST"
+          "level": "must"
         },
         {
           "guidance": "Do not mix dark-mode and light-mode semantic tokens on the same surface.",
-          "level": "MUST_NOT"
+          "level": "must-not"
         },
         {
           "guidance": "Applying dark theme only to part of a page while the rest remains light.",
           "rationale": "Instead: Use inline theme switching for isolated components; apply the theme at the root for global coverage.",
-          "level": "MUST_NOT"
+          "level": "must-not"
         }
       ]
     }
@@ -563,11 +576,11 @@
       "items": [
         {
           "guidance": "Do not substitute spacing tokens with typography or icon-size tokens.",
-          "level": "MUST_NOT"
+          "level": "must-not"
         },
         {
           "guidance": "Always use the next scale step up or down rather than custom values.",
-          "level": "SHOULD"
+          "level": "should"
         }
       ]
     }
@@ -638,16 +651,16 @@
       "items": [
         {
           "guidance": "Always include both an inline field error and a summary when multiple fields fail.",
-          "level": "MUST"
+          "level": "must"
         },
         {
           "guidance": "Do not use toast notifications as the sole error communication for form validation.",
-          "level": "MUST_NOT"
+          "level": "must-not"
         },
         {
           "guidance": "Showing errors only on submit without inline field feedback.",
           "rationale": "Instead: Show inline errors on field blur and in a summary on submit.",
-          "level": "MUST_NOT"
+          "level": "must-not"
         }
       ]
     }
@@ -658,7 +671,7 @@
 <p>Here's a complete, minimal DSDS file with one of each entity type:</p>
 <ds-code language="json">{
   "$schema": "../schema/dsds.bundled.schema.json",
-  "dsdsVersion": "0.8.0",
+  "dsdsVersion": "0.9.0",
   "systemInfo": {
     "systemName": "Minimal Example"
   },
@@ -709,28 +722,28 @@
               "items": [
                 {
                   "guidance": "Do not use for navigating to a different page or URL.",
-                  "level": "MUST_NOT",
+                  "level": "must-not",
                   "rationale": "Buttons signal actions and links signal navigation. Assistive technology announces each differently, and users rely on that distinction to predict what a control will do."
                 },
                 {
                   "guidance": "Limit each surface to one primary-emphasis button.",
-                  "level": "MUST",
+                  "level": "must",
                   "rationale": "A single primary action keeps the visual hierarchy clear. When several buttons compete at primary emphasis, the intended next step becomes ambiguous."
                 },
                 {
                   "guidance": "Always provide an accessible label via visible text or aria-label.",
-                  "level": "MUST",
+                  "level": "must",
                   "rationale": "Icon-only buttons without an accessible name are unusable with screen readers and fail WCAG 4.1.2 (Name, Role, Value)."
                 },
                 {
                   "guidance": "Using a button to navigate to another page.",
                   "rationale": "Instead: Use a link element with href.",
-                  "level": "MUST_NOT"
+                  "level": "must-not"
                 },
                 {
                   "guidance": "Placing multiple primary buttons on the same surface.",
                   "rationale": "Instead: Use one primary and one or more secondary or tertiary buttons.",
-                  "level": "MUST_NOT"
+                  "level": "must-not"
                 }
               ]
             }
@@ -800,7 +813,7 @@
                 {
                   "guidance": "Do not reference base palette tokens directly in component code.",
                   "rationale": "Always reference semantic tokens that point to palette values.",
-                  "level": "MUST_NOT"
+                  "level": "must-not"
                 }
               ]
             }
@@ -859,7 +872,7 @@
                 {
                   "guidance": "Do not reference base palette tokens directly in component code.",
                   "rationale": "Always reference semantic tokens that point to palette values.",
-                  "level": "MUST_NOT"
+                  "level": "must-not"
                 }
               ]
             }
@@ -910,18 +923,18 @@
               "items": [
                 {
                   "guidance": "Always apply at the application root, not on individual components.",
-                  "level": "MUST",
+                  "level": "must",
                   "rationale": "Scoping the theme to the root keeps every surface consistent. Per-component theming produces mixed-mode screens and doubles the testing surface."
                 },
                 {
                   "guidance": "Do not mix dark-mode and light-mode semantic tokens on the same surface.",
-                  "level": "MUST_NOT",
+                  "level": "must-not",
                   "rationale": "Semantic tokens are tuned for contrast within one mode. Mixing modes breaks those tuned pairings unpredictably."
                 },
                 {
                   "guidance": "Applying dark theme only to part of a page while the rest remains light.",
                   "rationale": "Instead: Use inline theme switching for isolated components; apply the theme at the root for global coverage.",
-                  "level": "MUST_NOT"
+                  "level": "must-not"
                 }
               ]
             }
@@ -964,12 +977,12 @@
               "items": [
                 {
                   "guidance": "Do not hard-code hex values; reference semantic color tokens instead.",
-                  "level": "MUST_NOT",
+                  "level": "must-not",
                   "rationale": "Hard-coded values escape theming, dark mode, and audits — the palette can no longer change in one place."
                 },
                 {
                   "guidance": "Maintain WCAG AA contrast for text and interactive elements on every surface.",
-                  "level": "MUST",
+                  "level": "must",
                   "rationale": "AA is the system's compliance floor: 4.5:1 for normal text, 3:1 for large text and interactive components."
                 }
               ]
@@ -1019,18 +1032,18 @@
               "items": [
                 {
                   "guidance": "Always include both an inline field error and a summary when multiple fields fail.",
-                  "level": "MUST",
+                  "level": "must",
                   "rationale": "The summary gives screen reader users one announcement point and an error count; inline errors give sighted users fix-it-here proximity. Each alone strands one audience."
                 },
                 {
                   "guidance": "Do not use toast notifications as the sole error communication for form validation.",
-                  "level": "MUST_NOT",
+                  "level": "must-not",
                   "rationale": "Toasts dismiss themselves and are not tied to the failing field. Once gone, the user has no path back to what went wrong."
                 },
                 {
                   "guidance": "Showing errors only on submit without inline field feedback.",
                   "rationale": "Instead: Show inline errors on field blur and in a summary on submit.",
-                  "level": "MUST_NOT"
+                  "level": "must-not"
                 }
               ]
             }
@@ -1058,8 +1071,8 @@
 <ds-heading level="3" anchor="using-the-bundled-schema">Using the bundled schema</ds-heading>
 <p>Add <ds-code inline>$schema</ds-code> to get editor autocompletion and inline validation:</p>
 <ds-code language="json">{
-  "$schema": "https://designsystemdocspec.org/v0.8.0/dsds.bundled.schema.json",
-  "dsdsVersion": "0.8.0",
+  "$schema": "https://designsystemdocspec.org/v0.9.0/dsds.bundled.schema.json",
+  "dsdsVersion": "0.9.0",
   "entity": {
     "kind": "component",
     "identifier": "my-component",
@@ -1094,7 +1107,7 @@ npx ajv validate -s spec/schema/dsds.bundled.schema.json -d my-system.dsds.json
         <ds-back-to-top></ds-back-to-top>
 
         <ds-footer>
-          <p>Design System Documentation Spec (DSDS) 0.8.0 — Draft Specification</p>
+          <p>Design System Documentation Spec (DSDS) 0.9.0 — Draft Specification</p>
           <p><a href="https://github.com/somerandomdude/design-system-documentation-schema">GitHub</a></p>
         </ds-footer>
       </div>

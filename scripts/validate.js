@@ -122,6 +122,32 @@ function closestKind(kind, knownKinds) {
  * of "path: message" strings; empty if no kind-bearing context was found
  * (caller should fall back to raw errors).
  */
+// Shape hints for known convention traps — positions where the intuitive
+// wrong guess produces an unhelpful raw error. Each hint claims its path so
+// the generic machinery doesn't pile on.
+function shapeHints(doc, rawErrors) {
+  const hints = new Map(); // path -> message
+  for (const err of rawErrors) {
+    const p = err.instancePath || "";
+    if (/\/metadata\/status$/.test(p) && !hints.has(p)) {
+      const node = getAtPointer(doc, p);
+      if (node && typeof node === "object" && !("overall" in node)) {
+        hints.set(
+          p,
+          `${p}: status is a bare string ("stable") or an object with \`overall\` — there is no other shape`,
+        );
+      }
+    }
+    if (/\/tokens$/.test(p) && err.message === "must be object" && !hints.has(p)) {
+      hints.set(
+        p,
+        `${p}: \`tokens\` is a purpose-keyed map, not an array — keys say what the token controls, values name the token, e.g. { "text-color": "color-button-fg" }`,
+      );
+    }
+  }
+  return hints;
+}
+
 function friendlyErrors(doc, rawErrors, schema, ajv) {
   const kindIndex = buildKindIndex(schema);
   const knownKinds = Object.keys(kindIndex);
@@ -141,10 +167,14 @@ function friendlyErrors(doc, rawErrors, schema, ajv) {
     return defValidators[name];
   };
 
+  // Convention-trap hints claim their paths first.
+  const hints = shapeHints(doc, rawErrors);
+
   // Group every raw error under the nearest ancestor that carries `kind`.
   const contexts = new Map(); // pointer -> node
   for (const err of rawErrors) {
     let p = err.instancePath || "";
+    if (hints.has(p)) continue;
     let found = null;
     while (true) {
       const node = getAtPointer(doc, p);
@@ -162,7 +192,7 @@ function friendlyErrors(doc, rawErrors, schema, ajv) {
     }
     if (found !== null) contexts.set(found, getAtPointer(doc, found));
   }
-  if (contexts.size === 0) return [];
+  if (contexts.size === 0 && hints.size === 0) return [];
 
   // Deepest contexts first: a parent context (e.g. the entity) re-validates
   // its whole subtree, so any of its errors that fall inside a child context
@@ -171,7 +201,7 @@ function friendlyErrors(doc, rawErrors, schema, ajv) {
   const ordered = Array.from(contexts.keys()).sort(
     (a, b) => b.split("/").length - a.split("/").length,
   );
-  const reported = [];
+  const reported = Array.from(hints.keys());
   const inReported = (absPath) =>
     reported.some((r) => absPath === r || absPath.startsWith(`${r}/`));
 
@@ -208,7 +238,7 @@ function friendlyErrors(doc, rawErrors, schema, ajv) {
       if (emitted > 0) reported.push(pointer);
     }
   }
-  return Array.from(messages);
+  return [...hints.values(), ...Array.from(messages)];
 }
 
 // ---------------------------------------------------------------------------
@@ -509,8 +539,58 @@ const ENTITY_KIND_SET = new Set([
   "token-group",
 ]);
 
+/** Collect every entity identifier in the document (including nested token children). */
+function collectEntityIdentifiers(doc) {
+  const ids = new Set();
+  function scan(node) {
+    if (Array.isArray(node)) return node.forEach(scan);
+    if (!node || typeof node !== "object") return;
+    if (ENTITY_KIND_SET.has(node.kind) && typeof node.identifier === "string") {
+      ids.add(node.identifier);
+    }
+    Object.values(node).forEach(scan);
+  }
+  scan(doc);
+  return ids;
+}
+
+/** True when the document contains unresolved fileRefs ({$ref: …}). */
+function hasFileRefs(doc) {
+  let found = false;
+  function scan(node) {
+    if (found) return;
+    if (Array.isArray(node)) return node.forEach(scan);
+    if (!node || typeof node !== "object") return;
+    if (typeof node.$ref === "string") { found = true; return; }
+    Object.values(node).forEach(scan);
+  }
+  scan(doc);
+  return found;
+}
+
 function semanticFindings(doc) {
   const findings = [];
+
+  // Entity-reference resolution: every entityRef in a pattern's interaction
+  // `components` must name an entity documented in this document. Skipped
+  // when the document carries unresolved $refs — the full catalog isn't
+  // visible until a resolver joins the files.
+  const refsResolvable = !hasFileRefs(doc);
+  const catalog = refsResolvable ? collectEntityIdentifiers(doc) : null;
+
+  function checkComponentRefs(node, nodePath) {
+    if (!catalog || !Array.isArray(node.components)) return;
+    node.components.forEach((ref, i) => {
+      if (ref && typeof ref === "object" && typeof ref.identifier === "string") {
+        if (!catalog.has(ref.identifier)) {
+          findings.push({
+            path: `${nodePath}/components/${i}/identifier`,
+            message: `entity reference '${ref.identifier}' resolves to no entity documented in this file — a reference that resolves to nothing is a defect (entityRef resolution)`,
+          });
+        }
+      }
+    });
+  }
 
   // DSDS-002 (static half): within one entity, no two criteria share an
   // identifier. Nested token-group children are their own entity scopes.
@@ -581,6 +661,7 @@ function semanticFindings(doc) {
         }
       }
     }
+    checkComponentRefs(node, nodePath);
     if (Array.isArray(node.entities)) {
       checkIdentifierScope(node.entities, `${nodePath}/entities`);
     }

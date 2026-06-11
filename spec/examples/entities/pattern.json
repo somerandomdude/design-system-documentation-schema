@@ -134,16 +134,24 @@
             "trigger": "User submits the form by activating the submit button.",
             "description": "Client-side validation runs on all required fields. If one or more fields are invalid, submission is prevented and the error state is activated.",
             "components": [
-              "button",
-              "form-field"
+              {
+                "identifier": "button"
+              },
+              {
+                "identifier": "form-field"
+              }
             ]
           },
           {
             "trigger": "Client-side validation detects one or more invalid fields.",
             "description": "Each invalid field displays an inline error message directly below the input. The message describes what is wrong and, where possible, how to fix it. The field's border changes to the error color and an error icon appears to the left of the message text.",
             "components": [
-              "form-field",
-              "icon"
+              {
+                "identifier": "form-field"
+              },
+              {
+                "identifier": "icon"
+              }
             ],
             "examples": [
               {
@@ -168,9 +176,15 @@
             "trigger": "Two or more fields fail validation simultaneously.",
             "description": "An error summary alert appears at the top of the form. The summary lists every current error as an anchor link. Each link, when activated, moves focus to the corresponding invalid field. Focus is programmatically moved to the error summary so screen reader users are immediately aware of it.",
             "components": [
-              "alert",
-              "link",
-              "form-field"
+              {
+                "identifier": "alert"
+              },
+              {
+                "identifier": "link"
+              },
+              {
+                "identifier": "form-field"
+              }
             ],
             "examples": [
               {
@@ -187,17 +201,27 @@
             "trigger": "User corrects an invalid field and moves focus away (blur) or types a valid value.",
             "description": "The inline error message for that field is removed. The field border returns to its default color. If an error summary is visible, the corresponding entry is removed from the summary. When all errors are resolved, the summary is removed entirely.",
             "components": [
-              "form-field",
-              "alert"
+              {
+                "identifier": "form-field"
+              },
+              {
+                "identifier": "alert"
+              }
             ]
           },
           {
             "trigger": "Form submission succeeds on the client but fails on the server (e.g., 422, 500, network timeout).",
             "description": "A toast notification appears communicating the server error. The toast uses the error variant and includes a brief description of the problem and, if actionable, a retry button. If the server returns field-level validation errors (422), those are mapped back to inline field errors using the same pattern as client-side validation.",
             "components": [
-              "toast",
-              "form-field",
-              "button"
+              {
+                "identifier": "toast"
+              },
+              {
+                "identifier": "form-field"
+              },
+              {
+                "identifier": "button"
+              }
             ],
             "examples": [
               {
@@ -259,31 +283,31 @@
           {
             "guidance": "Always display inline errors directly below the invalid field, not in a separate location or only in the summary.",
             "rationale": "Users scan forms top-to-bottom. An error placed away from its field forces the user to map the message to the field mentally. Proximity eliminates that cognitive load.",
-            "level": "MUST",
+            "level": "must",
             "category": "visual-design"
           },
           {
             "guidance": "Error messages must describe the problem and, when possible, suggest how to fix it.",
             "rationale": "A message like 'Invalid input' forces the user to guess what went wrong. A message like 'Enter a date in MM/DD/YYYY format' removes ambiguity and speeds correction.",
-            "level": "MUST",
+            "level": "must",
             "category": "content"
           },
           {
             "guidance": "When two or more fields have errors, display an error summary at the top of the form in addition to inline messages.",
             "rationale": "Users on long forms may not see all inline errors, especially those below the fold. The summary provides a single scannable list of everything that needs attention.",
-            "level": "MUST",
+            "level": "must",
             "category": "visual-design"
           },
           {
             "guidance": "Each entry in the error summary must link to the corresponding invalid field.",
             "rationale": "Keyboard and screen reader users need a way to navigate directly from the summary to the problematic field without tabbing through the entire form.",
-            "level": "MUST",
+            "level": "must",
             "category": "interaction"
           },
           {
             "guidance": "Move focus to the error summary when it appears.",
             "rationale": "Screen reader users will not discover the summary unless focus is moved to it. Sighted keyboard users benefit from the same behavior — their next Tab press lands them in the summary's link list.",
-            "level": "MUST",
+            "level": "must",
             "category": "accessibility",
             "references": [
               {
@@ -294,19 +318,19 @@
           {
             "guidance": "Do not clear the form or reset field values when validation fails.",
             "rationale": "Clearing the form destroys the user's work. They must re-enter all data, including fields that were valid. This is hostile to all users and catastrophic for users with motor impairments who rely on slow, deliberate input.",
-            "level": "MUST_NOT",
+            "level": "must-not",
             "category": "interaction"
           },
           {
             "guidance": "Use real-time inline validation only for fields where the constraint is unambiguous and immediate feedback is helpful (e.g., password strength, email format). Do not validate on every keystroke for fields that require the user to finish typing.",
             "rationale": "Premature validation interrupts the user. Showing 'Invalid email' while the user is still typing 'j' is noise. Wait for a blur event or a pause in typing.",
-            "level": "SHOULD",
+            "level": "should",
             "category": "interaction"
           },
           {
             "guidance": "Pair every inline error message with an error icon. Do not rely on color alone.",
             "rationale": "Approximately 8% of men have some form of color vision deficiency. An icon provides a second, non-color signal that the field is in an error state. WCAG 1.4.1 requires that color is not the sole means of conveying information.",
-            "level": "MUST",
+            "level": "must",
             "category": "accessibility",
             "references": [
               {
@@ -317,7 +341,7 @@
           {
             "guidance": "Each inline error message must be programmatically associated with its field using aria-describedby.",
             "rationale": "Screen readers announce aria-describedby content when the field receives focus. Without it, the user hears the field label but not the error, and has no way to know the field is invalid.",
-            "level": "MUST",
+            "level": "must",
             "category": "accessibility",
             "references": [
               {
@@ -331,7 +355,7 @@
           {
             "guidance": "Invalid fields must be marked with aria-invalid=\"true\".",
             "rationale": "The aria-invalid attribute allows screen readers to announce that a field's value is not accepted. It is the standard mechanism for communicating validation state in ARIA.",
-            "level": "MUST",
+            "level": "must",
             "category": "accessibility",
             "references": [
               {
@@ -342,7 +366,7 @@
           {
             "guidance": "The error summary must use role=\"alert\" or be injected into an aria-live=\"assertive\" region so that screen readers announce it immediately when it appears.",
             "rationale": "Without a live region, screen readers will not announce dynamically injected content. The user will not know the summary exists unless they navigate to it manually.",
-            "level": "MUST",
+            "level": "must",
             "category": "accessibility",
             "references": [
               {
@@ -353,7 +377,7 @@
           {
             "guidance": "Error summary anchor links must move focus to the corresponding field, not just scroll to it.",
             "rationale": "Keyboard users rely on focus position to interact. Scrolling without moving focus leaves the keyboard cursor at the summary, requiring the user to Tab through potentially many elements to reach the field.",
-            "level": "MUST",
+            "level": "must",
             "category": "accessibility",
             "references": [
               {
@@ -364,7 +388,7 @@
           {
             "guidance": "Toast notifications for errors must persist until the user dismisses them or the error is resolved. Do not auto-dismiss error toasts.",
             "rationale": "Users with cognitive disabilities or screen reader users may need more time to read and understand the error. Auto-dismissing the toast removes the information before they can act on it.",
-            "level": "MUST",
+            "level": "must",
             "category": "accessibility",
             "references": [
               {
@@ -436,16 +460,16 @@
         "items": [
           {
             "guidance": "Always include both an inline field error and a summary when multiple fields fail.",
-            "level": "MUST"
+            "level": "must"
           },
           {
             "guidance": "Do not use toast notifications as the sole error communication for form validation.",
-            "level": "MUST_NOT"
+            "level": "must-not"
           },
           {
             "guidance": "Showing errors only on submit without inline field feedback.",
             "rationale": "Instead: Show inline errors on field blur and in a summary on submit.",
-            "level": "MUST_NOT"
+            "level": "must-not"
           }
         ]
       }

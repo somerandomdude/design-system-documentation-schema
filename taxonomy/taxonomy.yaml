@@ -1,0 +1,542 @@
+# DSDS writing taxonomy & glossary
+#
+# The vocabulary of record for all DSDS prose: schema `description` strings,
+# the site narrative (site/content/), the README, and the CHANGELOG. One
+# term, one meaning, everywhere. Derived from a full copy review of the
+# 0.8.0 spec (547 schema prose strings + site + README).
+#
+# `status` values:
+#   canonical   — the word for this concept; use it
+#   shorthand   — acceptable short form after the canonical term has
+#                 appeared nearby
+#   restricted  — correct only in the named context; anywhere else it's
+#                 the wrong word
+#   avoid       — do not use; `instead` names the replacement
+#
+# The `collisions` section lists words that legitimately carry more than
+# one meaning; each meaning is bound to a context, and prose must make the
+# context unmistakable.
+#
+# The `verbs` section assigns one verb per action, and the `conventions`
+# section fixes the stock phrasings (omission, defaults, ordering, open
+# vocabularies, exemplification) so the same situation always reads the
+# same way.
+#
+# Two registers share this vocabulary:
+#   normative — schema descriptions and anything carrying RFC 2119
+#               keywords. Strict: canonical terms and formulas only.
+#   narrative — site copy, README, callouts. The same meanings, but
+#               entries marked `narrative-ok` may relax there for
+#               readability.
+#
+# Like rules/rules.yaml, this file is a candidate for machine enforcement:
+# a future lint rule can flag `avoid` terms and unqualified collisions.
+
+terms:
+  # ── The model ──────────────────────────────────────────────────────────
+  - term: entity
+    status: canonical
+    definition: >
+      The unit of DSDS documentation: an object with a `kind`, an
+      `identifier`, and (except tokens) a `name` — a component, token,
+      token group, theme, foundation, pattern, or guide. Entities are
+      records in a DSDS document.
+    notes: >
+      Most schema prose currently says "artifact" where it means entity
+      (e.g. "another DSDS artifact by identifier"). Migrate those to
+      "entity"; see `artifact`.
+
+  - term: artifact
+    status: restricted
+    context: the real-world thing an entity documents
+    definition: >
+      The actual design-system thing — the Button in code, the token in the
+      DTCG file, the pattern in the product. An entity documents an
+      artifact; they are not synonyms. "DSDS artifact" is always wrong —
+      the thing inside a DSDS document is an entity.
+
+  - term: kind
+    status: canonical
+    definition: >
+      The discriminator field and its values, on entities, document blocks,
+      links, presentations, and variants. In prose: "entity kinds",
+      "block kinds", "the `kind` property".
+    notes: Never "type" for a discriminator.
+
+  - term: type
+    status: restricted
+    context: JSON/TypeScript types, DTCG token types, API property types
+    definition: >
+      A data type in code or token terms — `tokenType`, an API property's
+      `type`, "accepts any JSON type". Not a synonym for `kind`.
+
+  - term: document block
+    status: canonical
+    definition: >
+      A typed entry in an entity's `documentBlocks` or `agentDocumentBlocks`
+      array, discriminated by `kind`. The unit of structured documentation.
+    notes: >
+      "block" is acceptable shorthand once "document block" has appeared in
+      the same section. Never "guideline" as the generic term for a block —
+      that is pre-0.7 vocabulary.
+
+  - term: guidelines block
+    status: canonical
+    definition: The document block of kind `guidelines`.
+
+  - term: guideline entry
+    status: canonical
+    definition: >
+      One item in a guidelines block: a `guidance` statement with its
+      `rationale`, `level`, and optional `criteria`. "Entry" or "item" is
+      fine on repeat reference; bare "guideline" only where the block/entry
+      distinction cannot be confused.
+
+  - term: identifier
+    status: canonical
+    definition: >
+      The stable machine-readable key of an entity or criterion. Test
+      results, cross-references, and inheritance resolve against it.
+    notes: Never "id", "slug", or "key" in prose.
+
+  - term: name
+    status: canonical
+    definition: >
+      The human-readable display name of an entity. Tokens and token groups
+      omit it — their identifier doubles as the display label.
+
+  - term: metadata field
+    status: canonical
+    definition: >
+      A member of an entity's `metadata` object (status, since, tags,
+      links…). The only correct use of "field" in DSDS prose.
+
+  - term: property
+    status: canonical
+    definition: >
+      A member of a schema-defined object: "the `kind` property", "optional
+      properties". Also the API domain term (`apiProperty`, "configurable
+      properties"). Use "property" for schema members; reserve "field" for
+      metadata fields.
+
+  - term: attribute
+    status: restricted
+    context: HTML, ARIA, and data attributes
+    definition: >
+      A markup attribute — `aria-label`, `data-state`. Never a synonym for
+      property or field.
+
+  - term: entity group
+    status: canonical
+    definition: A named collection of entities in a document's `entityGroups`.
+
+  - term: document
+    status: canonical
+    definition: >
+      One DSDS JSON file's root object: `dsdsVersion` plus a single
+      `entity` or `entityGroups`.
+
+  - term: example
+    status: canonical
+    definition: >
+      The shared demo model (common/example.schema.json): a presentation, a
+      literal value, or both. When an example belongs to a criterion it is a
+      fixture — see `fixture`.
+
+  - term: fixture
+    status: canonical
+    definition: >
+      A criterion example with a declared `outcome` ("pass" or "fail").
+      Fixtures make criteria self-verifying; call them fixtures, not
+      examples, whenever the outcome matters.
+
+  # ── Conformance ────────────────────────────────────────────────────────
+  - term: criterion
+    status: canonical
+    definition: >
+      A testable success condition with a stable identifier and a normative
+      `statement`. Plural "criteria". The statement is the source of truth;
+      the check is its executable shadow.
+
+  - term: verification mode
+    status: canonical
+    definition: >
+      Who decides a criterion's outcome: `automated` (a runner),
+      `assisted` (a tool proposes, a human decides), `manual` (a human).
+      A closed set; named procedures are techniques, not modes.
+
+  - term: check
+    status: canonical
+    definition: >
+      A criterion's dispatch envelope: a `scheme` naming the runner plus
+      scheme-owned configuration. DSDS defines the envelope only.
+
+  - term: conformance level
+    status: canonical
+    definition: >
+      The RFC 2119 severity shared by guideline entries and criteria.
+      Data values are lowercase kebab-case ('must', 'should', 'should-not',
+      'must-not'); in prose the keywords stay capitalized (MUST, SHOULD NOT)
+      where they carry conformance weight. "Level" alone is fine in context.
+
+  - term: outcome
+    status: canonical
+    definition: >
+      A fixture's declared result, "pass" or "fail". Reserved for fixtures;
+      observed results from runs belong to the diagnostic layer.
+
+  - term: runner
+    status: restricted
+    context: conformance execution
+    definition: >
+      Software that executes checks and reports per-criterion results.
+      Generic DSDS-reading software is a tool, not a runner.
+
+  - term: rule
+    status: restricted
+    context: the quality rules catalog (rules/rules.yaml)
+    definition: >
+      A catalogued quality rule with a stable DSDS-NNN ID. Distinct from a
+      guideline entry, which is authored design-system content. Don't call
+      guideline entries "rules" in spec prose.
+
+  # ── Audiences ──────────────────────────────────────────────────────────
+  - term: tool
+    status: canonical
+    definition: >
+      Any software that reads, writes, validates, or renders DSDS — docs
+      sites, linters, generators. The default word for machine audiences.
+
+  - term: agent
+    status: canonical
+    definition: >
+      An AI/LLM consumer of DSDS. Use only when the AI-specific behavior
+      matters (e.g. `agentDocumentBlocks`); otherwise "tool" covers it.
+
+  - term: author
+    status: canonical
+    definition: A person or agent writing DSDS documentation.
+
+  - term: consumer
+    status: restricted
+    context: component API documentation
+    definition: >
+      The developer (or code) using the documented component — "properties
+      the consumer must provide". Never the software reading DSDS; that is
+      a tool.
+
+  # ── Talking about DSDS itself ──────────────────────────────────────────
+  - term: specification
+    status: canonical
+    definition: >
+      DSDS the normative definition — what the documents at
+      designsystemdocspec.org and the schema together define. "Spec" is
+      acceptable shorthand everywhere.
+
+  - term: format
+    status: canonical
+    definition: >
+      The document shape the specification defines — what a .dsds.json file
+      is. "A machine-readable format for design system documentation."
+
+  - term: schema
+    status: canonical
+    definition: >
+      The JSON Schema expression of the format (spec/schema/). The schema
+      validates documents; the specification defines the format.
+
+  - term: standard
+    status: avoid
+    instead: specification / spec
+    definition: >
+      As a noun for DSDS itself ("this standard"), it contradicts the
+      draft notice ("not endorsed by any standards body"). Adjectival use
+      is fine ("standard values: …").
+
+  - term: documentation
+    status: canonical
+    definition: >
+      The written content DSDS carries. "Docs" is acceptable shorthand in
+      site copy and descriptions; prefer "documentation" in normative
+      sentences (anything carrying MUST/SHOULD).
+
+  - term: design system
+    status: canonical
+    definition: >
+      The system being documented. "The system" is fine on repeat
+      reference; `systemInfo` is its identity record.
+
+# ── Same word, several meanings: always make the context unmistakable ────
+collisions:
+  - word: reference
+    meanings:
+      - context: criterion citations
+        meaning: >
+          The `reference` model — a cited external standard (a WCAG
+          criterion, a platform guideline). Say "citation" or "external
+          reference" when nearby prose also discusses $ref.
+      - context: JSON References
+        meaning: >
+          A `$ref` object (fileRef) pointing into another DSDS file. Say
+          "$ref" or "JSON Reference", never bare "reference".
+      - context: cross-references
+        meaning: >
+          An identifier-based link between entities (`link.identifier`).
+          Say "cross-reference".
+
+  - word: source
+    meanings:
+      - context: token and theme entities
+        meaning: >
+          The `source` property — the pointer to the DTCG definition. Say
+          "the `source` pointer" or "DTCG source".
+      - context: link kinds
+        meaning: >
+          The link kind 'source' — source code. Say "source code link".
+      - context: idiom
+        meaning: >
+          "Source of truth" — the phrase is fine; just don't shorten it to
+          "source" near either meaning above.
+
+  - word: value
+    meanings:
+      - context: examples
+        meaning: The `value` property — a literal carried by an example.
+      - context: variants
+        meaning: A variant value — one option of an enum variant.
+      - context: tokens
+        meaning: >
+          A token's resolved value — lives in the DTCG file, never in DSDS.
+          Prose about token values should say where they live.
+      - context: status
+        meaning: A `statusValue` — a lifecycle string.
+
+  - word: level
+    meanings:
+      - context: conformance
+        meaning: The RFC 2119 conformance level. The default reading.
+      - context: structure
+        meaning: >
+          Nesting depth ("top-level", "entity level", "block level").
+          Always hyphenate or qualify so it cannot read as conformance.
+
+# ── Verbs: one verb per action ─────────────────────────────────────────────
+# Counts from the 0.8.0 corpus drove the canon: the dominant verb wins
+# unless it was ambiguous, in which case the precise one does.
+verbs:
+  - verb: documents
+    status: canonical
+    action: what an entity or block does to its subject
+    definition: >
+      An entity documents an artifact; a block documents one facet of it
+      ("Documents the visual structure…"). The workhorse — 288 uses. Avoid
+      "captures" and "records" for this; they describe collection, not
+      documentation.
+
+  - verb: defines
+    status: canonical
+    action: what the specification or a schema file does to a shape
+    definition: >
+      The spec defines the format; a schema file defines its definitions
+      ("Defines the component document"). Entities never "define" — they
+      document.
+
+  - verb: holds
+    status: canonical
+    action: what a property, array, or object physically contains
+    definition: >
+      "`items` holds the guideline entries." "Carries" is acceptable
+      shorthand when "holds" just appeared. Avoid "contains" and "stores".
+
+  - verb: lists
+    status: canonical
+    action: what an array of like entries does, when order is meaningful
+    definition: '"Lists every ARIA attribute the artifact uses."'
+
+  - verb: declares
+    status: canonical
+    action: what an author states as fact in a document
+    definition: >
+      Authors declare a stance, a verification mode, an outcome, an
+      inheritance ("Declares that this document inherits…"). In narrative
+      register, "says" is narrative-ok for the same act.
+
+  - verb: identifies
+    status: canonical
+    action: what a discriminator does
+    definition: >
+      The fixed formula for every `kind` property: "Identifies this
+      document block as an anatomy spec."
+
+  - verb: controls
+    status: canonical
+    action: what a configurable property does to behavior or appearance
+    definition: '"What visual attribute this property controls."'
+
+  - verb: accepts
+    status: canonical
+    action: what the schema permits at a position
+    definition: >
+      "Tokens accept the general kinds only." Avoid "takes" and "permits";
+      "allows"/"allowed" is reserved for value vocabularies ("Custom values
+      are allowed"); "supports" is reserved for capability statements
+      (platform or tool capabilities), not schema shape.
+
+  - verb: renders
+    status: canonical
+    action: what a tool does to turn DSDS data into output
+    definition: >
+      "Tools MUST render the value as markdown." Use "display" as the verb
+      only for end-user presentation where "render" reads too mechanical —
+      and freely as the adjective ("display name", "display order").
+      Avoid "shows" for tool behavior; an example may "show" a demo.
+
+  - verb: resolves
+    status: canonical
+    action: following a pointer to its target
+    definition: >
+      Tools resolve `$ref`s, identifiers, and the base system ("resolve
+      this identifier against the artifact catalog").
+
+  - verb: reports
+    status: canonical
+    action: what runners and lints emit
+    definition: >
+      Results are reported under a criterion's identifier; an unrecognized
+      scheme is reported as skipped. Lint findings are "flagged" — see
+      `flags`.
+
+  - verb: validates
+    status: restricted
+    context: schema validation of documents
+    definition: >
+      A document validates against the schema; `validate.js` validates the
+      corpus. Never for criteria — see `verifies`.
+
+  - verb: verifies
+    status: restricted
+    context: conformance checking of criteria
+    definition: >
+      Criteria are verified (per their verification mode); statements MUST
+      be objectively verifiable. Never for schema validation.
+
+  - verb: flags
+    status: restricted
+    context: lint findings
+    definition: >
+      The lint flags quality gaps; it never fails the build. Blocking
+      layers reject — see `rejects`.
+
+  - verb: rejects
+    status: restricted
+    context: blocking validation
+    definition: >
+      The schema and semantic checks reject invalid documents; negative
+      fixtures are correctly rejected.
+
+  - verb: pins
+    status: restricted
+    context: negative fixtures
+    definition: >
+      A fixture pins a guard — it fails the build if the guard stops
+      working. House term from test/invalid/.
+
+  - verb: points to
+    status: canonical
+    action: what a pointer-shaped value does
+    definition: >
+      A `$ref` points to a file; `source` points to the DTCG definition;
+      a URL points to a resource. Avoid the bare verb "references" — say
+      "cross-references" for identifier links (see collisions: reference).
+
+  - verb: extends
+    status: canonical
+    action: inheritance between documents or entities
+    definition: >
+      A document or entity extends a base. The only inheritance verb —
+      avoid "inherits from" except when describing what the *child*
+      receives ("children inherit tokenType from this group").
+
+# ── Conventions: stock phrasings, so the same situation reads the same ────
+conventions:
+  - name: omission
+    formula: "When omitted, <consequence>."
+    definition: >
+      The one way to describe absent optional properties ("When omitted,
+      tools MUST NOT assume the criterion is automatable."). Avoid "if
+      absent", "when missing", "if not set".
+
+  - name: defaults
+    formula: "Defaults to <value>."
+    definition: >
+      Follows the omission consequence when a default exists. The schema
+      `default` keyword and the prose MUST agree.
+
+  - name: ordering
+    formula: "Order matters: tools SHOULD preserve it for display."
+    definition: >
+      The one way to say an array's order is significant. Extend with the
+      reason when there is one ("…it often shows a meaningful progression").
+
+  - name: open-vocabulary
+    formula: "Standard values: <list>. Custom values are allowed and SHOULD match <pattern>."
+    definition: >
+      The one way to describe extensible string vocabularies (link kinds,
+      status values). Closed sets say nothing about custom values — the
+      enum speaks for itself.
+
+  - name: exemplification
+    formula: "(e.g., 'value-one', 'value-two')"
+    definition: >
+      Inline examples use "e.g.," inside parentheses with quoted literals —
+      182 uses. "Such as" is narrative-ok in flowing site copy. Avoid
+      "for example" in descriptions (verbosity) and "i.e." everywhere
+      (currently zero uses; keep it that way — say "that is" or rephrase).
+
+  - name: identifier-constraint
+    formula: "MUST be lowercase kebab-case."
+    definition: >
+      The one way to state the identifier pattern in prose, paired with
+      the `pattern` keyword carrying the regex.
+
+  - name: rfc-2119
+    formula: "MUST / MUST NOT / SHOULD / SHOULD NOT / MAY — capitalized"
+    definition: >
+      Capitalized keywords are normative and carry RFC 2119 meaning, in
+      schema prose and spec pages. Lowercase "must/should/may" in
+      narrative register is ordinary English and carries no conformance
+      weight — never capitalize for emphasis. Enforced in guidance and
+      criterion statements by DSDS-009 (lint). This governs prose only:
+      the `level` enum's data values are lowercase as of 0.9 —
+      capitalization belongs to sentences, not tokens.
+
+  - name: readable-pairing
+    formula: "machine-readable / human-readable"
+    definition: >
+      Always hyphenated, always this pair ("machine-readable identifier",
+      "human-readable name"). Avoid "computer-readable", "for machines".
+
+  - name: source-of-truth
+    formula: "the source of truth for <thing>"
+    definition: >
+      The house idiom for authority: the DTCG file for token values, the
+      `statement` for a criterion, the catalog for rule IDs. Use it
+      sparingly enough to stay meaningful; never shorten to "source"
+      (see collisions: source).
+
+  - name: silent-drift
+    formula: "…so <thing> cannot silently drift from <authority>"
+    definition: >
+      The house metaphor for why duplication is forbidden: forked values
+      drift, and drift is "silent" when no tooling would catch it. Pair
+      with the mechanism that prevents it.
+
+  - name: uppercase-enum-values
+    formula: "uppercase enum values only for external tokens with no lowercase form"
+    definition: >
+      DSDS-native vocabularies are lowercase kebab-case (levels, statuses,
+      kinds, stances, outcomes). An enum value is uppercase only when it
+      quotes an external standard's token that has no natural lowercase
+      form — WCAG's A/AA/AAA. RFC 2119 keywords do not qualify: the
+      concept survives lowercasing, so 'must'/'must-not' are data and
+      MUST/MUST NOT remain prose.
