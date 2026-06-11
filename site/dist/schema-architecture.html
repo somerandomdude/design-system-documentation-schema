@@ -3,13 +3,13 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Schema Architecture — DSDS 0.9.0</title>
+  <title>Schema Architecture — DSDS 0.10.0</title>
   <meta name="description" content="The full DSDS schema reference — document structure, entity properties, document block types, and all shared models.">
   <link rel="canonical" href="https://designsystemdocspec.org/schema-architecture">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Design System Documentation Spec">
-  <meta property="og:title" content="Schema Architecture — DSDS 0.9.0">
+  <meta property="og:title" content="Schema Architecture — DSDS 0.10.0">
   <meta property="og:description" content="The full DSDS schema reference — document structure, entity properties, document block types, and all shared models.">
   <meta property="og:url" content="https://designsystemdocspec.org/schema-architecture">
   <meta name="twitter:card" content="summary">
@@ -20,7 +20,7 @@
 <body>
   <a class="skip-link" href="#main-content">Skip to content</a>
   <ds-nav-toggle target="ds-spec-nav"></ds-nav-toggle>
-  <ds-spec-nav title="Design System Documentation Spec 0.9.0" title-href="index.html" active="schema-architecture">
+  <ds-spec-nav title="Design System Documentation Spec 0.10.0" title-href="index.html" active="schema-architecture">
     <a href="index.html" slug="index">Overview</a>
     <a href="quickstart.html" slug="quickstart">Quick start</a>
     <a href="schema-architecture.html" slug="schema-architecture">Schema architecture</a>
@@ -99,7 +99,7 @@
 </ul>
 <p>A complete, valid document using only the core:</p>
 <ds-code language="json">{
-  "dsdsVersion": "0.9.0",
+  "dsdsVersion": "0.10.0",
   "entity": {
     "kind": "component",
     "identifier": "button",
@@ -161,7 +161,7 @@
 │   ├── tags.schema.json                        # tags
 │   └── thumbnail.schema.json                   # thumbnail
 ├── document-blocks/
-│   ├── accessibility.schema.json               # keyboardInteraction, ariaAttribute, colorContrast, accessibility
+│   ├── accessibility.schema.json               # keyboardInteraction, ariaAttribute, colorContrast, accessibility, announcement, focusBehavior, reducedMotionEntry
 │   ├── anatomy.schema.json                     # anatomyEntry, anatomy
 │   ├── api.schema.json                         # apiProperty, apiEvent, apiSlot, apiCssCustomProperty, apiCssPart, apiDataAttribute, apiMethod, api
 │   ├── content.schema.json                     # contentLabelEntry, localizationEntry, content
@@ -189,7 +189,7 @@
 <p>A DSDS file is a JSON object. It needs a <ds-code inline>dsdsVersion</ds-code>. It also needs one of two shapes: an <ds-code inline>entityGroups</ds-code> array for many entities, or an <ds-code inline>entity</ds-code> object for a single one. Every valid file uses one or the other.</p>
 <ds-heading level="3" anchor="root-properties">Root properties</ds-heading>
 <ds-prop-table>
-  <ds-prop name="dsdsVersion" type="&lt;ds-code inline&gt;&quot;0.9.0&quot;&lt;/ds-code&gt;" required>The DSDS spec version this document conforms to.</ds-prop>
+  <ds-prop name="dsdsVersion" type="&lt;ds-code inline&gt;&quot;0.10.0&quot;&lt;/ds-code&gt;" required>The DSDS spec version this document conforms to.</ds-prop>
   <ds-prop name="$schema" type="string">URI reference to the DSDS JSON Schema for validation.</ds-prop>
   <ds-prop name="systemInfo" type="&lt;ds-type-ref href=&quot;common-system-info.html#systeminfo&quot;&gt;systemInfo&lt;/ds-type-ref&gt;"></ds-prop>
   <ds-prop name="extends" type="&lt;ds-type-ref href=&quot;common-extends.html#documentextends&quot;&gt;documentExtends&lt;/ds-type-ref&gt;">Declares that this DSDS document inherits from another DSDS document — usually a core design system. The base document provides the core entities. This document layers on top, adding or extending entities. It supports systems-of-systems architectures, where product- or brand-specific systems inherit from a shared core.</ds-prop>
@@ -210,8 +210,8 @@
 <ds-heading level="3" anchor="single-entity-documents">Single-entity documents</ds-heading>
 <p>When each entity lives in its own file, use the <ds-code inline>entity</ds-code> property instead of <ds-code inline>entityGroups</ds-code>. The <ds-code inline>kind</ds-code> field on the entity identifies its type.</p>
 <ds-code language="json">{
-  "$schema": "https://designsystemdocspec.org/v0.9.0/dsds.bundled.schema.json",
-  "dsdsVersion": "0.9.0",
+  "$schema": "https://designsystemdocspec.org/v0.10.0/dsds.bundled.schema.json",
+  "dsdsVersion": "0.10.0",
   "entity": {
     "kind": "component",
     "identifier": "button",
@@ -230,7 +230,7 @@
 <p>Each <ds-code inline>$ref</ds-code> object has one property: <ds-code inline>$ref</ds-code>. Its value is a path to a DSDS file. You can add a JSON Pointer fragment to target one value inside that file.</p>
 <p><strong>Individual entity file</strong> (<ds-code inline>button.dsds.json</ds-code>):</p>
 <ds-code language="json">{
-  "dsdsVersion": "0.9.0",
+  "dsdsVersion": "0.10.0",
   "entity": {
     "kind": "component",
     "identifier": "button",
@@ -241,7 +241,7 @@
 </ds-code>
 <p><strong>Manifest file</strong> (<ds-code inline>index.dsds.json</ds-code>):</p>
 <ds-code language="json">{
-  "dsdsVersion": "0.9.0",
+  "dsdsVersion": "0.10.0",
   "entityGroups": [
     {
       "name": "Acme Design System",
@@ -531,8 +531,8 @@
 <ds-table>
 <table>
 <thead><tr><th>Kind value</th><th>Container property</th><th>Item type</th><th>Scope</th><th>Description</th></tr></thead>
-<tbody><tr><td><ds-code inline>&quot;accessibility&quot;</ds-code></td><td>Named properties</td><td>various</td><td>General</td><td>Structured accessibility specs for an artifact.</td></tr>
-<tr><td><ds-code inline>&quot;content&quot;</ds-code></td><td>Named properties</td><td>various</td><td>General</td><td>Structured content guidelines: recommended action labels and localization notes.</td></tr>
+<tbody><tr><td><ds-code inline>&quot;accessibility&quot;</ds-code></td><td>Named properties</td><td>various</td><td>General</td><td>Specialized, structured accessibility documentation for an artifact.</td></tr>
+<tr><td><ds-code inline>&quot;content&quot;</ds-code></td><td>Named properties</td><td>various</td><td>General</td><td>Specialized, structured content documentation: a terminology dictionary of recommended labels and per-concern localization entries.</td></tr>
 <tr><td><ds-code inline>&quot;guidelines&quot;</ds-code></td><td><ds-code inline>items</ds-code></td><td><ds-type-ref href="document-blocks-guidelines.html#guidelineentry">guidelineEntry</ds-type-ref></td><td>General</td><td>Actionable usage rules for an artifact.</td></tr>
 <tr><td><ds-code inline>&quot;sections&quot;</ds-code></td><td><ds-code inline>items</ds-code></td><td><ds-type-ref href="document-blocks-sections.html#sectionentry">sectionEntry</ds-type-ref></td><td>General</td><td>A block of narrative documentation made up of one or more titled sections.</td></tr>
 <tr><td><ds-code inline>&quot;useCases&quot;</ds-code></td><td><ds-code inline>items</ds-code></td><td><ds-type-ref href="common-use-cases.html#usecase">useCase</ds-type-ref></td><td>General</td><td>Documents what an artifact is used for — when it is the right choice and when to choose something else.</td></tr>
@@ -596,26 +596,26 @@
 </ds-code>
 <p>The root document uses this same <ds-code inline>useCases</ds-code> block for system-level adoption guidance — see <a href="#root-document-blocks">Root document blocks</a>. Full model in <a href="#use-cases">Use Cases</a>.</p>
 <ds-heading level="3" anchor="accessibility-accessibility">Accessibility (<ds-code inline>accessibility</ds-code>)</ds-heading>
-<p>Documents structured accessibility specs. It captures <em>machine-readable specs</em> for:</p>
+<p>The accessibility block is for <strong>specialized, structured accessibility documentation</strong>. Every field is data — each entry states a verifiable fact about what the artifact does:</p>
 <ul>
-<li>keyboard interactions</li>
+<li>keyboard interactions (<ds-code inline>key</ds-code> → <ds-code inline>action</ds-code>)</li>
 <li>ARIA attributes</li>
-<li>screen reader behavior</li>
-<li>focus management</li>
+<li>screen reader announcements (<ds-code inline>context</ds-code> → <ds-code inline>announcement</ds-code>)</li>
+<li>focus behaviors (<ds-code inline>trigger</ds-code> → <ds-code inline>behavior</ds-code>)</li>
 <li>color contrast pairs</li>
-<li>motion concerns</li>
+<li>reduced-motion behaviors (<ds-code inline>animation</ds-code> → <ds-code inline>behavior</ds-code>)</li>
 </ul>
-<p>For accessibility <em>rules</em> with rationale (e.g., "Provide an aria-label for icon-only buttons"), use a guideline entry with <ds-code inline>category: "accessibility"</ds-code> instead.</p>
+<p>For <strong>general documentation guidance</strong> — rules with a rationale and a conformance level, like "Provide an aria-label for icon-only buttons" — use a <ds-code inline>guidelines</ds-code> block with <ds-code inline>category: "accessibility"</ds-code>. That is the line between the two: this block records what the artifact <em>does</em>; guidelines say what authors <em>should do</em>, and why.</p>
 <ds-prop-table>
   <ds-prop name="kind" type="&lt;ds-code inline&gt;&quot;accessibility&quot;&lt;/ds-code&gt;" required>Identifies this document block as an accessibility spec.</ds-prop>
   <ds-prop name="wcagLevel" type="&lt;ds-code inline&gt;&quot;A&quot;&lt;/ds-code&gt; | &lt;ds-code inline&gt;&quot;AA&quot;&lt;/ds-code&gt; | &lt;ds-code inline&gt;&quot;AAA&quot;&lt;/ds-code&gt;" conditional>The minimum WCAG conformance level targeted by this artifact. Most design systems target AA. Set to AAA when the artifact exceeds standard requirements.</ds-prop>
   <ds-prop name="criteria" type="&lt;ds-type-ref href=&quot;common-criterion.html#criterion&quot;&gt;criterion&lt;/ds-type-ref&gt;[]" conditional>Testable accessibility success criteria for this artifact (e.g., 'All interactive targets present a hit area of at least 44×44 px'). Each criterion pairs a stable identifier with an objectively verifiable statement. This lets accessibility checks run against the docs and report pass/fail. The structured data below (keyboard interactions, ARIA attributes, contrast pairs) shows how these conditions are met.<br><small>Min items: 1</small></ds-prop>
   <ds-prop name="keyboardInteractions" type="&lt;ds-type-ref href=&quot;document-blocks-accessibility.html#keyboardinteraction&quot;&gt;keyboardInteraction&lt;/ds-type-ref&gt;[]" conditional>Keyboard interaction specs: what happens when each key or key combination is pressed while the artifact has focus.</ds-prop>
   <ds-prop name="ariaAttributes" type="&lt;ds-type-ref href=&quot;document-blocks-accessibility.html#ariaattribute&quot;&gt;ariaAttribute&lt;/ds-type-ref&gt;[]" conditional>ARIA attribute docs. Lists every ARIA attribute the artifact uses, what it communicates, and when to apply it.</ds-prop>
-  <ds-prop name="screenReaderBehavior" type="&lt;ds-type-ref href=&quot;common-rich-text.html#richtext&quot;&gt;richText&lt;/ds-type-ref&gt;" conditional>How the artifact is announced by screen readers in various states. Include announcements for default, focused, disabled, loading, expanded, and other relevant states. Name specific screen readers (VoiceOver, NVDA, JAWS) when behavior differs.</ds-prop>
-  <ds-prop name="focusManagement" type="&lt;ds-type-ref href=&quot;common-rich-text.html#richtext&quot;&gt;richText&lt;/ds-type-ref&gt;" conditional>How focus moves into, within, and out of the artifact. Document focus trapping (for modals/dialogs), focus restoration (when dismissing overlays), and programmatic focus movement. Describe both keyboard and programmatic focus behavior.</ds-prop>
-  <ds-prop name="colorContrast" type="&lt;ds-type-ref href=&quot;document-blocks-accessibility.html#colorcontrast&quot;&gt;colorContrast&lt;/ds-type-ref&gt;[]" conditional>Contrast ratio documentation for foreground/background color pairs used by this artifact. Each entry documents a specific pairing, its measured ratio, and the WCAG level it meets.</ds-prop>
-  <ds-prop name="motionConsiderations" type="&lt;ds-type-ref href=&quot;common-rich-text.html#richtext&quot;&gt;richText&lt;/ds-type-ref&gt;" conditional>How the artifact respects the prefers-reduced-motion media query. Document what animations or transitions exist and what happens when reduced motion is preferred (e.g., 'The loading spinner is replaced with a static ellipsis indicator').</ds-prop>
+  <ds-prop name="announcements" type="&lt;ds-type-ref href=&quot;document-blocks-accessibility.html#announcement&quot;&gt;announcement&lt;/ds-type-ref&gt;[]" conditional>Screen reader announcements, one entry per state or situation. Name a specific screen reader on an entry when behavior differs between them.<br><small>Min items: 1</small></ds-prop>
+  <ds-prop name="focusBehaviors" type="&lt;ds-type-ref href=&quot;document-blocks-accessibility.html#focusbehavior&quot;&gt;focusBehavior&lt;/ds-type-ref&gt;[]" conditional>Focus movement, one entry per trigger: how focus enters, moves within, and leaves the artifact — including trapping and restoration.<br><small>Min items: 1</small></ds-prop>
+  <ds-prop name="colorContrast" type="&lt;ds-type-ref href=&quot;document-blocks-accessibility.html#colorcontrast&quot;&gt;colorContrast&lt;/ds-type-ref&gt;[]" conditional>The foreground/background color pairings this artifact uses, one entry per pairing. Pairs are declarations of intent; measure them with an automated contrast criterion, not by hand.</ds-prop>
+  <ds-prop name="reducedMotion" type="&lt;ds-type-ref href=&quot;document-blocks-accessibility.html#reducedmotionentry&quot;&gt;reducedMotionEntry&lt;/ds-type-ref&gt;[]" conditional>Animations and their prefers-reduced-motion behavior, one entry per animation.<br><small>Min items: 1</small></ds-prop>
 </ds-prop-table>
 <ds-heading level="3" anchor="examples-embedded-not-a-standalone-block">Examples (embedded, not a standalone block)</ds-heading>
 <p>DSDS has no standalone <ds-code inline>examples</ds-code> document block. Instead, the reusable <ds-code inline>example</ds-code> model sits <strong>inside</strong> other blocks. You will see it most on a <a href="#guidelines-guidelines">guideline entry</a> and its success criteria, and on a guide's <ds-code inline>sections</ds-code> and <ds-code inline>steps</ds-code> entries.</p>
@@ -626,7 +626,12 @@
 </ul>
 <p>Optional <ds-code inline>title</ds-code> and <ds-code inline>description</ds-code> provide context.</p>
 <ds-heading level="3" anchor="content-content">Content (<ds-code inline>content</ds-code>)</ds-heading>
-<p>Documents content — suggested action labels and localization (i18n) notes. Content entries pair with guideline entries. A guideline says "Use sentence case" (a <em>rule</em>). A content entry says "Add: Takes an existing object and uses it in a new context" (a <em>reference</em>).</p>
+<p>The content block is for <strong>specialized, structured content documentation</strong>. Every entry is reference data:</p>
+<ul>
+<li>a terminology dictionary of recommended labels (<ds-code inline>term</ds-code> → <ds-code inline>definition</ds-code>, with usage context and cross-references)</li>
+<li>localization entries (<ds-code inline>concern</ds-code> → handling: RTL, text expansion, pluralization)</li>
+</ul>
+<p>For <strong>general documentation guidance</strong> — voice, tone, and writing rules with a rationale and a conformance level, like "Use sentence case" — use a <ds-code inline>guidelines</ds-code> block with <ds-code inline>category: "content"</ds-code>. That is the line between the two: a guideline says "Use sentence case" (a <em>rule</em>); a content entry says "Add: takes an existing object and uses it in a new context" (a <em>reference</em>).</p>
 <p>At least one of <ds-code inline>labels</ds-code> or <ds-code inline>localization</ds-code> must be present.</p>
 <ds-heading level="4" anchor="content-label-entry">Content label entry</ds-heading>
 <ds-prop-table>
@@ -978,7 +983,7 @@
         <ds-back-to-top></ds-back-to-top>
 
         <ds-footer>
-          <p>Design System Documentation Spec (DSDS) 0.9.0 — Draft Specification</p>
+          <p>Design System Documentation Spec (DSDS) 0.10.0 — Draft Specification</p>
           <p><a href="https://github.com/somerandomdude/design-system-documentation-schema">GitHub</a></p>
         </ds-footer>
       </div>

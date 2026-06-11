@@ -75,7 +75,8 @@ spec/
 │   ├── dsds.schema.json                                # Root JSON Schema (anyEntity, entityGroup, fileRef)
 │   ├── dsds.bundled.schema.json                        # Auto-generated single-file bundle
 │   ├── common/                                         # Shared primitives
-│   │   ├── criterion.schema.json                       # criterion, reference (testable success criteria)
+│   │   ├── criterion.schema.json                       # criterion, conformanceLevel, verificationMode, criterionCheck, criterionFixture, reference
+│   │   ├── entity-ref.schema.json                      # entityRef, entityIdentifier, entityRole (the one way to point at an entity)
 │   │   ├── example.schema.json                         # example
 │   │   ├── extends.schema.json                         # documentExtends, entityExtends
 │   │   ├── extensions.schema.json                      # $extensions
@@ -143,6 +144,7 @@ scripts/
 ├── sync-examples.js                                    # Syncs markdown dsds:include directives with example JSON
 ├── migrate-to-0.7.js                                   # Migrates v0.5.x / v0.6 documents to the v0.7 shape
 ├── migrate-to-0.8.js                                   # Migrates v0.7.x documents to v0.8 (criterion fixture outcomes)
+├── migrate-to-0.10.js                                   # Migrates v0.8.x / v0.9.x documents to v0.10 (levels, entity refs, accessibility data)
 ├── build-site.js                                       # Generates the static specification site (orchestrator)
 ├── build-samples.js                                    # Generates the interactive sample viewer from example JSON
 ├── render-entity.js                                    # Server-side entity rendering used by build-samples.js
@@ -221,7 +223,7 @@ To validate your own DSDS file:
 npx ajv validate -s spec/schema/dsds.bundled.schema.json -d my-system.dsds.json
 ```
 
-Reference `https://designsystemdocspec.org/v0.9.0/dsds.bundled.schema.json` from your DSDS files via the `$schema` keyword to get editor autocompletion and inline validation. See the [Quick Start docs page](https://designsystemdocspec.org/quickstart.html) for the single-entity and multi-entity document shapes.
+Reference `https://designsystemdocspec.org/v0.10.0/dsds.bundled.schema.json` from your DSDS files via the `$schema` keyword to get editor autocompletion and inline validation. See the [Quick Start docs page](https://designsystemdocspec.org/quickstart.html) for the single-entity and multi-entity document shapes.
 
 #### Editorial lint (warnings, never blocking)
 
@@ -328,7 +330,7 @@ The Quick Start page (`site/content/quickstart.mdx`) is compiled the same way as
 The spec version lives in three coordinated places:
 
 1. **`spec/schema/dsds.schema.json#/properties/dsdsVersion/const`** — the single source of truth. The bundle script, the nav, every page title, and the versioned dist directory all derive from this value.
-2. **The `$id` URL on every schema file** — e.g., `https://designsystemdocspec.org/v0.9.0/metadata/last-updated.schema.json`. Every example document's `$schema` field and every `"dsdsVersion"` literal inside example JSON has to track the same version.
+2. **The `$id` URL on every schema file** — e.g., `https://designsystemdocspec.org/v0.10.0/metadata/last-updated.schema.json`. Every example document's `$schema` field and every `"dsdsVersion"` literal inside example JSON has to track the same version.
 3. **`package.json#version`** — the npm package version. Conventionally kept in lockstep with `dsdsVersion.const`.
 
 The `scripts/bump-version.js` script keeps the first two in sync across all 44 schema files, every example, and the README. `package.json` is handled separately because it's not a schema-consumer file.
@@ -361,7 +363,7 @@ This is the exact sequence for cutting a release that includes schema changes. S
 
 4. **Bump `package.json#version`** to the target version (e.g. `0.2.0` → `0.2.1`).
 
-5. **Add a CHANGELOG entry** at the top of `CHANGELOG`, mirroring the format of the prior release. Include a one-line header noting where the bundled schema is now served (e.g., "Schema files are now served at `https://designsystemdocspec.org/v0.9.0/...`") and an "Additions" or "Breaking changes" section describing every schema-visible change.
+5. **Add a CHANGELOG entry** at the top of `CHANGELOG`, mirroring the format of the prior release. Include a one-line header noting where the bundled schema is now served (e.g., "Schema files are now served at `https://designsystemdocspec.org/v0.10.0/...`") and an "Additions" or "Breaking changes" section describing every schema-visible change.
 
 6. **Run the version bump.** Preview the change first:
 
@@ -395,8 +397,8 @@ This is the exact sequence for cutting a release that includes schema changes. S
 
 9. **Spot-check the rendered site.** Confirm the version reads correctly in three places:
 
-   - Page `<title>` tags (e.g., `DSDS Last Updated Metadata — DSDS 0.9.0`).
-   - The nav title (`Design System Documentation Spec 0.9.0`).
+   - Page `<title>` tags (e.g., `DSDS Last Updated Metadata — DSDS 0.10.0`).
+   - The nav title (`Design System Documentation Spec 0.10.0`).
    - The footer (`Design System Documentation Spec (DSDS) 0.2.1 — Draft Specification`).
 
    The new schema page should exist at `site/dist/<group>-<name>.html` (e.g., `site/dist/metadata-last-updated.html`), and the versioned bundle should exist at `site/dist/v<new-version>/dsds.bundled.schema.json`.

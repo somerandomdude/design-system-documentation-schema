@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 /**
- * migrate-to-0.9.js — Migrate DSDS 0.8.x documents to 0.9.0.
+ * migrate-to-0.10.js — Migrate DSDS 0.8.x and 0.9.x documents to 0.10.0.
  *
- * Two breaking changes:
+ * The 0.9/0.10 breaking changes:
  *
  *   1. Conformance levels are lowercase kebab-case: MUST → must,
  *      MUST_NOT → must-not, SHOULD → should, SHOULD_NOT → should-not.
@@ -16,13 +16,13 @@
  * Also bumps `dsdsVersion` and any designsystemdocspec.org $schema URL.
  *
  * Usage:
- *   node scripts/migrate-to-0.9.js <files-or-dirs…> [--dry-run]
+ *   node scripts/migrate-to-0.10.js <files-or-dirs…> [--dry-run]
  */
 
 const fs = require("fs");
 const path = require("path");
 
-const TARGET_VERSION = "0.9.0";
+const TARGET_VERSION = "0.10.0";
 const LEVEL_MAP = {
   MUST: "must",
   MUST_NOT: "must-not",
@@ -58,7 +58,7 @@ function migrateDoc(doc, report) {
     changed = true;
   }
   if (typeof doc.$schema === "string") {
-    const updated = doc.$schema.replace(/\/v0\.[78](\.\d+)?\//, `/v${TARGET_VERSION}/`);
+    const updated = doc.$schema.replace(/\/v0\.[789](\.\d+)?\//, `/v${TARGET_VERSION}/`);
     if (updated !== doc.$schema) { doc.$schema = updated; changed = true; }
   }
 
@@ -69,6 +69,29 @@ function migrateDoc(doc, report) {
     if (typeof node.level === "string" && node.level in LEVEL_MAP) {
       node.level = LEVEL_MAP[node.level];
       changed = true;
+    }
+
+    if (node.kind === "accessibility") {
+      // Measured contrast fields are conformance results now, not documentation.
+      for (const pair of node.colorContrast || []) {
+        if (pair && (("contrastRatio" in pair) || ("wcagLevel" in pair))) {
+          delete pair.contrastRatio;
+          delete pair.wcagLevel;
+          changed = true;
+          report.migrated.push(`${p}/colorContrast: dropped measured fields — verify pairs with an automated contrast criterion instead`);
+        }
+      }
+      // Prose fields became structured arrays; converting prose to entries
+      // is a human judgment, not a heuristic's.
+      for (const [old, neu] of [
+        ["screenReaderBehavior", "announcements ({ context, announcement, screenReader? })"],
+        ["focusManagement", "focusBehaviors ({ trigger, behavior })"],
+        ["motionConsiderations", "reducedMotion ({ animation, behavior })"],
+      ]) {
+        if (old in node) {
+          report.manual.push(`${p}/${old}: prose must be restructured by hand into ${neu} — see the 0.9 changelog`);
+        }
+      }
     }
 
     if (Array.isArray(node.components) && node.components.some((c) => typeof c === "string")) {
@@ -108,7 +131,7 @@ function main() {
   const dryRun = args.includes("--dry-run");
   const targets = args.filter((a) => !a.startsWith("--"));
   if (targets.length === 0) {
-    console.error("Usage: node scripts/migrate-to-0.9.js <files-or-dirs…> [--dry-run]");
+    console.error("Usage: node scripts/migrate-to-0.10.js <files-or-dirs…> [--dry-run]");
     process.exit(1);
   }
 

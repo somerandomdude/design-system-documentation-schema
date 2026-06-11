@@ -1,6 +1,6 @@
 {
   "$schema": "../spec/schema/dsds.bundled.schema.json",
-  "dsdsVersion": "0.9.0",
+  "dsdsVersion": "0.10.0",
   "systemInfo": {
     "systemName": "Sanity UI",
     "systemVersion": "2.x",
@@ -887,9 +887,51 @@
                   "required": false
                 }
               ],
-              "screenReaderBehavior": "Announced as '[text], button'. When disabled, announced as '[text], button, dimmed' (VoiceOver) or '[text], button, unavailable' (NVDA/JAWS).",
-              "focusManagement": "The button participates in the normal tab order. When disabled, it is removed from the tab order via the HTML disabled attribute (unlike the DSDS example component which uses aria-disabled). The focus ring is implemented as a composite box-shadow and only appears on :focus-visible. On :focus:not(:focus-visible), the box-shadow resets to the normal border-only shadow, hiding the ring for mouse interactions.",
-              "motionConsiderations": "The button root has a CSS transition of 'background-color 100ms, border-color 100ms, color 100ms' for smooth state changes. The loading spinner uses CSS animation. Sanity UI provides a usePrefersReducedMotion hook, but the spinner does not currently auto-disable animation based on this preference."
+              "announcements": [
+                {
+                  "context": "default",
+                  "announcement": "[text], button"
+                },
+                {
+                  "context": "disabled",
+                  "announcement": "[text], button, dimmed",
+                  "screenReader": "VoiceOver"
+                },
+                {
+                  "context": "disabled",
+                  "announcement": "[text], button, unavailable",
+                  "screenReader": "NVDA"
+                },
+                {
+                  "context": "disabled",
+                  "announcement": "[text], button, unavailable",
+                  "screenReader": "JAWS"
+                }
+              ],
+              "focusBehaviors": [
+                {
+                  "trigger": "default",
+                  "behavior": "Participates in the normal tab order."
+                },
+                {
+                  "trigger": "disabled",
+                  "behavior": "Removed from the tab order via the HTML disabled attribute (unlike the DSDS example component, which uses aria-disabled)."
+                },
+                {
+                  "trigger": "focus-visible",
+                  "behavior": "The focus ring renders as a composite box-shadow; on :focus:not(:focus-visible) the box-shadow resets to the border-only shadow, hiding the ring for mouse interactions."
+                }
+              ],
+              "reducedMotion": [
+                {
+                  "animation": "Root transition: background-color 100ms, border-color 100ms, color 100ms",
+                  "behavior": "Not currently disabled — state changes still transition under reduced motion."
+                },
+                {
+                  "animation": "Loading spinner CSS animation",
+                  "behavior": "Not currently auto-disabled; Sanity UI provides a usePrefersReducedMotion hook the spinner does not yet use."
+                }
+              ]
             }
           ]
         }
