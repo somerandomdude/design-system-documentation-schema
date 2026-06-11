@@ -4,9 +4,36 @@ All notable changes to the DSDS specification are documented in this file.
 
 ---
 
+## [0.10.0] — 2026-06-11
+
+The accessibility block becomes data all the way down, and the specialized-vs-general framing is documented across the structured blocks. Schema files are served at `https://designsystemdocspec.org/v0.10.0/...`.
+
+### Breaking changes
+
+#### 1. The accessibility block is structured data only
+
+The block's charter — structured data, not prose — now holds for every field, drawing a bright line: accessibility entries state verifiable facts about what the artifact does; rules with rationale belong in `guidelines` blocks (category 'accessibility').
+
+| Before (prose) | After (structured) |
+|---|---|
+| `screenReaderBehavior` (richText) | `announcements` — `{ context, announcement, screenReader? }` per state |
+| `focusManagement` (richText) | `focusBehaviors` — `{ trigger, behavior }` per moment |
+| `motionConsiderations` (richText) | `reducedMotion` — `{ animation, behavior }` per animation |
+
+`colorContrast` pairs also drop their hand-measured `contrastRatio` and per-pair `wcagLevel`: a pair declares which combinations occur and where; measurement is conformance work for an automated contrast criterion, so documented ratios can no longer silently drift from token values. The block-level `wcagLevel` target stays.
+
+**Migration.** `scripts/migrate-to-0.10.js` strips the measured contrast fields automatically. The three prose fields are reported for hand-restructuring — turning prose into entries is a human judgment.
+
+### Documentation
+
+- **Specialized vs. general, framed in both directions.** The `accessibility` and `content` blocks are documented as specialized, structured documentation (reference data: what the artifact or system *is*); `guidelines` blocks own general documentation guidance (rules with rationale: what authors *should do*), routed by `category`. The framing appears in the block schemas, the `guidelines` schema, and the Schema Architecture page.
+- The content block's `description` property no longer invites "content philosophy, voice and tone" — that is general guidance and is redirected to guidelines.
+
+---
+
 ## [0.9.0] — 2026-06-11
 
-Predictability release, batch 2 of 2 — the reference unification and the casing fix, both breaking. Design record: `proposals/predictability.md`. Schema files are served at `https://designsystemdocspec.org/v0.9.0/...`.
+The predictability release: two breaking changes (the reference unification and the conformance-level casing fix) plus the non-breaking loosenings and author-facing errors that motivated it. Design record: `proposals/predictability.md`. Schema files are served at `https://designsystemdocspec.org/v0.9.0/...`.
 
 ### Breaking changes
 
@@ -14,7 +41,7 @@ Predictability release, batch 2 of 2 — the reference unification and the casin
 
 `level` values are `must`, `must-not`, `should`, `should-not` — like every DSDS-native vocabulary. The RFC 2119 keywords stay capitalized in prose, where capitalization carries conformance weight (enforced by DSDS-009); data tokens are not prose. Uppercase enum values are now reserved for external tokens with no natural lowercase form (WCAG `A`/`AA`/`AAA`).
 
-**Migration.** `node scripts/migrate-to-0.9.js <files>` — a four-entry lookup.
+**Migration.** `node scripts/migrate-to-0.10.js <files>` — a four-entry lookup.
 
 #### 2. Interaction `components` are entity references
 
@@ -26,7 +53,7 @@ Predictability release, batch 2 of 2 — the reference unification and the casin
 
 - **`entityRef`** (`common/entity-ref.schema.json`) — the one way to point at another entity: required `identifier`, optional `role`. Its leaf definitions (`entityIdentifier`, `entityRole`) are shared with `link`, whose identifier-bearing form follows the same resolution rules; URL-only links are why link composes the leaves rather than the object.
 - **Optional `name` on tokens and token groups.** When present it is the display name; when absent the identifier serves, as before. The display rule is now uniform for every entity: `name` when present, otherwise `identifier` — no more special-casing two kinds.
-- `scripts/migrate-to-0.9.js` — the codemod for both breaking changes.
+- `scripts/migrate-to-0.10.js` — the codemod for both breaking changes.
 - **Single-value enums are valid.** `enumVariant.values` accepts one entry (`minItems` 2 → 1) — real systems carry single-value dimensions mid-migration.
 - **Non-token scale steps are valid.** A `scaleStep` requires `token` *or* `value`, no longer `token` alone — pre-tokenization systems and non-token scales (column counts, icon grids) no longer have to fabricate token identifiers.
 - **Convention-trap errors.** The validator now answers the two most common shape mistakes directly: a `status` object with no `overall` ("status is a bare string or an object with `overall`"), and `anatomyEntry.tokens` written as an array ("a purpose-keyed map, not an array — keys say what the token controls"). `anatomyEntry.tokens` also carries an inline example in the schema.

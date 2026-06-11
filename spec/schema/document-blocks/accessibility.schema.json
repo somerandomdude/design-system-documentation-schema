@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://designsystemdocspec.org/v0.9.0/document-blocks/accessibility.schema.json",
+  "$id": "https://designsystemdocspec.org/v0.10.0/document-blocks/accessibility.schema.json",
   "title": "DSDS Accessibility Document Block",
-  "description": "Documents accessibility specs for an artifact: keyboard interactions, ARIA attributes, screen reader behavior, focus management, color contrast pairs, and motion considerations. Captures structured, machine-readable accessibility data. For actionable accessibility rules with rationale, use a `guidelines` block with category 'accessibility' instead.",
+  "description": "Specialized, structured accessibility documentation: keyboard interactions, ARIA attributes, screen reader announcements, focus behaviors, color contrast pairs, and reduced-motion behaviors. Every entry is a verifiable statement of what the artifact does — a fact a test or review can confirm. For general documentation guidance — rules about what authors should do, with rationale and a conformance level — use a `guidelines` block (category 'accessibility').",
   "$defs": {
     "keyboardInteraction": {
       "type": "object",
@@ -57,12 +57,10 @@
     },
     "colorContrast": {
       "type": "object",
-      "description": "A color contrast spec: the measured contrast ratio between a foreground and background color pair and the WCAG conformance level it meets.",
+      "description": "A foreground/background color pairing the artifact uses. The pair is the documentation — which combinations occur, and where. Measured contrast ratios are conformance results, not documentation: verify pairs with a criterion (verification: automated) whose check computes ratios from live token values, so the measurement cannot drift from the palette.",
       "required": [
         "foreground",
-        "background",
-        "contrastRatio",
-        "wcagLevel"
+        "background"
       ],
       "properties": {
         "foreground": {
@@ -73,20 +71,6 @@
           "type": "string",
           "description": "The background token name or resolved color value (e.g., 'color-background-default', '#ffffff', 'var(--button-background)')."
         },
-        "contrastRatio": {
-          "type": "number",
-          "description": "The contrast ratio as a decimal (e.g., 4.5, 7.2, 15.3). It stands for the ratio N:1, where N is this value. Tools MAY format it for display as 'N:1'.",
-          "exclusiveMinimum": 0
-        },
-        "wcagLevel": {
-          "type": "string",
-          "enum": [
-            "A",
-            "AA",
-            "AAA"
-          ],
-          "description": "The WCAG conformance level met by this contrast ratio (matches the block-level `wcagLevel` field). AA requires 4.5:1 for normal text and 3:1 for large text. AAA requires 7:1 for normal text and 4.5:1 for large text."
-        },
         "context": {
           "type": "string",
           "description": "Where this foreground/background combination is used (e.g., 'Label text on primary button background in light mode', 'Secondary text on card surface')."
@@ -96,7 +80,7 @@
     },
     "accessibility": {
       "type": "object",
-      "description": "Structured accessibility specs for an artifact. Documents keyboard behavior, ARIA attributes, screen reader announcements, focus management, color contrast pairs, and motion considerations. This block differs from `guidelines` blocks. Accessibility specs capture machine-readable data, while guidelines capture actionable rules with rationale. Both can be present on the same artifact.",
+      "description": "Specialized, structured accessibility documentation for an artifact. Every field is data: keyboard interactions, ARIA attributes, per-state announcements, per-trigger focus behaviors, color pairings, and per-animation reduced-motion behaviors. Each entry states what the artifact does, verifiably. This block carries no prose rules — general documentation guidance, with rationale and a conformance level, belongs in a `guidelines` block (category 'accessibility'), and the two blocks complement each other on the same artifact.",
       "required": [
         "kind"
       ],
@@ -137,24 +121,36 @@
             "$ref": "#/$defs/ariaAttribute"
           }
         },
-        "screenReaderBehavior": {
-          "$ref": "../common/rich-text.schema.json#/$defs/richText",
-          "description": "How the artifact is announced by screen readers in various states. Include announcements for default, focused, disabled, loading, expanded, and other relevant states. Name specific screen readers (VoiceOver, NVDA, JAWS) when behavior differs."
+        "announcements": {
+          "type": "array",
+          "description": "Screen reader announcements, one entry per state or situation. Name a specific screen reader on an entry when behavior differs between them.",
+          "items": {
+            "$ref": "#/$defs/announcement"
+          },
+          "minItems": 1
         },
-        "focusManagement": {
-          "$ref": "../common/rich-text.schema.json#/$defs/richText",
-          "description": "How focus moves into, within, and out of the artifact. Document focus trapping (for modals/dialogs), focus restoration (when dismissing overlays), and programmatic focus movement. Describe both keyboard and programmatic focus behavior."
+        "focusBehaviors": {
+          "type": "array",
+          "description": "Focus movement, one entry per trigger: how focus enters, moves within, and leaves the artifact — including trapping and restoration.",
+          "items": {
+            "$ref": "#/$defs/focusBehavior"
+          },
+          "minItems": 1
         },
         "colorContrast": {
           "type": "array",
-          "description": "Contrast ratio documentation for foreground/background color pairs used by this artifact. Each entry documents a specific pairing, its measured ratio, and the WCAG level it meets.",
+          "description": "The foreground/background color pairings this artifact uses, one entry per pairing. Pairs are declarations of intent; measure them with an automated contrast criterion, not by hand.",
           "items": {
             "$ref": "#/$defs/colorContrast"
           }
         },
-        "motionConsiderations": {
-          "$ref": "../common/rich-text.schema.json#/$defs/richText",
-          "description": "How the artifact respects the prefers-reduced-motion media query. Document what animations or transitions exist and what happens when reduced motion is preferred (e.g., 'The loading spinner is replaced with a static ellipsis indicator')."
+        "reducedMotion": {
+          "type": "array",
+          "description": "Animations and their prefers-reduced-motion behavior, one entry per animation.",
+          "items": {
+            "$ref": "#/$defs/reducedMotionEntry"
+          },
+          "minItems": 1
         }
       },
       "additionalProperties": false,
@@ -181,12 +177,12 @@
         },
         {
           "required": [
-            "screenReaderBehavior"
+            "announcements"
           ]
         },
         {
           "required": [
-            "focusManagement"
+            "focusBehaviors"
           ]
         },
         {
@@ -196,10 +192,71 @@
         },
         {
           "required": [
-            "motionConsiderations"
+            "reducedMotion"
           ]
         }
       ]
+    },
+    "announcement": {
+      "type": "object",
+      "description": "What a screen reader announces in one context or state.",
+      "required": [
+        "context",
+        "announcement"
+      ],
+      "properties": {
+        "context": {
+          "type": "string",
+          "description": "The state or situation being announced (e.g., 'default', 'disabled via aria-disabled', 'loading', 'validation failure'). Use 'default' for the resting state."
+        },
+        "announcement": {
+          "type": "string",
+          "description": "What is announced (e.g., '[label], button, dimmed'). Use bracketed placeholders for content that varies."
+        },
+        "screenReader": {
+          "type": "string",
+          "description": "The specific screen reader this announcement applies to (e.g., 'VoiceOver', 'NVDA', 'JAWS'). When omitted, the announcement applies to all screen readers."
+        }
+      },
+      "additionalProperties": false
+    },
+    "focusBehavior": {
+      "type": "object",
+      "description": "How focus moves at one moment in the artifact's lifecycle.",
+      "required": [
+        "trigger",
+        "behavior"
+      ],
+      "properties": {
+        "trigger": {
+          "type": "string",
+          "description": "The moment or event (e.g., 'default', 'open', 'close', 'validation failure', 'disabled'). Use 'default' for normal tab-order participation."
+        },
+        "behavior": {
+          "type": "string",
+          "description": "What focus does (e.g., 'Moves to the error summary', 'Returns to the trigger element', 'Participates in the normal tab order')."
+        }
+      },
+      "additionalProperties": false
+    },
+    "reducedMotionEntry": {
+      "type": "object",
+      "description": "One animation and its behavior under prefers-reduced-motion.",
+      "required": [
+        "animation",
+        "behavior"
+      ],
+      "properties": {
+        "animation": {
+          "type": "string",
+          "description": "The animation or transition (e.g., 'loading spinner rotation', 'background-color 100ms transition')."
+        },
+        "behavior": {
+          "type": "string",
+          "description": "What happens when reduced motion is preferred (e.g., 'Replaced with a static ellipsis indicator', 'Transition removed; state changes apply instantly')."
+        }
+      },
+      "additionalProperties": false
     }
   }
 }

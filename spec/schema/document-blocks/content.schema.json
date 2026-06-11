@@ -1,13 +1,16 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://designsystemdocspec.org/v0.9.0/document-blocks/content.schema.json",
+  "$id": "https://designsystemdocspec.org/v0.10.0/document-blocks/content.schema.json",
   "title": "DSDS Content Document Block",
-  "description": "Structured content guidelines for an artifact or for the design system as a whole. Content guidelines cover two concerns. The first is recommended action labels: a dictionary of standard labels like 'Add', 'Cancel', and 'Delete', with definitions, usage context, and cross-references. The second is localization: RTL behavior, text expansion, pluralization, and other i18n concerns. At least one of `labels` or `localization` is required.",
+  "description": "Specialized, structured content documentation for an artifact or for the design system as a whole. It covers two kinds of reference data. The first is a terminology dictionary of recommended action labels — 'Add', 'Cancel', 'Delete' — with definitions, usage context, and cross-references. The second is localization: RTL behavior, text expansion, pluralization, and other i18n concerns, one entry per concern. At least one of `labels` or `localization` is required. For general content guidance — voice, tone, capitalization rules, with rationale and a conformance level — use a `guidelines` block (category 'content').",
   "$defs": {
     "contentLabelEntry": {
       "type": "object",
       "description": "A single recommended action label or term in the content dictionary. Each entry sets a standard label, its meaning, usage guidance, and cross-references to related or alternative terms. Entries follow the {verb} + {noun} content formula used by systems like Carbon and Gestalt.",
-      "required": ["term", "definition"],
+      "required": [
+        "term",
+        "definition"
+      ],
       "properties": {
         "term": {
           "type": "string",
@@ -45,7 +48,10 @@
     "localizationEntry": {
       "type": "object",
       "description": "A single localization or i18n concern. Each entry covers something that affects how content is authored, translated, or rendered across languages and writing systems.",
-      "required": ["concern", "description"],
+      "required": [
+        "concern",
+        "description"
+      ],
       "properties": {
         "concern": {
           "type": "string",
@@ -67,9 +73,22 @@
     },
     "content": {
       "type": "object",
-      "description": "Structured content guidelines: recommended action labels and localization notes. The labels array is a dictionary of standard UI labels with definitions, usage context, and cross-references. The localization array covers i18n concerns like RTL behavior, text expansion, and pluralization. At least one of `labels` or `localization` is required. Content blocks complement `guidelines` blocks. A guideline entry states a rule, such as 'Use sentence case'. Content guidelines give a reference, such as 'Add: Takes an existing object and uses it in a new context'.",
-      "required": ["kind"],
-      "anyOf": [{ "required": ["labels"] }, { "required": ["localization"] }],
+      "description": "Specialized, structured content documentation: a terminology dictionary of recommended labels and per-concern localization entries. Each entry is reference data — a fact about the system's vocabulary or its i18n behavior. This block carries no prose rules: general content guidance, with rationale and a conformance level, belongs in a `guidelines` block (category 'content'), and the two blocks complement each other — a guideline says 'Use sentence case' (a rule); a content entry says 'Add: takes an existing object and uses it in a new context' (a reference).",
+      "required": [
+        "kind"
+      ],
+      "anyOf": [
+        {
+          "required": [
+            "labels"
+          ]
+        },
+        {
+          "required": [
+            "localization"
+          ]
+        }
+      ],
       "properties": {
         "kind": {
           "type": "string",
@@ -78,7 +97,7 @@
         },
         "description": {
           "$ref": "../common/rich-text.schema.json#/$defs/richText",
-          "description": "Overview of the content guidelines: content philosophy, voice and tone principles, or the scope of labels and localization rules covered."
+          "description": "Prose overview of what this block covers: the scope of the label dictionary and the localization entries. Content philosophy and voice-and-tone rules are general guidance and belong in a `guidelines` block (category 'content'), not here."
         },
         "labels": {
           "type": "array",
