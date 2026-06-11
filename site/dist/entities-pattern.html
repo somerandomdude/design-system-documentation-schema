@@ -3,13 +3,13 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>DSDS Pattern Definitions — DSDS 0.8.0</title>
+  <title>DSDS Pattern Definitions — DSDS 0.9.0</title>
   <meta name="description" content="Defines documents for interaction patterns. A pattern is a repeated answer to a common UX problem — navigation, error messaging, form validation, empty states, loading, and onboarding. A pattern document holds the identity of a multi-component solution. The `metadata` object holds optional fields like status, tags, and links. The `documentBlocks` array holds structured docs as typed entries.">
   <link rel="canonical" href="https://designsystemdocspec.org/entities-pattern">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Design System Documentation Spec">
-  <meta property="og:title" content="DSDS Pattern Definitions — DSDS 0.8.0">
+  <meta property="og:title" content="DSDS Pattern Definitions — DSDS 0.9.0">
   <meta property="og:description" content="Defines documents for interaction patterns. A pattern is a repeated answer to a common UX problem — navigation, error messaging, form validation, empty states, loading, and onboarding. A pattern document holds the identity of a multi-component solution. The `metadata` object holds optional fields like status, tags, and links. The `documentBlocks` array holds structured docs as typed entries.">
   <meta property="og:url" content="https://designsystemdocspec.org/entities-pattern">
   <meta name="twitter:card" content="summary">
@@ -20,7 +20,7 @@
 <body>
   <a class="skip-link" href="#main-content">Skip to content</a>
   <ds-nav-toggle target="ds-spec-nav"></ds-nav-toggle>
-  <ds-spec-nav title="Design System Documentation Spec 0.8.0" title-href="index.html" active="entities-pattern">
+  <ds-spec-nav title="Design System Documentation Spec 0.9.0" title-href="index.html" active="entities-pattern">
     <a href="index.html" slug="index">Overview</a>
     <a href="quickstart.html" slug="quickstart">Quick start</a>
     <a href="schema-architecture.html" slug="schema-architecture">Schema architecture</a>
@@ -30,6 +30,7 @@
     </ds-nav-group>
     <ds-nav-group label="Common">
       <a href="common-criterion.html" slug="common-criterion">criterion</a>
+      <a href="common-entity-ref.html" slug="common-entity-ref">entity-ref</a>
       <a href="common-example.html" slug="common-example">example</a>
       <a href="common-extends.html" slug="common-extends">extends</a>
       <a href="common-extensions.html" slug="common-extensions">extensions</a>
@@ -235,16 +236,24 @@
           &quot;trigger&quot;: &quot;User submits the form by activating the submit button.&quot;,
           &quot;description&quot;: &quot;Client-side validation runs on all required fields. If one or more fields are invalid, submission is prevented and the error state is activated.&quot;,
           &quot;components&quot;: [
-            &quot;button&quot;,
-            &quot;form-field&quot;
+            {
+              &quot;identifier&quot;: &quot;button&quot;
+            },
+            {
+              &quot;identifier&quot;: &quot;form-field&quot;
+            }
           ]
         },
         {
           &quot;trigger&quot;: &quot;Client-side validation detects one or more invalid fields.&quot;,
           &quot;description&quot;: &quot;Each invalid field displays an inline error message directly below the input. The message describes what is wrong and, where possible, how to fix it. The field's border changes to the error color and an error icon appears to the left of the message text.&quot;,
           &quot;components&quot;: [
-            &quot;form-field&quot;,
-            &quot;icon&quot;
+            {
+              &quot;identifier&quot;: &quot;form-field&quot;
+            },
+            {
+              &quot;identifier&quot;: &quot;icon&quot;
+            }
           ],
           &quot;examples&quot;: [
             {
@@ -269,9 +278,15 @@
           &quot;trigger&quot;: &quot;Two or more fields fail validation simultaneously.&quot;,
           &quot;description&quot;: &quot;An error summary alert appears at the top of the form. The summary lists every current error as an anchor link. Each link, when activated, moves focus to the corresponding invalid field. Focus is programmatically moved to the error summary so screen reader users are immediately aware of it.&quot;,
           &quot;components&quot;: [
-            &quot;alert&quot;,
-            &quot;link&quot;,
-            &quot;form-field&quot;
+            {
+              &quot;identifier&quot;: &quot;alert&quot;
+            },
+            {
+              &quot;identifier&quot;: &quot;link&quot;
+            },
+            {
+              &quot;identifier&quot;: &quot;form-field&quot;
+            }
           ],
           &quot;examples&quot;: [
             {
@@ -288,17 +303,27 @@
           &quot;trigger&quot;: &quot;User corrects an invalid field and moves focus away (blur) or types a valid value.&quot;,
           &quot;description&quot;: &quot;The inline error message for that field is removed. The field border returns to its default color. If an error summary is visible, the corresponding entry is removed from the summary. When all errors are resolved, the summary is removed entirely.&quot;,
           &quot;components&quot;: [
-            &quot;form-field&quot;,
-            &quot;alert&quot;
+            {
+              &quot;identifier&quot;: &quot;form-field&quot;
+            },
+            {
+              &quot;identifier&quot;: &quot;alert&quot;
+            }
           ]
         },
         {
           &quot;trigger&quot;: &quot;Form submission succeeds on the client but fails on the server (e.g., 422, 500, network timeout).&quot;,
           &quot;description&quot;: &quot;A toast notification appears communicating the server error. The toast uses the error variant and includes a brief description of the problem and, if actionable, a retry button. If the server returns field-level validation errors (422), those are mapped back to inline field errors using the same pattern as client-side validation.&quot;,
           &quot;components&quot;: [
-            &quot;toast&quot;,
-            &quot;form-field&quot;,
-            &quot;button&quot;
+            {
+              &quot;identifier&quot;: &quot;toast&quot;
+            },
+            {
+              &quot;identifier&quot;: &quot;form-field&quot;
+            },
+            {
+              &quot;identifier&quot;: &quot;button&quot;
+            }
           ],
           &quot;examples&quot;: [
             {
@@ -360,31 +385,31 @@
         {
           &quot;guidance&quot;: &quot;Always display inline errors directly below the invalid field, not in a separate location or only in the summary.&quot;,
           &quot;rationale&quot;: &quot;Users scan forms top-to-bottom. An error placed away from its field forces the user to map the message to the field mentally. Proximity eliminates that cognitive load.&quot;,
-          &quot;level&quot;: &quot;MUST&quot;,
+          &quot;level&quot;: &quot;must&quot;,
           &quot;category&quot;: &quot;visual-design&quot;
         },
         {
           &quot;guidance&quot;: &quot;Error messages must describe the problem and, when possible, suggest how to fix it.&quot;,
           &quot;rationale&quot;: &quot;A message like 'Invalid input' forces the user to guess what went wrong. A message like 'Enter a date in MM/DD/YYYY format' removes ambiguity and speeds correction.&quot;,
-          &quot;level&quot;: &quot;MUST&quot;,
+          &quot;level&quot;: &quot;must&quot;,
           &quot;category&quot;: &quot;content&quot;
         },
         {
           &quot;guidance&quot;: &quot;When two or more fields have errors, display an error summary at the top of the form in addition to inline messages.&quot;,
           &quot;rationale&quot;: &quot;Users on long forms may not see all inline errors, especially those below the fold. The summary provides a single scannable list of everything that needs attention.&quot;,
-          &quot;level&quot;: &quot;MUST&quot;,
+          &quot;level&quot;: &quot;must&quot;,
           &quot;category&quot;: &quot;visual-design&quot;
         },
         {
           &quot;guidance&quot;: &quot;Each entry in the error summary must link to the corresponding invalid field.&quot;,
           &quot;rationale&quot;: &quot;Keyboard and screen reader users need a way to navigate directly from the summary to the problematic field without tabbing through the entire form.&quot;,
-          &quot;level&quot;: &quot;MUST&quot;,
+          &quot;level&quot;: &quot;must&quot;,
           &quot;category&quot;: &quot;interaction&quot;
         },
         {
           &quot;guidance&quot;: &quot;Move focus to the error summary when it appears.&quot;,
           &quot;rationale&quot;: &quot;Screen reader users will not discover the summary unless focus is moved to it. Sighted keyboard users benefit from the same behavior — their next Tab press lands them in the summary's link list.&quot;,
-          &quot;level&quot;: &quot;MUST&quot;,
+          &quot;level&quot;: &quot;must&quot;,
           &quot;category&quot;: &quot;accessibility&quot;,
           &quot;references&quot;: [
             {
@@ -395,19 +420,19 @@
         {
           &quot;guidance&quot;: &quot;Do not clear the form or reset field values when validation fails.&quot;,
           &quot;rationale&quot;: &quot;Clearing the form destroys the user's work. They must re-enter all data, including fields that were valid. This is hostile to all users and catastrophic for users with motor impairments who rely on slow, deliberate input.&quot;,
-          &quot;level&quot;: &quot;MUST_NOT&quot;,
+          &quot;level&quot;: &quot;must-not&quot;,
           &quot;category&quot;: &quot;interaction&quot;
         },
         {
           &quot;guidance&quot;: &quot;Use real-time inline validation only for fields where the constraint is unambiguous and immediate feedback is helpful (e.g., password strength, email format). Do not validate on every keystroke for fields that require the user to finish typing.&quot;,
           &quot;rationale&quot;: &quot;Premature validation interrupts the user. Showing 'Invalid email' while the user is still typing 'j' is noise. Wait for a blur event or a pause in typing.&quot;,
-          &quot;level&quot;: &quot;SHOULD&quot;,
+          &quot;level&quot;: &quot;should&quot;,
           &quot;category&quot;: &quot;interaction&quot;
         },
         {
           &quot;guidance&quot;: &quot;Pair every inline error message with an error icon. Do not rely on color alone.&quot;,
           &quot;rationale&quot;: &quot;Approximately 8% of men have some form of color vision deficiency. An icon provides a second, non-color signal that the field is in an error state. WCAG 1.4.1 requires that color is not the sole means of conveying information.&quot;,
-          &quot;level&quot;: &quot;MUST&quot;,
+          &quot;level&quot;: &quot;must&quot;,
           &quot;category&quot;: &quot;accessibility&quot;,
           &quot;references&quot;: [
             {
@@ -418,7 +443,7 @@
         {
           &quot;guidance&quot;: &quot;Each inline error message must be programmatically associated with its field using aria-describedby.&quot;,
           &quot;rationale&quot;: &quot;Screen readers announce aria-describedby content when the field receives focus. Without it, the user hears the field label but not the error, and has no way to know the field is invalid.&quot;,
-          &quot;level&quot;: &quot;MUST&quot;,
+          &quot;level&quot;: &quot;must&quot;,
           &quot;category&quot;: &quot;accessibility&quot;,
           &quot;references&quot;: [
             {
@@ -432,7 +457,7 @@
         {
           &quot;guidance&quot;: &quot;Invalid fields must be marked with aria-invalid=\&quot;true\&quot;.&quot;,
           &quot;rationale&quot;: &quot;The aria-invalid attribute allows screen readers to announce that a field's value is not accepted. It is the standard mechanism for communicating validation state in ARIA.&quot;,
-          &quot;level&quot;: &quot;MUST&quot;,
+          &quot;level&quot;: &quot;must&quot;,
           &quot;category&quot;: &quot;accessibility&quot;,
           &quot;references&quot;: [
             {
@@ -443,7 +468,7 @@
         {
           &quot;guidance&quot;: &quot;The error summary must use role=\&quot;alert\&quot; or be injected into an aria-live=\&quot;assertive\&quot; region so that screen readers announce it immediately when it appears.&quot;,
           &quot;rationale&quot;: &quot;Without a live region, screen readers will not announce dynamically injected content. The user will not know the summary exists unless they navigate to it manually.&quot;,
-          &quot;level&quot;: &quot;MUST&quot;,
+          &quot;level&quot;: &quot;must&quot;,
           &quot;category&quot;: &quot;accessibility&quot;,
           &quot;references&quot;: [
             {
@@ -454,7 +479,7 @@
         {
           &quot;guidance&quot;: &quot;Error summary anchor links must move focus to the corresponding field, not just scroll to it.&quot;,
           &quot;rationale&quot;: &quot;Keyboard users rely on focus position to interact. Scrolling without moving focus leaves the keyboard cursor at the summary, requiring the user to Tab through potentially many elements to reach the field.&quot;,
-          &quot;level&quot;: &quot;MUST&quot;,
+          &quot;level&quot;: &quot;must&quot;,
           &quot;category&quot;: &quot;accessibility&quot;,
           &quot;references&quot;: [
             {
@@ -465,7 +490,7 @@
         {
           &quot;guidance&quot;: &quot;Toast notifications for errors must persist until the user dismisses them or the error is resolved. Do not auto-dismiss error toasts.&quot;,
           &quot;rationale&quot;: &quot;Users with cognitive disabilities or screen reader users may need more time to read and understand the error. Auto-dismissing the toast removes the information before they can act on it.&quot;,
-          &quot;level&quot;: &quot;MUST&quot;,
+          &quot;level&quot;: &quot;must&quot;,
           &quot;category&quot;: &quot;accessibility&quot;,
           &quot;references&quot;: [
             {
@@ -537,16 +562,16 @@
       &quot;items&quot;: [
         {
           &quot;guidance&quot;: &quot;Always include both an inline field error and a summary when multiple fields fail.&quot;,
-          &quot;level&quot;: &quot;MUST&quot;
+          &quot;level&quot;: &quot;must&quot;
         },
         {
           &quot;guidance&quot;: &quot;Do not use toast notifications as the sole error communication for form validation.&quot;,
-          &quot;level&quot;: &quot;MUST_NOT&quot;
+          &quot;level&quot;: &quot;must-not&quot;
         },
         {
           &quot;guidance&quot;: &quot;Showing errors only on submit without inline field feedback.&quot;,
           &quot;rationale&quot;: &quot;Instead: Show inline errors on field blur and in a summary on submit.&quot;,
-          &quot;level&quot;: &quot;MUST_NOT&quot;
+          &quot;level&quot;: &quot;must-not&quot;
         }
       ]
     }
@@ -558,7 +583,7 @@
         <ds-back-to-top></ds-back-to-top>
 
         <ds-footer>
-          <p>Design System Documentation Spec (DSDS) 0.8.0 — Draft Specification</p>
+          <p>Design System Documentation Spec (DSDS) 0.9.0 — Draft Specification</p>
           <p><a href="https://github.com/somerandomdude/design-system-documentation-schema">GitHub</a></p>
         </ds-footer>
       </div>

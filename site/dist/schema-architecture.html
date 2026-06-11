@@ -3,13 +3,13 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Schema Architecture — DSDS 0.8.0</title>
+  <title>Schema Architecture — DSDS 0.9.0</title>
   <meta name="description" content="The full DSDS schema reference — document structure, entity properties, document block types, and all shared models.">
   <link rel="canonical" href="https://designsystemdocspec.org/schema-architecture">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Design System Documentation Spec">
-  <meta property="og:title" content="Schema Architecture — DSDS 0.8.0">
+  <meta property="og:title" content="Schema Architecture — DSDS 0.9.0">
   <meta property="og:description" content="The full DSDS schema reference — document structure, entity properties, document block types, and all shared models.">
   <meta property="og:url" content="https://designsystemdocspec.org/schema-architecture">
   <meta name="twitter:card" content="summary">
@@ -20,7 +20,7 @@
 <body>
   <a class="skip-link" href="#main-content">Skip to content</a>
   <ds-nav-toggle target="ds-spec-nav"></ds-nav-toggle>
-  <ds-spec-nav title="Design System Documentation Spec 0.8.0" title-href="index.html" active="schema-architecture">
+  <ds-spec-nav title="Design System Documentation Spec 0.9.0" title-href="index.html" active="schema-architecture">
     <a href="index.html" slug="index">Overview</a>
     <a href="quickstart.html" slug="quickstart">Quick start</a>
     <a href="schema-architecture.html" slug="schema-architecture">Schema architecture</a>
@@ -30,6 +30,7 @@
     </ds-nav-group>
     <ds-nav-group label="Common">
       <a href="common-criterion.html" slug="common-criterion">criterion</a>
+      <a href="common-entity-ref.html" slug="common-entity-ref">entity-ref</a>
       <a href="common-example.html" slug="common-example">example</a>
       <a href="common-extends.html" slug="common-extends">extends</a>
       <a href="common-extensions.html" slug="common-extensions">extensions</a>
@@ -98,7 +99,7 @@
 </ul>
 <p>A complete, valid document using only the core:</p>
 <ds-code language="json">{
-  "dsdsVersion": "0.8.0",
+  "dsdsVersion": "0.9.0",
   "entity": {
     "kind": "component",
     "identifier": "button",
@@ -117,7 +118,7 @@
           {
             "guidance": "Use a single primary button per view.",
             "rationale": "Multiple primary buttons dilute the visual hierarchy.",
-            "level": "SHOULD",
+            "level": "should",
             "category": "visual-design"
           }
         ]
@@ -136,6 +137,7 @@
 ├── dsds.bundled.schema.json            # Auto-generated single-file bundle
 ├── common/
 │   ├── criterion.schema.json                   # conformanceLevel, verificationMode, criterionCheck, criterionFixture, reference, criterion
+│   ├── entity-ref.schema.json                  # entityIdentifier, entityRole, entityRef
 │   ├── example.schema.json                     # example
 │   ├── extends.schema.json                     # documentExtends, entityExtends
 │   ├── extensions.schema.json                  # extensions
@@ -187,7 +189,7 @@
 <p>A DSDS file is a JSON object. It needs a <ds-code inline>dsdsVersion</ds-code>. It also needs one of two shapes: an <ds-code inline>entityGroups</ds-code> array for many entities, or an <ds-code inline>entity</ds-code> object for a single one. Every valid file uses one or the other.</p>
 <ds-heading level="3" anchor="root-properties">Root properties</ds-heading>
 <ds-prop-table>
-  <ds-prop name="dsdsVersion" type="&lt;ds-code inline&gt;&quot;0.8.0&quot;&lt;/ds-code&gt;" required>The DSDS spec version this document conforms to.</ds-prop>
+  <ds-prop name="dsdsVersion" type="&lt;ds-code inline&gt;&quot;0.9.0&quot;&lt;/ds-code&gt;" required>The DSDS spec version this document conforms to.</ds-prop>
   <ds-prop name="$schema" type="string">URI reference to the DSDS JSON Schema for validation.</ds-prop>
   <ds-prop name="systemInfo" type="&lt;ds-type-ref href=&quot;common-system-info.html#systeminfo&quot;&gt;systemInfo&lt;/ds-type-ref&gt;"></ds-prop>
   <ds-prop name="extends" type="&lt;ds-type-ref href=&quot;common-extends.html#documentextends&quot;&gt;documentExtends&lt;/ds-type-ref&gt;">Declares that this DSDS document inherits from another DSDS document — usually a core design system. The base document provides the core entities. This document layers on top, adding or extending entities. It supports systems-of-systems architectures, where product- or brand-specific systems inherit from a shared core.</ds-prop>
@@ -208,8 +210,8 @@
 <ds-heading level="3" anchor="single-entity-documents">Single-entity documents</ds-heading>
 <p>When each entity lives in its own file, use the <ds-code inline>entity</ds-code> property instead of <ds-code inline>entityGroups</ds-code>. The <ds-code inline>kind</ds-code> field on the entity identifies its type.</p>
 <ds-code language="json">{
-  "$schema": "https://designsystemdocspec.org/v0.8.0/dsds.bundled.schema.json",
-  "dsdsVersion": "0.8.0",
+  "$schema": "https://designsystemdocspec.org/v0.9.0/dsds.bundled.schema.json",
+  "dsdsVersion": "0.9.0",
   "entity": {
     "kind": "component",
     "identifier": "button",
@@ -228,7 +230,7 @@
 <p>Each <ds-code inline>$ref</ds-code> object has one property: <ds-code inline>$ref</ds-code>. Its value is a path to a DSDS file. You can add a JSON Pointer fragment to target one value inside that file.</p>
 <p><strong>Individual entity file</strong> (<ds-code inline>button.dsds.json</ds-code>):</p>
 <ds-code language="json">{
-  "dsdsVersion": "0.8.0",
+  "dsdsVersion": "0.9.0",
   "entity": {
     "kind": "component",
     "identifier": "button",
@@ -239,7 +241,7 @@
 </ds-code>
 <p><strong>Manifest file</strong> (<ds-code inline>index.dsds.json</ds-code>):</p>
 <ds-code language="json">{
-  "dsdsVersion": "0.8.0",
+  "dsdsVersion": "0.9.0",
   "entityGroups": [
     {
       "name": "Acme Design System",
@@ -337,7 +339,7 @@
         {
           "guidance": "Always use semantic tokens instead of raw color values.",
           "rationale": "Semantic tokens ensure consistent theming and make future design changes non-breaking.",
-          "level": "MUST",
+          "level": "must",
           "category": "development"
         }
       ]
@@ -454,7 +456,7 @@
     {
       "kind": "guidelines",
       "items": [
-        { "guidance": "Never override height below 36px.", "level": "MUST_NOT",
+        { "guidance": "Never override height below 36px.", "level": "must-not",
           "evidence": "9/10 agent test runs failed touch-target minimums." }
       ]
     }
@@ -558,7 +560,7 @@
 <ds-heading level="4" anchor="guideline-entry">Guideline entry</ds-heading>
 <ds-prop-table>
   <ds-prop name="guidance" type="&lt;ds-type-ref href=&quot;common-rich-text.html#richtext&quot;&gt;richText&lt;/ds-type-ref&gt;" required>The guidance statement. MUST be concrete and unambiguous. Avoid vague phrases like 'use sparingly' or 'when possible'.</ds-prop>
-  <ds-prop name="level" type="&lt;ds-type-ref href=&quot;common-criterion.html#conformancelevel&quot;&gt;conformanceLevel&lt;/ds-type-ref&gt;" required>How strictly the guideline should be followed, named for RFC 2119 requirement levels: 'MUST' (non-compliance is a defect), 'SHOULD' (follow in most cases; exceptions need justification), 'SHOULD_NOT' (avoid unless justified), 'MUST_NOT' (violations are defects). Agents treat MUST/MUST_NOT entries as hard limits when generating or reviewing code.</ds-prop>
+  <ds-prop name="level" type="&lt;ds-type-ref href=&quot;common-criterion.html#conformancelevel&quot;&gt;conformanceLevel&lt;/ds-type-ref&gt;" required>How strictly the guideline should be followed, named for RFC 2119 requirement levels: 'must' (non-compliance is a defect), 'should' (follow in most cases; exceptions need justification), 'should-not' (avoid unless justified), 'must-not' (violations are defects). Agents treat must/must-not entries as hard constraints when generating or reviewing code.</ds-prop>
   <ds-prop name="rationale" type="&lt;ds-type-ref href=&quot;common-rich-text.html#richtext&quot;&gt;richText&lt;/ds-type-ref&gt;">Why this guidance exists. Cite evidence, accessibility standards, or user research when available. MUST NOT restate the guidance.</ds-prop>
   <ds-prop name="evidence" type="string">Quantitative or empirical backing for this guideline: test run data, audit findings, issue references, or cited sources. Keeping evidence separate from rationale lets tools tell test-derived rules apart from conventional guidance. Example: '9/10 agent test runs failed touch-target minimums when height was overridden below 36px.'</ds-prop>
   <ds-prop name="category" type="string">The discipline this guideline belongs to. Used to group guidelines by concern. Standard values: 'visual-design' (color, typography, spacing, layout), 'interaction' (behavior, animation, transitions, gestures), 'accessibility' (inclusive design, assistive tech, WCAG), 'content' (text, imagery, tone, voice, labeling), 'motion' (animation timing, easing, reduced-motion), 'development' (implementation patterns, performance, code conventions). Custom values are allowed and SHOULD be lowercase kebab-case.</ds-prop>
@@ -568,8 +570,8 @@
   <ds-prop name="examples" type="&lt;ds-type-ref href=&quot;common-example.html#example&quot;&gt;example&lt;/ds-type-ref&gt;[]">Examples showing encouraged and discouraged approaches.</ds-prop>
   <ds-prop name="tags" type="string[]">Freeform keywords that relate guidelines across categories and disciplines (e.g., 'rtl', 'localization', 'validation', 'contrast').</ds-prop>
 </ds-prop-table>
-<p>The <ds-code inline>level</ds-code> field is named for RFC 2119 requirement levels. Agents treat <ds-code inline>MUST</ds-code>/<ds-code inline>MUST_NOT</ds-code> entries as hard limits when they write or review code. The <ds-code inline>evidence</ds-code> field carries the backing — test runs, audits — that sets data-driven rules apart from convention:</p>
-<ds-table><table><thead><tr><th>Value</th><th>Meaning</th></tr></thead><tbody><tr><td><ds-code inline>MUST</ds-code></td><td>Required — non-compliance is a defect.</td></tr><tr><td><ds-code inline>SHOULD</ds-code></td><td>Follow in most cases; exceptions require justification.</td></tr><tr><td><ds-code inline>SHOULD_NOT</ds-code></td><td>Avoid unless justified.</td></tr><tr><td><ds-code inline>MUST_NOT</ds-code></td><td>Prohibited — violations are defects.</td></tr></tbody></table></ds-table>
+<p>The <ds-code inline>level</ds-code> field is named for RFC 2119 requirement levels. Values are lowercase kebab-case; tools display them as uppercase badges. Agents treat <ds-code inline>must</ds-code>/<ds-code inline>must-not</ds-code> entries as hard limits when they write or review code. The <ds-code inline>evidence</ds-code> field carries the backing — test runs, audits — that sets data-driven rules apart from convention:</p>
+<ds-table><table><thead><tr><th>Value</th><th>Meaning</th></tr></thead><tbody><tr><td><ds-code inline>must</ds-code></td><td>Required — non-compliance is a defect.</td></tr><tr><td><ds-code inline>should</ds-code></td><td>Follow in most cases; exceptions require justification.</td></tr><tr><td><ds-code inline>should-not</ds-code></td><td>Avoid unless justified.</td></tr><tr><td><ds-code inline>must-not</ds-code></td><td>Prohibited — violations are defects.</td></tr></tbody></table></ds-table>
 <p>Two arrays make a guideline checkable. <ds-code inline>criteria</ds-code> holds <strong>testable success criteria</strong>. Each has a stable <ds-code inline>identifier</ds-code> and a <ds-code inline>statement</ds-code> you can verify. So tools and agents can run checks and report pass or fail per criterion. <ds-code inline>references</ds-code> cites the outside standards the rule meets, such as WCAG or platform guidelines. The same criterion model also appears on the <a href="#accessibility-accessibility"><ds-code inline>accessibility</ds-code></a> block. Criteria define the tests; results belong in <ds-code inline>evidence</ds-code>.</p>
 <ds-heading level="3" anchor="use-cases-usecases">Use cases (<ds-code inline>useCases</ds-code>)</ds-heading>
 <p>Documents what an entity is for — the scenarios where it is the right choice and where another fits better. These entries help the reader decide <em>whether</em> to reach for the entity before they use it.</p>
@@ -808,7 +810,7 @@
 <ds-prop-table>
   <ds-prop name="description" type="&lt;ds-type-ref href=&quot;common-rich-text.html#richtext&quot;&gt;richText&lt;/ds-type-ref&gt;" required>What happens during this step: the system's response, visual changes, state transitions, and user-facing feedback. CommonMark supported.</ds-prop>
   <ds-prop name="trigger" type="string">What starts this interaction step: a user action, system event, or condition (e.g., 'User submits the form by activating the submit button', 'API returns a 422 response'). When omitted, the step continues the previous step's flow without a new trigger.</ds-prop>
-  <ds-prop name="components" type="string[]">Names of the components involved in this step. Each name MUST match the <ds-code inline>name</ds-code> of a component documented elsewhere in the system. Creates a cross-reference between the pattern's interaction flow and individual component docs.</ds-prop>
+  <ds-prop name="components" type="&lt;ds-type-ref href=&quot;common-entity-ref.html#entityref&quot;&gt;entityRef&lt;/ds-type-ref&gt;[]">The entities involved in this step, as entity references. Each <ds-code inline>identifier</ds-code> MUST match a component documented in the system; the optional <ds-code inline>role</ds-code> says what the component does in this step. Creates a traversable cross-reference between the pattern's interaction flow and individual component docs.<br><small>Min items: 1</small></ds-prop>
   <ds-prop name="examples" type="&lt;ds-type-ref href=&quot;common-example.html#example&quot;&gt;example&lt;/ds-type-ref&gt;[]">Visual or interactive examples for this step: screenshots of the resulting state, screen recordings of the transition, or code snippets showing the implementation.</ds-prop>
 </ds-prop-table>
 <hr />
@@ -831,9 +833,9 @@
 <ds-prop-table>
   <ds-prop name="kind" type="string" required>The category of the linked resource or relationship. Standard external kinds: 'source', 'design', 'storybook', 'documentation', 'package', 'repository'. Standard relationship kinds: 'alternative', 'parent', 'child', 'related'. Standard artifact kinds (for internal references): 'component', 'token', 'token-group', 'foundation', 'pattern', 'theme'. Custom values are allowed and SHOULD match ^[a-z][a-z0-9-]*$.</ds-prop>
   <ds-prop name="url" type="string (uri)" conditional>The URL of the linked resource. MUST be a valid absolute URI. Required for external resource links. Optional for internal artifact references, where <ds-code inline>identifier</ds-code> names the artifact. When both <ds-code inline>url</ds-code> and <ds-code inline>identifier</ds-code> are present, <ds-code inline>url</ds-code> points to the artifact's docs page and <ds-code inline>identifier</ds-code> is the machine-readable cross-reference.</ds-prop>
-  <ds-prop name="identifier" type="string" conditional>The identifier of a linked DSDS artifact (e.g., 'button', 'form-field', 'color-text'). MUST match the <ds-code inline>identifier</ds-code> property of a documented DSDS artifact. Required for internal artifact references. Optional for external resource links. When present, tools SHOULD resolve this identifier against the artifact catalog to build navigable cross-references.</ds-prop>
+  <ds-prop name="identifier" type="&lt;ds-type-ref href=&quot;common-entity-ref.html#entityidentifier&quot;&gt;entityIdentifier&lt;/ds-type-ref&gt;" conditional>The identifier of a referenced DSDS entity. MUST match the <ds-code inline>identifier</ds-code> property of a documented entity — a link with an <ds-code inline>identifier</ds-code> is an entity reference and follows entityRef resolution rules. Required for internal entity references; optional for external resource links. When both <ds-code inline>url</ds-code> and <ds-code inline>identifier</ds-code> are present, <ds-code inline>url</ds-code> points to the entity's docs page and <ds-code inline>identifier</ds-code> is the machine-readable cross-reference.</ds-prop>
   <ds-prop name="label" type="string">Display text for this link — what a user sees when the link renders (e.g., 'React component source', 'Design file — variants', 'Button component'). Use it for the display name of the resource. To describe an internal artifact's role, use <ds-code inline>role</ds-code> instead.</ds-prop>
-  <ds-prop name="role" type="string">The role this artifact plays in the current entity (e.g., 'Primary action trigger', 'Error summary container', 'Provides semantic text color tokens'). Different from <ds-code inline>label</ds-code>, which is display text for the link itself. Use it on internal artifact references to explain *why* this artifact is linked. When omitted, the link is a general association.</ds-prop>
+  <ds-prop name="role" type="&lt;ds-type-ref href=&quot;common-entity-ref.html#entityrole&quot;&gt;entityRole&lt;/ds-type-ref&gt;">The role the referenced entity plays in the current entity (e.g., 'Primary action trigger', 'Provides semantic text color tokens'). Distinct from <ds-code inline>label</ds-code>, which is display text for the link itself. When omitted, the link is a general association.</ds-prop>
   <ds-prop name="required" type="boolean">Whether this linked artifact is required for the parent entity to work. Used on internal artifact references — for example, a form-validation pattern might mark 'form-field' as required and 'toast' as optional. Defaults to false. Not used on external resource links.<br><small>Default: <ds-code inline>false</ds-code></small></ds-prop>
 </ds-prop-table>
 <ds-heading level="3" anchor="standard-link-types">Standard link types</ds-heading>
@@ -944,7 +946,7 @@
 <p>Casing follows <strong>position and provenance</strong>:</p>
 <ul>
 <li><strong>Schema identifiers</strong> — <ds-code inline>$def</ds-code> type names and property names — are <strong>camelCase</strong> (<ds-code inline>tokenGroup</ds-code>, <ds-code inline>documentBlocks</ds-code>).</li>
-<li><strong>Enumerated string values</strong> are <strong>kebab-case</strong> (<ds-code inline>token-group</ds-code>, <ds-code inline>visual-design</ds-code>, <ds-code inline>recommended</ds-code>). Values taken from an outside standard keep that standard's casing: RFC 2119 levels (<ds-code inline>MUST</ds-code>, <ds-code inline>SHOULD</ds-code>, <ds-code inline>SHOULD_NOT</ds-code>, <ds-code inline>MUST_NOT</ds-code>) and WCAG levels (<ds-code inline>A</ds-code>, <ds-code inline>AA</ds-code>, <ds-code inline>AAA</ds-code>).</li>
+<li><strong>Enumerated string values</strong> are <strong>kebab-case</strong> (<ds-code inline>token-group</ds-code>, <ds-code inline>visual-design</ds-code>, <ds-code inline>recommended</ds-code>). Values quote an outside standard's casing only when the token has no natural lowercase form: WCAG levels (<ds-code inline>A</ds-code>, <ds-code inline>AA</ds-code>, <ds-code inline>AAA</ds-code>). RFC 2119 levels are DSDS-native data and follow kebab-case (<ds-code inline>must</ds-code>, <ds-code inline>must-not</ds-code>); the capitalized keywords belong to prose.</li>
 <li>Keys beginning with <ds-code inline>$</ds-code> (<ds-code inline>$schema</ds-code>, <ds-code inline>$ref</ds-code>, <ds-code inline>$extensions</ds-code>) are reserved.</li>
 </ul>
 <p>So one concept can appear in several forms — the <ds-code inline>token-group</ds-code> kind and the <ds-code inline>tokenGroup</ds-code> type — because each follows its position's rule.</p>
@@ -976,7 +978,7 @@
         <ds-back-to-top></ds-back-to-top>
 
         <ds-footer>
-          <p>Design System Documentation Spec (DSDS) 0.8.0 — Draft Specification</p>
+          <p>Design System Documentation Spec (DSDS) 0.9.0 — Draft Specification</p>
           <p><a href="https://github.com/somerandomdude/design-system-documentation-schema">GitHub</a></p>
         </ds-footer>
       </div>

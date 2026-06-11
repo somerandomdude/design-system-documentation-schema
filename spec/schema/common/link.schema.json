@@ -1,14 +1,27 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://designsystemdocspec.org/v0.8.0/common/link.schema.json",
+  "$id": "https://designsystemdocspec.org/v0.9.0/common/link.schema.json",
   "title": "DSDS Link Definition",
   "description": "A typed pointer to an external resource, a related artifact, or another DSDS entity. Used across every DSDS document type for source code, design files, docs, packages, artifact relationships, and internal cross-references. Every link needs a `kind`, plus at least one of `url` (for external resources) or `identifier` (for internal DSDS artifacts). Both may appear together when an internal artifact also has a public URL.",
   "$defs": {
     "link": {
       "type": "object",
       "description": "A typed pointer to an external resource or another DSDS artifact. A link can point to an external resource (source code, design files, docs, packages). It can name another DSDS artifact by identifier. It can do both when an internal artifact also has a public URL. The `kind` property sorts the reference. Standard external kinds: 'source', 'design', 'storybook', 'documentation', 'package', 'repository'. Standard relationship kinds: 'alternative', 'parent', 'child', 'related'. Standard artifact kinds (for internal references): 'component', 'token', 'token-group', 'foundation', 'pattern', 'theme'. Custom values are allowed.",
-      "required": ["kind"],
-      "anyOf": [{ "required": ["url"] }, { "required": ["identifier"] }],
+      "required": [
+        "kind"
+      ],
+      "anyOf": [
+        {
+          "required": [
+            "url"
+          ]
+        },
+        {
+          "required": [
+            "identifier"
+          ]
+        }
+      ],
       "properties": {
         "kind": {
           "type": "string",
@@ -20,16 +33,16 @@
           "description": "The URL of the linked resource. MUST be a valid absolute URI. Required for external resource links. Optional for internal artifact references, where `identifier` names the artifact. When both `url` and `identifier` are present, `url` points to the artifact's docs page and `identifier` is the machine-readable cross-reference."
         },
         "identifier": {
-          "type": "string",
-          "description": "The identifier of a linked DSDS artifact (e.g., 'button', 'form-field', 'color-text'). MUST match the `identifier` property of a documented DSDS artifact. Required for internal artifact references. Optional for external resource links. When present, tools SHOULD resolve this identifier against the artifact catalog to build navigable cross-references."
+          "$ref": "entity-ref.schema.json#/$defs/entityIdentifier",
+          "description": "The identifier of a referenced DSDS entity. MUST match the `identifier` property of a documented entity — a link with an `identifier` is an entity reference and follows entityRef resolution rules. Required for internal entity references; optional for external resource links. When both `url` and `identifier` are present, `url` points to the entity's docs page and `identifier` is the machine-readable cross-reference."
         },
         "label": {
           "type": "string",
           "description": "Display text for this link — what a user sees when the link renders (e.g., 'React component source', 'Design file — variants', 'Button component'). Use it for the display name of the resource. To describe an internal artifact's role, use `role` instead."
         },
         "role": {
-          "type": "string",
-          "description": "The role this artifact plays in the current entity (e.g., 'Primary action trigger', 'Error summary container', 'Provides semantic text color tokens'). Different from `label`, which is display text for the link itself. Use it on internal artifact references to explain *why* this artifact is linked. When omitted, the link is a general association."
+          "$ref": "entity-ref.schema.json#/$defs/entityRole",
+          "description": "The role the referenced entity plays in the current entity (e.g., 'Primary action trigger', 'Provides semantic text color tokens'). Distinct from `label`, which is display text for the link itself. When omitted, the link is a general association."
         },
         "required": {
           "type": "boolean",

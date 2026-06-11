@@ -187,14 +187,14 @@ Each guideline pairs a `guidance` statement with a `rationale` and an RFC 2119 `
     {
       "guidance": "Limit each surface to one primary button.",
       "rationale": "Multiple primary buttons dilute visual hierarchy.",
-      "level": "MUST",
+      "level": "must",
       "category": "visual-design"
     }
   ]
 }
 ```
 
-The `level` field is named for RFC 2119: <ds-badge>MUST</ds-badge>, <ds-badge>SHOULD</ds-badge>, <ds-badge>SHOULD_NOT</ds-badge>, <ds-badge>MUST_NOT</ds-badge>. Agents treat `MUST`/`MUST_NOT` as hard limits. Optional `evidence` records the backing, and `criteria` define testable success conditions that checks can run against.
+The `level` field is named for RFC 2119. Its values are lowercase kebab-case like every DSDS vocabulary — `"must"`, `"should"`, `"should-not"`, `"must-not"` — and tools display them as badges: <ds-badge>MUST</ds-badge>, <ds-badge>SHOULD</ds-badge>, <ds-badge>SHOULD NOT</ds-badge>, <ds-badge>MUST NOT</ds-badge>. Agents treat must/must-not entries as hard limits. Optional `evidence` records the backing, and `criteria` define testable success conditions that checks can run against.
 
 ### Criteria: how to verify it
 
@@ -214,7 +214,7 @@ When `verification` is omitted, tools must not assume the criterion is automatab
 {
   "identifier": "icon-button-name-present",
   "statement": "Every icon-only button exposes a non-empty accessible name.",
-  "level": "MUST",
+  "level": "must",
   "verification": "automated",
   "check": { "scheme": "axe-core", "rule": "button-name" },
   "examples": [
@@ -233,6 +233,29 @@ When `verification` is omitted, tools must not assume the criterion is automatab
 ```
 
 The `statement` is always the source of truth. The `check` is its executable shadow — execution semantics belong to the named tool, not to DSDS.
+
+---
+
+## Conventions and traps
+
+Four conventions catch most first-time authors. Knowing them up front saves a validation round-trip.
+
+**`status` has exactly two shapes.** A bare string, or an object with `overall`. There is no `value` property:
+
+```json
+"status": "stable"
+"status": { "overall": "stable", "platforms": { "react": { "status": "stable" } } }
+```
+
+**It's always `identifier`, never `name`, for machine keys.** API properties, anatomy parts, criteria, variants — the machine-readable key is `identifier` everywhere. `name` is only ever a display name.
+
+**`tokens` is a purpose-keyed map, not an array.** Keys say what the token controls; values name the token:
+
+```json
+"tokens": { "text-color": "color-button-fg", "background": "color-button-bg" }
+```
+
+**Flag vs. enum variants.** A boolean on/off dimension is a `flag` variant. A set of named options is an `enum` variant — and a single-entry enum is valid (dimensions often ship one value at a time).
 
 ---
 

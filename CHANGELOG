@@ -4,6 +4,37 @@ All notable changes to the DSDS specification are documented in this file.
 
 ---
 
+## [0.9.0] — 2026-06-11
+
+Predictability release, batch 2 of 2 — the reference unification and the casing fix, both breaking. Design record: `proposals/predictability.md`. Schema files are served at `https://designsystemdocspec.org/v0.9.0/...`.
+
+### Breaking changes
+
+#### 1. Conformance levels are lowercase kebab-case
+
+`level` values are `must`, `must-not`, `should`, `should-not` — like every DSDS-native vocabulary. The RFC 2119 keywords stay capitalized in prose, where capitalization carries conformance weight (enforced by DSDS-009); data tokens are not prose. Uppercase enum values are now reserved for external tokens with no natural lowercase form (WCAG `A`/`AA`/`AAA`).
+
+**Migration.** `node scripts/migrate-to-0.9.js <files>` — a four-entry lookup.
+
+#### 2. Interaction `components` are entity references
+
+`interactionEntry.components` entries are `{ "identifier": …, "role"?: … }` objects, not bare name strings. References resolve by `identifier` (stable) instead of `name` (display text), making a pattern's component relationships traversable and verifiable — a semantic check now rejects references that resolve to no documented entity (skipped for documents with unresolved `$ref`s, where the catalog is incomplete).
+
+**Migration.** The same codemod converts strings: identifier matches pass through, display-name matches swap to the entity's identifier, and anything unresolvable is converted verbatim and reported for a human decision.
+
+### Additions
+
+- **`entityRef`** (`common/entity-ref.schema.json`) — the one way to point at another entity: required `identifier`, optional `role`. Its leaf definitions (`entityIdentifier`, `entityRole`) are shared with `link`, whose identifier-bearing form follows the same resolution rules; URL-only links are why link composes the leaves rather than the object.
+- **Optional `name` on tokens and token groups.** When present it is the display name; when absent the identifier serves, as before. The display rule is now uniform for every entity: `name` when present, otherwise `identifier` — no more special-casing two kinds.
+- `scripts/migrate-to-0.9.js` — the codemod for both breaking changes.
+- **Single-value enums are valid.** `enumVariant.values` accepts one entry (`minItems` 2 → 1) — real systems carry single-value dimensions mid-migration.
+- **Non-token scale steps are valid.** A `scaleStep` requires `token` *or* `value`, no longer `token` alone — pre-tokenization systems and non-token scales (column counts, icon grids) no longer have to fabricate token identifiers.
+- **Convention-trap errors.** The validator now answers the two most common shape mistakes directly: a `status` object with no `overall` ("status is a bare string or an object with `overall`"), and `anatomyEntry.tokens` written as an array ("a purpose-keyed map, not an array — keys say what the token controls"). `anatomyEntry.tokens` also carries an inline example in the schema.
+- **Quickstart: "Conventions and traps"** — the four conventions that catch first-time authors (status shapes, identifier-never-name, the tokens map, flag vs. enum variants).
+- New lint rule **DSDS-009**: RFC 2119 keywords in `guidance` and criterion `statement` prose must be capitalized to carry conformance weight.
+
+---
+
 ## [0.8.0] — 2026-06-10
 
 Conformance release. Criteria gain a conformance `level`, a `verification` mode, a machine-dispatchable `check`, and self-verifying fixtures with declared outcomes — a Spectrum-style layered model where the schema carries the test definitions and named tools carry execution. Schema files are served at `https://designsystemdocspec.org/v0.8.0/...`. Design and verification record: `proposals/criterion-conformance.md`.

@@ -160,7 +160,31 @@ function eachGuidelineItem(entity, pointer, fn) {
   }
 }
 
+// Lowercase RFC 2119 keywords in normative prose (DSDS-009). Case-sensitive
+// match: flags "must"/"should" (with optional "not") only when lowercase.
+// `may` is excluded — too common as ordinary English.
+const LOWERCASE_RFC_REGEX = /(?<![A-Za-z])(must|should)(?: not)?(?![A-Za-z])/g;
+
 const IMPLEMENTATIONS = {
+  "rfc-keywords-lowercase-in-normative-prose": (entity, pointer, emit) => {
+    const flag = (text, p, fieldName) => {
+      if (typeof text !== "string") return;
+      const hits = text.match(LOWERCASE_RFC_REGEX);
+      if (hits) {
+        emit(
+          p,
+          `${fieldName} in ${entityLabel(entity)} uses lowercase '${hits[0]}' — capitalize RFC 2119 keywords in normative prose (${hits[0].toUpperCase()}) so the conformance weight is explicit.`,
+        );
+      }
+    };
+    eachGuidelineItem(entity, pointer, (item, p) => {
+      flag(item.guidance, p, "guidance");
+    });
+    eachCriterion(entity, pointer, (criterion, p) => {
+      if (criterion) flag(criterion.statement, p, "statement");
+    });
+  },
+
   "guideline-rationale-restates-guidance": (entity, pointer, emit) => {
     eachGuidelineItem(entity, pointer, (item, p) => {
       if (!item.rationale || !item.guidance) return;
