@@ -537,6 +537,7 @@ const ENTITY_KIND_SET = new Set([
   "theme",
   "token",
   "token-group",
+  "blueprint",
 ]);
 
 /** Collect every entity identifier in the document (including nested token children). */

@@ -1,0 +1,64 @@
+{
+  "blueprint": {
+    "kind": "blueprint",
+    "identifier": "confirmation-dialog",
+    "name": "Confirmation dialog",
+    "description": "A modal that asks the user to confirm or cancel a destructive action before it runs. Composes Dialog, Stack, Text, and Button to present a clear question and two explicit choices.",
+    "metadata": {
+      "status": "stable",
+      "tags": ["modal", "confirm", "destructive", "dialog"],
+      "links": [
+        {
+          "kind": "component",
+          "identifier": "dialog",
+          "role": "Hosts the confirmation in a modal surface",
+          "required": true
+        },
+        {
+          "kind": "component",
+          "identifier": "button",
+          "role": "Renders the confirm and cancel actions",
+          "required": true
+        }
+      ]
+    },
+    "code": {
+      "language": "tsx",
+      "code": "<Dialog id=\"confirm-delete\" header=\"Delete project?\" onClose={onCancel} width={1}>\n  <Box padding={4}>\n    <Stack space={4}>\n      <Text>This permanently deletes the project and all of its content. This action cannot be undone.</Text>\n      <Flex gap={2} justify=\"flex-end\">\n        <Button text=\"Cancel\" mode=\"bleed\" onClick={onCancel} />\n        <Button text=\"Delete\" tone=\"critical\" onClick={onConfirm} />\n      </Flex>\n    </Stack>\n  </Box>\n</Dialog>"
+    },
+    "useCases": [
+      {
+        "description": "Guard a destructive or irreversible action — deleting, archiving, or overwriting — so the user confirms intent before it runs.",
+        "stance": "recommended"
+      },
+      {
+        "description": "Confirm low-stakes, easily reversible actions where an undo affordance would serve the user better.",
+        "stance": "discouraged",
+        "alternative": {
+          "identifier": "toast",
+          "rationale": "A toast with an undo action keeps reversible flows fast and avoids interrupting the user with a modal."
+        }
+      }
+    ],
+    "guidelines": [
+      {
+        "guidance": "Label the confirm button with the action it performs (e.g. 'Delete') rather than a generic 'OK'.",
+        "rationale": "An action-specific label tells the user what will happen, reducing accidental confirmations.",
+        "level": "should",
+        "category": "content"
+      },
+      {
+        "guidance": "Give the destructive confirm button the 'critical' tone and keep the cancel action visually quieter.",
+        "rationale": "Tone and weight signal the consequence and steer the user toward the safe default.",
+        "level": "should",
+        "category": "visual-design"
+      },
+      {
+        "guidance": "Move focus into the dialog on open and return it to the trigger on close.",
+        "rationale": "Keyboard and screen reader users lose their place when focus is not managed across the modal lifecycle.",
+        "level": "must",
+        "category": "accessibility"
+      }
+    ]
+  }
+}

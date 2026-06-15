@@ -3,13 +3,13 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Schema Architecture — DSDS 0.10.1</title>
+  <title>Schema Architecture — DSDS 0.10.2</title>
   <meta name="description" content="The full DSDS schema reference — document structure, entity properties, document block types, and all shared models.">
   <link rel="canonical" href="https://designsystemdocspec.org/schema-architecture">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Design System Documentation Spec">
-  <meta property="og:title" content="Schema Architecture — DSDS 0.10.1">
+  <meta property="og:title" content="Schema Architecture — DSDS 0.10.2">
   <meta property="og:description" content="The full DSDS schema reference — document structure, entity properties, document block types, and all shared models.">
   <meta property="og:url" content="https://designsystemdocspec.org/schema-architecture">
   <meta name="twitter:card" content="summary">
@@ -20,7 +20,7 @@
 <body>
   <a class="skip-link" href="#main-content">Skip to content</a>
   <ds-nav-toggle target="ds-spec-nav"></ds-nav-toggle>
-  <ds-spec-nav title="Design System Documentation Spec 0.10.1" title-href="index.html" active="schema-architecture">
+  <ds-spec-nav title="Design System Documentation Spec 0.10.2" title-href="index.html" active="schema-architecture">
     <a href="index.html" slug="index">Overview</a>
     <a href="quickstart.html" slug="quickstart">Quick start</a>
     <a href="schema-architecture.html" slug="schema-architecture">Schema architecture</a>
@@ -42,6 +42,7 @@
       <a href="common-use-cases.html" slug="common-use-cases">use-cases</a>
     </ds-nav-group>
     <ds-nav-group label="Entities">
+      <a href="entities-blueprint.html" slug="entities-blueprint">blueprint</a>
       <a href="entities-component.html" slug="entities-component">component</a>
       <a href="entities-foundation.html" slug="entities-foundation">foundation</a>
       <a href="entities-guide.html" slug="entities-guide">guide</a>
@@ -99,7 +100,7 @@
 </ul>
 <p>A complete, valid document using only the core:</p>
 <ds-code language="json">{
-  "dsdsVersion": "0.10.1",
+  "dsdsVersion": "0.10.2",
   "entity": {
     "kind": "component",
     "identifier": "button",
@@ -178,6 +179,7 @@
 │   ├── steps.schema.json                       # stepEntry, steps
 │   └── variants.schema.json                    # variantValue, flagVariant, enumVariant, variants
 └── entities/
+    ├── blueprint.schema.json                   # blueprint
     ├── component.schema.json                   # component
     ├── foundation.schema.json                  # foundation
     ├── guide.schema.json                       # guide
@@ -189,13 +191,13 @@
 <p>A DSDS file is a JSON object. It needs a <ds-code inline>dsdsVersion</ds-code>. It also needs one of two shapes: an <ds-code inline>entityGroups</ds-code> array for many entities, or an <ds-code inline>entity</ds-code> object for a single one. Every valid file uses one or the other.</p>
 <ds-heading level="3" anchor="root-properties">Root properties</ds-heading>
 <ds-prop-table>
-  <ds-prop name="dsdsVersion" type="&lt;ds-code inline&gt;&quot;0.10.1&quot;&lt;/ds-code&gt;" required>The DSDS spec version this document conforms to.</ds-prop>
+  <ds-prop name="dsdsVersion" type="&lt;ds-code inline&gt;&quot;0.10.2&quot;&lt;/ds-code&gt;" required>The DSDS spec version this document conforms to.</ds-prop>
   <ds-prop name="$schema" type="string">URI reference to the DSDS JSON Schema for validation.</ds-prop>
   <ds-prop name="systemInfo" type="&lt;ds-type-ref href=&quot;common-system-info.html#systeminfo&quot;&gt;systemInfo&lt;/ds-type-ref&gt;"></ds-prop>
   <ds-prop name="extends" type="&lt;ds-type-ref href=&quot;common-extends.html#documentextends&quot;&gt;documentExtends&lt;/ds-type-ref&gt;">Declares that this DSDS document inherits from another DSDS document — usually a core design system. The base document provides the core entities. This document layers on top, adding or extending entities. It supports systems-of-systems architectures, where product- or brand-specific systems inherit from a shared core.</ds-prop>
   <ds-prop name="documentBlocks" type="&lt;ds-type-ref href=&quot;document-blocks-document-blocks.html#generaldocumentblock&quot;&gt;generalDocumentBlock&lt;/ds-type-ref&gt;[]">System-level structured documentation for the design system as a whole — its purpose (when to adopt the system), cross-cutting guidelines, and narrative overviews. Each entry is a general document block: a <ds-code inline>useCases</ds-code>, <ds-code inline>guidelines</ds-code>, <ds-code inline>sections</ds-code>, <ds-code inline>accessibility</ds-code>, or <ds-code inline>content</ds-code> block. This is the same <ds-code inline>documentBlocks</ds-code> mechanism entities use, scoped to the system rather than a single artifact. Position signals the scope (root vs. inside an entity).</ds-prop>
-  <ds-prop name="entityGroups" type="&lt;ds-type-ref href=&quot;root.html#entitygroup&quot;&gt;entityGroup&lt;/ds-type-ref&gt; | &lt;ds-type-ref href=&quot;root.html#fileref&quot;&gt;fileRef&lt;/ds-type-ref&gt;[]">One or more entity groups. Each group is a named collection with a single <ds-code inline>entities</ds-code> array. That array holds any mix of entity types — components, tokens, token groups, themes, foundations, patterns, and guides — in display order. Each entity's <ds-code inline>kind</ds-code> identifies its type. Multiple groups let one DSDS file organize entities into logical sections (e.g., one group for foundations, another for components). Groups may be inlined or referenced through a $ref object that points to another DSDS file.<br><small>Min items: 1</small></ds-prop>
-  <ds-prop name="entity" type="&lt;ds-type-ref href=&quot;root.html#anyentity&quot;&gt;anyEntity&lt;/ds-type-ref&gt;">A single entity document — one component, token, token group, theme, foundation, pattern, or guide. Use this instead of <ds-code inline>entityGroups</ds-code> when each entity lives in its own file. The <ds-code inline>kind</ds-code> field on the entity identifies its type.</ds-prop>
+  <ds-prop name="entityGroups" type="&lt;ds-type-ref href=&quot;root.html#entitygroup&quot;&gt;entityGroup&lt;/ds-type-ref&gt; | &lt;ds-type-ref href=&quot;root.html#fileref&quot;&gt;fileRef&lt;/ds-type-ref&gt;[]">One or more entity groups. Each group is a named collection with a single <ds-code inline>entities</ds-code> array. That array holds any mix of entity types — components, tokens, token groups, themes, foundations, patterns, guides, and blueprints — in display order. Each entity's <ds-code inline>kind</ds-code> identifies its type. Multiple groups let one DSDS file organize entities into logical sections (e.g., one group for foundations, another for components). Groups may be inlined or referenced through a $ref object that points to another DSDS file.<br><small>Min items: 1</small></ds-prop>
+  <ds-prop name="entity" type="&lt;ds-type-ref href=&quot;root.html#anyentity&quot;&gt;anyEntity&lt;/ds-type-ref&gt;">A single entity document — one component, token, token group, theme, foundation, pattern, guide, or blueprint. Use this instead of <ds-code inline>entityGroups</ds-code> when each entity lives in its own file. The <ds-code inline>kind</ds-code> field on the entity identifies its type.</ds-prop>
   <ds-prop name="$extensions" type="&lt;ds-type-ref href=&quot;common-extensions.html#extensions&quot;&gt;extensions&lt;/ds-type-ref&gt;"></ds-prop>
 </ds-prop-table>
 <ds-heading level="3" anchor="entity-groups">Entity groups</ds-heading>
@@ -204,14 +206,14 @@
 <ds-prop-table>
   <ds-prop name="name" type="string" required>Human-readable name of the collection (e.g., 'Acme Design System', 'Color Tokens', 'Button Documentation'). This is already a display label — it does NOT have an <ds-code inline>identifier</ds-code> counterpart and need not match a slug pattern.</ds-prop>
   <ds-prop name="description" type="&lt;ds-type-ref href=&quot;common-rich-text.html#richtext&quot;&gt;richText&lt;/ds-type-ref&gt;"></ds-prop>
-  <ds-prop name="entities" type="&lt;ds-type-ref href=&quot;root.html#anyentity&quot;&gt;anyEntity&lt;/ds-type-ref&gt; | &lt;ds-type-ref href=&quot;root.html#fileref&quot;&gt;fileRef&lt;/ds-type-ref&gt;[]">The entities in this group, in display order. Any mix of entity kinds — components, tokens, token groups, themes, foundations, patterns, and guides. Each item's <ds-code inline>kind</ds-code> identifies its type. Items may be inlined or referenced through a $ref object that points to another DSDS file. Order is significant: tools SHOULD keep it for display.<br><small>Min items: 1</small></ds-prop>
+  <ds-prop name="entities" type="&lt;ds-type-ref href=&quot;root.html#anyentity&quot;&gt;anyEntity&lt;/ds-type-ref&gt; | &lt;ds-type-ref href=&quot;root.html#fileref&quot;&gt;fileRef&lt;/ds-type-ref&gt;[]">The entities in this group, in display order. Any mix of entity kinds — components, tokens, token groups, themes, foundations, patterns, guides, and blueprints. Each item's <ds-code inline>kind</ds-code> identifies its type. Items may be inlined or referenced through a $ref object that points to another DSDS file. Order is significant: tools SHOULD keep it for display.<br><small>Min items: 1</small></ds-prop>
   <ds-prop name="$extensions" type="&lt;ds-type-ref href=&quot;common-extensions.html#extensions&quot;&gt;extensions&lt;/ds-type-ref&gt;"></ds-prop>
 </ds-prop-table>
 <ds-heading level="3" anchor="single-entity-documents">Single-entity documents</ds-heading>
 <p>When each entity lives in its own file, use the <ds-code inline>entity</ds-code> property instead of <ds-code inline>entityGroups</ds-code>. The <ds-code inline>kind</ds-code> field on the entity identifies its type.</p>
 <ds-code language="json">{
-  "$schema": "https://designsystemdocspec.org/v0.10.1/dsds.bundled.schema.json",
-  "dsdsVersion": "0.10.1",
+  "$schema": "https://designsystemdocspec.org/v0.10.2/dsds.bundled.schema.json",
+  "dsdsVersion": "0.10.2",
   "entity": {
     "kind": "component",
     "identifier": "button",
@@ -224,13 +226,13 @@
   }
 }
 </ds-code>
-<p>Valid <ds-code inline>kind</ds-code> values for <ds-code inline>entity</ds-code>: <ds-code inline>"component"</ds-code>, <ds-code inline>"token"</ds-code>, <ds-code inline>"token-group"</ds-code>, <ds-code inline>"theme"</ds-code>, <ds-code inline>"foundation"</ds-code>, <ds-code inline>"pattern"</ds-code>.</p>
+<p>Valid <ds-code inline>kind</ds-code> values for <ds-code inline>entity</ds-code>: <ds-code inline>"component"</ds-code>, <ds-code inline>"token"</ds-code>, <ds-code inline>"token-group"</ds-code>, <ds-code inline>"theme"</ds-code>, <ds-code inline>"foundation"</ds-code>, <ds-code inline>"pattern"</ds-code>, <ds-code inline>"guide"</ds-code>, <ds-code inline>"blueprint"</ds-code>.</p>
 <ds-heading level="3" anchor="multi-file-documents">Multi-file documents</ds-heading>
 <p>Entity arrays take <ds-code inline>$ref</ds-code> objects next to inline entities. This lets a large system split its docs across files. One manifest then ties those files together.</p>
 <p>Each <ds-code inline>$ref</ds-code> object has one property: <ds-code inline>$ref</ds-code>. Its value is a path to a DSDS file. You can add a JSON Pointer fragment to target one value inside that file.</p>
 <p><strong>Individual entity file</strong> (<ds-code inline>button.dsds.json</ds-code>):</p>
 <ds-code language="json">{
-  "dsdsVersion": "0.10.1",
+  "dsdsVersion": "0.10.2",
   "entity": {
     "kind": "component",
     "identifier": "button",
@@ -241,7 +243,7 @@
 </ds-code>
 <p><strong>Manifest file</strong> (<ds-code inline>index.dsds.json</ds-code>):</p>
 <ds-code language="json">{
-  "dsdsVersion": "0.10.1",
+  "dsdsVersion": "0.10.2",
   "entityGroups": [
     {
       "name": "Acme Design System",
@@ -278,7 +280,8 @@
 <tr><td><ds-code inline>&quot;theme&quot;</ds-code></td><td>A named context that adapts the design system's token values.</td><td><ds-type-ref href="entities-theme.html"><ds-code inline>entities/theme.schema.json</ds-code></ds-type-ref></td></tr>
 <tr><td><ds-code inline>&quot;token&quot;</ds-code></td><td>Docs for a single design token: identifier, type, use cases, guidelines, and accessibility notes.</td><td><ds-type-ref href="entities-token.html"><ds-code inline>entities/token.schema.json</ds-code></ds-type-ref></td></tr>
 <tr><td><ds-code inline>&quot;token-group&quot;</ds-code></td><td>A group of related design tokens.</td><td><ds-type-ref href="entities-token.html"><ds-code inline>entities/token.schema.json</ds-code></ds-type-ref></td></tr>
-<tr><td><ds-code inline>&quot;guide&quot;</ds-code></td><td>A long-form, reading-oriented document: a getting-started walkthrough, a contribution guide, a tutorial, a conceptual overview, a migration guide, or any narrative guidance the system needs.</td><td><ds-type-ref href="entities-guide.html"><ds-code inline>entities/guide.schema.json</ds-code></ds-type-ref></td></tr></tbody>
+<tr><td><ds-code inline>&quot;guide&quot;</ds-code></td><td>A long-form, reading-oriented document: a getting-started walkthrough, a contribution guide, a tutorial, a conceptual overview, a migration guide, or any narrative guidance the system needs.</td><td><ds-type-ref href="entities-guide.html"><ds-code inline>entities/guide.schema.json</ds-code></ds-type-ref></td></tr>
+<tr><td><ds-code inline>&quot;blueprint&quot;</ds-code></td><td>A pre-composed block of code that captures a design system pattern.</td><td><ds-type-ref href="entities-blueprint.html"><ds-code inline>entities/blueprint.schema.json</ds-code></ds-type-ref></td></tr></tbody>
 </table>
 </ds-table>
 <ds-code language="json">{
@@ -435,6 +438,22 @@
 <p>A long-form, reading-oriented document — a getting-started walkthrough, contribution guide, tutorial, overview, or migration guide. Other entities each document one artifact: a component, token, foundation, or pattern. A guide fills the gap they leave. It documents a <em>journey</em> or a <em>concept</em> rather than one thing. Accepts the <strong>guide-scoped</strong> <ds-code inline>steps</ds-code> block, the <ds-code inline>imports</ds-code> block, and all general document block types — including the free-form <ds-code inline>sections</ds-code> block that forms its backbone.</p>
 <p>Required properties: <ds-code inline>kind</ds-code>, <ds-code inline>identifier</ds-code>, <ds-code inline>name</ds-code>. (<ds-code inline>description</ds-code> is an optional top-level property; <ds-code inline>status</ds-code> is an optional <ds-code inline>metadata</ds-code> field.)</p>
 <p>The <ds-code inline>category</ds-code> metadata field names the <em>kind</em> of guide — getting-started, contribution, tutorial, concept, or migration. This keeps the entity open to any kind of guidance.</p>
+<ds-heading level="3" anchor="blueprint">Blueprint</ds-heading>
+<p>A pre-composed block of code that captures a design system pattern — a copy-paste starting point built from the system's components. Blueprints sit at the same level as components. Where a component documents one building block, a blueprint documents a composition of them, captured as code. The blueprint is intentionally simple: it does not use <ds-code inline>documentBlocks</ds-code>.</p>
+<p>Required properties: <ds-code inline>kind</ds-code>, <ds-code inline>identifier</ds-code>, <ds-code inline>name</ds-code>, <ds-code inline>code</ds-code>.</p>
+<p>More properties:</p>
+<ds-prop-table>
+  <ds-prop name="kind" type="&lt;ds-code inline&gt;&quot;blueprint&quot;&lt;/ds-code&gt;" required>Identifies this entity as a blueprint.</ds-prop>
+  <ds-prop name="identifier" type="string" required>Machine-readable identifier for the blueprint (e.g., 'search-bar', 'settings-form', 'confirmation-dialog'). MUST be lowercase kebab-case and unique within its entity group.<br><small>Pattern: <ds-code inline>^[a-z][a-z0-9-]*$</ds-code></small></ds-prop>
+  <ds-prop name="name" type="string" required>Display name shown in docs (e.g., 'Search bar', 'Settings form', 'Confirmation dialog').</ds-prop>
+  <ds-prop name="code" type="object {code, language}" required>The pre-composed block of code consumers copy to use the blueprint. Holds the source itself (<ds-code inline>code</ds-code>) and the language or syntax it is written in (<ds-code inline>language</ds-code>).</ds-prop>
+  <ds-prop name="description" type="&lt;ds-type-ref href=&quot;common-rich-text.html#richtext&quot;&gt;richText&lt;/ds-type-ref&gt;">What this blueprint is, the pattern it captures, and which components it composes. CommonMark supported.</ds-prop>
+  <ds-prop name="guidelines" type="&lt;ds-type-ref href=&quot;document-blocks-guidelines.html#guidelineentry&quot;&gt;guidelineEntry&lt;/ds-type-ref&gt;[]">Actionable rules for using and adapting the blueprint. Each item pairs a guidance statement with a rationale and an RFC 2119 enforcement level. Reuses the shared guideline-entry shape so blueprint rules read the same as guidelines elsewhere in the system.<br><small>Min items: 1</small></ds-prop>
+  <ds-prop name="useCases" type="&lt;ds-type-ref href=&quot;common-use-cases.html#usecase&quot;&gt;useCase&lt;/ds-type-ref&gt;[]">Scenario-driven use cases describing when this blueprint is — or is not — the right choice. Each entry is marked 'recommended' or 'discouraged'. Reuses the shared use-case shape. Authors SHOULD lead with recommended scenarios.<br><small>Min items: 1</small></ds-prop>
+  <ds-prop name="metadata" type="&lt;ds-type-ref href=&quot;metadata-metadata.html#entitymetadata&quot;&gt;entityMetadata&lt;/ds-type-ref&gt;">Optional metadata fields, keyed by name: status, since, lastUpdated, category, tags, aliases, summary, thumbnail, preview, extends, and links. Use the <ds-code inline>links</ds-code> field to point at the components this blueprint composes.</ds-prop>
+  <ds-prop name="$extensions" type="&lt;ds-type-ref href=&quot;common-extensions.html#extensions&quot;&gt;extensions&lt;/ds-type-ref&gt;"></ds-prop>
+</ds-prop-table>
+<p>The <ds-code inline>code</ds-code> object holds the source (<ds-code inline>code</ds-code>) and its <ds-code inline>language</ds-code>. The flat <ds-code inline>guidelines</ds-code> array reuses the shared guideline-entry shape (guidance, rationale, level), and the <ds-code inline>useCases</ds-code> array reuses the shared use-case shape (description, stance). A blueprint points to the components it composes through the <ds-code inline>links</ds-code> metadata field (with <ds-code inline>kind: "component"</ds-code>, <ds-code inline>identifier</ds-code>, and <ds-code inline>role</ds-code>).</p>
 <hr />
 <ds-heading level="2" anchor="agent-document-blocks">Agent document blocks</ds-heading>
 <p>The optional <ds-code inline>agentDocumentBlocks</ds-code> property is a <strong>separate space for agent-only docs</strong>. It lives on entities, next to <ds-code inline>documentBlocks</ds-code>. It accepts the same block kinds — guidelines, useCases, sections, and the rest of the entity's scoped union. Only the audience differs. Tools MUST NOT render these blocks for humans. Agents SHOULD read both arrays: human blocks first, then these.</p>
@@ -983,7 +1002,7 @@
         <ds-back-to-top></ds-back-to-top>
 
         <ds-footer>
-          <p>Design System Documentation Spec (DSDS) 0.10.1 — Draft Specification</p>
+          <p>Design System Documentation Spec (DSDS) 0.10.2 — Draft Specification</p>
           <p><a href="https://github.com/somerandomdude/design-system-documentation-schema">GitHub</a></p>
         </ds-footer>
       </div>
