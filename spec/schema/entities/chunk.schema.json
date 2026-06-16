@@ -1,0 +1,107 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://designsystemdocspec.org/v0.11.0/entities/chunk.schema.json",
+  "title": "DSDS Chunk Definitions",
+  "description": "Defines documents for chunks. A chunk is a pre-composed block of code that represents a ready-to-use pattern in the design system — a copy-paste starting point built from the system's components. A chunk document holds the identity of the block, the rules for using it (`guidelines`), when it fits (`useCases`), and the code itself (`code`). Chunks sit at the same level as components. Where a component documents a single building block, a chunk documents a composition of building blocks captured as code.",
+  "$defs": {
+    "chunk": {
+      "type": "object",
+      "description": "A pre-composed block of code that captures a design system pattern. Chunks give consumers a working starting point assembled from system components — for example, a layout, a settings form, or a confirmation dialog. The top level holds its identity (`identifier`, `name`, optional `description`), the `code` block that consumers copy, `guidelines` for how to use and adapt it, and `useCases` for when it is the right choice. Chunks are intentionally simple: they document a code composition, not the full anatomy/API surface a component carries.",
+      "required": [
+        "kind",
+        "identifier",
+        "name",
+        "code"
+      ],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "const": "chunk",
+          "description": "Identifies this entity as a chunk."
+        },
+        "identifier": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]*$",
+          "description": "Machine-readable identifier for the chunk (e.g., 'search-bar', 'settings-form', 'confirmation-dialog'). MUST be lowercase kebab-case and unique within its entity group."
+        },
+        "name": {
+          "type": "string",
+          "description": "Display name shown in docs (e.g., 'Search bar', 'Settings form', 'Confirmation dialog')."
+        },
+        "description": {
+          "$ref": "../common/rich-text.schema.json#/$defs/richText",
+          "description": "What this chunk is, the pattern it captures, and which components it composes. CommonMark supported."
+        },
+        "code": {
+          "description": "The pre-composed block of code consumers copy to use the chunk. Provide it in exactly one of two forms: inline (`code` + `language`) when the source travels with the document, or referenced (`src` + `language`) when it lives in an external source file. The referenced form keeps long sources readable and lets a chunk share one canonical file with a live app. Consumers resolve `src` at read time — no build step inlines it.",
+          "oneOf": [
+            {
+              "type": "object",
+              "title": "Inline code",
+              "description": "The source travels inside the document as a string.",
+              "required": [
+                "code",
+                "language"
+              ],
+              "properties": {
+                "code": {
+                  "type": "string",
+                  "description": "The source code of the chunk — the block consumers copy and adapt."
+                },
+                "language": {
+                  "type": "string",
+                  "description": "The programming language or syntax of the code (e.g., 'jsx', 'tsx', 'html', 'css', 'vue', 'svelte')."
+                }
+              },
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "title": "Referenced code",
+              "description": "The source lives in an external file the consumer resolves at read time.",
+              "required": [
+                "src",
+                "language"
+              ],
+              "properties": {
+                "src": {
+                  "type": "string",
+                  "description": "A relative path to the source file that holds the chunk's code (e.g., './chunks/confirmation-dialog.tsx'). MUST be relative. Absolute paths, protocol-relative references, and scheme-bearing URIs (http:, file:, …) are not permitted. Resolvers SHOULD gate any remote dereferencing behind an allow-list, following the same rules a `$ref` fileRef obeys. The file is read verbatim — no build step inlines it into the document."
+                },
+                "language": {
+                  "type": "string",
+                  "description": "The programming language or syntax of the referenced file (e.g., 'jsx', 'tsx', 'html', 'css', 'vue', 'svelte')."
+                }
+              },
+              "additionalProperties": false
+            }
+          ]
+        },
+        "guidelines": {
+          "type": "array",
+          "description": "Actionable rules for using and adapting the chunk. Each item pairs a guidance statement with a rationale and an RFC 2119 enforcement level. Reuses the shared guideline-entry shape so chunk rules read the same as guidelines elsewhere in the system.",
+          "items": {
+            "$ref": "../document-blocks/guidelines.schema.json#/$defs/guidelineEntry"
+          },
+          "minItems": 1
+        },
+        "useCases": {
+          "type": "array",
+          "description": "Scenario-driven use cases describing when this chunk is — or is not — the right choice. Each entry is marked 'recommended' or 'discouraged'. Reuses the shared use-case shape. Authors SHOULD lead with recommended scenarios.",
+          "items": {
+            "$ref": "../common/use-cases.schema.json#/$defs/useCase"
+          },
+          "minItems": 1
+        },
+        "metadata": {
+          "$ref": "../metadata/metadata.schema.json#/$defs/entityMetadata",
+          "description": "Optional metadata fields, keyed by name: status, since, lastUpdated, category, tags, aliases, summary, thumbnail, preview, extends, and links. Use the `links` field to point at the components this chunk composes."
+        },
+        "$extensions": {
+          "$ref": "../common/extensions.schema.json#/$defs/extensions"
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

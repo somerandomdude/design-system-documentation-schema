@@ -45,7 +45,7 @@ const ENTITY_KINDS = [
   "theme",
   "token",
   "token-group",
-  "blueprint",
+  "chunk",
 ];
 
 // ---------------------------------------------------------------------------

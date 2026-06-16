@@ -107,7 +107,7 @@ When each entity lives in its own file, use the `entity` property instead of `en
 }
 ```
 
-Valid `kind` values for `entity`: `"component"`, `"token"`, `"token-group"`, `"theme"`, `"foundation"`, `"pattern"`, `"guide"`, `"blueprint"`.
+Valid `kind` values for `entity`: `"component"`, `"token"`, `"token-group"`, `"theme"`, `"foundation"`, `"pattern"`, `"guide"`, `"chunk"`.
 
 ### Multi-file documents
 
@@ -354,17 +354,17 @@ Required properties: `kind`, `identifier`, `name`. (`description` is an optional
 
 The `category` metadata field names the *kind* of guide — getting-started, contribution, tutorial, concept, or migration. This keeps the entity open to any kind of guidance.
 
-### Blueprint
+### Chunk
 
-A pre-composed block of code that captures a design system pattern — a copy-paste starting point built from the system's components. Blueprints sit at the same level as components. Where a component documents one building block, a blueprint documents a composition of them, captured as code. The blueprint is intentionally simple: it does not use `documentBlocks`.
+A pre-composed block of code that captures a design system pattern — a copy-paste starting point built from the system's components. Chunks sit at the same level as components. Where a component documents one building block, a chunk documents a composition of them, captured as code. The chunk is intentionally simple: it does not use `documentBlocks`.
 
 Required properties: `kind`, `identifier`, `name`, `code`.
 
 More properties:
 
-<ds-prop-table schema="entities/blueprint" def="blueprint" />
+<ds-prop-table schema="entities/chunk" def="chunk" />
 
-The `code` object holds the source (`code`) and its `language`. The flat `guidelines` array reuses the shared guideline-entry shape (guidance, rationale, level), and the `useCases` array reuses the shared use-case shape (description, stance). A blueprint points to the components it composes through the `links` metadata field (with `kind: "component"`, `identifier`, and `role`).
+The `code` object carries the source in one of two forms: **inline** (`code` + `language`) when the source travels with the document, or **referenced** (`src` + `language`) when it lives in an external file the consumer resolves at read time. The referenced `src` is a relative path and follows the same resolution rules as a `$ref` fileRef — no build step inlines it. The flat `guidelines` array reuses the shared guideline-entry shape (guidance, rationale, level), and the `useCases` array reuses the shared use-case shape (description, stance). A chunk points to the components it composes through the `links` metadata field (with `kind: "component"`, `identifier`, and `role`).
 
 ---
 
