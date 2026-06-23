@@ -29,6 +29,11 @@ const TOP_LINKS = [
   { label: "Overview", href: "index.html", slug: "index" },
   { label: "Quick start", href: "quickstart.html", slug: "quickstart" },
   {
+    label: "Humans & agents",
+    href: "humans-and-agents.html",
+    slug: "humans-and-agents",
+  },
+  {
     label: "Schema architecture",
     href: "schema-architecture.html",
     slug: "schema-architecture",

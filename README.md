@@ -59,6 +59,7 @@ Start here:
 
 - **[Overview](https://designsystemdocspec.org/)** — What DSDS is, the entity model, and how the pieces fit together.
 - **[Quick Start](https://designsystemdocspec.org/quickstart.html)** — Document structure, entity kinds, the document-block system, and minimal examples for every entity type.
+- **[Humans & agents](https://designsystemdocspec.org/humans-and-agents.html)** — How a DSDS document serves both people and AI agents, and when to use `agentDocumentBlocks` alongside `documentBlocks`.
 - **[Schema Architecture](https://designsystemdocspec.org/schema-architecture.html)** — The full schema reference. Covers document structure, entity types, the `agents` property, status, the document-block system, links, extends, extensions, naming conventions, and conformance levels, all with live property tables sourced from the schema.
 - **[Interactive Samples](https://designsystemdocspec.org/samples.html)** — Side-by-side JSON ↔ rendered docs for real-world entities (component, token, theme, foundation, pattern).
 

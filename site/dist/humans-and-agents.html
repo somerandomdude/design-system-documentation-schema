@@ -3,15 +3,15 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>DSDS System Info Definition — DSDS 0.12.0</title>
-  <meta name="description" content="System-level identity and provenance for the design system — name, version, organization, URL, and license. This is the system's own identity, much like an entity's identifier and name. It is separate from the descriptive `metadata` array that entities carry.">
-  <link rel="canonical" href="https://designsystemdocspec.org/common-system-info">
+  <title>DSDS for humans and agents — DSDS 0.12.0</title>
+  <meta name="description" content="A DSDS document serves two readers — people and AI agents. How documentBlocks and agentDocumentBlocks split the work between them.">
+  <link rel="canonical" href="https://designsystemdocspec.org/humans-and-agents">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Design System Documentation Spec">
-  <meta property="og:title" content="DSDS System Info Definition — DSDS 0.12.0">
-  <meta property="og:description" content="System-level identity and provenance for the design system — name, version, organization, URL, and license. This is the system's own identity, much like an entity's identifier and name. It is separate from the descriptive `metadata` array that entities carry.">
-  <meta property="og:url" content="https://designsystemdocspec.org/common-system-info">
+  <meta property="og:title" content="DSDS for humans and agents — DSDS 0.12.0">
+  <meta property="og:description" content="A DSDS document serves two readers — people and AI agents. How documentBlocks and agentDocumentBlocks split the work between them.">
+  <meta property="og:url" content="https://designsystemdocspec.org/humans-and-agents">
   <meta name="twitter:card" content="summary">
   <meta name="dsds-version" content="0.12.0">
   <link rel="stylesheet" href="tokens.css?v=0.12.0">
@@ -21,7 +21,7 @@
 <body>
   <a class="skip-link" href="#main-content">Skip to content</a>
   <ds-nav-toggle target="ds-spec-nav"></ds-nav-toggle>
-  <ds-spec-nav title="Design System Documentation Spec 0.12.0" title-href="index.html" active="common-system-info">
+  <ds-spec-nav title="Design System Documentation Spec 0.12.0" title-href="index.html" active="humans-and-agents">
     <a href="index.html" slug="index">Overview</a>
     <a href="quickstart.html" slug="quickstart">Quick start</a>
     <a href="humans-and-agents.html" slug="humans-and-agents">Humans &amp; agents</a>
@@ -90,25 +90,41 @@
   <div class="content content--with-toc">
     <main class="content__main" id="main-content" role="main">
       <div class="content__inner">
-        <ds-schema-header title="DSDS System Info Definition" description="System-level identity and provenance for the design system — name, version, organization, URL, and license. This is the system's own identity, much like an entity's identifier and name. It is separate from the descriptive `metadata` array that entities carry." source="common/system-info.schema.json"></ds-schema-header>
-<ds-def-section name="systemInfo" anchor="systeminfo" description="System-level identity and provenance for the design system." type="object">
-<ds-prop-table>
-  <ds-prop name="systemName" type="string" required>The name of the design system.</ds-prop>
-  <ds-prop name="systemVersion" type="string">The version of the design system.</ds-prop>
-  <ds-prop name="organization" type="string">The organization that maintains the system.</ds-prop>
-  <ds-prop name="url" type="string (uri)">URL to the system's documentation site.</ds-prop>
-  <ds-prop name="license" type="string">SPDX license identifier or license URL.</ds-prop>
-</ds-prop-table>
-<ds-def-example>
-<ds-code language="json" label="example">{
-  &quot;systemName&quot;: &quot;Acme Design System&quot;,
-  &quot;systemVersion&quot;: &quot;2.4.0&quot;,
-  &quot;organization&quot;: &quot;Acme Corp&quot;,
-  &quot;url&quot;: &quot;https://design.acme.com&quot;,
-  &quot;license&quot;: &quot;MIT&quot;
-}</ds-code>
-</ds-def-example>
-</ds-def-section>
+        <ds-heading level="1" anchor="dsds-for-humans-and-agents">DSDS for humans and agents</ds-heading>
+<p>A DSDS document has two readers: people and AI agents. The same file serves both. Most of what you write is for people. A small, optional part is just for agents.</p>
+<p>This page explains the split, and when to use each.</p>
+<ds-heading level="2" anchor="two-readers-one-document">Two readers, one document</ds-heading>
+<p>People read docs to learn a component: what it is, when to use it, how it behaves. Agents read docs to build with it correctly. They look for which rules are firm, what not to confuse it with, and how to check their own work.</p>
+<p>Most documentation works for both. A clear usage rule helps a person and an agent alike. So you write it once, in the normal place, and both readers benefit.</p>
+<ds-heading level="2" anchor="documentblocks-the-docs-everyone-reads">documentBlocks — the docs everyone reads</ds-heading>
+<p><ds-code inline>documentBlocks</ds-code> holds the main documentation. You write it for a person to read and act on: anatomy, API, variants, states, guidelines, accessibility, and the rest. Agents read it too. This is the default home for everything.</p>
+<ds-heading level="2" anchor="agentdocumentblocks-extra-notes-for-agents-only">agentDocumentBlocks — extra notes, for agents only</ds-heading>
+<p><ds-code inline>agentDocumentBlocks</ds-code> is an optional, separate space for notes meant only for agents. Tools never show it to people. It accepts the same block kinds as <ds-code inline>documentBlocks</ds-code>.</p>
+<p>Use it for guidance that would be clutter in the human docs but helps an agent get the code right.</p>
+<ds-heading level="3" anchor="what-belongs-here">What belongs here</ds-heading>
+<p>Put a block here when a tool can act on it directly — no person needed to interpret it. For example:</p>
+<ul>
+<li><strong>Hard rules.</strong> Do-this and never-do-that rules marked MUST or MUST NOT, so an agent treats them as firm limits.</li>
+<li><strong>Telling look-alikes apart.</strong> Notes that stop an agent from confusing this with a similar entity (for example, "use a link to navigate, not this button").</li>
+<li><strong>Limits backed by proof.</strong> A rule with evidence from testing (for example, "agents broke the touch target 9 times out of 10 when they shrank the height — don't").</li>
+<li><strong>Checks an agent can run.</strong> Pass-or-fail criteria the agent can test its own output against.</li>
+</ul>
+<ds-heading level="3" anchor="what-stays-in-documentblocks">What stays in documentBlocks</ds-heading>
+<p>Anything a person needs to read and understand stays in <ds-code inline>documentBlocks</ds-code>. If a human reader would want it, it is not agent-only.</p>
+<p>A quick test: would a person reading the docs need this? If yes, it goes in <ds-code inline>documentBlocks</ds-code>. If no, and only a tool or agent would act on it, it can go in <ds-code inline>agentDocumentBlocks</ds-code>.</p>
+<ds-heading level="2" anchor="how-the-two-work-together">How the two work together</ds-heading>
+<p>Agents read both arrays — the human docs first, then the agent-only notes. So <ds-code inline>agentDocumentBlocks</ds-code> adds to the human docs; it does not replace them.</p>
+<p>Two rules keep the split clean:</p>
+<ul>
+<li>Do not move human-facing content into <ds-code inline>agentDocumentBlocks</ds-code>. People would never see it.</li>
+<li>Do not repeat the human docs there. Agent notes should extend the docs, never echo them.</li>
+</ul>
+<ds-heading level="2" anchor="in-short">In short</ds-heading>
+<ul>
+<li>Write for people by default. That serves agents too.</li>
+<li>Use <ds-code inline>agentDocumentBlocks</ds-code> only for firm, ready-to-act notes a person would not need.</li>
+<li>Keep the two in sync: agent notes extend the human docs, and never contradict them.</li>
+</ul>
 
         <ds-back-to-top></ds-back-to-top>
 
