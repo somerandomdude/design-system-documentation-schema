@@ -123,6 +123,39 @@ for (const dir of [EX_BLOCKS_DIR, EX_ENTITIES_DIR]) {
 }
 
 // ---------------------------------------------------------------------------
+// 2c. Version consistency — the spec version is single-sourced.
+//
+//   The spec's own dogfood failure mode is publishing pages that disagree on
+//   the version. This guard makes that impossible to ship:
+//     • Source guard  — content pages MUST reference the version via the
+//       {{VERSION}} token, never a hardcoded designsystemdocspec.org/vX.Y.Z.
+//     • Rendered guard — after {{VERSION}} substitution, every versioned URL
+//       on every compiled page MUST equal dsds.schema.json's `const`.
+// ---------------------------------------------------------------------------
+
+const SPEC_VERSION = (root && root.properties && root.properties.dsdsVersion && root.properties.dsdsVersion.const) || "";
+const CONTENT_DIR = path.join(ROOT, "site", "content");
+const versionProblems = [];
+const contentFiles = fs.readdirSync(CONTENT_DIR).filter((f) => f.endsWith(".mdx"));
+
+for (const file of contentFiles) {
+  const src = fs.readFileSync(path.join(CONTENT_DIR, file), "utf-8");
+  for (const m of src.matchAll(/designsystemdocspec\.org\/v(\d+\.\d+\.\d+)/g)) {
+    versionProblems.push(`${file}: source hardcodes version URL v${m[1]} — use the {{VERSION}} token`);
+  }
+}
+for (const file of contentFiles) {
+  const { html } = await compileMdxFile(path.join(CONTENT_DIR, file));
+  const seen = new Set();
+  for (const m of html.matchAll(/designsystemdocspec\.org\/v(\d+\.\d+\.\d+)/g)) {
+    if (m[1] !== SPEC_VERSION && !seen.has(m[1])) {
+      seen.add(m[1]);
+      versionProblems.push(`${file}: rendered version v${m[1]} ≠ spec const ${SPEC_VERSION}`);
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
 // 3. Report
 // ---------------------------------------------------------------------------
 
@@ -139,7 +172,15 @@ if (genErrors.length) {
   for (const e of genErrors) console.error(`      ${e}`);
 }
 
-if (missing.length || genErrors.length || exampleMissing.length || orphanKeys.length) {
+if (missing.length || genErrors.length || exampleMissing.length || orphanKeys.length || versionProblems.length) {
+  if (versionProblems.length) {
+    console.error(`\n  ✗ ${versionProblems.length} version-consistency problem(s) (spec const ${SPEC_VERSION}):`);
+    for (const m of versionProblems) console.error(`      ${m}`);
+    console.error(
+      `\n  Every page's version must come from dsds.schema.json's const via {{VERSION}}.\n` +
+        `  A mismatch means the published site would show inconsistent versions.`,
+    );
+  }
   if (missing.length) {
     console.error(`\n  ✗ ${missing.length} schema kind(s) not surfaced on schema-architecture.mdx:`);
     for (const m of missing) console.error(`      ${m}`);
@@ -160,4 +201,5 @@ if (missing.length || genErrors.length || exampleMissing.length || orphanKeys.le
 }
 
 console.log("\n  ✓ Every schema kind is surfaced on the page.");
-console.log("  ✓ Every document-block has an example fixture; all fixture keys resolve.\n");
+console.log("  ✓ Every document-block has an example fixture; all fixture keys resolve.");
+console.log(`  ✓ All ${contentFiles.length} content pages render a single version (${SPEC_VERSION}).\n`);

@@ -555,6 +555,23 @@ function collectEntityIdentifiers(doc) {
   return ids;
 }
 
+/** Collect identifiers of token-layer entities (token, token-group). Used to
+ * decide whether a document documents its token layer — anatomy token
+ * references are only resolvable when it does. */
+const TOKEN_KINDS = new Set(["token", "token-group"]);
+function collectTokenIdentifiers(doc) {
+  const ids = new Set();
+  (function scan(node) {
+    if (Array.isArray(node)) return node.forEach(scan);
+    if (!node || typeof node !== "object") return;
+    if (TOKEN_KINDS.has(node.kind) && typeof node.identifier === "string") {
+      ids.add(node.identifier);
+    }
+    Object.values(node).forEach(scan);
+  })(doc);
+  return ids;
+}
+
 /** True when the document contains unresolved fileRefs ({$ref: …}). */
 function hasFileRefs(doc) {
   let found = false;
@@ -578,6 +595,10 @@ function semanticFindings(doc) {
   // visible until a resolver joins the files.
   const refsResolvable = !hasFileRefs(doc);
   const catalog = refsResolvable ? collectEntityIdentifiers(doc) : null;
+  // Token layer — present only when the document itself documents tokens.
+  // Anatomy token references resolve against it; when absent (tokens live in
+  // an external DTCG layer) anatomy token resolution is skipped.
+  const tokenLayer = refsResolvable ? collectTokenIdentifiers(doc) : null;
 
   function checkComponentRefs(node, nodePath) {
     if (!catalog || !Array.isArray(node.components)) return;
@@ -643,6 +664,124 @@ function semanticFindings(doc) {
     });
   }
 
+  // Relationship-graph integrity: every relationships[].target MUST resolve to
+  // a documented entity; an edge MUST NOT point at its own entity; and an
+  // entity MUST NOT declare the same (relation, target) edge twice. Resolution
+  // is skipped when unresolved $refs hide part of the catalog.
+  function checkRelationships(entity, entityPath) {
+    if (!Array.isArray(entity.relationships)) return;
+    const seen = new Set();
+    entity.relationships.forEach((edge, i) => {
+      if (!edge || typeof edge !== "object") return;
+      const { relation, target } = edge;
+      if (typeof target !== "string" || typeof relation !== "string") return;
+      const p = `${entityPath}/relationships/${i}`;
+      if (catalog && !catalog.has(target)) {
+        findings.push({
+          path: `${p}/target`,
+          message: `relationship target '${target}' resolves to no entity documented in this file — a reference that resolves to nothing is a defect (entityRef resolution)`,
+        });
+      }
+      if (target === entity.identifier) {
+        findings.push({
+          path: `${p}/target`,
+          message: `entity '${entity.identifier}' declares a '${relation}' relationship to itself — an edge must point at another entity`,
+        });
+      }
+      const key = `${relation} ${target}`;
+      if (seen.has(key)) {
+        findings.push({
+          path: p,
+          message: `duplicate relationship edge '${relation}' → '${target}' on entity '${entity.identifier}'`,
+        });
+      } else {
+        seen.add(key);
+      }
+    });
+  }
+
+  // Cycle detection for the acyclic relations ('composes', 'depends-on'). A
+  // cycle means an entity is, transitively, composed of or dependent on itself.
+  // Needs the full catalog to follow edges, so it is skipped under unresolved
+  // $refs. Only edges whose target resolves are followed.
+  function checkRelationshipCycles() {
+    if (!catalog) return;
+    const DAG_RELATIONS = new Set(["composes", "depends-on"]);
+    const adj = new Map();
+    (function collect(node) {
+      if (Array.isArray(node)) return node.forEach(collect);
+      if (!node || typeof node !== "object") return;
+      if (
+        ENTITY_KIND_SET.has(node.kind) &&
+        typeof node.identifier === "string" &&
+        Array.isArray(node.relationships)
+      ) {
+        const outs = node.relationships
+          .filter(
+            (e) =>
+              e &&
+              DAG_RELATIONS.has(e.relation) &&
+              typeof e.target === "string" &&
+              catalog.has(e.target),
+          )
+          .map((e) => e.target);
+        if (outs.length) {
+          adj.set(node.identifier, (adj.get(node.identifier) || []).concat(outs));
+        }
+      }
+      Object.values(node).forEach(collect);
+    })(doc);
+
+    const GRAY = 1;
+    const BLACK = 2;
+    const color = new Map();
+    const stack = [];
+    let reported = false;
+    function dfs(id) {
+      if (reported) return;
+      color.set(id, GRAY);
+      stack.push(id);
+      for (const next of adj.get(id) || []) {
+        const c = color.get(next) || 0;
+        if (c === GRAY) {
+          const cycle = stack.slice(stack.indexOf(next)).concat(next).join(" → ");
+          findings.push({
+            path: "",
+            message: `relationship cycle across 'composes'/'depends-on' edges: ${cycle} — these relations must form an acyclic graph`,
+          });
+          reported = true;
+          return;
+        }
+        if (c === 0) dfs(next);
+      }
+      stack.pop();
+      color.set(id, BLACK);
+    }
+    for (const id of adj.keys()) {
+      if (!reported && (color.get(id) || 0) === 0) dfs(id);
+    }
+  }
+
+  // Anatomy token references resolve against the documented token layer. When
+  // the document documents no tokens (external DTCG layer), this is skipped —
+  // matching the schema's "in a system that documents its token layer" rule.
+  function checkAnatomyTokens(block, blockPath) {
+    if (!tokenLayer || tokenLayer.size === 0) return;
+    if (!Array.isArray(block.parts)) return;
+    block.parts.forEach((part, pi) => {
+      const tokens = part && part.tokens;
+      if (!tokens || typeof tokens !== "object") return;
+      for (const [purpose, id] of Object.entries(tokens)) {
+        if (typeof id === "string" && !tokenLayer.has(id)) {
+          findings.push({
+            path: `${blockPath}/parts/${pi}/tokens/${purpose}`,
+            message: `anatomy token '${id}' resolves to no documented token — with a token layer present, anatomy token references MUST name a documented token (entityRef resolution)`,
+          });
+        }
+      }
+    });
+  }
+
   function walk(node, nodePath) {
     if (!node || typeof node !== "object") return;
     if (Array.isArray(node)) {
@@ -651,6 +790,7 @@ function semanticFindings(doc) {
     }
     if (ENTITY_KIND_SET.has(node.kind) && typeof node.identifier === "string") {
       checkCriterionScope(node, nodePath);
+      checkRelationships(node, nodePath);
     }
     if (node.$extensions && typeof node.$extensions === "object") {
       for (const key of Object.keys(node.$extensions)) {
@@ -663,6 +803,9 @@ function semanticFindings(doc) {
       }
     }
     checkComponentRefs(node, nodePath);
+    if (node.kind === "anatomy") {
+      checkAnatomyTokens(node, nodePath);
+    }
     if (Array.isArray(node.entities)) {
       checkIdentifierScope(node.entities, `${nodePath}/entities`);
     }
@@ -676,6 +819,7 @@ function semanticFindings(doc) {
   }
 
   walk(doc, "");
+  checkRelationshipCycles();
   return findings;
 }
 

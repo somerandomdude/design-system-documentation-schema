@@ -1,12 +1,12 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://designsystemdocspec.org/v0.11.1/common/link.schema.json",
+  "$id": "https://designsystemdocspec.org/v0.12.0/common/link.schema.json",
   "title": "DSDS Link Definition",
-  "description": "A typed pointer to an external resource, a related artifact, or another DSDS entity. Used across every DSDS document type for source code, design files, docs, packages, artifact relationships, and internal cross-references. Every link needs a `kind`, plus at least one of `url` (for external resources) or `identifier` (for internal DSDS artifacts). Both may appear together when an internal artifact also has a public URL.",
+  "description": "A typed pointer to an external resource — source code, design files, docs, packages. Every link needs a `kind` and a `url`. NOTE: links once doubled as inter-entity references via `identifier`; that use is deprecated in favor of the entity's typed `relationships` array. The `identifier`, `role`, and `required` properties remain for backward compatibility only.",
   "$defs": {
     "link": {
       "type": "object",
-      "description": "A typed pointer to an external resource or another DSDS artifact. A link can point to an external resource (source code, design files, docs, packages). It can name another DSDS artifact by identifier. It can do both when an internal artifact also has a public URL. The `kind` property sorts the reference. Standard external kinds: 'source', 'design', 'storybook', 'documentation', 'package', 'repository'. Standard relationship kinds: 'alternative', 'parent', 'child', 'related'. Standard artifact kinds (for internal references): 'component', 'token', 'token-group', 'foundation', 'pattern', 'theme'. Custom values are allowed.",
+      "description": "A typed pointer to an external resource. A link points to an external resource by `url` (source code, design files, docs, packages). The `kind` property sorts the reference. Standard external kinds: 'source', 'design', 'storybook', 'documentation', 'package', 'repository'. Custom values are allowed. DEPRECATED — using a link to express how entities relate is deprecated in favor of the entity's `relationships` array, which carries typed, validated edges. This covers the relationship kinds ('alternative', 'parent', 'child', 'related') and internal artifact references by `identifier` ('component', 'token', 'token-group', 'foundation', 'pattern', 'theme'). Those forms still validate for backward compatibility, but tools SHOULD warn (DSDS-010) and authors SHOULD migrate them to `relationships`. Reserve `link` for external resources addressed by `url`.",
       "required": [
         "kind"
       ],
@@ -25,7 +25,7 @@
       "properties": {
         "kind": {
           "type": "string",
-          "description": "The category of the linked resource or relationship. Standard external kinds: 'source', 'design', 'storybook', 'documentation', 'package', 'repository'. Standard relationship kinds: 'alternative', 'parent', 'child', 'related'. Standard artifact kinds (for internal references): 'component', 'token', 'token-group', 'foundation', 'pattern', 'theme'. Custom values are allowed and SHOULD match ^[a-z][a-z0-9-]*$."
+          "description": "The category of the linked resource. Standard external kinds: 'source', 'design', 'storybook', 'documentation', 'package', 'repository'. Custom values are allowed and SHOULD match ^[a-z][a-z0-9-]*$. DEPRECATED kinds — 'alternative', 'parent', 'child', 'related' (relationship kinds) and 'component', 'token', 'token-group', 'foundation', 'pattern', 'theme' (internal artifact references) are deprecated; express these as typed edges in the entity's `relationships` array instead."
         },
         "url": {
           "type": "string",
@@ -34,7 +34,7 @@
         },
         "identifier": {
           "$ref": "entity-ref.schema.json#/$defs/entityIdentifier",
-          "description": "The identifier of a referenced DSDS entity. MUST match the `identifier` property of a documented entity — a link with an `identifier` is an entity reference and follows entityRef resolution rules. Required for internal entity references; optional for external resource links. When both `url` and `identifier` are present, `url` points to the entity's docs page and `identifier` is the machine-readable cross-reference."
+          "description": "DEPRECATED — the identifier of a referenced DSDS entity. Use the entity's `relationships` array for inter-entity references. Retained for backward compatibility: a link with an `identifier` still follows entityRef resolution rules (it MUST match a documented entity)."
         },
         "label": {
           "type": "string",
@@ -47,7 +47,7 @@
         "required": {
           "type": "boolean",
           "default": false,
-          "description": "Whether this linked artifact is required for the parent entity to work. Used on internal artifact references — for example, a form-validation pattern might mark 'form-field' as required and 'toast' as optional. Defaults to false. Not used on external resource links."
+          "description": "DEPRECATED — whether the referenced artifact is required for the parent entity to work. Use `required` on a `relationships` edge instead. Retained for backward compatibility on internal artifact references. Defaults to false."
         }
       },
       "additionalProperties": false

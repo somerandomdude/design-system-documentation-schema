@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://designsystemdocspec.org/v0.12.0/document-blocks/checklist.schema.json",
+  "title": "DSDS Checklist Document Block",
+  "description": "An explicit checklist of items to work through for an artifact. Built primarily for agents: a concrete list of things to verify, do, or confirm when building, reviewing, or integrating a component, foundation, or pattern. Each item pairs a short, actionable label with optional detail, an optional RFC 2119 level that marks hard gates, and an optional pointer to the criterion that backs it. Use a checklist when the goal is an explicit pass over an artifact; use `guidelines` for the underlying rules and rationale.",
+  "$defs": {
+    "checklistItem": {
+      "type": "object",
+      "description": "A single checklist item: one concrete thing to verify, do, or confirm. `label` is the actionable statement an agent works through. `description` adds supporting detail. `level` sets how strictly it must be satisfied. `criterion` points to a testable success criterion that backs the item. `optional` marks an item that can be skipped. An item MUST carry a `label`; all other fields are optional.",
+      "required": ["label"],
+      "properties": {
+        "label": {
+          "$ref": "../common/rich-text.schema.json#/$defs/richText",
+          "description": "The check, written as a concrete, imperative statement an agent can act on and then mark done or not done (e.g., 'Give every icon-only button an aria-label', 'Keep one primary-emphasis button per surface'). MUST be specific enough to confirm. Avoid vague phrasing like 'check accessibility'."
+        },
+        "description": {
+          "$ref": "../common/rich-text.schema.json#/$defs/richText",
+          "description": "Optional detail: how to satisfy the item, what to watch for, or why it matters. Keep the actionable instruction in `label` and use this for supporting context."
+        },
+        "level": {
+          "$ref": "../common/criterion.schema.json#/$defs/conformanceLevel",
+          "description": "How strictly this item must be satisfied, named for RFC 2119 requirement levels: 'must' (a hard gate; failing it is a defect), 'should' (follow unless justified), 'should-not', 'must-not'. Agents treat must/must-not items as hard gates. When omitted, the item is a recommended check."
+        },
+        "criterion": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]*$",
+          "description": "Optional identifier of a testable success criterion (from a guideline or accessibility block on the same entity) that verifies this item. MUST be lowercase kebab-case. Lets an agent jump from the checklist item to the criterion that defines pass/fail."
+        },
+        "category": {
+          "type": "string",
+          "description": "Optional discipline this item belongs to, used to group a long checklist. Standard values match the guideline categories: 'visual-design', 'interaction', 'accessibility', 'content', 'motion', 'development'. Custom values are allowed and SHOULD be lowercase kebab-case."
+        },
+        "optional": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether the item can be skipped without failing the checklist. Defaults to false. Tools MAY render optional items distinctly (e.g., an 'optional' label)."
+        }
+      },
+      "additionalProperties": false
+    },
+    "checklist": {
+      "type": "object",
+      "description": "An explicit checklist for an artifact: a list of concrete items an agent (or a person) works through when building, reviewing, or integrating it. Each item is a checklistItem with an actionable label and an optional level, detail, and criterion link. Use it to turn an artifact's rules into an explicit pass: 'an accessibility review', 'before you ship', 'integration steps'. Accepted on component, foundation, and pattern entities, and equally at home in `agentDocumentBlocks`.",
+      "required": ["kind", "items"],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "const": "checklist",
+          "description": "Identifies this document block as a checklist."
+        },
+        "title": {
+          "type": "string",
+          "description": "An optional heading for the checklist (e.g., 'Accessibility review', 'Before you ship', 'Integration checklist'). Use it to name the pass the items belong to."
+        },
+        "ordered": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether the items must be worked through in order. Defaults to false (an independent checklist where items can be checked in any order). Set true when each item depends on the previous one. Tools SHOULD render unordered checklists as checkboxes and ordered ones as a numbered sequence."
+        },
+        "items": {
+          "type": "array",
+          "description": "The checklist items, in display order. Each item is one concrete thing to verify, do, or confirm. Order is significant for ordered checklists, so tools MUST preserve it.",
+          "items": {
+            "$ref": "#/$defs/checklistItem"
+          },
+          "minItems": 1
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

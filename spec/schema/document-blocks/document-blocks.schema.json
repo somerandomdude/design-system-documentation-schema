@@ -1,90 +1,180 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://designsystemdocspec.org/v0.11.1/document-blocks/document-blocks.schema.json",
+  "$id": "https://designsystemdocspec.org/v0.12.0/document-blocks/document-blocks.schema.json",
   "title": "DSDS Document Block — Scoped Unions",
-  "description": "Defines scoped document block unions, one per artifact type. Each piece of structured docs on an artifact is a block object with a `kind` tag. Each artifact type accepts its own special block kinds plus every general kind (see `generalDocumentBlock`). General kinds work on every artifact, including the free-form `sections` block. Special kinds are scoped, so you can't attach docs that don't fit — like an API spec on a foundation. Put internal artifact links in the shared `links` array on each entity, not in a block kind.",
+  "description": "Defines scoped document block unions, one per artifact type. Each piece of structured docs on an artifact is a block object with a `kind` tag. Each artifact type accepts its own special block kinds plus every general kind (see `generalDocumentBlock`). Unions are modeled as a `kind` enum plus `if`/`then` branches keyed on the `kind` const, rather than `oneOf`. This is a discriminated union: a mismatched block produces a single, scoped error (the failing branch for its `kind`) instead of a compound error across every branch — the hand-authoring DX problem `oneOf` causes. Put internal artifact links in the shared `links` array on each entity, not in a block kind.",
   "$defs": {
-    "generalDocumentBlock": {
-      "description": "A document block kind available on every artifact type. General blocks cover concerns that apply to any artifact, including free-form prose. Every scoped union includes these kinds by pointing to this definition.",
-      "oneOf": [
+    "generalBranches": {
+      "description": "Shared `if`/`then` branches for the general block kinds. A fragment composed into every scoped union via allOf; it carries no `kind` enum of its own (the enclosing union owns that). For a non-general `kind`, every `if` here is false and the fragment passes vacuously.",
+      "allOf": [
         {
-          "$ref": "guidelines.schema.json#/$defs/guidelines"
+          "if": { "required": ["kind"], "properties": { "kind": { "const": "guidelines" } } },
+          "then": { "$ref": "guidelines.schema.json#/$defs/guidelines" }
         },
         {
-          "$ref": "../common/use-cases.schema.json#/$defs/useCases"
+          "if": { "required": ["kind"], "properties": { "kind": { "const": "useCases" } } },
+          "then": { "$ref": "../common/use-cases.schema.json#/$defs/useCases" }
         },
         {
-          "$ref": "accessibility.schema.json#/$defs/accessibility"
+          "if": { "required": ["kind"], "properties": { "kind": { "const": "accessibility" } } },
+          "then": { "$ref": "accessibility.schema.json#/$defs/accessibility" }
         },
         {
-          "$ref": "content.schema.json#/$defs/content"
+          "if": { "required": ["kind"], "properties": { "kind": { "const": "content" } } },
+          "then": { "$ref": "content.schema.json#/$defs/content" }
         },
         {
-          "$ref": "sections.schema.json#/$defs/sections"
+          "if": { "required": ["kind"], "properties": { "kind": { "const": "sections" } } },
+          "then": { "$ref": "sections.schema.json#/$defs/sections" }
         }
       ]
     },
-    "componentDocumentBlock": {
-      "description": "A document block kind accepted on component artifacts. Includes the component-specific kinds (imports, anatomy, API, variants, states, design specs) plus every general kind.",
-      "oneOf": [
-        {
-          "$ref": "imports.schema.json#/$defs/imports"
-        },
-        {
-          "$ref": "anatomy.schema.json#/$defs/anatomy"
-        },
-        {
-          "$ref": "api.schema.json#/$defs/api"
-        },
-        {
-          "$ref": "variants.schema.json#/$defs/variants"
-        },
-        {
-          "$ref": "states.schema.json#/$defs/states"
-        },
-        {
-          "$ref": "design-specifications.schema.json#/$defs/designSpecifications"
-        },
-        {
-          "$ref": "#/$defs/generalDocumentBlock"
+    "generalDocumentBlock": {
+      "description": "A document block kind available on every artifact type. General blocks cover concerns that apply to any artifact, including free-form prose. Every scoped union includes these kinds.",
+      "type": "object",
+      "required": ["kind"],
+      "properties": {
+        "kind": {
+          "enum": ["guidelines", "useCases", "accessibility", "content", "sections"]
         }
+      },
+      "allOf": [{ "$ref": "#/$defs/generalBranches" }]
+    },
+    "componentDocumentBlock": {
+      "description": "A document block kind accepted on component artifacts. Includes the component-specific kinds (imports, anatomy, API, variants, states, design specs), the shared checklist kind, and every general kind.",
+      "type": "object",
+      "required": ["kind"],
+      "properties": {
+        "kind": {
+          "enum": [
+            "checklist",
+            "imports",
+            "anatomy",
+            "api",
+            "variants",
+            "states",
+            "design-specifications",
+            "guidelines",
+            "useCases",
+            "accessibility",
+            "content",
+            "sections"
+          ]
+        }
+      },
+      "allOf": [
+        {
+          "if": { "required": ["kind"], "properties": { "kind": { "const": "checklist" } } },
+          "then": { "$ref": "checklist.schema.json#/$defs/checklist" }
+        },
+        {
+          "if": { "required": ["kind"], "properties": { "kind": { "const": "imports" } } },
+          "then": { "$ref": "imports.schema.json#/$defs/imports" }
+        },
+        {
+          "if": { "required": ["kind"], "properties": { "kind": { "const": "anatomy" } } },
+          "then": { "$ref": "anatomy.schema.json#/$defs/anatomy" }
+        },
+        {
+          "if": { "required": ["kind"], "properties": { "kind": { "const": "api" } } },
+          "then": { "$ref": "api.schema.json#/$defs/api" }
+        },
+        {
+          "if": { "required": ["kind"], "properties": { "kind": { "const": "variants" } } },
+          "then": { "$ref": "variants.schema.json#/$defs/variants" }
+        },
+        {
+          "if": { "required": ["kind"], "properties": { "kind": { "const": "states" } } },
+          "then": { "$ref": "states.schema.json#/$defs/states" }
+        },
+        {
+          "if": { "required": ["kind"], "properties": { "kind": { "const": "design-specifications" } } },
+          "then": { "$ref": "design-specifications.schema.json#/$defs/designSpecifications" }
+        },
+        { "$ref": "#/$defs/generalBranches" }
       ]
     },
     "foundationDocumentBlock": {
-      "description": "A document block kind accepted on foundation artifacts. Includes the foundation-specific kinds (principles, scales, motion) plus every general kind.",
-      "oneOf": [
-        {
-          "$ref": "principles.schema.json#/$defs/principles"
-        },
-        {
-          "$ref": "scale.schema.json#/$defs/scale"
-        },
-        {
-          "$ref": "motion.schema.json#/$defs/motion"
-        },
-        {
-          "$ref": "#/$defs/generalDocumentBlock"
+      "description": "A document block kind accepted on foundation artifacts. Includes the foundation-specific kinds (principles, scales, motion), the shared checklist kind, and every general kind.",
+      "type": "object",
+      "required": ["kind"],
+      "properties": {
+        "kind": {
+          "enum": [
+            "checklist",
+            "principles",
+            "scale",
+            "motion",
+            "guidelines",
+            "useCases",
+            "accessibility",
+            "content",
+            "sections"
+          ]
         }
+      },
+      "allOf": [
+        {
+          "if": { "required": ["kind"], "properties": { "kind": { "const": "checklist" } } },
+          "then": { "$ref": "checklist.schema.json#/$defs/checklist" }
+        },
+        {
+          "if": { "required": ["kind"], "properties": { "kind": { "const": "principles" } } },
+          "then": { "$ref": "principles.schema.json#/$defs/principles" }
+        },
+        {
+          "if": { "required": ["kind"], "properties": { "kind": { "const": "scale" } } },
+          "then": { "$ref": "scale.schema.json#/$defs/scale" }
+        },
+        {
+          "if": { "required": ["kind"], "properties": { "kind": { "const": "motion" } } },
+          "then": { "$ref": "motion.schema.json#/$defs/motion" }
+        },
+        { "$ref": "#/$defs/generalBranches" }
       ]
     },
     "patternDocumentBlock": {
-      "description": "A document block kind accepted on pattern artifacts. Includes the pattern-specific kind (interactions), shared structural kinds (anatomy, variants, states), and every general kind.",
-      "oneOf": [
-        {
-          "$ref": "interactions.schema.json#/$defs/interactions"
-        },
-        {
-          "$ref": "anatomy.schema.json#/$defs/anatomy"
-        },
-        {
-          "$ref": "variants.schema.json#/$defs/variants"
-        },
-        {
-          "$ref": "states.schema.json#/$defs/states"
-        },
-        {
-          "$ref": "#/$defs/generalDocumentBlock"
+      "description": "A document block kind accepted on pattern artifacts. Includes the pattern-specific kind (interactions), shared structural kinds (anatomy, variants, states), the shared checklist kind, and every general kind.",
+      "type": "object",
+      "required": ["kind"],
+      "properties": {
+        "kind": {
+          "enum": [
+            "checklist",
+            "interactions",
+            "anatomy",
+            "variants",
+            "states",
+            "guidelines",
+            "useCases",
+            "accessibility",
+            "content",
+            "sections"
+          ]
         }
+      },
+      "allOf": [
+        {
+          "if": { "required": ["kind"], "properties": { "kind": { "const": "checklist" } } },
+          "then": { "$ref": "checklist.schema.json#/$defs/checklist" }
+        },
+        {
+          "if": { "required": ["kind"], "properties": { "kind": { "const": "interactions" } } },
+          "then": { "$ref": "interactions.schema.json#/$defs/interactions" }
+        },
+        {
+          "if": { "required": ["kind"], "properties": { "kind": { "const": "anatomy" } } },
+          "then": { "$ref": "anatomy.schema.json#/$defs/anatomy" }
+        },
+        {
+          "if": { "required": ["kind"], "properties": { "kind": { "const": "variants" } } },
+          "then": { "$ref": "variants.schema.json#/$defs/variants" }
+        },
+        {
+          "if": { "required": ["kind"], "properties": { "kind": { "const": "states" } } },
+          "then": { "$ref": "states.schema.json#/$defs/states" }
+        },
+        { "$ref": "#/$defs/generalBranches" }
       ]
     },
     "tokenDocumentBlock": {
@@ -93,16 +183,31 @@
     },
     "guideDocumentBlock": {
       "description": "A document block kind accepted on guide artifacts. It includes the guide-only `steps` kind, the reused `imports` kind for setup and install steps, and every general kind. One of those is the free-form `sections` block, the backbone of a guide. Guides are made for reading, so their blocks favor prose and steps over the measurable specs (api, anatomy, design specs) that components use.",
-      "oneOf": [
-        {
-          "$ref": "steps.schema.json#/$defs/steps"
-        },
-        {
-          "$ref": "imports.schema.json#/$defs/imports"
-        },
-        {
-          "$ref": "#/$defs/generalDocumentBlock"
+      "type": "object",
+      "required": ["kind"],
+      "properties": {
+        "kind": {
+          "enum": [
+            "steps",
+            "imports",
+            "guidelines",
+            "useCases",
+            "accessibility",
+            "content",
+            "sections"
+          ]
         }
+      },
+      "allOf": [
+        {
+          "if": { "required": ["kind"], "properties": { "kind": { "const": "steps" } } },
+          "then": { "$ref": "steps.schema.json#/$defs/steps" }
+        },
+        {
+          "if": { "required": ["kind"], "properties": { "kind": { "const": "imports" } } },
+          "then": { "$ref": "imports.schema.json#/$defs/imports" }
+        },
+        { "$ref": "#/$defs/generalBranches" }
       ]
     }
   }

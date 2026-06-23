@@ -260,6 +260,7 @@ These properties appear on every entity type. Token and token-group differ sligh
 | `metadata` | `object` | No | Optional metadata fields keyed by name — status, tags, links, and more. See [Entity metadata](#entity-metadata). |
 | `documentBlocks` | `array` | No | Typed document block objects. See [Document block](#document-block). |
 | `agentDocumentBlocks` | `array` | No | Blocks for agents (AI/LLM) only. Same kinds as `documentBlocks`, but never shown to humans. See [Agent document blocks](#agent-document-blocks). |
+| `relationships` | `array` | No | Typed, directional dependency edges to other entities — `depends-on`, `composes`, and so on. The structural graph agents read for impact and alternatives. See [Relationships](#relationships). |
 | `$extensions` | `object` | No | Vendor-specific extensions. See [Extensions](#extensions). |
 
 ### Entity metadata
@@ -762,11 +763,59 @@ An ordered or unordered procedure — the steps a reader follows to install, bui
 
 ---
 
+## Shared document block types
+
+These block types are shared across more than one entity type without being general (they are not accepted on tokens, themes, or guides).
+
+### Checklist (`checklist`)
+
+An explicit checklist of items to work through for an artifact. Accepted on **component**, **foundation**, and **pattern** entities. It is built primarily for agents: a concrete list of things to verify, do, or confirm when building, reviewing, or integrating an artifact, and it reads equally well from `agentDocumentBlocks`.
+
+Each item is a `checklistItem` with an actionable `label`, an optional RFC 2119 `level` that marks hard gates, optional `description` detail, and an optional `criterion` identifier linking to the testable success criterion that defines pass/fail. The block carries an optional `title` and an `ordered` flag (default `false`).
+
+> **Checklist vs. guidelines vs. steps:** [`guidelines`](#guidelines-guidelines) hold the rules and the *why*; `checklist` turns those rules into an explicit pass an agent can tick through; [`steps`](#steps-steps) (guides only) walk a reader through a *procedure* start to finish. Reach for `checklist` when the goal is an explicit review or integration pass over an existing artifact.
+
+#### Checklist entry
+
+<ds-prop-table schema="document-blocks/checklist" def="checklistItem" />
+
+---
+
+## Relationships
+
+The `relationships` array is an entity's structural dependency graph: typed, directional edges to other entities. Where `links` points at external resources, `relationships` records how entities depend on, compose, and supersede one another. This is the graph agents read to reason about impact ("what breaks if this token changes?") and alternatives ("what replaces this?").
+
+Each edge pairs a controlled `relation` with the target entity's `identifier`. `required` marks whether the target is needed for the source to work; `versionConstraint` pins a compatible range; `role` describes what the target does.
+
+<ds-prop-table schema="common/relationship" def="relationship" />
+
+### Relation vocabulary
+
+Edges are authored on the **source** entity, in their canonical direction. Tools derive the inverse edges and the whole-graph view — you never author both sides.
+
+| Authored relation | Derived inverse | Meaning |
+|---|---|---|
+| `depends-on` | `dependency-of` | the source needs the target to function |
+| `composes` | `composed-by` | the source is built from the target |
+| `part-of` | `contains` | the source is a member of the target |
+| `alternative-to` | `alternative-to` (symmetric) | the source is an interchangeable option |
+| `replaces` | `replaced-by` | the source supersedes a deprecated target |
+| `extends` | `extended-by` | the source inherits from the target |
+
+Custom relations are allowed but MUST be vendor-namespaced (e.g. `acme.themes`).
+
+### Rules
+
+- Every `target` MUST resolve to a documented entity. A target that resolves to nothing is a defect.
+- An edge MUST NOT point at its own entity, and an entity MUST NOT declare the same `(relation, target)` edge twice.
+- The `composes` and `depends-on` relations MUST form an acyclic graph; the validator rejects cycles.
+- The graph is in-catalog: relationships reference entities within the resolved document set. Cross-system inheritance uses [Extends](#extends), not relationships.
+
+---
+
 ## Links
 
-The `links` array holds typed references to outside resources and to other DSDS entities. One model covers both URL links and entity links.
-
-Every link needs a `kind` and at least one of `url` (for outside resources) or `identifier` (for DSDS entities). Both can appear when an entity also has a URL.
+The `links` array holds typed references to **external resources** — source code, design files, docs, packages — addressed by `url`.
 
 <ds-prop-table schema="common/link" def="link" />
 
@@ -774,11 +823,9 @@ Every link needs a `kind` and at least one of `url` (for outside resources) or `
 
 **External resource types:** `"source"`, `"design"`, `"storybook"`, `"documentation"`, `"package"`, `"repository"`.
 
-**Relationship types:** `"alternative"`, `"parent"`, `"child"`, `"related"`.
-
-**Artifact types (for internal references):** `"component"`, `"token"`, `"token-group"`, `"foundation"`, `"pattern"`, `"theme"`.
-
 Custom values are permitted and SHOULD be lowercase strings matching `^[a-z][a-z0-9-]*$`.
+
+> **Deprecated.** Using a link to express how entities relate — the relationship kinds (`"alternative"`, `"parent"`, `"child"`, `"related"`) and internal artifact references by `identifier` — is deprecated. Express these as typed edges in [Relationships](#relationships) instead. Linter rule DSDS-010 flags the deprecated forms.
 
 ---
 

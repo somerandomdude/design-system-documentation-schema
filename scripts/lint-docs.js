@@ -247,6 +247,35 @@ const IMPLEMENTATIONS = {
       );
     }
   },
+
+  "deprecated-relationship-link": (entity, pointer, emit) => {
+    const links =
+      entity.metadata && Array.isArray(entity.metadata.links)
+        ? entity.metadata.links
+        : [];
+    const RELATIONSHIP_KINDS = new Set(["alternative", "parent", "child", "related"]);
+    const ARTIFACT_KINDS = new Set([
+      "component",
+      "token",
+      "token-group",
+      "foundation",
+      "pattern",
+      "theme",
+    ]);
+    links.forEach((link, i) => {
+      if (!link || typeof link !== "object") return;
+      const isRelationship =
+        RELATIONSHIP_KINDS.has(link.kind) ||
+        (typeof link.identifier === "string" &&
+          (ARTIFACT_KINDS.has(link.kind) || !link.url));
+      if (isRelationship) {
+        emit(
+          `${pointer}/metadata/links/${i}`,
+          `${entityLabel(entity)} uses a relationship-flavored link (kind '${link.kind}') — move it to the entity's \`relationships\` array as a typed edge (DSDS-010).`,
+        );
+      }
+    });
+  },
 };
 
 // ---------------------------------------------------------------------------

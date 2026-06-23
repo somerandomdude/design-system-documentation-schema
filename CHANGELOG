@@ -4,6 +4,31 @@ All notable changes to the DSDS specification are documented in this file.
 
 ---
 
+## [0.12.0] — 2026-06-18
+
+Minor release — a new relationship graph plus a deprecation. Additive and backward-compatible. Schema files are served at `https://designsystemdocspec.org/v0.12.0/...`.
+
+### Additions
+
+- **New `relationships` array on every entity.** A typed, directional dependency graph: each edge pairs a controlled `relation` with a target entity `identifier`, plus optional `role`, `required`, and `versionConstraint`. The relation vocabulary is `depends-on`, `composes`, `part-of`, `alternative-to`, `replaces`, and `extends` (custom relations allowed if vendor-namespaced). Edges are authored on the source in their canonical direction; tools derive the inverse edges (`composed-by`, `dependency-of`, …) and the whole-graph view. This is the structural graph agents read for impact analysis and alternatives. Defined in `common/relationship.schema.json`. The property is optional on all entities; existing documents are unaffected.
+- **Semantic validation for the graph.** The validator now rejects relationship targets that resolve to no documented entity, self-referential edges, duplicate `(relation, target)` edges, and cycles across `composes`/`depends-on`. Two negative fixtures pin these guards.
+
+### Deprecations
+
+- **Relationship-flavored `links` are deprecated (DSDS-010).** Using a `link` to express how entities relate — the relationship kinds (`alternative`, `parent`, `child`, `related`) and internal artifact references by `identifier` — is deprecated in favor of `relationships`. `links` is now for external resources addressed by `url`. The deprecated forms still validate for backward compatibility; the new lint rule DSDS-010 warns on them. `scripts/migrate-relationship-links.js` converts the unambiguous cases and reports the rest.
+
+---
+
+## [0.11.2] — 2026-06-18
+
+Patch release — one addition, non-breaking. Schema files are served at `https://designsystemdocspec.org/v0.11.2/...`.
+
+### Additions
+
+- **New `checklist` document block.** A checklist is an explicit list of items to work through for an artifact, built primarily for agents: a concrete pass of things to verify, do, or confirm when building, reviewing, or integrating an artifact. Each `checklistItem` pairs an actionable `label` with an optional RFC 2119 `level` (so must/must-not items read as hard gates), optional `description` detail, an optional `criterion` identifier linking to the testable success criterion that defines pass/fail, an optional `category`, and an `optional` flag. The block carries an optional `title` and an `ordered` flag (default `false`). `checklist` is accepted on **component**, **foundation**, and **pattern** entities, in both `documentBlocks` and `agentDocumentBlocks`; it is not a general kind (tokens, themes, and guides do not accept it). Existing documents are unaffected — `checklist` is a new member of the component, foundation, and pattern scoped unions, so nothing prior was tightened or removed.
+
+---
+
 ## [0.11.1] — 2026-06-18
 
 Patch release — one addition, non-breaking. Schema files are served at `https://designsystemdocspec.org/v0.11.1/...`.

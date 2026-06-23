@@ -565,9 +565,10 @@ function pageHtml(
   <meta property="og:description" content="${esc(desc)}">
   <meta property="og:url" content="${pageUrl}">
   <meta name="twitter:card" content="summary">
-  <link rel="stylesheet" href="tokens.css">
-  <link rel="stylesheet" href="style.css">
-  <script src="components.js"></script>
+  <meta name="dsds-version" content="${esc(v)}">
+  <link rel="stylesheet" href="tokens.css?v=${esc(v)}">
+  <link rel="stylesheet" href="style.css?v=${esc(v)}">
+  <script src="components.js?v=${esc(v)}"></script>
 </head>
 <body>
   <a class="skip-link" href="#main-content">Skip to content</a>
@@ -729,11 +730,14 @@ async function build() {
   // at the URL it's published at — e.g., site/dist/v0.1/dsds.bundled.schema.json
   // is served at https://designsystemdocspec.org/v0.1/dsds.bundled.schema.json.
   //
-  // Once a versioned bundle has been published, the file at that URL is a
-  // public contract: every DSDS document that pins its $schema to that URL
-  // relies on the file there never changing. The build therefore refuses to
-  // overwrite an existing versioned bundle. To intentionally re-publish a
-  // version, delete the target file manually and rerun the build.
+  // The versioned bundle is the working artifact for the CURRENT version.
+  // The build ALWAYS refreshes it so a rebuild is atomic — the published
+  // v<current>/ output can never lag the schema source (the desync this
+  // guards against). Older v<n>/ archives are never touched here: the build
+  // only writes the directory named after the current `const`, and the dist
+  // clean step preserves every v*/ directory. Immutability of a *released*
+  // version is enforced at release/deploy time (git tag + atomic deploy),
+  // not by skipping the write — skipping is what let the site go stale.
   const bundledSchemaPath = path.join(SCHEMA_DIR, "dsds.bundled.schema.json");
   if (fs.existsSync(bundledSchemaPath)) {
     const bundledSchema = JSON.parse(fs.readFileSync(bundledSchemaPath, "utf-8"));
@@ -742,24 +746,15 @@ async function build() {
       const versionDir = path.join(DIST_DIR, `v${version}`);
       const versionedBundle = path.join(versionDir, "dsds.bundled.schema.json");
       const relTarget = `site/dist/v${version}/dsds.bundled.schema.json`;
-
-      if (fs.existsSync(versionedBundle)) {
-        const existing = fs.readFileSync(versionedBundle, "utf-8");
-        const current = fs.readFileSync(bundledSchemaPath, "utf-8");
-        if (existing === current) {
-          console.log(`  =  ${relTarget} (unchanged)\n`);
-        } else {
-          console.log(
-            `  ⚠  ${relTarget} already exists and differs from the current\n` +
-              `     bundle. Skipping to preserve the published artifact. Delete the\n` +
-              `     file manually if you intend to re-publish v${version}.\n`,
-          );
-        }
-      } else {
-        fs.mkdirSync(versionDir, { recursive: true });
-        fs.copyFileSync(bundledSchemaPath, versionedBundle);
-        console.log(`  ✓  ${relTarget}  ← spec/schema/dsds.bundled.schema.json\n`);
-      }
+      const changed =
+        !fs.existsSync(versionedBundle) ||
+        fs.readFileSync(versionedBundle, "utf-8") !==
+          fs.readFileSync(bundledSchemaPath, "utf-8");
+      fs.mkdirSync(versionDir, { recursive: true });
+      fs.copyFileSync(bundledSchemaPath, versionedBundle);
+      console.log(
+        `  ✓  ${relTarget}  ← spec/schema/dsds.bundled.schema.json${changed ? " (refreshed)" : ""}\n`,
+      );
     }
   }
 
