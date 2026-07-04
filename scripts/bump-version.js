@@ -4,7 +4,7 @@
  *
  * The DSDS spec version lives in `spec/schema/dsds.schema.json` at
  * `properties.dsdsVersion.const`, but it ALSO appears in the `$id` URL on
- * every split schema file (44 of them), in the root schema's title, in
+ * every split schema file (51 of them), in the root schema's title, in
  * the `$schema` URLs of example documents, and in code snippets in the
  * README. This script rewrites all of those places in one pass.
  *

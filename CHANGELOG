@@ -4,6 +4,19 @@ All notable changes to the DSDS specification are documented in this file.
 
 ---
 
+## [0.12.1] — 2026-07-04
+
+Patch release — two new metadata fields for documentation governance and provenance. Additive and backward-compatible. Both fields are **initial drafts and subject to change** in a future release. Schema files are served at `https://designsystemdocspec.org/v0.12.1/...`.
+
+### Additions
+
+- **New `governance` metadata field.** Who is accountable for an entity's documentation and when a human last confirmed it is accurate: a required `owner` (a team, role, or alias — string shorthand or `{name, contact}` object), an optional `lastReviewed` (bare ISO date or `{date, reviewedBy, note}` object), and an optional `reviewedAgainst` implementation version for drift detection. Reviewed is distinct from `lastUpdated`: updated records when the doc changed; reviewed records when someone confirmed it is still true. Defined in `metadata/governance.schema.json`. Optional on all entities; existing documents are unaffected.
+- **New `docOrigin` metadata field.** How the documentation came to exist, on two orthogonal axes. Origin — the doc's relation to the implementation: `authored` (doc-first), `generated` (tooling), `extracted` (read from the implementation after the fact), `reconstructed` (written from memory). Authorship — what wrote the words: `human`, `ai-assisted`, `ai-generated`, `machine-assisted`, `machine-generated`. A bare string sets the overall origin; the object form adds `authorship`, a `note`, and per-block origin overrides keyed by block kind. Lets consuming tools and agents calibrate trust. Defined in `metadata/doc-origin.schema.json`. Optional on all entities; existing documents are unaffected.
+
+### Credits
+
+- The `governance` and `docOrigin` schemas were contributed by [Afyia Smith](https://afyiasmith.co/).
+
 ## [0.12.0] — 2026-06-18
 
 Minor release — a new relationship graph plus a deprecation. Additive and backward-compatible. Schema files are served at `https://designsystemdocspec.org/v0.12.0/...`.
