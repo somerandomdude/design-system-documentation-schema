@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://designsystemdocspec.org/v0.12.0/entities/theme.schema.json",
+  "$id": "https://designsystemdocspec.org/v0.13.0/entities/theme.schema.json",
   "title": "DSDS Theme Definitions",
-  "description": "A theme documents an alternative set of token values: a color mode, a density setting, or a brand variant. DSDS captures the purpose, document blocks, and relationships of a theme. The override values live in the W3C Design Tokens (DTCG) file that the `source` property points to. The `metadata` object holds optional fields: status, since, lastUpdated, category, tags, aliases, summary, thumbnail, preview, extends, and links. Put internal artifact links in the `links` metadata field, not in a dedicated document block kind.",
+  "description": "A theme documents an alternative set of token values: a color mode, a density setting, or a brand variant. DSDS captures the purpose, document blocks, and relationships of a theme. The override values live in the W3C Design Tokens (DTCG) file that the `source` property points to. The `metadata` object holds the shared entityMetadata fields (see metadata/metadata.schema.json). Put internal artifact links in the `links` metadata field, not in a dedicated document block kind.",
   "$defs": {
     "tokenOverride": {
       "type": "object",
@@ -24,7 +24,7 @@
     },
     "theme": {
       "type": "object",
-      "description": "A named context that adapts the design system's token values. DSDS captures the purpose, usage document blocks, accessibility notes, and the list of affected tokens. The override values live in the DTCG file that `source` points to. Use themes for color modes (light, dark, high-contrast), density settings (compact, comfortable), brand variants, or product-specific tweaks. The token catalog stays the source of truth for token identity, type, and docs. The `metadata` object holds optional fields: status, since, lastUpdated, category, tags, aliases, summary, thumbnail, preview, extends, and links.",
+      "description": "A named context that adapts the design system's token values. DSDS captures the purpose, usage document blocks, accessibility notes, and the list of affected tokens. The override values live in the DTCG file that `source` points to. Use themes for color modes (light, dark, high-contrast), density settings (compact, comfortable), brand variants, or product-specific tweaks. The token catalog stays the source of truth for token identity, type, and docs. The `metadata` object holds the shared entityMetadata fields (see metadata/metadata.schema.json).",
       "required": [
         "kind",
         "identifier",
@@ -51,11 +51,14 @@
         },
         "metadata": {
           "$ref": "../metadata/metadata.schema.json#/$defs/entityMetadata",
-          "description": "Optional metadata fields, keyed by name: status, since, lastUpdated, category, tags, aliases, summary, thumbnail, preview, extends, and links."
+          "description": "Optional metadata: the shared entityMetadata fields (see metadata/metadata.schema.json)."
         },
         "source": {
           "type": "object",
           "description": "Points to the W3C Design Tokens (DTCG) definition. DSDS does not copy token values. The DTCG file is the source of truth for resolved values, aliases, and type info.",
+          "required": [
+            "file"
+          ],
           "properties": {
             "file": {
               "type": "string",
@@ -82,17 +85,19 @@
         },
         "documentBlocks": {
           "type": "array",
-          "description": "All structured docs for this theme, as an ordered array of typed document block objects. Themes accept the general kinds only (guidelines, useCases, accessibility, content, sections). The `kind` property on each entry sets its shape. Order matters, so tools SHOULD keep it for display.",
+          "description": "All structured docs for this theme, as an ordered array of typed document block objects. Themes accept the general kinds only (guidelines, useCases, accessibility, content, sections, checklist). The `kind` property on each entry sets its shape. Order matters, so tools SHOULD keep it for display.",
           "items": {
-            "$ref": "../document-blocks/document-blocks.schema.json#/$defs/tokenDocumentBlock"
-          }
+            "$ref": "../document-blocks/document-blocks.schema.json#/$defs/generalDocumentBlock"
+          },
+          "minItems": 1
         },
         "agentDocumentBlocks": {
           "type": "array",
           "description": "Structured docs for agents (AI/LLM) only — a separate space that accepts the same block kinds as `documentBlocks`. `documentBlocks` is the default: put anything a human reader needs there. Use `agentDocumentBlocks` only for content that helps an agent build correctly but is noise for humans. For example: hard MUST/MUST-NOT rules an agent should treat as firm limits; notes that correct a mistake an agent is likely to make, such as reaching for this entity when a confusable one fits better; constraints backed by test-run evidence; and machine-checkable criteria with verification modes. A hard rule that humans also need (such as an accessibility requirement) belongs in `documentBlocks`, not here. Agent blocks add to the human docs — they never replace or duplicate them. Tools MUST NOT render these blocks in human-facing docs. Agents SHOULD read both arrays, human blocks first.",
           "items": {
-            "$ref": "../document-blocks/document-blocks.schema.json#/$defs/tokenDocumentBlock"
-          }
+            "$ref": "../document-blocks/document-blocks.schema.json#/$defs/generalDocumentBlock"
+          },
+          "minItems": 1
         },
         "$extensions": {
           "$ref": "../common/extensions.schema.json#/$defs/extensions"

@@ -357,7 +357,7 @@ The `category` metadata field names the *kind* of guide — getting-started, con
 
 ### Chunk
 
-A pre-composed block of code that captures a design system pattern — a copy-paste starting point built from the system's components. Chunks sit at the same level as components. Where a component documents one building block, a chunk documents a composition of them, captured as code. The chunk is intentionally simple: it does not use `documentBlocks`.
+A pre-composed block of code that captures a design system pattern — a copy-paste starting point built from the system's components. Chunks sit at the same level as components. Where a component documents one building block, a chunk documents a composition of them, captured as code. The chunk is intentionally simple: its `documentBlocks` and `agentDocumentBlocks` accept the general block kinds only — no anatomy, API, or measurable specs.
 
 Required properties: `kind`, `identifier`, `name`, `code`.
 
@@ -365,7 +365,7 @@ More properties:
 
 <ds-prop-table schema="entities/chunk" def="chunk" />
 
-The `code` object carries the source in one of two forms: **inline** (`code` + `language`) when the source travels with the document, or **referenced** (`src` + `language`) when it lives in an external file the consumer resolves at read time. The referenced `src` is a relative path and follows the same resolution rules as a `$ref` fileRef — no build step inlines it. The flat `guidelines` array reuses the shared guideline-entry shape (guidance, rationale, level), and the `useCases` array reuses the shared use-case shape (description, stance). A chunk points to the components it composes through the `links` metadata field (with `kind: "component"`, `identifier`, and `role`).
+The `code` object carries the source in one of two forms: **inline** (`code` + `language`) when the source travels with the document, or **referenced** (`src` + `language`) when it lives in an external file the consumer resolves at read time. The referenced `src` is a relative path and follows the same resolution rules as a `$ref` fileRef — no build step inlines it. Structured docs live in `documentBlocks` (and agent-only rules in `agentDocumentBlocks`), both accepting the general block kinds — guidelines, useCases, accessibility, content, sections, and checklist. The flat top-level `guidelines` and `useCases` arrays are deprecated authoring shorthand for the equivalent blocks. A chunk declares the components it composes as typed `composes` edges in its `relationships` array.
 
 ---
 
@@ -479,7 +479,20 @@ Each entity type accepts only the block types that fit it. Here is why:
 
 <ds-block-scope-table />
 
-**General** (available on all entity types): guidelines, useCases, accessibility, content, and sections (free-form narrative prose).
+**General** (available on all entity types): checklist, guidelines, useCases, accessibility, content, and sections (free-form narrative prose).
+
+### Known naming exceptions
+
+Two naming inconsistencies are recorded here as deliberate, pending the next major release (renames are breaking):
+
+- The block kind `useCases` is camelCase where every other DSDS-native vocabulary value is lowercase kebab-case; it becomes `use-cases` at the next major.
+- The actionable line on a checklist item is richText `label`, while a step entry uses string `title` and a scale step uses `label` where sibling entries use `name`; these converge on `label` (richText) for procedural blocks and `name` for display names at the next major.
+
+- `systemInfo`'s `systemName`/`systemVersion` stutter against their mount point and diverge from the bare `name`/`version` style used elsewhere; they become `name`/`version` at the next major.
+- The explanatory-prose property on the status object forms is `description`, while sibling metadata fields (`lastUpdated`, `lastReviewed`, `docOrigin`) use `note`; status converges on `note` at the next major.
+- Sub-entry identifiers on anatomy parts, states, variant values, motion entries, and scale steps are unpatterned (values like `2xl` are legal), unlike entity identifiers — a deliberate exception, not drift.
+
+Do not introduce new values or properties that follow the exceptions — new vocabulary MUST be lowercase kebab-case.
 
 ### Document block types
 
@@ -769,7 +782,7 @@ These block types are shared across more than one entity type without being gene
 
 ### Checklist (`checklist`)
 
-An explicit checklist of items to work through for an artifact. Accepted on **component**, **foundation**, and **pattern** entities. It is built primarily for agents: a concrete list of things to verify, do, or confirm when building, reviewing, or integrating an artifact, and it reads equally well from `agentDocumentBlocks`.
+An explicit checklist of items to work through for an artifact. A general block kind, accepted on **every** entity type. It is built primarily for agents: a concrete list of things to verify, do, or confirm when building, reviewing, or integrating an artifact, and it reads equally well from `agentDocumentBlocks`.
 
 Each item is a `checklistItem` with an actionable `label`, an optional RFC 2119 `level` that marks hard gates, optional `description` detail, and an optional `criterion` identifier linking to the testable success criterion that defines pass/fail. The block carries an optional `title` and an `ordered` flag (default `false`).
 

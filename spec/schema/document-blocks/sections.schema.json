@@ -1,13 +1,15 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://designsystemdocspec.org/v0.12.0/document-blocks/sections.schema.json",
+  "$id": "https://designsystemdocspec.org/v0.13.0/document-blocks/sections.schema.json",
   "title": "DSDS Sections Document Block",
   "description": "Free-form narrative prose organized into titled, optionally nested sections. Sections are the backbone of long-form documentation that does not fit the highly structured block kinds (api, anatomy, variants). Use them for conceptual explanations, overviews, rationale, and any reading-oriented content. Each section pairs a heading with a rich-text body, examples, related links, and optional sub-sections.",
   "$defs": {
     "sectionEntry": {
       "type": "object",
       "description": "A single titled section of prose. Pairs a heading with a rich-text body, optional illustrative examples, optional related links, and optional nested sub-sections. Sub-sections let a guide build a heading hierarchy (h2 → h3 → h4) without inventing one block per level. A section MUST carry a `title`. Everything else is optional, so a section can be a bare heading that only groups its children.",
-      "required": ["title"],
+      "required": [
+        "title"
+      ],
       "properties": {
         "title": {
           "type": "string",
@@ -27,21 +29,24 @@
           "description": "Illustrative examples for this section: code snippets, images, videos, or live URLs. Useful for showing a concept in practice within explanatory prose.",
           "items": {
             "$ref": "../common/example.schema.json#/$defs/example"
-          }
+          },
+          "minItems": 1
         },
         "links": {
           "type": "array",
           "description": "Related links surfaced with this section: 'see also' references, source material, or pointers to other entities and external resources.",
           "items": {
             "$ref": "../common/link.schema.json#/$defs/link"
-          }
+          },
+          "minItems": 1
         },
         "sections": {
           "type": "array",
           "description": "Nested sub-sections beneath this one. Each item is itself a sectionEntry, allowing an arbitrarily deep heading hierarchy. Ordering is significant, so tools SHOULD render sub-sections in this order.",
           "items": {
             "$ref": "#/$defs/sectionEntry"
-          }
+          },
+          "minItems": 1
         }
       },
       "additionalProperties": false
@@ -49,7 +54,10 @@
     "sections": {
       "type": "object",
       "description": "A block of narrative documentation made up of one or more titled sections. Use it for the reading-oriented content of a guide that the structured block kinds do not capture: overviews, concepts, rationale, and FAQs. Each item is a sectionEntry with a heading, prose body, optional examples and links, and optional nested sub-sections.",
-      "required": ["kind", "items"],
+      "required": [
+        "kind",
+        "items"
+      ],
       "properties": {
         "kind": {
           "type": "string",

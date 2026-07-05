@@ -1,0 +1,91 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://designsystemdocspec.org/v0.13.0/metadata/governance.schema.json",
+  "title": "DSDS Governance Metadata Field",
+  "description": "Who is accountable for this entity's documentation, and when a human last confirmed it is accurate. Governance answers the question 'who do I ask when the doc contradicts the code' and lets tools flag documentation that no one has verified recently. It is distinct from `lastUpdated`: updated records when the documentation changed; reviewed records when someone confirmed it is still true. A doc untouched for a year but reviewed last month is healthy. Introduced as an initial draft in 0.12.1 — the shape may change in a future release.",
+  "$defs": {
+    "owner": {
+      "description": "The party accountable for this entity's documentation. A bare string names the owner and covers the common case. Use the object form to add contact details. Owners SHOULD be teams, roles, or group aliases (e.g., 'Design Systems', '@acme/design-system') rather than named individuals — person-level ownership goes stale on turnover, which is the exact situation this field exists for. Tools SHOULD surface the owner wherever a reader might need to escalate a discrepancy.",
+      "oneOf": [
+        {
+          "type": "string",
+          "description": "Name or alias of the owning team, role, or group (e.g., 'Design Systems', '@acme/design-system').",
+          "minLength": 1
+        },
+        {
+          "type": "object",
+          "description": "Full owner form: the owning party's name plus a contact route.",
+          "required": [
+            "name"
+          ],
+          "properties": {
+            "name": {
+              "type": "string",
+              "description": "Name or alias of the owning team, role, or group (e.g., 'Design Systems'). SHOULD name a team or role, not an individual.",
+              "minLength": 1
+            },
+            "contact": {
+              "type": "string",
+              "description": "How to reach the owner: a URL, email address, or channel reference (e.g., 'https://github.com/orgs/acme/teams/design-system', 'design-system@acme.com', '#design-system'). Freeform; tools SHOULD render it as a link when it parses as a URL or email.",
+              "minLength": 1
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "lastReviewed": {
+      "description": "When a human last confirmed this entity's documentation is accurate. A bare ISO 8601 date string ('2026-06-12') covers the common case. Use the object form to record who reviewed and what they concluded. Reviewing does not imply changing: a review that finds the doc correct updates `lastReviewed` and leaves `lastUpdated` alone. Tools MAY treat an old or absent `lastReviewed` as a staleness signal, and agents SHOULD prefer recently reviewed documentation when sources conflict.",
+      "oneOf": [
+        {
+          "$ref": "../common/dated-note.schema.json#/$defs/isoDate",
+          "description": "ISO 8601 date (YYYY-MM-DD) of the most recent review of this entity's documentation."
+        },
+        {
+          "type": "object",
+          "description": "Full lastReviewed form: the date plus who reviewed, what version it was verified against, and an optional note on the outcome.",
+          "required": [
+            "date"
+          ],
+          "properties": {
+            "date": {
+              "$ref": "../common/dated-note.schema.json#/$defs/isoDate",
+              "description": "ISO 8601 date (YYYY-MM-DD) of the most recent review of this entity's documentation."
+            },
+            "reviewedBy": {
+              "type": "string",
+              "description": "Who performed the review — a team, role, or individual (e.g., 'Design Systems', 'jane.doe'). Unlike `owner`, naming an individual here is fine: it records a historical fact, not a standing responsibility.",
+              "minLength": 1
+            },
+            "note": {
+              "$ref": "../common/dated-note.schema.json#/$defs/plainNote",
+              "description": "Plain-text note on the review outcome (e.g., 'Verified against v3.1; prop table still accurate', 'Guidelines section needs a rewrite — tracked in DS-412'). MUST NOT contain markup."
+            },
+            "reviewedAgainst": {
+              "type": "string",
+              "description": "The implementation version the documentation was verified against in this review, as a package version or release identifier (e.g., '@acme/ui@3.1.0', '3.1.0'). Lets tools detect drift: if the implementation has moved past this version, the documentation MAY be out of date even if recently reviewed. Nested inside the review record so it structurally cannot exist without one.",
+              "minLength": 1
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "governance": {
+      "type": "object",
+      "description": "Accountability and review state for this entity's documentation. `owner` is required — a governance object that names no owner answers none of the questions the field exists for. `lastReviewed` is optional but SHOULD be set once a review process exists; its object form records who reviewed and which implementation version was verified (`reviewedAgainst`), so a tool can answer 'is this doc verified, against which version, and who vouches for it.'",
+      "required": [
+        "owner"
+      ],
+      "properties": {
+        "owner": {
+          "$ref": "#/$defs/owner"
+        },
+        "lastReviewed": {
+          "$ref": "#/$defs/lastReviewed"
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

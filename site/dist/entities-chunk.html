@@ -3,35 +3,39 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>DSDS Chunk Definitions — DSDS 0.12.0</title>
+  <title>DSDS Chunk Definitions — DSDS 0.13.0</title>
   <meta name="description" content="Defines documents for chunks. A chunk is a pre-composed block of code that represents a ready-to-use pattern in the design system — a copy-paste starting point built from the system's components. A chunk document holds the identity of the block, the rules for using it (`guidelines`), when it fits (`useCases`), and the code itself (`code`). Chunks sit at the same level as components. Where a component documents a single building block, a chunk documents a composition of building blocks captured as code.">
   <link rel="canonical" href="https://designsystemdocspec.org/entities-chunk">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Design System Documentation Spec">
-  <meta property="og:title" content="DSDS Chunk Definitions — DSDS 0.12.0">
+  <meta property="og:title" content="DSDS Chunk Definitions — DSDS 0.13.0">
   <meta property="og:description" content="Defines documents for chunks. A chunk is a pre-composed block of code that represents a ready-to-use pattern in the design system — a copy-paste starting point built from the system's components. A chunk document holds the identity of the block, the rules for using it (`guidelines`), when it fits (`useCases`), and the code itself (`code`). Chunks sit at the same level as components. Where a component documents a single building block, a chunk documents a composition of building blocks captured as code.">
   <meta property="og:url" content="https://designsystemdocspec.org/entities-chunk">
   <meta name="twitter:card" content="summary">
-  <meta name="dsds-version" content="0.12.0">
-  <link rel="stylesheet" href="tokens.css?v=0.12.0">
-  <link rel="stylesheet" href="style.css?v=0.12.0">
-  <script src="components.js?v=0.12.0"></script>
+  <meta name="dsds-version" content="0.13.0">
+  <link rel="stylesheet" href="tokens.css?v=0.13.0">
+  <link rel="stylesheet" href="style.css?v=0.13.0">
+  <script src="components.js?v=0.13.0"></script>
 </head>
 <body>
   <a class="skip-link" href="#main-content">Skip to content</a>
   <ds-nav-toggle target="ds-spec-nav"></ds-nav-toggle>
-  <ds-spec-nav title="Design System Documentation Spec 0.12.0" title-href="index.html" active="entities-chunk">
+  <ds-spec-nav title="Design System Documentation Spec 0.13.0" title-href="index.html" active="entities-chunk">
     <a href="index.html" slug="index">Overview</a>
     <a href="quickstart.html" slug="quickstart">Quick start</a>
     <a href="humans-and-agents.html" slug="humans-and-agents">Humans &amp; agents</a>
     <a href="schema-architecture.html" slug="schema-architecture">Schema architecture</a>
+    <a href="conformance.html" slug="conformance">Conformance</a>
+    <a href="interoperability.html" slug="interoperability">Interoperability</a>
+    <a href="stability.html" slug="stability">Stability &amp; 1.0</a>
     <a href="samples.html" slug="samples">Interactive samples</a>
     <ds-nav-group label="Documentation">
       <a href="root.html" slug="root">Root schema</a>
     </ds-nav-group>
     <ds-nav-group label="Common">
       <a href="common-criterion.html" slug="common-criterion">criterion</a>
+      <a href="common-dated-note.html" slug="common-dated-note">dated-note</a>
       <a href="common-entity-ref.html" slug="common-entity-ref">entity-ref</a>
       <a href="common-example.html" slug="common-example">example</a>
       <a href="common-extends.html" slug="common-extends">extends</a>
@@ -42,6 +46,7 @@
       <a href="common-rich-text.html" slug="common-rich-text">rich-text</a>
       <a href="common-status.html" slug="common-status">status</a>
       <a href="common-system-info.html" slug="common-system-info">system-info</a>
+      <a href="common-token-overrides.html" slug="common-token-overrides">token-overrides</a>
       <a href="common-use-cases.html" slug="common-use-cases">use-cases</a>
     </ds-nav-group>
     <ds-nav-group label="Entities">
@@ -75,7 +80,8 @@
     <ds-nav-group label="Metadata">
       <a href="metadata-aliases.html" slug="metadata-aliases">aliases</a>
       <a href="metadata-category.html" slug="metadata-category">category</a>
-      <a href="metadata-extends.html" slug="metadata-extends">extends</a>
+      <a href="metadata-doc-origin.html" slug="metadata-doc-origin">doc-origin</a>
+      <a href="metadata-governance.html" slug="metadata-governance">governance</a>
       <a href="metadata-last-updated.html" slug="metadata-last-updated">last-updated</a>
       <a href="metadata-links.html" slug="metadata-links">links</a>
       <a href="metadata-metadata.html" slug="metadata-metadata">metadata</a>
@@ -91,21 +97,23 @@
     <main class="content__main" id="main-content" role="main">
       <div class="content__inner">
         <ds-schema-header title="DSDS Chunk Definitions" description="Defines documents for chunks. A chunk is a pre-composed block of code that represents a ready-to-use pattern in the design system — a copy-paste starting point built from the system's components. A chunk document holds the identity of the block, the rules for using it (`guidelines`), when it fits (`useCases`), and the code itself (`code`). Chunks sit at the same level as components. Where a component documents a single building block, a chunk documents a composition of building blocks captured as code." source="entities/chunk.schema.json"></ds-schema-header>
-<ds-def-section name="chunk" anchor="chunk" description="A pre-composed block of code that captures a design system pattern. Chunks give consumers a working starting point assembled from system components — for example, a layout, a settings form, or a confirmation dialog. The top level holds its identity (`identifier`, `name`, optional `description`), the `code` block that consumers copy, `guidelines` for how to use and adapt it, and `useCases` for when it is the right choice. Chunks are intentionally simple: they document a code composition, not the full anatomy/API surface a component carries." type="object">
+<ds-def-section name="chunk" anchor="chunk" description="A pre-composed block of code that captures a design system pattern. Chunks give consumers a working starting point assembled from system components — for example, a layout, a settings form, or a confirmation dialog. The top level holds its identity (`identifier`, `name`, optional `description`), the `code` block that consumers copy, and `documentBlocks`/`agentDocumentBlocks` carrying the general block kinds (guidelines, useCases, accessibility, content, sections, checklist) — so a chunk can hold agent-only rules like any other entity. Chunks are intentionally simple: they document a code composition, not the full anatomy/API surface a component carries. The top-level `guidelines` and `useCases` arrays are DEPRECATED authoring shorthand — prefer the equivalent blocks in `documentBlocks`." type="object">
 <ds-prop-table>
   <ds-prop name="kind" type="&lt;ds-code inline&gt;&quot;chunk&quot;&lt;/ds-code&gt;" required>Identifies this entity as a chunk.</ds-prop>
   <ds-prop name="identifier" type="string" required>Machine-readable identifier for the chunk (e.g., 'search-bar', 'settings-form', 'confirmation-dialog'). MUST be lowercase kebab-case and unique within its entity group.<br><small>Pattern: <ds-code inline>^[a-z][a-z0-9-]*$</ds-code></small></ds-prop>
   <ds-prop name="name" type="string" required>Display name shown in docs (e.g., 'Search bar', 'Settings form', 'Confirmation dialog').</ds-prop>
   <ds-prop name="code" type="object {code, language} | object {src, language}" required>The pre-composed block of code consumers copy to use the chunk. Provide it in exactly one of two forms: inline (<ds-code inline>code</ds-code> + <ds-code inline>language</ds-code>) when the source travels with the document, or referenced (<ds-code inline>src</ds-code> + <ds-code inline>language</ds-code>) when it lives in an external source file. The referenced form keeps long sources readable and lets a chunk share one canonical file with a live app. Consumers resolve <ds-code inline>src</ds-code> at read time — no build step inlines it.</ds-prop>
   <ds-prop name="description" type="&lt;ds-type-ref href=&quot;common-rich-text.html#richtext&quot;&gt;richText&lt;/ds-type-ref&gt;">What this chunk is, the pattern it captures, and which components it composes. CommonMark supported.</ds-prop>
-  <ds-prop name="guidelines" type="&lt;ds-type-ref href=&quot;document-blocks-guidelines.html#guidelineentry&quot;&gt;guidelineEntry&lt;/ds-type-ref&gt;[]">Actionable rules for using and adapting the chunk. Each item pairs a guidance statement with a rationale and an RFC 2119 enforcement level. Reuses the shared guideline-entry shape so chunk rules read the same as guidelines elsewhere in the system.<br><small>Min items: 1</small></ds-prop>
-  <ds-prop name="useCases" type="&lt;ds-type-ref href=&quot;common-use-cases.html#usecase&quot;&gt;useCase&lt;/ds-type-ref&gt;[]">Scenario-driven use cases describing when this chunk is — or is not — the right choice. Each entry is marked 'recommended' or 'discouraged'. Reuses the shared use-case shape. Authors SHOULD lead with recommended scenarios.<br><small>Min items: 1</small></ds-prop>
-  <ds-prop name="relationships" type="&lt;ds-type-ref href=&quot;common-relationship.html#relationships&quot;&gt;relationships&lt;/ds-type-ref&gt;">Typed dependency edges from this chunk to other entities — chiefly 'composes' the components it is built from (mark <ds-code inline>required</ds-code> true for essential ones). The structural counterpart to listing components in <ds-code inline>links</ds-code>; the graph agents read for impact and alternatives. Inverse edges are derived by tooling.</ds-prop>
-  <ds-prop name="metadata" type="&lt;ds-type-ref href=&quot;metadata-metadata.html#entitymetadata&quot;&gt;entityMetadata&lt;/ds-type-ref&gt;">Optional metadata fields, keyed by name: status, since, lastUpdated, category, tags, aliases, summary, thumbnail, preview, extends, and links. Use the <ds-code inline>links</ds-code> field to point at the components this chunk composes.</ds-prop>
+  <ds-prop name="documentBlocks" type="&lt;ds-type-ref href=&quot;document-blocks-document-blocks.html#generaldocumentblock&quot;&gt;generalDocumentBlock&lt;/ds-type-ref&gt;[]">Structured docs for this chunk, as an ordered array of general document blocks (guidelines, useCases, accessibility, content, sections, checklist). Chunks accept the general kinds only — they document a code composition, not the anatomy/API surface a component carries.<br><small>Min items: 1</small></ds-prop>
+  <ds-prop name="agentDocumentBlocks" type="&lt;ds-type-ref href=&quot;document-blocks-document-blocks.html#generaldocumentblock&quot;&gt;generalDocumentBlock&lt;/ds-type-ref&gt;[]">Structured docs for AI agents consuming this chunk, using the same general block kinds as <ds-code inline>documentBlocks</ds-code>. Content here is agent-only: hard MUST/MUST-NOT rules, verification checklists, and adaptation constraints an agent needs when copying the chunk into an application. Human-facing guidance belongs in <ds-code inline>documentBlocks</ds-code>.<br><small>Min items: 1</small></ds-prop>
+  <ds-prop name="guidelines" type="&lt;ds-type-ref href=&quot;document-blocks-guidelines.html#guidelineentry&quot;&gt;guidelineEntry&lt;/ds-type-ref&gt;[]">DEPRECATED authoring shorthand — prefer a <ds-code inline>guidelines</ds-code> block inside <ds-code inline>documentBlocks</ds-code>. Actionable rules for using and adapting the chunk. Each item pairs a guidance statement with a rationale and an RFC 2119 enforcement level. Reuses the shared guideline-entry shape so chunk rules read the same as guidelines elsewhere in the system. When both this shorthand and an equivalent block in <ds-code inline>documentBlocks</ds-code> are present, tools MUST treat the <ds-code inline>documentBlocks</ds-code> block as authoritative.<br><small>Min items: 1</small></ds-prop>
+  <ds-prop name="useCases" type="&lt;ds-type-ref href=&quot;common-use-cases.html#usecase&quot;&gt;useCase&lt;/ds-type-ref&gt;[]">DEPRECATED authoring shorthand — prefer a <ds-code inline>useCases</ds-code> block inside <ds-code inline>documentBlocks</ds-code>. Scenario-driven use cases describing when this chunk is — or is not — the right choice. Each entry is marked 'recommended' or 'discouraged'. Reuses the shared use-case shape. Authors SHOULD lead with recommended scenarios. When both this shorthand and an equivalent block in <ds-code inline>documentBlocks</ds-code> are present, tools MUST treat the <ds-code inline>documentBlocks</ds-code> block as authoritative.<br><small>Min items: 1</small></ds-prop>
+  <ds-prop name="relationships" type="&lt;ds-type-ref href=&quot;common-relationship.html#relationships&quot;&gt;relationships&lt;/ds-type-ref&gt;">Typed dependency edges from this chunk to other entities — chiefly 'composes' the components it is built from (mark <ds-code inline>required</ds-code> true for essential ones). This is the graph agents read for impact and alternatives. Inverse edges are derived by tooling.</ds-prop>
+  <ds-prop name="metadata" type="&lt;ds-type-ref href=&quot;metadata-metadata.html#entitymetadata&quot;&gt;entityMetadata&lt;/ds-type-ref&gt;">Optional metadata: the shared entityMetadata fields (see metadata/metadata.schema.json). Declare the components this chunk composes as <ds-code inline>relationships</ds-code> edges, not links.</ds-prop>
   <ds-prop name="$extensions" type="&lt;ds-type-ref href=&quot;common-extensions.html#extensions&quot;&gt;extensions&lt;/ds-type-ref&gt;"></ds-prop>
 </ds-prop-table>
 <ds-cross-refs><strong>References:</strong> 
-<ds-type-ref href="common-rich-text.html#richtext">richText</ds-type-ref>, <ds-type-ref href="document-blocks-guidelines.html#guidelineentry">guidelineEntry</ds-type-ref>, <ds-type-ref href="common-use-cases.html#usecase">useCase</ds-type-ref>, <ds-type-ref href="common-relationship.html#relationships">relationships</ds-type-ref>, <ds-type-ref href="metadata-metadata.html#entitymetadata">entityMetadata</ds-type-ref>, <ds-type-ref href="common-extensions.html#extensions">extensions</ds-type-ref>
+<ds-type-ref href="common-rich-text.html#richtext">richText</ds-type-ref>, <ds-type-ref href="document-blocks-document-blocks.html#generaldocumentblock">generalDocumentBlock</ds-type-ref>, <ds-type-ref href="document-blocks-guidelines.html#guidelineentry">guidelineEntry</ds-type-ref>, <ds-type-ref href="common-use-cases.html#usecase">useCase</ds-type-ref>, <ds-type-ref href="common-relationship.html#relationships">relationships</ds-type-ref>, <ds-type-ref href="metadata-metadata.html#entitymetadata">entityMetadata</ds-type-ref>, <ds-type-ref href="common-extensions.html#extensions">extensions</ds-type-ref>
 </ds-cross-refs>
 <ds-def-example>
 <ds-code language="json" label="example">{
@@ -145,38 +153,67 @@
     &quot;language&quot;: &quot;tsx&quot;,
     &quot;src&quot;: &quot;./chunks/confirmation-dialog.tsx&quot;
   },
-  &quot;useCases&quot;: [
+  &quot;documentBlocks&quot;: [
     {
-      &quot;description&quot;: &quot;Guard a destructive or irreversible action — deleting, archiving, or overwriting — so the user confirms intent before it runs.&quot;,
-      &quot;stance&quot;: &quot;recommended&quot;
+      &quot;kind&quot;: &quot;useCases&quot;,
+      &quot;purpose&quot;: &quot;Ask the user to confirm or cancel a destructive action before it runs.&quot;,
+      &quot;items&quot;: [
+        {
+          &quot;description&quot;: &quot;Guard a destructive or irreversible action — deleting, archiving, or overwriting — so the user confirms intent before it runs.&quot;,
+          &quot;stance&quot;: &quot;recommended&quot;
+        },
+        {
+          &quot;description&quot;: &quot;Confirm low-stakes, easily reversible actions where an undo affordance would serve the user better.&quot;,
+          &quot;stance&quot;: &quot;discouraged&quot;,
+          &quot;alternative&quot;: {
+            &quot;identifier&quot;: &quot;toast&quot;,
+            &quot;rationale&quot;: &quot;A toast with an undo action keeps reversible flows fast and avoids interrupting the user with a modal.&quot;
+          }
+        }
+      ]
     },
     {
-      &quot;description&quot;: &quot;Confirm low-stakes, easily reversible actions where an undo affordance would serve the user better.&quot;,
-      &quot;stance&quot;: &quot;discouraged&quot;,
-      &quot;alternative&quot;: {
-        &quot;identifier&quot;: &quot;toast&quot;,
-        &quot;rationale&quot;: &quot;A toast with an undo action keeps reversible flows fast and avoids interrupting the user with a modal.&quot;
-      }
+      &quot;kind&quot;: &quot;guidelines&quot;,
+      &quot;items&quot;: [
+        {
+          &quot;guidance&quot;: &quot;Label the confirm button with the action it performs (e.g. 'Delete') rather than a generic 'OK'.&quot;,
+          &quot;rationale&quot;: &quot;An action-specific label tells the user what will happen, reducing accidental confirmations.&quot;,
+          &quot;level&quot;: &quot;should&quot;,
+          &quot;category&quot;: &quot;content&quot;
+        },
+        {
+          &quot;guidance&quot;: &quot;Give the destructive confirm button the 'critical' tone and keep the cancel action visually quieter.&quot;,
+          &quot;rationale&quot;: &quot;Tone and weight signal the consequence and steer the user toward the safe default.&quot;,
+          &quot;level&quot;: &quot;should&quot;,
+          &quot;category&quot;: &quot;visual-design&quot;
+        },
+        {
+          &quot;guidance&quot;: &quot;Move focus into the dialog on open and return it to the trigger on close.&quot;,
+          &quot;rationale&quot;: &quot;Keyboard and screen reader users lose their place when focus is not managed across the modal lifecycle.&quot;,
+          &quot;level&quot;: &quot;must&quot;,
+          &quot;category&quot;: &quot;accessibility&quot;
+        }
+      ]
     }
   ],
-  &quot;guidelines&quot;: [
+  &quot;agentDocumentBlocks&quot;: [
     {
-      &quot;guidance&quot;: &quot;Label the confirm button with the action it performs (e.g. 'Delete') rather than a generic 'OK'.&quot;,
-      &quot;rationale&quot;: &quot;An action-specific label tells the user what will happen, reducing accidental confirmations.&quot;,
-      &quot;level&quot;: &quot;should&quot;,
-      &quot;category&quot;: &quot;content&quot;
-    },
-    {
-      &quot;guidance&quot;: &quot;Give the destructive confirm button the 'critical' tone and keep the cancel action visually quieter.&quot;,
-      &quot;rationale&quot;: &quot;Tone and weight signal the consequence and steer the user toward the safe default.&quot;,
-      &quot;level&quot;: &quot;should&quot;,
-      &quot;category&quot;: &quot;visual-design&quot;
-    },
-    {
-      &quot;guidance&quot;: &quot;Move focus into the dialog on open and return it to the trigger on close.&quot;,
-      &quot;rationale&quot;: &quot;Keyboard and screen reader users lose their place when focus is not managed across the modal lifecycle.&quot;,
-      &quot;level&quot;: &quot;must&quot;,
-      &quot;category&quot;: &quot;accessibility&quot;
+      &quot;kind&quot;: &quot;checklist&quot;,
+      &quot;title&quot;: &quot;Adapting this chunk&quot;,
+      &quot;items&quot;: [
+        {
+          &quot;label&quot;: &quot;Keep the confirm and cancel actions as Button components — do not replace them with raw button elements.&quot;,
+          &quot;level&quot;: &quot;must&quot;
+        },
+        {
+          &quot;label&quot;: &quot;Replace the placeholder question and confirm label with copy naming the specific action being confirmed.&quot;,
+          &quot;level&quot;: &quot;must&quot;
+        },
+        {
+          &quot;label&quot;: &quot;Preserve the focus-management wiring when restructuring the dialog contents.&quot;,
+          &quot;level&quot;: &quot;must&quot;
+        }
+      ]
     }
   ]
 }</ds-code>
@@ -186,7 +223,7 @@
         <ds-back-to-top></ds-back-to-top>
 
         <ds-footer>
-          <p>Design System Documentation Spec (DSDS) 0.12.0 — Draft Specification</p>
+          <p>Design System Documentation Spec (DSDS) 0.13.0 — Draft Specification</p>
           <p><a href="https://github.com/somerandomdude/design-system-documentation-schema">GitHub</a></p>
         </ds-footer>
       </div>

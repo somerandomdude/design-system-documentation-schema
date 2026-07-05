@@ -3,35 +3,39 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>DSDS Motion Document Block — DSDS 0.12.0</title>
+  <title>DSDS Motion Document Block — DSDS 0.13.0</title>
   <meta name="description" content="Documents the motion system for a foundation: named easing curves, recommended durations, and usage guidance. Each item defines an easing with its cubic-bezier function (aligned with the W3C Design Tokens Format Module cubicBezier type), recommended duration range, usage context, and optional examples. Motion blocks capture structured data that tools need to generate CSS transitions, validate animation implementations, and show interactive easing curve previews.">
   <link rel="canonical" href="https://designsystemdocspec.org/document-blocks-motion">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Design System Documentation Spec">
-  <meta property="og:title" content="DSDS Motion Document Block — DSDS 0.12.0">
+  <meta property="og:title" content="DSDS Motion Document Block — DSDS 0.13.0">
   <meta property="og:description" content="Documents the motion system for a foundation: named easing curves, recommended durations, and usage guidance. Each item defines an easing with its cubic-bezier function (aligned with the W3C Design Tokens Format Module cubicBezier type), recommended duration range, usage context, and optional examples. Motion blocks capture structured data that tools need to generate CSS transitions, validate animation implementations, and show interactive easing curve previews.">
   <meta property="og:url" content="https://designsystemdocspec.org/document-blocks-motion">
   <meta name="twitter:card" content="summary">
-  <meta name="dsds-version" content="0.12.0">
-  <link rel="stylesheet" href="tokens.css?v=0.12.0">
-  <link rel="stylesheet" href="style.css?v=0.12.0">
-  <script src="components.js?v=0.12.0"></script>
+  <meta name="dsds-version" content="0.13.0">
+  <link rel="stylesheet" href="tokens.css?v=0.13.0">
+  <link rel="stylesheet" href="style.css?v=0.13.0">
+  <script src="components.js?v=0.13.0"></script>
 </head>
 <body>
   <a class="skip-link" href="#main-content">Skip to content</a>
   <ds-nav-toggle target="ds-spec-nav"></ds-nav-toggle>
-  <ds-spec-nav title="Design System Documentation Spec 0.12.0" title-href="index.html" active="document-blocks-motion">
+  <ds-spec-nav title="Design System Documentation Spec 0.13.0" title-href="index.html" active="document-blocks-motion">
     <a href="index.html" slug="index">Overview</a>
     <a href="quickstart.html" slug="quickstart">Quick start</a>
     <a href="humans-and-agents.html" slug="humans-and-agents">Humans &amp; agents</a>
     <a href="schema-architecture.html" slug="schema-architecture">Schema architecture</a>
+    <a href="conformance.html" slug="conformance">Conformance</a>
+    <a href="interoperability.html" slug="interoperability">Interoperability</a>
+    <a href="stability.html" slug="stability">Stability &amp; 1.0</a>
     <a href="samples.html" slug="samples">Interactive samples</a>
     <ds-nav-group label="Documentation">
       <a href="root.html" slug="root">Root schema</a>
     </ds-nav-group>
     <ds-nav-group label="Common">
       <a href="common-criterion.html" slug="common-criterion">criterion</a>
+      <a href="common-dated-note.html" slug="common-dated-note">dated-note</a>
       <a href="common-entity-ref.html" slug="common-entity-ref">entity-ref</a>
       <a href="common-example.html" slug="common-example">example</a>
       <a href="common-extends.html" slug="common-extends">extends</a>
@@ -42,6 +46,7 @@
       <a href="common-rich-text.html" slug="common-rich-text">rich-text</a>
       <a href="common-status.html" slug="common-status">status</a>
       <a href="common-system-info.html" slug="common-system-info">system-info</a>
+      <a href="common-token-overrides.html" slug="common-token-overrides">token-overrides</a>
       <a href="common-use-cases.html" slug="common-use-cases">use-cases</a>
     </ds-nav-group>
     <ds-nav-group label="Entities">
@@ -75,7 +80,8 @@
     <ds-nav-group label="Metadata">
       <a href="metadata-aliases.html" slug="metadata-aliases">aliases</a>
       <a href="metadata-category.html" slug="metadata-category">category</a>
-      <a href="metadata-extends.html" slug="metadata-extends">extends</a>
+      <a href="metadata-doc-origin.html" slug="metadata-doc-origin">doc-origin</a>
+      <a href="metadata-governance.html" slug="metadata-governance">governance</a>
       <a href="metadata-last-updated.html" slug="metadata-last-updated">last-updated</a>
       <a href="metadata-links.html" slug="metadata-links">links</a>
       <a href="metadata-metadata.html" slug="metadata-metadata">metadata</a>
@@ -219,11 +225,11 @@
   <ds-prop name="identifier" type="string" required>Machine-readable identifier of the easing (e.g., 'expressive', 'enter', 'exit', 'lateral', 'bounce', 'linear'). Used for cross-referencing and tooling.</ds-prop>
   <ds-prop name="description" type="&lt;ds-type-ref href=&quot;common-rich-text.html#richtext&quot;&gt;richText&lt;/ds-type-ref&gt;" required>What this easing is for, when to use it, and how it affects the user experience. Explain the visual character of the curve and the types of transitions it suits.</ds-prop>
   <ds-prop name="name" type="string">Human-readable name of the easing (e.g., 'Expressive Ease', 'Enter Ease', 'Exit Ease').</ds-prop>
-  <ds-prop name="function" type="number[]">Cubic-bezier control points as a four-number array [P1x, P1y, P2x, P2y], aligned with the W3C Design Tokens Format Module cubicBezier type (§8.6). P1x and P2x MUST be in [0, 1]. P1y and P2y can be any real number (values outside [0, 1] produce bounce/overshoot effects). Maps to CSS cubic-bezier() and DTCG cubicBezier token values. When omitted, the easing is described in the description field or points to a token via <ds-code inline>token</ds-code>.<br><small>Min items: 4</small></ds-prop>
+  <ds-prop name="function" type="array">Cubic-bezier control points as a four-number array [P1x, P1y, P2x, P2y], aligned with the W3C Design Tokens Format Module cubicBezier type (§8.6). P1x and P2x MUST be in [0, 1]. P1y and P2y can be any real number (values outside [0, 1] produce bounce/overshoot effects). Maps to CSS cubic-bezier() and DTCG cubicBezier token values. When omitted, the easing is described in the description field or points to a token via <ds-code inline>token</ds-code>.<br><small>Min items: 4</small></ds-prop>
   <ds-prop name="token" type="string">Reference to a DTCG cubicBezier or transition token that defines this easing (e.g., 'motion-ease-expressive', 'transition-enter'). When both <ds-code inline>function</ds-code> and <ds-code inline>token</ds-code> are present, <ds-code inline>function</ds-code> is the display value and <ds-code inline>token</ds-code> is the authoritative source.</ds-prop>
   <ds-prop name="duration" type="&lt;ds-type-ref href=&quot;document-blocks-motion.html#motionduration&quot;&gt;motionDuration&lt;/ds-type-ref&gt;">Recommended duration range when using this easing. Different easings suit different durations. Enter transitions are typically longer (300–500ms) to draw attention, while exit transitions are shorter (200–300ms) to feel responsive.</ds-prop>
   <ds-prop name="usage" type="string">A short, comma-separated list of usage contexts (e.g., 'entering elements', 'exiting elements', 'lateral navigation', 'micro-interactions'). Gives a scannable summary. Use description for detailed guidance.</ds-prop>
-  <ds-prop name="examples" type="&lt;ds-type-ref href=&quot;common-example.html#example&quot;&gt;example&lt;/ds-type-ref&gt;[]">Visual or interactive examples showing this easing in action: screen recordings, interactive curve visualizations, or CSS code snippets.</ds-prop>
+  <ds-prop name="examples" type="&lt;ds-type-ref href=&quot;common-example.html#example&quot;&gt;example&lt;/ds-type-ref&gt;[]">Visual or interactive examples showing this easing in action: screen recordings, interactive curve visualizations, or CSS code snippets.<br><small>Min items: 1</small></ds-prop>
 </ds-prop-table>
 <ds-cross-refs><strong>References:</strong> 
 <ds-type-ref href="common-rich-text.html#richtext">richText</ds-type-ref>, <ds-type-ref href="document-blocks-motion.html#motionduration">motionDuration</ds-type-ref>, <ds-type-ref href="common-example.html#example">example</ds-type-ref>
@@ -344,12 +350,13 @@
 ]</ds-code>
 </ds-def-example>
 </ds-def-section>
-<ds-def-section name="motionDuration" anchor="motionduration" description="A recommended duration range for an easing curve. Duration values are strings: a time value (e.g., '200ms', '0.3s') or a token reference (e.g., 'duration-quick'). When both min and max are provided, they define a range. When only one is provided, it serves as a single recommendation. When neither is provided, the description field should explain the guidance." type="object">
+<ds-def-section name="motionDuration" anchor="motionduration" description="A recommended duration range for an easing curve. Duration values are strings: a time value (e.g., '200ms', '0.3s') or a token reference (e.g., 'duration-quick'). When both min and max are provided, they define a range. When only one is provided, it serves as a single recommendation. When neither is provided, the description field MUST explain the guidance — an empty duration object carries no information, so at least one of min, max, or description is required." type="object">
 <ds-prop-table>
-  <ds-prop name="min" type="string">Minimum recommended duration as a time value or token reference (e.g., '200ms', '0.3s', 'duration-quick'). When omitted, there is no minimum recommendation.</ds-prop>
-  <ds-prop name="max" type="string">Maximum recommended duration as a time value or token reference (e.g., '500ms', '0.5s', 'duration-slow'). When omitted, there is no maximum recommendation.</ds-prop>
-  <ds-prop name="description" type="&lt;ds-type-ref href=&quot;common-rich-text.html#richtext&quot;&gt;richText&lt;/ds-type-ref&gt;">Freeform duration guidance. Use it when the recommendation cannot be expressed as a min/max range (e.g., 'Depends on element size: use shorter durations for small elements and longer durations for full-screen transitions'). It also helps for extra notes when min/max are provided.</ds-prop>
+  <ds-prop name="min" type="string" conditional>Minimum recommended duration as a time value or token reference (e.g., '200ms', '0.3s', 'duration-quick'). When omitted, there is no minimum recommendation.</ds-prop>
+  <ds-prop name="max" type="string" conditional>Maximum recommended duration as a time value or token reference (e.g., '500ms', '0.5s', 'duration-slow'). When omitted, there is no maximum recommendation.</ds-prop>
+  <ds-prop name="description" type="&lt;ds-type-ref href=&quot;common-rich-text.html#richtext&quot;&gt;richText&lt;/ds-type-ref&gt;" conditional>Freeform duration guidance. Use it when the recommendation cannot be expressed as a min/max range (e.g., 'Depends on element size: use shorter durations for small elements and longer durations for full-screen transitions'). It also helps for extra notes when min/max are provided.</ds-prop>
 </ds-prop-table>
+<ds-note variant="warning"><strong>Constraint:</strong> At least one of <ds-code inline>min</ds-code>, <ds-code inline>max</ds-code>, <ds-code inline>description</ds-code> must be present.</ds-note>
 <ds-cross-refs><strong>References:</strong> 
 <ds-type-ref href="common-rich-text.html#richtext">richText</ds-type-ref>
 </ds-cross-refs>
@@ -358,7 +365,7 @@
         <ds-back-to-top></ds-back-to-top>
 
         <ds-footer>
-          <p>Design System Documentation Spec (DSDS) 0.12.0 — Draft Specification</p>
+          <p>Design System Documentation Spec (DSDS) 0.13.0 — Draft Specification</p>
           <p><a href="https://github.com/somerandomdude/design-system-documentation-schema">GitHub</a></p>
         </ds-footer>
       </div>

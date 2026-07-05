@@ -3,35 +3,39 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>DSDS Variants Document Block — DSDS 0.12.0</title>
+  <title>DSDS Variants Document Block — DSDS 0.13.0</title>
   <meta name="description" content="Documents all dimensions of visual or behavioral variation on a component. Each item is either a flag variant (a boolean toggle such as 'disabled' or 'full-width') or an enum variant (a set of mutually exclusive options such as size: sm | md | lg). Every variant can carry a rationale that explains why the variation exists.">
   <link rel="canonical" href="https://designsystemdocspec.org/document-blocks-variants">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Design System Documentation Spec">
-  <meta property="og:title" content="DSDS Variants Document Block — DSDS 0.12.0">
+  <meta property="og:title" content="DSDS Variants Document Block — DSDS 0.13.0">
   <meta property="og:description" content="Documents all dimensions of visual or behavioral variation on a component. Each item is either a flag variant (a boolean toggle such as 'disabled' or 'full-width') or an enum variant (a set of mutually exclusive options such as size: sm | md | lg). Every variant can carry a rationale that explains why the variation exists.">
   <meta property="og:url" content="https://designsystemdocspec.org/document-blocks-variants">
   <meta name="twitter:card" content="summary">
-  <meta name="dsds-version" content="0.12.0">
-  <link rel="stylesheet" href="tokens.css?v=0.12.0">
-  <link rel="stylesheet" href="style.css?v=0.12.0">
-  <script src="components.js?v=0.12.0"></script>
+  <meta name="dsds-version" content="0.13.0">
+  <link rel="stylesheet" href="tokens.css?v=0.13.0">
+  <link rel="stylesheet" href="style.css?v=0.13.0">
+  <script src="components.js?v=0.13.0"></script>
 </head>
 <body>
   <a class="skip-link" href="#main-content">Skip to content</a>
   <ds-nav-toggle target="ds-spec-nav"></ds-nav-toggle>
-  <ds-spec-nav title="Design System Documentation Spec 0.12.0" title-href="index.html" active="document-blocks-variants">
+  <ds-spec-nav title="Design System Documentation Spec 0.13.0" title-href="index.html" active="document-blocks-variants">
     <a href="index.html" slug="index">Overview</a>
     <a href="quickstart.html" slug="quickstart">Quick start</a>
     <a href="humans-and-agents.html" slug="humans-and-agents">Humans &amp; agents</a>
     <a href="schema-architecture.html" slug="schema-architecture">Schema architecture</a>
+    <a href="conformance.html" slug="conformance">Conformance</a>
+    <a href="interoperability.html" slug="interoperability">Interoperability</a>
+    <a href="stability.html" slug="stability">Stability &amp; 1.0</a>
     <a href="samples.html" slug="samples">Interactive samples</a>
     <ds-nav-group label="Documentation">
       <a href="root.html" slug="root">Root schema</a>
     </ds-nav-group>
     <ds-nav-group label="Common">
       <a href="common-criterion.html" slug="common-criterion">criterion</a>
+      <a href="common-dated-note.html" slug="common-dated-note">dated-note</a>
       <a href="common-entity-ref.html" slug="common-entity-ref">entity-ref</a>
       <a href="common-example.html" slug="common-example">example</a>
       <a href="common-extends.html" slug="common-extends">extends</a>
@@ -42,6 +46,7 @@
       <a href="common-rich-text.html" slug="common-rich-text">rich-text</a>
       <a href="common-status.html" slug="common-status">status</a>
       <a href="common-system-info.html" slug="common-system-info">system-info</a>
+      <a href="common-token-overrides.html" slug="common-token-overrides">token-overrides</a>
       <a href="common-use-cases.html" slug="common-use-cases">use-cases</a>
     </ds-nav-group>
     <ds-nav-group label="Entities">
@@ -75,7 +80,8 @@
     <ds-nav-group label="Metadata">
       <a href="metadata-aliases.html" slug="metadata-aliases">aliases</a>
       <a href="metadata-category.html" slug="metadata-category">category</a>
-      <a href="metadata-extends.html" slug="metadata-extends">extends</a>
+      <a href="metadata-doc-origin.html" slug="metadata-doc-origin">doc-origin</a>
+      <a href="metadata-governance.html" slug="metadata-governance">governance</a>
       <a href="metadata-last-updated.html" slug="metadata-last-updated">last-updated</a>
       <a href="metadata-links.html" slug="metadata-links">links</a>
       <a href="metadata-metadata.html" slug="metadata-metadata">metadata</a>
@@ -100,10 +106,10 @@
 <li><a href="#variantvalue"><ds-code inline>variantValue</ds-code></a></li>
 </ul>
 </ds-def-index>
-<ds-def-section name="variants" anchor="variants" description="Documents all dimensions of visual or behavioral variation on a component. Each item is either a flag variant (a boolean toggle like 'disabled' or 'full-width') or an enum variant (a set of mutually exclusive options like size: sm | md | lg). Multiple items document orthogonal dimensions that combine independently." type="object">
+<ds-def-section name="variants" anchor="variants" description="Documents all dimensions of visual or behavioral variation on a component or pattern. Each item is either a flag variant (a boolean toggle like 'disabled' or 'full-width') or an enum variant (a set of mutually exclusive options like size: sm | md | lg). Multiple items document orthogonal dimensions that combine independently. Ownership rule: a variant is a configuration the consumer chooses via the API or design surface (e.g., 'size', 'emphasis', 'full-width', 'icon-only'); a runtime condition entered through interaction or system events (hover, disabled, loading) is a state — document it in the states block, not here." type="object">
 <ds-prop-table>
   <ds-prop name="kind" type="&lt;ds-code inline&gt;&quot;variants&quot;&lt;/ds-code&gt;" required>Identifies this document block as a variants spec.</ds-prop>
-  <ds-prop name="items" type="&lt;ds-type-ref href=&quot;document-blocks-variants.html#flagvariant&quot;&gt;flagVariant&lt;/ds-type-ref&gt; | &lt;ds-type-ref href=&quot;document-blocks-variants.html#enumvariant&quot;&gt;enumVariant&lt;/ds-type-ref&gt;[]" required>The variant dimensions. Each item is either a flag (boolean toggle) or an enum (set of values). Ordering is significant, so tools SHOULD display dimensions in this order.<br><small>Min items: 1</small></ds-prop>
+  <ds-prop name="items" type="object {kind}[]" required>The variant dimensions. Each item is either a flag (boolean toggle) or an enum (set of values). Ordering is significant, so tools SHOULD display dimensions in this order.<br><small>Min items: 1</small></ds-prop>
 </ds-prop-table>
 <ds-cross-refs><strong>References:</strong> 
 <ds-type-ref href="document-blocks-variants.html#flagvariant">flagVariant</ds-type-ref>, <ds-type-ref href="document-blocks-variants.html#enumvariant">enumVariant</ds-type-ref>
@@ -175,18 +181,18 @@
 }</ds-code>
 </ds-def-example>
 </ds-def-section>
-<ds-def-section name="flagVariant" anchor="flagvariant" description="A boolean toggle variant that is either on or off. Use it for binary capabilities such as 'disabled', 'full-width', 'icon-only', or 'loading'. Flag variants have no values array. The component either has the flag active or not." type="object">
+<ds-def-section name="flagVariant" anchor="flagvariant" description="A boolean toggle variant that is either on or off. Use it for binary capabilities such as 'full-width', 'full-width', 'icon-only', or 'icon-only'. Flag variants have no values array. The component either has the flag active or not." type="object">
 <ds-prop-table>
   <ds-prop name="kind" type="&lt;ds-code inline&gt;&quot;flag&quot;&lt;/ds-code&gt;" required>Identifies this variant as a boolean flag.</ds-prop>
   <ds-prop name="identifier" type="string" required>Machine-readable identifier of the flag (e.g., 'disabled', 'full-width', 'icon-only', 'loading').</ds-prop>
   <ds-prop name="description" type="&lt;ds-type-ref href=&quot;common-rich-text.html#richtext&quot;&gt;richText&lt;/ds-type-ref&gt;" required>What this flag controls and how it affects the component's appearance or behavior when active.</ds-prop>
   <ds-prop name="name" type="string">Human-readable name of the flag (e.g., 'Disabled', 'Full Width', 'Icon Only', 'Loading').</ds-prop>
   <ds-prop name="rationale" type="&lt;ds-type-ref href=&quot;common-rich-text.html#richtext&quot;&gt;richText&lt;/ds-type-ref&gt;">Why this flag exists: the user need or design rationale it addresses (e.g., 'Prevents user interaction during form submission to avoid duplicate requests').</ds-prop>
-  <ds-prop name="examples" type="&lt;ds-type-ref href=&quot;common-example.html#example&quot;&gt;example&lt;/ds-type-ref&gt;[]">Examples showing the component with this flag active.</ds-prop>
-  <ds-prop name="tokens" type="map&amp;lt;string, string&amp;gt;">Design token overrides applied when this flag is active. Keys are token-purpose names. Values are token identifiers. In a system with a token layer these MUST be token identifiers, not raw values, so the value can't silently drift from the token source.</ds-prop>
+  <ds-prop name="examples" type="&lt;ds-type-ref href=&quot;common-example.html#example&quot;&gt;example&lt;/ds-type-ref&gt;[]">Examples showing the component with this flag active.<br><small>Min items: 1</small></ds-prop>
+  <ds-prop name="tokens" type="&lt;ds-type-ref href=&quot;common-token-overrides.html#tokenoverrides&quot;&gt;tokenOverrides&lt;/ds-type-ref&gt;">Design token overrides applied when this flag is active, as the shared token-override map: keys are token-purpose names, values are documented token identifiers.</ds-prop>
 </ds-prop-table>
 <ds-cross-refs><strong>References:</strong> 
-<ds-type-ref href="common-rich-text.html#richtext">richText</ds-type-ref>, <ds-type-ref href="common-example.html#example">example</ds-type-ref>
+<ds-type-ref href="common-rich-text.html#richtext">richText</ds-type-ref>, <ds-type-ref href="common-example.html#example">example</ds-type-ref>, <ds-type-ref href="common-token-overrides.html#tokenoverrides">tokenOverrides</ds-type-ref>
 </ds-cross-refs>
 <ds-def-example>
 <ds-code language="json" label="example">[
@@ -272,11 +278,11 @@
   <ds-prop name="description" type="&lt;ds-type-ref href=&quot;common-rich-text.html#richtext&quot;&gt;richText&lt;/ds-type-ref&gt;" required>What this value looks like, when to use it, and how it differs from other values in this dimension.</ds-prop>
   <ds-prop name="name" type="string">Human-readable name (e.g., 'Small', 'Medium', 'Large', 'Primary', 'Secondary').</ds-prop>
   <ds-prop name="rationale" type="&lt;ds-type-ref href=&quot;common-rich-text.html#richtext&quot;&gt;richText&lt;/ds-type-ref&gt;">Why this value exists: the user need or design rationale it addresses (e.g., 'High emphasis directs the user to the single most important action on the surface'). For comparative when-to-use guidance across values, use the entity's useCases block instead.</ds-prop>
-  <ds-prop name="examples" type="&lt;ds-type-ref href=&quot;common-example.html#example&quot;&gt;example&lt;/ds-type-ref&gt;[]">Examples showing this variant value in isolation or in context.</ds-prop>
-  <ds-prop name="tokens" type="map&amp;lt;string, string&amp;gt;">Design token overrides applied when this value is selected. Keys are token-purpose names (e.g., 'background', 'text-color', 'padding-horizontal'). Values are token identifiers. In a system with a token layer these MUST be token identifiers, not raw values, so the value can't silently drift from the token source.</ds-prop>
+  <ds-prop name="examples" type="&lt;ds-type-ref href=&quot;common-example.html#example&quot;&gt;example&lt;/ds-type-ref&gt;[]">Examples showing this variant value in isolation or in context.<br><small>Min items: 1</small></ds-prop>
+  <ds-prop name="tokens" type="&lt;ds-type-ref href=&quot;common-token-overrides.html#tokenoverrides&quot;&gt;tokenOverrides&lt;/ds-type-ref&gt;">Design token overrides applied when this value is selected, as the shared token-override map: keys are token-purpose names, values are documented token identifiers.</ds-prop>
 </ds-prop-table>
 <ds-cross-refs><strong>References:</strong> 
-<ds-type-ref href="common-rich-text.html#richtext">richText</ds-type-ref>, <ds-type-ref href="common-example.html#example">example</ds-type-ref>
+<ds-type-ref href="common-rich-text.html#richtext">richText</ds-type-ref>, <ds-type-ref href="common-example.html#example">example</ds-type-ref>, <ds-type-ref href="common-token-overrides.html#tokenoverrides">tokenOverrides</ds-type-ref>
 </ds-cross-refs>
 <ds-def-example>
 <ds-code language="json" label="example">[
@@ -309,7 +315,7 @@
         <ds-back-to-top></ds-back-to-top>
 
         <ds-footer>
-          <p>Design System Documentation Spec (DSDS) 0.12.0 — Draft Specification</p>
+          <p>Design System Documentation Spec (DSDS) 0.13.0 — Draft Specification</p>
           <p><a href="https://github.com/somerandomdude/design-system-documentation-schema">GitHub</a></p>
         </ds-footer>
       </div>

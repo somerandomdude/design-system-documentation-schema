@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://designsystemdocspec.org/v0.12.0/document-blocks/anatomy.schema.json",
+  "$id": "https://designsystemdocspec.org/v0.13.0/document-blocks/anatomy.schema.json",
   "title": "DSDS Anatomy Document Block",
   "description": "Documents the visual structure of a component or pattern: its named sub-elements (parts), their design tokens, and optional annotated examples. Anatomy blocks break an artifact into the parts that designers and engineers need to understand, style, and test. For components, parts are rendered UI sub-elements (container, label, icon). For patterns, parts are sections of the pattern's visual layout (image, title, body, primary action).",
   "$defs": {
@@ -30,25 +30,16 @@
           "description": "Whether this part is always present in the rendered output. Defaults to false. When false, the part is conditionally rendered based on props or content."
         },
         "tokens": {
-          "type": "object",
-          "description": "Design tokens applied to this part. Keys are token-purpose names that say what visual attribute the token controls (e.g., 'background', 'border-radius', 'padding-horizontal', 'text-color'). Values are entity references to the token that supplies the value: each is a token `identifier` (e.g., 'color-action-primary', 'radius-md', 'space-4') and follows the same resolution rule as every entity reference. In a system that documents its token layer, these MUST resolve to a documented token, so a part's styling can't silently drift from the token source. Validators resolve them when a token layer is present (see entityRef resolution).",
-          "additionalProperties": {
-            "$ref": "../common/entity-ref.schema.json#/$defs/entityIdentifier"
-          },
-          "examples": [
-            {
-              "background": "color-action-primary",
-              "text-color": "color-text-on-action",
-              "border-radius": "radius-md"
-            }
-          ]
+          "$ref": "../common/token-overrides.schema.json#/$defs/tokenOverrides",
+          "description": "Design tokens applied to this part, as the shared token-override map: keys are token-purpose names, values are documented token identifiers."
         },
         "links": {
           "type": "array",
           "description": "Links to resources for this anatomy part: design tool nodes, source code blocks, documentation sections, or other addressable references.",
           "items": {
             "$ref": "../common/link.schema.json#/$defs/link"
-          }
+          },
+          "minItems": 1
         }
       },
       "additionalProperties": false
@@ -83,7 +74,8 @@
           "description": "Examples of the anatomy, typically annotated diagrams with numbered callouts that map to the parts array. Multiple examples allow different views (e.g., expanded vs. collapsed, with icon vs. without).",
           "items": {
             "$ref": "../common/example.schema.json#/$defs/example"
-          }
+          },
+          "minItems": 1
         }
       },
       "additionalProperties": false

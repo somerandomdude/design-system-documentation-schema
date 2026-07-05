@@ -1,0 +1,110 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://designsystemdocspec.org/v0.13.0/metadata/doc-origin.schema.json",
+  "title": "DSDS Doc Origin Metadata Field",
+  "description": "How this entity's documentation came to exist. Two orthogonal axes: origin (how the doc relates to the implementation — written before it, generated from it, extracted from it, or reconstructed from memory) and authorship (who or what wrote the words — a human, an AI, a script, or a mix). Two documents can look identical and mean different things: one was extracted from shipped code by its maintainer, the other AI-written from memory months later. Making both axes machine-readable lets consuming tools and agents calibrate trust. A bare string sets the overall origin; the object form adds authorship, an explanatory note, and per-block overrides for mixed-origin documents. Introduced as an initial draft in 0.12.1 — the shape may change in a future release.",
+  "$defs": {
+    "authorshipValue": {
+      "type": "string",
+      "description": "Who or what wrote the documentation's words. Orthogonal to origin: origin says what the doc was produced from; authorship says what produced it. 'human': written by a person with no AI or script involvement. 'ai-assisted': human-led, with an AI model drafting or editing portions under human direction and review. 'ai-generated': produced by an AI model or agent with at most light human review; MAY contain plausible-but-wrong statements and SHOULD be verified before an agent treats it as ground truth. 'machine-assisted': human-led, with deterministic tooling (scripts, doc generators) producing portions such as tables or listings. 'machine-generated': produced end-to-end by deterministic tooling with no human or AI synthesis; exactly as trustworthy as its source and pipeline. The AI values and the machine values differ in reproducibility: machine output is determined by its input; AI output is not. When both AI and scripts contributed, record the AI value — AI involvement is what consumers most need to know.",
+      "enum": [
+        "human",
+        "ai-assisted",
+        "ai-generated",
+        "machine-assisted",
+        "machine-generated"
+      ]
+    },
+    "docOriginValue": {
+      "type": "string",
+      "description": "How the documentation was produced, relative to the implementation. 'authored': written before or alongside the implementation as its specification — the code follows the doc; authoritative for intent, but MAY lag the shipped API. 'generated': produced by automated tooling from source artifacts (type definitions, doc comments) without human synthesis; high fidelity to the API, silent on intent. 'extracted': derived by a human or agent reading the existing implementation (source, stories, tests) after the fact; describes what exists. 'reconstructed': written after the fact from institutional knowledge, without systematically consulting the implementation; lowest fidelity to the API and SHOULD be verified before an agent relies on it for API facts. Agents SHOULD prefer 'generated' and 'extracted' documentation for API accuracy and 'authored' documentation for design intent.",
+      "enum": [
+        "authored",
+        "generated",
+        "extracted",
+        "reconstructed"
+      ]
+    },
+    "docOrigin": {
+      "description": "How this entity's documentation came to exist. A bare string sets the overall origin (e.g., 'extracted') and covers the common case. Use the object form when the document has mixed origins — a prop table extracted from code inside otherwise authored guidance — or when the origin needs explaining. Origin describes production, not quality: it records how the words got here so consumers can decide how much to trust which parts.",
+      "oneOf": [
+        {
+          "$ref": "#/$defs/docOriginValue"
+        },
+        {
+          "type": "object",
+          "description": "Full docOrigin form: the overall origin, the authorship, an optional explanatory note, and per-block overrides. A document MAY be 'authored' overall while individual blocks were 'extracted' or 'generated'.",
+          "required": [
+            "overall"
+          ],
+          "properties": {
+            "overall": {
+              "$ref": "#/$defs/docOriginValue",
+              "description": "The dominant origin of the document as a whole. When blocks differ, choose the origin of the document's substantive prose; record exceptions in `blocks`."
+            },
+            "authorship": {
+              "$ref": "#/$defs/authorshipValue",
+              "description": "Who or what wrote the document's words, as a single value for the document as a whole. When production was mixed, record the least-supervised method that contributed substantively (a mostly human doc with AI-drafted sections is 'ai-assisted'). Note the interaction with origin: an origin of 'generated' implies 'machine-generated' or 'ai-generated' authorship — the schema rejects other pairings when both fields are set."
+            },
+            "note": {
+              "$ref": "../common/dated-note.schema.json#/$defs/plainNote",
+              "description": "Plain-text note explaining the origin (e.g., 'Authored as the spec for the v3 rebuild; prop table regenerated from source on each release'). MUST NOT contain markup."
+            },
+            "blocks": {
+              "type": "object",
+              "description": "Per-block overrides for blocks whose origin or authorship differs from the document-level values. Keys are document block kinds (e.g., 'api', 'guidelines', 'accessibility') matching the `kind` of a block in this entity's `documentBlocks` or `agentDocumentBlocks`. A value is either a bare origin string (the common case) or an object carrying `origin` and/or `authorship` when the block's production method also differs — an authored, human-written doc whose prop table is AI-generated records that here. List only the exceptions. A key that matches no block in the entity is a defect in the document (validators resolve keys against the entity's blocks).",
+              "minProperties": 1,
+              "propertyNames": {
+                "pattern": "^[a-z][a-zA-Z0-9-]*$"
+              },
+              "additionalProperties": {
+                "oneOf": [
+                  {
+                    "$ref": "#/$defs/docOriginValue"
+                  },
+                  {
+                    "type": "object",
+                    "description": "Full per-block override: the block's origin and/or authorship, when either differs from the document-level value. At least one is required.",
+                    "minProperties": 1,
+                    "properties": {
+                      "origin": {
+                        "$ref": "#/$defs/docOriginValue",
+                        "description": "This block's origin, when it differs from `overall`."
+                      },
+                      "authorship": {
+                        "$ref": "#/$defs/authorshipValue",
+                        "description": "This block's authorship, when it differs from the document-level `authorship`."
+                      }
+                    },
+                    "additionalProperties": false
+                  }
+                ]
+              }
+            }
+          },
+          "if": {
+            "properties": {
+              "overall": {
+                "const": "generated"
+              }
+            },
+            "required": [
+              "authorship"
+            ]
+          },
+          "then": {
+            "properties": {
+              "authorship": {
+                "enum": [
+                  "ai-generated",
+                  "machine-generated"
+                ]
+              }
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
+    }
+  }
+}

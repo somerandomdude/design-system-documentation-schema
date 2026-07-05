@@ -1,12 +1,12 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://designsystemdocspec.org/v0.12.0/entities/component.schema.json",
+  "$id": "https://designsystemdocspec.org/v0.13.0/entities/component.schema.json",
   "title": "DSDS Component Definitions",
-  "description": "Defines the component document. A component document holds the identity of a reusable UI element. The `metadata` object holds optional fields: status, since, lastUpdated, category, tags, aliases, summary, thumbnail, preview, extends, and links. The `documentBlocks` array holds structured docs as typed entries. It accepts the component-scoped kinds (imports, anatomy, api, variants, states, design-specifications) plus the general kinds (guidelines, useCases, accessibility, content, sections).",
+  "description": "Defines the component document. A component document holds the identity of a reusable UI element. The `metadata` object holds the shared entityMetadata fields (see metadata/metadata.schema.json). The `documentBlocks` array holds structured docs as typed entries. It accepts the component-scoped kinds (imports, anatomy, api, variants, states, design-specifications) plus the general kinds (guidelines, useCases, accessibility, content, sections, checklist).",
   "$defs": {
     "component": {
       "type": "object",
-      "description": "A single reusable UI component. The top level holds its identity: `identifier`, `name`, and `description`. The `metadata` object holds optional fields: status, since, lastUpdated, category, tags, aliases, summary, thumbnail, preview, extends, and links. The `documentBlocks` array holds structured docs as typed entries: imports, anatomy, api, variants, states, design-specifications, plus the general kinds.",
+      "description": "A single reusable UI component. The top level holds its identity: `identifier`, `name`, and `description`. The `metadata` object holds the shared entityMetadata fields (see metadata/metadata.schema.json). The `documentBlocks` array holds structured docs as typed entries: imports, anatomy, api, variants, states, design-specifications, plus the general kinds.",
       "required": [
         "kind",
         "identifier",
@@ -33,7 +33,7 @@
         },
         "metadata": {
           "$ref": "../metadata/metadata.schema.json#/$defs/entityMetadata",
-          "description": "Optional metadata fields, keyed by name: status, since, lastUpdated, category, tags, aliases, summary, thumbnail, preview, extends, and links."
+          "description": "Optional metadata: the shared entityMetadata fields (see metadata/metadata.schema.json)."
         },
         "relationships": {
           "$ref": "../common/relationship.schema.json#/$defs/relationships",
@@ -41,17 +41,19 @@
         },
         "documentBlocks": {
           "type": "array",
-          "description": "All structured docs for this component, as an ordered array of typed document block objects. It accepts the component-specific kinds (imports, anatomy, api, variants, states, design-specifications) plus the general kinds (guidelines, useCases, accessibility, content, sections). The `kind` property on each entry sets its shape. Order matters, so tools SHOULD keep it for display.",
+          "description": "All structured docs for this component, as an ordered array of typed document block objects. It accepts the component-specific kinds (imports, anatomy, api, variants, states, design-specifications) plus the general kinds (guidelines, useCases, accessibility, content, sections, checklist). The `kind` property on each entry sets its shape. Order matters, so tools SHOULD keep it for display.",
           "items": {
             "$ref": "../document-blocks/document-blocks.schema.json#/$defs/componentDocumentBlock"
-          }
+          },
+          "minItems": 1
         },
         "agentDocumentBlocks": {
           "type": "array",
           "description": "Structured docs for agents (AI/LLM) only — a separate space that accepts the same block kinds as `documentBlocks`. `documentBlocks` is the default: put anything a human reader needs there. Use `agentDocumentBlocks` only for content that helps an agent build correctly but is noise for humans. For example: hard MUST/MUST-NOT rules an agent should treat as firm limits; notes that correct a mistake an agent is likely to make, such as reaching for this entity when a confusable one fits better; constraints backed by test-run evidence; and machine-checkable criteria with verification modes. A hard rule that humans also need (such as an accessibility requirement) belongs in `documentBlocks`, not here. Agent blocks add to the human docs — they never replace or duplicate them. Tools MUST NOT render these blocks in human-facing docs. Agents SHOULD read both arrays, human blocks first.",
           "items": {
             "$ref": "../document-blocks/document-blocks.schema.json#/$defs/componentDocumentBlock"
-          }
+          },
+          "minItems": 1
         },
         "$extensions": {
           "$ref": "../common/extensions.schema.json#/$defs/extensions"

@@ -33,9 +33,25 @@ const UNION_LABELS = {
   patternDocumentBlock: "Pattern",
   foundationDocumentBlock: "Foundation",
   guideDocumentBlock: "Guide",
-  tokenDocumentBlock: "Token",
+  generalDocumentBlock: "Token / Theme / Chunk",
 };
 const UNION_ORDER = Object.keys(UNION_LABELS);
+
+// The unions are kind-discriminated: branches live in `allOf` as
+// `{ if: {kind const}, then: {$ref} }` entries, with shared general kinds
+// composed via a bare `{ $ref: generalBranches }` entry. This helper returns
+// the branch target refs of either shape (plus legacy oneOf, defensively).
+function unionBranchRefs(def) {
+  if (!def) return [];
+  const refs = [];
+  for (const entry of def.allOf || []) {
+    if (entry.then && entry.then.$ref) refs.push(entry.then.$ref);
+    else if (entry.$ref) refs.push(entry.$ref);
+  }
+  for (const o of def.oneOf || []) if (o.$ref) refs.push(o.$ref);
+  if (def.$ref) refs.push(def.$ref);
+  return refs;
+}
 
 // ---------------------------------------------------------------------------
 // Schema loading
@@ -114,8 +130,8 @@ function renderEntityTable(opts = {}) {
 
   // The single entity union: used by the root `entity` property and each
   // documentation group's `entities` array alike.
-  const entityNames = ((defs.anyEntity && defs.anyEntity.oneOf) || [])
-    .map((o) => linkToRef(o.$ref))
+  const entityNames = unionBranchRefs(defs.anyEntity)
+    .map((r) => linkToRef(r))
     .filter(Boolean);
 
   const rows = entityNames.map((name) => {
@@ -199,9 +215,11 @@ function blockContainer(def) {
 // the general kinds (guideline, purpose, accessibility, content, section) are
 // attributed to every union that includes general, not lost one level down.
 function buildBlockScope(defs) {
+  // General kinds live one level down: generalDocumentBlock composes the
+  // shared generalBranches fragment, whose allOf carries the actual branches.
   const generalNames = new Set(
-    ((defs.generalDocumentBlock && defs.generalDocumentBlock.oneOf) || [])
-      .map((o) => linkToRef(o.$ref))
+    unionBranchRefs(defs.generalBranches)
+      .map((r) => linkToRef(r))
       .filter(Boolean),
   );
   const scopeByBlock = {}; // block def name → Set of entity labels
@@ -211,11 +229,10 @@ function buildBlockScope(defs) {
   for (const union of UNION_ORDER) {
     const u = defs[union];
     if (!u) continue;
-    // A union may be a bare $ref alias (e.g. tokenDocumentBlock → general).
-    for (const alt of u.oneOf || (u.$ref ? [{ $ref: u.$ref }] : [])) {
-      const b = linkToRef(alt.$ref);
+    for (const ref of unionBranchRefs(u)) {
+      const b = linkToRef(ref);
       if (!b) continue;
-      if (b === "generalDocumentBlock") {
+      if (b === "generalBranches" || b === "generalDocumentBlock") {
         for (const g of generalNames) add(g, UNION_LABELS[union]);
       } else {
         add(b, UNION_LABELS[union]);

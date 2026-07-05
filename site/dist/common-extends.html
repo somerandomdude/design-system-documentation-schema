@@ -3,35 +3,39 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>DSDS Extends Definitions — DSDS 0.12.0</title>
+  <title>DSDS Extends Definitions — DSDS 0.13.0</title>
   <meta name="description" content="Shared definitions for declaring inheritance, both between DSDS documents and between single entities. The extends mechanism supports systems-of-systems setups, where one design system builds on a core system. An entity can also declare that it extends a base entity from the parent system.">
   <link rel="canonical" href="https://designsystemdocspec.org/common-extends">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Design System Documentation Spec">
-  <meta property="og:title" content="DSDS Extends Definitions — DSDS 0.12.0">
+  <meta property="og:title" content="DSDS Extends Definitions — DSDS 0.13.0">
   <meta property="og:description" content="Shared definitions for declaring inheritance, both between DSDS documents and between single entities. The extends mechanism supports systems-of-systems setups, where one design system builds on a core system. An entity can also declare that it extends a base entity from the parent system.">
   <meta property="og:url" content="https://designsystemdocspec.org/common-extends">
   <meta name="twitter:card" content="summary">
-  <meta name="dsds-version" content="0.12.0">
-  <link rel="stylesheet" href="tokens.css?v=0.12.0">
-  <link rel="stylesheet" href="style.css?v=0.12.0">
-  <script src="components.js?v=0.12.0"></script>
+  <meta name="dsds-version" content="0.13.0">
+  <link rel="stylesheet" href="tokens.css?v=0.13.0">
+  <link rel="stylesheet" href="style.css?v=0.13.0">
+  <script src="components.js?v=0.13.0"></script>
 </head>
 <body>
   <a class="skip-link" href="#main-content">Skip to content</a>
   <ds-nav-toggle target="ds-spec-nav"></ds-nav-toggle>
-  <ds-spec-nav title="Design System Documentation Spec 0.12.0" title-href="index.html" active="common-extends">
+  <ds-spec-nav title="Design System Documentation Spec 0.13.0" title-href="index.html" active="common-extends">
     <a href="index.html" slug="index">Overview</a>
     <a href="quickstart.html" slug="quickstart">Quick start</a>
     <a href="humans-and-agents.html" slug="humans-and-agents">Humans &amp; agents</a>
     <a href="schema-architecture.html" slug="schema-architecture">Schema architecture</a>
+    <a href="conformance.html" slug="conformance">Conformance</a>
+    <a href="interoperability.html" slug="interoperability">Interoperability</a>
+    <a href="stability.html" slug="stability">Stability &amp; 1.0</a>
     <a href="samples.html" slug="samples">Interactive samples</a>
     <ds-nav-group label="Documentation">
       <a href="root.html" slug="root">Root schema</a>
     </ds-nav-group>
     <ds-nav-group label="Common">
       <a href="common-criterion.html" slug="common-criterion">criterion</a>
+      <a href="common-dated-note.html" slug="common-dated-note">dated-note</a>
       <a href="common-entity-ref.html" slug="common-entity-ref">entity-ref</a>
       <a href="common-example.html" slug="common-example">example</a>
       <a href="common-extends.html" slug="common-extends">extends</a>
@@ -42,6 +46,7 @@
       <a href="common-rich-text.html" slug="common-rich-text">rich-text</a>
       <a href="common-status.html" slug="common-status">status</a>
       <a href="common-system-info.html" slug="common-system-info">system-info</a>
+      <a href="common-token-overrides.html" slug="common-token-overrides">token-overrides</a>
       <a href="common-use-cases.html" slug="common-use-cases">use-cases</a>
     </ds-nav-group>
     <ds-nav-group label="Entities">
@@ -75,7 +80,8 @@
     <ds-nav-group label="Metadata">
       <a href="metadata-aliases.html" slug="metadata-aliases">aliases</a>
       <a href="metadata-category.html" slug="metadata-category">category</a>
-      <a href="metadata-extends.html" slug="metadata-extends">extends</a>
+      <a href="metadata-doc-origin.html" slug="metadata-doc-origin">doc-origin</a>
+      <a href="metadata-governance.html" slug="metadata-governance">governance</a>
       <a href="metadata-last-updated.html" slug="metadata-last-updated">last-updated</a>
       <a href="metadata-links.html" slug="metadata-links">links</a>
       <a href="metadata-metadata.html" slug="metadata-metadata">metadata</a>
@@ -101,7 +107,7 @@
 <ds-def-section name="documentExtends" anchor="documentextends" description="Says that this DSDS document inherits from another DSDS document. The base document supplies the core entities: components, tokens, themes, foundations, and patterns. This document layers on top, adding new entities or extending base ones. The declaration sets up the relationship. The consuming tools handle merge and resolution. A common case: a product-specific system that inherits from an organization's core design system." type="object">
 <ds-prop-table>
   <ds-prop name="system" type="string" required>The name or identifier of the base design system being extended (e.g., 'Acme Core Design System', 'acme-core', '@acme/design-system'). A display name or a package name, not a URL. Tools use it to resolve the base system from a registry, file system, or package manager.</ds-prop>
-  <ds-prop name="url" type="string (uri)">URL to the base DSDS document (e.g., 'https://design.acme.com/v2/core.dsds.json', './core.dsds.json'). When provided, tools MAY fetch and resolve the base document for merge, validation, or docs generation.</ds-prop>
+  <ds-prop name="url" type="string (uri-reference)">URL or relative path to the base DSDS document (e.g., 'https://design.acme.com/v2/core.dsds.json', './core.dsds.json'). Relative paths are resolved against this document's location. When provided, tools MAY fetch and resolve the base document for merge, validation, or docs generation.</ds-prop>
   <ds-prop name="version" type="string">The version of the base system this document extends (e.g., '2.0.0', '&gt;=2.0.0', '^3.1.0'). Follows semver. When omitted, tools SHOULD resolve to the latest available version.</ds-prop>
   <ds-prop name="description" type="&lt;ds-type-ref href=&quot;common-rich-text.html#richtext&quot;&gt;richText&lt;/ds-type-ref&gt;">Description of the relationship: what this extension adds, changes, or narrows relative to the base system.</ds-prop>
 </ds-prop-table>
@@ -121,7 +127,7 @@
 <ds-prop-table>
   <ds-prop name="identifier" type="string" required>The identifier of the base entity being extended (e.g., 'button', 'color-text-primary', 'form-validation'). MUST match the <ds-code inline>identifier</ds-code> property of the base entity in the parent system.</ds-prop>
   <ds-prop name="system" type="string">The name or identifier of the system that owns the base entity (e.g., 'Acme Core Design System', 'acme-core'). When omitted, the base entity is resolved from the system declared in the root document's <ds-code inline>extends</ds-code> property. When provided, it lets you extend from a system other than the document's default base.</ds-prop>
-  <ds-prop name="url" type="string (uri)">Direct URL to the base entity's docs or DSDS definition. Useful for cross-linking in docs sites.</ds-prop>
+  <ds-prop name="url" type="string (uri-reference)">URL or relative path to the base entity's docs or DSDS definition. Useful for cross-linking in docs sites.</ds-prop>
   <ds-prop name="version" type="string">The version of the base entity or base system this entity extends (e.g., '2.0.0'). When omitted, the version comes from the document-level extends declaration.</ds-prop>
   <ds-prop name="description" type="&lt;ds-type-ref href=&quot;common-rich-text.html#richtext&quot;&gt;richText&lt;/ds-type-ref&gt;">What this entity adds or changes relative to the base: new variants, more props, overridden guidelines, and so on.</ds-prop>
   <ds-prop name="modifications" type="object {changeType, target, description}[]">Summary of what this entity changes relative to the base. Each entry describes one change. Tools MAY use these for changelog generation, diff views, or migration guides. When omitted, consuming tools must diff the entities to find the changes.</ds-prop>
@@ -170,7 +176,7 @@
         <ds-back-to-top></ds-back-to-top>
 
         <ds-footer>
-          <p>Design System Documentation Spec (DSDS) 0.12.0 — Draft Specification</p>
+          <p>Design System Documentation Spec (DSDS) 0.13.0 — Draft Specification</p>
           <p><a href="https://github.com/somerandomdude/design-system-documentation-schema">GitHub</a></p>
         </ds-footer>
       </div>

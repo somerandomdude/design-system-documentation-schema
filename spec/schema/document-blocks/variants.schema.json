@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://designsystemdocspec.org/v0.12.0/document-blocks/variants.schema.json",
+  "$id": "https://designsystemdocspec.org/v0.13.0/document-blocks/variants.schema.json",
   "title": "DSDS Variants Document Block",
   "description": "Documents all dimensions of visual or behavioral variation on a component. Each item is either a flag variant (a boolean toggle such as 'disabled' or 'full-width') or an enum variant (a set of mutually exclusive options such as size: sm | md | lg). Every variant can carry a rationale that explains why the variation exists.",
   "$defs": {
@@ -33,21 +33,19 @@
           "description": "Examples showing this variant value in isolation or in context.",
           "items": {
             "$ref": "../common/example.schema.json#/$defs/example"
-          }
+          },
+          "minItems": 1
         },
         "tokens": {
-          "type": "object",
-          "description": "Design token overrides applied when this value is selected. Keys are token-purpose names (e.g., 'background', 'text-color', 'padding-horizontal'). Values are token identifiers. In a system with a token layer these MUST be token identifiers, not raw values, so the value can't silently drift from the token source.",
-          "additionalProperties": {
-            "type": "string"
-          }
+          "$ref": "../common/token-overrides.schema.json#/$defs/tokenOverrides",
+          "description": "Design token overrides applied when this value is selected, as the shared token-override map: keys are token-purpose names, values are documented token identifiers."
         }
       },
       "additionalProperties": false
     },
     "flagVariant": {
       "type": "object",
-      "description": "A boolean toggle variant that is either on or off. Use it for binary capabilities such as 'disabled', 'full-width', 'icon-only', or 'loading'. Flag variants have no values array. The component either has the flag active or not.",
+      "description": "A boolean toggle variant that is either on or off. Use it for binary capabilities such as 'full-width', 'full-width', 'icon-only', or 'icon-only'. Flag variants have no values array. The component either has the flag active or not.",
       "required": [
         "kind",
         "identifier",
@@ -80,14 +78,12 @@
           "description": "Examples showing the component with this flag active.",
           "items": {
             "$ref": "../common/example.schema.json#/$defs/example"
-          }
+          },
+          "minItems": 1
         },
         "tokens": {
-          "type": "object",
-          "description": "Design token overrides applied when this flag is active. Keys are token-purpose names. Values are token identifiers. In a system with a token layer these MUST be token identifiers, not raw values, so the value can't silently drift from the token source.",
-          "additionalProperties": {
-            "type": "string"
-          }
+          "$ref": "../common/token-overrides.schema.json#/$defs/tokenOverrides",
+          "description": "Design token overrides applied when this flag is active, as the shared token-override map: keys are token-purpose names, values are documented token identifiers."
         }
       },
       "additionalProperties": false
@@ -132,7 +128,7 @@
     },
     "variants": {
       "type": "object",
-      "description": "Documents all dimensions of visual or behavioral variation on a component. Each item is either a flag variant (a boolean toggle like 'disabled' or 'full-width') or an enum variant (a set of mutually exclusive options like size: sm | md | lg). Multiple items document orthogonal dimensions that combine independently.",
+      "description": "Documents all dimensions of visual or behavioral variation on a component or pattern. Each item is either a flag variant (a boolean toggle like 'disabled' or 'full-width') or an enum variant (a set of mutually exclusive options like size: sm | md | lg). Multiple items document orthogonal dimensions that combine independently. Ownership rule: a variant is a configuration the consumer chooses via the API or design surface (e.g., 'size', 'emphasis', 'full-width', 'icon-only'); a runtime condition entered through interaction or system events (hover, disabled, loading) is a state — document it in the states block, not here.",
       "required": [
         "kind",
         "items"
@@ -147,12 +143,49 @@
           "type": "array",
           "description": "The variant dimensions. Each item is either a flag (boolean toggle) or an enum (set of values). Ordering is significant, so tools SHOULD display dimensions in this order.",
           "items": {
-            "oneOf": [
+            "type": "object",
+            "description": "One variant dimension, discriminated by `kind`: 'flag' selects the flagVariant schema, 'enum' selects the enumVariant schema. Discriminated `if`/`then` branches (rather than a bare oneOf) keep validation errors scoped to the one schema the `kind` selects.",
+            "required": [
+              "kind"
+            ],
+            "properties": {
+              "kind": {
+                "enum": [
+                  "flag",
+                  "enum"
+                ]
+              }
+            },
+            "allOf": [
               {
-                "$ref": "#/$defs/flagVariant"
+                "if": {
+                  "required": [
+                    "kind"
+                  ],
+                  "properties": {
+                    "kind": {
+                      "const": "flag"
+                    }
+                  }
+                },
+                "then": {
+                  "$ref": "#/$defs/flagVariant"
+                }
               },
               {
-                "$ref": "#/$defs/enumVariant"
+                "if": {
+                  "required": [
+                    "kind"
+                  ],
+                  "properties": {
+                    "kind": {
+                      "const": "enum"
+                    }
+                  }
+                },
+                "then": {
+                  "$ref": "#/$defs/enumVariant"
+                }
               }
             ]
           },

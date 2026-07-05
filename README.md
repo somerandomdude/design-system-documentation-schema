@@ -61,6 +61,9 @@ Start here:
 - **[Quick Start](https://designsystemdocspec.org/quickstart.html)** — Document structure, entity kinds, the document-block system, and minimal examples for every entity type.
 - **[Humans & agents](https://designsystemdocspec.org/humans-and-agents.html)** — How a DSDS document serves both people and AI agents, and when to use `agentDocumentBlocks` alongside `documentBlocks`.
 - **[Schema Architecture](https://designsystemdocspec.org/schema-architecture.html)** — The full schema reference. Covers document structure, entity types, the `agents` property, status, the document-block system, links, extends, extensions, naming conventions, and conformance levels, all with live property tables sourced from the schema.
+- **[Conformance](https://designsystemdocspec.org/conformance.html)** — Conformance classes, enforcement tiers, and the generated index of every normative statement in the schemas.
+- **[Interoperability](https://designsystemdocspec.org/interoperability.html)** — How DSDS composes with the W3C Design Tokens format, Custom Elements Manifest, and Storybook: the documentation layer over existing sources of truth.
+- **[Stability & 1.0](https://designsystemdocspec.org/stability.html)** — The stability contract: version semantics, the deprecation policy, the enumerated breaking backlog, and the criteria for declaring 1.0.
 - **[Interactive Samples](https://designsystemdocspec.org/samples.html)** — Side-by-side JSON ↔ rendered docs for real-world entities (component, token, theme, foundation, pattern).
 
 Per-schema reference pages sit next to the narrative pages — e.g. [entities/component](https://designsystemdocspec.org/entities-component.html), [document-blocks/guidelines](https://designsystemdocspec.org/document-blocks-guidelines.html), [common/use-cases](https://designsystemdocspec.org/common-use-cases.html). Each page is built from its matching `spec/schema/**/*.schema.json` file.
@@ -78,21 +81,25 @@ spec/
 │   ├── dsds.bundled.schema.json                        # Auto-generated single-file bundle
 │   ├── common/                                         # Shared primitives
 │   │   ├── criterion.schema.json                       # criterion, conformanceLevel, verificationMode, criterionCheck, criterionFixture, reference
+│   │   ├── dated-note.schema.json                      # isoDate, plainNote (shared date+note leaves)
 │   │   ├── entity-ref.schema.json                      # entityRef, entityIdentifier, entityRole (the one way to point at an entity)
 │   │   ├── example.schema.json                         # example
 │   │   ├── extends.schema.json                         # documentExtends, entityExtends
 │   │   ├── extensions.schema.json                      # $extensions
 │   │   ├── link.schema.json                            # link
 │   │   ├── presentation.schema.json                    # presentationImage, presentationVideo, presentationCode, presentationUrl
+│   │   ├── relationship.schema.json                    # relationship, relationType, relationships
 │   │   ├── rich-text.schema.json                       # richText (markdown string)
 │   │   ├── status.schema.json                          # statusValue, platformStatus
 │   │   ├── system-info.schema.json                     # systemInfo
+│   │   ├── token-overrides.schema.json                 # tokenOverrides (shared token-override map)
 │   │   └── use-cases.schema.json                       # useCases, useCase
 │   ├── metadata/                                       # Entity metadata fields (one file per field)
 │   │   ├── metadata.schema.json                        # entityMetadata (the aggregating object)
 │   │   ├── aliases.schema.json                         # aliases
 │   │   ├── category.schema.json                        # category
-│   │   ├── extends.schema.json                         # extends
+│   │   ├── doc-origin.schema.json                      # docOrigin, docOriginValue, authorshipValue (initial draft)
+│   │   ├── governance.schema.json                      # governance, owner, lastReviewed (initial draft)
 │   │   ├── last-updated.schema.json                    # lastUpdated
 │   │   ├── links.schema.json                           # links
 │   │   ├── preview.schema.json                         # preview
@@ -102,6 +109,7 @@ spec/
 │   │   ├── tags.schema.json                            # tags
 │   │   └── thumbnail.schema.json                       # thumbnail
 │   ├── entities/                                       # Entity types
+│   │   ├── chunk.schema.json                           # chunk
 │   │   ├── component.schema.json                       # component
 │   │   ├── foundation.schema.json                      # foundation
 │   │   ├── guide.schema.json                           # guide
@@ -201,6 +209,7 @@ The [`spec/examples/`](spec/examples/) directory contains validated example file
 
 - **[`starter-kit.dsds.json`](spec/examples/starter-kit.dsds.json)** — A complete document with components, tokens, a foundation, and a pattern, showing the full architecture.
 - **[`minimal/`](spec/examples/minimal/)** — Lightweight examples (8–30 lines each) showing the floor of documentation for each entity type.
+- **[`interop/`](spec/examples/interop/)** — Interoperability pairs: CEM's sample manifest beside the DSDS component document it converts to, and a DTCG token file beside the DSDS token document that references it. Embedded on the site's Interoperability page via drift-guarded includes.
 - **[`entities/component.json`](spec/examples/entities/component.json)** — A full Button component with anatomy, API, variants (flag and enum types), states, design specs, guidelines, purpose, and accessibility.
 - **[`entities/empty-state-pattern.json`](spec/examples/entities/empty-state-pattern.json)** — An Empty State pattern demonstrating anatomy, variants, states, interactions, content guidelines, and localization on a pattern entity.
 - **[`entities/foundation.json`](spec/examples/entities/foundation.json)** — A Spacing foundation with principles, scale, motion definitions, and guidelines.
@@ -226,7 +235,7 @@ To validate your own DSDS file:
 npx ajv validate -s spec/schema/dsds.bundled.schema.json -d my-system.dsds.json
 ```
 
-Reference `https://designsystemdocspec.org/v0.12.0/dsds.bundled.schema.json` from your DSDS files via the `$schema` keyword to get editor autocompletion and inline validation. See the [Quick Start docs page](https://designsystemdocspec.org/quickstart.html) for the single-entity and multi-entity document shapes.
+Reference `https://designsystemdocspec.org/v0.13.0/dsds.bundled.schema.json` from your DSDS files via the `$schema` keyword to get editor autocompletion and inline validation. See the [Quick Start docs page](https://designsystemdocspec.org/quickstart.html) for the single-entity and multi-entity document shapes.
 
 #### Editorial lint (warnings, never blocking)
 
@@ -333,10 +342,10 @@ The Quick Start page (`site/content/quickstart.mdx`) is compiled the same way as
 The spec version lives in three coordinated places:
 
 1. **`spec/schema/dsds.schema.json#/properties/dsdsVersion/const`** — the single source of truth. The bundle script, the nav, every page title, and the versioned dist directory all derive from this value.
-2. **The `$id` URL on every schema file** — e.g., `https://designsystemdocspec.org/v0.12.0/metadata/last-updated.schema.json`. Every example document's `$schema` field and every `"dsdsVersion"` literal inside example JSON has to track the same version.
+2. **The `$id` URL on every schema file** — e.g., `https://designsystemdocspec.org/v0.13.0/metadata/last-updated.schema.json`. Every example document's `$schema` field and every `"dsdsVersion"` literal inside example JSON has to track the same version.
 3. **`package.json#version`** — the npm package version. Conventionally kept in lockstep with `dsdsVersion.const`.
 
-The `scripts/bump-version.js` script keeps the first two in sync across all 44 schema files, every example, and the README. `package.json` is handled separately because it's not a schema-consumer file.
+The `scripts/bump-version.js` script keeps the first two in sync across all 52 schema files, every example, and the README. `package.json` is handled separately because it's not a schema-consumer file.
 
 ### Version templating in MDX content
 
@@ -366,7 +375,7 @@ This is the exact sequence for cutting a release that includes schema changes. S
 
 4. **Bump `package.json#version`** to the target version (e.g. `0.2.0` → `0.2.1`).
 
-5. **Add a CHANGELOG entry** at the top of `CHANGELOG`, mirroring the format of the prior release. Include a one-line header noting where the bundled schema is now served (e.g., "Schema files are now served at `https://designsystemdocspec.org/v0.12.0/...`") and an "Additions" or "Breaking changes" section describing every schema-visible change.
+5. **Add a CHANGELOG entry** at the top of `CHANGELOG`, mirroring the format of the prior release. Include a one-line header noting where the bundled schema is now served (e.g., "Schema files are now served at `https://designsystemdocspec.org/v0.13.0/...`") and an "Additions" or "Breaking changes" section describing every schema-visible change.
 
 6. **Run the version bump.** Preview the change first:
 
@@ -380,7 +389,7 @@ This is the exact sequence for cutting a release that includes schema changes. S
    node scripts/bump-version.js 0.2.1
    ```
 
-   This rewrites `dsdsVersion.const`, the root schema title, every `$id` URL across the 44 split schemas, every example's `$schema` URL and `"dsdsVersion"` literal, and the README — then regenerates `spec/schema/dsds.bundled.schema.json` so the bundle reflects the new version. The MDX content pages need no rewriting; they pick up the new version from `{{VERSION}}` on the next `npm run build` (see [Version templating in MDX content](#version-templating-in-mdx-content)). The script is drift-tolerant: it migrates any stale `/v<X>/` URL it finds, not just the one currently in `dsdsVersion.const`.
+   This rewrites `dsdsVersion.const`, the root schema title, every `$id` URL across the 52 split schemas, every example's `$schema` URL and `"dsdsVersion"` literal, and the README — then regenerates `spec/schema/dsds.bundled.schema.json` so the bundle reflects the new version. The MDX content pages need no rewriting; they pick up the new version from `{{VERSION}}` on the next `npm run build` (see [Version templating in MDX content](#version-templating-in-mdx-content)). The script is drift-tolerant: it migrates any stale `/v<X>/` URL it finds, not just the one currently in `dsdsVersion.const`.
 
 7. **Build the site.**
 
@@ -400,8 +409,8 @@ This is the exact sequence for cutting a release that includes schema changes. S
 
 9. **Spot-check the rendered site.** Confirm the version reads correctly in three places:
 
-   - Page `<title>` tags (e.g., `DSDS Last Updated Metadata — DSDS 0.12.0`).
-   - The nav title (`Design System Documentation Spec 0.12.0`).
+   - Page `<title>` tags (e.g., `DSDS Last Updated Metadata — DSDS 0.13.0`).
+   - The nav title (`Design System Documentation Spec 0.13.0`).
    - The footer (`Design System Documentation Spec (DSDS) 0.2.1 — Draft Specification`).
 
    The new schema page should exist at `site/dist/<group>-<name>.html` (e.g., `site/dist/metadata-last-updated.html`), and the versioned bundle should exist at `site/dist/v<new-version>/dsds.bundled.schema.json`.
@@ -429,10 +438,14 @@ No changelog entry, no version bump, no new `/v<n>/` artifact. Commit the regene
 
 ## Contributing
 
-This is an early-stage specification (v0.12.0). Feedback is welcome:
+This is an early-stage specification (currently DSDS 0.13.0). Feedback is welcome:
 
 - **Open an issue** for questions, suggestions, or problems with the spec.
 - **Open a PR** for proposed changes to the spec, schema, or examples.
+
+### Contributors
+
+- [Afyia Smith](https://afyiasmith.co/) — the `governance` and `docOrigin` metadata schemas (initial drafts, introduced in 0.12.1 and subject to change).
 
 ## License
 

@@ -41,19 +41,34 @@ const refName = (ref) => (ref && ref.match(/\$defs\/(\w+)/) || [])[1];
 
 const { defs, root } = loadAllDefs();
 
-const entityKinds = ((defs.anyEntity && defs.anyEntity.oneOf) || [])
-  .map((o) => kindConst(defs[refName(o.$ref)]))
-  .filter(Boolean);
+// The unions are kind-discriminated (enum + if/then branches), so the kind
+// vocabulary is read from each union's `properties.kind.enum` — the single
+// authoritative list — rather than from oneOf branch refs (which the unions
+// no longer have).
+const kindEnum = (def) =>
+  (def && def.properties && def.properties.kind && def.properties.kind.enum) || [];
+
+const entityKinds = kindEnum(defs.anyEntity);
 
 const blockKinds = [
   ...new Set(
     Object.keys(defs)
       .filter((n) => n.endsWith("DocumentBlock"))
-      .flatMap((u) => (defs[u].oneOf || []).map((o) => refName(o.$ref)))
-      .map((n) => kindConst(defs[n]))
-      .filter(Boolean),
+      .flatMap((u) => kindEnum(defs[u])),
   ),
 ];
+
+// Self-check: an empty kind list means this script's schema-reading logic has
+// drifted from the union structure (the exact failure mode that let empty
+// tables ship in 0.13.0). Fail loudly instead of passing vacuously.
+if (entityKinds.length === 0 || blockKinds.length === 0) {
+  console.error(
+    `✗ check-doc-coverage self-check failed: derived ${entityKinds.length} entity ` +
+      `and ${blockKinds.length} document-block kinds from the unions. The union ` +
+      `structure has changed and this script no longer reads it correctly.`,
+  );
+  process.exit(1);
+}
 
 const metadataKinds = Object.keys(
   (defs.entityMetadata && defs.entityMetadata.properties) || {},
@@ -103,8 +118,57 @@ for (const base of blockSchemaBases) {
   }
 }
 
+// (c) Every $def in common/ and metadata/ must be exercised by a keyed fixture
+//     in the matching spec/examples/ directory — that is how the relationship
+//     and entity-ref fixture gaps accrued silently before 0.13.0. Leaf and
+//     value defs that are always exercised inside a parent def's fixture are
+//     allowlisted explicitly; a new def is either fixtured or consciously
+//     added here, never silently uncovered.
+const DEF_FIXTURE_ALLOWLIST = new Set([
+  // common/ leaves — exercised inside their parent defs' fixtures
+  "deprecationNotice", // inside status fixtures
+  "mediaAlt", "mediaUrl", // presentation/thumbnail leaves
+  "relationType", // value def, inside relationship
+  // metadata/ nested defs — exercised inside governance / doc-origin fixtures
+  "authorshipValue", "docOriginValue", "lastReviewed", "owner",
+]);
+
+const EX_COMMON_DIR = path.join(ROOT, "spec", "examples", "common");
+const EX_METADATA_DIR = path.join(ROOT, "spec", "examples", "metadata");
+const SCHEMA_COMMON_DIR = path.join(ROOT, "spec", "schema", "common");
+const SCHEMA_METADATA_DIR = path.join(ROOT, "spec", "schema", "metadata");
+
+const defCoverageMissing = [];
+for (const [schemaDir, exDir, label] of [
+  [SCHEMA_COMMON_DIR, EX_COMMON_DIR, "common"],
+  [SCHEMA_METADATA_DIR, EX_METADATA_DIR, "metadata"],
+]) {
+  const dirDefs = new Set();
+  for (const f of fs.readdirSync(schemaDir).filter((f) => f.endsWith(".schema.json"))) {
+    const parsed = JSON.parse(fs.readFileSync(path.join(schemaDir, f), "utf-8"));
+    for (const d of Object.keys(parsed.$defs || {})) dirDefs.add(d);
+  }
+  const fixtureKeys = new Set();
+  for (const f of fs.readdirSync(exDir).filter((f) => f.endsWith(".json"))) {
+    try {
+      for (const k of Object.keys(JSON.parse(fs.readFileSync(path.join(exDir, f), "utf-8")))) {
+        fixtureKeys.add(k);
+      }
+    } catch {
+      // JSON validity is validate.js's job.
+    }
+  }
+  for (const d of dirDefs) {
+    if (!fixtureKeys.has(d) && !DEF_FIXTURE_ALLOWLIST.has(d)) {
+      defCoverageMissing.push(
+        `${label} def "${d}" has no keyed fixture in spec/examples/${label}/ (add one, or allowlist it in check-doc-coverage.mjs with a reason)`,
+      );
+    }
+  }
+}
+
 const orphanKeys = [];
-for (const dir of [EX_BLOCKS_DIR, EX_ENTITIES_DIR]) {
+for (const dir of [EX_BLOCKS_DIR, EX_ENTITIES_DIR, EX_COMMON_DIR, EX_METADATA_DIR]) {
   for (const file of fs.readdirSync(dir).filter((f) => f.endsWith(".json"))) {
     let data;
     try {
@@ -138,8 +202,16 @@ const CONTENT_DIR = path.join(ROOT, "site", "content");
 const versionProblems = [];
 const contentFiles = fs.readdirSync(CONTENT_DIR).filter((f) => f.endsWith(".mdx"));
 
+// dsds:include blocks are generated from version-stamped example files:
+// bump-version.js rewrites the examples, sync-examples.js regenerates the
+// blocks, and the rendered guard below still verifies their versions. Strip
+// them before the hardcode scan so only hand-written URLs are flagged.
+const INCLUDE_BLOCK_RE =
+  /(\{\/\* dsds:include [\s\S]*?\{\/\* \/dsds:include \*\/\})|(<!-- dsds:include [\s\S]*?<!-- \/dsds:include -->)/g;
 for (const file of contentFiles) {
-  const src = fs.readFileSync(path.join(CONTENT_DIR, file), "utf-8");
+  const src = fs
+    .readFileSync(path.join(CONTENT_DIR, file), "utf-8")
+    .replace(INCLUDE_BLOCK_RE, "");
   for (const m of src.matchAll(/designsystemdocspec\.org\/v(\d+\.\d+\.\d+)/g)) {
     versionProblems.push(`${file}: source hardcodes version URL v${m[1]} — use the {{VERSION}} token`);
   }
@@ -172,7 +244,7 @@ if (genErrors.length) {
   for (const e of genErrors) console.error(`      ${e}`);
 }
 
-if (missing.length || genErrors.length || exampleMissing.length || orphanKeys.length || versionProblems.length) {
+if (missing.length || genErrors.length || exampleMissing.length || defCoverageMissing.length || orphanKeys.length || versionProblems.length) {
   if (versionProblems.length) {
     console.error(`\n  ✗ ${versionProblems.length} version-consistency problem(s) (spec const ${SPEC_VERSION}):`);
     for (const m of versionProblems) console.error(`      ${m}`);
@@ -193,6 +265,10 @@ if (missing.length || genErrors.length || exampleMissing.length || orphanKeys.le
     console.error(`\n  ✗ ${exampleMissing.length} document-block(s) without an example fixture:`);
     for (const m of exampleMissing) console.error(`      ${m}`);
   }
+  if (defCoverageMissing.length) {
+    console.error(`\n  ✗ ${defCoverageMissing.length} def(s) without a keyed example fixture:`);
+    for (const m of defCoverageMissing) console.error(`      ${m}`);
+  }
   if (orphanKeys.length) {
     console.error(`\n  ✗ ${orphanKeys.length} stale example fixture key(s):`);
     for (const m of orphanKeys) console.error(`      ${m}`);
@@ -202,4 +278,5 @@ if (missing.length || genErrors.length || exampleMissing.length || orphanKeys.le
 
 console.log("\n  ✓ Every schema kind is surfaced on the page.");
 console.log("  ✓ Every document-block has an example fixture; all fixture keys resolve.");
+console.log("  ✓ Every common/ and metadata/ def is fixtured or allowlisted.");
 console.log(`  ✓ All ${contentFiles.length} content pages render a single version (${SPEC_VERSION}).\n`);
