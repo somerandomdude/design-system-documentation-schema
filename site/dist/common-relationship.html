@@ -3,35 +3,39 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>DSDS Relationship Definitions — DSDS 0.12.1</title>
+  <title>DSDS Relationship Definitions — DSDS 0.13.0</title>
   <meta name="description" content="Typed, directional dependency edges between entities. A relationship records that one entity depends on, composes, replaces, or otherwise relates to another, with a controlled `relation` vocabulary that tools and agents can reason over. This is the structural dependency graph: where `link` carries pointers to external resources (source, design, docs) and soft associations, `relationship` carries the typed, validatable edges agents use for impact analysis ('what breaks if this token changes') and alternatives ('what replaces this'). Edges are authored on the source entity in their canonical direction; tools derive the inverse edges and the whole-graph view. The target is named by `identifier` and follows the same resolution rule as every entity reference: it MUST match a documented entity.">
   <link rel="canonical" href="https://designsystemdocspec.org/common-relationship">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Design System Documentation Spec">
-  <meta property="og:title" content="DSDS Relationship Definitions — DSDS 0.12.1">
+  <meta property="og:title" content="DSDS Relationship Definitions — DSDS 0.13.0">
   <meta property="og:description" content="Typed, directional dependency edges between entities. A relationship records that one entity depends on, composes, replaces, or otherwise relates to another, with a controlled `relation` vocabulary that tools and agents can reason over. This is the structural dependency graph: where `link` carries pointers to external resources (source, design, docs) and soft associations, `relationship` carries the typed, validatable edges agents use for impact analysis ('what breaks if this token changes') and alternatives ('what replaces this'). Edges are authored on the source entity in their canonical direction; tools derive the inverse edges and the whole-graph view. The target is named by `identifier` and follows the same resolution rule as every entity reference: it MUST match a documented entity.">
   <meta property="og:url" content="https://designsystemdocspec.org/common-relationship">
   <meta name="twitter:card" content="summary">
-  <meta name="dsds-version" content="0.12.1">
-  <link rel="stylesheet" href="tokens.css?v=0.12.1">
-  <link rel="stylesheet" href="style.css?v=0.12.1">
-  <script src="components.js?v=0.12.1"></script>
+  <meta name="dsds-version" content="0.13.0">
+  <link rel="stylesheet" href="tokens.css?v=0.13.0">
+  <link rel="stylesheet" href="style.css?v=0.13.0">
+  <script src="components.js?v=0.13.0"></script>
 </head>
 <body>
   <a class="skip-link" href="#main-content">Skip to content</a>
   <ds-nav-toggle target="ds-spec-nav"></ds-nav-toggle>
-  <ds-spec-nav title="Design System Documentation Spec 0.12.1" title-href="index.html" active="common-relationship">
+  <ds-spec-nav title="Design System Documentation Spec 0.13.0" title-href="index.html" active="common-relationship">
     <a href="index.html" slug="index">Overview</a>
     <a href="quickstart.html" slug="quickstart">Quick start</a>
     <a href="humans-and-agents.html" slug="humans-and-agents">Humans &amp; agents</a>
     <a href="schema-architecture.html" slug="schema-architecture">Schema architecture</a>
+    <a href="conformance.html" slug="conformance">Conformance</a>
+    <a href="interoperability.html" slug="interoperability">Interoperability</a>
+    <a href="stability.html" slug="stability">Stability &amp; 1.0</a>
     <a href="samples.html" slug="samples">Interactive samples</a>
     <ds-nav-group label="Documentation">
       <a href="root.html" slug="root">Root schema</a>
     </ds-nav-group>
     <ds-nav-group label="Common">
       <a href="common-criterion.html" slug="common-criterion">criterion</a>
+      <a href="common-dated-note.html" slug="common-dated-note">dated-note</a>
       <a href="common-entity-ref.html" slug="common-entity-ref">entity-ref</a>
       <a href="common-example.html" slug="common-example">example</a>
       <a href="common-extends.html" slug="common-extends">extends</a>
@@ -42,6 +46,7 @@
       <a href="common-rich-text.html" slug="common-rich-text">rich-text</a>
       <a href="common-status.html" slug="common-status">status</a>
       <a href="common-system-info.html" slug="common-system-info">system-info</a>
+      <a href="common-token-overrides.html" slug="common-token-overrides">token-overrides</a>
       <a href="common-use-cases.html" slug="common-use-cases">use-cases</a>
     </ds-nav-group>
     <ds-nav-group label="Entities">
@@ -76,7 +81,6 @@
       <a href="metadata-aliases.html" slug="metadata-aliases">aliases</a>
       <a href="metadata-category.html" slug="metadata-category">category</a>
       <a href="metadata-doc-origin.html" slug="metadata-doc-origin">doc-origin</a>
-      <a href="metadata-extends.html" slug="metadata-extends">extends</a>
       <a href="metadata-governance.html" slug="metadata-governance">governance</a>
       <a href="metadata-last-updated.html" slug="metadata-last-updated">last-updated</a>
       <a href="metadata-links.html" slug="metadata-links">links</a>
@@ -105,6 +109,27 @@
 <ds-cross-refs><strong>References:</strong> 
 <ds-type-ref href="common-relationship.html#relationship">relationship</ds-type-ref>
 </ds-cross-refs>
+<ds-def-example>
+<ds-code language="json" label="example">[
+  [
+    {
+      &quot;relation&quot;: &quot;composes&quot;,
+      &quot;target&quot;: &quot;button&quot;,
+      &quot;role&quot;: &quot;Renders the confirm and cancel actions&quot;,
+      &quot;required&quot;: true
+    },
+    {
+      &quot;relation&quot;: &quot;depends-on&quot;,
+      &quot;target&quot;: &quot;color-critical&quot;,
+      &quot;role&quot;: &quot;Tones the destructive confirm action&quot;
+    },
+    {
+      &quot;relation&quot;: &quot;alternative-to&quot;,
+      &quot;target&quot;: &quot;link&quot;
+    }
+  ]
+]</ds-code>
+</ds-def-example>
 </ds-def-section>
 <ds-def-section name="relationship" anchor="relationship" description="A single directional edge from the entity that declares it (the source) to another documented entity (the target). Pairs a controlled `relation` with the target's `identifier`. `required` marks whether the target is needed for the source to work (meaningful for 'depends-on' and 'composes'). `versionConstraint` pins a compatible range of the target. `role` describes what the target does in this relationship." type="object">
 <ds-prop-table>
@@ -117,6 +142,15 @@
 <ds-cross-refs><strong>References:</strong> 
 <ds-type-ref href="common-relationship.html#relationtype">relationType</ds-type-ref>, <ds-type-ref href="common-entity-ref.html#entityidentifier">entityIdentifier</ds-type-ref>, <ds-type-ref href="common-entity-ref.html#entityrole">entityRole</ds-type-ref>
 </ds-cross-refs>
+<ds-def-example>
+<ds-code language="json" label="example">{
+  &quot;relation&quot;: &quot;depends-on&quot;,
+  &quot;target&quot;: &quot;color-action-primary&quot;,
+  &quot;role&quot;: &quot;Provides the resting background color&quot;,
+  &quot;required&quot;: true,
+  &quot;versionConstraint&quot;: &quot;&gt;=2.0.0&quot;
+}</ds-code>
+</ds-def-example>
 </ds-def-section>
 <ds-def-section name="relationType" anchor="relationtype" description="The kind of relationship, in its canonical direction (source → target). Standard relations: 'depends-on' (the source needs the target to function — e.g. a component depends on a token), 'composes' (the source is built from the target — e.g. a pattern composes a component), 'part-of' (the source is a member of the target — e.g. a token is part of a token group), 'alternative-to' (the source is an interchangeable option for the target; symmetric), 'replaces' (the source supersedes a deprecated target), 'extends' (the source inherits from the target). Tools derive the inverse edges ('composed-by', 'replaced-by', 'contains', 'dependency-of', 'extended-by') and MUST NOT require them to be authored. Custom relations are allowed and MUST be vendor-namespaced (e.g. 'acme.themes').">
 <p><strong>Constraints:</strong> at least one of:</p>
@@ -127,7 +161,7 @@
         <ds-back-to-top></ds-back-to-top>
 
         <ds-footer>
-          <p>Design System Documentation Spec (DSDS) 0.12.1 — Draft Specification</p>
+          <p>Design System Documentation Spec (DSDS) 0.13.0 — Draft Specification</p>
           <p><a href="https://github.com/somerandomdude/design-system-documentation-schema">GitHub</a></p>
         </ds-footer>
       </div>

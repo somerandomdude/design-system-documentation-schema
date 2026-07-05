@@ -38,6 +38,13 @@ const TOP_LINKS = [
     href: "schema-architecture.html",
     slug: "schema-architecture",
   },
+  { label: "Conformance", href: "conformance.html", slug: "conformance" },
+  {
+    label: "Interoperability",
+    href: "interoperability.html",
+    slug: "interoperability",
+  },
+  { label: "Stability & 1.0", href: "stability.html", slug: "stability" },
   { label: "Interactive samples", href: "samples.html", slug: "samples" },
 ];
 

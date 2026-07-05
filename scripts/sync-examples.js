@@ -68,14 +68,21 @@ const MODULES_DIR = path.join(ROOT, "spec", "modules");
  */
 function parseDirective(line) {
   const trimmed = line.trim();
-  const match = trimmed.match(/^<!--\s*dsds:include\s+(\S+)\s*-->$/);
+  // Two marker syntaxes: HTML comments in spec/modules markdown, MDX (JSX)
+  // comments in site/content pages — MDX rejects HTML comments outright.
+  let style = "html";
+  let match = trimmed.match(/^<!--\s*dsds:include\s+(\S+)\s*-->$/);
+  if (!match) {
+    match = trimmed.match(/^\{\/\*\s*dsds:include\s+(\S+)\s*\*\/\}$/);
+    style = "mdx";
+  }
   if (!match) return null;
 
   const raw = match[1];
   const hashIndex = raw.indexOf("#");
 
   if (hashIndex === -1) {
-    return { filePath: raw, keyPath: [] };
+    return { filePath: raw, keyPath: [], style };
   }
 
   const filePath = raw.slice(0, hashIndex);
@@ -93,7 +100,7 @@ function parseDirective(line) {
  * Test if a line is a closing include marker.
  */
 function isClosingMarker(line) {
-  return /^\s*<!--\s*\/dsds:include\s*-->\s*$/.test(line);
+  return /^\s*(<!--\s*\/dsds:include\s*-->|\{\/\*\s*\/dsds:include\s*\*\/\})\s*$/.test(line);
 }
 
 /**
@@ -238,8 +245,10 @@ function processMarkdown(mdPath) {
       output.push(lines[i]);
       i++;
     } else {
-      // Insert closing marker if missing
-      output.push("<!-- /dsds:include -->");
+      // Insert closing marker if missing, matching the directive syntax
+      output.push(
+        directive.style === "mdx" ? "{/* /dsds:include */}" : "<!-- /dsds:include -->",
+      );
       updated = true;
     }
 
@@ -321,17 +330,23 @@ function main() {
       : "Syncing markdown include directives...\n",
   );
 
-  if (!fs.existsSync(MODULES_DIR)) {
-    console.log("  No modules directory found — nothing to sync.\n");
-    console.log("Done.\n");
-    return;
-  }
-
-  const mdFiles = fs
-    .readdirSync(MODULES_DIR)
-    .filter((f) => f.endsWith(".md"))
-    .sort()
-    .map((f) => path.join(MODULES_DIR, f));
+  const CONTENT_DIR = path.join(ROOT, "site", "content");
+  const mdFiles = (fs.existsSync(MODULES_DIR)
+    ? fs
+        .readdirSync(MODULES_DIR)
+        .filter((f) => f.endsWith(".md"))
+        .sort()
+        .map((f) => path.join(MODULES_DIR, f))
+    : [])
+    .concat(
+      fs.existsSync(CONTENT_DIR)
+        ? fs
+            .readdirSync(CONTENT_DIR)
+            .filter((f) => f.endsWith(".mdx"))
+            .sort()
+            .map((f) => path.join(CONTENT_DIR, f))
+        : [],
+    );
 
   let totalIncludes = 0;
   let totalUpdated = 0;

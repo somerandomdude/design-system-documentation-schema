@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://designsystemdocspec.org/v0.12.1/document-blocks/api.schema.json",
+  "$id": "https://designsystemdocspec.org/v0.13.0/document-blocks/api.schema.json",
   "title": "DSDS API Document Block",
   "description": "Documents the code-level interface of a component: configurable properties, emitted events, content slots, CSS custom properties, CSS shadow parts, data attributes, and public methods. When a component supports multiple platforms, each platform gets its own API block. The `platform` property says which implementation it describes.",
   "$defs": {
@@ -19,18 +19,19 @@
         },
         "type": {
           "type": "string",
-          "description": "The property's type as it would appear in a type signature (e.g., 'boolean', 'number', 'string', 'ReactNode', 'IconComponent'). For enum properties, use `values` instead of listing members here."
+          "description": "The property's type as it would appear in a type signature (e.g., 'boolean', 'number', 'string', 'ReactNode', 'IconComponent'). For enum properties, use `values` instead of listing members here. When `schema` is present it is authoritative; `type` is its display summary and MUST NOT disagree with it."
         },
         "values": {
           "type": "array",
-          "description": "The accepted values for enum-like properties (e.g., ['default', 'primary', 'ghost']). Use this instead of listing members in `type`.",
+          "description": "The accepted values for enum-like properties (e.g., ['default', 'primary', 'ghost']). Use this instead of listing members in `type`. When `schema` is present it is authoritative; `values` is its display summary and MUST NOT disagree with it.",
           "items": {
             "type": "string"
-          }
+          },
+          "minItems": 1
         },
         "schema": {
           "type": "object",
-          "description": "A JSON Schema (Draft 2020-12) object that defines the property's type in machine-readable form. It follows the same conventions as OpenAPI parameter schemas."
+          "description": "A JSON Schema (Draft 2020-12) object that defines the property's type in machine-readable form. It follows the same conventions as OpenAPI parameter schemas. When present, `schema` is the authoritative type definition; `type` and `values` are display summaries of it and MUST NOT disagree."
         },
         "description": {
           "$ref": "../common/rich-text.schema.json#/$defs/richText",
@@ -49,7 +50,8 @@
           "description": "Example values for this property.",
           "items": {
             "$ref": "../common/example.schema.json#/$defs/example"
-          }
+          },
+          "minItems": 1
         },
         "since": {
           "type": "string",
@@ -85,7 +87,7 @@
         },
         "returns": {
           "type": "string",
-          "description": "Description of the event return shape (e.g., '(event: MouseEvent) => void', '{ value: string, index: number }')."
+          "description": "The event's payload or handler signature (e.g., '(event: MouseEvent) => void', '{ value: string, index: number }'). Emitted events do not return values; this documents what a listener receives."
         },
         "since": {
           "type": "string",
@@ -108,7 +110,7 @@
         },
         "description": {
           "$ref": "../common/rich-text.schema.json#/$defs/richText",
-          "description": "What content this slot accepts and any constraints on its children."
+          "description": "The slot's purpose and where it renders in the component. Content rules belong in `acceptedContent`, not here."
         },
         "acceptedContent": {
           "$ref": "../common/rich-text.schema.json#/$defs/richText",
@@ -198,7 +200,8 @@
           "items": {
             "type": "string"
           },
-          "description": "The set of possible values (e.g., ['default', 'hover', 'active', 'disabled'])."
+          "description": "The set of possible values (e.g., ['default', 'hover', 'active', 'disabled']).",
+          "minItems": 1
         },
         "since": {
           "type": "string",
@@ -257,6 +260,7 @@
         "properties": {
           "type": "array",
           "description": "Configurable properties (props, attributes, inputs) that consumers pass to the component.",
+          "minItems": 1,
           "items": {
             "$ref": "#/$defs/apiProperty"
           }
@@ -264,6 +268,7 @@
         "events": {
           "type": "array",
           "description": "Events emitted by the component that consumers can listen to.",
+          "minItems": 1,
           "items": {
             "$ref": "#/$defs/apiEvent"
           }
@@ -271,6 +276,7 @@
         "slots": {
           "type": "array",
           "description": "Content insertion points where consumers can project child content.",
+          "minItems": 1,
           "items": {
             "$ref": "#/$defs/apiSlot"
           }
@@ -278,6 +284,7 @@
         "cssCustomProperties": {
           "type": "array",
           "description": "CSS custom properties exposed for external styling.",
+          "minItems": 1,
           "items": {
             "$ref": "#/$defs/apiCssCustomProperty"
           }
@@ -285,6 +292,7 @@
         "cssParts": {
           "type": "array",
           "description": "CSS shadow parts exposed for external styling via ::part() selectors.",
+          "minItems": 1,
           "items": {
             "$ref": "#/$defs/apiCssPart"
           }
@@ -292,6 +300,7 @@
         "dataAttributes": {
           "type": "array",
           "description": "Data attributes that reflect component state or config into the DOM.",
+          "minItems": 1,
           "items": {
             "$ref": "#/$defs/apiDataAttribute"
           }
@@ -299,6 +308,7 @@
         "methods": {
           "type": "array",
           "description": "Public methods on the component instance.",
+          "minItems": 1,
           "items": {
             "$ref": "#/$defs/apiMethod"
           }

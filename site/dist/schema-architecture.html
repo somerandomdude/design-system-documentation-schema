@@ -3,35 +3,39 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Schema Architecture — DSDS 0.12.1</title>
+  <title>Schema Architecture — DSDS 0.13.0</title>
   <meta name="description" content="The full DSDS schema reference — document structure, entity properties, document block types, and all shared models.">
   <link rel="canonical" href="https://designsystemdocspec.org/schema-architecture">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Design System Documentation Spec">
-  <meta property="og:title" content="Schema Architecture — DSDS 0.12.1">
+  <meta property="og:title" content="Schema Architecture — DSDS 0.13.0">
   <meta property="og:description" content="The full DSDS schema reference — document structure, entity properties, document block types, and all shared models.">
   <meta property="og:url" content="https://designsystemdocspec.org/schema-architecture">
   <meta name="twitter:card" content="summary">
-  <meta name="dsds-version" content="0.12.1">
-  <link rel="stylesheet" href="tokens.css?v=0.12.1">
-  <link rel="stylesheet" href="style.css?v=0.12.1">
-  <script src="components.js?v=0.12.1"></script>
+  <meta name="dsds-version" content="0.13.0">
+  <link rel="stylesheet" href="tokens.css?v=0.13.0">
+  <link rel="stylesheet" href="style.css?v=0.13.0">
+  <script src="components.js?v=0.13.0"></script>
 </head>
 <body>
   <a class="skip-link" href="#main-content">Skip to content</a>
   <ds-nav-toggle target="ds-spec-nav"></ds-nav-toggle>
-  <ds-spec-nav title="Design System Documentation Spec 0.12.1" title-href="index.html" active="schema-architecture">
+  <ds-spec-nav title="Design System Documentation Spec 0.13.0" title-href="index.html" active="schema-architecture">
     <a href="index.html" slug="index">Overview</a>
     <a href="quickstart.html" slug="quickstart">Quick start</a>
     <a href="humans-and-agents.html" slug="humans-and-agents">Humans &amp; agents</a>
     <a href="schema-architecture.html" slug="schema-architecture">Schema architecture</a>
+    <a href="conformance.html" slug="conformance">Conformance</a>
+    <a href="interoperability.html" slug="interoperability">Interoperability</a>
+    <a href="stability.html" slug="stability">Stability &amp; 1.0</a>
     <a href="samples.html" slug="samples">Interactive samples</a>
     <ds-nav-group label="Documentation">
       <a href="root.html" slug="root">Root schema</a>
     </ds-nav-group>
     <ds-nav-group label="Common">
       <a href="common-criterion.html" slug="common-criterion">criterion</a>
+      <a href="common-dated-note.html" slug="common-dated-note">dated-note</a>
       <a href="common-entity-ref.html" slug="common-entity-ref">entity-ref</a>
       <a href="common-example.html" slug="common-example">example</a>
       <a href="common-extends.html" slug="common-extends">extends</a>
@@ -42,6 +46,7 @@
       <a href="common-rich-text.html" slug="common-rich-text">rich-text</a>
       <a href="common-status.html" slug="common-status">status</a>
       <a href="common-system-info.html" slug="common-system-info">system-info</a>
+      <a href="common-token-overrides.html" slug="common-token-overrides">token-overrides</a>
       <a href="common-use-cases.html" slug="common-use-cases">use-cases</a>
     </ds-nav-group>
     <ds-nav-group label="Entities">
@@ -76,7 +81,6 @@
       <a href="metadata-aliases.html" slug="metadata-aliases">aliases</a>
       <a href="metadata-category.html" slug="metadata-category">category</a>
       <a href="metadata-doc-origin.html" slug="metadata-doc-origin">doc-origin</a>
-      <a href="metadata-extends.html" slug="metadata-extends">extends</a>
       <a href="metadata-governance.html" slug="metadata-governance">governance</a>
       <a href="metadata-last-updated.html" slug="metadata-last-updated">last-updated</a>
       <a href="metadata-links.html" slug="metadata-links">links</a>
@@ -106,7 +110,7 @@
 </ul>
 <p>A complete, valid document using only the core:</p>
 <ds-code language="json">{
-  "dsdsVersion": "0.12.1",
+  "dsdsVersion": "0.13.0",
   "entity": {
     "kind": "component",
     "identifier": "button",
@@ -144,22 +148,23 @@
 ├── dsds.bundled.schema.json            # Auto-generated single-file bundle
 ├── common/
 │   ├── criterion.schema.json                   # conformanceLevel, verificationMode, criterionCheck, criterionFixture, reference, criterion
+│   ├── dated-note.schema.json                  # isoDate, plainNote
 │   ├── entity-ref.schema.json                  # entityIdentifier, entityRole, entityRef
 │   ├── example.schema.json                     # example
 │   ├── extends.schema.json                     # documentExtends, entityExtends
 │   ├── extensions.schema.json                  # extensions
 │   ├── link.schema.json                        # link
-│   ├── presentation.schema.json                # presentationImage, presentationVideo, presentationCode, presentationUrl
+│   ├── presentation.schema.json                # mediaUrl, mediaAlt, presentationImage, presentationVideo, presentationCode, presentationUrl
 │   ├── relationship.schema.json                # relationType, relationship, relationships
 │   ├── rich-text.schema.json                   # richText
-│   ├── status.schema.json                      # statusValue, platformStatus
+│   ├── status.schema.json                      # statusValue, deprecationNotice, platformStatus
 │   ├── system-info.schema.json                 # systemInfo
+│   ├── token-overrides.schema.json             # tokenOverrides
 │   └── use-cases.schema.json                   # useCase, useCases
 ├── metadata/
 │   ├── aliases.schema.json                     # aliases
 │   ├── category.schema.json                    # category
 │   ├── doc-origin.schema.json                  # authorshipValue, docOriginValue, docOrigin
-│   ├── extends.schema.json                     # extends
 │   ├── governance.schema.json                  # owner, lastReviewed, governance
 │   ├── last-updated.schema.json                # lastUpdated
 │   ├── links.schema.json                       # links
@@ -171,13 +176,13 @@
 │   ├── tags.schema.json                        # tags
 │   └── thumbnail.schema.json                   # thumbnail
 ├── document-blocks/
-│   ├── accessibility.schema.json               # keyboardInteraction, ariaAttribute, colorContrast, accessibility, announcement, focusBehavior, reducedMotionEntry
+│   ├── accessibility.schema.json               # keyboardInteraction, ariaAttribute, colorContrastEntry, accessibility, announcement, focusBehavior, reducedMotionEntry
 │   ├── anatomy.schema.json                     # anatomyEntry, anatomy
 │   ├── api.schema.json                         # apiProperty, apiEvent, apiSlot, apiCssCustomProperty, apiCssPart, apiDataAttribute, apiMethod, api
 │   ├── checklist.schema.json                   # checklistItem, checklist
 │   ├── content.schema.json                     # contentLabelEntry, localizationEntry, content
 │   ├── design-specifications.schema.json       # designValue, designProperties, spacingSpec, sizingSpec, typographyEntrySpec, typographySpec, responsiveEntry, designSpecifications
-│   ├── document-blocks.schema.json             # generalBranches, generalDocumentBlock, componentDocumentBlock, foundationDocumentBlock, patternDocumentBlock, tokenDocumentBlock, guideDocumentBlock
+│   ├── document-blocks.schema.json             # generalBranches, generalDocumentBlock, componentDocumentBlock, foundationDocumentBlock, patternDocumentBlock, guideDocumentBlock
 │   ├── guidelines.schema.json                  # guidelineEntry, guidelines
 │   ├── imports.schema.json                     # importEntry, imports
 │   ├── interactions.schema.json                # interactionEntry, interactions
@@ -201,11 +206,11 @@
 <p>A DSDS file is a JSON object. It needs a <ds-code inline>dsdsVersion</ds-code>. It also needs one of two shapes: an <ds-code inline>entityGroups</ds-code> array for many entities, or an <ds-code inline>entity</ds-code> object for a single one. Every valid file uses one or the other.</p>
 <ds-heading level="3" anchor="root-properties">Root properties</ds-heading>
 <ds-prop-table>
-  <ds-prop name="dsdsVersion" type="&lt;ds-code inline&gt;&quot;0.12.1&quot;&lt;/ds-code&gt;" required>The DSDS spec version this document conforms to.</ds-prop>
+  <ds-prop name="dsdsVersion" type="&lt;ds-code inline&gt;&quot;0.13.0&quot;&lt;/ds-code&gt;" required>The DSDS spec version this document conforms to.</ds-prop>
   <ds-prop name="$schema" type="string">URI reference to the DSDS JSON Schema for validation.</ds-prop>
   <ds-prop name="systemInfo" type="&lt;ds-type-ref href=&quot;common-system-info.html#systeminfo&quot;&gt;systemInfo&lt;/ds-type-ref&gt;"></ds-prop>
   <ds-prop name="extends" type="&lt;ds-type-ref href=&quot;common-extends.html#documentextends&quot;&gt;documentExtends&lt;/ds-type-ref&gt;">Declares that this DSDS document inherits from another DSDS document — usually a core design system. The base document provides the core entities. This document layers on top, adding or extending entities. It supports systems-of-systems architectures, where product- or brand-specific systems inherit from a shared core.</ds-prop>
-  <ds-prop name="documentBlocks" type="&lt;ds-type-ref href=&quot;document-blocks-document-blocks.html#generaldocumentblock&quot;&gt;generalDocumentBlock&lt;/ds-type-ref&gt;[]">System-level structured documentation for the design system as a whole — its purpose (when to adopt the system), cross-cutting guidelines, and narrative overviews. Each entry is a general document block: a <ds-code inline>useCases</ds-code>, <ds-code inline>guidelines</ds-code>, <ds-code inline>sections</ds-code>, <ds-code inline>accessibility</ds-code>, or <ds-code inline>content</ds-code> block. This is the same <ds-code inline>documentBlocks</ds-code> mechanism entities use, scoped to the system rather than a single artifact. Position signals the scope (root vs. inside an entity).</ds-prop>
+  <ds-prop name="documentBlocks" type="&lt;ds-type-ref href=&quot;document-blocks-document-blocks.html#generaldocumentblock&quot;&gt;generalDocumentBlock&lt;/ds-type-ref&gt;[]">System-level structured documentation for the design system as a whole — its purpose (when to adopt the system), cross-cutting guidelines, and narrative overviews. Each entry is a general document block: a <ds-code inline>useCases</ds-code>, <ds-code inline>guidelines</ds-code>, <ds-code inline>sections</ds-code>, <ds-code inline>accessibility</ds-code>, <ds-code inline>content</ds-code>, or <ds-code inline>checklist</ds-code> block. This is the same <ds-code inline>documentBlocks</ds-code> mechanism entities use, scoped to the system rather than a single artifact. Position signals the scope (root vs. inside an entity).<br><small>Min items: 1</small></ds-prop>
   <ds-prop name="entityGroups" type="&lt;ds-type-ref href=&quot;root.html#entitygroup&quot;&gt;entityGroup&lt;/ds-type-ref&gt; | &lt;ds-type-ref href=&quot;root.html#fileref&quot;&gt;fileRef&lt;/ds-type-ref&gt;[]">One or more entity groups. Each group is a named collection with a single <ds-code inline>entities</ds-code> array. That array holds any mix of entity types — components, tokens, token groups, themes, foundations, patterns, guides, and chunks — in display order. Each entity's <ds-code inline>kind</ds-code> identifies its type. Multiple groups let one DSDS file organize entities into logical sections (e.g., one group for foundations, another for components). Groups may be inlined or referenced through a $ref object that points to another DSDS file.<br><small>Min items: 1</small></ds-prop>
   <ds-prop name="entity" type="&lt;ds-type-ref href=&quot;root.html#anyentity&quot;&gt;anyEntity&lt;/ds-type-ref&gt;">A single entity document — one component, token, token group, theme, foundation, pattern, guide, or chunk. Use this instead of <ds-code inline>entityGroups</ds-code> when each entity lives in its own file. The <ds-code inline>kind</ds-code> field on the entity identifies its type.</ds-prop>
   <ds-prop name="$extensions" type="&lt;ds-type-ref href=&quot;common-extensions.html#extensions&quot;&gt;extensions&lt;/ds-type-ref&gt;"></ds-prop>
@@ -215,15 +220,15 @@
 <p>The <ds-code inline>entities</ds-code> array takes inline entity objects or <ds-code inline>$ref</ds-code> objects. A <ds-code inline>$ref</ds-code> points to an outside DSDS file (see <a href="#multi-file-documents">Multi-file documents</a>). The <ds-code inline>entityGroups</ds-code> array also takes <ds-code inline>$ref</ds-code> objects, so a whole group can live in its own file.</p>
 <ds-prop-table>
   <ds-prop name="name" type="string" required>Human-readable name of the collection (e.g., 'Acme Design System', 'Color Tokens', 'Button Documentation'). This is already a display label — it does NOT have an <ds-code inline>identifier</ds-code> counterpart and need not match a slug pattern.</ds-prop>
+  <ds-prop name="entities" type="&lt;ds-type-ref href=&quot;root.html#anyentity&quot;&gt;anyEntity&lt;/ds-type-ref&gt; | &lt;ds-type-ref href=&quot;root.html#fileref&quot;&gt;fileRef&lt;/ds-type-ref&gt;[]" required>The entities in this group, in display order. Any mix of entity kinds — components, tokens, token groups, themes, foundations, patterns, guides, and chunks. Each item's <ds-code inline>kind</ds-code> identifies its type. Items may be inlined or referenced through a $ref object that points to another DSDS file. Order is significant: tools SHOULD keep it for display.<br><small>Min items: 1</small></ds-prop>
   <ds-prop name="description" type="&lt;ds-type-ref href=&quot;common-rich-text.html#richtext&quot;&gt;richText&lt;/ds-type-ref&gt;"></ds-prop>
-  <ds-prop name="entities" type="&lt;ds-type-ref href=&quot;root.html#anyentity&quot;&gt;anyEntity&lt;/ds-type-ref&gt; | &lt;ds-type-ref href=&quot;root.html#fileref&quot;&gt;fileRef&lt;/ds-type-ref&gt;[]">The entities in this group, in display order. Any mix of entity kinds — components, tokens, token groups, themes, foundations, patterns, guides, and chunks. Each item's <ds-code inline>kind</ds-code> identifies its type. Items may be inlined or referenced through a $ref object that points to another DSDS file. Order is significant: tools SHOULD keep it for display.<br><small>Min items: 1</small></ds-prop>
   <ds-prop name="$extensions" type="&lt;ds-type-ref href=&quot;common-extensions.html#extensions&quot;&gt;extensions&lt;/ds-type-ref&gt;"></ds-prop>
 </ds-prop-table>
 <ds-heading level="3" anchor="single-entity-documents">Single-entity documents</ds-heading>
 <p>When each entity lives in its own file, use the <ds-code inline>entity</ds-code> property instead of <ds-code inline>entityGroups</ds-code>. The <ds-code inline>kind</ds-code> field on the entity identifies its type.</p>
 <ds-code language="json">{
-  "$schema": "https://designsystemdocspec.org/v0.12.1/dsds.bundled.schema.json",
-  "dsdsVersion": "0.12.1",
+  "$schema": "https://designsystemdocspec.org/v0.13.0/dsds.bundled.schema.json",
+  "dsdsVersion": "0.13.0",
   "entity": {
     "kind": "component",
     "identifier": "button",
@@ -242,7 +247,7 @@
 <p>Each <ds-code inline>$ref</ds-code> object has one property: <ds-code inline>$ref</ds-code>. Its value is a path to a DSDS file. You can add a JSON Pointer fragment to target one value inside that file.</p>
 <p><strong>Individual entity file</strong> (<ds-code inline>button.dsds.json</ds-code>):</p>
 <ds-code language="json">{
-  "dsdsVersion": "0.12.1",
+  "dsdsVersion": "0.13.0",
   "entity": {
     "kind": "component",
     "identifier": "button",
@@ -253,7 +258,7 @@
 </ds-code>
 <p><strong>Manifest file</strong> (<ds-code inline>index.dsds.json</ds-code>):</p>
 <ds-code language="json">{
-  "dsdsVersion": "0.12.1",
+  "dsdsVersion": "0.13.0",
   "entityGroups": [
     {
       "name": "Acme Design System",
@@ -309,11 +314,11 @@
 <ds-heading level="3" anchor="system-info">System info</ds-heading>
 <p>The root <ds-code inline>systemInfo</ds-code> object holds the design system's <strong>identity</strong> — its name, version, organization, URL, and license. It is the system's version of an entity's <ds-code inline>identifier</ds-code> and <ds-code inline>name</ds-code>. It is not the same as the <ds-code inline>metadata</ds-code> object on entities (see <a href="#entity-metadata">Entity metadata</a>). The two are kept apart on purpose, even though both hold "data about" their subject.</p>
 <ds-prop-table>
-  <ds-prop name="systemName" type="string" required>The name of the design system.</ds-prop>
-  <ds-prop name="systemVersion" type="string">The version of the design system.</ds-prop>
+  <ds-prop name="systemName" type="string" required>Display name of the design system (e.g., 'Acme Design System'). A human-readable name, not a package name — package identifiers belong in <ds-code inline>extends.system</ds-code> or platform imports.</ds-prop>
+  <ds-prop name="systemVersion" type="string">Version of the design system this documentation describes (e.g., '2.3.0'). SHOULD follow semver so tools can compare against <ds-code inline>extends.version</ds-code> and <ds-code inline>reviewedAgainst</ds-code> values.</ds-prop>
   <ds-prop name="organization" type="string">The organization that maintains the system.</ds-prop>
   <ds-prop name="url" type="string (uri)">URL to the system's documentation site.</ds-prop>
-  <ds-prop name="license" type="string">SPDX license identifier or license URL.</ds-prop>
+  <ds-prop name="license" type="string">License of the design system, as an SPDX identifier (e.g., 'MIT', 'Apache-2.0') or a URL to the license text.</ds-prop>
 </ds-prop-table>
 <ds-heading level="3" anchor="root-document-blocks">Root document blocks</ds-heading>
 <p>System-wide docs live in an optional <ds-code inline>documentBlocks</ds-code> array on the root document. It works just like the one on entities, but it covers the whole system rather than a single artifact. <strong>Position sets the scope.</strong> A <ds-code inline>useCases</ds-code> or <ds-code inline>guidelines</ds-code> block at the root describes the <em>system</em>. The same block inside an entity describes that <em>entity</em>. Both levels reuse one block definition.</p>
@@ -374,15 +379,15 @@
 <thead><tr><th>Metadata field</th><th>Value</th><th>Purpose</th></tr></thead>
 <tbody><tr><td><ds-code inline>status</ds-code></td><td><ds-code inline>statusValue</ds-code> or <ds-code inline>object</ds-code></td><td>Lifecycle status of the entity.</td></tr>
 <tr><td><ds-code inline>since</ds-code></td><td><ds-code inline>string</ds-code></td><td>The design system version in which this entity was introduced (e.g., '1.0.0', '2.3.0').</td></tr>
-<tr><td><ds-code inline>lastUpdated</ds-code></td><td><ds-code inline>string</ds-code> or <ds-code inline>object</ds-code></td><td>When this entity's documentation last changed.</td></tr>
+<tr><td><ds-code inline>lastUpdated</ds-code></td><td><ds-code inline>isoDate</ds-code> or <ds-code inline>object</ds-code></td><td>When this entity's documentation last changed.</td></tr>
 <tr><td><ds-code inline>category</ds-code></td><td><ds-code inline>string</ds-code></td><td>Where this entity fits in the design system's taxonomy (e.g., 'action', 'navigation', 'feedback', 'base', 'semantic').</td></tr>
 <tr><td><ds-code inline>tags</ds-code></td><td><ds-code inline>string[]</ds-code></td><td>Freeform keywords for grouping, search, and cross-referencing.</td></tr>
 <tr><td><ds-code inline>aliases</ds-code></td><td><ds-code inline>string[]</ds-code></td><td>Alternative names for this entity across teams, tools, or legacy systems.</td></tr>
 <tr><td><ds-code inline>summary</ds-code></td><td><ds-code inline>string</ds-code></td><td>One-line plain-text summary for compact display contexts (list views, search results, hover cards).</td></tr>
 <tr><td><ds-code inline>thumbnail</ds-code></td><td><ds-code inline>object</ds-code></td><td>A visual thumbnail for compact display contexts.</td></tr>
 <tr><td><ds-code inline>preview</ds-code></td><td><ds-code inline>presentationImage</ds-code> or <ds-code inline>presentationVideo</ds-code> or <ds-code inline>presentationCode</ds-code> or <ds-code inline>presentationUrl</ds-code></td><td>A visual or interactive preview of the entity — an image, video, code snippet, or URL.</td></tr>
-<tr><td><ds-code inline>extends</ds-code></td><td><ds-code inline>entityExtends</ds-code></td><td>Declares that this entity inherits from a base entity in a parent design system.</td></tr>
-<tr><td><ds-code inline>links</ds-code></td><td><ds-code inline>link[]</ds-code></td><td>Links to outside resources and internal artifacts, plus links that show how entities relate.</td></tr>
+<tr><td><ds-code inline>extends</ds-code></td><td><ds-code inline>object</ds-code></td><td>Says that this entity inherits from a base entity in a parent design system.</td></tr>
+<tr><td><ds-code inline>links</ds-code></td><td><ds-code inline>link[]</ds-code></td><td>Links to external resources.</td></tr>
 <tr><td><ds-code inline>governance</ds-code></td><td><ds-code inline>object</ds-code></td><td>Accountability and review state for this entity's documentation.</td></tr>
 <tr><td><ds-code inline>docOrigin</ds-code></td><td><ds-code inline>docOriginValue</ds-code> or <ds-code inline>object</ds-code></td><td>How this entity's documentation came to exist.</td></tr></tbody>
 </table>
@@ -407,11 +412,11 @@
 <p>Required properties: <ds-code inline>kind</ds-code>, <ds-code inline>identifier</ds-code>, <ds-code inline>tokenType</ds-code>.</p>
 <p>More properties:</p>
 <ds-prop-table>
-  <ds-prop name="tokenType" type="string" required>The type of token aligned with the DTCG spec (e.g., 'color', 'dimension', 'fontFamily', 'fontWeight', 'duration', 'cubicBezier', 'shadow').</ds-prop>
+  <ds-prop name="tokenType" type="string">The type of token aligned with the DTCG spec (e.g., 'color', 'dimension', 'fontFamily', 'fontWeight', 'duration', 'cubicBezier', 'shadow'). MUST be present unless an ancestor token group declares <ds-code inline>tokenType</ds-code> — children inherit the group's value when they omit their own. Validators enforce the own-or-inherited rule; a token with no <ds-code inline>tokenType</ds-code> anywhere in its ancestry is a defect.</ds-prop>
   <ds-prop name="description" type="&lt;ds-type-ref href=&quot;common-rich-text.html#richtext&quot;&gt;richText&lt;/ds-type-ref&gt;">What this token represents and when to use it. Optional, so keep it terse at scale. CommonMark supported.</ds-prop>
   <ds-prop name="source" type="object {file, path}">Points to the W3C Design Tokens (DTCG) definition. DSDS does not copy token values. The DTCG file is the source of truth for resolved values, aliases, and type info.</ds-prop>
   <ds-prop name="relationships" type="&lt;ds-type-ref href=&quot;common-relationship.html#relationships&quot;&gt;relationships&lt;/ds-type-ref&gt;">Typed dependency edges to other entities — e.g. 'depends-on' a token this one aliases, 'part-of' a token group. Inverse edges are derived by tooling.</ds-prop>
-  <ds-prop name="agentDocumentBlocks" type="&lt;ds-type-ref href=&quot;document-blocks-document-blocks.html#tokendocumentblock&quot;&gt;tokenDocumentBlock&lt;/ds-type-ref&gt;[]">Structured docs for agents (AI/LLM) only — a separate space that accepts the same block kinds as <ds-code inline>documentBlocks</ds-code>. <ds-code inline>documentBlocks</ds-code> is the default: put anything a human reader needs there. Use <ds-code inline>agentDocumentBlocks</ds-code> only for content that helps an agent build correctly but is noise for humans. For example: hard MUST/MUST-NOT rules an agent should treat as firm limits; notes that correct a mistake an agent is likely to make, such as reaching for this entity when a confusable one fits better; constraints backed by test-run evidence; and machine-checkable criteria with verification modes. A hard rule that humans also need (such as an accessibility requirement) belongs in <ds-code inline>documentBlocks</ds-code>, not here. Agent blocks add to the human docs — they never replace or duplicate them. Tools MUST NOT render these blocks in human-facing docs. Agents SHOULD read both arrays, human blocks first.</ds-prop>
+  <ds-prop name="agentDocumentBlocks" type="&lt;ds-type-ref href=&quot;document-blocks-document-blocks.html#generaldocumentblock&quot;&gt;generalDocumentBlock&lt;/ds-type-ref&gt;[]">Structured docs for agents (AI/LLM) only — a separate space that accepts the same block kinds as <ds-code inline>documentBlocks</ds-code>. <ds-code inline>documentBlocks</ds-code> is the default: put anything a human reader needs there. Use <ds-code inline>agentDocumentBlocks</ds-code> only for content that helps an agent build correctly but is noise for humans. For example: hard MUST/MUST-NOT rules an agent should treat as firm limits; notes that correct a mistake an agent is likely to make, such as reaching for this entity when a confusable one fits better; constraints backed by test-run evidence; and machine-checkable criteria with verification modes. A hard rule that humans also need (such as an accessibility requirement) belongs in <ds-code inline>documentBlocks</ds-code>, not here. Agent blocks add to the human docs — they never replace or duplicate them. Tools MUST NOT render these blocks in human-facing docs. Agents SHOULD read both arrays, human blocks first.<br><small>Min items: 1</small></ds-prop>
 </ds-prop-table>
 <p>DSDS does not duplicate token values or platform identifiers. The W3C Design Tokens Format file is the source of truth for values. Use the <ds-code inline>source</ds-code> property to link tokens to their DTCG definitions.</p>
 <p>Tokens have no separate <ds-code inline>name</ds-code> by design. The <ds-code inline>identifier</ds-code> serves as the display label. Token id styles — dots, slashes, kebab-case — already read well on their own.</p>
@@ -426,7 +431,7 @@
   <ds-prop name="source" type="object {file, path}">Points to the W3C Design Tokens (DTCG) definition. DSDS does not copy token values. The DTCG file is the source of truth for resolved values, aliases, and type info.</ds-prop>
   <ds-prop name="children" type="&lt;ds-type-ref href=&quot;entities-token.html#token&quot;&gt;token&lt;/ds-type-ref&gt; | &lt;ds-type-ref href=&quot;entities-token.html#tokengroup&quot;&gt;tokenGroup&lt;/ds-type-ref&gt;[]">An ordered array of tokens and/or nested token groups inside this group. Each item MUST be either a token or a tokenGroup. Order often shows a meaningful progression (e.g., lightest to darkest, or smallest to largest), so it matters and tools SHOULD keep it for display. Children inherit tokenType and status from this group when they omit their own values.<br><small>Min items: 1</small></ds-prop>
   <ds-prop name="relationships" type="&lt;ds-type-ref href=&quot;common-relationship.html#relationships&quot;&gt;relationships&lt;/ds-type-ref&gt;">Typed dependency edges to other entities — e.g. 'depends-on' a token this one aliases, 'part-of' a token group. Inverse edges are derived by tooling.</ds-prop>
-  <ds-prop name="agentDocumentBlocks" type="&lt;ds-type-ref href=&quot;document-blocks-document-blocks.html#tokendocumentblock&quot;&gt;tokenDocumentBlock&lt;/ds-type-ref&gt;[]">Structured docs for agents (AI/LLM) only — a separate space that accepts the same block kinds as <ds-code inline>documentBlocks</ds-code>. <ds-code inline>documentBlocks</ds-code> is the default: put anything a human reader needs there. Use <ds-code inline>agentDocumentBlocks</ds-code> only for content that helps an agent build correctly but is noise for humans. For example: hard MUST/MUST-NOT rules an agent should treat as firm limits; notes that correct a mistake an agent is likely to make, such as reaching for this entity when a confusable one fits better; constraints backed by test-run evidence; and machine-checkable criteria with verification modes. A hard rule that humans also need (such as an accessibility requirement) belongs in <ds-code inline>documentBlocks</ds-code>, not here. Agent blocks add to the human docs — they never replace or duplicate them. Tools MUST NOT render these blocks in human-facing docs. Agents SHOULD read both arrays, human blocks first.</ds-prop>
+  <ds-prop name="agentDocumentBlocks" type="&lt;ds-type-ref href=&quot;document-blocks-document-blocks.html#generaldocumentblock&quot;&gt;generalDocumentBlock&lt;/ds-type-ref&gt;[]">Structured docs for agents (AI/LLM) only — a separate space that accepts the same block kinds as <ds-code inline>documentBlocks</ds-code>. <ds-code inline>documentBlocks</ds-code> is the default: put anything a human reader needs there. Use <ds-code inline>agentDocumentBlocks</ds-code> only for content that helps an agent build correctly but is noise for humans. For example: hard MUST/MUST-NOT rules an agent should treat as firm limits; notes that correct a mistake an agent is likely to make, such as reaching for this entity when a confusable one fits better; constraints backed by test-run evidence; and machine-checkable criteria with verification modes. A hard rule that humans also need (such as an accessibility requirement) belongs in <ds-code inline>documentBlocks</ds-code>, not here. Agent blocks add to the human docs — they never replace or duplicate them. Tools MUST NOT render these blocks in human-facing docs. Agents SHOULD read both arrays, human blocks first.<br><small>Min items: 1</small></ds-prop>
 </ds-prop-table>
 <p>A token group has no <ds-code inline>name</ds-code>. Like a token, it has an optional top-level <ds-code inline>description</ds-code>, with other fields in the optional <ds-code inline>metadata</ds-code> object. Children inherit <ds-code inline>tokenType</ds-code> from the parent when they leave their own value out.</p>
 <ds-heading level="3" anchor="theme">Theme</ds-heading>
@@ -438,7 +443,7 @@
   <ds-prop name="source" type="object {file, path}">Points to the W3C Design Tokens (DTCG) definition. DSDS does not copy token values. The DTCG file is the source of truth for resolved values, aliases, and type info.</ds-prop>
   <ds-prop name="overrides" type="&lt;ds-type-ref href=&quot;entities-theme.html#tokenoverride&quot;&gt;tokenOverride&lt;/ds-type-ref&gt;[]">Token overrides this theme applies. Each entry says which token changes and why. List only tokens whose values differ from the default. Unlisted tokens keep their default values. The override values live in the DTCG file that <ds-code inline>source</ds-code> points to.<br><small>Min items: 1</small></ds-prop>
   <ds-prop name="relationships" type="&lt;ds-type-ref href=&quot;common-relationship.html#relationships&quot;&gt;relationships&lt;/ds-type-ref&gt;">Typed dependency edges from this theme to other entities — e.g. 'depends-on' the tokens it overrides, 'extends' a base theme. Inverse edges are derived by tooling.</ds-prop>
-  <ds-prop name="agentDocumentBlocks" type="&lt;ds-type-ref href=&quot;document-blocks-document-blocks.html#tokendocumentblock&quot;&gt;tokenDocumentBlock&lt;/ds-type-ref&gt;[]">Structured docs for agents (AI/LLM) only — a separate space that accepts the same block kinds as <ds-code inline>documentBlocks</ds-code>. <ds-code inline>documentBlocks</ds-code> is the default: put anything a human reader needs there. Use <ds-code inline>agentDocumentBlocks</ds-code> only for content that helps an agent build correctly but is noise for humans. For example: hard MUST/MUST-NOT rules an agent should treat as firm limits; notes that correct a mistake an agent is likely to make, such as reaching for this entity when a confusable one fits better; constraints backed by test-run evidence; and machine-checkable criteria with verification modes. A hard rule that humans also need (such as an accessibility requirement) belongs in <ds-code inline>documentBlocks</ds-code>, not here. Agent blocks add to the human docs — they never replace or duplicate them. Tools MUST NOT render these blocks in human-facing docs. Agents SHOULD read both arrays, human blocks first.</ds-prop>
+  <ds-prop name="agentDocumentBlocks" type="&lt;ds-type-ref href=&quot;document-blocks-document-blocks.html#generaldocumentblock&quot;&gt;generalDocumentBlock&lt;/ds-type-ref&gt;[]">Structured docs for agents (AI/LLM) only — a separate space that accepts the same block kinds as <ds-code inline>documentBlocks</ds-code>. <ds-code inline>documentBlocks</ds-code> is the default: put anything a human reader needs there. Use <ds-code inline>agentDocumentBlocks</ds-code> only for content that helps an agent build correctly but is noise for humans. For example: hard MUST/MUST-NOT rules an agent should treat as firm limits; notes that correct a mistake an agent is likely to make, such as reaching for this entity when a confusable one fits better; constraints backed by test-run evidence; and machine-checkable criteria with verification modes. A hard rule that humans also need (such as an accessibility requirement) belongs in <ds-code inline>documentBlocks</ds-code>, not here. Agent blocks add to the human docs — they never replace or duplicate them. Tools MUST NOT render these blocks in human-facing docs. Agents SHOULD read both arrays, human blocks first.<br><small>Min items: 1</small></ds-prop>
 </ds-prop-table>
 <p>Each <ds-code inline>tokenOverride</ds-code> names a token through <ds-code inline>token</ds-code> (the token id). It may carry a <ds-code inline>description</ds-code> of the change. The override values live in the DTCG <ds-code inline>source</ds-code> file, not in DSDS.</p>
 <ds-heading level="3" anchor="foundation">Foundation</ds-heading>
@@ -454,7 +459,7 @@
 <p>Required properties: <ds-code inline>kind</ds-code>, <ds-code inline>identifier</ds-code>, <ds-code inline>name</ds-code>. (<ds-code inline>description</ds-code> is an optional top-level property; <ds-code inline>status</ds-code> is an optional <ds-code inline>metadata</ds-code> field.)</p>
 <p>The <ds-code inline>category</ds-code> metadata field names the <em>kind</em> of guide — getting-started, contribution, tutorial, concept, or migration. This keeps the entity open to any kind of guidance.</p>
 <ds-heading level="3" anchor="chunk">Chunk</ds-heading>
-<p>A pre-composed block of code that captures a design system pattern — a copy-paste starting point built from the system's components. Chunks sit at the same level as components. Where a component documents one building block, a chunk documents a composition of them, captured as code. The chunk is intentionally simple: it does not use <ds-code inline>documentBlocks</ds-code>.</p>
+<p>A pre-composed block of code that captures a design system pattern — a copy-paste starting point built from the system's components. Chunks sit at the same level as components. Where a component documents one building block, a chunk documents a composition of them, captured as code. The chunk is intentionally simple: its <ds-code inline>documentBlocks</ds-code> and <ds-code inline>agentDocumentBlocks</ds-code> accept the general block kinds only — no anatomy, API, or measurable specs.</p>
 <p>Required properties: <ds-code inline>kind</ds-code>, <ds-code inline>identifier</ds-code>, <ds-code inline>name</ds-code>, <ds-code inline>code</ds-code>.</p>
 <p>More properties:</p>
 <ds-prop-table>
@@ -463,13 +468,15 @@
   <ds-prop name="name" type="string" required>Display name shown in docs (e.g., 'Search bar', 'Settings form', 'Confirmation dialog').</ds-prop>
   <ds-prop name="code" type="object {code, language} | object {src, language}" required>The pre-composed block of code consumers copy to use the chunk. Provide it in exactly one of two forms: inline (<ds-code inline>code</ds-code> + <ds-code inline>language</ds-code>) when the source travels with the document, or referenced (<ds-code inline>src</ds-code> + <ds-code inline>language</ds-code>) when it lives in an external source file. The referenced form keeps long sources readable and lets a chunk share one canonical file with a live app. Consumers resolve <ds-code inline>src</ds-code> at read time — no build step inlines it.</ds-prop>
   <ds-prop name="description" type="&lt;ds-type-ref href=&quot;common-rich-text.html#richtext&quot;&gt;richText&lt;/ds-type-ref&gt;">What this chunk is, the pattern it captures, and which components it composes. CommonMark supported.</ds-prop>
-  <ds-prop name="guidelines" type="&lt;ds-type-ref href=&quot;document-blocks-guidelines.html#guidelineentry&quot;&gt;guidelineEntry&lt;/ds-type-ref&gt;[]">Actionable rules for using and adapting the chunk. Each item pairs a guidance statement with a rationale and an RFC 2119 enforcement level. Reuses the shared guideline-entry shape so chunk rules read the same as guidelines elsewhere in the system.<br><small>Min items: 1</small></ds-prop>
-  <ds-prop name="useCases" type="&lt;ds-type-ref href=&quot;common-use-cases.html#usecase&quot;&gt;useCase&lt;/ds-type-ref&gt;[]">Scenario-driven use cases describing when this chunk is — or is not — the right choice. Each entry is marked 'recommended' or 'discouraged'. Reuses the shared use-case shape. Authors SHOULD lead with recommended scenarios.<br><small>Min items: 1</small></ds-prop>
-  <ds-prop name="relationships" type="&lt;ds-type-ref href=&quot;common-relationship.html#relationships&quot;&gt;relationships&lt;/ds-type-ref&gt;">Typed dependency edges from this chunk to other entities — chiefly 'composes' the components it is built from (mark <ds-code inline>required</ds-code> true for essential ones). The structural counterpart to listing components in <ds-code inline>links</ds-code>; the graph agents read for impact and alternatives. Inverse edges are derived by tooling.</ds-prop>
-  <ds-prop name="metadata" type="&lt;ds-type-ref href=&quot;metadata-metadata.html#entitymetadata&quot;&gt;entityMetadata&lt;/ds-type-ref&gt;">Optional metadata fields, keyed by name: status, since, lastUpdated, category, tags, aliases, summary, thumbnail, preview, extends, and links. Use the <ds-code inline>links</ds-code> field to point at the components this chunk composes.</ds-prop>
+  <ds-prop name="documentBlocks" type="&lt;ds-type-ref href=&quot;document-blocks-document-blocks.html#generaldocumentblock&quot;&gt;generalDocumentBlock&lt;/ds-type-ref&gt;[]">Structured docs for this chunk, as an ordered array of general document blocks (guidelines, useCases, accessibility, content, sections, checklist). Chunks accept the general kinds only — they document a code composition, not the anatomy/API surface a component carries.<br><small>Min items: 1</small></ds-prop>
+  <ds-prop name="agentDocumentBlocks" type="&lt;ds-type-ref href=&quot;document-blocks-document-blocks.html#generaldocumentblock&quot;&gt;generalDocumentBlock&lt;/ds-type-ref&gt;[]">Structured docs for AI agents consuming this chunk, using the same general block kinds as <ds-code inline>documentBlocks</ds-code>. Content here is agent-only: hard MUST/MUST-NOT rules, verification checklists, and adaptation constraints an agent needs when copying the chunk into an application. Human-facing guidance belongs in <ds-code inline>documentBlocks</ds-code>.<br><small>Min items: 1</small></ds-prop>
+  <ds-prop name="guidelines" type="&lt;ds-type-ref href=&quot;document-blocks-guidelines.html#guidelineentry&quot;&gt;guidelineEntry&lt;/ds-type-ref&gt;[]">DEPRECATED authoring shorthand — prefer a <ds-code inline>guidelines</ds-code> block inside <ds-code inline>documentBlocks</ds-code>. Actionable rules for using and adapting the chunk. Each item pairs a guidance statement with a rationale and an RFC 2119 enforcement level. Reuses the shared guideline-entry shape so chunk rules read the same as guidelines elsewhere in the system. When both this shorthand and an equivalent block in <ds-code inline>documentBlocks</ds-code> are present, tools MUST treat the <ds-code inline>documentBlocks</ds-code> block as authoritative.<br><small>Min items: 1</small></ds-prop>
+  <ds-prop name="useCases" type="&lt;ds-type-ref href=&quot;common-use-cases.html#usecase&quot;&gt;useCase&lt;/ds-type-ref&gt;[]">DEPRECATED authoring shorthand — prefer a <ds-code inline>useCases</ds-code> block inside <ds-code inline>documentBlocks</ds-code>. Scenario-driven use cases describing when this chunk is — or is not — the right choice. Each entry is marked 'recommended' or 'discouraged'. Reuses the shared use-case shape. Authors SHOULD lead with recommended scenarios. When both this shorthand and an equivalent block in <ds-code inline>documentBlocks</ds-code> are present, tools MUST treat the <ds-code inline>documentBlocks</ds-code> block as authoritative.<br><small>Min items: 1</small></ds-prop>
+  <ds-prop name="relationships" type="&lt;ds-type-ref href=&quot;common-relationship.html#relationships&quot;&gt;relationships&lt;/ds-type-ref&gt;">Typed dependency edges from this chunk to other entities — chiefly 'composes' the components it is built from (mark <ds-code inline>required</ds-code> true for essential ones). This is the graph agents read for impact and alternatives. Inverse edges are derived by tooling.</ds-prop>
+  <ds-prop name="metadata" type="&lt;ds-type-ref href=&quot;metadata-metadata.html#entitymetadata&quot;&gt;entityMetadata&lt;/ds-type-ref&gt;">Optional metadata: the shared entityMetadata fields (see metadata/metadata.schema.json). Declare the components this chunk composes as <ds-code inline>relationships</ds-code> edges, not links.</ds-prop>
   <ds-prop name="$extensions" type="&lt;ds-type-ref href=&quot;common-extensions.html#extensions&quot;&gt;extensions&lt;/ds-type-ref&gt;"></ds-prop>
 </ds-prop-table>
-<p>The <ds-code inline>code</ds-code> object carries the source in one of two forms: <strong>inline</strong> (<ds-code inline>code</ds-code> + <ds-code inline>language</ds-code>) when the source travels with the document, or <strong>referenced</strong> (<ds-code inline>src</ds-code> + <ds-code inline>language</ds-code>) when it lives in an external file the consumer resolves at read time. The referenced <ds-code inline>src</ds-code> is a relative path and follows the same resolution rules as a <ds-code inline>$ref</ds-code> fileRef — no build step inlines it. The flat <ds-code inline>guidelines</ds-code> array reuses the shared guideline-entry shape (guidance, rationale, level), and the <ds-code inline>useCases</ds-code> array reuses the shared use-case shape (description, stance). A chunk points to the components it composes through the <ds-code inline>links</ds-code> metadata field (with <ds-code inline>kind: "component"</ds-code>, <ds-code inline>identifier</ds-code>, and <ds-code inline>role</ds-code>).</p>
+<p>The <ds-code inline>code</ds-code> object carries the source in one of two forms: <strong>inline</strong> (<ds-code inline>code</ds-code> + <ds-code inline>language</ds-code>) when the source travels with the document, or <strong>referenced</strong> (<ds-code inline>src</ds-code> + <ds-code inline>language</ds-code>) when it lives in an external file the consumer resolves at read time. The referenced <ds-code inline>src</ds-code> is a relative path and follows the same resolution rules as a <ds-code inline>$ref</ds-code> fileRef — no build step inlines it. Structured docs live in <ds-code inline>documentBlocks</ds-code> (and agent-only rules in <ds-code inline>agentDocumentBlocks</ds-code>), both accepting the general block kinds — guidelines, useCases, accessibility, content, sections, and checklist. The flat top-level <ds-code inline>guidelines</ds-code> and <ds-code inline>useCases</ds-code> arrays are deprecated authoring shorthand for the equivalent blocks. A chunk declares the components it composes as typed <ds-code inline>composes</ds-code> edges in its <ds-code inline>relationships</ds-code> array.</p>
 <hr />
 <ds-heading level="2" anchor="agent-document-blocks">Agent document blocks</ds-heading>
 <p>The optional <ds-code inline>agentDocumentBlocks</ds-code> property is a <strong>separate space for agent-only docs</strong>. It lives on entities, next to <ds-code inline>documentBlocks</ds-code>. It accepts the same block kinds — guidelines, useCases, sections, and the rest of the entity's scoped union. Only the audience differs. Tools MUST NOT render these blocks for humans. Agents SHOULD read both arrays: human blocks first, then these.</p>
@@ -510,7 +517,7 @@
 <ds-prop-table>
   <ds-prop name="status" type="&lt;ds-type-ref href=&quot;common-status.html#statusvalue&quot;&gt;statusValue&lt;/ds-type-ref&gt;" required>Lifecycle status of the artifact on this platform. Uses the same vocabulary as the overall status: 'draft', 'experimental', 'stable', 'deprecated'. Custom values are allowed.</ds-prop>
   <ds-prop name="since" type="string">The version in which this artifact became available on this platform.</ds-prop>
-  <ds-prop name="deprecationNotice" type="string">Required when status is 'deprecated'. Says what to use instead on this platform.</ds-prop>
+  <ds-prop name="deprecationNotice" type="&lt;ds-type-ref href=&quot;common-status.html#deprecationnotice&quot;&gt;deprecationNotice&lt;/ds-type-ref&gt;">Required when status is 'deprecated'. Says what to use instead on this platform. MUST NOT be empty.</ds-prop>
   <ds-prop name="description" type="string">Notes about the artifact's status on this platform (e.g., 'Available as a Web Component wrapper; native implementation planned for v4').</ds-prop>
 </ds-prop-table>
 <ds-heading level="3" anchor="status-values">Status values</ds-heading>
@@ -521,7 +528,7 @@
 <ds-prop-table>
   <ds-prop name="status" type="&lt;ds-type-ref href=&quot;common-status.html#statusvalue&quot;&gt;statusValue&lt;/ds-type-ref&gt;" required>Lifecycle status of the artifact on this platform. Uses the same vocabulary as the overall status: 'draft', 'experimental', 'stable', 'deprecated'. Custom values are allowed.</ds-prop>
   <ds-prop name="since" type="string">The version in which this artifact became available on this platform.</ds-prop>
-  <ds-prop name="deprecationNotice" type="string">Required when status is 'deprecated'. Says what to use instead on this platform.</ds-prop>
+  <ds-prop name="deprecationNotice" type="&lt;ds-type-ref href=&quot;common-status.html#deprecationnotice&quot;&gt;deprecationNotice&lt;/ds-type-ref&gt;">Required when status is 'deprecated'. Says what to use instead on this platform. MUST NOT be empty.</ds-prop>
   <ds-prop name="description" type="string">Notes about the artifact's status on this platform (e.g., 'Available as a Web Component wrapper; native implementation planned for v4').</ds-prop>
 </ds-prop-table>
 <hr />
@@ -554,19 +561,55 @@
 <ds-table>
 <table>
 <thead><tr><th>Scope</th><th>Used by</th><th>Accepts</th></tr></thead>
-<tbody><tr><td><strong>Component</strong></td><td><ds-code inline>component</ds-code></td><td>—</td></tr>
-<tr><td><strong>Pattern</strong></td><td><ds-code inline>pattern</ds-code></td><td>—</td></tr>
-<tr><td><strong>Foundation</strong></td><td><ds-code inline>foundation</ds-code></td><td>—</td></tr>
-<tr><td><strong>Guide</strong></td><td><ds-code inline>guide</ds-code></td><td>—</td></tr>
-<tr><td><strong>Token</strong></td><td><ds-code inline>theme</ds-code>, <ds-code inline>token</ds-code>, <ds-code inline>token-group</ds-code></td><td>general only</td></tr></tbody>
+<tbody><tr><td><strong>Component</strong></td><td>—</td><td>—</td></tr>
+<tr><td><strong>Pattern</strong></td><td>—</td><td>—</td></tr>
+<tr><td><strong>Foundation</strong></td><td>—</td><td>—</td></tr>
+<tr><td><strong>Guide</strong></td><td>—</td><td>—</td></tr>
+<tr><td><strong>Token / Theme / Chunk</strong></td><td>—</td><td>—</td></tr></tbody>
 </table>
 </ds-table>
-<p><strong>General</strong> (available on all entity types): guidelines, useCases, accessibility, content, and sections (free-form narrative prose).</p>
+<p><strong>General</strong> (available on all entity types): checklist, guidelines, useCases, accessibility, content, and sections (free-form narrative prose).</p>
+<ds-heading level="3" anchor="known-naming-exceptions">Known naming exceptions</ds-heading>
+<p>Two naming inconsistencies are recorded here as deliberate, pending the next major release (renames are breaking):</p>
+<ul>
+<li>
+<p>The block kind <ds-code inline>useCases</ds-code> is camelCase where every other DSDS-native vocabulary value is lowercase kebab-case; it becomes <ds-code inline>use-cases</ds-code> at the next major.</p>
+</li>
+<li>
+<p>The actionable line on a checklist item is richText <ds-code inline>label</ds-code>, while a step entry uses string <ds-code inline>title</ds-code> and a scale step uses <ds-code inline>label</ds-code> where sibling entries use <ds-code inline>name</ds-code>; these converge on <ds-code inline>label</ds-code> (richText) for procedural blocks and <ds-code inline>name</ds-code> for display names at the next major.</p>
+</li>
+<li>
+<p><ds-code inline>systemInfo</ds-code>'s <ds-code inline>systemName</ds-code>/<ds-code inline>systemVersion</ds-code> stutter against their mount point and diverge from the bare <ds-code inline>name</ds-code>/<ds-code inline>version</ds-code> style used elsewhere; they become <ds-code inline>name</ds-code>/<ds-code inline>version</ds-code> at the next major.</p>
+</li>
+<li>
+<p>The explanatory-prose property on the status object forms is <ds-code inline>description</ds-code>, while sibling metadata fields (<ds-code inline>lastUpdated</ds-code>, <ds-code inline>lastReviewed</ds-code>, <ds-code inline>docOrigin</ds-code>) use <ds-code inline>note</ds-code>; status converges on <ds-code inline>note</ds-code> at the next major.</p>
+</li>
+<li>
+<p>Sub-entry identifiers on anatomy parts, states, variant values, motion entries, and scale steps are unpatterned (values like <ds-code inline>2xl</ds-code> are legal), unlike entity identifiers — a deliberate exception, not drift.</p>
+</li>
+</ul>
+<p>Do not introduce new values or properties that follow the exceptions — new vocabulary MUST be lowercase kebab-case.</p>
 <ds-heading level="3" anchor="document-block-types">Document block types</ds-heading>
 <ds-table>
 <table>
 <thead><tr><th>Kind value</th><th>Container property</th><th>Item type</th><th>Scope</th><th>Description</th></tr></thead>
-<tbody></tbody>
+<tbody><tr><td><ds-code inline>&quot;accessibility&quot;</ds-code></td><td>Named properties</td><td>various</td><td>General</td><td>Specialized, structured accessibility documentation for an artifact.</td></tr>
+<tr><td><ds-code inline>&quot;checklist&quot;</ds-code></td><td><ds-code inline>items</ds-code></td><td><ds-type-ref href="document-blocks-checklist.html#checklistitem">checklistItem</ds-type-ref></td><td>General</td><td>An explicit checklist for an artifact: a list of concrete items an agent (or a person) works through when building, reviewing, or integrating it.</td></tr>
+<tr><td><ds-code inline>&quot;content&quot;</ds-code></td><td>Named properties</td><td>various</td><td>General</td><td>Specialized, structured content documentation: a terminology dictionary of recommended labels and per-concern localization entries.</td></tr>
+<tr><td><ds-code inline>&quot;guidelines&quot;</ds-code></td><td><ds-code inline>items</ds-code></td><td><ds-type-ref href="document-blocks-guidelines.html#guidelineentry">guidelineEntry</ds-type-ref></td><td>General</td><td>Actionable usage rules for an artifact.</td></tr>
+<tr><td><ds-code inline>&quot;sections&quot;</ds-code></td><td><ds-code inline>items</ds-code></td><td><ds-type-ref href="document-blocks-sections.html#sectionentry">sectionEntry</ds-type-ref></td><td>General</td><td>A block of narrative documentation made up of one or more titled sections.</td></tr>
+<tr><td><ds-code inline>&quot;useCases&quot;</ds-code></td><td><ds-code inline>items</ds-code></td><td><ds-type-ref href="common-use-cases.html#usecase">useCase</ds-type-ref></td><td>General</td><td>Documents what an artifact is used for — when it is the right choice and when to choose something else.</td></tr>
+<tr><td><ds-code inline>&quot;imports&quot;</ds-code></td><td><ds-code inline>items</ds-code></td><td><ds-type-ref href="document-blocks-imports.html#importentry">importEntry</ds-type-ref></td><td>Component, Guide</td><td>Documents how to import a component across platforms.</td></tr>
+<tr><td><ds-code inline>&quot;anatomy&quot;</ds-code></td><td>Named properties</td><td>various</td><td>Component, Pattern</td><td>Documents the visual structure of a component or pattern by listing its named sub-elements (parts).</td></tr>
+<tr><td><ds-code inline>&quot;states&quot;</ds-code></td><td><ds-code inline>items</ds-code></td><td><ds-type-ref href="document-blocks-states.html#stateentry">stateEntry</ds-type-ref></td><td>Component, Pattern</td><td>Documents all interactive states of a component or pattern.</td></tr>
+<tr><td><ds-code inline>&quot;variants&quot;</ds-code></td><td><ds-code inline>items</ds-code></td><td>object</td><td>Component, Pattern</td><td>Documents all dimensions of visual or behavioral variation on a component or pattern.</td></tr>
+<tr><td><ds-code inline>&quot;api&quot;</ds-code></td><td>Named properties</td><td>various</td><td>Component</td><td>Documents the code-level interface of a component on a single platform.</td></tr>
+<tr><td><ds-code inline>&quot;design-specifications&quot;</ds-code></td><td><ds-code inline>responsive</ds-code></td><td><ds-type-ref href="document-blocks-design-specifications.html#responsiveentry">responsiveEntry</ds-type-ref></td><td>Component</td><td>Documents the baseline measurable visual specs of a component: the default design properties, spacing relationships, dimension limits, typographic settings, and responsive behavior.</td></tr>
+<tr><td><ds-code inline>&quot;motion&quot;</ds-code></td><td><ds-code inline>items</ds-code></td><td><ds-type-ref href="document-blocks-motion.html#motionentry">motionEntry</ds-type-ref></td><td>Foundation</td><td>Documents the motion system for a foundation: named easing curves, timing functions, recommended durations, and usage guidance.</td></tr>
+<tr><td><ds-code inline>&quot;principles&quot;</ds-code></td><td><ds-code inline>items</ds-code></td><td><ds-type-ref href="document-blocks-principles.html#principleentry">principleEntry</ds-type-ref></td><td>Foundation</td><td>Documents guiding principles for a foundation or design domain.</td></tr>
+<tr><td><ds-code inline>&quot;scale&quot;</ds-code></td><td><ds-code inline>steps</ds-code></td><td><ds-type-ref href="document-blocks-scale.html#scalestep">scaleStep</ds-type-ref></td><td>Foundation</td><td>Documents an ordered scale: a deliberate progression of values that limits design decisions to a harmonious, consistent set.</td></tr>
+<tr><td><ds-code inline>&quot;steps&quot;</ds-code></td><td><ds-code inline>items</ds-code></td><td><ds-type-ref href="document-blocks-steps.html#stepentry">stepEntry</ds-type-ref></td><td>Guide</td><td>A procedure made up of an ordered or unordered sequence of steps.</td></tr>
+<tr><td><ds-code inline>&quot;interactions&quot;</ds-code></td><td><ds-code inline>items</ds-code></td><td><ds-type-ref href="document-blocks-interactions.html#interactionentry">interactionEntry</ds-type-ref></td><td>Pattern</td><td>Documents the interaction flow of a pattern as an ordered sequence of steps.</td></tr></tbody>
 </table>
 </ds-table>
 <hr />
@@ -587,8 +630,8 @@
   <ds-prop name="target" type="string">The anatomy part or content area this guideline applies to (e.g., 'label', 'icon', 'helper-text'). When omitted, the guideline applies to the whole artifact.</ds-prop>
   <ds-prop name="criteria" type="&lt;ds-type-ref href=&quot;common-criterion.html#criterion&quot;&gt;criterion&lt;/ds-type-ref&gt;[]">Testable success criteria that verify this guideline. Each criterion pairs a stable identifier with an objectively verifiable statement. This lets tooling and agents check implementations against the rule and report pass/fail. Attach criteria only when the success condition is objectively verifiable. Observed results belong in <ds-code inline>evidence</ds-code>.<br><small>Min items: 1</small></ds-prop>
   <ds-prop name="references" type="&lt;ds-type-ref href=&quot;common-criterion.html#reference&quot;&gt;reference&lt;/ds-type-ref&gt;[]">External standards this guideline addresses (e.g., WCAG success criteria, MDN or platform guidelines). Each entry cites a URL with an optional display label.<br><small>Min items: 1</small></ds-prop>
-  <ds-prop name="examples" type="&lt;ds-type-ref href=&quot;common-example.html#example&quot;&gt;example&lt;/ds-type-ref&gt;[]">Examples showing encouraged and discouraged approaches.</ds-prop>
-  <ds-prop name="tags" type="string[]">Freeform keywords that relate guidelines across categories and disciplines (e.g., 'rtl', 'localization', 'validation', 'contrast').</ds-prop>
+  <ds-prop name="examples" type="&lt;ds-type-ref href=&quot;common-example.html#example&quot;&gt;example&lt;/ds-type-ref&gt;[]">Examples showing encouraged and discouraged approaches.<br><small>Min items: 1</small></ds-prop>
+  <ds-prop name="tags" type="string[]">Freeform keywords that relate guidelines across categories and disciplines (e.g., 'rtl', 'localization', 'validation', 'contrast').<br><small>Min items: 1</small></ds-prop>
 </ds-prop-table>
 <p>The <ds-code inline>level</ds-code> field is named for RFC 2119 requirement levels. Values are lowercase kebab-case; tools display them as uppercase badges. Agents treat <ds-code inline>must</ds-code>/<ds-code inline>must-not</ds-code> entries as hard limits when they write or review code. The <ds-code inline>evidence</ds-code> field carries the backing — test runs, audits — that sets data-driven rules apart from convention:</p>
 <ds-table><table><thead><tr><th>Value</th><th>Meaning</th></tr></thead><tbody><tr><td><ds-code inline>must</ds-code></td><td>Required — non-compliance is a defect.</td></tr><tr><td><ds-code inline>should</ds-code></td><td>Follow in most cases; exceptions require justification.</td></tr><tr><td><ds-code inline>should-not</ds-code></td><td>Avoid unless justified.</td></tr><tr><td><ds-code inline>must-not</ds-code></td><td>Prohibited — violations are defects.</td></tr></tbody></table></ds-table>
@@ -630,11 +673,11 @@
   <ds-prop name="kind" type="&lt;ds-code inline&gt;&quot;accessibility&quot;&lt;/ds-code&gt;" required>Identifies this document block as an accessibility spec.</ds-prop>
   <ds-prop name="wcagLevel" type="&lt;ds-code inline&gt;&quot;A&quot;&lt;/ds-code&gt; | &lt;ds-code inline&gt;&quot;AA&quot;&lt;/ds-code&gt; | &lt;ds-code inline&gt;&quot;AAA&quot;&lt;/ds-code&gt;" conditional>The minimum WCAG conformance level targeted by this artifact. Most design systems target AA. Set to AAA when the artifact exceeds standard requirements.</ds-prop>
   <ds-prop name="criteria" type="&lt;ds-type-ref href=&quot;common-criterion.html#criterion&quot;&gt;criterion&lt;/ds-type-ref&gt;[]" conditional>Testable accessibility success criteria for this artifact (e.g., 'All interactive targets present a hit area of at least 44×44 px'). Each criterion pairs a stable identifier with an objectively verifiable statement. This lets accessibility checks run against the docs and report pass/fail. The structured data below (keyboard interactions, ARIA attributes, contrast pairs) shows how these conditions are met.<br><small>Min items: 1</small></ds-prop>
-  <ds-prop name="keyboardInteractions" type="&lt;ds-type-ref href=&quot;document-blocks-accessibility.html#keyboardinteraction&quot;&gt;keyboardInteraction&lt;/ds-type-ref&gt;[]" conditional>Keyboard interaction specs: what happens when each key or key combination is pressed while the artifact has focus.</ds-prop>
-  <ds-prop name="ariaAttributes" type="&lt;ds-type-ref href=&quot;document-blocks-accessibility.html#ariaattribute&quot;&gt;ariaAttribute&lt;/ds-type-ref&gt;[]" conditional>ARIA attribute docs. Lists every ARIA attribute the artifact uses, what it communicates, and when to apply it.</ds-prop>
+  <ds-prop name="keyboardInteractions" type="&lt;ds-type-ref href=&quot;document-blocks-accessibility.html#keyboardinteraction&quot;&gt;keyboardInteraction&lt;/ds-type-ref&gt;[]" conditional>Keyboard interaction specs: what happens when each key or key combination is pressed while the artifact has focus.<br><small>Min items: 1</small></ds-prop>
+  <ds-prop name="ariaAttributes" type="&lt;ds-type-ref href=&quot;document-blocks-accessibility.html#ariaattribute&quot;&gt;ariaAttribute&lt;/ds-type-ref&gt;[]" conditional>ARIA attribute docs. Lists every ARIA attribute the artifact uses, what it communicates, and when to apply it.<br><small>Min items: 1</small></ds-prop>
   <ds-prop name="announcements" type="&lt;ds-type-ref href=&quot;document-blocks-accessibility.html#announcement&quot;&gt;announcement&lt;/ds-type-ref&gt;[]" conditional>Screen reader announcements, one entry per state or situation. Name a specific screen reader on an entry when behavior differs between them.<br><small>Min items: 1</small></ds-prop>
   <ds-prop name="focusBehaviors" type="&lt;ds-type-ref href=&quot;document-blocks-accessibility.html#focusbehavior&quot;&gt;focusBehavior&lt;/ds-type-ref&gt;[]" conditional>Focus movement, one entry per trigger: how focus enters, moves within, and leaves the artifact — including trapping and restoration.<br><small>Min items: 1</small></ds-prop>
-  <ds-prop name="colorContrast" type="&lt;ds-type-ref href=&quot;document-blocks-accessibility.html#colorcontrast&quot;&gt;colorContrast&lt;/ds-type-ref&gt;[]" conditional>The foreground/background color pairings this artifact uses, one entry per pairing. Pairs are declarations of intent; measure them with an automated contrast criterion, not by hand.</ds-prop>
+  <ds-prop name="colorContrast" type="&lt;ds-type-ref href=&quot;document-blocks-accessibility.html#colorcontrastentry&quot;&gt;colorContrastEntry&lt;/ds-type-ref&gt;[]" conditional>The foreground/background color pairings this artifact uses, one entry per pairing. Pairs are declarations of intent; measure them with an automated contrast criterion, not by hand.<br><small>Min items: 1</small></ds-prop>
   <ds-prop name="reducedMotion" type="&lt;ds-type-ref href=&quot;document-blocks-accessibility.html#reducedmotionentry&quot;&gt;reducedMotionEntry&lt;/ds-type-ref&gt;[]" conditional>Animations and their prefers-reduced-motion behavior, one entry per animation.<br><small>Min items: 1</small></ds-prop>
 </ds-prop-table>
 <ds-heading level="3" anchor="examples-embedded-not-a-standalone-block">Examples (embedded, not a standalone block)</ds-heading>
@@ -658,15 +701,15 @@
   <ds-prop name="term" type="string" required>The recommended label text (e.g., 'Add', 'Cancel', 'Delete', 'Save as', 'Learn more'). The canonical form as it should appear in the UI.</ds-prop>
   <ds-prop name="definition" type="&lt;ds-type-ref href=&quot;common-rich-text.html#richtext&quot;&gt;richText&lt;/ds-type-ref&gt;" required>What this label means: the action it represents. Should be concrete and unambiguous (e.g., for Delete: 'Destroys an existing object so that it no longer exists').</ds-prop>
   <ds-prop name="usage" type="&lt;ds-type-ref href=&quot;common-rich-text.html#richtext&quot;&gt;richText&lt;/ds-type-ref&gt;">When and how to use this label. Include context, formatting rules, and any caveats (e.g., 'Where appropriate, combine Add with the object: Add user, Add role').</ds-prop>
-  <ds-prop name="alternatives" type="string[]">Related terms that serve a different purpose but are often confused with this one. Listed for comparison, to help authors pick the right label. The terms SHOULD match other <ds-code inline>term</ds-code> values in the same content guideline so tools can cross-reference them.</ds-prop>
+  <ds-prop name="alternatives" type="string[]">Related terms that serve a different purpose but are often confused with this one. Listed for comparison, to help authors pick the right label. The terms SHOULD match other <ds-code inline>term</ds-code> values in this content block's <ds-code inline>labels</ds-code> array — the block is the dictionary they resolve against, so tools can cross-reference them.<br><small>Min items: 1</small></ds-prop>
   <ds-prop name="context" type="string">Where this label is used in the UI (e.g., 'Buttons in dialogs', 'Navigation links', 'Form submission', 'Toolbar actions'). Tells authors where the label normally appears.</ds-prop>
-  <ds-prop name="examples" type="&lt;ds-type-ref href=&quot;common-example.html#example&quot;&gt;example&lt;/ds-type-ref&gt;[]">Visual or code examples showing the label in context: do/don't pairs, screenshots of correct usage, or code snippets.</ds-prop>
+  <ds-prop name="examples" type="&lt;ds-type-ref href=&quot;common-example.html#example&quot;&gt;example&lt;/ds-type-ref&gt;[]">Visual or code examples showing the label in context: do/don't pairs, screenshots of correct usage, or code snippets.<br><small>Min items: 1</small></ds-prop>
 </ds-prop-table>
 <ds-heading level="4" anchor="localization-entry">Localization entry</ds-heading>
 <ds-prop-table>
   <ds-prop name="concern" type="string" required>The localization concern being addressed. Standard values: 'rtl' (right-to-left layout mirroring and bidirectional text), 'text-expansion' (content lengthening during translation), 'pluralization' (plural forms varying across languages), 'date-format' (date and time formatting conventions), 'number-format' (decimal separators, grouping), 'currency' (currency symbol placement and formatting), 'text-direction' (mixed-direction content within a single string), 'icon-direction' (icons that imply directionality), 'truncation' (text overflow behavior across languages), 'sorting' (locale-specific sort order and collation), 'concatenation' (avoiding string concatenation that breaks in other languages). Custom values are allowed and SHOULD be lowercase kebab-case.</ds-prop>
   <ds-prop name="description" type="&lt;ds-type-ref href=&quot;common-rich-text.html#richtext&quot;&gt;richText&lt;/ds-type-ref&gt;" required>Guidance for handling this localization concern. Should be actionable and specific: say what changes across locales, what the author or developer must do, and what to avoid.</ds-prop>
-  <ds-prop name="examples" type="&lt;ds-type-ref href=&quot;common-example.html#example&quot;&gt;example&lt;/ds-type-ref&gt;[]">Visual or code examples that illustrate the concern: before/after screenshots for RTL, samples of text expansion, or code patterns for pluralization.</ds-prop>
+  <ds-prop name="examples" type="&lt;ds-type-ref href=&quot;common-example.html#example&quot;&gt;example&lt;/ds-type-ref&gt;[]">Visual or code examples that illustrate the concern: before/after screenshots for RTL, samples of text expansion, or code patterns for pluralization.<br><small>Min items: 1</small></ds-prop>
 </ds-prop-table>
 <ds-heading level="3" anchor="sections-sections">Sections (<ds-code inline>sections</ds-code>)</ds-heading>
 <p>Free-form prose in titled, optionally nested sections. It is the backbone for overviews, explanations, rationale, and any reading-oriented content the structured blocks miss. It is available on every entity type. Each <ds-code inline>sectionEntry</ds-code> pairs a <ds-code inline>title</ds-code> with an optional rich-text <ds-code inline>body</ds-code>, <ds-code inline>examples</ds-code>, <ds-code inline>links</ds-code>, and nested <ds-code inline>sections</ds-code> for a heading tree. Reach for a structured block first. Use <ds-code inline>sections</ds-code> only for what they cannot express.</p>
@@ -675,9 +718,9 @@
   <ds-prop name="title" type="string" required>The section heading (e.g., 'Installation', 'Core concepts', 'Why semantic tokens'). Concise enough to render as a heading and to anchor a deep link.</ds-prop>
   <ds-prop name="anchor" type="string">A stable, URL-safe fragment identifier for deep-linking to this section (e.g., 'installation', 'core-concepts'). MUST be lowercase kebab-case and unique within the parent block. When omitted, tools MAY derive an anchor from the title.<br><small>Pattern: <ds-code inline>^[a-z][a-z0-9-]*$</ds-code></small></ds-prop>
   <ds-prop name="body" type="&lt;ds-type-ref href=&quot;common-rich-text.html#richtext&quot;&gt;richText&lt;/ds-type-ref&gt;">The prose content of the section. Supports markdown by default. May be omitted when the section exists only to group sub-sections under a heading.</ds-prop>
-  <ds-prop name="examples" type="&lt;ds-type-ref href=&quot;common-example.html#example&quot;&gt;example&lt;/ds-type-ref&gt;[]">Illustrative examples for this section: code snippets, images, videos, or live URLs. Useful for showing a concept in practice within explanatory prose.</ds-prop>
-  <ds-prop name="links" type="&lt;ds-type-ref href=&quot;common-link.html#link&quot;&gt;link&lt;/ds-type-ref&gt;[]">Related links surfaced with this section: 'see also' references, source material, or pointers to other entities and external resources.</ds-prop>
-  <ds-prop name="sections" type="&lt;ds-type-ref href=&quot;document-blocks-sections.html#sectionentry&quot;&gt;sectionEntry&lt;/ds-type-ref&gt;[]">Nested sub-sections beneath this one. Each item is itself a sectionEntry, allowing an arbitrarily deep heading hierarchy. Ordering is significant, so tools SHOULD render sub-sections in this order.</ds-prop>
+  <ds-prop name="examples" type="&lt;ds-type-ref href=&quot;common-example.html#example&quot;&gt;example&lt;/ds-type-ref&gt;[]">Illustrative examples for this section: code snippets, images, videos, or live URLs. Useful for showing a concept in practice within explanatory prose.<br><small>Min items: 1</small></ds-prop>
+  <ds-prop name="links" type="&lt;ds-type-ref href=&quot;common-link.html#link&quot;&gt;link&lt;/ds-type-ref&gt;[]">Related links surfaced with this section: 'see also' references, source material, or pointers to other entities and external resources.<br><small>Min items: 1</small></ds-prop>
+  <ds-prop name="sections" type="&lt;ds-type-ref href=&quot;document-blocks-sections.html#sectionentry&quot;&gt;sectionEntry&lt;/ds-type-ref&gt;[]">Nested sub-sections beneath this one. Each item is itself a sectionEntry, allowing an arbitrarily deep heading hierarchy. Ordering is significant, so tools SHOULD render sub-sections in this order.<br><small>Min items: 1</small></ds-prop>
 </ds-prop-table>
 <hr />
 <ds-heading level="2" anchor="component-scoped-document-block-types">Component-scoped document block types</ds-heading>
@@ -702,8 +745,8 @@
   <ds-prop name="description" type="&lt;ds-type-ref href=&quot;common-rich-text.html#richtext&quot;&gt;richText&lt;/ds-type-ref&gt;" required>What this part is, what it does, and any constraints on its content or appearance.</ds-prop>
   <ds-prop name="name" type="string">Human-readable name (e.g., 'Container', 'Label', 'Leading Icon').</ds-prop>
   <ds-prop name="required" type="boolean">Whether this part is always present in the rendered output. Defaults to false. When false, the part is conditionally rendered based on props or content.<br><small>Default: <ds-code inline>false</ds-code></small></ds-prop>
-  <ds-prop name="tokens" type="map&amp;lt;string, &lt;ds-type-ref href=&quot;common-entity-ref.html#entityidentifier&quot;&gt;entityIdentifier&lt;/ds-type-ref&gt;&amp;gt;">Design tokens applied to this part. Keys are token-purpose names that say what visual attribute the token controls (e.g., 'background', 'border-radius', 'padding-horizontal', 'text-color'). Values are entity references to the token that supplies the value: each is a token <ds-code inline>identifier</ds-code> (e.g., 'color-action-primary', 'radius-md', 'space-4') and follows the same resolution rule as every entity reference. In a system that documents its token layer, these MUST resolve to a documented token, so a part's styling can't silently drift from the token source. Validators resolve them when a token layer is present (see entityRef resolution).</ds-prop>
-  <ds-prop name="links" type="&lt;ds-type-ref href=&quot;common-link.html#link&quot;&gt;link&lt;/ds-type-ref&gt;[]">Links to resources for this anatomy part: design tool nodes, source code blocks, documentation sections, or other addressable references.</ds-prop>
+  <ds-prop name="tokens" type="&lt;ds-type-ref href=&quot;common-token-overrides.html#tokenoverrides&quot;&gt;tokenOverrides&lt;/ds-type-ref&gt;">Design tokens applied to this part, as the shared token-override map: keys are token-purpose names, values are documented token identifiers.</ds-prop>
+  <ds-prop name="links" type="&lt;ds-type-ref href=&quot;common-link.html#link&quot;&gt;link&lt;/ds-type-ref&gt;[]">Links to resources for this anatomy part: design tool nodes, source code blocks, documentation sections, or other addressable references.<br><small>Min items: 1</small></ds-prop>
 </ds-prop-table>
 <ds-heading level="3" anchor="api-api">API (<ds-code inline>api</ds-code>)</ds-heading>
 <p>Documents the code interface of a component on one platform. For multi-platform components, add one API block per platform with the <ds-code inline>platform</ds-code> property.</p>
@@ -720,13 +763,13 @@
 <ds-heading level="4" anchor="property-entry-apiproperty">Property entry (<ds-code inline>apiProperty</ds-code>)</ds-heading>
 <ds-prop-table>
   <ds-prop name="identifier" type="string" required>The property identifier as used in code (e.g., 'variant', 'size', 'disabled', 'onClick').</ds-prop>
-  <ds-prop name="type" type="string" required>The property's type as it would appear in a type signature (e.g., 'boolean', 'number', 'string', 'ReactNode', 'IconComponent'). For enum properties, use <ds-code inline>values</ds-code> instead of listing members here.</ds-prop>
+  <ds-prop name="type" type="string" required>The property's type as it would appear in a type signature (e.g., 'boolean', 'number', 'string', 'ReactNode', 'IconComponent'). For enum properties, use <ds-code inline>values</ds-code> instead of listing members here. When <ds-code inline>schema</ds-code> is present it is authoritative; <ds-code inline>type</ds-code> is its display summary and MUST NOT disagree with it.</ds-prop>
   <ds-prop name="description" type="&lt;ds-type-ref href=&quot;common-rich-text.html#richtext&quot;&gt;richText&lt;/ds-type-ref&gt;" required>What this property controls, how it affects the component, and any constraints or side effects.</ds-prop>
-  <ds-prop name="values" type="string[]">The accepted values for enum-like properties (e.g., ['default', 'primary', 'ghost']). Use this instead of listing members in <ds-code inline>type</ds-code>.</ds-prop>
-  <ds-prop name="schema" type="object">A JSON Schema (Draft 2020-12) object that defines the property's type in machine-readable form. It follows the same conventions as OpenAPI parameter schemas.</ds-prop>
+  <ds-prop name="values" type="string[]">The accepted values for enum-like properties (e.g., ['default', 'primary', 'ghost']). Use this instead of listing members in <ds-code inline>type</ds-code>. When <ds-code inline>schema</ds-code> is present it is authoritative; <ds-code inline>values</ds-code> is its display summary and MUST NOT disagree with it.<br><small>Min items: 1</small></ds-prop>
+  <ds-prop name="schema" type="object">A JSON Schema (Draft 2020-12) object that defines the property's type in machine-readable form. It follows the same conventions as OpenAPI parameter schemas. When present, <ds-code inline>schema</ds-code> is the authoritative type definition; <ds-code inline>type</ds-code> and <ds-code inline>values</ds-code> are display summaries of it and MUST NOT disagree.</ds-prop>
   <ds-prop name="required" type="boolean">Whether the consumer must provide this property. Defaults to false.<br><small>Default: <ds-code inline>false</ds-code></small></ds-prop>
   <ds-prop name="defaultValue" type="any">The default value in its native JSON type. Accepts any JSON type: string, number, boolean, object, array, or null.</ds-prop>
-  <ds-prop name="examples" type="&lt;ds-type-ref href=&quot;common-example.html#example&quot;&gt;example&lt;/ds-type-ref&gt;[]">Example values for this property.</ds-prop>
+  <ds-prop name="examples" type="&lt;ds-type-ref href=&quot;common-example.html#example&quot;&gt;example&lt;/ds-type-ref&gt;[]">Example values for this property.<br><small>Min items: 1</small></ds-prop>
   <ds-prop name="since" type="string">The version in which this property was introduced.</ds-prop>
   <ds-prop name="deprecated" type="boolean">Whether this property is deprecated. Defaults to false.<br><small>Default: <ds-code inline>false</ds-code></small></ds-prop>
   <ds-prop name="deprecationNotice" type="string">What to use instead, if deprecated.</ds-prop>
@@ -745,7 +788,7 @@
 <ds-prop-table>
   <ds-prop name="identifier" type="string" required>The event identifier (e.g., 'onClick', 'onChange', 'onDismiss').</ds-prop>
   <ds-prop name="description" type="&lt;ds-type-ref href=&quot;common-rich-text.html#richtext&quot;&gt;richText&lt;/ds-type-ref&gt;" required>When this event fires, what it communicates, and how consumers should respond. Add any behavioral context worth noting in prose (DOM propagation, cancelability, deprecation, and conditions under which it does not fire). This is the single home for event documentation.</ds-prop>
-  <ds-prop name="returns" type="string">Description of the event return shape (e.g., '(event: MouseEvent) =&gt; void', '{ value: string, index: number }').</ds-prop>
+  <ds-prop name="returns" type="string">The event's payload or handler signature (e.g., '(event: MouseEvent) =&gt; void', '{ value: string, index: number }'). Emitted events do not return values; this documents what a listener receives.</ds-prop>
   <ds-prop name="since" type="string">The version in which this event was introduced.</ds-prop>
 </ds-prop-table>
 <p>Events live here, in <ds-code inline>api.events</ds-code> — there is no separate events block. Past the signature, put behavior in the event's <ds-code inline>description</ds-code>: when it fires, how to respond, DOM propagation, cancelability, and deprecation.</p>
@@ -777,8 +820,8 @@
   <ds-prop name="description" type="&lt;ds-type-ref href=&quot;common-rich-text.html#richtext&quot;&gt;richText&lt;/ds-type-ref&gt;" required>What this value looks like, when to use it, and how it differs from other values in this dimension.</ds-prop>
   <ds-prop name="name" type="string">Human-readable name (e.g., 'Small', 'Medium', 'Large', 'Primary', 'Secondary').</ds-prop>
   <ds-prop name="rationale" type="&lt;ds-type-ref href=&quot;common-rich-text.html#richtext&quot;&gt;richText&lt;/ds-type-ref&gt;">Why this value exists: the user need or design rationale it addresses (e.g., 'High emphasis directs the user to the single most important action on the surface'). For comparative when-to-use guidance across values, use the entity's useCases block instead.</ds-prop>
-  <ds-prop name="examples" type="&lt;ds-type-ref href=&quot;common-example.html#example&quot;&gt;example&lt;/ds-type-ref&gt;[]">Examples showing this variant value in isolation or in context.</ds-prop>
-  <ds-prop name="tokens" type="map&amp;lt;string, string&amp;gt;">Design token overrides applied when this value is selected. Keys are token-purpose names (e.g., 'background', 'text-color', 'padding-horizontal'). Values are token identifiers. In a system with a token layer these MUST be token identifiers, not raw values, so the value can't silently drift from the token source.</ds-prop>
+  <ds-prop name="examples" type="&lt;ds-type-ref href=&quot;common-example.html#example&quot;&gt;example&lt;/ds-type-ref&gt;[]">Examples showing this variant value in isolation or in context.<br><small>Min items: 1</small></ds-prop>
+  <ds-prop name="tokens" type="&lt;ds-type-ref href=&quot;common-token-overrides.html#tokenoverrides&quot;&gt;tokenOverrides&lt;/ds-type-ref&gt;">Design token overrides applied when this value is selected, as the shared token-override map: keys are token-purpose names, values are documented token identifiers.</ds-prop>
 </ds-prop-table>
 <ds-heading level="3" anchor="states-states">States (<ds-code inline>states</ds-code>)</ds-heading>
 <p>Documents all interactive states — hover, focus, active, disabled, loading, selected, error, etc. — with triggers, token overrides, and examples.</p>
@@ -787,9 +830,9 @@
   <ds-prop name="identifier" type="string" required>Machine-readable state identifier (e.g., 'default', 'hover', 'focus', 'active', 'disabled', 'loading', 'selected', 'error', 'read-only').</ds-prop>
   <ds-prop name="description" type="&lt;ds-type-ref href=&quot;common-rich-text.html#richtext&quot;&gt;richText&lt;/ds-type-ref&gt;" required>What triggers this state, how appearance and behavior change, and any constraints or side effects.</ds-prop>
   <ds-prop name="name" type="string">Human-readable name (e.g., 'Default', 'Hover', 'Focus', 'Active / Pressed', 'Disabled', 'Loading').</ds-prop>
-  <ds-prop name="tokens" type="map&amp;lt;string, string&amp;gt;">Design token overrides applied when this state is active. Keys are token property names scoped to the component (e.g., 'button-background', 'button-border-color'). Values are token identifiers. They are required when the system has a token layer, so the override can't silently drift from the token source. Raw values are only for token-less systems. List only tokens that change from the default state. Note: these token references are descriptive summaries for designers. Authoritative resolved values for each variant × state combination live in the design-specifications guideline's overrides array.</ds-prop>
+  <ds-prop name="tokens" type="&lt;ds-type-ref href=&quot;common-token-overrides.html#tokenoverrides&quot;&gt;tokenOverrides&lt;/ds-type-ref&gt;">Design token overrides applied when this state is active, as the shared token-override map: keys are token-purpose names, values are documented token identifiers. List only tokens that change from the default state. Each state carries its own overrides here; on components, baseline (default-state) values live on the design-specifications block (patterns have no such block — their anatomy carries the baseline).</ds-prop>
   <ds-prop name="rationale" type="&lt;ds-type-ref href=&quot;common-rich-text.html#richtext&quot;&gt;richText&lt;/ds-type-ref&gt;">Why this state exists — the user need or design rationale it addresses.</ds-prop>
-  <ds-prop name="examples" type="&lt;ds-type-ref href=&quot;common-example.html#example&quot;&gt;example&lt;/ds-type-ref&gt;[]">Examples showing the component in this state.</ds-prop>
+  <ds-prop name="examples" type="&lt;ds-type-ref href=&quot;common-example.html#example&quot;&gt;example&lt;/ds-type-ref&gt;[]">Examples showing the component in this state.<br><small>Min items: 1</small></ds-prop>
 </ds-prop-table>
 <ds-heading level="3" anchor="design-specifications-design-specifications">Design specifications (<ds-code inline>design-specifications</ds-code>)</ds-heading>
 <p>Documents the <strong>baseline</strong> measurable specs of a component: default design properties, spacing, dimension limits, typography, and responsive behavior. At least one of these sections must be present.</p>
@@ -799,7 +842,7 @@
   <ds-prop name="spacing" type="&lt;ds-type-ref href=&quot;document-blocks-design-specifications.html#spacingspec&quot;&gt;spacingSpec&lt;/ds-type-ref&gt;" conditional>Base spacing spec for the default config.</ds-prop>
   <ds-prop name="sizing" type="&lt;ds-type-ref href=&quot;document-blocks-design-specifications.html#sizingspec&quot;&gt;sizingSpec&lt;/ds-type-ref&gt;" conditional>Base sizing spec for the default config.</ds-prop>
   <ds-prop name="typography" type="&lt;ds-type-ref href=&quot;document-blocks-design-specifications.html#typographyspec&quot;&gt;typographySpec&lt;/ds-type-ref&gt;" conditional>Base typography spec for the default config.</ds-prop>
-  <ds-prop name="responsive" type="&lt;ds-type-ref href=&quot;document-blocks-design-specifications.html#responsiveentry&quot;&gt;responsiveEntry&lt;/ds-type-ref&gt;[]" conditional>Responsive behavior describing how the component adapts across breakpoints. Entries are ordered from smallest to largest breakpoint.</ds-prop>
+  <ds-prop name="responsive" type="&lt;ds-type-ref href=&quot;document-blocks-design-specifications.html#responsiveentry&quot;&gt;responsiveEntry&lt;/ds-type-ref&gt;[]" conditional>Responsive behavior describing how the component adapts across breakpoints. Entries are ordered from smallest to largest breakpoint.<br><small>Min items: 1</small></ds-prop>
 </ds-prop-table>
 <p>The base <ds-code inline>properties</ds-code> map is the default spec — usually the primary variant at medium size in the default state. Values are design token ids (required when the system has a token layer) or raw CSS values (token-less systems only).</p>
 <p><strong>Per-variant and per-state values are not documented here.</strong> They live on the <a href="#variants-variants">variants</a> and <a href="#states-states">states</a> blocks. Each value there carries its own <ds-code inline>tokens</ds-code> overrides. <ds-code inline>design-specifications</ds-code> covers only the baseline and responsive behavior, so nothing is duplicated and nothing can drift.</p>
@@ -820,11 +863,11 @@
   <ds-prop name="identifier" type="string" required>Machine-readable identifier of the easing (e.g., 'expressive', 'enter', 'exit', 'lateral', 'bounce', 'linear'). Used for cross-referencing and tooling.</ds-prop>
   <ds-prop name="description" type="&lt;ds-type-ref href=&quot;common-rich-text.html#richtext&quot;&gt;richText&lt;/ds-type-ref&gt;" required>What this easing is for, when to use it, and how it affects the user experience. Explain the visual character of the curve and the types of transitions it suits.</ds-prop>
   <ds-prop name="name" type="string">Human-readable name of the easing (e.g., 'Expressive Ease', 'Enter Ease', 'Exit Ease').</ds-prop>
-  <ds-prop name="function" type="number[]">Cubic-bezier control points as a four-number array [P1x, P1y, P2x, P2y], aligned with the W3C Design Tokens Format Module cubicBezier type (§8.6). P1x and P2x MUST be in [0, 1]. P1y and P2y can be any real number (values outside [0, 1] produce bounce/overshoot effects). Maps to CSS cubic-bezier() and DTCG cubicBezier token values. When omitted, the easing is described in the description field or points to a token via <ds-code inline>token</ds-code>.<br><small>Min items: 4</small></ds-prop>
+  <ds-prop name="function" type="array">Cubic-bezier control points as a four-number array [P1x, P1y, P2x, P2y], aligned with the W3C Design Tokens Format Module cubicBezier type (§8.6). P1x and P2x MUST be in [0, 1]. P1y and P2y can be any real number (values outside [0, 1] produce bounce/overshoot effects). Maps to CSS cubic-bezier() and DTCG cubicBezier token values. When omitted, the easing is described in the description field or points to a token via <ds-code inline>token</ds-code>.<br><small>Min items: 4</small></ds-prop>
   <ds-prop name="token" type="string">Reference to a DTCG cubicBezier or transition token that defines this easing (e.g., 'motion-ease-expressive', 'transition-enter'). When both <ds-code inline>function</ds-code> and <ds-code inline>token</ds-code> are present, <ds-code inline>function</ds-code> is the display value and <ds-code inline>token</ds-code> is the authoritative source.</ds-prop>
   <ds-prop name="duration" type="&lt;ds-type-ref href=&quot;document-blocks-motion.html#motionduration&quot;&gt;motionDuration&lt;/ds-type-ref&gt;">Recommended duration range when using this easing. Different easings suit different durations. Enter transitions are typically longer (300–500ms) to draw attention, while exit transitions are shorter (200–300ms) to feel responsive.</ds-prop>
   <ds-prop name="usage" type="string">A short, comma-separated list of usage contexts (e.g., 'entering elements', 'exiting elements', 'lateral navigation', 'micro-interactions'). Gives a scannable summary. Use description for detailed guidance.</ds-prop>
-  <ds-prop name="examples" type="&lt;ds-type-ref href=&quot;common-example.html#example&quot;&gt;example&lt;/ds-type-ref&gt;[]">Visual or interactive examples showing this easing in action: screen recordings, interactive curve visualizations, or CSS code snippets.</ds-prop>
+  <ds-prop name="examples" type="&lt;ds-type-ref href=&quot;common-example.html#example&quot;&gt;example&lt;/ds-type-ref&gt;[]">Visual or interactive examples showing this easing in action: screen recordings, interactive curve visualizations, or CSS code snippets.<br><small>Min items: 1</small></ds-prop>
 </ds-prop-table>
 <hr />
 <ds-heading level="2" anchor="pattern-scoped-document-block-types">Pattern-scoped document block types</ds-heading>
@@ -836,7 +879,7 @@
   <ds-prop name="description" type="&lt;ds-type-ref href=&quot;common-rich-text.html#richtext&quot;&gt;richText&lt;/ds-type-ref&gt;" required>What happens during this step: the system's response, visual changes, state transitions, and user-facing feedback. CommonMark supported.</ds-prop>
   <ds-prop name="trigger" type="string">What starts this interaction step: a user action, system event, or condition (e.g., 'User submits the form by activating the submit button', 'API returns a 422 response'). When omitted, the step continues the previous step's flow without a new trigger.</ds-prop>
   <ds-prop name="components" type="&lt;ds-type-ref href=&quot;common-entity-ref.html#entityref&quot;&gt;entityRef&lt;/ds-type-ref&gt;[]">The entities involved in this step, as entity references. Each <ds-code inline>identifier</ds-code> MUST match a component documented in the system; the optional <ds-code inline>role</ds-code> says what the component does in this step. Creates a traversable cross-reference between the pattern's interaction flow and individual component docs.<br><small>Min items: 1</small></ds-prop>
-  <ds-prop name="examples" type="&lt;ds-type-ref href=&quot;common-example.html#example&quot;&gt;example&lt;/ds-type-ref&gt;[]">Visual or interactive examples for this step: screenshots of the resulting state, screen recordings of the transition, or code snippets showing the implementation.</ds-prop>
+  <ds-prop name="examples" type="&lt;ds-type-ref href=&quot;common-example.html#example&quot;&gt;example&lt;/ds-type-ref&gt;[]">Visual or interactive examples for this step: screenshots of the resulting state, screen recordings of the transition, or code snippets showing the implementation.<br><small>Min items: 1</small></ds-prop>
 </ds-prop-table>
 <hr />
 <ds-heading level="2" anchor="guide-scoped-document-block-types">Guide-scoped document block types</ds-heading>
@@ -847,7 +890,7 @@
 <ds-prop-table>
   <ds-prop name="title" type="string" required>A short label for the step (e.g., 'Install the package', 'Wrap your app in the provider', 'Run the validator'). Concise enough to serve as a numbered list item or heading.</ds-prop>
   <ds-prop name="instruction" type="&lt;ds-type-ref href=&quot;common-rich-text.html#richtext&quot;&gt;richText&lt;/ds-type-ref&gt;">What the reader should do in this step. Supports markdown by default. MUST be concrete and actionable: describe the action, not the goal.</ds-prop>
-  <ds-prop name="examples" type="&lt;ds-type-ref href=&quot;common-example.html#example&quot;&gt;example&lt;/ds-type-ref&gt;[]">Illustrative material for the step: a code snippet, a terminal command, a screenshot, or a live URL. Most procedural steps carry a single code example.</ds-prop>
+  <ds-prop name="examples" type="&lt;ds-type-ref href=&quot;common-example.html#example&quot;&gt;example&lt;/ds-type-ref&gt;[]">Illustrative material for the step: a code snippet, a terminal command, a screenshot, or a live URL. Most procedural steps carry a single code example.<br><small>Min items: 1</small></ds-prop>
   <ds-prop name="expectedResult" type="&lt;ds-type-ref href=&quot;common-rich-text.html#richtext&quot;&gt;richText&lt;/ds-type-ref&gt;">What the reader should see once the step succeeds (e.g., 'The dev server starts on port 3000', 'A themed button renders'). Lets readers confirm progress and spot problems on their own. Most useful in tutorials and getting-started guides.</ds-prop>
   <ds-prop name="optional" type="boolean">Whether the step can be skipped without breaking the procedure. Defaults to false. Tools MAY render optional steps distinctly (e.g., an 'optional' label).<br><small>Default: <ds-code inline>false</ds-code></small></ds-prop>
 </ds-prop-table>
@@ -855,7 +898,7 @@
 <ds-heading level="2" anchor="shared-document-block-types">Shared document block types</ds-heading>
 <p>These block types are shared across more than one entity type without being general (they are not accepted on tokens, themes, or guides).</p>
 <ds-heading level="3" anchor="checklist-checklist">Checklist (<ds-code inline>checklist</ds-code>)</ds-heading>
-<p>An explicit checklist of items to work through for an artifact. Accepted on <strong>component</strong>, <strong>foundation</strong>, and <strong>pattern</strong> entities. It is built primarily for agents: a concrete list of things to verify, do, or confirm when building, reviewing, or integrating an artifact, and it reads equally well from <ds-code inline>agentDocumentBlocks</ds-code>.</p>
+<p>An explicit checklist of items to work through for an artifact. A general block kind, accepted on <strong>every</strong> entity type. It is built primarily for agents: a concrete list of things to verify, do, or confirm when building, reviewing, or integrating an artifact, and it reads equally well from <ds-code inline>agentDocumentBlocks</ds-code>.</p>
 <p>Each item is a <ds-code inline>checklistItem</ds-code> with an actionable <ds-code inline>label</ds-code>, an optional RFC 2119 <ds-code inline>level</ds-code> that marks hard gates, optional <ds-code inline>description</ds-code> detail, and an optional <ds-code inline>criterion</ds-code> identifier linking to the testable success criterion that defines pass/fail. The block carries an optional <ds-code inline>title</ds-code> and an <ds-code inline>ordered</ds-code> flag (default <ds-code inline>false</ds-code>).</p>
 <blockquote>
 <p><strong>Checklist vs. guidelines vs. steps:</strong> <a href="#guidelines-guidelines"><ds-code inline>guidelines</ds-code></a> hold the rules and the <em>why</em>; <ds-code inline>checklist</ds-code> turns those rules into an explicit pass an agent can tick through; <a href="#steps-steps"><ds-code inline>steps</ds-code></a> (guides only) walk a reader through a <em>procedure</em> start to finish. Reach for <ds-code inline>checklist</ds-code> when the goal is an explicit review or integration pass over an existing artifact.</p>
@@ -895,7 +938,7 @@
 <ds-heading level="2" anchor="links">Links</ds-heading>
 <p>The <ds-code inline>links</ds-code> array holds typed references to <strong>external resources</strong> — source code, design files, docs, packages — addressed by <ds-code inline>url</ds-code>.</p>
 <ds-prop-table>
-  <ds-prop name="kind" type="string" required>The category of the linked resource. Standard external kinds: 'source', 'design', 'storybook', 'documentation', 'package', 'repository'. Custom values are allowed and SHOULD match ^[a-z][a-z0-9-]*$. DEPRECATED kinds — 'alternative', 'parent', 'child', 'related' (relationship kinds) and 'component', 'token', 'token-group', 'foundation', 'pattern', 'theme' (internal artifact references) are deprecated; express these as typed edges in the entity's <ds-code inline>relationships</ds-code> array instead.</ds-prop>
+  <ds-prop name="kind" type="string" required>The category of the linked resource. Standard external kinds: 'source', 'design', 'storybook', 'documentation', 'package', 'repository'. Custom values are allowed and MUST match ^[a-z][a-z0-9-]*$ (schema-enforced; all standard kinds already do). DEPRECATED kinds — 'alternative', 'parent', 'child', 'related' (relationship kinds) and 'component', 'token', 'token-group', 'foundation', 'pattern', 'theme' (internal artifact references) are deprecated; express these as typed edges in the entity's <ds-code inline>relationships</ds-code> array instead.<br><small>Pattern: <ds-code inline>^[a-z][a-z0-9-]*$</ds-code></small></ds-prop>
   <ds-prop name="url" type="string (uri)" conditional>The URL of the linked resource. MUST be a valid absolute URI. Required for external resource links. Optional for internal artifact references, where <ds-code inline>identifier</ds-code> names the artifact. When both <ds-code inline>url</ds-code> and <ds-code inline>identifier</ds-code> are present, <ds-code inline>url</ds-code> points to the artifact's docs page and <ds-code inline>identifier</ds-code> is the machine-readable cross-reference.</ds-prop>
   <ds-prop name="identifier" type="&lt;ds-type-ref href=&quot;common-entity-ref.html#entityidentifier&quot;&gt;entityIdentifier&lt;/ds-type-ref&gt;" conditional>DEPRECATED — the identifier of a referenced DSDS entity. Use the entity's <ds-code inline>relationships</ds-code> array for inter-entity references. Retained for backward compatibility: a link with an <ds-code inline>identifier</ds-code> still follows entityRef resolution rules (it MUST match a documented entity).</ds-prop>
   <ds-prop name="label" type="string">Display text for this link — what a user sees when the link renders (e.g., 'React component source', 'Design file — variants', 'Button component'). Use it for the display name of the resource. To describe an internal artifact's role, use <ds-code inline>role</ds-code> instead.</ds-prop>
@@ -941,7 +984,7 @@
 <p>The root <ds-code inline>extends</ds-code> property declares that the whole DSDS document inherits from another DSDS document. This sets up the parent–child relationship between systems.</p>
 <ds-prop-table>
   <ds-prop name="system" type="string" required>The name or identifier of the base design system being extended (e.g., 'Acme Core Design System', 'acme-core', '@acme/design-system'). A display name or a package name, not a URL. Tools use it to resolve the base system from a registry, file system, or package manager.</ds-prop>
-  <ds-prop name="url" type="string (uri)">URL to the base DSDS document (e.g., 'https://design.acme.com/v2/core.dsds.json', './core.dsds.json'). When provided, tools MAY fetch and resolve the base document for merge, validation, or docs generation.</ds-prop>
+  <ds-prop name="url" type="string (uri-reference)">URL or relative path to the base DSDS document (e.g., 'https://design.acme.com/v2/core.dsds.json', './core.dsds.json'). Relative paths are resolved against this document's location. When provided, tools MAY fetch and resolve the base document for merge, validation, or docs generation.</ds-prop>
   <ds-prop name="version" type="string">The version of the base system this document extends (e.g., '2.0.0', '&gt;=2.0.0', '^3.1.0'). Follows semver. When omitted, tools SHOULD resolve to the latest available version.</ds-prop>
   <ds-prop name="description" type="&lt;ds-type-ref href=&quot;common-rich-text.html#richtext&quot;&gt;richText&lt;/ds-type-ref&gt;">Description of the relationship: what this extension adds, changes, or narrows relative to the base system.</ds-prop>
 </ds-prop-table>
@@ -959,7 +1002,7 @@
 <ds-prop-table>
   <ds-prop name="identifier" type="string" required>The identifier of the base entity being extended (e.g., 'button', 'color-text-primary', 'form-validation'). MUST match the <ds-code inline>identifier</ds-code> property of the base entity in the parent system.</ds-prop>
   <ds-prop name="system" type="string">The name or identifier of the system that owns the base entity (e.g., 'Acme Core Design System', 'acme-core'). When omitted, the base entity is resolved from the system declared in the root document's <ds-code inline>extends</ds-code> property. When provided, it lets you extend from a system other than the document's default base.</ds-prop>
-  <ds-prop name="url" type="string (uri)">Direct URL to the base entity's docs or DSDS definition. Useful for cross-linking in docs sites.</ds-prop>
+  <ds-prop name="url" type="string (uri-reference)">URL or relative path to the base entity's docs or DSDS definition. Useful for cross-linking in docs sites.</ds-prop>
   <ds-prop name="version" type="string">The version of the base entity or base system this entity extends (e.g., '2.0.0'). When omitted, the version comes from the document-level extends declaration.</ds-prop>
   <ds-prop name="description" type="&lt;ds-type-ref href=&quot;common-rich-text.html#richtext&quot;&gt;richText&lt;/ds-type-ref&gt;">What this entity adds or changes relative to the base: new variants, more props, overridden guidelines, and so on.</ds-prop>
   <ds-prop name="modifications" type="object {changeType, target, description}[]">Summary of what this entity changes relative to the base. Each entry describes one change. Tools MAY use these for changelog generation, diff views, or migration guides. When omitted, consuming tools must diff the entities to find the changes.</ds-prop>
@@ -1043,7 +1086,7 @@
         <ds-back-to-top></ds-back-to-top>
 
         <ds-footer>
-          <p>Design System Documentation Spec (DSDS) 0.12.1 — Draft Specification</p>
+          <p>Design System Documentation Spec (DSDS) 0.13.0 — Draft Specification</p>
           <p><a href="https://github.com/somerandomdude/design-system-documentation-schema">GitHub</a></p>
         </ds-footer>
       </div>

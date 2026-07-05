@@ -1,13 +1,27 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://designsystemdocspec.org/v0.12.1/common/presentation.schema.json",
+  "$id": "https://designsystemdocspec.org/v0.13.0/common/presentation.schema.json",
   "title": "DSDS Presentation Definitions",
   "description": "Presentation types for visual and interactive demos across DSDS. Each presentation is a typed object for one media format: image, video, code snippet, or URL. Used by the example schema and any schema that embeds a visual or interactive presentation.",
   "$defs": {
+    "mediaUrl": {
+      "type": "string",
+      "format": "uri-reference",
+      "description": "URL or relative path to a media file. Absolute URLs point at hosted assets; relative paths are resolved against the referencing document's location."
+    },
+    "mediaAlt": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Alternative text describing the media content for assistive technology. MUST be provided and MUST NOT be empty."
+    },
     "presentationImage": {
       "type": "object",
       "description": "An image presentation — a screenshot, diagram, annotated mockup, or exported design frame.",
-      "required": ["kind", "url", "alt"],
+      "required": [
+        "kind",
+        "url",
+        "alt"
+      ],
       "properties": {
         "kind": {
           "type": "string",
@@ -15,13 +29,12 @@
           "description": "Identifies this presentation as an image."
         },
         "url": {
-          "type": "string",
-          "format": "uri",
+          "$ref": "#/$defs/mediaUrl",
           "description": "URL or relative path to the image file."
         },
         "alt": {
-          "type": "string",
-          "description": "Alternative text describing the image content. MUST be provided for accessibility."
+          "$ref": "#/$defs/mediaAlt",
+          "description": "Alternative text describing the image content. MUST be provided for accessibility and MUST NOT be empty."
         }
       },
       "additionalProperties": false
@@ -29,7 +42,11 @@
     "presentationVideo": {
       "type": "object",
       "description": "A video presentation — a screen recording, animated transition, or interaction walkthrough.",
-      "required": ["kind", "url", "alt"],
+      "required": [
+        "kind",
+        "url",
+        "alt"
+      ],
       "properties": {
         "kind": {
           "type": "string",
@@ -37,13 +54,12 @@
           "description": "Identifies this presentation as a video."
         },
         "url": {
-          "type": "string",
-          "format": "uri",
+          "$ref": "#/$defs/mediaUrl",
           "description": "URL or relative path to the video file."
         },
         "alt": {
-          "type": "string",
-          "description": "Alternative text describing the video content. MUST be provided for accessibility."
+          "$ref": "#/$defs/mediaAlt",
+          "description": "Alternative text describing the video content. MUST be provided for accessibility and MUST NOT be empty."
         }
       },
       "additionalProperties": false
@@ -51,7 +67,11 @@
     "presentationCode": {
       "type": "object",
       "description": "A code presentation — a source code snippet showing how to use the artifact.",
-      "required": ["kind", "code", "language"],
+      "required": [
+        "kind",
+        "code",
+        "language"
+      ],
       "properties": {
         "kind": {
           "type": "string",
@@ -60,7 +80,8 @@
         },
         "code": {
           "type": "string",
-          "description": "The source code of the example."
+          "description": "The source code of the example.",
+          "minLength": 1
         },
         "language": {
           "type": "string",
@@ -72,7 +93,10 @@
     "presentationUrl": {
       "type": "object",
       "description": "A URL presentation — a link to a web resource such as a live demo, interactive example, docs page, or hosted component story. Use it for Storybook stories, CodeSandbox embeds, StackBlitz projects, or other addressable web content.",
-      "required": ["kind", "url"],
+      "required": [
+        "kind",
+        "url"
+      ],
       "properties": {
         "kind": {
           "type": "string",

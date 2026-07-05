@@ -7,7 +7,7 @@
  *   2. All per-definition example files in spec/examples/{common,document-blocks,entities}/
  *      against their matching $defs in the bundled schema
  *   3. Bare entity files (e.g. spec/examples/minimal/*.json) against their
- *      entity $def, detected via the top-level `type` property
+ *      entity $def, detected via the top-level `kind` property
  *
  * Usage:
  *   node scripts/validate.js
@@ -527,6 +527,14 @@ const EXTENSION_KEY_REGEX = /^[A-Za-z0-9_-]+(\.[A-Za-z0-9_-]+)+$/;
  *   2. `$extensions` keys MUST be vendor-namespaced.
  *   3. Criterion identifiers MUST be unique within their entity
  *      (rules/rules.yaml DSDS-002 — test runs report against them).
+ *   4. Relationship edges MUST resolve, not self-reference, not duplicate,
+ *      and stay acyclic across composes/depends-on.
+ *   5. Token-override references (anatomy, states, variants) MUST resolve
+ *      against the documented token layer when one is present.
+ *   6. `docOrigin.blocks` keys MUST match a block kind on the entity.
+ *   7. String token references (theme overrides, scale steps, motion entries)
+ *      MUST resolve; token `tokenType` MUST be present or group-inherited;
+ *      section anchors MUST be unique within their parent block.
  * Returns an array of { path, message } findings.
  */
 const ENTITY_KIND_SET = new Set([
@@ -762,24 +770,102 @@ function semanticFindings(doc) {
     }
   }
 
-  // Anatomy token references resolve against the documented token layer. When
-  // the document documents no tokens (external DTCG layer), this is skipped —
+  // Token-override references resolve against the documented token layer. The
+  // shared tokenOverrides map appears on anatomy parts, states, and variant
+  // values/flags — every position resolves under the same rule. When the
+  // document documents no tokens (external DTCG layer), this is skipped —
   // matching the schema's "in a system that documents its token layer" rule.
-  function checkAnatomyTokens(block, blockPath) {
+  function checkTokenOverrides(node, nodePath) {
     if (!tokenLayer || tokenLayer.size === 0) return;
-    if (!Array.isArray(block.parts)) return;
-    block.parts.forEach((part, pi) => {
-      const tokens = part && part.tokens;
-      if (!tokens || typeof tokens !== "object") return;
-      for (const [purpose, id] of Object.entries(tokens)) {
-        if (typeof id === "string" && !tokenLayer.has(id)) {
+    const tokens = node.tokens;
+    if (!tokens || typeof tokens !== "object" || Array.isArray(tokens)) return;
+    for (const [purpose, id] of Object.entries(tokens)) {
+      if (typeof id === "string" && !tokenLayer.has(id)) {
+        findings.push({
+          path: `${nodePath}/tokens/${purpose}`,
+          message: `token override '${id}' resolves to no documented token — with a token layer present, token-override references MUST name a documented token (entityRef resolution)`,
+        });
+      }
+    }
+  }
+
+  // Section anchors MUST be unique within their parent block — same rule as
+  // checkIdentifierScope, keyed on `anchor` (sections deep-link by anchor,
+  // not identifier).
+  function checkAnchorScope(items, pathPrefix) {
+    const seen = new Map();
+    items.forEach((item, i) => {
+      if (!item || typeof item !== "object") return;
+      const a = item.anchor;
+      if (typeof a !== "string") return;
+      if (seen.has(a)) {
+        findings.push({
+          path: `${pathPrefix}/${i}/anchor`,
+          message: `duplicate section anchor '${a}' in the same block (first used at ${pathPrefix}/${seen.get(a)}) — anchors MUST be unique within the parent block`,
+        });
+      } else {
+        seen.set(a, i);
+      }
+    });
+  }
+
+  // String token references — theme override entries, scale steps, and motion
+  // entries each carry a `token` property that MUST name a documented token.
+  // Same token-layer gate as the tokenOverrides maps.
+  function checkTokenRefString(node, nodePath) {
+    if (!tokenLayer || tokenLayer.size === 0) return;
+    if (typeof node.token !== "string") return;
+    if (ENTITY_KIND_SET.has(node.kind)) return; // entities never carry a token ref property
+    if (!tokenLayer.has(node.token)) {
+      findings.push({
+        path: `${nodePath}/token`,
+        message: `token reference '${node.token}' resolves to no documented token — with a token layer present, token references MUST name a documented token (entityRef resolution)`,
+      });
+    }
+  }
+
+  // Token tokenType inheritance: a token may omit `tokenType` only when an
+  // ancestor token group declares it (children inherit the group's value).
+  function checkTokenTypeInheritance() {
+    (function scan(node, inherited, p) {
+      if (Array.isArray(node)) return node.forEach((v, i) => scan(v, inherited, `${p}/${i}`));
+      if (!node || typeof node !== "object") return;
+      let next = inherited;
+      if (node.kind === "token-group") {
+        next = typeof node.tokenType === "string" ? node.tokenType : inherited;
+      } else if (node.kind === "token") {
+        if (typeof node.tokenType !== "string" && !next) {
           findings.push({
-            path: `${blockPath}/parts/${pi}/tokens/${purpose}`,
-            message: `anatomy token '${id}' resolves to no documented token — with a token layer present, anatomy token references MUST name a documented token (entityRef resolution)`,
+            path: `${p}/tokenType`,
+            message: `token '${node.identifier}' has no tokenType and no ancestor token group declares one — tokenType MUST be present or inherited`,
           });
         }
       }
-    });
+      for (const [k, v] of Object.entries(node)) scan(v, next, `${p}/${k}`);
+    })(doc, null, "");
+  }
+
+  // docOrigin per-block overrides: every key in metadata.docOrigin.blocks MUST
+  // match the `kind` of a block in the entity's documentBlocks or
+  // agentDocumentBlocks — a key that matches no block is a defect.
+  function checkDocOriginBlocks(entity, entityPath) {
+    const docOrigin = entity.metadata && entity.metadata.docOrigin;
+    if (!docOrigin || typeof docOrigin !== "object") return;
+    const blocks = docOrigin.blocks;
+    if (!blocks || typeof blocks !== "object") return;
+    const kinds = new Set(
+      [].concat(entity.documentBlocks || [], entity.agentDocumentBlocks || [])
+        .map((b) => b && b.kind)
+        .filter(Boolean),
+    );
+    for (const key of Object.keys(blocks)) {
+      if (!kinds.has(key)) {
+        findings.push({
+          path: `${entityPath}/metadata/docOrigin/blocks/${key}`,
+          message: `docOrigin block key '${key}' matches no block kind in this entity's documentBlocks or agentDocumentBlocks — a key that matches no block is a defect`,
+        });
+      }
+    }
   }
 
   function walk(node, nodePath) {
@@ -791,6 +877,7 @@ function semanticFindings(doc) {
     if (ENTITY_KIND_SET.has(node.kind) && typeof node.identifier === "string") {
       checkCriterionScope(node, nodePath);
       checkRelationships(node, nodePath);
+      checkDocOriginBlocks(node, nodePath);
     }
     if (node.$extensions && typeof node.$extensions === "object") {
       for (const key of Object.keys(node.$extensions)) {
@@ -803,8 +890,13 @@ function semanticFindings(doc) {
       }
     }
     checkComponentRefs(node, nodePath);
-    if (node.kind === "anatomy") {
-      checkAnatomyTokens(node, nodePath);
+    checkTokenOverrides(node, nodePath);
+    checkTokenRefString(node, nodePath);
+    if (node.kind === "sections" && Array.isArray(node.items)) {
+      checkAnchorScope(node.items, `${nodePath}/items`);
+    }
+    if (Array.isArray(node.sections)) {
+      checkAnchorScope(node.sections, `${nodePath}/sections`);
     }
     if (Array.isArray(node.entities)) {
       checkIdentifierScope(node.entities, `${nodePath}/entities`);
@@ -820,6 +912,7 @@ function semanticFindings(doc) {
 
   walk(doc, "");
   checkRelationshipCycles();
+  checkTokenTypeInheritance();
   return findings;
 }
 

@@ -4,6 +4,56 @@ All notable changes to the DSDS specification are documented in this file.
 
 ---
 
+## [0.13.0] — 2026-07-04
+
+Minor release — a fortification pass from a full schema review: constraints the prose always promised are now enforced, unions report scoped errors, duplicated shapes share one definition, and chunks gain document blocks. Tightenings mean some previously-accepted (but always-defective) documents now fail validation. Schema files are served at `https://designsystemdocspec.org/v0.13.0/...`.
+
+### Additions
+
+- **Chunks accept `documentBlocks` and `agentDocumentBlocks`** (general kinds only). A chunk can now carry agent-only MUST/MUST-NOT rules and checklists like every other entity. The top-level `guidelines`/`useCases` arrays remain as deprecated authoring shorthand.
+- **`checklist` is now a general block kind**, available on every entity type (previously component/foundation/pattern only). Guides, tokens, and themes gain it.
+- **New shared defs**: `common/token-overrides.schema.json` (the token-override map used by anatomy, states, and variants — keys kebab-case, values documented token identifiers) and `common/dated-note.schema.json` (`isoDate`/`plainNote` leaves composed by `lastUpdated` and `lastReviewed`).
+
+### Tightenings (schema-enforced rules that were previously prose-only)
+
+- Empty content is rejected: `minItems: 1` on all seven `api` arrays and the three unguarded `accessibility` arrays; `motionDuration` requires min, max, or description; token/theme `source` requires `file`; `entityGroup` requires `entities`; `deprecationNotice` and `thumbnail.alt` must be non-empty.
+- `$extensions` keys must be vendor-namespaced (dot-separated) in schema, matching the existing semantic check. `link.kind` must match `^[a-z][a-z0-9-]*$`. `fileRef.$ref` and chunk `src` patterns reject absolute and scheme-bearing URIs.
+- `governance.reviewedAgainst` requires `lastReviewed` (`dependentRequired`). `docOrigin` rejects the `generated` + `human` origin/authorship contradiction, and its `blocks` map requires kebab-case keys and at least one entry. A criterion carrying a `check` must declare `verification`.
+
+### Changes
+
+- **Discriminated unions everywhere**: `anyEntity` and the flag/enum variant union now use kind-keyed `if`/`then` branches (like the document-block unions) instead of bare `oneOf` — one scoped error instead of a compound error across every branch. No valid document changes.
+- **`format: "uri"` → `"uri-reference"`** on presentation image/video URLs, `thumbnail.url`, and both `extends` URLs — relative paths, which the descriptions always promised, now validate.
+- **`tokenDocumentBlock` deleted** (pure alias); token/token-group/theme reference `generalDocumentBlock` directly. `metadata/extends.schema.json` pass-through deleted; metadata references `common/extends` directly. `colorContrast` def renamed `colorContrastEntry` (internal name only).
+- **Validator**: token-override resolution now covers states and variants (previously anatomy only) and a new check resolves `docOrigin.blocks` keys against the entity's actual block kinds. Both immediately caught and fixed latent defects in the shipped examples.
+
+### Fixes
+
+- Dangling and contradictory prose corrected: states' phantom "design-specifications overrides array", principles' nonexistent `purpose` reference, entity-ref's wrong consumer list, and pattern/chunk/links descriptions that still taught the DSDS-010-deprecated links-as-relationships form. Entity schemas now point at the shared `entityMetadata` field list instead of enumerating it (it had drifted in all seven).
+- `apiProperty` gains a precedence rule: `schema` is authoritative; `type`/`values` are display summaries and MUST NOT disagree.
+- Known naming exceptions (`useCases` casing; `label`/`title`/`name` drift) are recorded on the Schema Architecture page as deliberate until the next major.
+
+### Second review pass (also in this release)
+
+A fresh from-scratch review of the fortified tree folded further changes into this release before it was cut:
+
+- **`tokenType` is now inheritable.** Dropped from `token`'s required list; a token may omit it when an ancestor token group declares it, as the group prose always promised. The own-or-inherited rule is validator-enforced.
+- **Doc-generation repair.** The union restructure had broken `render-summaries.js`/`check-doc-coverage.mjs` (both read `oneOf`): the architecture page's entity/block tables rendered empty and the coverage guard passed vacuously. Both scripts now read the discriminated branches, and the guard hard-fails if its derived kind lists are ever empty.
+- **Further tightenings**: `minLength: 1` on `entityIdentifier`, `richText`, code strings, governance strings, `since`/`summary` and `tags`/`aliases` items (plus `uniqueItems`); `minProperties`/`minItems` close the hollow design-specifications presence gate, the `status.platforms` map, `entityMetadata`, and every remaining optional array (documentBlocks/agentDocumentBlocks included); cubic-bezier P1x/P2x bounds enforced via `prefixItems`.
+- **Draft-field reshapes** (`governance`/`docOrigin` are drafts): `reviewedAgainst` moved inside `lastReviewed`'s object form so it structurally cannot exist without a review; `docOrigin.blocks` values may now carry per-block `authorship` alongside origin; `docOrigin.note` composes the shared `plainNote`.
+- **Validator**: string token references (`theme` overrides, `scale` steps, `motion` entries) now resolve against the token layer — which caught and fixed an undocumented spacing ramp in starter-kit; `sections` identifiers are uniqueness-checked; token `tokenType` inheritance is checked.
+- **Prose sync**: the general-kinds lists across all entity schemas now include `checklist`; checklist/principles/variants/states/imports/link/criterion/content descriptions corrected; a flag-vs-state ownership rule added; `useCase.alternative.identifier` now routes through `entityIdentifier`; more naming exceptions recorded on the Schema Architecture page.
+
+### Documentation
+
+- **Three new spec pages**: Conformance (RFC 2119 classes, enforcement tiers, and a normative-statements index generated from the schemas by `scripts/extract-normative.mjs`, drift-guarded in postvalidate), Stability & 1.0 (version semantics, deprecation policy, the enumerated 0.14.0 breaking backlog, 1.0 criteria, and the post-1.0 additive-only contract), and Interoperability (explicit DTCG and Custom Elements Manifest positioning, a CEM-to-`api`-block mapping, the new documented `manifest` link kind, and validated worked examples — CEM's own sample manifest converted to a component document, and a DTCG token file paired with the token document that references it — living in `spec/examples/interop/` and embedded via drift-guarded `dsds:include` blocks, which `sync-examples.js` now also processes in site content pages).
+
+### Fixtures
+
+- New negative fixtures pin every new guard; new keyed examples cover `relationship`, `entityRef`, and `tokenOverrides`; the states fixture gains a full block instance; the chunk example demonstrates `agentDocumentBlocks`.
+
+---
+
 ## [0.12.1] — 2026-07-04
 
 Patch release — two new metadata fields for documentation governance and provenance. Additive and backward-compatible. Both fields are **initial drafts and subject to change** in a future release. Schema files are served at `https://designsystemdocspec.org/v0.12.1/...`.

@@ -3,35 +3,39 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>DSDS Doc Origin Metadata Field — DSDS 0.12.1</title>
+  <title>DSDS Doc Origin Metadata Field — DSDS 0.13.0</title>
   <meta name="description" content="How this entity's documentation came to exist. Two orthogonal axes: origin (how the doc relates to the implementation — written before it, generated from it, extracted from it, or reconstructed from memory) and authorship (who or what wrote the words — a human, an AI, a script, or a mix). Two documents can look identical and mean different things: one was extracted from shipped code by its maintainer, the other AI-written from memory months later. Making both axes machine-readable lets consuming tools and agents calibrate trust. A bare string sets the overall origin; the object form adds authorship, an explanatory note, and per-block overrides for mixed-origin documents. Introduced as an initial draft in 0.12.1 — the shape may change in a future release.">
   <link rel="canonical" href="https://designsystemdocspec.org/metadata-doc-origin">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Design System Documentation Spec">
-  <meta property="og:title" content="DSDS Doc Origin Metadata Field — DSDS 0.12.1">
+  <meta property="og:title" content="DSDS Doc Origin Metadata Field — DSDS 0.13.0">
   <meta property="og:description" content="How this entity's documentation came to exist. Two orthogonal axes: origin (how the doc relates to the implementation — written before it, generated from it, extracted from it, or reconstructed from memory) and authorship (who or what wrote the words — a human, an AI, a script, or a mix). Two documents can look identical and mean different things: one was extracted from shipped code by its maintainer, the other AI-written from memory months later. Making both axes machine-readable lets consuming tools and agents calibrate trust. A bare string sets the overall origin; the object form adds authorship, an explanatory note, and per-block overrides for mixed-origin documents. Introduced as an initial draft in 0.12.1 — the shape may change in a future release.">
   <meta property="og:url" content="https://designsystemdocspec.org/metadata-doc-origin">
   <meta name="twitter:card" content="summary">
-  <meta name="dsds-version" content="0.12.1">
-  <link rel="stylesheet" href="tokens.css?v=0.12.1">
-  <link rel="stylesheet" href="style.css?v=0.12.1">
-  <script src="components.js?v=0.12.1"></script>
+  <meta name="dsds-version" content="0.13.0">
+  <link rel="stylesheet" href="tokens.css?v=0.13.0">
+  <link rel="stylesheet" href="style.css?v=0.13.0">
+  <script src="components.js?v=0.13.0"></script>
 </head>
 <body>
   <a class="skip-link" href="#main-content">Skip to content</a>
   <ds-nav-toggle target="ds-spec-nav"></ds-nav-toggle>
-  <ds-spec-nav title="Design System Documentation Spec 0.12.1" title-href="index.html" active="metadata-doc-origin">
+  <ds-spec-nav title="Design System Documentation Spec 0.13.0" title-href="index.html" active="metadata-doc-origin">
     <a href="index.html" slug="index">Overview</a>
     <a href="quickstart.html" slug="quickstart">Quick start</a>
     <a href="humans-and-agents.html" slug="humans-and-agents">Humans &amp; agents</a>
     <a href="schema-architecture.html" slug="schema-architecture">Schema architecture</a>
+    <a href="conformance.html" slug="conformance">Conformance</a>
+    <a href="interoperability.html" slug="interoperability">Interoperability</a>
+    <a href="stability.html" slug="stability">Stability &amp; 1.0</a>
     <a href="samples.html" slug="samples">Interactive samples</a>
     <ds-nav-group label="Documentation">
       <a href="root.html" slug="root">Root schema</a>
     </ds-nav-group>
     <ds-nav-group label="Common">
       <a href="common-criterion.html" slug="common-criterion">criterion</a>
+      <a href="common-dated-note.html" slug="common-dated-note">dated-note</a>
       <a href="common-entity-ref.html" slug="common-entity-ref">entity-ref</a>
       <a href="common-example.html" slug="common-example">example</a>
       <a href="common-extends.html" slug="common-extends">extends</a>
@@ -42,6 +46,7 @@
       <a href="common-rich-text.html" slug="common-rich-text">rich-text</a>
       <a href="common-status.html" slug="common-status">status</a>
       <a href="common-system-info.html" slug="common-system-info">system-info</a>
+      <a href="common-token-overrides.html" slug="common-token-overrides">token-overrides</a>
       <a href="common-use-cases.html" slug="common-use-cases">use-cases</a>
     </ds-nav-group>
     <ds-nav-group label="Entities">
@@ -76,7 +81,6 @@
       <a href="metadata-aliases.html" slug="metadata-aliases">aliases</a>
       <a href="metadata-category.html" slug="metadata-category">category</a>
       <a href="metadata-doc-origin.html" slug="metadata-doc-origin">doc-origin</a>
-      <a href="metadata-extends.html" slug="metadata-extends">extends</a>
       <a href="metadata-governance.html" slug="metadata-governance">governance</a>
       <a href="metadata-last-updated.html" slug="metadata-last-updated">last-updated</a>
       <a href="metadata-links.html" slug="metadata-links">links</a>
@@ -108,13 +112,13 @@
 <li><strong>object</strong> — Full docOrigin form: the overall origin, the authorship, an optional explanatory note, and per-block overrides. A document MAY be 'authored' overall while individual blocks were 'extracted' or 'generated'.</li>
 <ds-prop-table>
   <ds-prop name="overall" type="&lt;ds-type-ref href=&quot;metadata-doc-origin.html#docoriginvalue&quot;&gt;docOriginValue&lt;/ds-type-ref&gt;" required>The dominant origin of the document as a whole. When blocks differ, choose the origin of the document's substantive prose; record exceptions in <ds-code inline>blocks</ds-code>.</ds-prop>
-  <ds-prop name="authorship" type="&lt;ds-type-ref href=&quot;metadata-doc-origin.html#authorshipvalue&quot;&gt;authorshipValue&lt;/ds-type-ref&gt;">Who or what wrote the document's words, as a single value for the document as a whole. When production was mixed, record the least-supervised method that contributed substantively (a mostly human doc with AI-drafted sections is 'ai-assisted'). Note the interaction with origin: an origin of 'generated' implies 'machine-generated' or 'ai-generated' authorship — pairing it with 'human' is a contradiction, and tools MAY flag it.</ds-prop>
-  <ds-prop name="note" type="string">Plain-text note explaining the origin (e.g., 'Authored as the spec for the v3 rebuild; prop table regenerated from source on each release'). MUST NOT contain markup.</ds-prop>
-  <ds-prop name="blocks" type="map&amp;lt;string, &lt;ds-type-ref href=&quot;metadata-doc-origin.html#docoriginvalue&quot;&gt;docOriginValue&lt;/ds-type-ref&gt;&amp;gt;">Per-block origin overrides for blocks whose origin differs from <ds-code inline>overall</ds-code>. Keys are document block kinds (e.g., 'api', 'guidelines', 'accessibility') matching the <ds-code inline>kind</ds-code> of a block in this entity's <ds-code inline>documentBlocks</ds-code> or <ds-code inline>agentDocumentBlocks</ds-code>; values are that block's origin. List only the exceptions. A key that matches no block in the entity is a defect in the document.</ds-prop>
+  <ds-prop name="authorship" type="&lt;ds-type-ref href=&quot;metadata-doc-origin.html#authorshipvalue&quot;&gt;authorshipValue&lt;/ds-type-ref&gt;">Who or what wrote the document's words, as a single value for the document as a whole. When production was mixed, record the least-supervised method that contributed substantively (a mostly human doc with AI-drafted sections is 'ai-assisted'). Note the interaction with origin: an origin of 'generated' implies 'machine-generated' or 'ai-generated' authorship — the schema rejects other pairings when both fields are set.</ds-prop>
+  <ds-prop name="note" type="&lt;ds-type-ref href=&quot;common-dated-note.html#plainnote&quot;&gt;plainNote&lt;/ds-type-ref&gt;">Plain-text note explaining the origin (e.g., 'Authored as the spec for the v3 rebuild; prop table regenerated from source on each release'). MUST NOT contain markup.</ds-prop>
+  <ds-prop name="blocks" type="map&amp;lt;string, &lt;ds-type-ref href=&quot;metadata-doc-origin.html#docoriginvalue&quot;&gt;docOriginValue&lt;/ds-type-ref&gt; | object {origin, authorship}&amp;gt;">Per-block overrides for blocks whose origin or authorship differs from the document-level values. Keys are document block kinds (e.g., 'api', 'guidelines', 'accessibility') matching the <ds-code inline>kind</ds-code> of a block in this entity's <ds-code inline>documentBlocks</ds-code> or <ds-code inline>agentDocumentBlocks</ds-code>. A value is either a bare origin string (the common case) or an object carrying <ds-code inline>origin</ds-code> and/or <ds-code inline>authorship</ds-code> when the block's production method also differs — an authored, human-written doc whose prop table is AI-generated records that here. List only the exceptions. A key that matches no block in the entity is a defect in the document (validators resolve keys against the entity's blocks).</ds-prop>
 </ds-prop-table>
 </ul>
 <ds-cross-refs><strong>References:</strong> 
-<ds-type-ref href="metadata-doc-origin.html#docoriginvalue">docOriginValue</ds-type-ref>, <ds-type-ref href="metadata-doc-origin.html#authorshipvalue">authorshipValue</ds-type-ref>
+<ds-type-ref href="metadata-doc-origin.html#docoriginvalue">docOriginValue</ds-type-ref>, <ds-type-ref href="metadata-doc-origin.html#authorshipvalue">authorshipValue</ds-type-ref>, <ds-type-ref href="common-dated-note.html#plainnote">plainNote</ds-type-ref>
 </ds-cross-refs>
 <ds-def-example>
 <ds-code language="json" label="example">[
@@ -131,6 +135,17 @@
     &quot;overall&quot;: &quot;reconstructed&quot;,
     &quot;authorship&quot;: &quot;ai-generated&quot;,
     &quot;note&quot;: &quot;Drafted by an agent from team knowledge; not yet verified against the implementation.&quot;
+  },
+  {
+    &quot;overall&quot;: &quot;authored&quot;,
+    &quot;authorship&quot;: &quot;human&quot;,
+    &quot;note&quot;: &quot;Human-written spec; the prop table alone is regenerated from type definitions on each release.&quot;,
+    &quot;blocks&quot;: {
+      &quot;api&quot;: {
+        &quot;origin&quot;: &quot;generated&quot;,
+        &quot;authorship&quot;: &quot;machine-generated&quot;
+      }
+    }
   }
 ]</ds-code>
 </ds-def-example>
@@ -158,7 +173,7 @@
         <ds-back-to-top></ds-back-to-top>
 
         <ds-footer>
-          <p>Design System Documentation Spec (DSDS) 0.12.1 — Draft Specification</p>
+          <p>Design System Documentation Spec (DSDS) 0.13.0 — Draft Specification</p>
           <p><a href="https://github.com/somerandomdude/design-system-documentation-schema">GitHub</a></p>
         </ds-footer>
       </div>

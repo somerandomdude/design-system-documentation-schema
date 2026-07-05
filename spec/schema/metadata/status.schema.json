@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://designsystemdocspec.org/v0.12.1/metadata/status.schema.json",
+  "$id": "https://designsystemdocspec.org/v0.13.0/metadata/status.schema.json",
   "title": "DSDS Status Metadata Field",
   "description": "Lifecycle status of an entity. A bare string sets the overall status. The object form adds per-platform readiness, an optional explanatory note, and a deprecation notice.",
   "$defs": {
@@ -9,12 +9,16 @@
       "oneOf": [
         {
           "$ref": "../common/status.schema.json#/$defs/statusValue",
-          "not": { "const": "deprecated" }
+          "not": {
+            "const": "deprecated"
+          }
         },
         {
           "type": "object",
           "description": "Full status form: overall lifecycle value, optional per-platform readiness, and a conditional deprecation notice. An entity MAY be 'stable' overall while individual platforms are still 'experimental' or 'draft'.",
-          "required": ["overall"],
+          "required": [
+            "overall"
+          ],
           "properties": {
             "overall": {
               "$ref": "../common/status.schema.json#/$defs/statusValue",
@@ -29,20 +33,28 @@
               "description": "Per-platform readiness. Keys are platform identifiers (freeform strings; common values include 'react', 'web-component', 'ios', 'android', 'flutter', 'figma', 'sketch', 'compose'). Values describe the entity's status on that platform.",
               "additionalProperties": {
                 "$ref": "../common/status.schema.json#/$defs/platformStatus"
+              },
+              "minProperties": 1,
+              "propertyNames": {
+                "pattern": "^[a-z][a-z0-9-]*$"
               }
             },
             "deprecationNotice": {
-              "type": "string",
-              "description": "Required when overall status is 'deprecated'. MUST say what to use instead and give a migration path. Tools SHOULD display this prominently next to the status indicator."
+              "$ref": "../common/status.schema.json#/$defs/deprecationNotice",
+              "description": "Required when overall status is 'deprecated'. MUST say what to use instead (non-empty) and give a migration path. Tools SHOULD display this prominently next to the status indicator."
             }
           },
           "if": {
             "properties": {
-              "overall": { "const": "deprecated" }
+              "overall": {
+                "const": "deprecated"
+              }
             }
           },
           "then": {
-            "required": ["deprecationNotice"]
+            "required": [
+              "deprecationNotice"
+            ]
           },
           "additionalProperties": false
         }
