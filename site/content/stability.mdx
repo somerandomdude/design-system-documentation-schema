@@ -6,7 +6,7 @@ description: "The DSDS stability contract: what pre-1.0 means, version semantics
 
 # Stability and the road to 1.0
 
-DSDS {{VERSION}} is a **pre-1.0 draft**. This page is the contract around that status: what can change and how you will be told, what will never change, the complete list of known breaking changes still to come, and the conditions under which 1.0 is declared. The goal is that an adopter can read this page and price the risk of adopting now.
+DSDS {{VERSION}} is a **pre-1.0 draft**. This page is the contract around that status: what can change and how you will be told, what will never change, the record of the executed breaking window, and the conditions under which 1.0 is declared. The goal is that an adopter can read this page and price the risk of adopting now.
 
 ## What never changes
 
@@ -27,13 +27,13 @@ Pre-1.0, minors carry tightenings without a deprecation window — that is what 
 
 From 0.13.0 onward, a form scheduled for removal is: (1) marked `deprecated: true` in the schema where JSON Schema supports it, (2) flagged by a lint rule (warning, never blocking), (3) documented with its replacement in the schema description, and (4) kept validating for at least one further minor release. Removals happen only in the release that executes the breaking backlog below, and each removal ships with a migration script (`scripts/migrate-to-*.js` — the mechanism used for every past migration).
 
-Currently deprecated: `link`'s inter-entity reference form (`identifier`/`role`/`required` — use `relationships`; lint rule DSDS-010), and chunk's top-level `guidelines`/`useCases` shorthand (use `documentBlocks`).
+Nothing is currently deprecated: the 0.14.0 window removed both previously deprecated surfaces (`link`'s inter-entity form and chunk's top-level shorthand).
 
-## The breaking backlog — everything 1.0 will change
+## The breaking backlog — executed at 0.14.0
 
-This is the complete list of known breaking changes, drawn from the recorded naming exceptions and deprecation notices. They will be executed together in **one breaking window (0.14.0)** rather than dripped across releases, each with a migration script.
+The backlog below was announced in 0.13.0 and executed in full in the 0.14.0 breaking window, as this contract promised — together, once, with a migration script (`scripts/migrate-to-0.14.js`; run `scripts/migrate-relationship-links.js` first if your documents still carry relationship-flavored links).
 
-| # | Change | Today | At 0.14.0 |
+| # | Change | Before | Since 0.14.0 |
 |---|---|---|---|
 | 1 | Block-kind casing | `useCases` | `use-cases` |
 | 2 | Procedural entry naming | `stepEntry.title` (string) | `label` (richText), matching `checklistItem` |
@@ -41,11 +41,11 @@ This is the complete list of known breaking changes, drawn from the recorded nam
 | 4 | System info naming | `systemName` / `systemVersion` | `name` / `version` |
 | 5 | Status prose property | `description` on status object forms | `note`, matching `lastUpdated`/`lastReviewed`/`docOrigin` |
 | 6 | Event payload naming | `apiEvent.returns` | `payload` |
-| 7 | Remove `link`'s deprecated inter-entity surface | validates with DSDS-010 warning | removed; `relationships` only |
-| 8 | Remove chunk's top-level `guidelines`/`useCases` | validates, marked deprecated | removed; `documentBlocks` only |
-| 9 | Graduate draft metadata fields | `governance` / `docOrigin` marked "initial draft" | shapes frozen |
+| 7 | `link`'s deprecated inter-entity surface | validated with DSDS-010 warning | removed; `relationships` only (DSDS-010 graduated to the schema) |
+| 8 | Chunk's top-level `guidelines`/`useCases` | validated, marked deprecated | removed; `documentBlocks` only |
+| 9 | Draft metadata fields | `governance` / `docOrigin` marked "initial draft" | shapes frozen |
 
-Nothing else is planned to break. A breaking change not on this list would itself be treated as a defect in this contract.
+**The backlog is now empty.** No further breaking changes are planned before 1.0; a new entry here would restart the clock on criterion 1 below.
 
 ## Criteria for declaring 1.0
 

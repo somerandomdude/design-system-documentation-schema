@@ -4,6 +4,35 @@ All notable changes to the DSDS specification are documented in this file.
 
 ---
 
+## [0.14.0] — 2026-07-06
+
+**Breaking release — the announced 0.14.0 breaking window.** Every naming exception recorded on the Schema Architecture page and every deprecated surface is executed here, together, once, exactly as the Stability page promised. Migrate with `scripts/migrate-to-0.14.js <files-or-dirs>` (run `scripts/migrate-relationship-links.js` first if documents still carry relationship-flavored links). Schema files are served at `https://designsystemdocspec.org/v0.14.0/...`.
+
+### Breaking changes
+
+- **Block kind `useCases` → `use-cases`** — the last camelCase value in the block-kind vocabulary; every DSDS-native vocabulary is now lowercase kebab-case. `docOrigin.blocks` keys tightened to match.
+- **`stepEntry.title` → `label`** (now richText), aligning the actionable line with `checklistItem.label`.
+- **`scaleStep.label` → `name`**, aligning with every sibling entry's display-name property.
+- **`systemInfo.systemName`/`systemVersion` → `name`/`version`**.
+- **Status object forms: `description` → `note`** (entity-level and per-platform), aligning with `lastUpdated`/`lastReviewed`/`docOrigin`; composes the shared `plainNote` leaf.
+- **`apiEvent.returns` → `payload`** — events do not return; the field documents what a listener receives.
+- **`link`'s inter-entity surface removed** — `identifier`, `role`, `required`, and the url-or-identifier anyOf are gone; a link is `kind` + `url` (+ optional `label`). Inter-entity references are `relationships` edges only. Lint rule DSDS-010 graduated to the schema (recorded in `rules/rules.yaml`'s graduated list).
+- **Chunk's top-level `guidelines`/`useCases` shorthand removed** — general document blocks in `documentBlocks` are the one way to attach guidance to a chunk.
+
+### Graduations
+
+- **`governance` and `docOrigin` are no longer drafts.** The "initial draft — shape may change" markers are removed; their shapes are frozen under the stability contract (criterion 2 of the 1.0 checklist starts now).
+
+### Fixes
+
+- **The negative-fixture suite now ships.** A stale `test` entry in `.gitignore` (predating the suite) had silently excluded all of `test/invalid/` — 58 fixtures plus README — from version control. Clones ran the negative-fixture pass against an empty directory, which reports "(no fixtures found)" and passes. The entry is removed; the conformance kit is now part of the repository, as the Conformance page and stability contract always claimed.
+
+### Migration
+
+- New `scripts/migrate-to-0.14.js` performs every mechanical transform above and reports the cases needing a human decision (identifier-bearing links). The full in-repo corpus (66 documents plus all keyed fixtures) migrated with zero manual interventions; three legacy relationship-links in `minimal/pattern.json` were converted to typed `composes` edges.
+
+---
+
 ## [0.13.0] — 2026-07-04
 
 Minor release — a fortification pass from a full schema review: constraints the prose always promised are now enforced, unions report scoped errors, duplicated shapes share one definition, and chunks gain document blocks. Tightenings mean some previously-accepted (but always-defective) documents now fail validation. Schema files are served at `https://designsystemdocspec.org/v0.13.0/...`.

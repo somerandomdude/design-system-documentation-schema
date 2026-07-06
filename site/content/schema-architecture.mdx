@@ -15,7 +15,7 @@ The handful of concepts you'll use constantly:
 - **Document** — `dsdsVersion` plus either a single `entity` or `entityGroups` of entities.
 - **Entity** — a `kind` (`component`, `token`, `theme`, `foundation`, `pattern`, or `guide`) with an `identifier`, a `name`, and usually a `description`.
 - **Metadata** — short facts in the optional `metadata` object: status, tags, links, and more.
-- **Document blocks** — the documentation, in the `documentBlocks` array. Two cover most needs: **`useCases`** (when to use the thing) and **`guidelines`** (how to use it). **`sections`** holds free-form prose for anything else.
+- **Document blocks** — the documentation, in the `documentBlocks` array. Two cover most needs: **`use-cases`** (when to use the thing) and **`guidelines`** (how to use it). **`sections`** holds free-form prose for anything else.
 
 A complete, valid document using only the core:
 
@@ -29,7 +29,7 @@ A complete, valid document using only the core:
     "description": "Triggers an action such as submitting a form.",
     "documentBlocks": [
       {
-        "kind": "useCases",
+        "kind": "use-cases",
         "items": [
           { "description": "Submitting a form or confirming an action.", "stance": "recommended" }
         ]
@@ -191,9 +191,9 @@ The root `systemInfo` object holds the design system's **identity** — its name
 
 ### Root document blocks
 
-System-wide docs live in an optional `documentBlocks` array on the root document. It works just like the one on entities, but it covers the whole system rather than a single artifact. **Position sets the scope.** A `useCases` or `guidelines` block at the root describes the _system_. The same block inside an entity describes that _entity_. Both levels reuse one block definition.
+System-wide docs live in an optional `documentBlocks` array on the root document. It works just like the one on entities, but it covers the whole system rather than a single artifact. **Position sets the scope.** A `use-cases` or `guidelines` block at the root describes the _system_. The same block inside an entity describes that _entity_. Both levels reuse one block definition.
 
-The root accepts the [general document block types](#general-document-block-types). These are `useCases` (when to adopt the system), `guidelines` (system-wide rules like "always use semantic tokens"), `sections` (free-form overviews), `accessibility`, and `content`.
+The root accepts the [general document block types](#general-document-block-types). These are `use-cases` (when to adopt the system), `guidelines` (system-wide rules like "always use semantic tokens"), `sections` (free-form overviews), `accessibility`, and `content`.
 
 ```json
 {
@@ -208,7 +208,7 @@ The root accepts the [general document block types](#general-document-block-type
       ]
     },
     {
-      "kind": "useCases",
+      "kind": "use-cases",
       "items": [
         {
           "description": "Building a new customer-facing web application on the Acme platform.",
@@ -345,7 +345,7 @@ A broad interaction pattern — a repeating, multi-component answer to a common 
 
 Required properties: `kind`, `identifier`, `name`. (`description` is an optional top-level property; `status` is an optional `metadata` field — see [Entity metadata](#entity-metadata).)
 
-A pattern points to its components through the `links` array (with `kind: "component"`, `identifier`, and `role`), not through a dedicated block.
+A pattern declares the components it uses as typed `composes` edges in its `relationships` array (with `role` describing what each component does), not through a dedicated block.
 
 ### Guide
 
@@ -365,13 +365,13 @@ More properties:
 
 <ds-prop-table schema="entities/chunk" def="chunk" />
 
-The `code` object carries the source in one of two forms: **inline** (`code` + `language`) when the source travels with the document, or **referenced** (`src` + `language`) when it lives in an external file the consumer resolves at read time. The referenced `src` is a relative path and follows the same resolution rules as a `$ref` fileRef — no build step inlines it. Structured docs live in `documentBlocks` (and agent-only rules in `agentDocumentBlocks`), both accepting the general block kinds — guidelines, useCases, accessibility, content, sections, and checklist. The flat top-level `guidelines` and `useCases` arrays are deprecated authoring shorthand for the equivalent blocks. A chunk declares the components it composes as typed `composes` edges in its `relationships` array.
+The `code` object carries the source in one of two forms: **inline** (`code` + `language`) when the source travels with the document, or **referenced** (`src` + `language`) when it lives in an external file the consumer resolves at read time. The referenced `src` is a relative path and follows the same resolution rules as a `$ref` fileRef — no build step inlines it. Structured docs live in `documentBlocks` (and agent-only rules in `agentDocumentBlocks`), both accepting the general block kinds — guidelines, use-cases, accessibility, content, sections, and checklist. (The flat top-level `guidelines` and `useCases` shorthand arrays were removed in the 0.14.0 breaking window; `scripts/migrate-to-0.14.js` folds them into `documentBlocks`.) A chunk declares the components it composes as typed `composes` edges in its `relationships` array.
 
 ---
 
 ## Agent document blocks
 
-The optional `agentDocumentBlocks` property is a **separate space for agent-only docs**. It lives on entities, next to `documentBlocks`. It accepts the same block kinds — guidelines, useCases, sections, and the rest of the entity's scoped union. Only the audience differs. Tools MUST NOT render these blocks for humans. Agents SHOULD read both arrays: human blocks first, then these.
+The optional `agentDocumentBlocks` property is a **separate space for agent-only docs**. It lives on entities, next to `documentBlocks`. It accepts the same block kinds — guidelines, use-cases, sections, and the rest of the entity's scoped union. Only the audience differs. Tools MUST NOT render these blocks for humans. Agents SHOULD read both arrays: human blocks first, then these.
 
 Use it for guidance that would be noise to a human reader. Think generation limits with test-run `evidence`, notes that tell apart similar entities, and machine-aimed examples:
 
@@ -383,7 +383,7 @@ Use it for guidance that would be noise to a human reader. Think generation limi
   "documentBlocks": [ ... ],
   "agentDocumentBlocks": [
     {
-      "kind": "useCases",
+      "kind": "use-cases",
       "purpose": "Trigger a user action within the current view without causing page navigation.",
       "items": [
         { "description": "Use button for in-page actions; use link for navigation to a URL.",
@@ -413,14 +413,14 @@ Lifecycle status is recorded in the `status` field of an entity's `metadata` obj
 "metadata": { "status": "stable" }
 ```
 
-The object form adds per-platform readiness. It also adds an optional `description` and a deprecation notice, which becomes required when `overall` is `deprecated`. An entity can be `stable` overall while some platforms are still `experimental` or `draft`.
+The object form adds per-platform readiness. It also adds an optional `note` and a deprecation notice, which becomes required when `overall` is `deprecated`. An entity can be `stable` overall while some platforms are still `experimental` or `draft`.
 
 {/* Hand-rolled: the status object form is defined inline in metadata/status.schema.json (no $defs entry), so it can't be rendered by the shortcode. */}
 
 | Property | Type | Required | Description |
 |---|---|---|---|
 | `overall` | `statusValue` | Yes | Overall lifecycle status. An editorial call on maturity. It need not match the highest or lowest platform status. |
-| `description` | `string` | No | Optional note explaining what the status represents — the reasoning behind it, its scope, or any caveats. Separate from `deprecationNotice`, which covers only the deprecated case. |
+| `note` | `string` | No | Optional note explaining what the status represents — the reasoning behind it, its scope, or any caveats. Separate from `deprecationNotice`, which covers only the deprecated case. |
 | `platforms` | `object` | No | Per-platform readiness, keyed by platform identifier (`react`, `ios`, `figma`, …). Values use the shared `platformStatus` shape. |
 | `deprecationNotice` | `string` | No* | Required when `overall` is `deprecated`. MUST say what to use instead and give a migration path. |
 
@@ -451,7 +451,7 @@ Custom values are permitted (e.g., `"sunset"`, `"archived"`, `"beta"`) and MUST 
 
 Document block entries are the core unit of structured docs in DSDS. Every piece of docs on an entity is a block object with a `kind` field. The block types cover:
 
-- guidelines, useCases, accessibility, content, and narrative sections (general — all entity types)
+- guidelines, use-cases, accessibility, content, and narrative sections (general — all entity types)
 - anatomy, API specs, variants, states, design specifications, and import (component-scoped)
 - principles, scales, and motion definitions (foundation-scoped)
 - interactions (pattern-scoped)
@@ -461,7 +461,7 @@ Document block entries are the core unit of structured docs in DSDS. Every piece
 
 Every block has the same skeleton — a `kind` tag plus its payload. Read one and you can predict the rest:
 
-- **Collection blocks** hold a list of like entries in an `items` array: `guidelines`, `sections`, `states`, `variants`, `steps`, `imports`, `interactions`, `motion`, `principles`, `useCases`. List-shaped blocks have plural names.
+- **Collection blocks** hold a list of like entries in an `items` array: `guidelines`, `sections`, `states`, `variants`, `steps`, `imports`, `interactions`, `motion`, `principles`, `use-cases`. List-shaped blocks have plural names.
 - **Two blocks keep a domain name** where it reads more clearly than `items` — `anatomy.parts` and `scale.steps`. Same idea (a list of entries), just a clearer label.
 - **Structured blocks** hold no single list. They use named fields for distinct parts: `api`, `accessibility`, `content`, and `design-specifications`.
 
@@ -479,20 +479,15 @@ Each entity type accepts only the block types that fit it. Here is why:
 
 <ds-block-scope-table />
 
-**General** (available on all entity types): checklist, guidelines, useCases, accessibility, content, and sections (free-form narrative prose).
+**General** (available on all entity types): checklist, guidelines, use-cases, accessibility, content, and sections (free-form narrative prose).
 
 ### Known naming exceptions
 
-Two naming inconsistencies are recorded here as deliberate, pending the next major release (renames are breaking):
+The naming exceptions previously recorded here were executed in the 0.14.0 breaking window: the block kind is now `use-cases`, step entries use `label` (richText), scale steps use `name`, `systemInfo` uses `name`/`version`, the status object forms use `note`, and `apiEvent` uses `payload`. One deliberate exception remains:
 
-- The block kind `useCases` is camelCase where every other DSDS-native vocabulary value is lowercase kebab-case; it becomes `use-cases` at the next major.
-- The actionable line on a checklist item is richText `label`, while a step entry uses string `title` and a scale step uses `label` where sibling entries use `name`; these converge on `label` (richText) for procedural blocks and `name` for display names at the next major.
-
-- `systemInfo`'s `systemName`/`systemVersion` stutter against their mount point and diverge from the bare `name`/`version` style used elsewhere; they become `name`/`version` at the next major.
-- The explanatory-prose property on the status object forms is `description`, while sibling metadata fields (`lastUpdated`, `lastReviewed`, `docOrigin`) use `note`; status converges on `note` at the next major.
 - Sub-entry identifiers on anatomy parts, states, variant values, motion entries, and scale steps are unpatterned (values like `2xl` are legal), unlike entity identifiers — a deliberate exception, not drift.
 
-Do not introduce new values or properties that follow the exceptions — new vocabulary MUST be lowercase kebab-case.
+New vocabulary MUST be lowercase kebab-case; the exceptions list is not a precedent.
 
 ### Document block types
 
@@ -508,7 +503,7 @@ These document block types are available on **all** entity types.
 
 Documents usage rules you can act on. Each item is a self-contained rule that pairs guidance with a rationale. Guidelines tell the reader _how_ to use the entity well once they have chosen it.
 
-> **Three flavors of guidance — pick the right one.** [`useCases`](#use-cases-usecases) says *whether* to use something: the right choice vs. an alternative. `guidelines` says *how* to use it well: concrete rules plus rationale. [`principles`](#principles-principles) (foundations) says *what the system believes* — the philosophy above the rules.
+> **Three flavors of guidance — pick the right one.** [`use-cases`](#use-cases-use-cases) says *whether* to use something: the right choice vs. an alternative. `guidelines` says *how* to use it well: concrete rules plus rationale. [`principles`](#principles-principles) (foundations) says *what the system believes* — the philosophy above the rules.
 
 #### Guideline entry
 
@@ -525,15 +520,15 @@ The `level` field is named for RFC 2119 requirement levels. Values are lowercase
 
 Two arrays make a guideline checkable. `criteria` holds **testable success criteria**. Each has a stable `identifier` and a `statement` you can verify. So tools and agents can run checks and report pass or fail per criterion. `references` cites the outside standards the rule meets, such as WCAG or platform guidelines. The same criterion model also appears on the [`accessibility`](#accessibility-accessibility) block. Criteria define the tests; results belong in `evidence`.
 
-### Use cases (`useCases`)
+### Use cases (`use-cases`)
 
 Documents what an entity is for — the scenarios where it is the right choice and where another fits better. These entries help the reader decide _whether_ to reach for the entity before they use it.
 
-The `useCases` block holds an optional `purpose` statement — the broad answer for what the artifact is for. It also holds an `items` array of scenarios. Each item has a `description` and a `stance`: `"recommended"` (when to use) or `"discouraged"` (when to pick something else). Discouraged items add an `alternative`:
+The `use-cases` block holds an optional `purpose` statement — the broad answer for what the artifact is for. It also holds an `items` array of scenarios. Each item has a `description` and a `stance`: `"recommended"` (when to use) or `"discouraged"` (when to pick something else). Discouraged items add an `alternative`:
 
 ```json
 {
-  "kind": "useCases",
+  "kind": "use-cases",
   "items": [
     {
       "stance": "recommended",
@@ -551,7 +546,7 @@ The `useCases` block holds an optional `purpose` statement — the broad answer 
 }
 ```
 
-The root document uses this same `useCases` block for system-level adoption guidance — see [Root document blocks](#root-document-blocks). Full model in [Use Cases](#use-cases).
+The root document uses this same `use-cases` block for system-level adoption guidance — see [Root document blocks](#root-document-blocks). Full model in [Use Cases](#use-cases).
 
 ### Accessibility (`accessibility`)
 
@@ -734,7 +729,7 @@ Each `principleEntry` has a `title` (short, memorable name) and a `description` 
 
 Documents an ordered run of values that forms a visual scale — type, spacing, elevation, or similar.
 
-Each `scaleStep` points to a design token. It may add a `label`, a `value` (for display), and a `description` (usage notes). Steps run from smallest to largest.
+Each `scaleStep` carries a `token`, a literal `value`, or both — at least one is required. It may add a `name` (a shorthand like `sm` or `2xl`) and a `description` (usage notes). Steps run from smallest to largest.
 
 The scale block requires an `identifier`, `description`, and `steps` array.
 
@@ -838,7 +833,7 @@ The `links` array holds typed references to **external resources** — source co
 
 Custom values are permitted and SHOULD be lowercase strings matching `^[a-z][a-z0-9-]*$`.
 
-> **Deprecated.** Using a link to express how entities relate — the relationship kinds (`"alternative"`, `"parent"`, `"child"`, `"related"`) and internal artifact references by `identifier` — is deprecated. Express these as typed edges in [Relationships](#relationships) instead. Linter rule DSDS-010 flags the deprecated forms.
+> **Removed in 0.14.0.** The pre-0.14 identifier-bearing link form — relationship kinds (`"alternative"`, `"parent"`, `"child"`, `"related"`) and internal artifact references by `identifier`, `role`, or `required` — was removed in the 0.14.0 breaking window. A link now requires `kind` and `url`. Express inter-entity references as typed edges in [Relationships](#relationships); `scripts/migrate-relationship-links.js` converts old documents.
 
 ---
 
@@ -850,10 +845,10 @@ Fields that hold human prose use the `richText` type: a string read as CommonMar
 
 ## Use cases
 
-The `useCase` model gives scenario guidance for when something is — and is not — the right choice. It appears wherever a `useCases` block does:
+The `useCase` model gives scenario guidance for when something is — and is not — the right choice. It appears wherever a `use-cases` block does:
 
-1. **A root `useCases` block** ([root document blocks](#root-document-blocks)) — adoption guidance for the design system as a whole.
-2. **An entity's [`useCases`](#use-cases-usecases) document block** — when to reach for a specific entity.
+1. **A root `use-cases` block** ([root document blocks](#root-document-blocks)) — adoption guidance for the design system as a whole.
+2. **An entity's [`use-cases`](#use-cases-use-cases) document block** — when to reach for a specific entity.
 
 In both, `items` is an **array** of `useCase` entries. Each has a `description` and a `stance`: `"recommended"` (when to use) or `"discouraged"` (when to pick something else). A discouraged entry SHOULD add an `alternative` that points to a better fit:
 
@@ -988,7 +983,7 @@ Document block type values follow two naming patterns based on their structural 
   - `"api"` (has `properties`, `events`, etc.)
   - `"accessibility"` (has `keyboardInteractions`, `ariaAttributes`, etc.)
   - `"design-specifications"` (has `tokens`, `spacing`, etc.)
-  - `"useCases"` (has `items` and an optional `purpose` statement)
+  - `"use-cases"` (has `items` and an optional `purpose` statement)
 
 The split: a plural type is a container of like items, with no identity beyond its type. A singular type has real inner structure, where properties are named and distinct. Note: `"guideline"` and `"section"` use singular names even though they wrap an `items` list. Each names a concept — a body of guidelines, or a body of sections — rather than a generic container.
 
@@ -1009,7 +1004,7 @@ The split: a plural type is a container of like items, with no identity beyond i
 | [`examples/entities/foundation.json`](examples/entities/foundation.json) | Foundation docs (Spacing) with scale, motion, and guidelines. |
 | [`examples/entities/pattern.json`](examples/entities/pattern.json) | Pattern docs (Error Messaging). |
 | [`examples/entities/empty-state-pattern.json`](examples/entities/empty-state-pattern.json) | Pattern docs (Empty State) with anatomy, variants, states, interactions, and content. |
-| [`examples/entities/guide.json`](examples/entities/guide.json) | Guide docs (Getting started) with sections, steps, imports, guidelines, and useCases. |
+| [`examples/entities/guide.json`](examples/entities/guide.json) | Guide docs (Getting started) with sections, steps, imports, guidelines, and use-cases. |
 | [`examples/extension-system.dsds.json`](examples/extension-system.dsds.json) | Enterprise extension system showing document-level and entity-level `extends` with modifications. |
 
 ---
@@ -1019,4 +1014,4 @@ The split: a plural type is a container of like items, with no identity beyond i
 | Level | Requirement |
 |---|---|
 | **Level 1: Core** | Identity only. Tokens: `kind`, `identifier`, `tokenType`. Token groups: `kind`, `identifier`. All others: `kind`, `identifier`, `name`. A top-level `description` and a `status` metadata field are strongly recommended. |
-| **Level 2: Complete** | Level 1 plus at least one real document block entry: anatomy/api/variants for components, principles/scale for foundations, interactions for patterns, sections/steps for guides, guidelines/useCases for tokens. |
+| **Level 2: Complete** | Level 1 plus at least one real document block entry: anatomy/api/variants for components, principles/scale for foundations, interactions for patterns, sections/steps for guides, guidelines/use-cases for tokens. |

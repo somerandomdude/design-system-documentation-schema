@@ -3,25 +3,25 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>DSDS Link Definition — DSDS 0.13.0</title>
-  <meta name="description" content="A typed pointer to an external resource — source code, design files, docs, packages. Every link needs a `kind` and a `url` (or, for the deprecated inter-entity form, an `identifier`). NOTE: links once doubled as inter-entity references via `identifier`; that use is deprecated in favor of the entity's typed `relationships` array. The `identifier`, `role`, and `required` properties remain for backward compatibility only.">
+  <title>DSDS Link Definition — DSDS 0.14.0</title>
+  <meta name="description" content="A typed pointer to an external resource — source code, design files, docs, packages. Every link needs a `kind` and a `url`. Links are pointers only: inter-entity references are expressed as typed edges in the entity's `relationships` array, never as links. (The pre-0.14 identifier-bearing link form was removed in the 0.14.0 breaking window; `scripts/migrate-relationship-links.js` converts old documents.)">
   <link rel="canonical" href="https://designsystemdocspec.org/common-link">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Design System Documentation Spec">
-  <meta property="og:title" content="DSDS Link Definition — DSDS 0.13.0">
-  <meta property="og:description" content="A typed pointer to an external resource — source code, design files, docs, packages. Every link needs a `kind` and a `url` (or, for the deprecated inter-entity form, an `identifier`). NOTE: links once doubled as inter-entity references via `identifier`; that use is deprecated in favor of the entity's typed `relationships` array. The `identifier`, `role`, and `required` properties remain for backward compatibility only.">
+  <meta property="og:title" content="DSDS Link Definition — DSDS 0.14.0">
+  <meta property="og:description" content="A typed pointer to an external resource — source code, design files, docs, packages. Every link needs a `kind` and a `url`. Links are pointers only: inter-entity references are expressed as typed edges in the entity's `relationships` array, never as links. (The pre-0.14 identifier-bearing link form was removed in the 0.14.0 breaking window; `scripts/migrate-relationship-links.js` converts old documents.)">
   <meta property="og:url" content="https://designsystemdocspec.org/common-link">
   <meta name="twitter:card" content="summary">
-  <meta name="dsds-version" content="0.13.0">
-  <link rel="stylesheet" href="tokens.css?v=0.13.0">
-  <link rel="stylesheet" href="style.css?v=0.13.0">
-  <script src="components.js?v=0.13.0"></script>
+  <meta name="dsds-version" content="0.14.0">
+  <link rel="stylesheet" href="tokens.css?v=0.14.0">
+  <link rel="stylesheet" href="style.css?v=0.14.0">
+  <script src="components.js?v=0.14.0"></script>
 </head>
 <body>
   <a class="skip-link" href="#main-content">Skip to content</a>
   <ds-nav-toggle target="ds-spec-nav"></ds-nav-toggle>
-  <ds-spec-nav title="Design System Documentation Spec 0.13.0" title-href="index.html" active="common-link">
+  <ds-spec-nav title="Design System Documentation Spec 0.14.0" title-href="index.html" active="common-link">
     <a href="index.html" slug="index">Overview</a>
     <a href="quickstart.html" slug="quickstart">Quick start</a>
     <a href="humans-and-agents.html" slug="humans-and-agents">Humans &amp; agents</a>
@@ -96,20 +96,13 @@
   <div class="content content--with-toc">
     <main class="content__main" id="main-content" role="main">
       <div class="content__inner">
-        <ds-schema-header title="DSDS Link Definition" description="A typed pointer to an external resource — source code, design files, docs, packages. Every link needs a `kind` and a `url` (or, for the deprecated inter-entity form, an `identifier`). NOTE: links once doubled as inter-entity references via `identifier`; that use is deprecated in favor of the entity's typed `relationships` array. The `identifier`, `role`, and `required` properties remain for backward compatibility only." source="common/link.schema.json"></ds-schema-header>
-<ds-def-section name="link" anchor="link" description="A typed pointer to an external resource. A link points to an external resource by `url` (source code, design files, docs, packages). The `kind` property sorts the reference. Standard external kinds: 'source', 'design', 'storybook', 'documentation', 'package', 'repository', 'manifest' (a machine-readable component manifest, e.g. a Custom Elements Manifest). Custom values are allowed. DEPRECATED — using a link to express how entities relate is deprecated in favor of the entity's `relationships` array, which carries typed, validated edges. This covers the relationship kinds ('alternative', 'parent', 'child', 'related') and internal artifact references by `identifier` ('component', 'token', 'token-group', 'foundation', 'pattern', 'theme'). Those forms still validate for backward compatibility, but tools SHOULD warn (DSDS-010) and authors SHOULD migrate them to `relationships`. Reserve `link` for external resources addressed by `url`." type="object">
+        <ds-schema-header title="DSDS Link Definition" description="A typed pointer to an external resource — source code, design files, docs, packages. Every link needs a `kind` and a `url`. Links are pointers only: inter-entity references are expressed as typed edges in the entity's `relationships` array, never as links. (The pre-0.14 identifier-bearing link form was removed in the 0.14.0 breaking window; `scripts/migrate-relationship-links.js` converts old documents.)" source="common/link.schema.json"></ds-schema-header>
+<ds-def-section name="link" anchor="link" description="A typed pointer to an external resource, addressed by `url`. The `kind` property sorts the reference. Standard kinds: 'source', 'design', 'storybook', 'documentation', 'package', 'repository', 'manifest' (a machine-readable component manifest, e.g. a Custom Elements Manifest). Custom values are allowed. For how entities relate to each other, use the entity's `relationships` array — it carries typed, validated edges; links are for resources outside the document." type="object">
 <ds-prop-table>
-  <ds-prop name="kind" type="string" required>The category of the linked resource. Standard external kinds: 'source', 'design', 'storybook', 'documentation', 'package', 'repository'. Custom values are allowed and MUST match ^[a-z][a-z0-9-]*$ (schema-enforced; all standard kinds already do). DEPRECATED kinds — 'alternative', 'parent', 'child', 'related' (relationship kinds) and 'component', 'token', 'token-group', 'foundation', 'pattern', 'theme' (internal artifact references) are deprecated; express these as typed edges in the entity's <ds-code inline>relationships</ds-code> array instead.<br><small>Pattern: <ds-code inline>^[a-z][a-z0-9-]*$</ds-code></small></ds-prop>
-  <ds-prop name="url" type="string (uri)" conditional>The URL of the linked resource. MUST be a valid absolute URI. Required for external resource links. Optional for internal artifact references, where <ds-code inline>identifier</ds-code> names the artifact. When both <ds-code inline>url</ds-code> and <ds-code inline>identifier</ds-code> are present, <ds-code inline>url</ds-code> points to the artifact's docs page and <ds-code inline>identifier</ds-code> is the machine-readable cross-reference.</ds-prop>
-  <ds-prop name="identifier" type="&lt;ds-type-ref href=&quot;common-entity-ref.html#entityidentifier&quot;&gt;entityIdentifier&lt;/ds-type-ref&gt;" conditional>DEPRECATED — the identifier of a referenced DSDS entity. Use the entity's <ds-code inline>relationships</ds-code> array for inter-entity references. Retained for backward compatibility: a link with an <ds-code inline>identifier</ds-code> still follows entityRef resolution rules (it MUST match a documented entity).</ds-prop>
-  <ds-prop name="label" type="string">Display text for this link — what a user sees when the link renders (e.g., 'React component source', 'Design file — variants', 'Button component'). Use it for the display name of the resource. To describe an internal artifact's role, use <ds-code inline>role</ds-code> instead.</ds-prop>
-  <ds-prop name="role" type="&lt;ds-type-ref href=&quot;common-entity-ref.html#entityrole&quot;&gt;entityRole&lt;/ds-type-ref&gt;">The role the referenced entity plays in the current entity (e.g., 'Primary action trigger', 'Provides semantic text color tokens'). Distinct from <ds-code inline>label</ds-code>, which is display text for the link itself. When omitted, the link is a general association.</ds-prop>
-  <ds-prop name="required" type="boolean">DEPRECATED — whether the referenced artifact is required for the parent entity to work. Use <ds-code inline>required</ds-code> on a <ds-code inline>relationships</ds-code> edge instead. Retained for backward compatibility on internal artifact references. Defaults to false.<br><small>Default: <ds-code inline>false</ds-code></small></ds-prop>
+  <ds-prop name="kind" type="string" required>The category of the linked resource. Standard kinds: 'source', 'design', 'storybook', 'documentation', 'package', 'repository', 'manifest'. Custom values are allowed and MUST match ^[a-z][a-z0-9-]*$ (schema-enforced; all standard kinds already do).<br><small>Pattern: <ds-code inline>^[a-z][a-z0-9-]*$</ds-code></small></ds-prop>
+  <ds-prop name="url" type="string (uri)" required>The URL of the linked resource. MUST be a valid absolute URI.</ds-prop>
+  <ds-prop name="label" type="string">Display text for this link — what a user sees when the link renders (e.g., 'React component source', 'Design file — variants'). When omitted, tools MAY build a label from the URL.</ds-prop>
 </ds-prop-table>
-<ds-note variant="warning"><strong>Constraint:</strong> At least one of <ds-code inline>url</ds-code>, <ds-code inline>identifier</ds-code> must be present.</ds-note>
-<ds-cross-refs><strong>References:</strong> 
-<ds-type-ref href="common-entity-ref.html#entityidentifier">entityIdentifier</ds-type-ref>, <ds-type-ref href="common-entity-ref.html#entityrole">entityRole</ds-type-ref>
-</ds-cross-refs>
 <ds-def-example>
 <ds-code language="json" label="example">[
   {
@@ -159,7 +152,7 @@
         <ds-back-to-top></ds-back-to-top>
 
         <ds-footer>
-          <p>Design System Documentation Spec (DSDS) 0.13.0 — Draft Specification</p>
+          <p>Design System Documentation Spec (DSDS) 0.14.0 — Draft Specification</p>
           <p><a href="https://github.com/somerandomdude/design-system-documentation-schema">GitHub</a></p>
         </ds-footer>
       </div>

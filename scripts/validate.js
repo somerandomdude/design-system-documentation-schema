@@ -977,8 +977,12 @@ function validateNegativeFixtures(ajv) {
   const errors = [];
 
   if (files.length === 0) {
-    console.log("  (no fixtures found)\n");
-    return { passed, failed, errors };
+    // An empty fixture directory is a broken checkout, not a passing suite —
+    // a stale .gitignore once hid the entire suite behind exactly this branch.
+    console.error(
+      "  ✗ no negative fixtures found in test/invalid/ — the guards the suite pins are unverified",
+    );
+    return { passed, failed: 1, errors: [{ file: "test/invalid/", error: "no fixtures found" }] };
   }
 
   for (const filePath of files) {

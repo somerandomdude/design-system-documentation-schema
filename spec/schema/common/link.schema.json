@@ -1,54 +1,28 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://designsystemdocspec.org/v0.13.0/common/link.schema.json",
+  "$id": "https://designsystemdocspec.org/v0.14.0/common/link.schema.json",
   "title": "DSDS Link Definition",
-  "description": "A typed pointer to an external resource — source code, design files, docs, packages. Every link needs a `kind` and a `url` (or, for the deprecated inter-entity form, an `identifier`). NOTE: links once doubled as inter-entity references via `identifier`; that use is deprecated in favor of the entity's typed `relationships` array. The `identifier`, `role`, and `required` properties remain for backward compatibility only.",
+  "description": "A typed pointer to an external resource — source code, design files, docs, packages. Every link needs a `kind` and a `url`. Links are pointers only: inter-entity references are expressed as typed edges in the entity's `relationships` array, never as links. (The pre-0.14 identifier-bearing link form was removed in the 0.14.0 breaking window; `scripts/migrate-relationship-links.js` converts old documents.)",
   "$defs": {
     "link": {
       "type": "object",
-      "description": "A typed pointer to an external resource. A link points to an external resource by `url` (source code, design files, docs, packages). The `kind` property sorts the reference. Standard external kinds: 'source', 'design', 'storybook', 'documentation', 'package', 'repository', 'manifest' (a machine-readable component manifest, e.g. a Custom Elements Manifest). Custom values are allowed. DEPRECATED — using a link to express how entities relate is deprecated in favor of the entity's `relationships` array, which carries typed, validated edges. This covers the relationship kinds ('alternative', 'parent', 'child', 'related') and internal artifact references by `identifier` ('component', 'token', 'token-group', 'foundation', 'pattern', 'theme'). Those forms still validate for backward compatibility, but tools SHOULD warn (DSDS-010) and authors SHOULD migrate them to `relationships`. Reserve `link` for external resources addressed by `url`.",
-      "required": [
-        "kind"
-      ],
-      "anyOf": [
-        {
-          "required": [
-            "url"
-          ]
-        },
-        {
-          "required": [
-            "identifier"
-          ]
-        }
-      ],
+      "description": "A typed pointer to an external resource, addressed by `url`. The `kind` property sorts the reference. Standard kinds: 'source', 'design', 'storybook', 'documentation', 'package', 'repository', 'manifest' (a machine-readable component manifest, e.g. a Custom Elements Manifest). Custom values are allowed. For how entities relate to each other, use the entity's `relationships` array — it carries typed, validated edges; links are for resources outside the document.",
+      "required": ["kind", "url"],
       "properties": {
         "kind": {
           "type": "string",
           "pattern": "^[a-z][a-z0-9-]*$",
-          "description": "The category of the linked resource. Standard external kinds: 'source', 'design', 'storybook', 'documentation', 'package', 'repository'. Custom values are allowed and MUST match ^[a-z][a-z0-9-]*$ (schema-enforced; all standard kinds already do). DEPRECATED kinds — 'alternative', 'parent', 'child', 'related' (relationship kinds) and 'component', 'token', 'token-group', 'foundation', 'pattern', 'theme' (internal artifact references) are deprecated; express these as typed edges in the entity's `relationships` array instead."
+          "description": "The category of the linked resource. Standard kinds: 'source', 'design', 'storybook', 'documentation', 'package', 'repository', 'manifest'. Custom values are allowed and MUST match ^[a-z][a-z0-9-]*$ (schema-enforced; all standard kinds already do)."
         },
         "url": {
           "type": "string",
           "format": "uri",
-          "description": "The URL of the linked resource. MUST be a valid absolute URI. Required for external resource links. Optional for internal artifact references, where `identifier` names the artifact. When both `url` and `identifier` are present, `url` points to the artifact's docs page and `identifier` is the machine-readable cross-reference."
-        },
-        "identifier": {
-          "$ref": "entity-ref.schema.json#/$defs/entityIdentifier",
-          "description": "DEPRECATED — the identifier of a referenced DSDS entity. Use the entity's `relationships` array for inter-entity references. Retained for backward compatibility: a link with an `identifier` still follows entityRef resolution rules (it MUST match a documented entity)."
+          "description": "The URL of the linked resource. MUST be a valid absolute URI."
         },
         "label": {
           "type": "string",
-          "description": "Display text for this link — what a user sees when the link renders (e.g., 'React component source', 'Design file — variants', 'Button component'). Use it for the display name of the resource. To describe an internal artifact's role, use `role` instead."
-        },
-        "role": {
-          "$ref": "entity-ref.schema.json#/$defs/entityRole",
-          "description": "The role the referenced entity plays in the current entity (e.g., 'Primary action trigger', 'Provides semantic text color tokens'). Distinct from `label`, which is display text for the link itself. When omitted, the link is a general association."
-        },
-        "required": {
-          "type": "boolean",
-          "default": false,
-          "description": "DEPRECATED — whether the referenced artifact is required for the parent entity to work. Use `required` on a `relationships` edge instead. Retained for backward compatibility on internal artifact references. Defaults to false."
+          "minLength": 1,
+          "description": "Display text for this link — what a user sees when the link renders (e.g., 'React component source', 'Design file — variants'). When omitted, tools MAY build a label from the URL."
         }
       },
       "additionalProperties": false
