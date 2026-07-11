@@ -1,12 +1,12 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://designsystemdocspec.org/v0.13.0/entities/chunk.schema.json",
+  "$id": "https://designsystemdocspec.org/v0.14.0/entities/chunk.schema.json",
   "title": "DSDS Chunk Definitions",
-  "description": "Defines documents for chunks. A chunk is a pre-composed block of code that represents a ready-to-use pattern in the design system — a copy-paste starting point built from the system's components. A chunk document holds the identity of the block, the rules for using it (`guidelines`), when it fits (`useCases`), and the code itself (`code`). Chunks sit at the same level as components. Where a component documents a single building block, a chunk documents a composition of building blocks captured as code.",
+  "description": "Defines documents for chunks. A chunk is a pre-composed block of code that represents a ready-to-use pattern in the design system — a copy-paste starting point built from the system's components. A chunk document holds the identity of the block, the code itself (`code`) and general document blocks for the rules around it (guidelines, use-cases, accessibility, and the rest). Chunks sit at the same level as components. Where a component documents a single building block, a chunk documents a composition of building blocks captured as code.",
   "$defs": {
     "chunk": {
       "type": "object",
-      "description": "A pre-composed block of code that captures a design system pattern. Chunks give consumers a working starting point assembled from system components — for example, a layout, a settings form, or a confirmation dialog. The top level holds its identity (`identifier`, `name`, optional `description`), the `code` block that consumers copy, and `documentBlocks`/`agentDocumentBlocks` carrying the general block kinds (guidelines, useCases, accessibility, content, sections, checklist) — so a chunk can hold agent-only rules like any other entity. Chunks are intentionally simple: they document a code composition, not the full anatomy/API surface a component carries. The top-level `guidelines` and `useCases` arrays are DEPRECATED authoring shorthand — prefer the equivalent blocks in `documentBlocks`.",
+      "description": "A pre-composed block of code that captures a design system pattern. Chunks give consumers a working starting point assembled from system components — for example, a layout, a settings form, or a confirmation dialog. The top level holds its identity (`identifier`, `name`, optional `description`), the `code` block that consumers copy, and `documentBlocks`/`agentDocumentBlocks` carrying the general block kinds (guidelines, use-cases, accessibility, content, sections, checklist) — so a chunk can hold agent-only rules like any other entity. Chunks are intentionally simple: they document a code composition, not the full anatomy/API surface a component carries.",
       "required": [
         "kind",
         "identifier",
@@ -81,7 +81,7 @@
         },
         "documentBlocks": {
           "type": "array",
-          "description": "Structured docs for this chunk, as an ordered array of general document blocks (guidelines, useCases, accessibility, content, sections, checklist). Chunks accept the general kinds only — they document a code composition, not the anatomy/API surface a component carries.",
+          "description": "Structured docs for this chunk, as an ordered array of general document blocks (guidelines, use-cases, accessibility, content, sections, checklist). Chunks accept the general kinds only — they document a code composition, not the anatomy/API surface a component carries.",
           "items": {
             "$ref": "../document-blocks/document-blocks.schema.json#/$defs/generalDocumentBlock"
           },
@@ -94,24 +94,6 @@
             "$ref": "../document-blocks/document-blocks.schema.json#/$defs/generalDocumentBlock"
           },
           "minItems": 1
-        },
-        "guidelines": {
-          "type": "array",
-          "description": "DEPRECATED authoring shorthand — prefer a `guidelines` block inside `documentBlocks`. Actionable rules for using and adapting the chunk. Each item pairs a guidance statement with a rationale and an RFC 2119 enforcement level. Reuses the shared guideline-entry shape so chunk rules read the same as guidelines elsewhere in the system. When both this shorthand and an equivalent block in `documentBlocks` are present, tools MUST treat the `documentBlocks` block as authoritative.",
-          "items": {
-            "$ref": "../document-blocks/guidelines.schema.json#/$defs/guidelineEntry"
-          },
-          "minItems": 1,
-          "deprecated": true
-        },
-        "useCases": {
-          "type": "array",
-          "description": "DEPRECATED authoring shorthand — prefer a `useCases` block inside `documentBlocks`. Scenario-driven use cases describing when this chunk is — or is not — the right choice. Each entry is marked 'recommended' or 'discouraged'. Reuses the shared use-case shape. Authors SHOULD lead with recommended scenarios. When both this shorthand and an equivalent block in `documentBlocks` are present, tools MUST treat the `documentBlocks` block as authoritative.",
-          "items": {
-            "$ref": "../common/use-cases.schema.json#/$defs/useCase"
-          },
-          "minItems": 1,
-          "deprecated": true
         },
         "relationships": {
           "$ref": "../common/relationship.schema.json#/$defs/relationships",
