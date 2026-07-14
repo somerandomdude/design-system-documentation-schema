@@ -10,6 +10,16 @@ This page covers moving existing DSDS documents to a newer spec version. Each br
 
 The [Stability page](stability.html) explains when breaking changes happen. Short version: they are batched, announced one minor ahead, and shipped with a migration script.
 
+## Migrating to 0.15.0
+
+0.15.0 is a minor release. It renames nothing and adds three constraints, so most documents migrate with only a `dsdsVersion` bump. There is no migration script — the affected positions are few and the edits are specific. Fix these if your documents hit them:
+
+- **Design-spec map keys must be lowercase kebab-case.** In a `design-specifications` block, the keys of `properties`, `spacing.internal`, `spacing.external`, and `typography` must match `^[a-z][a-z0-9-]*$`. Rename camelCase keys — `textColor` becomes `text-color`.
+- **`spacing.internal` and `spacing.external` cannot be empty.** Drop an empty map, or give it at least one entry.
+- **A deprecated API property needs a notice.** An `apiProperty` with `deprecated: true` must carry a non-empty `deprecationNotice` saying what to use instead.
+
+Then set `dsdsVersion` to `0.15.0` and point any `$schema` URL at the `v0.15.0` bundle.
+
 ## Migrating to 0.14.0
 
 0.14.0 is a breaking release. It executed every recorded naming exception and removed both deprecated surfaces. Documents at 0.10 through 0.13 migrate mechanically.

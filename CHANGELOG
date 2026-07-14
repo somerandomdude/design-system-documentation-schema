@@ -4,6 +4,38 @@ All notable changes to the DSDS specification are documented in this file.
 
 ---
 
+## [0.15.0] — 2026-07-14
+
+Minor release — a documentation-correctness and fortification pass from a full 0.14.0 review. Three new schema constraints tighten validation; some previously-accepted (but always-defective) documents now fail. Everything else corrects prose, tooling, fixtures, and examples without changing what validates. Schema files are served at `https://designsystemdocspec.org/v0.15.0/...`.
+
+### Tightenings (schema-enforced; may require edits)
+
+- **Design-spec map keys must be lowercase kebab-case** (`^[a-z][a-z0-9-]*$`), matching the token-override map. Affected positions: in a `design-specifications` block, the keys of `properties`, `spacing.internal`, `spacing.external`, and `typography`. A key like `textColor` now fails — use `text-color`.
+- **`spacing.internal` and `spacing.external` reject empty maps** (`minProperties: 1`) — the two nested maps missed by the 0.13.0 min-constraint sweep. An empty `{}` is now a defect.
+- **`apiProperty` with `deprecated: true` requires a non-empty `deprecationNotice`** (conditional), mirroring the `status`/`platformStatus` rule. A property marked deprecated must say what to use instead.
+
+### Fixes
+
+- **Description prose realigned with the 0.14.0 renames** — corrections that had drifted from the schema, one of which shipped in the published normative index: steps said a step "MUST carry a `title`" though the field is now `label`; token prose claimed the display `name` property was absent though it is defined; `links` and `entity-ref` described the removed inter-entity link surface as merely "deprecated"; scale said "label" for the renamed `name`; `useCases` casing survived in the guide and variants descriptions and the DSDS-006 rule statement; criterion listed a "custom" verification mode the enum forbids.
+- **`package.json` license `ISC` → `Apache-2.0`**, matching the LICENSE file.
+- **Doc counts corrected** — 17 block kinds (was 16) on the Overview; the Quick start lists all eight entity kinds (`chunk` was missing).
+- **README** — block-kind list (no phantom "examples" kind), migration-script listing, footer version example, and the governance/docOrigin credit (frozen since 0.14.0, no longer "initial drafts").
+
+### Tooling
+
+- **`test/invalid/expectations.json`** pins how every negative fixture fails — the rejection layer, and for schema rejections the instance path of the violation. `validate.js` enforces it and rejects missing or orphan entries, so a broken guard can no longer hide behind an unrelated failure in the same fixture.
+- **Eleven new negative fixtures** — eight pinning the old form of each 0.14.0 removal (nothing had asserted they still fail), three pinning the tightenings above. The suite is now 69.
+- **`migrate-to-0.14.js`** no longer recurses into `$extensions` (vendor blobs are opaque) and merges chunk shorthand into an existing same-kind block instead of appending a duplicate.
+- **`sync-examples.js`** drops the removed `spec/modules/` path and fails on an empty scan instead of passing vacuously.
+- **`readability-audit.mjs`** fails fast when the `readability` CLI is absent and no longer crashes on an empty result set.
+
+### Documentation
+
+- **New Migration page** — the field-by-field mapping, script order, and human-decision cases for 0.14.0, plus the 0.15.0 tightenings above.
+- The `extension-system` example carries real per-token agent guidance instead of copy-paste boilerplate; the minimal corpus's `form-validation` pattern describes form validation; its duplicate token groups are restructured into a nesting demonstration.
+
+---
+
 ## [0.14.0] — 2026-07-06
 
 **Breaking release — the announced 0.14.0 breaking window.** Every naming exception recorded on the Schema Architecture page and every deprecated surface is executed here, together, once, exactly as the Stability page promised. Migrate with `scripts/migrate-to-0.14.js <files-or-dirs>` (run `scripts/migrate-relationship-links.js` first if documents still carry relationship-flavored links). Schema files are served at `https://designsystemdocspec.org/v0.14.0/...`.

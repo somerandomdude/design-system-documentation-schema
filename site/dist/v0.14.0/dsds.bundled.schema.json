@@ -328,7 +328,7 @@
     },
     "entityRef": {
       "type": "object",
-      "description": "A reference to another entity by identifier, with an optional role describing what the entity does in this context. Used where a position points at an entity and nothing else; for external resources addressed by URL, use `link`.",
+      "description": "A reference to another entity by identifier, with an optional role describing what the entity does in this context. Used where a position points at an entity and nothing else; for pointers that may also carry a URL or external-resource kind, use `link`.",
       "required": [
         "identifier"
       ],
@@ -1083,7 +1083,7 @@
         "$ref": "#/$defs/link"
       },
       "minItems": 1,
-      "description": "Links to external resources. Examples: source code, design files, docs pages, packages. Links cannot express how entities relate — the entity's `relationships` array holds those typed edges."
+      "description": "Links to external resources. Examples: source code, design files, docs pages, packages. Expressing how entities relate through links is deprecated (DSDS-010) — use the entity's `relationships` array for typed edges."
     },
     "entityMetadata": {
       "type": "object",
@@ -1636,24 +1636,9 @@
           "description": "Whether this property is deprecated. Defaults to false."
         },
         "deprecationNotice": {
-          "$ref": "#/$defs/deprecationNotice",
-          "description": "Required when `deprecated` is true. MUST say what to use instead (non-empty) and SHOULD give a migration path."
+          "type": "string",
+          "description": "What to use instead, if deprecated."
         }
-      },
-      "if": {
-        "properties": {
-          "deprecated": {
-            "const": true
-          }
-        },
-        "required": [
-          "deprecated"
-        ]
-      },
-      "then": {
-        "required": [
-          "deprecationNotice"
-        ]
       },
       "additionalProperties": false
     },
@@ -2133,12 +2118,9 @@
     },
     "designProperties": {
       "type": "object",
-      "description": "A map of design property names to their values. Keys are component-scoped property names that say what the value controls (e.g., 'background', 'border-color', 'min-height', 'font-size', 'opacity') and MUST be lowercase kebab-case. Values are design token names or raw CSS values. Token-based systems use values like 'color-action-primary'. Non-token systems use values like '#0055b3' or '16px'. You can use either approach, or mix them.",
+      "description": "A map of design property names to their values. Keys are component-scoped property names that say what the value controls (e.g., 'background', 'border-color', 'min-height', 'font-size', 'opacity'). Values are design token names or raw CSS values. Token-based systems use values like 'color-action-primary'. Non-token systems use values like '#0055b3' or '16px'. You can use either approach, or mix them.",
       "additionalProperties": {
         "$ref": "#/$defs/designValue"
-      },
-      "propertyNames": {
-        "pattern": "^[a-z][a-z0-9-]*$"
       },
       "examples": [
         {
@@ -2168,25 +2150,17 @@
       "properties": {
         "internal": {
           "type": "object",
-          "description": "Padding and internal gaps within the component. Keys are named spatial relationships between anatomy parts or edges (e.g., 'container-horizontal', 'icon-to-label') and MUST be lowercase kebab-case. Values are token names or raw CSS values (e.g., 'space-4', '8px', '1rem').",
+          "description": "Padding and internal gaps within the component. Keys are named spatial relationships between anatomy parts or edges (e.g., 'container-horizontal', 'icon-to-label'). Values are token names or raw CSS values (e.g., 'space-4', '8px', '1rem').",
           "additionalProperties": {
             "$ref": "#/$defs/designValue"
-          },
-          "propertyNames": {
-            "pattern": "^[a-z][a-z0-9-]*$"
-          },
-          "minProperties": 1
+          }
         },
         "external": {
           "type": "object",
-          "description": "Recommended margins and gaps between this component and siblings or container edges. Keys are named spatial relationships (e.g., 'button-to-button', 'button-group-gap', 'stack-gap') and MUST be lowercase kebab-case. Values are token names or raw CSS values. External spacing is a recommendation. The parent layout controls the space between components.",
+          "description": "Recommended margins and gaps between this component and siblings or container edges. Keys are named spatial relationships (e.g., 'button-to-button', 'button-group-gap', 'stack-gap'). Values are token names or raw CSS values. External spacing is a recommendation. The parent layout controls the space between components.",
           "additionalProperties": {
             "$ref": "#/$defs/designValue"
-          },
-          "propertyNames": {
-            "pattern": "^[a-z][a-z0-9-]*$"
-          },
-          "minProperties": 1
+          }
         }
       },
       "additionalProperties": false,
@@ -2258,12 +2232,9 @@
     },
     "typographySpec": {
       "type": "object",
-      "description": "Typographic specs for text content within the component. Keys are named text elements matching anatomy parts (e.g., 'label', 'helper-text', 'heading', 'body') and MUST be lowercase kebab-case. Values are typographyEntrySpec objects.",
+      "description": "Typographic specs for text content within the component. Keys are named text elements matching anatomy parts (e.g., 'label', 'helper-text', 'heading', 'body'). Values are typographyEntrySpec objects.",
       "additionalProperties": {
         "$ref": "#/$defs/typographyEntrySpec"
-      },
-      "propertyNames": {
-        "pattern": "^[a-z][a-z0-9-]*$"
       },
       "minProperties": 1
     },
@@ -3214,7 +3185,7 @@
         },
         "name": {
           "type": "string",
-          "description": "A human-readable name for this step (e.g., 'sm', 'md', 'lg', '2xl', 'body', 'heading-1'). Names give a shorthand vocabulary that designers and engineers use to talk about scale positions without naming raw values."
+          "description": "A human-readable name for this step (e.g., 'sm', 'md', 'lg', '2xl', 'body', 'heading-1'). Labels give a shorthand vocabulary that designers and engineers use to talk about scale positions without naming raw values."
         },
         "value": {
           "type": "string",
@@ -3225,7 +3196,8 @@
           "description": "Usage notes for this step: when to use it, what it pairs with, and any limits (e.g., 'The base unit. Use for default internal component padding.', 'Reserved for page-level hero sections only.')."
         }
       },
-      "additionalProperties": false
+      "additionalProperties": false,
+      "required": []
     },
     "scale": {
       "type": "object",
@@ -3295,7 +3267,7 @@
         },
         "links": {
           "type": "array",
-          "description": "Related links surfaced with this section: 'see also' references, source material, or pointers to external resources. To reference another entity, use the entity's `relationships` array.",
+          "description": "Related links surfaced with this section: 'see also' references, source material, or pointers to other entities and external resources.",
           "items": {
             "$ref": "#/$defs/link"
           },
@@ -3401,7 +3373,7 @@
     },
     "stepEntry": {
       "type": "object",
-      "description": "A single step in a procedure. Pairs a short label with an instruction that describes what to do. Examples carry the code, command, or screenshot for the step. `expectedResult` tells the reader what they should see once the step succeeds, which is valuable for tutorials. `optional` marks a step that can be skipped. A step MUST carry a `label`. All other fields are optional.",
+      "description": "A single step in a procedure. Pairs a short title with an instruction that describes what to do. Examples carry the code, command, or screenshot for the step. `expectedResult` tells the reader what they should see once the step succeeds, which is valuable for tutorials. `optional` marks a step that can be skipped. A step MUST carry a `title`. All other fields are optional.",
       "required": [
         "label"
       ],
@@ -3436,7 +3408,7 @@
     },
     "steps": {
       "type": "object",
-      "description": "A procedure made up of an ordered or unordered sequence of steps. Use it for any task a reader works through start to finish: installation, a first-component tutorial, a contribution checklist, or a migration. Each item is a stepEntry with a label, instruction, optional examples, and an optional expected result.",
+      "description": "A procedure made up of an ordered or unordered sequence of steps. Use it for any task a reader works through start to finish: installation, a first-component tutorial, a contribution checklist, or a migration. Each item is a stepEntry with a title, instruction, optional examples, and an optional expected result.",
       "required": [
         "kind",
         "items"
@@ -3458,7 +3430,7 @@
         },
         "items": {
           "type": "array",
-          "description": "The steps, in display order. Each item is a single step with a label and optional instruction, examples, and expected result. Ordering is significant, so tools MUST preserve it for ordered procedures.",
+          "description": "The steps, in display order. Each item is a single step with a title and optional instruction, examples, and expected result. Ordering is significant, so tools MUST preserve it for ordered procedures.",
           "items": {
             "$ref": "#/$defs/stepEntry"
           },
@@ -3489,7 +3461,7 @@
         },
         "rationale": {
           "$ref": "#/$defs/richText",
-          "description": "Why this value exists: the user need or design rationale it addresses (e.g., 'High emphasis directs the user to the single most important action on the surface'). For comparative when-to-use guidance across values, use the entity's use-cases block instead."
+          "description": "Why this value exists: the user need or design rationale it addresses (e.g., 'High emphasis directs the user to the single most important action on the surface'). For comparative when-to-use guidance across values, use the entity's useCases block instead."
         },
         "examples": {
           "type": "array",
@@ -3508,7 +3480,7 @@
     },
     "flagVariant": {
       "type": "object",
-      "description": "A boolean toggle variant that is either on or off. Use it for binary capabilities such as 'disabled', 'full-width', 'icon-only', or 'loading'. Flag variants have no values array. The component either has the flag active or not.",
+      "description": "A boolean toggle variant that is either on or off. Use it for binary capabilities such as 'full-width', 'full-width', 'icon-only', or 'icon-only'. Flag variants have no values array. The component either has the flag active or not.",
       "required": [
         "kind",
         "identifier",
@@ -3878,7 +3850,7 @@
     },
     "guide": {
       "type": "object",
-      "description": "A long-form, reading-oriented document: a getting-started walkthrough, a contribution guide, a tutorial, a conceptual overview, a migration guide, or any narrative guidance the system needs. Guides fill the gap left by the artifact-bound entities (component, token, foundation, pattern). Those entities document a single thing, not a journey or a concept. The top level holds its identity: `identifier`, `name`, and `description`. The `metadata` object holds optional fields. Use `category` (e.g., 'getting-started', 'contribution', 'tutorial', 'concept', 'migration') to classify the guide, and `tags` for finer-grained discovery. The `documentBlocks` array holds structured docs as typed entries: sections (narrative prose), steps (procedures), guidelines, use-cases, imports, accessibility, and content.",
+      "description": "A long-form, reading-oriented document: a getting-started walkthrough, a contribution guide, a tutorial, a conceptual overview, a migration guide, or any narrative guidance the system needs. Guides fill the gap left by the artifact-bound entities (component, token, foundation, pattern). Those entities document a single thing, not a journey or a concept. The top level holds its identity: `identifier`, `name`, and `description`. The `metadata` object holds optional fields. Use `category` (e.g., 'getting-started', 'contribution', 'tutorial', 'concept', 'migration') to classify the guide, and `tags` for finer-grained discovery. The `documentBlocks` array holds structured docs as typed entries: sections (narrative prose), steps (procedures), guidelines, useCases, imports, accessibility, and content.",
       "required": [
         "kind",
         "identifier",
@@ -3913,7 +3885,7 @@
         },
         "documentBlocks": {
           "type": "array",
-          "description": "All structured docs for this guide, as an ordered array of typed document block objects. It accepts the guide-specific kind (steps), the reused imports kind (setup instructions), plus the general kinds (guidelines, use-cases, accessibility, content, sections, checklist). The free-form sections block is a guide's backbone. The `kind` property on each entry sets its shape. A guide reads top to bottom, so order matters and tools SHOULD keep it for display. Put links to external resources in the `links` metadata field or a section's `links`, not in document block entries; point at other entities through the `relationships` array.",
+          "description": "All structured docs for this guide, as an ordered array of typed document block objects. It accepts the guide-specific kind (steps), the reused imports kind (setup instructions), plus the general kinds (guidelines, use-cases, accessibility, content, sections, checklist). The free-form sections block is a guide's backbone. The `kind` property on each entry sets its shape. A guide reads top to bottom, so order matters and tools SHOULD keep it for display. Put links to other entities and external resources in the `links` metadata field or a section's `links`, not in document block entries.",
           "items": {
             "$ref": "#/$defs/guideDocumentBlock"
           },
@@ -3935,7 +3907,7 @@
     },
     "pattern": {
       "type": "object",
-      "description": "A repeated, multi-component solution to a common UX problem. Patterns sit above individual components. They show how those components combine to meet a user need. The top level holds its identity: `identifier`, `name`, and `description`. The `metadata` object holds the shared entityMetadata fields (see metadata/metadata.schema.json). The `documentBlocks` array holds structured docs as typed entries: `interactions` for flow steps, `guidelines` for rules, `accessibility` for a11y specs, and so on.",
+      "description": "A repeated, multi-component solution to a common UX problem. Patterns sit above individual components. They show how those components combine to meet a user need. The top level holds its identity: `identifier`, `name`, and `description`. The `metadata` object holds the shared entityMetadata fields (see metadata/metadata.schema.json). The `documentBlock` array holds structured docs as typed entries: `interactions` for flow steps, `guidelines` for rules, `accessibility` for a11y specs, and so on.",
       "required": [
         "kind",
         "identifier",
@@ -3966,7 +3938,7 @@
         },
         "relationships": {
           "$ref": "#/$defs/relationships",
-          "description": "Typed dependency edges from this pattern to other entities — chiefly 'composes' the components it is built from (mark `required` true for essential ones), plus 'depends-on' and 'alternative-to'. Use the `links` metadata field for external resources. Inverse edges are derived by tooling."
+          "description": "Typed dependency edges from this pattern to other entities — chiefly 'composes' the components it is built from (mark `required` true for essential ones), plus 'depends-on' and 'alternative-to'. The structural counterpart to listing components in `links`. Inverse edges are derived by tooling."
         },
         "documentBlocks": {
           "type": "array",
@@ -4093,7 +4065,7 @@
     },
     "token": {
       "type": "object",
-      "description": "Docs for a single design token: identifier, type, use cases, guidelines, and accessibility notes. The display `name` property is optional. When it is omitted, the `identifier` serves as the display label. Description and status are optional. The `metadata` object holds the shared entityMetadata fields (see metadata/metadata.schema.json). When a token sits inside a token group and omits its own status field, the parent group's status applies.",
+      "description": "Docs for a single design token: identifier, type, use cases, guidelines, and accessibility notes. The display `name` property is absent. The `identifier` itself serves as the display label. Description and status are optional. The `metadata` object holds the shared entityMetadata fields (see metadata/metadata.schema.json). When a token sits inside a token group and omits its own status field, the parent group's status applies.",
       "required": [
         "kind",
         "identifier"
@@ -4114,7 +4086,7 @@
         },
         "tokenType": {
           "type": "string",
-          "description": "The type of token aligned with the DTCG spec (e.g., 'color', 'dimension', 'fontFamily', 'fontWeight', 'duration', 'cubicBezier', 'number', 'shadow'). MUST be present unless an ancestor token group declares `tokenType` — children inherit the group's value when they omit their own. Validators enforce the own-or-inherited rule; a token with no `tokenType` anywhere in its ancestry is a defect."
+          "description": "The type of token aligned with the DTCG spec (e.g., 'color', 'dimension', 'fontFamily', 'fontWeight', 'duration', 'cubicBezier', 'shadow'). MUST be present unless an ancestor token group declares `tokenType` — children inherit the group's value when they omit their own. Validators enforce the own-or-inherited rule; a token with no `tokenType` anywhere in its ancestry is a defect."
         },
         "description": {
           "$ref": "#/$defs/richText",
@@ -4170,7 +4142,7 @@
     },
     "tokenGroup": {
       "type": "object",
-      "description": "A group of related design tokens. Token groups are flexible units: a full collection, a family (e.g., all color tokens), a sub-family (e.g., a single hue with its grade scale), or any other logical grouping. Groups can nest to form a deep hierarchy. A top-level group might stand for 'color' and hold child groups for 'color-text', 'color-background', and 'color-border', each with its own tokens. This nesting mirrors how real design systems organize tokens into families and sub-families. The display `name` property is optional. When it is omitted, the `identifier` serves as the display label. Description and status are optional. The `metadata` object holds the shared entityMetadata fields (see metadata/metadata.schema.json). When a child omits its own status field, the parent group's status applies.",
+      "description": "A group of related design tokens. Token groups are flexible units: a full collection, a family (e.g., all color tokens), a sub-family (e.g., a single hue with its grade scale), or any other logical grouping. Groups can nest to form a deep hierarchy. A top-level group might stand for 'color' and hold child groups for 'color-text', 'color-background', and 'color-border', each with its own tokens. This nesting mirrors how real design systems organize tokens into families and sub-families. The display `name` property is absent. The `identifier` itself serves as the display label. Description and status are optional. The `metadata` object holds the shared entityMetadata fields (see metadata/metadata.schema.json). When a child omits its own status field, the parent group's status applies.",
       "required": [
         "kind",
         "identifier"
@@ -4195,7 +4167,7 @@
         },
         "tokenType": {
           "type": "string",
-          "description": "When all tokens in this group share the same DTCG token type, declare it here so you don't repeat it on each child. Each token in children MAY override this value. Common values: 'color', 'dimension', 'fontFamily', 'fontWeight', 'duration', 'cubicBezier', 'number', 'shadow'."
+          "description": "When all tokens in this group share the same DTCG token type, declare it here so you don't repeat it on each child. Each token in children MAY override this value. Common values: 'color', 'dimension', 'fontFamily', 'fontWeight', 'duration', 'number', 'shadow'."
         },
         "source": {
           "type": "object",
