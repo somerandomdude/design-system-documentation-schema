@@ -166,8 +166,8 @@
 <ds-callout variant="tip"><p><strong>Tip:</strong> Use single-entity files plus a <ds-code inline>$ref</ds-code> manifest for large systems where a different team owns each component. Use one multi-entity file for smaller systems, or when you want everything in one place.</p></ds-callout>
 <hr />
 <ds-heading level="2" anchor="entity-types">Entity types</ds-heading>
-<p>Every entity has a <ds-code inline>kind</ds-code> field that tells tools what type of thing it is. There are seven kinds.</p>
-<ds-table><table><thead><tr><th>Kind</th><th>Code</th><th>Description</th></tr></thead><tbody><tr><td>component</td><td><ds-code inline>"component"</ds-code></td><td>A reusable UI element — buttons, inputs, modals. Supports anatomy, API, variants, states, and design specs.</td></tr><tr><td>token</td><td><ds-code inline>"token"</ds-code></td><td>A single design token — color, spacing, typography. Carries type, category, and usage rules. Link to W3C DTCG definitions via <ds-code inline>source</ds-code>.</td></tr><tr><td>token-group</td><td><ds-code inline>"token-group"</ds-code></td><td>A nested group of related tokens. Recursive — groups can contain groups.</td></tr><tr><td>theme</td><td><ds-code inline>"theme"</ds-code></td><td>A named set of token overrides — dark mode, high-contrast, compact density, brand variants. It lists which token names change; the DTCG file holds the values.</td></tr><tr><td>foundation</td><td><ds-code inline>"foundation"</ds-code></td><td>A design base — color, typography, spacing, elevation. Carries principles, scales, and motion definitions.</td></tr><tr><td>pattern</td><td><ds-code inline>"pattern"</ds-code></td><td>A broad action pattern — nav, error messaging, empty states. It shows how components combine to solve a user need.</td></tr><tr><td>guide</td><td><ds-code inline>"guide"</ds-code></td><td>A long-form, reading-oriented document — getting-started, contribution, tutorial, migration. It carries prose sections and step-by-step procedures.</td></tr></tbody></table></ds-table>
+<p>Every entity has a <ds-code inline>kind</ds-code> field that tells tools what type of thing it is. There are eight kinds.</p>
+<ds-table><table><thead><tr><th>Kind</th><th>Code</th><th>Description</th></tr></thead><tbody><tr><td>component</td><td><ds-code inline>"component"</ds-code></td><td>A reusable UI element — buttons, inputs, modals. Supports anatomy, API, variants, states, and design specs.</td></tr><tr><td>token</td><td><ds-code inline>"token"</ds-code></td><td>A single design token — color, spacing, typography. Carries type, category, and usage rules. Link to W3C DTCG definitions via <ds-code inline>source</ds-code>.</td></tr><tr><td>token-group</td><td><ds-code inline>"token-group"</ds-code></td><td>A nested group of related tokens. Recursive — groups can contain groups.</td></tr><tr><td>theme</td><td><ds-code inline>"theme"</ds-code></td><td>A named set of token overrides — dark mode, high-contrast, compact density, brand variants. It lists which token names change; the DTCG file holds the values.</td></tr><tr><td>foundation</td><td><ds-code inline>"foundation"</ds-code></td><td>A design base — color, typography, spacing, elevation. Carries principles, scales, and motion definitions.</td></tr><tr><td>pattern</td><td><ds-code inline>"pattern"</ds-code></td><td>A broad action pattern — nav, error messaging, empty states. It shows how components combine to solve a user need.</td></tr><tr><td>guide</td><td><ds-code inline>"guide"</ds-code></td><td>A long-form, reading-oriented document — getting-started, contribution, tutorial, migration. It carries prose sections and step-by-step procedures.</td></tr><tr><td>chunk</td><td><ds-code inline>"chunk"</ds-code></td><td>A pre-composed block of code that captures a pattern — a copy-paste starting point built from the system's components. It requires <ds-code inline>code</ds-code> and declares what it composes via <ds-code inline>relationships</ds-code>.</td></tr></tbody></table></ds-table>
 <ds-heading level="3" anchor="common-properties">Common properties</ds-heading>
 <p>Every entity shares the same envelope: <ds-code inline>kind</ds-code>, <ds-code inline>identifier</ds-code>, <ds-code inline>name</ds-code>, optional <ds-code inline>description</ds-code> and <ds-code inline>metadata</ds-code>, plus <ds-code inline>documentBlocks</ds-code> and <ds-code inline>agentDocumentBlocks</ds-code>. See <a href="schema-architecture.html#common-entity-properties">Common entity properties</a> for the full table, including the token exceptions.</p>
 <p>The optional <ds-code inline>agentDocumentBlocks</ds-code> array is a separate space for agent-only docs. It holds generation limits with <ds-code inline>evidence</ds-code> and notes that tell apart similar entities. It uses the same block kinds as <ds-code inline>documentBlocks</ds-code>. Tools never show it to humans; agents read both arrays.</p>
@@ -628,17 +628,17 @@
       "purpose": "Guide multi-component composition for surfacing, communicating, and resolving form validation errors.",
       "items": [
         {
-          "description": "Use error-messaging for validation and system errors; use empty-state for the absence of content.",
-          "stance": "discouraged",
-          "alternative": {
-            "identifier": "empty-state"
-          }
-        },
-        {
-          "description": "Use error-messaging for form validation flows; use alert for non-form system or status messages.",
+          "description": "Use form-validation for input errors the user can fix at the field; use alert for system or status messages not tied to a field.",
           "stance": "discouraged",
           "alternative": {
             "identifier": "alert"
+          }
+        },
+        {
+          "description": "Use form-validation to communicate failure; success confirmation belongs to a toast, which never carries errors.",
+          "stance": "discouraged",
+          "alternative": {
+            "identifier": "toast"
           }
         }
       ]
@@ -655,8 +655,8 @@
           "level": "must-not"
         },
         {
-          "guidance": "Showing errors only on submit without inline field feedback.",
-          "rationale": "Instead: Show inline errors on field blur and in a summary on submit.",
+          "guidance": "Do not show errors only on submit with no inline field feedback.",
+          "rationale": "Users fix problems fastest at the field. Show inline errors on blur and collect them in a summary on submit.",
           "level": "must-not"
         }
       ]
@@ -1026,17 +1026,17 @@
               "purpose": "Guide multi-component composition for surfacing, communicating, and resolving form validation errors.",
               "items": [
                 {
-                  "description": "Use error-messaging for validation and system errors; use empty-state for the absence of content.",
-                  "stance": "discouraged",
-                  "alternative": {
-                    "identifier": "empty-state"
-                  }
-                },
-                {
-                  "description": "Use error-messaging for form validation flows; use alert for non-form system or status messages.",
+                  "description": "Use form-validation for input errors the user can fix at the field; use alert for system or status messages not tied to a field.",
                   "stance": "discouraged",
                   "alternative": {
                     "identifier": "alert"
+                  }
+                },
+                {
+                  "description": "Use form-validation to communicate failure; success confirmation belongs to a toast, which never carries errors.",
+                  "stance": "discouraged",
+                  "alternative": {
+                    "identifier": "toast"
                   }
                 }
               ]
@@ -1055,8 +1055,8 @@
                   "rationale": "Toasts dismiss themselves and are not tied to the failing field. Once gone, the user has no path back to what went wrong."
                 },
                 {
-                  "guidance": "Showing errors only on submit without inline field feedback.",
-                  "rationale": "Instead: Show inline errors on field blur and in a summary on submit.",
+                  "guidance": "Do not show errors only on submit with no inline field feedback.",
+                  "rationale": "Users fix problems fastest at the field. Show inline errors on blur and collect them in a summary on submit.",
                   "level": "must-not"
                 }
               ]

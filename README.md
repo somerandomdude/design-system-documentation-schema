@@ -17,7 +17,7 @@ DSDS defines a JSON-based format for documenting the eight entity types of a des
 - **Guides** — Long-form, reading-oriented documentation like getting-started walkthroughs, contribution guides, tutorials, and migration guides — with narrative sections, step-by-step procedures, and best practices
 - **Chunks** — Pre-composed blocks of code that capture a pattern built from the system's components — copy-paste starting points like a search bar, settings form, or confirmation dialog — with guidelines, use cases, and the code itself
 
-All structured docs live in one **document block** system. Each entry is a typed container with a `kind` tag. The kinds cover guidelines, anatomy, API specs, variants, states, accessibility, examples, design specifications, principles, scales, motion, content, interactions, narrative sections, and step-by-step procedures.
+All structured docs live in one **document block** system. Each entry is a typed container with a `kind` tag. The kinds cover guidelines, use cases, anatomy, API specs, variants, states, accessibility, design specifications, principles, scales, motion, content, imports, interactions, checklists, narrative sections, and step-by-step procedures.
 
 The goal is simple: make design system docs structured, portable, and easy for tools to read. The tool can be a docs site, a linter, a code assistant, or a person reading JSON.
 
@@ -156,6 +156,8 @@ scripts/
 ├── migrate-to-0.7.js                                   # Migrates v0.5.x / v0.6 documents to the v0.7 shape
 ├── migrate-to-0.8.js                                   # Migrates v0.7.x documents to v0.8 (criterion fixture outcomes)
 ├── migrate-to-0.10.js                                   # Migrates v0.8.x / v0.9.x documents to v0.10 (levels, entity refs, accessibility data)
+├── migrate-to-0.14.js                                   # Migrates v0.10–v0.13 documents to v0.14 (breaking renames; reports identifier-bearing links)
+├── migrate-relationship-links.js                        # Converts relationship-flavored links to typed `relationships` edges (run before migrate-to-0.14.js)
 ├── build-site.js                                       # Generates the static specification site (orchestrator)
 ├── build-samples.js                                    # Generates the interactive sample viewer from example JSON
 ├── render-entity.js                                    # Server-side entity rendering used by build-samples.js
@@ -411,7 +413,7 @@ This is the exact sequence for cutting a release that includes schema changes. S
 
    - Page `<title>` tags (e.g., `DSDS Last Updated Metadata — DSDS 0.14.0`).
    - The nav title (`Design System Documentation Spec 0.14.0`).
-   - The footer (`Design System Documentation Spec (DSDS) 0.2.1 — Draft Specification`).
+   - The footer (`Design System Documentation Spec (DSDS) 0.14.0 — Draft Specification`).
 
    The new schema page should exist at `site/dist/<group>-<name>.html` (e.g., `site/dist/metadata-last-updated.html`), and the versioned bundle should exist at `site/dist/v<new-version>/dsds.bundled.schema.json`.
 
@@ -445,7 +447,7 @@ This is an early-stage specification (currently DSDS 0.14.0). Feedback is welcom
 
 ### Contributors
 
-- [Afyia Smith](https://afyiasmith.co/) — the `governance` and `docOrigin` metadata schemas (initial drafts, introduced in 0.12.1 and subject to change).
+- [Afyia Smith](https://afyiasmith.co/) — the `governance` and `docOrigin` metadata schemas (introduced in 0.12.1).
 
 ## License
 

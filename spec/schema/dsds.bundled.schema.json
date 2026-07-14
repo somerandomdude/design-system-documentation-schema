@@ -328,7 +328,7 @@
     },
     "entityRef": {
       "type": "object",
-      "description": "A reference to another entity by identifier, with an optional role describing what the entity does in this context. Used where a position points at an entity and nothing else; for pointers that may also carry a URL or external-resource kind, use `link`.",
+      "description": "A reference to another entity by identifier, with an optional role describing what the entity does in this context. Used where a position points at an entity and nothing else; for external resources addressed by URL, use `link`.",
       "required": [
         "identifier"
       ],
@@ -1083,7 +1083,7 @@
         "$ref": "#/$defs/link"
       },
       "minItems": 1,
-      "description": "Links to external resources. Examples: source code, design files, docs pages, packages. Expressing how entities relate through links is deprecated (DSDS-010) — use the entity's `relationships` array for typed edges."
+      "description": "Links to external resources. Examples: source code, design files, docs pages, packages. Links cannot express how entities relate — the entity's `relationships` array holds those typed edges."
     },
     "entityMetadata": {
       "type": "object",
@@ -3185,7 +3185,7 @@
         },
         "name": {
           "type": "string",
-          "description": "A human-readable name for this step (e.g., 'sm', 'md', 'lg', '2xl', 'body', 'heading-1'). Labels give a shorthand vocabulary that designers and engineers use to talk about scale positions without naming raw values."
+          "description": "A human-readable name for this step (e.g., 'sm', 'md', 'lg', '2xl', 'body', 'heading-1'). Names give a shorthand vocabulary that designers and engineers use to talk about scale positions without naming raw values."
         },
         "value": {
           "type": "string",
@@ -3373,7 +3373,7 @@
     },
     "stepEntry": {
       "type": "object",
-      "description": "A single step in a procedure. Pairs a short title with an instruction that describes what to do. Examples carry the code, command, or screenshot for the step. `expectedResult` tells the reader what they should see once the step succeeds, which is valuable for tutorials. `optional` marks a step that can be skipped. A step MUST carry a `title`. All other fields are optional.",
+      "description": "A single step in a procedure. Pairs a short label with an instruction that describes what to do. Examples carry the code, command, or screenshot for the step. `expectedResult` tells the reader what they should see once the step succeeds, which is valuable for tutorials. `optional` marks a step that can be skipped. A step MUST carry a `label`. All other fields are optional.",
       "required": [
         "label"
       ],
@@ -3408,7 +3408,7 @@
     },
     "steps": {
       "type": "object",
-      "description": "A procedure made up of an ordered or unordered sequence of steps. Use it for any task a reader works through start to finish: installation, a first-component tutorial, a contribution checklist, or a migration. Each item is a stepEntry with a title, instruction, optional examples, and an optional expected result.",
+      "description": "A procedure made up of an ordered or unordered sequence of steps. Use it for any task a reader works through start to finish: installation, a first-component tutorial, a contribution checklist, or a migration. Each item is a stepEntry with a label, instruction, optional examples, and an optional expected result.",
       "required": [
         "kind",
         "items"
@@ -3430,7 +3430,7 @@
         },
         "items": {
           "type": "array",
-          "description": "The steps, in display order. Each item is a single step with a title and optional instruction, examples, and expected result. Ordering is significant, so tools MUST preserve it for ordered procedures.",
+          "description": "The steps, in display order. Each item is a single step with a label and optional instruction, examples, and expected result. Ordering is significant, so tools MUST preserve it for ordered procedures.",
           "items": {
             "$ref": "#/$defs/stepEntry"
           },
@@ -3461,7 +3461,7 @@
         },
         "rationale": {
           "$ref": "#/$defs/richText",
-          "description": "Why this value exists: the user need or design rationale it addresses (e.g., 'High emphasis directs the user to the single most important action on the surface'). For comparative when-to-use guidance across values, use the entity's useCases block instead."
+          "description": "Why this value exists: the user need or design rationale it addresses (e.g., 'High emphasis directs the user to the single most important action on the surface'). For comparative when-to-use guidance across values, use the entity's use-cases block instead."
         },
         "examples": {
           "type": "array",
@@ -3850,7 +3850,7 @@
     },
     "guide": {
       "type": "object",
-      "description": "A long-form, reading-oriented document: a getting-started walkthrough, a contribution guide, a tutorial, a conceptual overview, a migration guide, or any narrative guidance the system needs. Guides fill the gap left by the artifact-bound entities (component, token, foundation, pattern). Those entities document a single thing, not a journey or a concept. The top level holds its identity: `identifier`, `name`, and `description`. The `metadata` object holds optional fields. Use `category` (e.g., 'getting-started', 'contribution', 'tutorial', 'concept', 'migration') to classify the guide, and `tags` for finer-grained discovery. The `documentBlocks` array holds structured docs as typed entries: sections (narrative prose), steps (procedures), guidelines, useCases, imports, accessibility, and content.",
+      "description": "A long-form, reading-oriented document: a getting-started walkthrough, a contribution guide, a tutorial, a conceptual overview, a migration guide, or any narrative guidance the system needs. Guides fill the gap left by the artifact-bound entities (component, token, foundation, pattern). Those entities document a single thing, not a journey or a concept. The top level holds its identity: `identifier`, `name`, and `description`. The `metadata` object holds optional fields. Use `category` (e.g., 'getting-started', 'contribution', 'tutorial', 'concept', 'migration') to classify the guide, and `tags` for finer-grained discovery. The `documentBlocks` array holds structured docs as typed entries: sections (narrative prose), steps (procedures), guidelines, use-cases, imports, accessibility, and content.",
       "required": [
         "kind",
         "identifier",
@@ -4065,7 +4065,7 @@
     },
     "token": {
       "type": "object",
-      "description": "Docs for a single design token: identifier, type, use cases, guidelines, and accessibility notes. The display `name` property is absent. The `identifier` itself serves as the display label. Description and status are optional. The `metadata` object holds the shared entityMetadata fields (see metadata/metadata.schema.json). When a token sits inside a token group and omits its own status field, the parent group's status applies.",
+      "description": "Docs for a single design token: identifier, type, use cases, guidelines, and accessibility notes. The display `name` property is optional. When it is omitted, the `identifier` serves as the display label. Description and status are optional. The `metadata` object holds the shared entityMetadata fields (see metadata/metadata.schema.json). When a token sits inside a token group and omits its own status field, the parent group's status applies.",
       "required": [
         "kind",
         "identifier"
@@ -4142,7 +4142,7 @@
     },
     "tokenGroup": {
       "type": "object",
-      "description": "A group of related design tokens. Token groups are flexible units: a full collection, a family (e.g., all color tokens), a sub-family (e.g., a single hue with its grade scale), or any other logical grouping. Groups can nest to form a deep hierarchy. A top-level group might stand for 'color' and hold child groups for 'color-text', 'color-background', and 'color-border', each with its own tokens. This nesting mirrors how real design systems organize tokens into families and sub-families. The display `name` property is absent. The `identifier` itself serves as the display label. Description and status are optional. The `metadata` object holds the shared entityMetadata fields (see metadata/metadata.schema.json). When a child omits its own status field, the parent group's status applies.",
+      "description": "A group of related design tokens. Token groups are flexible units: a full collection, a family (e.g., all color tokens), a sub-family (e.g., a single hue with its grade scale), or any other logical grouping. Groups can nest to form a deep hierarchy. A top-level group might stand for 'color' and hold child groups for 'color-text', 'color-background', and 'color-border', each with its own tokens. This nesting mirrors how real design systems organize tokens into families and sub-families. The display `name` property is optional. When it is omitted, the `identifier` serves as the display label. Description and status are optional. The `metadata` object holds the shared entityMetadata fields (see metadata/metadata.schema.json). When a child omits its own status field, the parent group's status applies.",
       "required": [
         "kind",
         "identifier"

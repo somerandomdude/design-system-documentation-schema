@@ -296,16 +296,6 @@
                   "guidance": "Always provide an accessible label via visible text or aria-label.",
                   "level": "must",
                   "rationale": "Icon-only buttons without an accessible name are unusable with screen readers and fail WCAG 4.1.2 (Name, Role, Value)."
-                },
-                {
-                  "guidance": "Using a button to navigate to another page.",
-                  "rationale": "Instead: Use a link element with href.",
-                  "level": "must-not"
-                },
-                {
-                  "guidance": "Placing multiple primary buttons on the same surface.",
-                  "rationale": "Instead: Use one primary and one or more secondary or tertiary buttons.",
-                  "level": "must-not"
                 }
               ]
             }
@@ -418,21 +408,18 @@
           "agentDocumentBlocks": [
             {
               "kind": "use-cases",
-              "purpose": "Trigger a user-initiated action within the current view without causing page navigation.",
+              "purpose": "Display and operate on large tabular datasets — sorting, filtering, selection, and pagination — in admin interfaces.",
               "items": [
                 {
-                  "description": "Use button for in-page actions; use link for navigation to a URL.",
+                  "description": "Use data-grid when the dataset needs sorting, filtering, selection, or virtualization; use the core data-table for simple read-only tables.",
                   "stance": "discouraged",
                   "alternative": {
-                    "identifier": "link"
+                    "identifier": "data-table"
                   }
                 },
                 {
-                  "description": "Use button when a visible text label is present; use icon-button for icon-only affordances.",
-                  "stance": "discouraged",
-                  "alternative": {
-                    "identifier": "icon-button"
-                  }
+                  "description": "Use data-grid for tabular records; use a card or list pattern for content-first collections.",
+                  "stance": "discouraged"
                 }
               ]
             },
@@ -440,29 +427,19 @@
               "kind": "guidelines",
               "items": [
                 {
-                  "guidance": "Do not use for navigating to a different page or URL.",
+                  "guidance": "Always render inside a container with a bounded height.",
+                  "level": "must",
+                  "rationale": "Row virtualization measures the visible viewport. In an unbounded container every row renders and the performance benefit disappears."
+                },
+                {
+                  "guidance": "Always give the grid an accessible name via aria-label or an associated caption.",
+                  "level": "must",
+                  "rationale": "Screen reader users need the grid announced by name to understand what dataset they are navigating (WCAG 4.1.2)."
+                },
+                {
+                  "guidance": "Do not use the grid as a page-layout primitive.",
                   "level": "must-not",
-                  "rationale": "Buttons signal actions and links signal navigation. Assistive technology announces each differently, and users rely on that distinction to predict what a control will do."
-                },
-                {
-                  "guidance": "Limit each surface to one primary-emphasis button.",
-                  "level": "must",
-                  "rationale": "A single primary action keeps the visual hierarchy clear. When several buttons compete at primary emphasis, the intended next step becomes ambiguous."
-                },
-                {
-                  "guidance": "Always provide an accessible label via visible text or aria-label.",
-                  "level": "must",
-                  "rationale": "Icon-only buttons without an accessible name are unusable with screen readers and fail WCAG 4.1.2 (Name, Role, Value)."
-                },
-                {
-                  "guidance": "Using a button to navigate to another page.",
-                  "rationale": "Instead: Use a link element with href.",
-                  "level": "must-not"
-                },
-                {
-                  "guidance": "Placing multiple primary buttons on the same surface.",
-                  "rationale": "Instead: Use one primary and one or more secondary or tertiary buttons.",
-                  "level": "must-not"
+                  "rationale": "It is a data component. Using it to arrange arbitrary UI couples layout to row/column semantics that assistive technology announces as data."
                 }
               ]
             }
@@ -520,12 +497,10 @@
                 },
                 "tags": [
                   "color",
-                  "text",
-                  "primary",
-                  "body",
-                  "heading",
-                  "label",
-                  "foreground"
+                  "action",
+                  "interactive",
+                  "teal",
+                  "semantic"
                 ]
               },
               "tokenType": "color",
@@ -555,21 +530,18 @@
               "agentDocumentBlocks": [
                 {
                   "kind": "use-cases",
-                  "purpose": "Apply the primary text color for body content, headings, and labels on default background surfaces.",
+                  "purpose": "Apply the enterprise action color to primary interactive elements in admin interfaces.",
                   "items": [
                     {
-                      "description": "Use primary for default reading content; use secondary for supporting or reduced-emphasis text.",
+                      "description": "Use for primary interactive elements in admin surfaces; use color-action-primary in consumer products.",
                       "stance": "discouraged",
                       "alternative": {
-                        "identifier": "color-text-secondary"
+                        "identifier": "color-action-primary"
                       }
                     },
                     {
-                      "description": "Use primary on default surfaces; use on-action inside filled interactive components.",
-                      "stance": "discouraged",
-                      "alternative": {
-                        "identifier": "color-text-on-action"
-                      }
+                      "description": "Use for action affordances only — never to color informational badges or status indicators. Keeping action teal distinct from informational blue is this token's reason to exist.",
+                      "stance": "discouraged"
                     }
                   ]
                 },
@@ -577,9 +549,9 @@
                   "kind": "guidelines",
                   "items": [
                     {
-                      "guidance": "Do not use on dark or colored background surfaces.",
-                      "level": "must-not",
-                      "rationale": "The token's contrast ratio is qualified against light surfaces only. On dark or saturated backgrounds it can drop below WCAG AA."
+                      "guidance": "Text and icons on this background MUST meet WCAG AA — the token is contrast-qualified against white foregrounds only.",
+                      "level": "must",
+                      "rationale": "The teal value was audited with white text. Darker foregrounds can silently drop below the 4.5:1 threshold."
                     },
                     {
                       "guidance": "Do not override this token value at the component level.",
@@ -598,12 +570,10 @@
                 "summary": "Hover state for the enterprise action color.",
                 "tags": [
                   "color",
-                  "text",
-                  "primary",
-                  "body",
-                  "heading",
-                  "label",
-                  "foreground"
+                  "action",
+                  "interactive",
+                  "hover",
+                  "state"
                 ]
               },
               "tokenType": "color",
@@ -614,20 +584,13 @@
               "agentDocumentBlocks": [
                 {
                   "kind": "use-cases",
-                  "purpose": "Apply the primary text color for body content, headings, and labels on default background surfaces.",
+                  "purpose": "Apply the hover state of the enterprise action color.",
                   "items": [
                     {
-                      "description": "Use primary for default reading content; use secondary for supporting or reduced-emphasis text.",
+                      "description": "Use only as the hover state of elements resting on color-action-enterprise; use the base token for resting states.",
                       "stance": "discouraged",
                       "alternative": {
-                        "identifier": "color-text-secondary"
-                      }
-                    },
-                    {
-                      "description": "Use primary on default surfaces; use on-action inside filled interactive components.",
-                      "stance": "discouraged",
-                      "alternative": {
-                        "identifier": "color-text-on-action"
+                        "identifier": "color-action-enterprise"
                       }
                     }
                   ]
@@ -636,9 +599,9 @@
                   "kind": "guidelines",
                   "items": [
                     {
-                      "guidance": "Do not use on dark or colored background surfaces.",
-                      "level": "must-not",
-                      "rationale": "The token's contrast ratio is qualified against light surfaces only. On dark or saturated backgrounds it can drop below WCAG AA."
+                      "guidance": "Apply on hover only. The pressed state uses color-action-enterprise-active.",
+                      "level": "must",
+                      "rationale": "Hover and pressed feedback must stay distinct so users can tell an armed control from an activated one."
                     },
                     {
                       "guidance": "Do not override this token value at the component level.",
@@ -657,12 +620,11 @@
                 "summary": "Active/pressed state for the enterprise action color.",
                 "tags": [
                   "color",
-                  "text",
-                  "primary",
-                  "body",
-                  "heading",
-                  "label",
-                  "foreground"
+                  "action",
+                  "interactive",
+                  "active",
+                  "pressed",
+                  "state"
                 ]
               },
               "tokenType": "color",
@@ -673,20 +635,13 @@
               "agentDocumentBlocks": [
                 {
                   "kind": "use-cases",
-                  "purpose": "Apply the primary text color for body content, headings, and labels on default background surfaces.",
+                  "purpose": "Apply the pressed (active) state of the enterprise action color.",
                   "items": [
                     {
-                      "description": "Use primary for default reading content; use secondary for supporting or reduced-emphasis text.",
+                      "description": "Use only as the pressed state of elements resting on color-action-enterprise; use the base token for resting states.",
                       "stance": "discouraged",
                       "alternative": {
-                        "identifier": "color-text-secondary"
-                      }
-                    },
-                    {
-                      "description": "Use primary on default surfaces; use on-action inside filled interactive components.",
-                      "stance": "discouraged",
-                      "alternative": {
-                        "identifier": "color-text-on-action"
+                        "identifier": "color-action-enterprise"
                       }
                     }
                   ]
@@ -695,9 +650,9 @@
                   "kind": "guidelines",
                   "items": [
                     {
-                      "guidance": "Do not use on dark or colored background surfaces.",
-                      "level": "must-not",
-                      "rationale": "The token's contrast ratio is qualified against light surfaces only. On dark or saturated backgrounds it can drop below WCAG AA."
+                      "guidance": "Apply while the control is pressed only. The hover state uses color-action-enterprise-hover.",
+                      "level": "must",
+                      "rationale": "Hover and pressed feedback must stay distinct so users can tell an armed control from an activated one."
                     },
                     {
                       "guidance": "Do not override this token value at the component level.",
@@ -728,12 +683,10 @@
                 },
                 "tags": [
                   "color",
-                  "text",
-                  "primary",
-                  "body",
-                  "heading",
-                  "label",
-                  "foreground"
+                  "button",
+                  "background",
+                  "enterprise",
+                  "component"
                 ]
               },
               "tokenType": "color",
@@ -744,20 +697,13 @@
               "agentDocumentBlocks": [
                 {
                   "kind": "use-cases",
-                  "purpose": "Apply the primary text color for body content, headings, and labels on default background surfaces.",
+                  "purpose": "Apply the background of the button's enterprise variant.",
                   "items": [
                     {
-                      "description": "Use primary for default reading content; use secondary for supporting or reduced-emphasis text.",
+                      "description": "Use only inside the button component's enterprise variant; use color-action-enterprise for other admin action surfaces.",
                       "stance": "discouraged",
                       "alternative": {
-                        "identifier": "color-text-secondary"
-                      }
-                    },
-                    {
-                      "description": "Use primary on default surfaces; use on-action inside filled interactive components.",
-                      "stance": "discouraged",
-                      "alternative": {
-                        "identifier": "color-text-on-action"
+                        "identifier": "color-action-enterprise"
                       }
                     }
                   ]
@@ -766,9 +712,9 @@
                   "kind": "guidelines",
                   "items": [
                     {
-                      "guidance": "Do not use on dark or colored background surfaces.",
-                      "level": "must-not",
-                      "rationale": "The token's contrast ratio is qualified against light surfaces only. On dark or saturated backgrounds it can drop below WCAG AA."
+                      "guidance": "Pair with button-enterprise-text for the label and icon — the pair is contrast-qualified together.",
+                      "level": "must",
+                      "rationale": "Mixing this background with other text tokens breaks the audited contrast pairing."
                     },
                     {
                       "guidance": "Do not override this token value at the component level.",
@@ -787,12 +733,10 @@
                 "summary": "Text color for the enterprise button variant.",
                 "tags": [
                   "color",
+                  "button",
                   "text",
-                  "primary",
-                  "body",
-                  "heading",
-                  "label",
-                  "foreground"
+                  "enterprise",
+                  "component"
                 ]
               },
               "tokenType": "color",
@@ -803,21 +747,11 @@
               "agentDocumentBlocks": [
                 {
                   "kind": "use-cases",
-                  "purpose": "Apply the primary text color for body content, headings, and labels on default background surfaces.",
+                  "purpose": "Apply the label and icon color inside the button's enterprise variant.",
                   "items": [
                     {
-                      "description": "Use primary for default reading content; use secondary for supporting or reduced-emphasis text.",
-                      "stance": "discouraged",
-                      "alternative": {
-                        "identifier": "color-text-secondary"
-                      }
-                    },
-                    {
-                      "description": "Use primary on default surfaces; use on-action inside filled interactive components.",
-                      "stance": "discouraged",
-                      "alternative": {
-                        "identifier": "color-text-on-action"
-                      }
+                      "description": "Use only on the enterprise button backgrounds (resting, hover, and active); it is not a general-purpose text token.",
+                      "stance": "discouraged"
                     }
                   ]
                 },
@@ -825,9 +759,9 @@
                   "kind": "guidelines",
                   "items": [
                     {
-                      "guidance": "Do not use on dark or colored background surfaces.",
+                      "guidance": "Do not repurpose as an on-color text token for other components — it is qualified against the enterprise button backgrounds only.",
                       "level": "must-not",
-                      "rationale": "The token's contrast ratio is qualified against light surfaces only. On dark or saturated backgrounds it can drop below WCAG AA."
+                      "rationale": "Contrast was audited against the enterprise button background ramp, not against arbitrary filled surfaces."
                     },
                     {
                       "guidance": "Do not override this token value at the component level.",
@@ -846,12 +780,11 @@
                 "summary": "Hover background for the enterprise button variant.",
                 "tags": [
                   "color",
-                  "text",
-                  "primary",
-                  "body",
-                  "heading",
-                  "label",
-                  "foreground"
+                  "button",
+                  "background",
+                  "hover",
+                  "state",
+                  "component"
                 ]
               },
               "tokenType": "color",
@@ -862,20 +795,13 @@
               "agentDocumentBlocks": [
                 {
                   "kind": "use-cases",
-                  "purpose": "Apply the primary text color for body content, headings, and labels on default background surfaces.",
+                  "purpose": "Apply the hover background of the button's enterprise variant.",
                   "items": [
                     {
-                      "description": "Use primary for default reading content; use secondary for supporting or reduced-emphasis text.",
+                      "description": "Use only as the hover state of button-enterprise-bg; use the resting token everywhere else.",
                       "stance": "discouraged",
                       "alternative": {
-                        "identifier": "color-text-secondary"
-                      }
-                    },
-                    {
-                      "description": "Use primary on default surfaces; use on-action inside filled interactive components.",
-                      "stance": "discouraged",
-                      "alternative": {
-                        "identifier": "color-text-on-action"
+                        "identifier": "button-enterprise-bg"
                       }
                     }
                   ]
@@ -884,9 +810,9 @@
                   "kind": "guidelines",
                   "items": [
                     {
-                      "guidance": "Do not use on dark or colored background surfaces.",
-                      "level": "must-not",
-                      "rationale": "The token's contrast ratio is qualified against light surfaces only. On dark or saturated backgrounds it can drop below WCAG AA."
+                      "guidance": "Apply on hover only. The pressed state uses button-enterprise-active-bg.",
+                      "level": "must",
+                      "rationale": "Hover and pressed feedback must stay distinct so users can tell an armed control from an activated one."
                     },
                     {
                       "guidance": "Do not override this token value at the component level.",
@@ -905,12 +831,12 @@
                 "summary": "Active/pressed background for the enterprise button variant.",
                 "tags": [
                   "color",
-                  "text",
-                  "primary",
-                  "body",
-                  "heading",
-                  "label",
-                  "foreground"
+                  "button",
+                  "background",
+                  "active",
+                  "pressed",
+                  "state",
+                  "component"
                 ]
               },
               "tokenType": "color",
@@ -921,20 +847,13 @@
               "agentDocumentBlocks": [
                 {
                   "kind": "use-cases",
-                  "purpose": "Apply the primary text color for body content, headings, and labels on default background surfaces.",
+                  "purpose": "Apply the pressed (active) background of the button's enterprise variant.",
                   "items": [
                     {
-                      "description": "Use primary for default reading content; use secondary for supporting or reduced-emphasis text.",
+                      "description": "Use only as the pressed state of button-enterprise-bg; use the resting token everywhere else.",
                       "stance": "discouraged",
                       "alternative": {
-                        "identifier": "color-text-secondary"
-                      }
-                    },
-                    {
-                      "description": "Use primary on default surfaces; use on-action inside filled interactive components.",
-                      "stance": "discouraged",
-                      "alternative": {
-                        "identifier": "color-text-on-action"
+                        "identifier": "button-enterprise-bg"
                       }
                     }
                   ]
@@ -943,9 +862,9 @@
                   "kind": "guidelines",
                   "items": [
                     {
-                      "guidance": "Do not use on dark or colored background surfaces.",
-                      "level": "must-not",
-                      "rationale": "The token's contrast ratio is qualified against light surfaces only. On dark or saturated backgrounds it can drop below WCAG AA."
+                      "guidance": "Apply while the button is pressed only. The hover state uses button-enterprise-hover-bg.",
+                      "level": "must",
+                      "rationale": "Hover and pressed feedback must stay distinct so users can tell an armed control from an activated one."
                     },
                     {
                       "guidance": "Do not override this token value at the component level.",
@@ -965,12 +884,10 @@
                 "summary": "Background color for data grid column headers.",
                 "tags": [
                   "color",
-                  "text",
-                  "primary",
-                  "body",
-                  "heading",
-                  "label",
-                  "foreground"
+                  "data-grid",
+                  "background",
+                  "header",
+                  "component"
                 ]
               },
               "tokenType": "color",
@@ -981,21 +898,11 @@
               "agentDocumentBlocks": [
                 {
                   "kind": "use-cases",
-                  "purpose": "Apply the primary text color for body content, headings, and labels on default background surfaces.",
+                  "purpose": "Distinguish the data grid's header row from its data rows.",
                   "items": [
                     {
-                      "description": "Use primary for default reading content; use secondary for supporting or reduced-emphasis text.",
-                      "stance": "discouraged",
-                      "alternative": {
-                        "identifier": "color-text-secondary"
-                      }
-                    },
-                    {
-                      "description": "Use primary on default surfaces; use on-action inside filled interactive components.",
-                      "stance": "discouraged",
-                      "alternative": {
-                        "identifier": "color-text-on-action"
-                      }
+                      "description": "Use only for the data grid header row; page-level and panel backgrounds use the core surface tokens.",
+                      "stance": "discouraged"
                     }
                   ]
                 },
@@ -1003,9 +910,9 @@
                   "kind": "guidelines",
                   "items": [
                     {
-                      "guidance": "Do not use on dark or colored background surfaces.",
-                      "level": "must-not",
-                      "rationale": "The token's contrast ratio is qualified against light surfaces only. On dark or saturated backgrounds it can drop below WCAG AA."
+                      "guidance": "Header text on this background MUST meet WCAG AA contrast.",
+                      "level": "must",
+                      "rationale": "Column headers carry sort affordances and labels — illegible headers make the whole grid unusable."
                     },
                     {
                       "guidance": "Do not override this token value at the component level.",
@@ -1024,12 +931,11 @@
                 "summary": "Hover background for data grid rows.",
                 "tags": [
                   "color",
-                  "text",
-                  "primary",
-                  "body",
-                  "heading",
-                  "label",
-                  "foreground"
+                  "data-grid",
+                  "background",
+                  "hover",
+                  "state",
+                  "component"
                 ]
               },
               "tokenType": "color",
@@ -1040,20 +946,13 @@
               "agentDocumentBlocks": [
                 {
                   "kind": "use-cases",
-                  "purpose": "Apply the primary text color for body content, headings, and labels on default background surfaces.",
+                  "purpose": "Give pointer-hover feedback on data grid rows.",
                   "items": [
                     {
-                      "description": "Use primary for default reading content; use secondary for supporting or reduced-emphasis text.",
+                      "description": "Use for transient pointer feedback only; persistent selection uses color-data-grid-row-selected.",
                       "stance": "discouraged",
                       "alternative": {
-                        "identifier": "color-text-secondary"
-                      }
-                    },
-                    {
-                      "description": "Use primary on default surfaces; use on-action inside filled interactive components.",
-                      "stance": "discouraged",
-                      "alternative": {
-                        "identifier": "color-text-on-action"
+                        "identifier": "color-data-grid-row-selected"
                       }
                     }
                   ]
@@ -1062,9 +961,9 @@
                   "kind": "guidelines",
                   "items": [
                     {
-                      "guidance": "Do not use on dark or colored background surfaces.",
-                      "level": "must-not",
-                      "rationale": "The token's contrast ratio is qualified against light surfaces only. On dark or saturated backgrounds it can drop below WCAG AA."
+                      "guidance": "Keep visually distinct from color-data-grid-row-selected — users rely on the difference to tell hover from selection.",
+                      "level": "must",
+                      "rationale": "When hover and selected states look alike, users lose track of what is actually selected during bulk operations."
                     },
                     {
                       "guidance": "Do not override this token value at the component level.",
@@ -1083,12 +982,11 @@
                 "summary": "Background for selected data grid rows.",
                 "tags": [
                   "color",
-                  "text",
-                  "primary",
-                  "body",
-                  "heading",
-                  "label",
-                  "foreground"
+                  "data-grid",
+                  "background",
+                  "selected",
+                  "state",
+                  "component"
                 ]
               },
               "tokenType": "color",
@@ -1099,20 +997,13 @@
               "agentDocumentBlocks": [
                 {
                   "kind": "use-cases",
-                  "purpose": "Apply the primary text color for body content, headings, and labels on default background surfaces.",
+                  "purpose": "Mark selected data grid rows.",
                   "items": [
                     {
-                      "description": "Use primary for default reading content; use secondary for supporting or reduced-emphasis text.",
+                      "description": "Use for persistent selection only; transient pointer feedback uses color-data-grid-row-hover.",
                       "stance": "discouraged",
                       "alternative": {
-                        "identifier": "color-text-secondary"
-                      }
-                    },
-                    {
-                      "description": "Use primary on default surfaces; use on-action inside filled interactive components.",
-                      "stance": "discouraged",
-                      "alternative": {
-                        "identifier": "color-text-on-action"
+                        "identifier": "color-data-grid-row-hover"
                       }
                     }
                   ]
@@ -1121,9 +1012,9 @@
                   "kind": "guidelines",
                   "items": [
                     {
-                      "guidance": "Do not use on dark or colored background surfaces.",
-                      "level": "must-not",
-                      "rationale": "The token's contrast ratio is qualified against light surfaces only. On dark or saturated backgrounds it can drop below WCAG AA."
+                      "guidance": "Keep visually distinct from color-data-grid-row-hover — users rely on the difference to tell selection from hover.",
+                      "level": "must",
+                      "rationale": "When hover and selected states look alike, users lose track of what is actually selected during bulk operations."
                     },
                     {
                       "guidance": "Do not override this token value at the component level.",
@@ -1137,12 +1028,10 @@
           ],
           "metadata": {
             "tags": [
-              "token",
-              "group",
-              "palette",
-              "scale",
-              "family",
-              "collection"
+              "color",
+              "enterprise",
+              "semantic",
+              "component"
             ]
           },
           "agentDocumentBlocks": [
@@ -1151,7 +1040,7 @@
               "items": [
                 {
                   "title": "Intent",
-                  "body": "Define and organize a set of related design tokens, providing shared defaults for type and category."
+                  "body": "The enterprise color layer over the core system: the teal action ramp (resting, hover, active) and component tokens for the enterprise button variant and the data grid."
                 }
               ]
             },

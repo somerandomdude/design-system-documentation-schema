@@ -15,7 +15,8 @@
  *      `description` → `note`.
  *   6. API events: `returns` → `payload`.
  *   7. Chunk shorthand: top-level `guidelines`/`useCases` arrays become
- *      equivalent blocks in `documentBlocks`.
+ *      equivalent blocks in `documentBlocks` (merged into an existing
+ *      same-kind block when one is present — the block was authoritative).
  *   8. Deprecated link forms: `role`/`required` are dropped from url-links
  *      (reported); identifier-bearing relationship links are NOT auto-
  *      converted — run `scripts/migrate-relationship-links.js` first, which
@@ -101,23 +102,33 @@ function migrateDoc(doc, report) {
       node.events.forEach((ev) => renameKey(ev, "returns", "payload"));
     }
 
-    // 7. Chunk shorthand → documentBlocks.
+    // 7. Chunk shorthand → documentBlocks. When an equivalent block already
+    // exists, that block is authoritative (the 0.13 rule) — merge in only the
+    // shorthand items it does not already contain, never a duplicate block.
     if (node.kind === "chunk") {
-      const moved = [];
-      if (Array.isArray(node.guidelines)) {
-        moved.push({ kind: "guidelines", items: node.guidelines });
-        delete node.guidelines;
+      for (const [prop, kind] of [["guidelines", "guidelines"], ["useCases", "use-cases"]]) {
+        if (!Array.isArray(node[prop])) continue;
+        const items = node[prop];
+        delete node[prop];
         changed = true;
-        report.migrated.push(`${p}: top-level guidelines → documentBlocks guidelines block`);
-      }
-      if (Array.isArray(node.useCases)) {
-        moved.push({ kind: "use-cases", items: node.useCases });
-        delete node.useCases;
-        changed = true;
-        report.migrated.push(`${p}: top-level useCases → documentBlocks use-cases block`);
-      }
-      if (moved.length) {
-        node.documentBlocks = (node.documentBlocks || []).concat(moved);
+        if (items.length === 0) {
+          report.migrated.push(`${p}: empty top-level ${prop} removed`);
+          continue;
+        }
+        node.documentBlocks = node.documentBlocks || [];
+        const existing = node.documentBlocks.find((b) => b && b.kind === kind);
+        if (!existing) {
+          node.documentBlocks.push({ kind, items });
+          report.migrated.push(`${p}: top-level ${prop} → documentBlocks ${kind} block`);
+          continue;
+        }
+        const seen = new Set((existing.items || []).map((it) => JSON.stringify(it)));
+        const fresh = items.filter((it) => !seen.has(JSON.stringify(it)));
+        existing.items = (existing.items || []).concat(fresh);
+        report.migrated.push(
+          `${p}: top-level ${prop} merged into existing ${kind} block ` +
+            `(${fresh.length} item(s) added, ${items.length - fresh.length} duplicate(s) dropped)`,
+        );
       }
     }
 
@@ -141,7 +152,10 @@ function migrateDoc(doc, report) {
       });
     }
 
-    for (const [k, v] of Object.entries(node)) walk(v, `${p}/${k}`);
+    for (const [k, v] of Object.entries(node)) {
+      if (k === "$extensions") continue; // vendor blobs are opaque — never rewrite inside them
+      walk(v, `${p}/${k}`);
+    }
   }
   walk(doc, "");
   return changed;
