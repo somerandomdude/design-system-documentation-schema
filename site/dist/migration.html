@@ -3,15 +3,15 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>DSDS Since Metadata Field — DSDS 0.14.0</title>
-  <meta name="description" content="The design system version in which this entity was introduced.">
-  <link rel="canonical" href="https://designsystemdocspec.org/metadata-since">
+  <title>Migration — DSDS 0.14.0</title>
+  <meta name="description" content="How to move DSDS documents between spec versions: the 0.14.0 field-by-field mapping, the scripts that automate it, and the cases that need a human decision.">
+  <link rel="canonical" href="https://designsystemdocspec.org/migration">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Design System Documentation Spec">
-  <meta property="og:title" content="DSDS Since Metadata Field — DSDS 0.14.0">
-  <meta property="og:description" content="The design system version in which this entity was introduced.">
-  <meta property="og:url" content="https://designsystemdocspec.org/metadata-since">
+  <meta property="og:title" content="Migration — DSDS 0.14.0">
+  <meta property="og:description" content="How to move DSDS documents between spec versions: the 0.14.0 field-by-field mapping, the scripts that automate it, and the cases that need a human decision.">
+  <meta property="og:url" content="https://designsystemdocspec.org/migration">
   <meta name="twitter:card" content="summary">
   <meta name="dsds-version" content="0.14.0">
   <link rel="stylesheet" href="tokens.css?v=0.14.0">
@@ -21,7 +21,7 @@
 <body>
   <a class="skip-link" href="#main-content">Skip to content</a>
   <ds-nav-toggle target="ds-spec-nav"></ds-nav-toggle>
-  <ds-spec-nav title="Design System Documentation Spec 0.14.0" title-href="index.html" active="metadata-since">
+  <ds-spec-nav title="Design System Documentation Spec 0.14.0" title-href="index.html" active="migration">
     <a href="index.html" slug="index">Overview</a>
     <a href="quickstart.html" slug="quickstart">Quick start</a>
     <a href="humans-and-agents.html" slug="humans-and-agents">Humans &amp; agents</a>
@@ -97,9 +97,29 @@
   <div class="content content--with-toc">
     <main class="content__main" id="main-content" role="main">
       <div class="content__inner">
-        <ds-schema-header title="DSDS Since Metadata Field" description="The design system version in which this entity was introduced." source="metadata/since.schema.json"></ds-schema-header>
-<ds-def-section name="since" anchor="since" description="The design system version in which this entity was introduced (e.g., '1.0.0', '2.3.0')." type="string">
-</ds-def-section>
+        <ds-heading level="1" anchor="migration">Migration</ds-heading>
+<p>This page covers moving existing DSDS documents to a newer spec version. Each breaking release gets a section here: what changed, what the migration script does for you, and what it leaves for a human.</p>
+<p>The <a href="stability.html">Stability page</a> explains when breaking changes happen. Short version: they are batched, announced one minor ahead, and shipped with a migration script.</p>
+<ds-heading level="2" anchor="migrating-to-0140">Migrating to 0.14.0</ds-heading>
+<p>0.14.0 is a breaking release. It executed every recorded naming exception and removed both deprecated surfaces. Documents at 0.10 through 0.13 migrate mechanically.</p>
+<ds-heading level="3" anchor="run-the-scripts">Run the scripts</ds-heading>
+<p>Run the link converter first if your documents still relate entities through <ds-code inline>links</ds-code>. Then run the 0.14 migrator:</p>
+<ds-code>node scripts/migrate-relationship-links.js <files-or-dirs>
+node scripts/migrate-to-0.14.js <files-or-dirs>
+</ds-code>
+<p>Both accept <ds-code inline>--dry-run</ds-code>. The migrator bumps <ds-code inline>dsdsVersion</ds-code>, updates any versioned <ds-code inline>$schema</ds-code> URL, and applies every rename below. It never touches <ds-code inline>$extensions</ds-code> content.</p>
+<ds-heading level="3" anchor="what-changes">What changes</ds-heading>
+<ds-table><table><thead><tr><th>Before (≤ 0.13)</th><th>After (0.14.0)</th></tr></thead><tbody><tr><td>Block kind <ds-code inline>useCases</ds-code></td><td>Block kind <ds-code inline>use-cases</ds-code> (same rename in <ds-code inline>docOrigin.blocks</ds-code> keys)</td></tr><tr><td><ds-code inline>stepEntry.title</ds-code></td><td><ds-code inline>stepEntry.label</ds-code> (now rich text)</td></tr><tr><td><ds-code inline>scaleStep.label</ds-code></td><td><ds-code inline>scaleStep.name</ds-code></td></tr><tr><td><ds-code inline>systemInfo.systemName</ds-code> / <ds-code inline>systemVersion</ds-code></td><td><ds-code inline>systemInfo.name</ds-code> / <ds-code inline>version</ds-code></td></tr><tr><td>Status object <ds-code inline>description</ds-code> (entity-level and per-platform)</td><td>Status object <ds-code inline>note</ds-code></td></tr><tr><td><ds-code inline>apiEvent.returns</ds-code></td><td><ds-code inline>apiEvent.payload</ds-code></td></tr><tr><td>Link <ds-code inline>identifier</ds-code>, <ds-code inline>role</ds-code>, <ds-code inline>required</ds-code></td><td>Removed. A link is <ds-code inline>kind</ds-code> + <ds-code inline>url</ds-code> (+ optional <ds-code inline>label</ds-code>). Entities relate through <ds-code inline>relationships</ds-code> edges</td></tr><tr><td>Chunk top-level <ds-code inline>guidelines</ds-code> / <ds-code inline>useCases</ds-code></td><td>Removed. Guidance lives in the chunk's <ds-code inline>documentBlocks</ds-code></td></tr></tbody></table></ds-table>
+<p>Nothing else changed shape. Documents that used none of these forms migrate with only a version bump.</p>
+<ds-heading level="3" anchor="what-needs-a-human">What needs a human</ds-heading>
+<ul>
+<li><strong>Identifier-bearing links.</strong> A link that pointed at another entity by <ds-code inline>identifier</ds-code> no longer validates. The migrator reports each one instead of guessing. Convert it to a typed <ds-code inline>relationships</ds-code> edge (<ds-code inline>composes</ds-code>, <ds-code inline>depends-on</ds-code>, <ds-code inline>alternative-to</ds-code>, …) or rewrite it as a plain URL link.</li>
+<li><strong>Chunks that had both forms.</strong> When a chunk carried the shorthand <em>and</em> an equivalent block, the block was authoritative. The migrator merges the shorthand items it does not already contain and reports the counts. Skim the report to confirm nothing merged that you meant to drop.</li>
+</ul>
+<ds-heading level="3" anchor="verify">Verify</ds-heading>
+<p>Validate the migrated documents against the bundled schema for the version you migrated to — every release is served at its own versioned URL on this site. In this repository, <ds-code inline>npm run validate</ds-code> covers every example and fixture.</p>
+<ds-heading level="2" anchor="older-migrations">Older migrations</ds-heading>
+<p>Earlier breaking windows have their own scripts: <ds-code inline>migrate-to-0.7.js</ds-code> (from 0.5.x / 0.6), <ds-code inline>migrate-to-0.8.js</ds-code> (from 0.7.x), and <ds-code inline>migrate-to-0.10.js</ds-code> (from 0.8.x / 0.9.x). Run them in order when jumping several versions. The <a href="https://github.com/somerandomdude/design-system-documentation-schema/blob/main/CHANGELOG">CHANGELOG</a> records what each release changed.</p>
 
         <ds-back-to-top></ds-back-to-top>
 

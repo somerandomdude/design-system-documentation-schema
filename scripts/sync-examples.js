@@ -2,7 +2,7 @@
 /**
  * sync-examples.js — Synchronize JSON examples from source files into markdown.
  *
- * Scans all markdown files in spec/modules/ for include directives of the form:
+ * Scans all MDX content pages in site/content/ for include directives of the form:
  *
  *   <!-- dsds:include path/to/file.json#/key -->
  *
@@ -46,7 +46,6 @@ const path = require("path");
 // ---------------------------------------------------------------------------
 
 const ROOT = path.resolve(__dirname, "..");
-const MODULES_DIR = path.join(ROOT, "spec", "modules");
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -331,22 +330,13 @@ function main() {
   );
 
   const CONTENT_DIR = path.join(ROOT, "site", "content");
-  const mdFiles = (fs.existsSync(MODULES_DIR)
+  const mdFiles = fs.existsSync(CONTENT_DIR)
     ? fs
-        .readdirSync(MODULES_DIR)
-        .filter((f) => f.endsWith(".md"))
+        .readdirSync(CONTENT_DIR)
+        .filter((f) => f.endsWith(".mdx"))
         .sort()
-        .map((f) => path.join(MODULES_DIR, f))
-    : [])
-    .concat(
-      fs.existsSync(CONTENT_DIR)
-        ? fs
-            .readdirSync(CONTENT_DIR)
-            .filter((f) => f.endsWith(".mdx"))
-            .sort()
-            .map((f) => path.join(CONTENT_DIR, f))
-        : [],
-    );
+        .map((f) => path.join(CONTENT_DIR, f))
+    : [];
 
   let totalIncludes = 0;
   let totalUpdated = 0;
@@ -387,6 +377,15 @@ function main() {
         fs.writeFileSync(mdPath, result.content, "utf-8");
       }
     }
+  }
+
+  if (totalIncludes === 0) {
+    // An empty scan is a broken checkout (or a moved content dir), not a
+    // passing sync — the same failure mode validate.js guards against.
+    console.error(
+      "  ✗ No include directives found — site/content/ is missing or empty.",
+    );
+    process.exit(1);
   }
 
   console.log(

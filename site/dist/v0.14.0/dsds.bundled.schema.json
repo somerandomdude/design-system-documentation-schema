@@ -1636,9 +1636,24 @@
           "description": "Whether this property is deprecated. Defaults to false."
         },
         "deprecationNotice": {
-          "type": "string",
-          "description": "What to use instead, if deprecated."
+          "$ref": "#/$defs/deprecationNotice",
+          "description": "Required when `deprecated` is true. MUST say what to use instead (non-empty) and SHOULD give a migration path."
         }
+      },
+      "if": {
+        "properties": {
+          "deprecated": {
+            "const": true
+          }
+        },
+        "required": [
+          "deprecated"
+        ]
+      },
+      "then": {
+        "required": [
+          "deprecationNotice"
+        ]
       },
       "additionalProperties": false
     },
@@ -2118,9 +2133,12 @@
     },
     "designProperties": {
       "type": "object",
-      "description": "A map of design property names to their values. Keys are component-scoped property names that say what the value controls (e.g., 'background', 'border-color', 'min-height', 'font-size', 'opacity'). Values are design token names or raw CSS values. Token-based systems use values like 'color-action-primary'. Non-token systems use values like '#0055b3' or '16px'. You can use either approach, or mix them.",
+      "description": "A map of design property names to their values. Keys are component-scoped property names that say what the value controls (e.g., 'background', 'border-color', 'min-height', 'font-size', 'opacity') and MUST be lowercase kebab-case. Values are design token names or raw CSS values. Token-based systems use values like 'color-action-primary'. Non-token systems use values like '#0055b3' or '16px'. You can use either approach, or mix them.",
       "additionalProperties": {
         "$ref": "#/$defs/designValue"
+      },
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9-]*$"
       },
       "examples": [
         {
@@ -2150,17 +2168,25 @@
       "properties": {
         "internal": {
           "type": "object",
-          "description": "Padding and internal gaps within the component. Keys are named spatial relationships between anatomy parts or edges (e.g., 'container-horizontal', 'icon-to-label'). Values are token names or raw CSS values (e.g., 'space-4', '8px', '1rem').",
+          "description": "Padding and internal gaps within the component. Keys are named spatial relationships between anatomy parts or edges (e.g., 'container-horizontal', 'icon-to-label') and MUST be lowercase kebab-case. Values are token names or raw CSS values (e.g., 'space-4', '8px', '1rem').",
           "additionalProperties": {
             "$ref": "#/$defs/designValue"
-          }
+          },
+          "propertyNames": {
+            "pattern": "^[a-z][a-z0-9-]*$"
+          },
+          "minProperties": 1
         },
         "external": {
           "type": "object",
-          "description": "Recommended margins and gaps between this component and siblings or container edges. Keys are named spatial relationships (e.g., 'button-to-button', 'button-group-gap', 'stack-gap'). Values are token names or raw CSS values. External spacing is a recommendation. The parent layout controls the space between components.",
+          "description": "Recommended margins and gaps between this component and siblings or container edges. Keys are named spatial relationships (e.g., 'button-to-button', 'button-group-gap', 'stack-gap') and MUST be lowercase kebab-case. Values are token names or raw CSS values. External spacing is a recommendation. The parent layout controls the space between components.",
           "additionalProperties": {
             "$ref": "#/$defs/designValue"
-          }
+          },
+          "propertyNames": {
+            "pattern": "^[a-z][a-z0-9-]*$"
+          },
+          "minProperties": 1
         }
       },
       "additionalProperties": false,
@@ -2232,9 +2258,12 @@
     },
     "typographySpec": {
       "type": "object",
-      "description": "Typographic specs for text content within the component. Keys are named text elements matching anatomy parts (e.g., 'label', 'helper-text', 'heading', 'body'). Values are typographyEntrySpec objects.",
+      "description": "Typographic specs for text content within the component. Keys are named text elements matching anatomy parts (e.g., 'label', 'helper-text', 'heading', 'body') and MUST be lowercase kebab-case. Values are typographyEntrySpec objects.",
       "additionalProperties": {
         "$ref": "#/$defs/typographyEntrySpec"
+      },
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9-]*$"
       },
       "minProperties": 1
     },
@@ -3196,8 +3225,7 @@
           "description": "Usage notes for this step: when to use it, what it pairs with, and any limits (e.g., 'The base unit. Use for default internal component padding.', 'Reserved for page-level hero sections only.')."
         }
       },
-      "additionalProperties": false,
-      "required": []
+      "additionalProperties": false
     },
     "scale": {
       "type": "object",
@@ -3267,7 +3295,7 @@
         },
         "links": {
           "type": "array",
-          "description": "Related links surfaced with this section: 'see also' references, source material, or pointers to other entities and external resources.",
+          "description": "Related links surfaced with this section: 'see also' references, source material, or pointers to external resources. To reference another entity, use the entity's `relationships` array.",
           "items": {
             "$ref": "#/$defs/link"
           },
@@ -3480,7 +3508,7 @@
     },
     "flagVariant": {
       "type": "object",
-      "description": "A boolean toggle variant that is either on or off. Use it for binary capabilities such as 'full-width', 'full-width', 'icon-only', or 'icon-only'. Flag variants have no values array. The component either has the flag active or not.",
+      "description": "A boolean toggle variant that is either on or off. Use it for binary capabilities such as 'disabled', 'full-width', 'icon-only', or 'loading'. Flag variants have no values array. The component either has the flag active or not.",
       "required": [
         "kind",
         "identifier",
@@ -3885,7 +3913,7 @@
         },
         "documentBlocks": {
           "type": "array",
-          "description": "All structured docs for this guide, as an ordered array of typed document block objects. It accepts the guide-specific kind (steps), the reused imports kind (setup instructions), plus the general kinds (guidelines, use-cases, accessibility, content, sections, checklist). The free-form sections block is a guide's backbone. The `kind` property on each entry sets its shape. A guide reads top to bottom, so order matters and tools SHOULD keep it for display. Put links to other entities and external resources in the `links` metadata field or a section's `links`, not in document block entries.",
+          "description": "All structured docs for this guide, as an ordered array of typed document block objects. It accepts the guide-specific kind (steps), the reused imports kind (setup instructions), plus the general kinds (guidelines, use-cases, accessibility, content, sections, checklist). The free-form sections block is a guide's backbone. The `kind` property on each entry sets its shape. A guide reads top to bottom, so order matters and tools SHOULD keep it for display. Put links to external resources in the `links` metadata field or a section's `links`, not in document block entries; point at other entities through the `relationships` array.",
           "items": {
             "$ref": "#/$defs/guideDocumentBlock"
           },
@@ -3907,7 +3935,7 @@
     },
     "pattern": {
       "type": "object",
-      "description": "A repeated, multi-component solution to a common UX problem. Patterns sit above individual components. They show how those components combine to meet a user need. The top level holds its identity: `identifier`, `name`, and `description`. The `metadata` object holds the shared entityMetadata fields (see metadata/metadata.schema.json). The `documentBlock` array holds structured docs as typed entries: `interactions` for flow steps, `guidelines` for rules, `accessibility` for a11y specs, and so on.",
+      "description": "A repeated, multi-component solution to a common UX problem. Patterns sit above individual components. They show how those components combine to meet a user need. The top level holds its identity: `identifier`, `name`, and `description`. The `metadata` object holds the shared entityMetadata fields (see metadata/metadata.schema.json). The `documentBlocks` array holds structured docs as typed entries: `interactions` for flow steps, `guidelines` for rules, `accessibility` for a11y specs, and so on.",
       "required": [
         "kind",
         "identifier",
@@ -3938,7 +3966,7 @@
         },
         "relationships": {
           "$ref": "#/$defs/relationships",
-          "description": "Typed dependency edges from this pattern to other entities — chiefly 'composes' the components it is built from (mark `required` true for essential ones), plus 'depends-on' and 'alternative-to'. The structural counterpart to listing components in `links`. Inverse edges are derived by tooling."
+          "description": "Typed dependency edges from this pattern to other entities — chiefly 'composes' the components it is built from (mark `required` true for essential ones), plus 'depends-on' and 'alternative-to'. Use the `links` metadata field for external resources. Inverse edges are derived by tooling."
         },
         "documentBlocks": {
           "type": "array",
@@ -4086,7 +4114,7 @@
         },
         "tokenType": {
           "type": "string",
-          "description": "The type of token aligned with the DTCG spec (e.g., 'color', 'dimension', 'fontFamily', 'fontWeight', 'duration', 'cubicBezier', 'shadow'). MUST be present unless an ancestor token group declares `tokenType` — children inherit the group's value when they omit their own. Validators enforce the own-or-inherited rule; a token with no `tokenType` anywhere in its ancestry is a defect."
+          "description": "The type of token aligned with the DTCG spec (e.g., 'color', 'dimension', 'fontFamily', 'fontWeight', 'duration', 'cubicBezier', 'number', 'shadow'). MUST be present unless an ancestor token group declares `tokenType` — children inherit the group's value when they omit their own. Validators enforce the own-or-inherited rule; a token with no `tokenType` anywhere in its ancestry is a defect."
         },
         "description": {
           "$ref": "#/$defs/richText",
@@ -4167,7 +4195,7 @@
         },
         "tokenType": {
           "type": "string",
-          "description": "When all tokens in this group share the same DTCG token type, declare it here so you don't repeat it on each child. Each token in children MAY override this value. Common values: 'color', 'dimension', 'fontFamily', 'fontWeight', 'duration', 'number', 'shadow'."
+          "description": "When all tokens in this group share the same DTCG token type, declare it here so you don't repeat it on each child. Each token in children MAY override this value. Common values: 'color', 'dimension', 'fontFamily', 'fontWeight', 'duration', 'cubicBezier', 'number', 'shadow'."
         },
         "source": {
           "type": "object",

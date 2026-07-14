@@ -15,6 +15,7 @@ Each fixture pins one guard:
 | `api-block-on-token` | block scoping: tokens accept general kinds only |
 | `api-empty-content-arrays` | api content arrays require at least one item |
 | `api-event-returns` | the pre-0.14 `returns` field on events is rejected — events document what a listener receives via `payload` |
+| `api-property-deprecated-without-notice` | `deprecated: true` on an API property requires a `deprecationNotice` |
 | `block-kind-camelcase-use-cases` | the pre-0.14 camelCase `useCases` block kind is rejected — the kind is `use-cases` |
 | `both-entity-and-entity-groups` | `entity` and `entityGroups` are mutually exclusive |
 | `chunk-code-both-forms` | chunk `code` is exactly one of inline (`code` + `language`) or referenced (`src` + `language`), never both |
@@ -30,7 +31,9 @@ Each fixture pins one guard:
 | `deprecated-as-bare-string` | deprecated status must use the object form |
 | `deprecated-overall-without-notice` | overall deprecation requires `deprecationNotice` |
 | `deprecated-platform-without-notice` | platform deprecation requires `deprecationNotice` |
+| `design-specifications-camelcase-key` | design-spec map keys must be lowercase kebab-case |
 | `design-specifications-empty-objects` | design-specifications sub-objects (`spacing` here) require at least one property |
+| `design-specifications-spacing-internal-empty` | `spacing.internal`/`external` require at least one property |
 | `doc-origin-blocks-unknown-kind` | semantic: `docOrigin.blocks` keys must match a block kind on the entity |
 | `doc-origin-generated-human` | `overall: generated` restricts `authorship` to machine-generated / ai-generated |
 | `duplicate-identifiers-in-group` | semantic: identifiers unique within an entity group |
@@ -77,4 +80,8 @@ Each fixture pins one guard:
 | `wrong-dsds-version` | `dsdsVersion` must be the spec version string (numeric here so bump-version cannot rewrite it) |
 
 When adding a guard to the schema or to the semantic checks, add a fixture
-here that fails because of it.
+here that fails because of it, plus an entry in `expectations.json` declaring
+how it fails: the rejection layer (`schema` or `semantic`), and for schema
+rejections the `errorAt` instance path of the violation. The validator
+enforces both — a fixture that fails at the wrong layer or path is treated
+as a broken guard, not a pass.

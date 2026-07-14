@@ -964,6 +964,10 @@ const INVALID_FIXTURES_DIR = path.join(ROOT, "test", "invalid");
  * Every .dsds.json file in test/invalid/ must be rejected — either by schema
  * validation or by the semantic checks. A fixture that validates cleanly is
  * a regression: the guard it pins has stopped working.
+ *
+ * expectations.json pins HOW each fixture fails (rejection layer, and for
+ * schema rejections the instance path of the violation). Without it, a broken
+ * guard can hide behind an unrelated failure in the same fixture.
  */
 function validateNegativeFixtures(ajv) {
   console.log("━━━ Negative fixtures (must fail) ━━━\n");
@@ -985,6 +989,21 @@ function validateNegativeFixtures(ajv) {
     return { passed, failed: 1, errors: [{ file: "test/invalid/", error: "no fixtures found" }] };
   }
 
+  const EXPECTATIONS_PATH = path.join(INVALID_FIXTURES_DIR, "expectations.json");
+  let expectations;
+  try {
+    expectations = JSON.parse(fs.readFileSync(EXPECTATIONS_PATH, "utf-8"));
+  } catch (e) {
+    console.error(
+      `  ✗ test/invalid/expectations.json is missing or unreadable — every fixture must declare how it fails (${e.message})`,
+    );
+    return {
+      passed,
+      failed: 1,
+      errors: [{ file: "test/invalid/expectations.json", error: "missing or unreadable" }],
+    };
+  }
+
   for (const filePath of files) {
     const file = path.relative(INVALID_FIXTURES_DIR, filePath);
     let data;
@@ -998,19 +1017,64 @@ function validateNegativeFixtures(ajv) {
     }
 
     const schemaValid = validate(data);
+    const ajvErrors = schemaValid ? [] : validate.errors || [];
     const semantics = schemaValid ? semanticFindings(data) : [];
     const rejected = !schemaValid || semantics.length > 0;
 
-    if (rejected) {
-      const via = !schemaValid ? "schema" : "semantic check";
-      console.log(`  ✓ ${file} (rejected by ${via})`);
-      passed++;
-    } else {
+    if (!rejected) {
       console.error(
         `  ✗ ${file}: validated cleanly — the guard this fixture pins is broken`,
       );
       failed++;
       errors.push({ file, error: "fixture unexpectedly valid" });
+      continue;
+    }
+
+    const layer = !schemaValid ? "schema" : "semantic";
+    const via = layer === "schema" ? "schema" : "semantic check";
+    const expected = expectations[file];
+
+    if (!expected) {
+      console.error(
+        `  ✗ ${file}: no entry in test/invalid/expectations.json — declare how this fixture must fail`,
+      );
+      failed++;
+      errors.push({ file, error: "missing expectations entry" });
+      continue;
+    }
+    if (expected.rejectedBy !== layer) {
+      console.error(
+        `  ✗ ${file}: rejected by ${via}, but expectations.json pins '${expected.rejectedBy}' — the guard moved or broke`,
+      );
+      failed++;
+      errors.push({ file, error: `rejected by ${layer}, expected ${expected.rejectedBy}` });
+      continue;
+    }
+    if (layer === "schema" && typeof expected.errorAt === "string") {
+      const at = expected.errorAt;
+      const hit = ajvErrors.some(
+        (e) => e.instancePath === at || (at !== "" && e.instancePath.startsWith(at + "/")),
+      );
+      if (!hit) {
+        console.error(
+          `  ✗ ${file}: fails, but not at ${at || "(document root)"} — it is rejected for the wrong reason`,
+        );
+        failed++;
+        errors.push({ file, error: `no schema error at ${at || "(document root)"}` });
+        continue;
+      }
+    }
+
+    console.log(`  ✓ ${file} (rejected by ${via})`);
+    passed++;
+  }
+
+  // An expectations entry with no fixture is a guard nobody verifies.
+  for (const name of Object.keys(expectations)) {
+    if (!files.some((f) => path.relative(INVALID_FIXTURES_DIR, f) === name)) {
+      console.error(`  ✗ expectations.json entry '${name}' has no fixture file`);
+      failed++;
+      errors.push({ file: name, error: "orphan expectations entry" });
     }
   }
 
