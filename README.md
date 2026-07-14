@@ -17,7 +17,7 @@ DSDS defines a JSON-based format for documenting the eight entity types of a des
 - **Guides** — Long-form, reading-oriented documentation like getting-started walkthroughs, contribution guides, tutorials, and migration guides — with narrative sections, step-by-step procedures, and best practices
 - **Chunks** — Pre-composed blocks of code that capture a pattern built from the system's components — copy-paste starting points like a search bar, settings form, or confirmation dialog — with guidelines, use cases, and the code itself
 
-All structured docs live in one **document block** system. Each entry is a typed container with a `kind` tag. The kinds cover guidelines, anatomy, API specs, variants, states, accessibility, examples, design specifications, principles, scales, motion, content, interactions, narrative sections, and step-by-step procedures.
+All structured docs live in one **document block** system. Each entry is a typed container with a `kind` tag. The kinds cover guidelines, use cases, anatomy, API specs, variants, states, accessibility, design specifications, principles, scales, motion, content, imports, interactions, checklists, narrative sections, and step-by-step procedures.
 
 The goal is simple: make design system docs structured, portable, and easy for tools to read. The tool can be a docs site, a linter, a code assistant, or a person reading JSON.
 
@@ -156,6 +156,8 @@ scripts/
 ├── migrate-to-0.7.js                                   # Migrates v0.5.x / v0.6 documents to the v0.7 shape
 ├── migrate-to-0.8.js                                   # Migrates v0.7.x documents to v0.8 (criterion fixture outcomes)
 ├── migrate-to-0.10.js                                   # Migrates v0.8.x / v0.9.x documents to v0.10 (levels, entity refs, accessibility data)
+├── migrate-to-0.14.js                                   # Migrates v0.10–v0.13 documents to v0.14 (breaking renames; reports identifier-bearing links)
+├── migrate-relationship-links.js                        # Converts relationship-flavored links to typed `relationships` edges (run before migrate-to-0.14.js)
 ├── build-site.js                                       # Generates the static specification site (orchestrator)
 ├── build-samples.js                                    # Generates the interactive sample viewer from example JSON
 ├── render-entity.js                                    # Server-side entity rendering used by build-samples.js
@@ -235,7 +237,7 @@ To validate your own DSDS file:
 npx ajv validate -s spec/schema/dsds.bundled.schema.json -d my-system.dsds.json
 ```
 
-Reference `https://designsystemdocspec.org/v0.14.0/dsds.bundled.schema.json` from your DSDS files via the `$schema` keyword to get editor autocompletion and inline validation. See the [Quick Start docs page](https://designsystemdocspec.org/quickstart.html) for the single-entity and multi-entity document shapes.
+Reference `https://designsystemdocspec.org/v0.15.0/dsds.bundled.schema.json` from your DSDS files via the `$schema` keyword to get editor autocompletion and inline validation. See the [Quick Start docs page](https://designsystemdocspec.org/quickstart.html) for the single-entity and multi-entity document shapes.
 
 #### Editorial lint (warnings, never blocking)
 
@@ -342,7 +344,7 @@ The Quick Start page (`site/content/quickstart.mdx`) is compiled the same way as
 The spec version lives in three coordinated places:
 
 1. **`spec/schema/dsds.schema.json#/properties/dsdsVersion/const`** — the single source of truth. The bundle script, the nav, every page title, and the versioned dist directory all derive from this value.
-2. **The `$id` URL on every schema file** — e.g., `https://designsystemdocspec.org/v0.14.0/metadata/last-updated.schema.json`. Every example document's `$schema` field and every `"dsdsVersion"` literal inside example JSON has to track the same version.
+2. **The `$id` URL on every schema file** — e.g., `https://designsystemdocspec.org/v0.15.0/metadata/last-updated.schema.json`. Every example document's `$schema` field and every `"dsdsVersion"` literal inside example JSON has to track the same version.
 3. **`package.json#version`** — the npm package version. Conventionally kept in lockstep with `dsdsVersion.const`.
 
 The `scripts/bump-version.js` script keeps the first two in sync across all 52 schema files, every example, and the README. `package.json` is handled separately because it's not a schema-consumer file.
@@ -375,7 +377,7 @@ This is the exact sequence for cutting a release that includes schema changes. S
 
 4. **Bump `package.json#version`** to the target version (e.g. `0.2.0` → `0.2.1`).
 
-5. **Add a CHANGELOG entry** at the top of `CHANGELOG`, mirroring the format of the prior release. Include a one-line header noting where the bundled schema is now served (e.g., "Schema files are now served at `https://designsystemdocspec.org/v0.14.0/...`") and an "Additions" or "Breaking changes" section describing every schema-visible change.
+5. **Add a CHANGELOG entry** at the top of `CHANGELOG`, mirroring the format of the prior release. Include a one-line header noting where the bundled schema is now served (e.g., "Schema files are now served at `https://designsystemdocspec.org/v0.15.0/...`") and an "Additions" or "Breaking changes" section describing every schema-visible change.
 
 6. **Run the version bump.** Preview the change first:
 
@@ -409,9 +411,9 @@ This is the exact sequence for cutting a release that includes schema changes. S
 
 9. **Spot-check the rendered site.** Confirm the version reads correctly in three places:
 
-   - Page `<title>` tags (e.g., `DSDS Last Updated Metadata — DSDS 0.14.0`).
-   - The nav title (`Design System Documentation Spec 0.14.0`).
-   - The footer (`Design System Documentation Spec (DSDS) 0.2.1 — Draft Specification`).
+   - Page `<title>` tags (e.g., `DSDS Last Updated Metadata — DSDS 0.15.0`).
+   - The nav title (`Design System Documentation Spec 0.15.0`).
+   - The footer (`Design System Documentation Spec (DSDS) 0.14.0 — Draft Specification`).
 
    The new schema page should exist at `site/dist/<group>-<name>.html` (e.g., `site/dist/metadata-last-updated.html`), and the versioned bundle should exist at `site/dist/v<new-version>/dsds.bundled.schema.json`.
 
@@ -438,14 +440,14 @@ No changelog entry, no version bump, no new `/v<n>/` artifact. Commit the regene
 
 ## Contributing
 
-This is an early-stage specification (currently DSDS 0.14.0). Feedback is welcome:
+This is an early-stage specification (currently DSDS 0.15.0). Feedback is welcome:
 
 - **Open an issue** for questions, suggestions, or problems with the spec.
 - **Open a PR** for proposed changes to the spec, schema, or examples.
 
 ### Contributors
 
-- [Afyia Smith](https://afyiasmith.co/) — the `governance` and `docOrigin` metadata schemas (initial drafts, introduced in 0.12.1 and subject to change).
+- [Afyia Smith](https://afyiasmith.co/) — the `governance` and `docOrigin` metadata schemas (introduced in 0.12.1).
 
 ## License
 

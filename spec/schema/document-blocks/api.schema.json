@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://designsystemdocspec.org/v0.14.0/document-blocks/api.schema.json",
+  "$id": "https://designsystemdocspec.org/v0.15.0/document-blocks/api.schema.json",
   "title": "DSDS API Document Block",
   "description": "Documents the code-level interface of a component: configurable properties, emitted events, content slots, CSS custom properties, CSS shadow parts, data attributes, and public methods. When a component supports multiple platforms, each platform gets its own API block. The `platform` property says which implementation it describes.",
   "$defs": {
@@ -63,9 +63,24 @@
           "description": "Whether this property is deprecated. Defaults to false."
         },
         "deprecationNotice": {
-          "type": "string",
-          "description": "What to use instead, if deprecated."
+          "$ref": "../common/status.schema.json#/$defs/deprecationNotice",
+          "description": "Required when `deprecated` is true. MUST say what to use instead (non-empty) and SHOULD give a migration path."
         }
+      },
+      "if": {
+        "properties": {
+          "deprecated": {
+            "const": true
+          }
+        },
+        "required": [
+          "deprecated"
+        ]
+      },
+      "then": {
+        "required": [
+          "deprecationNotice"
+        ]
       },
       "additionalProperties": false
     },

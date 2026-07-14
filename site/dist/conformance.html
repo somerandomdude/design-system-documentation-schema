@@ -3,25 +3,25 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Conformance — DSDS 0.14.0</title>
+  <title>Conformance — DSDS 0.15.0</title>
   <meta name="description" content="Conformance classes, RFC 2119 requirement levels, enforcement tiers, and the generated index of every normative statement in the DSDS schemas.">
   <link rel="canonical" href="https://designsystemdocspec.org/conformance">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Design System Documentation Spec">
-  <meta property="og:title" content="Conformance — DSDS 0.14.0">
+  <meta property="og:title" content="Conformance — DSDS 0.15.0">
   <meta property="og:description" content="Conformance classes, RFC 2119 requirement levels, enforcement tiers, and the generated index of every normative statement in the DSDS schemas.">
   <meta property="og:url" content="https://designsystemdocspec.org/conformance">
   <meta name="twitter:card" content="summary">
-  <meta name="dsds-version" content="0.14.0">
-  <link rel="stylesheet" href="tokens.css?v=0.14.0">
-  <link rel="stylesheet" href="style.css?v=0.14.0">
-  <script src="components.js?v=0.14.0"></script>
+  <meta name="dsds-version" content="0.15.0">
+  <link rel="stylesheet" href="tokens.css?v=0.15.0">
+  <link rel="stylesheet" href="style.css?v=0.15.0">
+  <script src="components.js?v=0.15.0"></script>
 </head>
 <body>
   <a class="skip-link" href="#main-content">Skip to content</a>
   <ds-nav-toggle target="ds-spec-nav"></ds-nav-toggle>
-  <ds-spec-nav title="Design System Documentation Spec 0.14.0" title-href="index.html" active="conformance">
+  <ds-spec-nav title="Design System Documentation Spec 0.15.0" title-href="index.html" active="conformance">
     <a href="index.html" slug="index">Overview</a>
     <a href="quickstart.html" slug="quickstart">Quick start</a>
     <a href="humans-and-agents.html" slug="humans-and-agents">Humans &amp; agents</a>
@@ -29,6 +29,7 @@
     <a href="conformance.html" slug="conformance">Conformance</a>
     <a href="interoperability.html" slug="interoperability">Interoperability</a>
     <a href="stability.html" slug="stability">Stability &amp; 1.0</a>
+    <a href="migration.html" slug="migration">Migration</a>
     <a href="samples.html" slug="samples">Interactive samples</a>
     <ds-nav-group label="Documentation">
       <a href="root.html" slug="root">Root schema</a>
@@ -97,7 +98,7 @@
     <main class="content__main" id="main-content" role="main">
       <div class="content__inner">
         <ds-heading level="1" anchor="conformance">Conformance</ds-heading>
-<p>This page defines what it means to conform to the Design System Documentation Spec 0.14.0, and indexes every normative statement the spec makes.</p>
+<p>This page defines what it means to conform to the Design System Documentation Spec 0.15.0, and indexes every normative statement the spec makes.</p>
 <p>The key words <strong>MUST</strong>, <strong>MUST NOT</strong>, <strong>SHOULD</strong>, <strong>SHOULD NOT</strong>, and <strong>MAY</strong> in the DSDS schemas and on this page are to be interpreted as described in <a href="https://www.rfc-editor.org/rfc/rfc2119">RFC 2119</a> (as clarified by <a href="https://www.rfc-editor.org/rfc/rfc8174">RFC 8174</a>): they are normative only when they appear in upper case.</p>
 <ds-heading level="2" anchor="where-the-normative-text-lives">Where the normative text lives</ds-heading>
 <p>DSDS keeps its normative language inside the schema <ds-code inline>description</ds-code> strings, next to the structures that enforce it — the schema is the specification, not an illustration of one. The index at the bottom of this page is <strong>generated from the schemas</strong> on every build, so it cannot drift from them. Cite statements by their location-based ID (e.g. <ds-code inline>common/link§link.kind.1</ds-code>); an ID changes only when the schema path it points at changes, which is the correct signal that a citation needs re-checking.</p>
@@ -106,7 +107,7 @@
 <ds-heading level="3" anchor="conforming-document">Conforming document</ds-heading>
 <p>A JSON document that validates against the DSDS schema for the version its <ds-code inline>dsdsVersion</ds-code> declares <strong>and</strong> satisfies the semantic rules JSON Schema cannot express (identifier uniqueness, reference resolution, relationship-graph integrity, token-layer resolution, <ds-code inline>tokenType</ds-code> inheritance, <ds-code inline>docOrigin</ds-code> block-key resolution, extension-key namespacing). Schema validity alone is necessary but not sufficient.</p>
 <ds-heading level="3" anchor="conforming-producer">Conforming producer</ds-heading>
-<p>A tool or person that emits DSDS documents. A conforming producer MUST emit conforming documents, MUST NOT emit deprecated forms in new output (deprecated forms exist for reading old documents, not writing new ones), and SHOULD record how the documentation was produced via the <ds-code inline>docOrigin</ds-code> metadata field.</p>
+<p>A tool or person that emits DSDS documents. A conforming producer MUST emit conforming documents, MUST NOT emit deprecated forms in new output (when a form is deprecated, it exists for reading old documents, not writing new ones — as of 0.14.0, nothing is deprecated), and SHOULD record how the documentation was produced via the <ds-code inline>docOrigin</ds-code> metadata field.</p>
 <ds-heading level="3" anchor="conforming-consumer">Conforming consumer</ds-heading>
 <p>A tool, renderer, or agent that reads DSDS documents. A conforming consumer MUST NOT fail on optional fields it does not recognize the meaning of, MUST preserve <ds-code inline>$extensions</ds-code> data it does not understand, MUST treat unresolvable references as defects rather than silently dropping them, and MUST respect RFC 2119 levels on guidance it acts on (a <ds-code inline>must-not</ds-code> guideline is a hard gate for an agent writing code).</p>
 <ds-heading level="3" anchor="conforming-validator">Conforming validator</ds-heading>
@@ -115,7 +116,7 @@
 <p>Every normative statement is enforced at one of three tiers, or is explicitly advisory:</p>
 <ds-table><table><thead><tr><th>Tier</th><th>Mechanism</th><th>Failure mode</th></tr></thead><tbody><tr><td>Structural</td><td>JSON Schema (patterns, required, minItems, conditionals)</td><td>Validation error — blocking</td></tr><tr><td>Semantic</td><td>Reference implementation checks (resolution, uniqueness, inheritance, cycles)</td><td>Validation error — blocking</td></tr><tr><td>Lint</td><td>Rules catalog (<ds-code inline>rules/rules.yaml</ds-code>, DSDS-001…)</td><td>Warning — never blocking</td></tr><tr><td>Advisory</td><td>SHOULD/MAY statements consumed by judgment</td><td>None</td></tr></tbody></table></ds-table>
 <ds-heading level="2" anchor="normative-statements-index">Normative statements index</ds-heading>
-<p><em>Generated from the v0.14.0 schemas by <ds-code inline>scripts/extract-normative.mjs</ds-code> — do not edit by hand. 168 statements: 65 MUST, 24 MUST NOT, 62 SHOULD, 2 SHOULD NOT, 15 MAY.</em></p>
+<p><em>Generated from the v0.15.0 schemas by <ds-code inline>scripts/extract-normative.mjs</ds-code> — do not edit by hand. 173 statements: 70 MUST, 24 MUST NOT, 62 SHOULD, 2 SHOULD NOT, 15 MAY.</em></p>
 <ds-heading level="3" anchor="common">common</ds-heading>
 <ds-heading level="4" anchor="commoncriterion">common/criterion</ds-heading>
 <ul>
@@ -211,6 +212,7 @@
 <li><strong>MUST NOT</strong> — When <ds-code inline>schema</ds-code> is present it is authoritative; <ds-code inline>type</ds-code> is its display summary and MUST NOT disagree with it. <small><ds-code inline>document-blocks/api§apiProperty.type.1</ds-code></small></li>
 <li><strong>MUST NOT</strong> — When <ds-code inline>schema</ds-code> is present it is authoritative; <ds-code inline>values</ds-code> is its display summary and MUST NOT disagree with it. <small><ds-code inline>document-blocks/api§apiProperty.values.1</ds-code></small></li>
 <li><strong>MUST NOT</strong> — When present, <ds-code inline>schema</ds-code> is the authoritative type definition; <ds-code inline>type</ds-code> and <ds-code inline>values</ds-code> are display summaries of it and MUST NOT disagree. <small><ds-code inline>document-blocks/api§apiProperty.schema.1</ds-code></small></li>
+<li><strong>MUST</strong> — MUST say what to use instead (non-empty) and SHOULD give a migration path. <small><ds-code inline>document-blocks/api§apiProperty.deprecationNotice.1</ds-code></small></li>
 </ul>
 <ds-heading level="4" anchor="document-blockschecklist">document-blocks/checklist</ds-heading>
 <ul>
@@ -234,6 +236,10 @@
 <ds-heading level="4" anchor="document-blocksdesign-specifications">document-blocks/design-specifications</ds-heading>
 <ul>
 <li><strong>MUST</strong> — In a system with a token layer, this MUST be a design token identifier (e.g., 'color-action-primary', 'space-4') so the value stays single-sourced and cannot silently drift from the token system. <small><ds-code inline>document-blocks/design-specifications§designValue.1</ds-code></small></li>
+<li><strong>MUST</strong> — Keys are component-scoped property names that say what the value controls (e.g., 'background', 'border-color', 'min-height', 'font-size', 'opacity') and MUST be lowercase kebab-case. <small><ds-code inline>document-blocks/design-specifications§designProperties.1</ds-code></small></li>
+<li><strong>MUST</strong> — Keys are named spatial relationships between anatomy parts or edges (e.g., 'container-horizontal', 'icon-to-label') and MUST be lowercase kebab-case. <small><ds-code inline>document-blocks/design-specifications§spacingSpec.internal.1</ds-code></small></li>
+<li><strong>MUST</strong> — Keys are named spatial relationships (e.g., 'button-to-button', 'button-group-gap', 'stack-gap') and MUST be lowercase kebab-case. <small><ds-code inline>document-blocks/design-specifications§spacingSpec.external.1</ds-code></small></li>
+<li><strong>MUST</strong> — Keys are named text elements matching anatomy parts (e.g., 'label', 'helper-text', 'heading', 'body') and MUST be lowercase kebab-case. <small><ds-code inline>document-blocks/design-specifications§typographySpec.1</ds-code></small></li>
 </ul>
 <ds-heading level="4" anchor="document-blocksguidelines">document-blocks/guidelines</ds-heading>
 <ul>
@@ -289,7 +295,7 @@
 </ul>
 <ds-heading level="4" anchor="document-blockssteps">document-blocks/steps</ds-heading>
 <ul>
-<li><strong>MUST</strong> — A step MUST carry a <ds-code inline>title</ds-code>. <small><ds-code inline>document-blocks/steps§stepEntry.1</ds-code></small></li>
+<li><strong>MUST</strong> — A step MUST carry a <ds-code inline>label</ds-code>. <small><ds-code inline>document-blocks/steps§stepEntry.1</ds-code></small></li>
 <li><strong>MUST</strong> — MUST be concrete and actionable: describe the action, not the goal. <small><ds-code inline>document-blocks/steps§stepEntry.instruction.1</ds-code></small></li>
 <li><strong>MAY</strong> — Tools MAY render optional steps distinctly (e.g., an 'optional' label). <small><ds-code inline>document-blocks/steps§stepEntry.optional.1</ds-code></small></li>
 <li><strong>SHOULD</strong> — Tools SHOULD render ordered procedures as numbered lists and unordered ones as a checklist or bulleted list. <small><ds-code inline>document-blocks/steps§steps.ordered.1</ds-code></small></li>
@@ -422,7 +428,7 @@
         <ds-back-to-top></ds-back-to-top>
 
         <ds-footer>
-          <p>Design System Documentation Spec (DSDS) 0.14.0 — Draft Specification</p>
+          <p>Design System Documentation Spec (DSDS) 0.15.0 — Draft Specification</p>
           <p><a href="https://github.com/somerandomdude/design-system-documentation-schema">GitHub</a></p>
         </ds-footer>
       </div>

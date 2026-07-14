@@ -19,9 +19,11 @@
  *     unfamiliar counts.
  *   - A "Worst offenders" callout for files that fall below thresholds.
  *
- * The `readability` CLI must be on PATH. Install: npm i -g readability-cli
- * (this script does not pin to a version — it shells out to whatever the
- *  user has installed).
+ * The `readability` CLI must be on PATH. It is the `readability-cli` binary
+ * built from the readability tool (Rust): symlink
+ * src-rust/target/release/readability-cli onto PATH as `readability`.
+ * (This script does not pin to a version — it shells out to whatever the
+ *  user has installed.)
  */
 
 import { execFileSync } from "node:child_process";
@@ -123,6 +125,21 @@ function scoreText(text, { asMarkdown = false } = {}) {
 function scoreFile(absPath, { markdown = false } = {}) {
   const text = fs.readFileSync(absPath, "utf-8");
   return scoreText(text, { asMarkdown: markdown });
+}
+
+// Fail fast when the CLI is absent — otherwise every row reads "(error)" and
+// the aggregate math runs on an empty set.
+try {
+  execFileSync("readability", ["--format", "json"], {
+    input: "probe.",
+    encoding: "utf-8",
+  });
+} catch {
+  console.error(
+    "The `readability` CLI is not on PATH. Symlink the readability tool's " +
+      "src-rust/target/release/readability-cli binary onto PATH as `readability`.",
+  );
+  process.exit(1);
 }
 
 // ---------------------------------------------------------------------------
@@ -269,6 +286,12 @@ if (offenders.length === 0) {
 }
 
 const SUMMARY_FILES = all.filter((x) => typeof x.score === "number");
+if (SUMMARY_FILES.length === 0) {
+  console.error(
+    "\nNo files produced a score — every CLI invocation errored. Check `readability` on PATH.",
+  );
+  process.exit(1);
+}
 const avgScore =
   SUMMARY_FILES.reduce((sum, x) => sum + x.score, 0) / SUMMARY_FILES.length;
 
