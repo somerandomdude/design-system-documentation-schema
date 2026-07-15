@@ -49,25 +49,24 @@ Every normative statement is enforced at one of three tiers, or is explicitly ad
 
 {/* dsds:normative-index */}
 
-*Generated from the v{{VERSION}} schemas by `scripts/extract-normative.mjs` — do not edit by hand. 173 statements: 70 MUST, 24 MUST NOT, 62 SHOULD, 2 SHOULD NOT, 15 MAY.*
+*Generated from the v{{VERSION}} schemas by `scripts/extract-normative.mjs` — do not edit by hand. 170 statements: 69 MUST, 23 MUST NOT, 61 SHOULD, 2 SHOULD NOT, 15 MAY.*
 
 ### common
 
 #### common/criterion
 
-- **MUST** — Values are lowercase kebab-case like every DSDS-native vocabulary — in prose, the keywords stay capitalized (MUST, SHOULD NOT) where they carry conformance weight. <small>`common/criterion§conformanceLevel.1`</small>
-- **MUST** — 'automated': a runner fully decides; a `check` MUST be present. <small>`common/criterion§verificationMode.1`</small>
+- **MUST** — 'automated': a fully objective test checked programmatically; a `check` MUST be present. <small>`common/criterion§verificationMode.1`</small>
 - **MUST NOT** — When omitted, tools MUST NOT assume the criterion is automatable. <small>`common/criterion§verificationMode.2`</small>
-- **MUST** — A runner that does not recognize the scheme MUST report the criterion as skipped, never as passing. <small>`common/criterion§criterionCheck.1`</small>
+- **MUST** — Any process that doesn't recognize the tool MUST report the criterion as skipped, never as passing. <small>`common/criterion§criterionCheck.1`</small>
 - **MUST** — MUST be lowercase; dots permitted for namespacing (e.g. 'com.acme.contract-tests'). <small>`common/criterion§criterionCheck.scheme.1`</small>
-- **SHOULD** — Fixtures make criteria self-verifying: a conformance runner SHOULD execute the criterion's `check` (when present) against each fixture and confirm the declared outcome is reproduced — a 'fail' fixture that passes means the check no longer detects what it claims to. <small>`common/criterion§criterionFixture.1`</small>
+- **SHOULD** — Test cases make criteria self-verifying: a conformance runner SHOULD execute the criterion's `check` (when present) against each test case and confirm the declared outcome is reproduced — a 'fail' test case that passes means the check no longer detects what it claims to. <small>`common/criterion§criterionTestCase.1`</small>
 - **MAY** — When omitted, tools MAY build a label from the URL. <small>`common/criterion§reference.label.1`</small>
 - **MUST** — MUST be lowercase kebab-case. <small>`common/criterion§criterion.identifier.1`</small>
-- **SHOULD NOT** — Test runs report pass/fail against this identifier, so it SHOULD NOT change once checks depend on it — renaming breaks result history across runs. <small>`common/criterion§criterion.identifier.2`</small>
+- **SHOULD NOT** — Test runs report pass/fail against this identifier, so it SHOULD NOT change once checks depend on it. <small>`common/criterion§criterion.identifier.2`</small>
 - **SHOULD** — Tools SHOULD render it in docs and test reports beside the identifier. <small>`common/criterion§criterion.title.1`</small>
-- **MUST** — MUST be objectively verifiable — by inspection, static analysis, or runtime measurement. <small>`common/criterion§criterion.statement.1`</small>
+- **MUST** — MUST be objectively verifiable by inspection, static analysis, or runtime measurement. <small>`common/criterion§criterion.statement.1`</small>
 - **SHOULD** — A criterion referenced by a guideline SHOULD inherit the guideline's `level` when omitted; a standalone criterion SHOULD declare its own. <small>`common/criterion§criterion.level.1`</small>
-- **MUST NOT** — Criterion identifiers are stable: once published, an identifier MUST NOT be reused for a different requirement — retire the identifier and mint a new one instead. <small>`common/criterion§criterion.since.1`</small>
+- **MUST NOT** — Criterion identifiers are stable: once published, an identifier MUST NOT be reused for a different requirement — retire the identifier and make a new one instead. <small>`common/criterion§criterion.since.1`</small>
 
 #### common/dated-note
 
@@ -75,9 +74,9 @@ Every normative statement is enforced at one of three tiers, or is explicitly ad
 
 #### common/entity-ref
 
-- **MUST** — Tools resolve every entity reference through the same rule: the identifier MUST match a documented entity. <small>`common/entity-ref§(root).1`</small>
+- **MUST** — Every identifier MUST match a documented entity. <small>`common/entity-ref§(root).1`</small>
 - **MUST** — MUST match that entity's `identifier`. <small>`common/entity-ref§entityIdentifier.1`</small>
-- **SHOULD** — Tools SHOULD resolve it against the entity catalog to build navigable cross-references; a reference that resolves to nothing is a defect in the document. <small>`common/entity-ref§entityIdentifier.2`</small>
+- **SHOULD** — Tools SHOULD resolve it to build cross-references. <small>`common/entity-ref§entityIdentifier.2`</small>
 
 #### common/example
 
@@ -85,36 +84,36 @@ Every normative statement is enforced at one of three tiers, or is explicitly ad
 
 #### common/extends
 
-- **MAY** — When provided, tools MAY fetch and resolve the base document for merge, validation, or docs generation. <small>`common/extends§documentExtends.url.1`</small>
-- **SHOULD** — When omitted, tools SHOULD resolve to the latest available version. <small>`common/extends§documentExtends.version.1`</small>
-- **MUST** — MUST match the `identifier` property of the base entity in the parent system. <small>`common/extends§entityExtends.identifier.1`</small>
-- **MAY** — Tools MAY use these for changelog generation, diff views, or migration guides. <small>`common/extends§entityExtends.modifications.1`</small>
+- **MAY** — Tools MAY fetch it for merge, validation, or docs. <small>`common/extends§documentExtends.url.1`</small>
+- **SHOULD** — When omitted, tools SHOULD use the latest. <small>`common/extends§documentExtends.version.1`</small>
+- **MUST** — MUST match the base entity's `identifier` in the parent system. <small>`common/extends§entityExtends.identifier.1`</small>
+- **MAY** — Tools MAY use them for changelogs, diffs, or migration guides; when omitted, tools must diff the entities. <small>`common/extends§entityExtends.modifications.1`</small>
 
 #### common/extensions
 
-- **MUST** — Keys MUST use vendor-specific namespaces. <small>`common/extensions§(root).1`</small>
-- **MUST** — Keys MUST use vendor-specific namespaces (reverse domain name notation is recommended) — at least two dot-separated segments, e.g. 'com.figma', 'acme.tooling'. <small>`common/extensions§extensions.1`</small>
-- **MUST** — Tools that do not recognize an extension MUST keep it. <small>`common/extensions§extensions.2`</small>
+- **MUST** — Keys MUST use vendor namespaces. <small>`common/extensions§(root).1`</small>
+- **MUST** — Keys MUST use a namespace of at least two dot-separated segments (reverse domain recommended), Example: 'com.figma', 'acme.tooling'; the pattern is case-tolerant. <small>`common/extensions§extensions.1`</small>
+- **MUST** — Tools that don't recognize an extension MUST keep it. <small>`common/extensions§extensions.2`</small>
 - **SHOULD NOT** — Extension data SHOULD NOT duplicate core schema fields. <small>`common/extensions§extensions.3`</small>
 
 #### common/link
 
-- **MUST** — Custom values are allowed and MUST match ^[a-z][a-z0-9-]*$ (schema-enforced; all standard kinds already do). <small>`common/link§link.kind.1`</small>
+- **MUST** — Custom values MUST match ^[a-z][a-z0-9-]*$. <small>`common/link§link.kind.1`</small>
 - **MUST** — MUST be a valid absolute URI. <small>`common/link§link.url.1`</small>
-- **MAY** — When omitted, tools MAY build a label from the URL. <small>`common/link§link.label.1`</small>
+- **MAY** — When omitted, tools MAY build one from the URL. <small>`common/link§link.label.1`</small>
 
 #### common/presentation
 
-- **MUST NOT** — MUST be provided and MUST NOT be empty. <small>`common/presentation§mediaAlt.1`</small>
-- **MUST NOT** — MUST be provided for accessibility and MUST NOT be empty. <small>`common/presentation§presentationImage.alt.1`</small>
-- **MUST NOT** — MUST be provided for accessibility and MUST NOT be empty. <small>`common/presentation§presentationVideo.alt.1`</small>
+- **MUST NOT** — MUST NOT be empty. <small>`common/presentation§mediaAlt.1`</small>
+- **MUST NOT** — MUST NOT be empty. <small>`common/presentation§presentationImage.alt.1`</small>
+- **MUST NOT** — MUST NOT be empty. <small>`common/presentation§presentationVideo.alt.1`</small>
 
 #### common/relationship
 
-- **MUST** — The target is named by `identifier` and follows the same resolution rule as every entity reference: it MUST match a documented entity. <small>`common/relationship§(root).1`</small>
-- **MUST NOT** — Tools derive the inverse edges ('composed-by', 'replaced-by', 'contains', 'dependency-of', 'extended-by') and MUST NOT require them to be authored. <small>`common/relationship§relationType.1`</small>
-- **MUST** — Custom relations are allowed and MUST be vendor-namespaced (e.g. 'acme.themes'). <small>`common/relationship§relationType.2`</small>
-- **MUST** — MUST match a documented entity's `identifier`. <small>`common/relationship§relationship.target.1`</small>
+- **MUST** — Unlike `link`, which points to external resources, a relationship's target MUST be a documented entity. <small>`common/relationship§(root).1`</small>
+- **MUST NOT** — Tools derive inverse edges (composed-by, replaced-by, etc.) and MUST NOT require them to be authored. <small>`common/relationship§relationType.1`</small>
+- **MUST** — Custom relations MUST be vendor-namespaced (e.g. 'acme.themes'). <small>`common/relationship§relationType.2`</small>
+- **MUST** — MUST match a documented entity. <small>`common/relationship§relationship.target.1`</small>
 
 #### common/rich-text
 
@@ -123,23 +122,21 @@ Every normative statement is enforced at one of three tiers, or is explicitly ad
 #### common/status
 
 - **MUST** — MUST be lowercase kebab-case. <small>`common/status§statusValue.1`</small>
-- **MUST** — Custom values are allowed (e.g., 'sunset', 'archived', 'beta') and MUST follow the same pattern. <small>`common/status§statusValue.2`</small>
+- **MUST** — Custom values (e.g., 'sunset', 'beta') are allowed and MUST follow the same pattern. <small>`common/status§statusValue.2`</small>
 - **MUST** — MUST say what to use instead and, where one exists, give a migration path. <small>`common/status§deprecationNotice.1`</small>
-- **MUST NOT** — MUST NOT be empty. <small>`common/status§platformStatus.deprecationNotice.1`</small>
 
 #### common/system-info
 
-- **SHOULD** — SHOULD follow semver so tools can compare against `extends.version` and `reviewedAgainst` values. <small>`common/system-info§systemInfo.version.1`</small>
+- **SHOULD** — SHOULD follow semver so tools can compare it against `extends.version` and `reviewedAgainst`. <small>`common/system-info§systemInfo.version.1`</small>
 
 #### common/token-overrides
 
-- **MUST** — One definition anchors the same rule in every position: token references MUST name a documented token, never a raw value, so styling can't silently drift from the token source. <small>`common/token-overrides§(root).1`</small>
-- **MUST** — Values are token `identifier` references (e.g., 'color-action-primary', 'radius-md') and follow the same resolution rule as every entity reference: in a system that documents its token layer, they MUST resolve to a documented token. <small>`common/token-overrides§tokenOverrides.1`</small>
+- **MUST** — Token references MUST name a documented token, never a raw value. <small>`common/token-overrides§(root).1`</small>
+- **MUST** — When the system documents a token layer, each value MUST resolve to a documented token. <small>`common/token-overrides§tokenOverrides.1`</small>
 
 #### common/use-cases
 
-- **SHOULD** — Order matters: tools SHOULD keep it for display. <small>`common/use-cases§useCases.items.1`</small>
-- **SHOULD** — Authors SHOULD lead with recommended scenarios. <small>`common/use-cases§useCases.items.2`</small>
+- **SHOULD** — Order matters: tools SHOULD keep it for display, and authors SHOULD lead with recommended scenarios. <small>`common/use-cases§useCases.items.1`</small>
 
 ### document-blocks
 
@@ -246,11 +243,11 @@ Every normative statement is enforced at one of three tiers, or is explicitly ad
 
 #### dsds
 
-- **MUST** — MUST be relative — the pattern rejects absolute paths, protocol-relative references, and scheme-bearing URIs (http:, file:, …). <small>`dsds§fileRef.$ref.1`</small>
+- **MUST** — The value MUST be relative. <small>`dsds§fileRef.$ref.1`</small>
 - **MUST** — Resolvers MUST detect cycles. <small>`dsds§fileRef.$ref.2`</small>
 - **MUST** — They MUST treat unresolvable files or pointers and shape mismatches as fatal. <small>`dsds§fileRef.$ref.3`</small>
 - **MUST** — They MUST gate any remote dereferencing behind an allow-list (see the spec's reference-resolution and security rules). <small>`dsds§fileRef.$ref.4`</small>
-- **MUST** — A group MUST hold at least one entity — an empty group has nothing to document. <small>`dsds§entityGroup.1`</small>
+- **MUST** — A group MUST hold at least one entity. <small>`dsds§entityGroup.1`</small>
 - **SHOULD** — Order is significant: tools SHOULD keep it for display. <small>`dsds§entityGroup.entities.1`</small>
 
 ### entities

@@ -1,11 +1,11 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://designsystemdocspec.org/v0.15.0/common/relationship.schema.json",
+  "$id": "https://designsystemdocspec.org/v0.15.1/common/relationship.schema.json",
   "title": "DSDS Relationship Definitions",
-  "description": "Typed, directional dependency edges between entities. A relationship records that one entity depends on, composes, replaces, or otherwise relates to another, with a controlled `relation` vocabulary that tools and agents can reason over. This is the structural dependency graph: where `link` carries pointers to external resources (source, design, docs) and soft associations, `relationship` carries the typed, validatable edges agents use for impact analysis ('what breaks if this token changes') and alternatives ('what replaces this'). Edges are authored on the source entity in their canonical direction; tools derive the inverse edges and the whole-graph view. The target is named by `identifier` and follows the same resolution rule as every entity reference: it MUST match a documented entity.",
+  "description": "How one entity relates to another (source → target). Relationships include: source depends on the target, souce is built from the target, source replaces the target, etc. Each relationship has a `relation` type and a target entity. You declare it on one entity, and tools work out the reverse direction. A relationship's target MUST be a documented entity. Use `link`, to point to external resources.",
   "$defs": {
     "relationType": {
-      "description": "The kind of relationship, in its canonical direction (source → target). Standard relations: 'depends-on' (the source needs the target to function — e.g. a component depends on a token), 'composes' (the source is built from the target — e.g. a pattern composes a component), 'part-of' (the source is a member of the target — e.g. a token is part of a token group), 'alternative-to' (the source is an interchangeable option for the target; symmetric), 'replaces' (the source supersedes a deprecated target), 'extends' (the source inherits from the target). Tools derive the inverse edges ('composed-by', 'replaced-by', 'contains', 'dependency-of', 'extended-by') and MUST NOT require them to be authored. Custom relations are allowed and MUST be vendor-namespaced (e.g. 'acme.themes').",
+      "description": "The relation type, in canonical direction (source → target): 'depends-on' (source needs the target), 'composes' (source is built from the target), 'part-of' (source is a member of the target), 'alternative-to' (interchangeable; symmetric), 'replaces' (source supersedes a deprecated target), 'extends' (source inherits from the target). Tools work out the reverse relationship direction direction (target → source) and MUST NOT require them to be manually authored. Custom relations MUST be vendor-namespaced (e.g. 'acme.themes').",
       "anyOf": [
         {
           "type": "string",
@@ -26,7 +26,7 @@
     },
     "relationship": {
       "type": "object",
-      "description": "A single directional edge from the entity that declares it (the source) to another documented entity (the target). Pairs a controlled `relation` with the target's `identifier`. `required` marks whether the target is needed for the source to work (meaningful for 'depends-on' and 'composes'). `versionConstraint` pins a compatible range of the target. `role` describes what the target does in this relationship.",
+      "description": "Defines what entity the source relates to (`target`: the other entity's `identifier`) and how it relates (`relation`). Optional `role`, `required`, and `versionConstraint` add detail.",
       "required": [
         "relation",
         "target"
@@ -37,27 +37,27 @@
         },
         "target": {
           "$ref": "entity-ref.schema.json#/$defs/entityIdentifier",
-          "description": "The identifier of the entity this edge points at. MUST match a documented entity's `identifier`. A target that resolves to nothing is a defect in the document."
+          "description": "Identifier of the target entity. MUST match a documented entity."
         },
         "role": {
           "$ref": "entity-ref.schema.json#/$defs/entityRole",
-          "description": "What the target does in this relationship (e.g., 'Provides semantic text color', 'Renders the confirm action'). When omitted, the edge is a general association of the given relation type."
+          "description": "What the target does here (ex: 'Provides semantic text color'). When omitted, the edge is a general association."
         },
         "required": {
           "type": "boolean",
           "default": false,
-          "description": "Whether the target is required for the source entity to function. Meaningful for 'depends-on' and 'composes' edges; ignored for symmetric or advisory relations like 'alternative-to'. Defaults to false."
+          "description": "Whether the target is required for the source to function. Meaningful for 'depends-on' and 'composes'; ignored for symmetric relations. Defaults to false."
         },
         "versionConstraint": {
           "type": "string",
-          "description": "An optional version range that the target must satisfy for this relationship to hold, expressed as a semver range (e.g., '>=2.0.0', '^3'). Use it when a dependency is tied to a specific version of the target. Tools treat it as advisory metadata, not a hard validation rule."
+          "description": "A semver range the target must satisfy (e.g., '>=2.0.0', '^3'). Advisory metadata, not a hard validation rule."
         }
       },
       "additionalProperties": false
     },
     "relationships": {
       "type": "array",
-      "description": "The entity's outgoing relationship edges, in canonical direction. Each entry is a typed `relationship` to another documented entity. Order is not significant. Tools derive inverse edges (e.g., 'composed-by') and the whole-graph view; authors declare each edge once, on the source. Use this for the structural dependency graph; use the `links` metadata field for external resources and display-oriented pointers.",
+      "description": "The links this entity points at other entities. You list each one here, on this entity; the order doesn't matter, and you don't repeat it on the other entity (tools show the reverse side for you).",
       "items": {
         "$ref": "#/$defs/relationship"
       },

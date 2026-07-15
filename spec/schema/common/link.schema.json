@@ -1,28 +1,28 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://designsystemdocspec.org/v0.15.0/common/link.schema.json",
+  "$id": "https://designsystemdocspec.org/v0.15.1/common/link.schema.json",
   "title": "DSDS Link Definition",
-  "description": "A typed pointer to an external resource — source code, design files, docs, packages. Every link needs a `kind` and a `url`. Links are pointers only: inter-entity references are expressed as typed edges in the entity's `relationships` array, never as links. (The pre-0.14 identifier-bearing link form was removed in the 0.14.0 breaking window; `scripts/migrate-relationship-links.js` converts old documents.)",
+  "description": "A typed pointer to an external resource — source, design, docs, packages. Every link needs a `kind` and a `url`. Use the `relationships` array for references between entities instead of links.",
   "$defs": {
     "link": {
       "type": "object",
-      "description": "A typed pointer to an external resource, addressed by `url`. The `kind` property sorts the reference. Standard kinds: 'source', 'design', 'storybook', 'documentation', 'package', 'repository', 'manifest' (a machine-readable component manifest, e.g. a Custom Elements Manifest). Custom values are allowed. For how entities relate to each other, use the entity's `relationships` array — it carries typed, validated edges; links are for resources outside the document.",
+      "description": "The typed pointer to external content, defined by `url`. Standard `kind`s include 'source', 'design', 'storybook', 'documentation', 'package', 'repository', 'manifest'. Custom values allowed.",
       "required": ["kind", "url"],
       "properties": {
         "kind": {
           "type": "string",
           "pattern": "^[a-z][a-z0-9-]*$",
-          "description": "The category of the linked resource. Standard kinds: 'source', 'design', 'storybook', 'documentation', 'package', 'repository', 'manifest'. Custom values are allowed and MUST match ^[a-z][a-z0-9-]*$ (schema-enforced; all standard kinds already do)."
+          "description": "The resource category. Custom values MUST match ^[a-z][a-z0-9-]*$."
         },
         "url": {
           "type": "string",
           "format": "uri",
-          "description": "The URL of the linked resource. MUST be a valid absolute URI."
+          "description": "The URL of the linked content. MUST be a valid absolute URI."
         },
         "label": {
           "type": "string",
           "minLength": 1,
-          "description": "Display text for this link — what a user sees when the link renders (e.g., 'React component source', 'Design file — variants'). When omitted, tools MAY build a label from the URL."
+          "description": "Display text for the link (ex: 'React component source'). When omitted, tools MAY build one from the URL."
         }
       },
       "additionalProperties": false

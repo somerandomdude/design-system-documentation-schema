@@ -1,41 +1,41 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://designsystemdocspec.org/v0.15.0/common/status.schema.json",
+  "$id": "https://designsystemdocspec.org/v0.15.1/common/status.schema.json",
   "title": "DSDS Status Definition",
-  "description": "Shared status vocabulary used by the status metadata entry. `statusValue` is the lowercase kebab-case lifecycle string (draft, experimental, stable, deprecated, plus custom values). `platformStatus` captures one platform's readiness: its lifecycle stage, the version it became available, and an optional deprecation notice. It needs a deprecationNotice when that platform is deprecated.",
+  "description": "Shared status vocabulary. `statusValue` is the lifecycle string (draft, experimental, stable, deprecated, or custom). `platformStatus` captures one platform's readiness, and requires a `deprecationNotice` when that platform is deprecated.",
   "$defs": {
     "statusValue": {
       "type": "string",
       "pattern": "^[a-z][a-z0-9-]*$",
-      "description": "A lifecycle status value. MUST be lowercase kebab-case. Standard values: 'draft' (under development, not ready for use), 'experimental' (available, but the API may change without notice), 'stable' (production-ready; changes follow semver), 'deprecated' (scheduled for removal). Custom values are allowed (e.g., 'sunset', 'archived', 'beta') and MUST follow the same pattern."
+      "description": "A lifecycle status value. MUST be lowercase kebab-case. Standard values: 'draft' (in development), 'experimental' (available; API may change), 'stable' (production-ready, semver), 'deprecated' (scheduled for removal). Custom values (ex: 'sunset', 'beta') are allowed and MUST follow the same pattern."
     },
     "deprecationNotice": {
       "type": "string",
       "minLength": 1,
-      "description": "A non-empty notice for a deprecated artifact. MUST say what to use instead and, where one exists, give a migration path. Shared by the platform-level and entity-level status forms so the non-empty rule lives in one place."
+      "description": "A non-empty notice for a deprecated artifact. MUST say what to use instead and, where one exists, give a migration path."
     },
     "platformStatus": {
       "type": "object",
-      "description": "Readiness of an artifact on one platform. Tracks the lifecycle stage, the version where it became available, and an optional deprecation notice.",
+      "description": "Readiness of an artifact on one platform: lifecycle stage, the version it landed in, and an optional deprecation notice.",
       "required": [
         "status"
       ],
       "properties": {
         "status": {
           "$ref": "#/$defs/statusValue",
-          "description": "Lifecycle status of the artifact on this platform. Uses the same vocabulary as the overall status: 'draft', 'experimental', 'stable', 'deprecated'. Custom values are allowed."
+          "description": "Lifecycle status on this platform. Same vocabulary as overall status; custom values allowed."
         },
         "since": {
           "type": "string",
-          "description": "The version in which this artifact became available on this platform."
+          "description": "The version this entity became available on this platform."
         },
         "deprecationNotice": {
           "$ref": "#/$defs/deprecationNotice",
-          "description": "Required when status is 'deprecated'. Says what to use instead on this platform. MUST NOT be empty."
+          "description": "Required when status is 'deprecated'; says what to use instead on this platform."
         },
         "note": {
           "$ref": "dated-note.schema.json#/$defs/plainNote",
-          "description": "Notes about the artifact's status on this platform (e.g., 'Available as a Web Component wrapper; native implementation planned for v4')."
+          "description": "Free-text notes on this platform's status (ex: 'Web Component wrapper; native implementation planned for v4')."
         }
       },
       "if": {

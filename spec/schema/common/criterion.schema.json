@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://designsystemdocspec.org/v0.15.0/common/criterion.schema.json",
+  "$id": "https://designsystemdocspec.org/v0.15.1/common/criterion.schema.json",
   "title": "DSDS Criterion Definitions",
-  "description": "Shared definitions for testable success criteria, conformance, and external standard references. Criteria are the test-definition layer of DSDS documentation: each pairs a stable identifier with an objectively verifiable statement, an optional conformance `level`, a `verification` mode (automated, assisted, or manual), and an optional machine-dispatchable `check`. Fixtures with declared outcomes make criteria self-verifying. Used by guideline entries and accessibility blocks. Observed results belong in a guideline entry's `evidence`, not here.",
+  "description": "Definitions for testable success criteria, conformance, and external standard references. Criteria are the test-definition layer of DSDS documentation: each has a unique identifier with an objectively verifiable statement, an optional conformance `level`, a `verification` mode (automated, assisted, or manual), and an optional machine-dispatchable `check`. Test cases with declared outcomes make criteria self-verifying. Used by guideline entries and accessibility document blocks. Observed results belong in a guideline entry's `evidence`.",
   "$defs": {
     "conformanceLevel": {
       "type": "string",
@@ -12,7 +12,7 @@
         "should-not",
         "must-not"
       ],
-      "description": "Conformance level, named for RFC 2119 requirement levels: 'must' and 'must-not' are absolute requirements (non-compliance is a defect); 'should' and 'should-not' are strong defaults that valid exceptions may override when the implications are understood. Values are lowercase kebab-case like every DSDS-native vocabulary — in prose, the keywords stay capitalized (MUST, SHOULD NOT) where they carry conformance weight. Shared by guideline entries and criteria so reports aggregate on one severity vocabulary."
+      "description": "Conformance level, named for RFC 2119 requirement levels: 'must' and 'must-not' are absolute requirements (non-compliance is a failure); 'should' and 'should-not' are recommendations that can be overridden. Values in the schema are lowercase kebab-case (ex: must, should-not); the uppercase RFC 2119 spellings are used only when writing documentation, where they carry conformance weight."
     },
     "verificationMode": {
       "type": "string",
@@ -21,11 +21,11 @@
         "assisted",
         "manual"
       ],
-      "description": "How a result for this criterion is produced — who decides the outcome. 'automated': a runner fully decides; a `check` MUST be present. 'assisted': a tool surfaces candidates but a human decides; `check` diagnostics are advisory. 'manual': pure human judgment; no `check` applies — `techniques` and `failures` serve as the reviewer's procedure. This is a closed set: the axis is who decides, and named procedures (e.g. a design review) are the 'how', which belongs in `techniques`. When omitted, tools MUST NOT assume the criterion is automatable."
+      "description": "How a result for this criterion is determined. 'automated': a fully objective test checked programmatically; a `check` MUST be present. 'assisted': a tool surfaces candidates but remains a subjective decision; `check` diagnostics are advisory. 'manual': pure subjective judgment; no `check` applies — `techniques` and `failures` serve as the reviewer's steps. Named procedures (ex: a design review) belong in `techniques`. When omitted, tools MUST NOT assume the criterion is automatable."
     },
     "criterionCheck": {
       "type": "object",
-      "description": "A dispatch envelope for automated or assisted verification. DSDS defines only the envelope: `scheme` names the runner or rule system (open vocabulary, e.g. 'axe-core', 'vitest', 'stylelint', 'lighthouse'); all other properties are scheme-specific configuration owned by the named tool. A runner that does not recognize the scheme MUST report the criterion as skipped, never as passing. Like `extensions`, this object is intentionally open: execution semantics live in tools, not in this specification.",
+      "description": "Defines the tool used for testing (ex: 'axe-core', 'vitest', 'stylelint', 'lighthouse'). DSDS only defines the tool. It doesn't define tools' configuration values or settings. Any process that doesn't recognize the tool MUST report the criterion as skipped, never as passing. Like `extensions`, this object is intentionally open: execution details do not live in this specification.",
       "required": [
         "scheme"
       ],
@@ -38,9 +38,9 @@
       },
       "additionalProperties": true
     },
-    "criterionFixture": {
+    "criterionTestCase": {
       "type": "object",
-      "description": "An example with a declared outcome, used as a verification fixture for a criterion. Identical to `example` plus a required `outcome`. NOTE: this is an intentional copy of the `example` shape, not a composition — `example` is a closed schema (additionalProperties: false), so allOf-extension cannot add `outcome`. When `example` changes, change this definition to match (example.schema.json carries the mirror note). Fixtures make criteria self-verifying: a conformance runner SHOULD execute the criterion's `check` (when present) against each fixture and confirm the declared outcome is reproduced — a 'fail' fixture that passes means the check no longer detects what it claims to.",
+      "description": "An example with a defined outcome, used as a test case for a criterion. Identical to `example` plus a required `outcome`. This intentionally copies the shape of `example`. `example` is a closed schema, so allOf-extension cannot add `outcome`. When `example` changes, update this definition to match. Test cases make criteria self-verifying: a conformance runner SHOULD execute the criterion's `check` (when present) against each test case and confirm the declared outcome is reproduced — a 'fail' test case that passes means the check no longer detects what it claims to.",
       "anyOf": [
         {
           "required": [
@@ -62,13 +62,13 @@
         },
         "description": {
           "type": "string",
-          "description": "An explanation of the example — why it is encouraged, discouraged, or notable."
+          "description": "An explanation of the example and why it's encouraged, discouraged, or important."
         },
         "value": {
-          "description": "A literal value carried by the example. Use it for API property examples, where the content is a concrete value rather than a visual demo. It can display code that reflects the example. Accepts any JSON type: string, number, boolean, object, array, or null. When given without a presentation, this value alone is the example. Do not use `value` for display text — use `title` for captions and `description` for explanations."
+          "description": "A literal value carried by the example. Use it for API property examples, where the content is a concrete value rather than a visual demo. It can display code that reflects the example. Accepts any JSON type: string, number, boolean, object, array, or null. When given without a presentation, this value alone is the example. Do not use `value` for display text. Use `title` and `description` instead."
         },
         "presentation": {
-          "description": "The visual or interactive presentation for the example. Required when no `value` is set. Optional when `value` is present. Value-only examples are concrete data points that tools render as table rows or inline displays.",
+          "description": "The visual or interactive presentation for the example. Required when no `value` is set. Optional when `value` is present.",
           "oneOf": [
             {
               "$ref": "presentation.schema.json#/$defs/presentationImage"
@@ -90,14 +90,14 @@
             "pass",
             "fail"
           ],
-          "description": "Whether this fixture satisfies ('pass') or violates ('fail') the criterion. Replaces encoding pass/fail in `title` prose, which tools cannot rely on."
+          "description": "Whether this test case satisfies ('pass') or violates ('fail') the criterion."
         }
       },
       "additionalProperties": false
     },
     "reference": {
       "type": "object",
-      "description": "A citation of an external standard or requirement. This is a published rule the docs address (WCAG, platform guidelines, vendor compliance frameworks).",
+      "description": "A citation of an external standard or requirement. This is a published rule the docs address (ex: WCAG, platform guidelines, vendor compliance frameworks).",
       "required": [
         "url"
       ],
@@ -109,14 +109,14 @@
         },
         "label": {
           "type": "string",
-          "description": "A display label for the citation (e.g., '1.4.3 Contrast (Minimum)', 'WCAG 2.5.8 Target Size'). When omitted, tools MAY build a label from the URL."
+          "description": "A display label for the citation (ex: '1.4.3 Contrast (Minimum)', 'WCAG 2.5.8 Target Size'). When omitted, tools MAY build a label from the URL."
         }
       },
       "additionalProperties": false
     },
     "criterion": {
       "type": "object",
-      "description": "A testable success criterion: an objectively verifiable condition an implementation must meet. Criteria let documentation act as a test harness — a result is produced per `verification` mode and reported under the criterion's `identifier`. `statement` is the normative, human-readable source of truth; `check`, when present, is its machine-dispatchable shadow and never replaces it. Pair with `techniques` (how to pass), `failures` (what failing looks like), `references` (external standards), and `examples` (fixtures with declared outcomes).",
+      "description": "A testable success criterion: an objectively verifiable condition an implementation must meet. `statement` is the human-readable source of truth; `check` describes what tool is used to run the test and is not a replacement for `statement`. Pair with `techniques` (how to pass), `failures` (what failing looks like), `references` (external standards), and `examples` (test cases with declared outcomes).",
       "required": [
         "identifier",
         "statement"
@@ -125,7 +125,7 @@
         "identifier": {
           "type": "string",
           "pattern": "^[a-z][a-z0-9-]*$",
-          "description": "Stable identifier for this criterion, unique within the parent entity (e.g., 'touch-target-minimum', 'single-primary-action'). MUST be lowercase kebab-case. Test runs report pass/fail against this identifier, so it SHOULD NOT change once checks depend on it — renaming breaks result history across runs."
+          "description": "Stable identifier for this criterion, unique within the parent entity (e.g., 'touch-target-minimum', 'single-primary-action'). MUST be lowercase kebab-case. Test runs report pass/fail against this identifier, so it SHOULD NOT change once checks depend on it."
         },
         "title": {
           "type": "string",
@@ -133,11 +133,11 @@
         },
         "statement": {
           "$ref": "rich-text.schema.json#/$defs/richText",
-          "description": "The testable statement of what success looks like. MUST be objectively verifiable — by inspection, static analysis, or runtime measurement. Avoid vague language like 'feels right' or 'looks balanced' (e.g., 'Interactive elements present a hit area of at least 44×44 px')."
+          "description": "The testable statement of what success looks like. MUST be objectively verifiable by inspection, static analysis, or runtime measurement. Statements should be concrete and measurable (ex: 'Interactive elements present a hit area of at least 44×44 px')."
         },
         "techniques": {
           "type": "array",
-          "description": "Sufficient ways to satisfy this criterion — the passing patterns (e.g., 'Apply `min-height: 44px` to every interactive element', 'Use the `<Button>` component without overriding its default height').",
+          "description": "Sufficient ways to satisfy this criterion — the passing patterns (ex: 'Apply `min-height: 44px` to every interactive element', 'Use the `<Button>` component without overriding its default height').",
           "items": {
             "$ref": "rich-text.schema.json#/$defs/richText"
           },
@@ -145,7 +145,7 @@
         },
         "failures": {
           "type": "array",
-          "description": "Known failure modes — conditions that count as failing this criterion (e.g., 'Setting `height` below 44px on an interactive element', 'Removing `aria-label` from an icon-only button').",
+          "description": "Known failure modes. A list of conditions that count as failing this criterion (ex: 'Setting `height` below 44px on an interactive element', 'Removing `aria-label` from an icon-only button').",
           "items": {
             "$ref": "rich-text.schema.json#/$defs/richText"
           },
@@ -153,7 +153,7 @@
         },
         "references": {
           "type": "array",
-          "description": "External standards this criterion aligns with or derives from (e.g., a matching WCAG success criterion, a platform guideline).",
+          "description": "External standards this criterion aligns with or derives from (ex: a matching WCAG success criterion, a platform guideline).",
           "items": {
             "$ref": "#/$defs/reference"
           },
@@ -161,9 +161,9 @@
         },
         "examples": {
           "type": "array",
-          "description": "Verification fixtures — typically one passing and one failing implementation, each with a declared `outcome`.",
+          "description": "Verification test cases — typically one passing and one failing implementation, each with a declared `outcome`.",
           "items": {
-            "$ref": "#/$defs/criterionFixture"
+            "$ref": "#/$defs/criterionTestCase"
           },
           "minItems": 1
         },
@@ -186,7 +186,7 @@
         },
         "since": {
           "type": "string",
-          "description": "The design system version in which this criterion was introduced (e.g., '1.0.0', '2.3.0'). Criterion identifiers are stable: once published, an identifier MUST NOT be reused for a different requirement — retire the identifier and mint a new one instead."
+          "description": "The design system version in which this criterion was introduced (ex: '1.0.0', '2.3.0'). Criterion identifiers are stable: once published, an identifier MUST NOT be reused for a different requirement — retire the identifier and make a new one instead."
         }
       },
       "additionalProperties": false,

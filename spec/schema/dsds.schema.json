@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://designsystemdocspec.org/v0.15.0/dsds.schema.json",
-  "title": "Design System Documentation Spec (DSDS) v0.15.0",
-  "description": "A machine-readable format for design system documentation. It covers components, design tokens, token groups, themes, foundations, patterns, guides, and chunks. A DSDS document holds a single entity or one or more entity groups — named collections of entities. Each entity carries a `kind` discriminator that marks it as a component, token, token-group, theme, foundation, pattern, guide, or chunk. Entity schemas are in entities/. Document block schemas are in document-blocks/. Common schemas are in common/.",
+  "$id": "https://designsystemdocspec.org/v0.15.1/dsds.schema.json",
+  "title": "Design System Documentation Spec (DSDS) v0.15.1",
+  "description": "The design system documentation spec (DSDS) is machine-readable format for design system documentation. Each DSDS document is either an entity (a document for a specific design token, component, pattern, etc.) or an entity group (collection of entities). Each entity has a `kind` property that defines its subject matter. DSDS entities support component, token, token-group, theme, foundation, pattern, guide, or chunk. Entity schemas are in entities/. Document block schemas are in document-blocks/. Common schemas are in common/.",
   "type": "object",
   "required": [
     "dsdsVersion"
@@ -26,19 +26,19 @@
     },
     "dsdsVersion": {
       "type": "string",
-      "const": "0.15.0",
-      "description": "The DSDS spec version this document conforms to."
+      "const": "0.15.1",
+      "description": "The DSDS spec version this document follows."
     },
     "systemInfo": {
       "$ref": "common/system-info.schema.json#/$defs/systemInfo"
     },
     "extends": {
       "$ref": "common/extends.schema.json#/$defs/documentExtends",
-      "description": "Declares that this DSDS document inherits from another DSDS document — usually a core design system. The base document provides the core entities. This document layers on top, adding or extending entities. It supports systems-of-systems architectures, where product- or brand-specific systems inherit from a shared core."
+      "description": "Declares that this DSDS document inherits from another DSDS document. This is typically used for systems with a core/extension model. The base document provides the core entities. This document layers on top, adding or extending entities."
     },
     "documentBlocks": {
       "type": "array",
-      "description": "System-level structured documentation for the design system as a whole — its purpose (when to adopt the system), cross-cutting guidelines, and narrative overviews. Each entry is a general document block: a `use-cases`, `guidelines`, `sections`, `accessibility`, `content`, or `checklist` block. This is the same `documentBlocks` mechanism entities use, scoped to the system rather than a single artifact. Position signals the scope (root vs. inside an entity).",
+      "description": "Structured documentation for the design system as a whole. Examples include defining the system's purpose (when to adopt the system), system-level guidelines, and overviews. It's accepts general document blocks: `use-cases`, `guidelines`, `sections`, `accessibility`, `content`, or `checklist`.",
       "items": {
         "$ref": "document-blocks/document-blocks.schema.json#/$defs/generalDocumentBlock"
       },
@@ -46,7 +46,7 @@
     },
     "entityGroups": {
       "type": "array",
-      "description": "One or more entity groups. Each group is a named collection with a single `entities` array. That array holds any mix of entity types — components, tokens, token groups, themes, foundations, patterns, guides, and chunks — in display order. Each entity's `kind` identifies its type. Multiple groups let one DSDS file organize entities into logical sections (e.g., one group for foundations, another for components). Groups may be inlined or referenced through a $ref object that points to another DSDS file.",
+      "description": "One or more entity groups. Each group is named with a single `entities` array. That array holds any kind of entity — components, tokens, token groups, themes, foundations, patterns, guides, and chunks. The order of the array represents the default display order. Multiple groups let one DSDS file organize entities into logical sections (ex:, one group for foundations, another for components). Groups can be inlined or referenced through a $ref object that points to another DSDS file.",
       "items": {
         "oneOf": [
           {
@@ -61,7 +61,7 @@
     },
     "entity": {
       "$ref": "#/$defs/anyEntity",
-      "description": "A single entity document — one component, token, token group, theme, foundation, pattern, guide, or chunk. Use this instead of `entityGroups` when each entity lives in its own file. The `kind` field on the entity identifies its type."
+      "description": "The entity information for an individual component, token, token group, theme, foundation, pattern, guide, or chunk. Use this instead of `entityGroups` when each entity lives in its own file. The `kind` field on the entity identifies its type."
     },
     "$extensions": {
       "$ref": "common/extensions.schema.json#/$defs/extensions"
@@ -71,7 +71,7 @@
   "$defs": {
     "anyEntity": {
       "type": "object",
-      "description": "Any DSDS entity — component, token, token group, theme, foundation, pattern, guide, or chunk. The required `kind` property identifies the entity type and selects its schema via one `if`/`then` branch per kind — the same discriminated-union style the document-block unions use, so a validation error reports against the one schema the `kind` selects instead of compounding across all eight. This is the single entity union. The root `entity` property and each entity group's `entities` array both accept it.",
+      "description": "The required entity `kind` property identifies its type and selects its schema via one `if`/`then` branch per kind. This checks that an entity is referencing the correct schema.",
       "required": [
         "kind"
       ],
@@ -214,7 +214,7 @@
     },
     "fileRef": {
       "type": "object",
-      "description": "A JSON Reference to a DSDS entity or entity group defined in another file. Tooling (e.g. json-schema-ref-parser) resolves the reference before validation and merge. The URI should include a JSON Pointer fragment to target a specific value within the referenced file (e.g. './button.dsds.json#/entity', './groups/tokens.dsds.json#/entityGroups/0').",
+      "description": "A JSON Reference to a DSDS entity or entity group defined in another file. Tooling ( json-schema-ref-parser) resolves the reference before validation and bundling. The URI should include a JSON Pointer fragment to target a specific value within the referenced file (ex: './button.dsds.json#/entity', './groups/tokens.dsds.json#/entityGroups/0').",
       "required": [
         "$ref"
       ],
@@ -222,7 +222,7 @@
         "$ref": {
           "type": "string",
           "pattern": "^(?![a-zA-Z][a-zA-Z0-9+.\\-]*:)(?!//)(?!/)",
-          "description": "A relative reference to a DSDS file, optionally with a JSON Pointer fragment that identifies the target value within that file (e.g., './button.dsds.json#/entity'). MUST be relative — the pattern rejects absolute paths, protocol-relative references, and scheme-bearing URIs (http:, file:, …). A reference to another system uses `extends.url`. Resolvers MUST detect cycles. They MUST treat unresolvable files or pointers and shape mismatches as fatal. They MUST gate any remote dereferencing behind an allow-list (see the spec's reference-resolution and security rules).",
+          "description": "A relative reference to a DSDS file, optionally with a JSON Pointer fragment that identifies the target value within that file (ex: './button.dsds.json#/entity'). The value MUST be relative. The pattern rejects absolute paths, protocol-relative references, and scheme-bearing URIs (http:, file:, …). A reference to another system uses `extends.url`. Resolvers MUST detect cycles. They MUST treat unresolvable files or pointers and shape mismatches as fatal. They MUST gate any remote dereferencing behind an allow-list (see the spec's reference-resolution and security rules).",
           "minLength": 1
         }
       },
@@ -230,7 +230,7 @@
     },
     "entityGroup": {
       "type": "object",
-      "description": "A named collection of design system entities. All entities live in a single `entities` array, in display order, mixing entity types freely. Each entity's required `kind` identifies its type, so no per-type arrays are needed. A group MUST hold at least one entity — an empty group has nothing to document.",
+      "description": "A named collection of design system entities. All entities live in a single `entities` array, in display order, mixing entity types freely. Each entity's required `kind` identifies its type, so no per-type arrays are needed. A group MUST hold at least one entity.",
       "required": [
         "name",
         "entities"
@@ -238,7 +238,7 @@
       "properties": {
         "name": {
           "type": "string",
-          "description": "Human-readable name of the collection (e.g., 'Acme Design System', 'Color Tokens', 'Button Documentation'). This is already a display label — it does NOT have an `identifier` counterpart and need not match a slug pattern.",
+          "description": "Human-readable name of the collection (ex: 'Acme Design System', 'Color Tokens', 'Button Documentation'). This acts as display label only.",
           "minLength": 1
         },
         "description": {
@@ -246,7 +246,7 @@
         },
         "entities": {
           "type": "array",
-          "description": "The entities in this group, in display order. Any mix of entity kinds — components, tokens, token groups, themes, foundations, patterns, guides, and chunks. Each item's `kind` identifies its type. Items may be inlined or referenced through a $ref object that points to another DSDS file. Order is significant: tools SHOULD keep it for display.",
+          "description": "The group's entities, in order of default display. A group can contain any mix of entity kinds. Items may be inlined or referenced through a $ref object that points to another DSDS file. Order is significant: tools SHOULD keep it for display.",
           "items": {
             "oneOf": [
               {
