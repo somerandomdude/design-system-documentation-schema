@@ -2,64 +2,64 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://designsystemdocspec.org/v0.15.1/document-blocks/checklist.schema.json",
   "title": "DSDS Checklist Document Block",
-  "description": "An explicit checklist of items to work through for an artifact. Built primarily for agents: a concrete list of things to verify, do, or confirm when building, reviewing, or integrating a component, foundation, or pattern. Each item pairs a short, actionable label with optional detail, an optional RFC 2119 level that marks hard gates, and an optional pointer to the criterion that backs it. Use a checklist when the goal is an explicit pass over an artifact; use `guidelines` for the underlying rules and rationale.",
+  "description": "A checklist of things to check off \u2014 built for agents, but useful for people too. Each item is a short, actionable line, with optional extra detail, a level that marks how strict it is, and an optional link to the criterion that proves it. Use `checklist` for a hands-on pass over something; use `guidelines` for the rules behind it.",
   "$defs": {
     "checklistItem": {
       "type": "object",
-      "description": "A single checklist item: one concrete thing to verify, do, or confirm. `label` is the actionable statement an agent works through. `description` adds supporting detail. `level` sets how strictly it must be satisfied. `criterion` points to a testable success criterion that backs the item. `optional` marks an item that can be skipped. An item MUST carry a `label`; all other fields are optional.",
+      "description": "One thing to check, do, or confirm. `label` is the action itself. `description` adds detail. `level` says how strict it is. `criterion` links to the test that proves it. `optional` lets it be skipped. Only `label` is required.",
       "required": ["label"],
       "properties": {
         "label": {
           "$ref": "../common/rich-text.schema.json#/$defs/richText",
-          "description": "The check, written as a concrete, imperative statement an agent can act on and then mark done or not done (e.g., 'Give every icon-only button an aria-label', 'Keep one primary-emphasis button per surface'). MUST be specific enough to confirm. Avoid vague phrasing like 'check accessibility'."
+          "description": "The check itself, written as an instruction you can act on and mark done or not (e.g., 'Give every icon-only button an aria-label'). MUST be specific \u2014 not 'check accessibility'."
         },
         "description": {
           "$ref": "../common/rich-text.schema.json#/$defs/richText",
-          "description": "Optional detail: how to satisfy the item, what to watch for, or why it matters. Keep the actionable instruction in `label` and use this for supporting context."
+          "description": "Extra detail \u2014 how to do it, what to watch for, or why it matters. Keep the instruction itself in `label`."
         },
         "level": {
           "$ref": "../common/criterion.schema.json#/$defs/conformanceLevel",
-          "description": "How strictly this item must be satisfied, named for RFC 2119 requirement levels: 'must' (a hard gate; failing it is a defect), 'should' (follow unless justified), 'should-not', 'must-not'. Agents treat must/must-not items as hard gates. When omitted, the item is a recommended check."
+          "description": "How strict this item is: 'must' (a hard requirement), 'should' (do it unless you have a reason not to), 'should-not', or 'must-not'. Agents treat must/must-not as non-negotiable. Left out, it's just a recommendation."
         },
         "criterion": {
           "type": "string",
           "pattern": "^[a-z][a-z0-9-]*$",
-          "description": "Optional identifier of a testable success criterion (from a guideline or accessibility block on the same entity) that verifies this item. MUST be lowercase kebab-case. Lets an agent jump from the checklist item to the criterion that defines pass/fail."
+          "description": "Optional link to a testable criterion (from a guideline or accessibility block) that proves this item passes. MUST be lowercase kebab-case."
         },
         "category": {
           "type": "string",
-          "description": "Optional discipline this item belongs to, used to group a long checklist. Standard values match the guideline categories: 'visual-design', 'interaction', 'accessibility', 'content', 'motion', 'development'. Custom values are allowed and SHOULD be lowercase kebab-case."
+          "description": "Groups items in a long checklist by discipline: 'visual-design', 'interaction', 'accessibility', 'content', 'motion', 'development', or a custom lowercase kebab-case value."
         },
         "optional": {
           "type": "boolean",
           "default": false,
-          "description": "Whether the item can be skipped without failing the checklist. Defaults to false. Tools MAY render optional items distinctly (e.g., an 'optional' label)."
+          "description": "Whether this item can be skipped. Defaults to false. Tools MAY mark optional items differently."
         }
       },
       "additionalProperties": false
     },
     "checklist": {
       "type": "object",
-      "description": "An explicit checklist for an artifact: a list of concrete items an agent (or a person) works through when building, reviewing, or integrating it. Each item is a checklistItem with an actionable label and an optional level, detail, and criterion link. Use it to turn an artifact's rules into an explicit pass: 'an accessibility review', 'before you ship', 'integration steps'. A general block kind, accepted on every entity type, and equally at home in `agentDocumentBlocks`.",
+      "description": "A checklist for an artifact \u2014 the concrete steps an agent (or a person) works through when building, reviewing, or integrating it. Turns rules into an actual pass, like 'accessibility review' or 'before you ship'. A general block kind, accepted on every entity type, and just as at home in `agentDocumentBlocks`.",
       "required": ["kind", "items"],
       "properties": {
         "kind": {
           "type": "string",
           "const": "checklist",
-          "description": "Identifies this document block as a checklist."
+          "description": "Identifies this block as a checklist."
         },
         "title": {
           "type": "string",
-          "description": "An optional heading for the checklist (e.g., 'Accessibility review', 'Before you ship', 'Integration checklist'). Use it to name the pass the items belong to."
+          "description": "An optional heading naming the checklist (e.g., 'Accessibility review', 'Before you ship')."
         },
         "ordered": {
           "type": "boolean",
           "default": false,
-          "description": "Whether the items must be worked through in order. Defaults to false (an independent checklist where items can be checked in any order). Set true when each item depends on the previous one. Tools SHOULD render unordered checklists as checkboxes and ordered ones as a numbered sequence."
+          "description": "Whether items must be done in order. Defaults to false \u2014 items can be checked off in any order. Set true when each item depends on the last. Tools SHOULD show unordered checklists as checkboxes and ordered ones as a numbered list."
         },
         "items": {
           "type": "array",
-          "description": "The checklist items, in display order. Each item is one concrete thing to verify, do, or confirm. Order is significant for ordered checklists, so tools MUST preserve it.",
+          "description": "The checklist items, in order. Order matters when `ordered` is true, so tools MUST preserve it.",
           "items": {
             "$ref": "#/$defs/checklistItem"
           },

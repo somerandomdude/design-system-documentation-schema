@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://designsystemdocspec.org/v0.15.1/document-blocks/variants.schema.json",
   "title": "DSDS Variants Document Block",
-  "description": "Documents all dimensions of visual or behavioral variation on a component. Each item is either a flag variant (a boolean toggle such as 'disabled' or 'full-width') or an enum variant (a set of mutually exclusive options such as size: sm | md | lg). Every variant can carry a rationale that explains why the variation exists.",
+  "description": "Every way a component can be configured \u2014 a toggle (flag variant, like 'disabled') or a set of options (enum variant, like size: sm | md | lg). Each can explain why it exists.",
   "$defs": {
     "variantValue": {
       "type": "object",
@@ -26,7 +26,7 @@
         },
         "rationale": {
           "$ref": "../common/rich-text.schema.json#/$defs/richText",
-          "description": "Why this value exists: the user need or design rationale it addresses (e.g., 'High emphasis directs the user to the single most important action on the surface'). For comparative when-to-use guidance across values, use the entity's use-cases block instead."
+          "description": "Why this value exists (e.g., 'High emphasis directs users to the one key action'). For guidance comparing values, use `use-cases` instead."
         },
         "examples": {
           "type": "array",
@@ -38,14 +38,14 @@
         },
         "tokens": {
           "$ref": "../common/token-overrides.schema.json#/$defs/tokenOverrides",
-          "description": "Design token overrides applied when this value is selected, as the shared token-override map: keys are token-purpose names, values are documented token identifiers."
+          "description": "Token overrides applied when this value is selected."
         }
       },
       "additionalProperties": false
     },
     "flagVariant": {
       "type": "object",
-      "description": "A boolean toggle variant that is either on or off. Use it for binary capabilities such as 'disabled', 'full-width', 'icon-only', or 'loading'. Flag variants have no values array. The component either has the flag active or not.",
+      "description": "A toggle \u2014 on or off. Use it for binary capabilities like 'disabled' or 'full-width'. No `values` array; it's simply active or not.",
       "required": [
         "kind",
         "identifier",
@@ -71,7 +71,7 @@
         },
         "rationale": {
           "$ref": "../common/rich-text.schema.json#/$defs/richText",
-          "description": "Why this flag exists: the user need or design rationale it addresses (e.g., 'Prevents user interaction during form submission to avoid duplicate requests')."
+          "description": "Why this flag exists (e.g., 'Prevents interaction during submission to avoid duplicate requests')."
         },
         "examples": {
           "type": "array",
@@ -83,14 +83,14 @@
         },
         "tokens": {
           "$ref": "../common/token-overrides.schema.json#/$defs/tokenOverrides",
-          "description": "Design token overrides applied when this flag is active, as the shared token-override map: keys are token-purpose names, values are documented token identifiers."
+          "description": "Token overrides applied when this flag is active."
         }
       },
       "additionalProperties": false
     },
     "enumVariant": {
       "type": "object",
-      "description": "An enumerated variant with multiple mutually exclusive values. Use it for dimensions where the user picks one option from a set, such as 'size' (sm | md | lg), 'emphasis' (primary | secondary | ghost), or 'shape' (rounded | pill | square).",
+      "description": "A set of options where you pick one, like 'size' (sm | md | lg) or 'emphasis' (primary | secondary | ghost).",
       "required": [
         "kind",
         "identifier",
@@ -105,7 +105,7 @@
         },
         "identifier": {
           "type": "string",
-          "description": "Machine-readable identifier of the variant dimension (e.g., 'size', 'emphasis', 'shape'). This is the axis name, not a value within it."
+          "description": "Machine-readable name for this dimension (e.g., 'size', 'emphasis') \u2014 the axis, not one of its values."
         },
         "name": {
           "type": "string",
@@ -117,7 +117,7 @@
         },
         "values": {
           "type": "array",
-          "description": "The possible values for this variant. A single entry is valid — real systems carry single-value dimensions mid-migration (a new dimension introduced one value at a time). Ordering is significant, so tools SHOULD keep it for display.",
+          "description": "The possible values. A single value is fine \u2014 dimensions often start with just one while more are added over time. Tools SHOULD keep this order.",
           "items": {
             "$ref": "#/$defs/variantValue"
           },
@@ -128,7 +128,7 @@
     },
     "variants": {
       "type": "object",
-      "description": "Documents all dimensions of visual or behavioral variation on a component or pattern. Each item is either a flag variant (a boolean toggle like 'disabled' or 'full-width') or an enum variant (a set of mutually exclusive options like size: sm | md | lg). Multiple items document orthogonal dimensions that combine independently. Ownership rule: a variant is a configuration the consumer chooses via the API or design surface (e.g., 'size', 'emphasis', 'full-width', 'icon-only'); a runtime condition entered through interaction or system events (hover, disabled, loading) is a state — document it in the states block, not here.",
+      "description": "Every way a component or pattern can be configured \u2014 a toggle or a set of options. Multiple items combine independently. A variant is a choice the consumer makes up front (e.g., 'size', 'full-width'); a condition entered at runtime (hover, disabled, loading) is a state \u2014 document that in `states` instead.",
       "required": [
         "kind",
         "items"
@@ -137,14 +137,14 @@
         "kind": {
           "type": "string",
           "const": "variants",
-          "description": "Identifies this document block as a variants spec."
+          "description": "Identifies this block as a variants spec."
         },
         "items": {
           "type": "array",
-          "description": "The variant dimensions. Each item is either a flag (boolean toggle) or an enum (set of values). Ordering is significant, so tools SHOULD display dimensions in this order.",
+          "description": "The variant dimensions, in order. Tools SHOULD keep this order.",
           "items": {
             "type": "object",
-            "description": "One variant dimension, discriminated by `kind`: 'flag' selects the flagVariant schema, 'enum' selects the enumVariant schema. Discriminated `if`/`then` branches (rather than a bare oneOf) keep validation errors scoped to the one schema the `kind` selects.",
+            "description": "One variant dimension. `kind: 'flag'` makes it a toggle; `kind: 'enum'` makes it a set of options. We use `if`/`then` instead of `oneOf` so an invalid entry gives one clear error instead of many.",
             "required": [
               "kind"
             ],

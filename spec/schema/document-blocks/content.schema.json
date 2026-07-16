@@ -2,11 +2,11 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://designsystemdocspec.org/v0.15.1/document-blocks/content.schema.json",
   "title": "DSDS Content Document Block",
-  "description": "Specialized, structured content documentation for an artifact or for the design system as a whole. It covers two kinds of reference data. The first is a terminology dictionary of recommended action labels — 'Add', 'Cancel', 'Delete' — with definitions, usage context, and cross-references. The second is localization: RTL behavior, text expansion, pluralization, and other i18n concerns, one entry per concern. At least one of `labels` or `localization` is required. For general content guidance — voice, tone, capitalization rules, with rationale and a conformance level — use a `guidelines` block (category 'content').",
+  "description": "Two kinds of content reference data: a dictionary of standard labels ('Add', 'Cancel', 'Delete') with definitions and usage notes, and localization notes (RTL, text expansion, pluralization, and other i18n concerns). At least one of `labels` or `localization` is required. For voice, tone, or capitalization rules, use a `guidelines` block (category 'content') instead.",
   "$defs": {
     "contentLabelEntry": {
       "type": "object",
-      "description": "A single recommended action label or term in the content dictionary. Each entry sets a standard label, its meaning, usage guidance, and cross-references to related or alternative terms. Entries follow the {verb} + {noun} content formula used by systems like Carbon and Gestalt.",
+      "description": "One standard label in the dictionary: the label text, what it means, when to use it, and related terms.",
       "required": [
         "term",
         "definition"
@@ -14,31 +14,31 @@
       "properties": {
         "term": {
           "type": "string",
-          "description": "The recommended label text (e.g., 'Add', 'Cancel', 'Delete', 'Save as', 'Learn more'). The canonical form as it should appear in the UI."
+          "description": "The label text as it should appear in the UI (e.g., 'Add', 'Cancel', 'Delete')."
         },
         "definition": {
           "$ref": "../common/rich-text.schema.json#/$defs/richText",
-          "description": "What this label means: the action it represents. Should be concrete and unambiguous (e.g., for Delete: 'Destroys an existing object so that it no longer exists')."
+          "description": "What the label means \u2014 the action it represents. Be concrete (e.g., for Delete: 'Destroys an existing object so it no longer exists')."
         },
         "usage": {
           "$ref": "../common/rich-text.schema.json#/$defs/richText",
-          "description": "When and how to use this label. Include context, formatting rules, and any caveats (e.g., 'Where appropriate, combine Add with the object: Add user, Add role')."
+          "description": "When and how to use it, with any formatting rules or caveats (e.g., 'Combine with the object: Add user, Add role')."
         },
         "alternatives": {
           "type": "array",
           "items": {
             "type": "string"
           },
-          "description": "Related terms that serve a different purpose but are often confused with this one. Listed for comparison, to help authors pick the right label. The terms SHOULD match other `term` values in this content block's `labels` array — the block is the dictionary they resolve against, so tools can cross-reference them.",
+          "description": "Related terms that are often confused with this one, listed to help authors pick the right label. These SHOULD match other `term` values in this block's `labels` array, so tools can cross-reference them.",
           "minItems": 1
         },
         "context": {
           "type": "string",
-          "description": "Where this label is used in the UI (e.g., 'Buttons in dialogs', 'Navigation links', 'Form submission', 'Toolbar actions'). Tells authors where the label normally appears."
+          "description": "Where this label normally appears (e.g., 'Buttons in dialogs', 'Toolbar actions')."
         },
         "examples": {
           "type": "array",
-          "description": "Visual or code examples showing the label in context: do/don't pairs, screenshots of correct usage, or code snippets.",
+          "description": "Examples of the label in context \u2014 do/don't pairs, screenshots, or code.",
           "items": {
             "$ref": "../common/example.schema.json#/$defs/example"
           },
@@ -49,7 +49,7 @@
     },
     "localizationEntry": {
       "type": "object",
-      "description": "A single localization or i18n concern. Each entry covers something that affects how content is authored, translated, or rendered across languages and writing systems.",
+      "description": "One localization concern \u2014 something that affects how content is written, translated, or displayed across languages.",
       "required": [
         "concern",
         "description"
@@ -57,15 +57,15 @@
       "properties": {
         "concern": {
           "type": "string",
-          "description": "The localization concern being addressed. Standard values: 'rtl' (right-to-left layout mirroring and bidirectional text), 'text-expansion' (content lengthening during translation), 'pluralization' (plural forms varying across languages), 'date-format' (date and time formatting conventions), 'number-format' (decimal separators, grouping), 'currency' (currency symbol placement and formatting), 'text-direction' (mixed-direction content within a single string), 'icon-direction' (icons that imply directionality), 'truncation' (text overflow behavior across languages), 'sorting' (locale-specific sort order and collation), 'concatenation' (avoiding string concatenation that breaks in other languages). Custom values are allowed and SHOULD be lowercase kebab-case."
+          "description": "Which concern this is: 'rtl' (right-to-left layout), 'text-expansion' (text growing in translation), 'pluralization' (plural forms), 'date-format', 'number-format', 'currency', 'text-direction' (mixed-direction text), 'icon-direction' (icons that imply direction), 'truncation', 'sorting' (locale-specific order), or 'concatenation' (don't build sentences by joining strings). Custom values allowed, in lowercase kebab-case."
         },
         "description": {
           "$ref": "../common/rich-text.schema.json#/$defs/richText",
-          "description": "Guidance for handling this localization concern. Should be actionable and specific: say what changes across locales, what the author or developer must do, and what to avoid."
+          "description": "What to do about this concern \u2014 what changes across locales, and what to avoid."
         },
         "examples": {
           "type": "array",
-          "description": "Visual or code examples that illustrate the concern: before/after screenshots for RTL, samples of text expansion, or code patterns for pluralization.",
+          "description": "Examples showing the concern \u2014 before/after screenshots for RTL, or code for pluralization.",
           "items": {
             "$ref": "../common/example.schema.json#/$defs/example"
           },
@@ -76,7 +76,7 @@
     },
     "content": {
       "type": "object",
-      "description": "Specialized, structured content documentation: a terminology dictionary of recommended labels and per-concern localization entries. Each entry is reference data — a fact about the system's vocabulary or its i18n behavior. This block carries no prose rules: general content guidance, with rationale and a conformance level, belongs in a `guidelines` block (category 'content'), and the two blocks complement each other — a guideline says 'Use sentence case' (a rule); a content entry says 'Add: takes an existing object and uses it in a new context' (a reference).",
+      "description": "A label dictionary and localization notes for an artifact or the whole system. Each entry is a fact, not a rule \u2014 general content guidance belongs in `guidelines` (category 'content') instead. A guideline says 'Use sentence case' (a rule); a content entry says 'Add: takes an existing object and uses it in a new context' (a definition).",
       "required": [
         "kind"
       ],
@@ -96,15 +96,15 @@
         "kind": {
           "type": "string",
           "const": "content",
-          "description": "Identifies this document block as a content spec."
+          "description": "Identifies this block as a content spec."
         },
         "description": {
           "$ref": "../common/rich-text.schema.json#/$defs/richText",
-          "description": "Prose overview of what this block covers: the scope of the label dictionary and the localization entries. Content philosophy and voice-and-tone rules are general guidance and belong in a `guidelines` block (category 'content'), not here."
+          "description": "A short overview of what this block covers. Voice-and-tone philosophy belongs in a `guidelines` block (category 'content'), not here."
         },
         "labels": {
           "type": "array",
-          "description": "Recommended action labels and terminology. Each entry sets a standard label, its meaning, usage guidance, and cross-references to related terms. Order matters, so tools SHOULD keep it for display. Authors MAY order alphabetically or by frequency of use.",
+          "description": "The label dictionary. Order matters for display, so tools SHOULD keep it; authors MAY sort alphabetically or by frequency.",
           "items": {
             "$ref": "#/$defs/contentLabelEntry"
           },
@@ -112,7 +112,7 @@
         },
         "localization": {
           "type": "array",
-          "description": "Localization and i18n notes. Each entry covers a concern that affects content across languages and writing systems: RTL mirroring, text expansion during translation, pluralization rules, and other i18n concerns. Order matters, so tools SHOULD display entries in this order. Authors SHOULD order by impact or frequency.",
+          "description": "The localization notes. Order matters for display, so tools SHOULD keep it; authors SHOULD lead with the highest-impact concerns.",
           "items": {
             "$ref": "#/$defs/localizationEntry"
           },

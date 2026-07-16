@@ -2,26 +2,26 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://designsystemdocspec.org/v0.15.1/document-blocks/imports.schema.json",
   "title": "DSDS Imports Document Block",
-  "description": "Documents how to import a component in code across different platforms and frameworks — also reused on guides for setup and installation steps. Each item gives a platform-specific import statement, the package to install, and optional context. When a component is available on multiple platforms (React, Vue, Web Components, etc.), include one entry per platform.",
+  "description": "How to install and import a component in code, across platforms \u2014 also reused on guides for setup steps. One entry per platform (React, Vue, Web Components, etc.), each with the package name and the import code.",
   "$defs": {
     "importEntry": {
       "type": "object",
-      "description": "A single platform-specific import statement for a component. Pairs the platform identifier with the code needed to import and use the component.",
+      "description": "One platform's import instructions \u2014 which platform, and the code to import and use the component.",
       "required": [
         "code"
       ],
       "properties": {
         "platform": {
           "type": "string",
-          "description": "The platform or framework this import applies to (e.g., 'react', 'vue', 'angular', 'svelte', 'web-component', 'ios', 'android'). Use the same platform identifiers as the API document block. When omitted, the import is taken to apply to the single/default platform."
+          "description": "The platform this applies to (e.g., 'react', 'vue', 'ios'). Use the same identifiers as the `api` block. Left out, it's assumed to be the only/default platform."
         },
         "package": {
           "type": "string",
-          "description": "The package or module to install (e.g., '@acme/ui', '@acme/ui-vue', 'AcmeUI'). Include the full package name as it appears in the package manager."
+          "description": "The package to install (e.g., '@acme/ui'), exactly as it appears in the package manager."
         },
         "code": {
           "type": "string",
-          "description": "The import statement or code snippet. SHOULD be copy-pasteable and ready to use. For multi-line snippets (e.g., install + import), use newlines."
+          "description": "The import code. SHOULD be copy-paste ready. Use newlines for multi-line snippets."
         },
         "language": {
           "type": "string",
@@ -29,7 +29,7 @@
         },
         "description": {
           "$ref": "../common/rich-text.schema.json#/$defs/richText",
-          "description": "Additional context about this import: when to use this path over others, version requirements, or setup prerequisites."
+          "description": "Extra context \u2014 when to use this path over another, version requirements, or setup steps."
         },
         "since": {
           "type": "string",
@@ -40,7 +40,7 @@
     },
     "imports": {
       "type": "object",
-      "description": "Documents how to import a component across platforms. Each item is a platform-specific import entry with the code needed to use the component. For components available on multiple platforms, include one entry per platform. Ordering is significant, so list the primary/recommended platform first.",
+      "description": "How to import a component across platforms, one entry per platform. List the main/recommended platform first.",
       "required": [
         "kind",
         "items"
@@ -49,11 +49,11 @@
         "kind": {
           "type": "string",
           "const": "imports",
-          "description": "Identifies this document block as an imports spec."
+          "description": "Identifies this block as an imports spec."
         },
         "items": {
           "type": "array",
-          "description": "Platform-specific import entries. Each item documents how to import the component on a specific platform or framework. List the primary/recommended platform first.",
+          "description": "The per-platform import entries, primary platform first.",
           "items": {
             "$ref": "#/$defs/importEntry"
           },

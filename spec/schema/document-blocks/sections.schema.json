@@ -2,31 +2,31 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://designsystemdocspec.org/v0.15.1/document-blocks/sections.schema.json",
   "title": "DSDS Sections Document Block",
-  "description": "Free-form documentation content organized into titled, optionally nested sections. Sections are the backbone of long-form documentation that does not fit the highly structured block kinds (api, anatomy, variants). Use them for conceptual explanations, overviews, rationale, and any reading-oriented content. Each section pairs a heading with a rich-text body, examples, related links, and optional sub-sections.",
+  "description": "Free-form documentation content, organized into titled sections that can nest. Use it for anything that doesn't fit the structured blocks (api, anatomy, variants) \u2014 overviews, explanations, rationale. Each section has a heading, a body, examples, links, and optional sub-sections.",
   "$defs": {
     "sectionEntry": {
       "type": "object",
-      "description": "A single titled section of documentation content. Pairs a heading with a rich-text body, optional illustrative examples, optional related links, and optional nested sub-sections. Sub-sections let a guide build a heading hierarchy (h2 → h3 → h4) without inventing one block per level. A section MUST carry a `title`. Everything else is optional, so a section can be a bare heading that only groups its children.",
+      "description": "One section: a heading, a body, and optionally examples, links, and nested sub-sections. Sub-sections let you build a heading hierarchy (h2 \u2192 h3 \u2192 h4). Only `title` is required \u2014 a section can be just a heading that groups its children.",
       "required": [
         "title"
       ],
       "properties": {
         "title": {
           "type": "string",
-          "description": "The section heading (e.g., 'Installation', 'Core concepts', 'Why semantic tokens'). Concise enough to render as a heading and to anchor a deep link."
+          "description": "The section heading (e.g., 'Installation', 'Core concepts')."
         },
         "anchor": {
           "type": "string",
           "pattern": "^[a-z][a-z0-9-]*$",
-          "description": "A stable, URL-safe fragment identifier for deep-linking to this section (e.g., 'installation', 'core-concepts'). MUST be lowercase kebab-case and unique within the parent block. When omitted, tools MAY derive an anchor from the title."
+          "description": "A stable URL fragment for linking to this section (e.g., 'installation'). MUST be lowercase kebab-case and unique in the block. Left out, tools MAY derive one from the title."
         },
         "body": {
           "$ref": "../common/rich-text.schema.json#/$defs/richText",
-          "description": "The documentation content of the section. Supports markdown by default. May be omitted when the section exists only to group sub-sections under a heading."
+          "description": "The section's content, as markdown. Can be omitted when the section only groups sub-sections."
         },
         "examples": {
           "type": "array",
-          "description": "Illustrative examples for this section: code snippets, images, videos, or live URLs. Useful for showing a concept in practice within explanatory documentation content.",
+          "description": "Examples for this section \u2014 code, images, videos, or live links.",
           "items": {
             "$ref": "../common/example.schema.json#/$defs/example"
           },
@@ -34,7 +34,7 @@
         },
         "links": {
           "type": "array",
-          "description": "Related links surfaced with this section: 'see also' references, source material, or pointers to external resources. To reference another entity, use the entity's `relationships` array.",
+          "description": "'See also' links for this section. To reference another entity, use `relationships` instead.",
           "items": {
             "$ref": "../common/link.schema.json#/$defs/link"
           },
@@ -42,7 +42,7 @@
         },
         "sections": {
           "type": "array",
-          "description": "Nested sub-sections beneath this one. Each item is itself a sectionEntry, allowing an arbitrarily deep heading hierarchy. Ordering is significant, so tools SHOULD render sub-sections in this order.",
+          "description": "Sub-sections nested beneath this one, to any depth. Tools SHOULD keep this order.",
           "items": {
             "$ref": "#/$defs/sectionEntry"
           },
@@ -53,7 +53,7 @@
     },
     "sections": {
       "type": "object",
-      "description": "A block of narrative documentation made up of one or more titled sections. Use it for the reading-oriented content of a guide that the structured block kinds do not capture: overviews, concepts, rationale, and FAQs. Each item is a sectionEntry with a heading, a documentation-content body, optional examples and links, and optional nested sub-sections.",
+      "description": "One or more titled sections of documentation content. Use it for anything a guide needs that the structured blocks don't capture: overviews, concepts, rationale, FAQs.",
       "required": [
         "kind",
         "items"
@@ -62,11 +62,11 @@
         "kind": {
           "type": "string",
           "const": "sections",
-          "description": "Identifies this document block as narrative sections."
+          "description": "Identifies this block as sections."
         },
         "items": {
           "type": "array",
-          "description": "The sections, in display order. Each item is a titled section with optional body, examples, links, and sub-sections. Ordering is significant, so tools SHOULD keep it.",
+          "description": "The sections, in order. Tools SHOULD keep this order.",
           "items": {
             "$ref": "#/$defs/sectionEntry"
           },

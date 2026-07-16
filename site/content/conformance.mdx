@@ -49,7 +49,7 @@ Every normative statement is enforced at one of three tiers, or is explicitly ad
 
 {/* dsds:normative-index */}
 
-*Generated from the v{{VERSION}} schemas by `scripts/extract-normative.mjs` — do not edit by hand. 170 statements: 69 MUST, 23 MUST NOT, 61 SHOULD, 2 SHOULD NOT, 15 MAY.*
+*Generated from the v{{VERSION}} schemas by `scripts/extract-normative.mjs` — do not edit by hand. 159 statements: 65 MUST, 23 MUST NOT, 55 SHOULD, 2 SHOULD NOT, 14 MAY.*
 
 ### common
 
@@ -110,8 +110,8 @@ Every normative statement is enforced at one of three tiers, or is explicitly ad
 
 #### common/relationship
 
-- **MUST** — Unlike `link`, which points to external resources, a relationship's target MUST be a documented entity. <small>`common/relationship§(root).1`</small>
-- **MUST NOT** — Tools derive inverse edges (composed-by, replaced-by, etc.) and MUST NOT require them to be authored. <small>`common/relationship§relationType.1`</small>
+- **MUST** — A relationship's target MUST be a documented entity. <small>`common/relationship§(root).1`</small>
+- **MUST NOT** — Tools work out the reverse relationship direction direction (target → source) and MUST NOT require them to be manually authored. <small>`common/relationship§relationType.1`</small>
 - **MUST** — Custom relations MUST be vendor-namespaced (e.g. 'acme.themes'). <small>`common/relationship§relationType.2`</small>
 - **MUST** — MUST match a documented entity. <small>`common/relationship§relationship.target.1`</small>
 
@@ -122,7 +122,7 @@ Every normative statement is enforced at one of three tiers, or is explicitly ad
 #### common/status
 
 - **MUST** — MUST be lowercase kebab-case. <small>`common/status§statusValue.1`</small>
-- **MUST** — Custom values (e.g., 'sunset', 'beta') are allowed and MUST follow the same pattern. <small>`common/status§statusValue.2`</small>
+- **MUST** — Custom values (ex: 'sunset', 'beta') are allowed and MUST follow the same pattern. <small>`common/status§statusValue.2`</small>
 - **MUST** — MUST say what to use instead and, where one exists, give a migration path. <small>`common/status§deprecationNotice.1`</small>
 
 #### common/system-info
@@ -149,95 +149,84 @@ Every normative statement is enforced at one of three tiers, or is explicitly ad
 
 #### document-blocks/checklist
 
-- **MUST** — An item MUST carry a `label`; all other fields are optional. <small>`document-blocks/checklist§checklistItem.1`</small>
-- **MUST** — MUST be specific enough to confirm. <small>`document-blocks/checklist§checklistItem.label.1`</small>
+- **MUST** — MUST be specific — not 'check accessibility'. <small>`document-blocks/checklist§checklistItem.label.1`</small>
 - **MUST** — MUST be lowercase kebab-case. <small>`document-blocks/checklist§checklistItem.criterion.1`</small>
-- **SHOULD** — Custom values are allowed and SHOULD be lowercase kebab-case. <small>`document-blocks/checklist§checklistItem.category.1`</small>
-- **MAY** — Tools MAY render optional items distinctly (e.g., an 'optional' label). <small>`document-blocks/checklist§checklistItem.optional.1`</small>
-- **SHOULD** — Tools SHOULD render unordered checklists as checkboxes and ordered ones as a numbered sequence. <small>`document-blocks/checklist§checklist.ordered.1`</small>
-- **MUST** — Order is significant for ordered checklists, so tools MUST preserve it. <small>`document-blocks/checklist§checklist.items.1`</small>
+- **MAY** — Tools MAY mark optional items differently. <small>`document-blocks/checklist§checklistItem.optional.1`</small>
+- **SHOULD** — Tools SHOULD show unordered checklists as checkboxes and ordered ones as a numbered list. <small>`document-blocks/checklist§checklist.ordered.1`</small>
+- **MUST** — Order matters when `ordered` is true, so tools MUST preserve it. <small>`document-blocks/checklist§checklist.items.1`</small>
 
 #### document-blocks/content
 
-- **SHOULD** — The terms SHOULD match other `term` values in this content block's `labels` array — the block is the dictionary they resolve against, so tools can cross-reference them. <small>`document-blocks/content§contentLabelEntry.alternatives.1`</small>
-- **SHOULD** — Custom values are allowed and SHOULD be lowercase kebab-case. <small>`document-blocks/content§localizationEntry.concern.1`</small>
-- **SHOULD** — Order matters, so tools SHOULD keep it for display. <small>`document-blocks/content§content.labels.1`</small>
-- **MAY** — Authors MAY order alphabetically or by frequency of use. <small>`document-blocks/content§content.labels.2`</small>
-- **SHOULD** — Order matters, so tools SHOULD display entries in this order. <small>`document-blocks/content§content.localization.1`</small>
-- **SHOULD** — Authors SHOULD order by impact or frequency. <small>`document-blocks/content§content.localization.2`</small>
+- **SHOULD** — These SHOULD match other `term` values in this block's `labels` array, so tools can cross-reference them. <small>`document-blocks/content§contentLabelEntry.alternatives.1`</small>
+- **SHOULD** — Order matters for display, so tools SHOULD keep it; authors MAY sort alphabetically or by frequency. <small>`document-blocks/content§content.labels.1`</small>
+- **SHOULD** — Order matters for display, so tools SHOULD keep it; authors SHOULD lead with the highest-impact concerns. <small>`document-blocks/content§content.localization.1`</small>
 
 #### document-blocks/design-specifications
 
-- **MUST** — In a system with a token layer, this MUST be a design token identifier (e.g., 'color-action-primary', 'space-4') so the value stays single-sourced and cannot silently drift from the token system. <small>`document-blocks/design-specifications§designValue.1`</small>
-- **MUST** — Keys are component-scoped property names that say what the value controls (e.g., 'background', 'border-color', 'min-height', 'font-size', 'opacity') and MUST be lowercase kebab-case. <small>`document-blocks/design-specifications§designProperties.1`</small>
-- **MUST** — Keys are named spatial relationships between anatomy parts or edges (e.g., 'container-horizontal', 'icon-to-label') and MUST be lowercase kebab-case. <small>`document-blocks/design-specifications§spacingSpec.internal.1`</small>
-- **MUST** — Keys are named spatial relationships (e.g., 'button-to-button', 'button-group-gap', 'stack-gap') and MUST be lowercase kebab-case. <small>`document-blocks/design-specifications§spacingSpec.external.1`</small>
-- **MUST** — Keys are named text elements matching anatomy parts (e.g., 'label', 'helper-text', 'heading', 'body') and MUST be lowercase kebab-case. <small>`document-blocks/design-specifications§typographySpec.1`</small>
+- **MUST** — If the system has tokens, this MUST be a token identifier (e.g., 'color-action-primary', 'space-4'), not a raw value — that keeps it from drifting out of sync with the token system. <small>`document-blocks/design-specifications§designValue.1`</small>
+- **MUST** — Keys say what the value controls (e.g., 'background', 'min-height') and MUST be lowercase kebab-case. <small>`document-blocks/design-specifications§designProperties.1`</small>
+- **MUST** — Keys name the relationship (e.g., 'icon-to-label') and MUST be lowercase kebab-case. <small>`document-blocks/design-specifications§spacingSpec.internal.1`</small>
+- **MUST** — Keys name the relationship (e.g., 'button-to-button') and MUST be lowercase kebab-case. <small>`document-blocks/design-specifications§spacingSpec.external.1`</small>
+- **MUST** — Keys name the element (e.g., 'label', 'helper-text') and MUST be lowercase kebab-case. <small>`document-blocks/design-specifications§typographySpec.1`</small>
 
 #### document-blocks/guidelines
 
-- **MUST** — MUST be concrete and unambiguous. <small>`document-blocks/guidelines§guidelineEntry.guidance.1`</small>
-- **MUST NOT** — MUST NOT restate the guidance. <small>`document-blocks/guidelines§guidelineEntry.rationale.1`</small>
-- **SHOULD** — Custom values are allowed and SHOULD be lowercase kebab-case. <small>`document-blocks/guidelines§guidelineEntry.category.1`</small>
-- **SHOULD** — Order matters, so tools SHOULD display guidelines in this order. <small>`document-blocks/guidelines§guidelines.items.1`</small>
-- **SHOULD** — Authors SHOULD order by importance or group by category. <small>`document-blocks/guidelines§guidelines.items.2`</small>
+- **MUST** — MUST be concrete and clear — not 'use sparingly' or 'when possible'. <small>`document-blocks/guidelines§guidelineEntry.guidance.1`</small>
+- **MUST NOT** — MUST NOT just repeat the guidance. <small>`document-blocks/guidelines§guidelineEntry.rationale.1`</small>
+- **SHOULD** — Tools SHOULD keep this order; authors SHOULD lead with the most important or group by category. <small>`document-blocks/guidelines§guidelines.items.1`</small>
 
 #### document-blocks/imports
 
-- **SHOULD** — SHOULD be copy-pasteable and ready to use. <small>`document-blocks/imports§importEntry.code.1`</small>
+- **SHOULD** — SHOULD be copy-paste ready. <small>`document-blocks/imports§importEntry.code.1`</small>
 
 #### document-blocks/interactions
 
-- **MUST** — Each `identifier` MUST match a component documented in the system; the optional `role` says what the component does in this step. <small>`document-blocks/interactions§interactionEntry.components.1`</small>
-- **SHOULD** — Authors SHOULD include steps for the initial trigger, the system's response, recovery or correction steps, and completion. <small>`document-blocks/interactions§interactions.1`</small>
-- **SHOULD** — Ordering is significant, so tools SHOULD keep and display steps in this order to show the sequence over time. <small>`document-blocks/interactions§interactions.items.1`</small>
+- **MUST** — Each `identifier` MUST match a documented component; the optional `role` says what it does here. <small>`document-blocks/interactions§interactionEntry.components.1`</small>
+- **SHOULD** — Authors SHOULD cover the trigger, the response, any recovery steps, and completion. <small>`document-blocks/interactions§interactions.1`</small>
+- **SHOULD** — Tools SHOULD keep this order so the sequence stays clear. <small>`document-blocks/interactions§interactions.items.1`</small>
 
 #### document-blocks/motion
 
-- **MUST** — When neither is provided, the description field MUST explain the guidance — an empty duration object carries no information, so at least one of min, max, or description is required. <small>`document-blocks/motion§motionDuration.1`</small>
-- **MUST** — P1x and P2x MUST be in [0, 1]. <small>`document-blocks/motion§motionEntry.function.1`</small>
+- **MUST** — P1x and P2x MUST be between 0 and 1; P1y and P2y can be any number (values outside 0–1 give a bounce/overshoot). <small>`document-blocks/motion§motionEntry.function.1`</small>
 - **MUST** — P1x — MUST be in [0, 1]. <small>`document-blocks/motion§motionEntry.function[prefixItems][0].1`</small>
 - **MUST** — P2x — MUST be in [0, 1]. <small>`document-blocks/motion§motionEntry.function[prefixItems][2].1`</small>
-- **SHOULD** — Ordering is significant, so tools SHOULD display easings in this order. <small>`document-blocks/motion§motion.1`</small>
-- **SHOULD** — Ordering is significant, so tools SHOULD display easings in this order. <small>`document-blocks/motion§motion.items.1`</small>
+- **SHOULD** — List the most common ones first; tools SHOULD keep this order. <small>`document-blocks/motion§motion.1`</small>
+- **SHOULD** — Tools SHOULD keep this order for display. <small>`document-blocks/motion§motion.items.1`</small>
 
 #### document-blocks/principles
 
-- **SHOULD** — Ordering is significant, so tools SHOULD display principles in this order. <small>`document-blocks/principles§principles.items.1`</small>
-- **SHOULD** — Authors SHOULD order by importance or by the natural progression of the design philosophy. <small>`document-blocks/principles§principles.items.2`</small>
+- **SHOULD** — Tools SHOULD keep this order; authors SHOULD lead with the most important. <small>`document-blocks/principles§principles.items.1`</small>
 
 #### document-blocks/scale
 
-- **MUST** — MUST match the `identifier` of a token defined elsewhere in the system. <small>`document-blocks/scale§scaleStep.token.1`</small>
-- **MAY** — Tools MAY fill this in from the token catalog. <small>`document-blocks/scale§scaleStep.value.1`</small>
-- **SHOULD** — Tools SHOULD keep this order for display. <small>`document-blocks/scale§scale.1`</small>
-- **SHOULD** — Ordering is significant, so tools SHOULD keep it for display. <small>`document-blocks/scale§scale.steps.1`</small>
-- **SHOULD** — Consumers SHOULD treat adjacent steps as the natural next-smaller and next-larger options when adjusting a value. <small>`document-blocks/scale§scale.steps.2`</small>
+- **MUST** — MUST match a token defined elsewhere in the system. <small>`document-blocks/scale§scaleStep.token.1`</small>
+- **MAY** — Tools MAY fill this in automatically. <small>`document-blocks/scale§scaleStep.value.1`</small>
+- **SHOULD** — Steps run smallest to largest; tools SHOULD keep this order. <small>`document-blocks/scale§scale.1`</small>
+- **SHOULD** — Tools SHOULD keep this order. <small>`document-blocks/scale§scale.steps.1`</small>
+- **SHOULD** — When adjusting a value, consumers SHOULD move to the adjacent step. <small>`document-blocks/scale§scale.steps.2`</small>
 
 #### document-blocks/sections
 
-- **MUST** — A section MUST carry a `title`. <small>`document-blocks/sections§sectionEntry.1`</small>
-- **MUST** — MUST be lowercase kebab-case and unique within the parent block. <small>`document-blocks/sections§sectionEntry.anchor.1`</small>
-- **MAY** — When omitted, tools MAY derive an anchor from the title. <small>`document-blocks/sections§sectionEntry.anchor.2`</small>
-- **SHOULD** — Ordering is significant, so tools SHOULD render sub-sections in this order. <small>`document-blocks/sections§sectionEntry.sections.1`</small>
-- **SHOULD** — Ordering is significant, so tools SHOULD keep it. <small>`document-blocks/sections§sections.items.1`</small>
+- **MUST** — MUST be lowercase kebab-case and unique in the block. <small>`document-blocks/sections§sectionEntry.anchor.1`</small>
+- **MAY** — Left out, tools MAY derive one from the title. <small>`document-blocks/sections§sectionEntry.anchor.2`</small>
+- **SHOULD** — Tools SHOULD keep this order. <small>`document-blocks/sections§sectionEntry.sections.1`</small>
+- **SHOULD** — Tools SHOULD keep this order. <small>`document-blocks/sections§sections.items.1`</small>
 
 #### document-blocks/states
 
-- **SHOULD** — Ordering is significant, so tools SHOULD display states in this order. <small>`document-blocks/states§states.items.1`</small>
+- **SHOULD** — Tools SHOULD keep this order for display. <small>`document-blocks/states§states.items.1`</small>
 
 #### document-blocks/steps
 
-- **MUST** — A step MUST carry a `label`. <small>`document-blocks/steps§stepEntry.1`</small>
 - **MUST** — MUST be concrete and actionable: describe the action, not the goal. <small>`document-blocks/steps§stepEntry.instruction.1`</small>
 - **MAY** — Tools MAY render optional steps distinctly (e.g., an 'optional' label). <small>`document-blocks/steps§stepEntry.optional.1`</small>
-- **SHOULD** — Tools SHOULD render ordered procedures as numbered lists and unordered ones as a checklist or bulleted list. <small>`document-blocks/steps§steps.ordered.1`</small>
-- **MUST** — Ordering is significant, so tools MUST preserve it for ordered procedures. <small>`document-blocks/steps§steps.items.1`</small>
+- **SHOULD** — Tools SHOULD show ordered steps as a numbered list, unordered ones as a checklist. <small>`document-blocks/steps§steps.ordered.1`</small>
+- **MUST** — Tools MUST preserve this order when `ordered` is true. <small>`document-blocks/steps§steps.items.1`</small>
 
 #### document-blocks/variants
 
-- **SHOULD** — Ordering is significant, so tools SHOULD keep it for display. <small>`document-blocks/variants§enumVariant.values.1`</small>
-- **SHOULD** — Ordering is significant, so tools SHOULD display dimensions in this order. <small>`document-blocks/variants§variants.items.1`</small>
+- **SHOULD** — Tools SHOULD keep this order. <small>`document-blocks/variants§enumVariant.values.1`</small>
+- **SHOULD** — Tools SHOULD keep this order. <small>`document-blocks/variants§variants.items.1`</small>
 
 ### Root schema
 
