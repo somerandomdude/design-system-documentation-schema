@@ -12,7 +12,7 @@ The key words **MUST**, **MUST NOT**, **SHOULD**, **SHOULD NOT**, and **MAY** in
 
 ## Where the normative text lives
 
-DSDS keeps its normative language inside the schema `description` strings, next to the structures that enforce it — the schema is the specification, not an illustration of one. The index at the bottom of this page is **generated from the schemas** on every build, so it cannot drift from them. Cite statements by their location-based ID (e.g. `common/link§link.kind.1`); an ID changes only when the schema path it points at changes, which is the correct signal that a citation needs re-checking.
+DSDS keeps its normative language inside the schema `description` strings, next to the structures that enforce it. The schema *is* the specification — not a picture of one. The index at the bottom of this page is **generated from the schemas** on every build, so it can't drift from them. Cite statements by their location-based ID (e.g. `common/link§link.kind.1`). An ID only changes when the schema path it points to changes — that's the signal that a citation needs a re-check.
 
 ## Conformance classes
 
@@ -20,19 +20,38 @@ DSDS defines four conformance classes. A claim of conformance names the class it
 
 ### Conforming document
 
-A JSON document that validates against the DSDS schema for the version its `dsdsVersion` declares **and** satisfies the semantic rules JSON Schema cannot express (identifier uniqueness, reference resolution, relationship-graph integrity, token-layer resolution, `tokenType` inheritance, `docOrigin` block-key resolution, extension-key namespacing). Schema validity alone is necessary but not sufficient.
+A JSON document that validates against the DSDS schema for the version its `dsdsVersion` declares, **and** satisfies the semantic rules that JSON Schema alone can't express:
+
+- identifier uniqueness
+- reference resolution
+- relationship-graph integrity
+- token-layer resolution
+- `tokenType` inheritance
+- `docOrigin` block-key resolution
+- extension-key namespacing
+
+Schema validity alone is necessary, but not sufficient.
 
 ### Conforming producer
 
-A tool or person that emits DSDS documents. A conforming producer MUST emit conforming documents, MUST NOT emit deprecated forms in new output (when a form is deprecated, it exists for reading old documents, not writing new ones — as of 0.14.0, nothing is deprecated), and SHOULD record how the documentation was produced via the `docOrigin` metadata field.
+A tool or person that emits DSDS documents. A conforming producer:
+
+- MUST emit conforming documents
+- MUST NOT emit deprecated forms in new output (a deprecated form exists only for reading old documents, never for writing new ones — as of 0.14.0, nothing is deprecated)
+- SHOULD record how the documentation was produced, via the `docOrigin` metadata field
 
 ### Conforming consumer
 
-A tool, renderer, or agent that reads DSDS documents. A conforming consumer MUST NOT fail on optional fields it does not recognize the meaning of, MUST preserve `$extensions` data it does not understand, MUST treat unresolvable references as defects rather than silently dropping them, and MUST respect RFC 2119 levels on guidance it acts on (a `must-not` guideline is a hard gate for an agent writing code).
+A tool, renderer, or agent that reads DSDS documents. A conforming consumer:
+
+- MUST NOT fail on optional fields it doesn't recognize
+- MUST preserve `$extensions` data it doesn't understand
+- MUST treat unresolvable references as defects, not silently drop them
+- MUST respect RFC 2119 levels on guidance it acts on (a `must-not` guideline is a hard gate for an agent writing code)
 
 ### Conforming validator
 
-A tool that checks documents. A conforming validator MUST enforce both the structural layer (the JSON Schema, with format assertion enabled) and the semantic layer, and SHOULD surface the lint layer (the rules catalog in `rules/rules.yaml`) as non-blocking diagnostics. The reference implementation is `scripts/validate.js`; its negative-fixture suite in `test/invalid/` pins every guard and doubles as a conformance test suite for independent validators.
+A tool that checks documents. A conforming validator MUST enforce both the structural layer (the JSON Schema, with format assertion enabled) and the semantic layer. It SHOULD also surface the lint layer (the rules catalog in `rules/rules.yaml`) as non-blocking diagnostics. The reference implementation is `scripts/validate.js`. Its negative-fixture suite in `test/invalid/` pins every guard, and doubles as a conformance test suite for independent validators.
 
 ## Enforcement tiers
 

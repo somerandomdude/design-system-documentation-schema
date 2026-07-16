@@ -101,17 +101,38 @@
 <p>This page defines what it means to conform to the Design System Documentation Spec 0.15.1, and indexes every normative statement the spec makes.</p>
 <p>The key words <strong>MUST</strong>, <strong>MUST NOT</strong>, <strong>SHOULD</strong>, <strong>SHOULD NOT</strong>, and <strong>MAY</strong> in the DSDS schemas and on this page are to be interpreted as described in <a href="https://www.rfc-editor.org/rfc/rfc2119">RFC 2119</a> (as clarified by <a href="https://www.rfc-editor.org/rfc/rfc8174">RFC 8174</a>): they are normative only when they appear in upper case.</p>
 <ds-heading level="2" anchor="where-the-normative-text-lives">Where the normative text lives</ds-heading>
-<p>DSDS keeps its normative language inside the schema <ds-code inline>description</ds-code> strings, next to the structures that enforce it — the schema is the specification, not an illustration of one. The index at the bottom of this page is <strong>generated from the schemas</strong> on every build, so it cannot drift from them. Cite statements by their location-based ID (e.g. <ds-code inline>common/link§link.kind.1</ds-code>); an ID changes only when the schema path it points at changes, which is the correct signal that a citation needs re-checking.</p>
+<p>DSDS keeps its normative language inside the schema <ds-code inline>description</ds-code> strings, next to the structures that enforce it. The schema <em>is</em> the specification — not a picture of one. The index at the bottom of this page is <strong>generated from the schemas</strong> on every build, so it can't drift from them. Cite statements by their location-based ID (e.g. <ds-code inline>common/link§link.kind.1</ds-code>). An ID only changes when the schema path it points to changes — that's the signal that a citation needs a re-check.</p>
 <ds-heading level="2" anchor="conformance-classes">Conformance classes</ds-heading>
 <p>DSDS defines four conformance classes. A claim of conformance names the class it applies to.</p>
 <ds-heading level="3" anchor="conforming-document">Conforming document</ds-heading>
-<p>A JSON document that validates against the DSDS schema for the version its <ds-code inline>dsdsVersion</ds-code> declares <strong>and</strong> satisfies the semantic rules JSON Schema cannot express (identifier uniqueness, reference resolution, relationship-graph integrity, token-layer resolution, <ds-code inline>tokenType</ds-code> inheritance, <ds-code inline>docOrigin</ds-code> block-key resolution, extension-key namespacing). Schema validity alone is necessary but not sufficient.</p>
+<p>A JSON document that validates against the DSDS schema for the version its <ds-code inline>dsdsVersion</ds-code> declares, <strong>and</strong> satisfies the semantic rules that JSON Schema alone can't express:</p>
+<ul>
+<li>identifier uniqueness</li>
+<li>reference resolution</li>
+<li>relationship-graph integrity</li>
+<li>token-layer resolution</li>
+<li><ds-code inline>tokenType</ds-code> inheritance</li>
+<li><ds-code inline>docOrigin</ds-code> block-key resolution</li>
+<li>extension-key namespacing</li>
+</ul>
+<p>Schema validity alone is necessary, but not sufficient.</p>
 <ds-heading level="3" anchor="conforming-producer">Conforming producer</ds-heading>
-<p>A tool or person that emits DSDS documents. A conforming producer MUST emit conforming documents, MUST NOT emit deprecated forms in new output (when a form is deprecated, it exists for reading old documents, not writing new ones — as of 0.14.0, nothing is deprecated), and SHOULD record how the documentation was produced via the <ds-code inline>docOrigin</ds-code> metadata field.</p>
+<p>A tool or person that emits DSDS documents. A conforming producer:</p>
+<ul>
+<li>MUST emit conforming documents</li>
+<li>MUST NOT emit deprecated forms in new output (a deprecated form exists only for reading old documents, never for writing new ones — as of 0.14.0, nothing is deprecated)</li>
+<li>SHOULD record how the documentation was produced, via the <ds-code inline>docOrigin</ds-code> metadata field</li>
+</ul>
 <ds-heading level="3" anchor="conforming-consumer">Conforming consumer</ds-heading>
-<p>A tool, renderer, or agent that reads DSDS documents. A conforming consumer MUST NOT fail on optional fields it does not recognize the meaning of, MUST preserve <ds-code inline>$extensions</ds-code> data it does not understand, MUST treat unresolvable references as defects rather than silently dropping them, and MUST respect RFC 2119 levels on guidance it acts on (a <ds-code inline>must-not</ds-code> guideline is a hard gate for an agent writing code).</p>
+<p>A tool, renderer, or agent that reads DSDS documents. A conforming consumer:</p>
+<ul>
+<li>MUST NOT fail on optional fields it doesn't recognize</li>
+<li>MUST preserve <ds-code inline>$extensions</ds-code> data it doesn't understand</li>
+<li>MUST treat unresolvable references as defects, not silently drop them</li>
+<li>MUST respect RFC 2119 levels on guidance it acts on (a <ds-code inline>must-not</ds-code> guideline is a hard gate for an agent writing code)</li>
+</ul>
 <ds-heading level="3" anchor="conforming-validator">Conforming validator</ds-heading>
-<p>A tool that checks documents. A conforming validator MUST enforce both the structural layer (the JSON Schema, with format assertion enabled) and the semantic layer, and SHOULD surface the lint layer (the rules catalog in <ds-code inline>rules/rules.yaml</ds-code>) as non-blocking diagnostics. The reference implementation is <ds-code inline>scripts/validate.js</ds-code>; its negative-fixture suite in <ds-code inline>test/invalid/</ds-code> pins every guard and doubles as a conformance test suite for independent validators.</p>
+<p>A tool that checks documents. A conforming validator MUST enforce both the structural layer (the JSON Schema, with format assertion enabled) and the semantic layer. It SHOULD also surface the lint layer (the rules catalog in <ds-code inline>rules/rules.yaml</ds-code>) as non-blocking diagnostics. The reference implementation is <ds-code inline>scripts/validate.js</ds-code>. Its negative-fixture suite in <ds-code inline>test/invalid/</ds-code> pins every guard, and doubles as a conformance test suite for independent validators.</p>
 <ds-heading level="2" anchor="enforcement-tiers">Enforcement tiers</ds-heading>
 <p>Every normative statement is enforced at one of three tiers, or is explicitly advisory:</p>
 <ds-table><table><thead><tr><th>Tier</th><th>Mechanism</th><th>Failure mode</th></tr></thead><tbody><tr><td>Structural</td><td>JSON Schema (patterns, required, minItems, conditionals)</td><td>Validation error — blocking</td></tr><tr><td>Semantic</td><td>Reference implementation checks (resolution, uniqueness, inheritance, cycles)</td><td>Validation error — blocking</td></tr><tr><td>Lint</td><td>Rules catalog (<ds-code inline>rules/rules.yaml</ds-code>, DSDS-001…)</td><td>Warning — never blocking</td></tr><tr><td>Advisory</td><td>SHOULD/MAY statements consumed by judgment</td><td>None</td></tr></tbody></table></ds-table>

@@ -2208,7 +2208,15 @@
   // ── prop-table.js ──
   const PROP_TABLE_CSS = `
     ${BASE_RESET}
-    :host { display: block; margin: var(--ds-space-4) 0; max-width: 100%; overflow: hidden; }
+    :host { display: block; margin: var(--ds-space-4) 0; max-width: 100%; }
+
+    /* Horizontal-scroll wrapper. The property/type/required columns are
+       shrink-to-fit with nowrap content, so the table has a hard minimum
+       width (~500px). On narrow viewports that minimum exceeds the host,
+       and without a scroller the rightmost column (Description) is clipped
+       off-screen with no way to reach it. overflow-x: auto lets the table
+       scroll instead of losing its Description column. Mirrors <ds-table>. */
+    .table-scroll { overflow-x: auto; max-width: 100%; }
 
     table {
       width: 100%;
@@ -2402,11 +2410,13 @@
         .join("\n");
 
       this._shadow.innerHTML =
+        '<div class="table-scroll" part="wrapper">' +
         '<table part="table">' +
         "<thead><tr><th>Property</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>" +
         "<tbody>" +
         trs +
-        "</tbody></table>";
+        "</tbody></table>" +
+        "</div>";
     }
   }
 

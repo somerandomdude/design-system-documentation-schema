@@ -98,19 +98,28 @@
     <main class="content__main" id="main-content" role="main">
       <div class="content__inner">
         <ds-heading level="1" anchor="interoperability">Interoperability</ds-heading>
-<p>No open standard covers full design-system documentation — components, tokens, and guidelines together. The standards that exist each cover one layer well: the <a href="https://www.w3.org/community/reports/design-tokens/CG-FINAL-format-20251028/">W3C Design Tokens format</a> (DTCG) trades token <strong>values</strong>, and <a href="https://github.com/webcomponents/custom-elements-manifest">Custom Elements Manifest</a> (CEM) describes component <strong>code APIs</strong>. DSDS is deliberately the layer over them: it documents meaning, usage, and intent, and <strong>points at</strong> the other formats rather than duplicating what they own. This page makes each relationship explicit.</p>
+<p>No open standard covers the whole of design-system documentation — components, tokens, and guidelines together. The standards that do exist each cover one layer well. The <a href="https://www.w3.org/community/reports/design-tokens/CG-FINAL-format-20251028/">W3C Design Tokens format</a> (DTCG) trades token <strong>values</strong>. <a href="https://github.com/webcomponents/custom-elements-manifest">Custom Elements Manifest</a> (CEM) describes component <strong>code APIs</strong>. DSDS sits in the layer above both: it documents meaning, usage, and intent, and <strong>points at</strong> the other formats instead of duplicating what they already own. This page spells out each relationship.</p>
 <ds-heading level="2" anchor="what-dsds-does-not-define">What DSDS does not define</ds-heading>
 <ds-table><table><thead><tr><th>Concern</th><th>Source of truth</th><th>How DSDS points at it</th></tr></thead><tbody><tr><td>Token values and platform mappings</td><td>DTCG token files</td><td><ds-code inline>token</ds-code>/<ds-code inline>tokenGroup</ds-code>/<ds-code inline>theme</ds-code> <ds-code inline>source</ds-code> (<ds-code inline>file</ds-code> + <ds-code inline>path</ds-code>)</td></tr><tr><td>Component code API facts</td><td>CEM manifest (web components) or framework typings</td><td><ds-code inline>api</ds-code> block, generatable from the manifest; <ds-code inline>links</ds-code> kind <ds-code inline>manifest</ds-code></td></tr><tr><td>Live component demos</td><td>Storybook or equivalent</td><td><ds-code inline>preview</ds-code> metadata, <ds-code inline>presentationUrl</ds-code>, <ds-code inline>links</ds-code> kind <ds-code inline>storybook</ds-code></td></tr><tr><td>Design artifacts</td><td>Design tool files</td><td><ds-code inline>links</ds-code> kind <ds-code inline>design</ds-code>, <ds-code inline>thumbnail</ds-code></td></tr><tr><td>Source code</td><td>The repository</td><td><ds-code inline>links</ds-code> kinds <ds-code inline>source</ds-code> / <ds-code inline>repository</ds-code>, chunk <ds-code inline>code.src</ds-code></td></tr></tbody></table></ds-table>
-<p>DSDS owns what none of those carry: usage guidance with rationale and RFC 2119 levels, use cases and alternatives, accessibility documentation with testable criteria, anatomy, the entity relationship graph, agent-directed rules, and documentation provenance (<ds-code inline>docOrigin</ds-code>) and accountability (<ds-code inline>governance</ds-code>).</p>
+<p>DSDS owns what none of those formats carry:</p>
+<ul>
+<li>usage guidance with rationale and RFC 2119 levels</li>
+<li>use cases and alternatives</li>
+<li>accessibility documentation with testable criteria</li>
+<li>anatomy</li>
+<li>the entity relationship graph</li>
+<li>agent-directed rules</li>
+<li>documentation provenance (<ds-code inline>docOrigin</ds-code>) and accountability (<ds-code inline>governance</ds-code>)</li>
+</ul>
 <ds-heading level="2" anchor="dsds-and-the-w3c-design-tokens-format">DSDS and the W3C Design Tokens format</ds-heading>
 <p>The DTCG file is the source of truth for values; DSDS is the documentation around them. The rules of the relationship:</p>
 <ul>
 <li>A DSDS <ds-code inline>token</ds-code> entity <strong>references</strong> its DTCG definition via <ds-code inline>source</ds-code> (<ds-code inline>file</ds-code> + JSON path). DSDS documents never carry resolved values, so values cannot fork between the two files.</li>
 <li>DSDS token <ds-code inline>identifier</ds-code>s are deliberately unrestricted (no kebab-case pattern) so DTCG-style names can be referenced as written.</li>
-<li>Theme <ds-code inline>overrides</ds-code> record <strong>which token changes and why</strong>; the override values themselves live in the theme's DTCG file, pointed at by the theme's <ds-code inline>source</ds-code>.</li>
-<li>Token-purpose maps elsewhere in DSDS (anatomy, states, variants) reference tokens by identifier and are resolution-checked against the documented token layer.</li>
+<li>Theme <ds-code inline>overrides</ds-code> record <strong>which token changes and why</strong>. The override values themselves live in the theme's DTCG file, which the theme's <ds-code inline>source</ds-code> points to.</li>
+<li>Token-purpose maps elsewhere in DSDS (anatomy, states, variants) reference tokens by identifier, and are checked against the documented token layer to make sure they resolve.</li>
 </ul>
-<p>DTCG has no schema or validator of its own; DSDS does not attempt to validate DTCG files — it validates that DSDS documents point at them coherently.</p>
+<p>DTCG has no schema or validator of its own. DSDS doesn't try to validate DTCG files — it only validates that DSDS documents point at them correctly.</p>
 <ds-heading level="3" anchor="worked-example-one-token-two-files">Worked example: one token, two files</ds-heading>
 <p>The DTCG file owns the value:</p>
 <ds-code language="json">{
@@ -159,9 +168,9 @@
 </ds-code>
 <p>Both files live in <ds-code inline>spec/examples/interop/</ds-code> and the DSDS half is validated by the test suite on every build, so this example cannot drift from the schema.</p>
 <ds-heading level="2" anchor="dsds-and-custom-elements-manifest">DSDS and Custom Elements Manifest</ds-heading>
-<p>CEM and the DSDS <ds-code inline>api</ds-code> block describe the same territory, member for member — by design the <ds-code inline>api</ds-code> block is generatable from a manifest:</p>
+<p>CEM and the DSDS <ds-code inline>api</ds-code> block describe the same territory, member for member. By design, the <ds-code inline>api</ds-code> block can be generated straight from a manifest:</p>
 <ds-table><table><thead><tr><th>CEM</th><th>DSDS <ds-code inline>api</ds-code> block</th></tr></thead><tbody><tr><td><ds-code inline>ClassField</ds-code> / <ds-code inline>Attribute</ds-code></td><td><ds-code inline>apiProperty</ds-code> (<ds-code inline>identifier</ds-code>, <ds-code inline>type</ds-code>, <ds-code inline>defaultValue</ds-code>, <ds-code inline>deprecated</ds-code>)</td></tr><tr><td><ds-code inline>Event</ds-code></td><td><ds-code inline>apiEvent</ds-code></td></tr><tr><td><ds-code inline>Slot</ds-code></td><td><ds-code inline>apiSlot</ds-code></td></tr><tr><td><ds-code inline>CssCustomProperty</ds-code></td><td><ds-code inline>apiCssCustomProperty</ds-code></td></tr><tr><td><ds-code inline>CssPart</ds-code></td><td><ds-code inline>apiCssPart</ds-code></td></tr><tr><td><ds-code inline>ClassMethod</ds-code></td><td><ds-code inline>apiMethod</ds-code></td></tr><tr><td><ds-code inline>summary</ds-code> / <ds-code inline>description</ds-code></td><td><ds-code inline>description</ds-code> (richText)</td></tr></tbody></table></ds-table>
-<p>The intended pipeline for web-component systems: <strong>generate</strong> the <ds-code inline>api</ds-code> block from the manifest on each release, mark it <ds-code inline>docOrigin.blocks.api = \{"origin": "generated", "authorship": "machine-generated"\}</ds-code>, and keep the human-authored layers (guidelines, use cases, accessibility, anatomy) in the same entity. The <ds-code inline>docOrigin</ds-code> field exists precisely so a document can carry both and a consumer can tell which is which. Link the manifest itself from the entity's <ds-code inline>links</ds-code> with kind <ds-code inline>manifest</ds-code>.</p>
+<p>The intended pipeline for web-component systems: on each release, <strong>generate</strong> the <ds-code inline>api</ds-code> block from the manifest, and mark it <ds-code inline>docOrigin.blocks.api = \{"origin": "generated", "authorship": "machine-generated"\}</ds-code>. Keep the human-authored layers — guidelines, use cases, accessibility, anatomy — in the same entity. The <ds-code inline>docOrigin</ds-code> field exists so a document can carry both, and a consumer can tell which is which. Link the manifest itself from the entity's <ds-code inline>links</ds-code>, with kind <ds-code inline>manifest</ds-code>.</p>
 <ds-heading level="3" anchor="worked-example-cems-own-sample-manifest">Worked example: CEM's own sample manifest</ds-heading>
 <p>The manifest below is the example from the CEM readme, verbatim:</p>
 <ds-code language="json">{
@@ -226,7 +235,7 @@
   ]
 }
 </ds-code>
-<p>Converted mechanically along the mapping table above, it becomes this valid DSDS component document:</p>
+<p>Run through the mapping table above, it becomes this valid DSDS component document:</p>
 <ds-code language="json">{
   "$schema": "https://designsystemdocspec.org/v0.15.1/dsds.bundled.schema.json",
   "dsdsVersion": "0.15.1",
@@ -297,12 +306,24 @@
   }
 }
 </ds-code>
-<p>Three things to notice, because they are the interoperability story in miniature. First, the <ds-code inline>field</ds-code> and <ds-code inline>attribute</ds-code> both named <ds-code inline>disabled</ds-code> become <strong>one</strong> <ds-code inline>apiProperty</ds-code> — CEM models the code surfaces separately; DSDS documents the logical property. Second, <ds-code inline>superclass: HTMLElement</ds-code> is deliberately dropped: CEM records implementation inheritance, while DSDS <ds-code inline>extends</ds-code> means design-system inheritance, and conflating them would be wrong. Third, the friction is visible and intentional: DSDS requires a <ds-code inline>description</ds-code> on every API entry, and this minimal manifest carries none — so the converter derives what it can, stamps the gaps "pending human review", and declares the block <ds-code inline>machine-generated</ds-code> via <ds-code inline>docOrigin</ds-code>. The generated document is valid but visibly unfinished, which is exactly the right starting state: everything CEM knows is filled in, and every empty slot is one CEM never had. The editorial lint agrees — DSDS-006 flags this very document for its missing <ds-code inline>use-cases</ds-code> block. That warning is the authoring to-do list, on purpose.</p>
+<p>Three things to notice here — they are the interoperability story in miniature.</p>
+<ol>
+<li>The <ds-code inline>field</ds-code> and <ds-code inline>attribute</ds-code>, both named <ds-code inline>disabled</ds-code>, become <strong>one</strong> <ds-code inline>apiProperty</ds-code>. CEM models the code surfaces separately; DSDS documents the logical property instead.</li>
+<li><ds-code inline>superclass: HTMLElement</ds-code> is deliberately dropped. CEM records implementation inheritance. DSDS <ds-code inline>extends</ds-code> means design-system inheritance. Mixing the two up would be wrong.</li>
+<li>The friction here is visible, and intentional. DSDS requires a <ds-code inline>description</ds-code> on every API entry, and this minimal manifest has none. So the converter derives what it can, marks the gaps "pending human review," and labels the block <ds-code inline>machine-generated</ds-code> via <ds-code inline>docOrigin</ds-code>.</li>
+</ol>
+<p>The generated document is valid, but visibly unfinished — which is exactly the right starting state. Everything CEM knows gets filled in. Every empty slot is one CEM never had. The editorial lint agrees: DSDS-006 flags this very document for its missing <ds-code inline>use-cases</ds-code> block. That warning is the authoring to-do list, on purpose.</p>
 <p>What DSDS adds that CEM has no slot for: <em>when to use</em> the component, RFC 2119 usage rules with rationale, accessibility criteria with declared verification modes, variants and states as designed concepts (not just code enums), and the relationship graph.</p>
 <ds-heading level="2" anchor="dsds-and-storybook-design-tools-and-code">DSDS and Storybook, design tools, and code</ds-heading>
-<p>These are display and authoring surfaces, not schemas, so the integration is by pointer: <ds-code inline>preview</ds-code> metadata for the canonical embed, <ds-code inline>presentationUrl</ds-code> presentations for per-example stories, <ds-code inline>links</ds-code> kinds <ds-code inline>storybook</ds-code>, <ds-code inline>design</ds-code>, <ds-code inline>source</ds-code>, <ds-code inline>package</ds-code>, <ds-code inline>repository</ds-code>, and <ds-code inline>documentation</ds-code> for everything else. Chunks reference living source files directly (<ds-code inline>code.src</ds-code>) so a copy-paste starting point can share one canonical file with a running app.</p>
+<p>These are display and authoring surfaces, not schemas, so DSDS integrates with them by pointer, not by schema mapping:</p>
+<ul>
+<li><ds-code inline>preview</ds-code> metadata for the canonical embed</li>
+<li><ds-code inline>presentationUrl</ds-code> presentations for per-example stories</li>
+<li><ds-code inline>links</ds-code> kinds <ds-code inline>storybook</ds-code>, <ds-code inline>design</ds-code>, <ds-code inline>source</ds-code>, <ds-code inline>package</ds-code>, <ds-code inline>repository</ds-code>, and <ds-code inline>documentation</ds-code> for everything else</li>
+</ul>
+<p>Chunks reference living source files directly (<ds-code inline>code.src</ds-code>), so a copy-paste starting point can share one canonical file with a running app.</p>
 <ds-heading level="2" anchor="the-positioning-in-one-sentence">The positioning in one sentence</ds-heading>
-<p>Wherever a machine-readable source of truth already exists, DSDS references it and documents around it; DSDS is only ever the source of truth for the documentation itself.</p>
+<p>Wherever a machine-readable source of truth already exists, DSDS references it and documents around it. DSDS is only ever the source of truth for the documentation itself.</p>
 
         <ds-back-to-top></ds-back-to-top>
 

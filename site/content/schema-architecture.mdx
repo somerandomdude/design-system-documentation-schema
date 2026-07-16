@@ -267,7 +267,7 @@ These properties appear on every entity type. Token and token-group differ sligh
 
 Descriptive fields past `kind`, `identifier`, `name`, and `description` live in the `metadata` object, keyed by field name. Keeping them out of the top level keeps the entity small. It also lets new fields arrive without changing the entity shape. Every field is optional. Each appears at most once, since an object cannot repeat a key.
 
-Two fields offer a string shorthand for the common case. `status` takes a bare value (`"stable"`) or an object with per-platform readiness. `lastUpdated` takes a bare ISO date (`"2026-05-28"`) or an object with a note about what changed.
+Two fields offer a string shorthand for the common case. `status` can be a bare value like `stable`, or an object with per-platform readiness. `lastUpdated` can be a bare ISO date like `2026-05-28`, or an object with a note about what changed.
 
 <ds-metadata-kinds-table />
 
@@ -345,7 +345,7 @@ A broad interaction pattern — a repeating, multi-component answer to a common 
 
 Required properties: `kind`, `identifier`, `name`. (`description` is an optional top-level property; `status` is an optional `metadata` field — see [Entity metadata](#entity-metadata).)
 
-A pattern declares the components it uses as typed `composes` edges in its `relationships` array (with `role` describing what each component does), not through a dedicated block.
+A pattern declares the components it uses as typed `composes` edges in its `relationships` array. The `role` field on each edge describes what that component does. There's no dedicated block for this.
 
 ### Guide
 
@@ -365,7 +365,7 @@ More properties:
 
 <ds-prop-table schema="entities/chunk" def="chunk" />
 
-The `code` object carries the source in one of two forms: **inline** (`code` + `language`) when the source travels with the document, or **referenced** (`src` + `language`) when it lives in an external file the consumer resolves at read time. The referenced `src` is a relative path and follows the same resolution rules as a `$ref` fileRef — no build step inlines it. Structured docs live in `documentBlocks` (and agent-only rules in `agentDocumentBlocks`), both accepting the general block kinds — guidelines, use-cases, accessibility, content, sections, and checklist. (The flat top-level `guidelines` and `useCases` shorthand arrays were removed in the 0.14.0 breaking window; `scripts/migrate-to-0.14.js` folds them into `documentBlocks`.) A chunk declares the components it composes as typed `composes` edges in its `relationships` array.
+The `code` object carries the source in one of two forms. **Inline** (`code` + `language`) means the source travels with the document. **Referenced** (`src` + `language`) means it lives in an external file that the consumer resolves at read time. The referenced `src` is a relative path and follows the same resolution rules as a `$ref` fileRef — no build step inlines it. Structured docs live in `documentBlocks`, and agent-only rules live in `agentDocumentBlocks`. Both accept the general block kinds: guidelines, use-cases, accessibility, content, sections, and checklist. (The flat top-level `guidelines` and `useCases` shorthand arrays were removed in the 0.14.0 breaking window; `scripts/migrate-to-0.14.js` folds them into `documentBlocks`.) A chunk declares the components it composes as typed `composes` edges in its `relationships` array.
 
 ---
 
@@ -483,9 +483,18 @@ Each entity type accepts only the block types that fit it. Here is why:
 
 ### Known naming exceptions
 
-The naming exceptions previously recorded here were executed in the 0.14.0 breaking window: the block kind is now `use-cases`, step entries use `label` (richText), scale steps use `name`, `systemInfo` uses `name`/`version`, the status object forms use `note`, and `apiEvent` uses `payload`. One deliberate exception remains:
+The naming exceptions previously recorded here were resolved in the 0.14.0 breaking window:
 
-- Sub-entry identifiers on anatomy parts, states, variant values, motion entries, and scale steps are unpatterned (values like `2xl` are legal), unlike entity identifiers — a deliberate exception, not drift.
+- the block kind is now `use-cases`
+- step entries use `label` (richText)
+- scale steps use `name`
+- `systemInfo` uses `name`/`version`
+- the status object forms use `note`
+- `apiEvent` uses `payload`
+
+One deliberate exception remains:
+
+- Sub-entry identifiers — on anatomy parts, states, variant values, motion entries, and scale steps — don't follow a pattern. Values like `2xl` are legal here, unlike entity identifiers. This is a deliberate exception, not drift.
 
 New vocabulary MUST be lowercase kebab-case; the exceptions list is not a precedent.
 
@@ -559,7 +568,7 @@ The accessibility block is for **specialized, structured accessibility documenta
 - color contrast pairs
 - reduced-motion behaviors (`animation` → `behavior`)
 
-For **general documentation guidance** — rules with a rationale and a conformance level, like "Provide an aria-label for icon-only buttons" — use a `guidelines` block with `category: "accessibility"`. That is the line between the two: this block records what the artifact *does*; guidelines say what authors *should do*, and why.
+For **general documentation guidance** — rules with a rationale and a conformance level, like "Provide an aria-label for icon-only buttons" — use a `guidelines` block with `category: "accessibility"` instead. Here's the line between the two: this block records what the artifact *does*. Guidelines say what authors *should do*, and why.
 
 <ds-prop-table schema="document-blocks/accessibility" def="accessibility" />
 
@@ -581,7 +590,7 @@ The content block is for **specialized, structured content documentation**. Ever
 - a terminology dictionary of recommended labels (`term` → `definition`, with usage context and cross-references)
 - localization entries (`concern` → handling: RTL, text expansion, pluralization)
 
-For **general documentation guidance** — voice, tone, and writing rules with a rationale and a conformance level, like "Use sentence case" — use a `guidelines` block with `category: "content"`. That is the line between the two: a guideline says "Use sentence case" (a _rule_); a content entry says "Add: takes an existing object and uses it in a new context" (a _reference_).
+For **general documentation guidance** — voice, tone, and writing rules with a rationale and a conformance level, like "Use sentence case" — use a `guidelines` block with `category: "content"` instead. Here's the line between the two: a guideline states a rule, like "Use sentence case." A content entry states a reference fact, like "Add: takes an existing object and uses it in a new context."
 
 At least one of `labels` or `localization` must be present.
 
@@ -960,7 +969,7 @@ The root document, each entity group, and each entity can carry a `$extensions` 
 
 ### Casing
 
-Casing follows **position and provenance**:
+Casing follows **where a term appears and where it came from**:
 
 - **Schema identifiers** — `$def` type names and property names — are **camelCase** (`tokenGroup`, `documentBlocks`).
 - **Enumerated string values** are **kebab-case** (`token-group`, `visual-design`, `recommended`). Values quote an outside standard's casing only when the token has no natural lowercase form: WCAG levels (`A`, `AA`, `AAA`). RFC 2119 levels are DSDS-native data and follow kebab-case (`must`, `must-not`); the capitalized keywords belong in documentation content.
