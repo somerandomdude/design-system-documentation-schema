@@ -137,7 +137,7 @@
 <p>Every normative statement is enforced at one of three tiers, or is explicitly advisory:</p>
 <ds-table><table><thead><tr><th>Tier</th><th>Mechanism</th><th>Failure mode</th></tr></thead><tbody><tr><td>Structural</td><td>JSON Schema (patterns, required, minItems, conditionals)</td><td>Validation error — blocking</td></tr><tr><td>Semantic</td><td>Reference implementation checks (resolution, uniqueness, inheritance, cycles)</td><td>Validation error — blocking</td></tr><tr><td>Lint</td><td>Rules catalog (<ds-code inline>rules/rules.yaml</ds-code>, DSDS-001…)</td><td>Warning — never blocking</td></tr><tr><td>Advisory</td><td>SHOULD/MAY statements consumed by judgment</td><td>None</td></tr></tbody></table></ds-table>
 <ds-heading level="2" anchor="normative-statements-index">Normative statements index</ds-heading>
-<p><em>Generated from the v0.15.1 schemas by <ds-code inline>scripts/extract-normative.mjs</ds-code> — do not edit by hand. 170 statements: 69 MUST, 23 MUST NOT, 61 SHOULD, 2 SHOULD NOT, 15 MAY.</em></p>
+<p><em>Generated from the v0.15.1 schemas by <ds-code inline>scripts/extract-normative.mjs</ds-code> — do not edit by hand. 148 statements: 54 MUST, 23 MUST NOT, 55 SHOULD, 2 SHOULD NOT, 14 MAY.</em></p>
 <ds-heading level="3" anchor="common">common</ds-heading>
 <ds-heading level="4" anchor="commoncriterion">common/criterion</ds-heading>
 <ul>
@@ -196,8 +196,8 @@
 </ul>
 <ds-heading level="4" anchor="commonrelationship">common/relationship</ds-heading>
 <ul>
-<li><strong>MUST</strong> — Unlike <ds-code inline>link</ds-code>, which points to external resources, a relationship's target MUST be a documented entity. <small><ds-code inline>common/relationship§(root).1</ds-code></small></li>
-<li><strong>MUST NOT</strong> — Tools derive inverse edges (composed-by, replaced-by, etc.) and MUST NOT require them to be authored. <small><ds-code inline>common/relationship§relationType.1</ds-code></small></li>
+<li><strong>MUST</strong> — A relationship's target MUST be a documented entity. <small><ds-code inline>common/relationship§(root).1</ds-code></small></li>
+<li><strong>MUST NOT</strong> — Tools work out the reverse relationship direction direction (target → source) and MUST NOT require them to be manually authored. <small><ds-code inline>common/relationship§relationType.1</ds-code></small></li>
 <li><strong>MUST</strong> — Custom relations MUST be vendor-namespaced (e.g. 'acme.themes'). <small><ds-code inline>common/relationship§relationType.2</ds-code></small></li>
 <li><strong>MUST</strong> — MUST match a documented entity. <small><ds-code inline>common/relationship§relationship.target.1</ds-code></small></li>
 </ul>
@@ -208,7 +208,7 @@
 <ds-heading level="4" anchor="commonstatus">common/status</ds-heading>
 <ul>
 <li><strong>MUST</strong> — MUST be lowercase kebab-case. <small><ds-code inline>common/status§statusValue.1</ds-code></small></li>
-<li><strong>MUST</strong> — Custom values (e.g., 'sunset', 'beta') are allowed and MUST follow the same pattern. <small><ds-code inline>common/status§statusValue.2</ds-code></small></li>
+<li><strong>MUST</strong> — Custom values (ex: 'sunset', 'beta') are allowed and MUST follow the same pattern. <small><ds-code inline>common/status§statusValue.2</ds-code></small></li>
 <li><strong>MUST</strong> — MUST say what to use instead and, where one exists, give a migration path. <small><ds-code inline>common/status§deprecationNotice.1</ds-code></small></li>
 </ul>
 <ds-heading level="4" anchor="commonsystem-info">common/system-info</ds-heading>
@@ -234,167 +234,145 @@
 </ul>
 <ds-heading level="4" anchor="document-blockschecklist">document-blocks/checklist</ds-heading>
 <ul>
-<li><strong>MUST</strong> — An item MUST carry a <ds-code inline>label</ds-code>; all other fields are optional. <small><ds-code inline>document-blocks/checklist§checklistItem.1</ds-code></small></li>
-<li><strong>MUST</strong> — MUST be specific enough to confirm. <small><ds-code inline>document-blocks/checklist§checklistItem.label.1</ds-code></small></li>
+<li><strong>MUST</strong> — MUST be specific — not 'check accessibility'. <small><ds-code inline>document-blocks/checklist§checklistItem.label.1</ds-code></small></li>
 <li><strong>MUST</strong> — MUST be lowercase kebab-case. <small><ds-code inline>document-blocks/checklist§checklistItem.criterion.1</ds-code></small></li>
-<li><strong>SHOULD</strong> — Custom values are allowed and SHOULD be lowercase kebab-case. <small><ds-code inline>document-blocks/checklist§checklistItem.category.1</ds-code></small></li>
-<li><strong>MAY</strong> — Tools MAY render optional items distinctly (e.g., an 'optional' label). <small><ds-code inline>document-blocks/checklist§checklistItem.optional.1</ds-code></small></li>
-<li><strong>SHOULD</strong> — Tools SHOULD render unordered checklists as checkboxes and ordered ones as a numbered sequence. <small><ds-code inline>document-blocks/checklist§checklist.ordered.1</ds-code></small></li>
-<li><strong>MUST</strong> — Order is significant for ordered checklists, so tools MUST preserve it. <small><ds-code inline>document-blocks/checklist§checklist.items.1</ds-code></small></li>
+<li><strong>MAY</strong> — Tools MAY mark optional items differently. <small><ds-code inline>document-blocks/checklist§checklistItem.optional.1</ds-code></small></li>
+<li><strong>SHOULD</strong> — Tools SHOULD show unordered checklists as checkboxes and ordered ones as a numbered list. <small><ds-code inline>document-blocks/checklist§checklist.ordered.1</ds-code></small></li>
+<li><strong>MUST</strong> — Order matters when <ds-code inline>ordered</ds-code> is true, so tools MUST preserve it. <small><ds-code inline>document-blocks/checklist§checklist.items.1</ds-code></small></li>
 </ul>
 <ds-heading level="4" anchor="document-blockscontent">document-blocks/content</ds-heading>
 <ul>
-<li><strong>SHOULD</strong> — The terms SHOULD match other <ds-code inline>term</ds-code> values in this content block's <ds-code inline>labels</ds-code> array — the block is the dictionary they resolve against, so tools can cross-reference them. <small><ds-code inline>document-blocks/content§contentLabelEntry.alternatives.1</ds-code></small></li>
-<li><strong>SHOULD</strong> — Custom values are allowed and SHOULD be lowercase kebab-case. <small><ds-code inline>document-blocks/content§localizationEntry.concern.1</ds-code></small></li>
-<li><strong>SHOULD</strong> — Order matters, so tools SHOULD keep it for display. <small><ds-code inline>document-blocks/content§content.labels.1</ds-code></small></li>
-<li><strong>MAY</strong> — Authors MAY order alphabetically or by frequency of use. <small><ds-code inline>document-blocks/content§content.labels.2</ds-code></small></li>
-<li><strong>SHOULD</strong> — Order matters, so tools SHOULD display entries in this order. <small><ds-code inline>document-blocks/content§content.localization.1</ds-code></small></li>
-<li><strong>SHOULD</strong> — Authors SHOULD order by impact or frequency. <small><ds-code inline>document-blocks/content§content.localization.2</ds-code></small></li>
+<li><strong>SHOULD</strong> — These SHOULD match other <ds-code inline>term</ds-code> values in this block's <ds-code inline>labels</ds-code> array, so tools can cross-reference them. <small><ds-code inline>document-blocks/content§contentLabelEntry.alternatives.1</ds-code></small></li>
+<li><strong>SHOULD</strong> — Order matters for display, so tools SHOULD keep it; authors MAY sort alphabetically or by frequency. <small><ds-code inline>document-blocks/content§content.labels.1</ds-code></small></li>
+<li><strong>SHOULD</strong> — Order matters for display, so tools SHOULD keep it; authors SHOULD lead with the highest-impact concerns. <small><ds-code inline>document-blocks/content§content.localization.1</ds-code></small></li>
 </ul>
 <ds-heading level="4" anchor="document-blocksdesign-specifications">document-blocks/design-specifications</ds-heading>
 <ul>
-<li><strong>MUST</strong> — In a system with a token layer, this MUST be a design token identifier (e.g., 'color-action-primary', 'space-4') so the value stays single-sourced and cannot silently drift from the token system. <small><ds-code inline>document-blocks/design-specifications§designValue.1</ds-code></small></li>
-<li><strong>MUST</strong> — Keys are component-scoped property names that say what the value controls (e.g., 'background', 'border-color', 'min-height', 'font-size', 'opacity') and MUST be lowercase kebab-case. <small><ds-code inline>document-blocks/design-specifications§designProperties.1</ds-code></small></li>
-<li><strong>MUST</strong> — Keys are named spatial relationships between anatomy parts or edges (e.g., 'container-horizontal', 'icon-to-label') and MUST be lowercase kebab-case. <small><ds-code inline>document-blocks/design-specifications§spacingSpec.internal.1</ds-code></small></li>
-<li><strong>MUST</strong> — Keys are named spatial relationships (e.g., 'button-to-button', 'button-group-gap', 'stack-gap') and MUST be lowercase kebab-case. <small><ds-code inline>document-blocks/design-specifications§spacingSpec.external.1</ds-code></small></li>
-<li><strong>MUST</strong> — Keys are named text elements matching anatomy parts (e.g., 'label', 'helper-text', 'heading', 'body') and MUST be lowercase kebab-case. <small><ds-code inline>document-blocks/design-specifications§typographySpec.1</ds-code></small></li>
+<li><strong>MUST</strong> — If the system has tokens, this MUST be a token identifier (e.g., 'color-action-primary', 'space-4'), not a raw value — that keeps it from drifting out of sync with the token system. <small><ds-code inline>document-blocks/design-specifications§designValue.1</ds-code></small></li>
+<li><strong>MUST</strong> — Keys say what the value controls (e.g., 'background', 'min-height') and MUST be lowercase kebab-case. <small><ds-code inline>document-blocks/design-specifications§designProperties.1</ds-code></small></li>
+<li><strong>MUST</strong> — Keys name the relationship (e.g., 'icon-to-label') and MUST be lowercase kebab-case. <small><ds-code inline>document-blocks/design-specifications§spacingSpec.internal.1</ds-code></small></li>
+<li><strong>MUST</strong> — Keys name the relationship (e.g., 'button-to-button') and MUST be lowercase kebab-case. <small><ds-code inline>document-blocks/design-specifications§spacingSpec.external.1</ds-code></small></li>
+<li><strong>MUST</strong> — Keys name the element (e.g., 'label', 'helper-text') and MUST be lowercase kebab-case. <small><ds-code inline>document-blocks/design-specifications§typographySpec.1</ds-code></small></li>
 </ul>
 <ds-heading level="4" anchor="document-blocksguidelines">document-blocks/guidelines</ds-heading>
 <ul>
-<li><strong>MUST</strong> — MUST be concrete and unambiguous. <small><ds-code inline>document-blocks/guidelines§guidelineEntry.guidance.1</ds-code></small></li>
-<li><strong>MUST NOT</strong> — MUST NOT restate the guidance. <small><ds-code inline>document-blocks/guidelines§guidelineEntry.rationale.1</ds-code></small></li>
-<li><strong>SHOULD</strong> — Custom values are allowed and SHOULD be lowercase kebab-case. <small><ds-code inline>document-blocks/guidelines§guidelineEntry.category.1</ds-code></small></li>
-<li><strong>SHOULD</strong> — Order matters, so tools SHOULD display guidelines in this order. <small><ds-code inline>document-blocks/guidelines§guidelines.items.1</ds-code></small></li>
-<li><strong>SHOULD</strong> — Authors SHOULD order by importance or group by category. <small><ds-code inline>document-blocks/guidelines§guidelines.items.2</ds-code></small></li>
+<li><strong>MUST</strong> — MUST be concrete and clear — not 'use sparingly' or 'when possible'. <small><ds-code inline>document-blocks/guidelines§guidelineEntry.guidance.1</ds-code></small></li>
+<li><strong>MUST NOT</strong> — MUST NOT just repeat the guidance. <small><ds-code inline>document-blocks/guidelines§guidelineEntry.rationale.1</ds-code></small></li>
+<li><strong>SHOULD</strong> — Tools SHOULD keep this order; authors SHOULD lead with the most important or group by category. <small><ds-code inline>document-blocks/guidelines§guidelines.items.1</ds-code></small></li>
 </ul>
 <ds-heading level="4" anchor="document-blocksimports">document-blocks/imports</ds-heading>
 <ul>
-<li><strong>SHOULD</strong> — SHOULD be copy-pasteable and ready to use. <small><ds-code inline>document-blocks/imports§importEntry.code.1</ds-code></small></li>
+<li><strong>SHOULD</strong> — SHOULD be copy-paste ready. <small><ds-code inline>document-blocks/imports§importEntry.code.1</ds-code></small></li>
 </ul>
 <ds-heading level="4" anchor="document-blocksinteractions">document-blocks/interactions</ds-heading>
 <ul>
-<li><strong>MUST</strong> — Each <ds-code inline>identifier</ds-code> MUST match a component documented in the system; the optional <ds-code inline>role</ds-code> says what the component does in this step. <small><ds-code inline>document-blocks/interactions§interactionEntry.components.1</ds-code></small></li>
-<li><strong>SHOULD</strong> — Authors SHOULD include steps for the initial trigger, the system's response, recovery or correction steps, and completion. <small><ds-code inline>document-blocks/interactions§interactions.1</ds-code></small></li>
-<li><strong>SHOULD</strong> — Ordering is significant, so tools SHOULD keep and display steps in this order to show the sequence over time. <small><ds-code inline>document-blocks/interactions§interactions.items.1</ds-code></small></li>
+<li><strong>MUST</strong> — Each <ds-code inline>identifier</ds-code> MUST match a documented component; the optional <ds-code inline>role</ds-code> says what it does here. <small><ds-code inline>document-blocks/interactions§interactionEntry.components.1</ds-code></small></li>
+<li><strong>SHOULD</strong> — Authors SHOULD cover the trigger, the response, any recovery steps, and completion. <small><ds-code inline>document-blocks/interactions§interactions.1</ds-code></small></li>
+<li><strong>SHOULD</strong> — Tools SHOULD keep this order so the sequence stays clear. <small><ds-code inline>document-blocks/interactions§interactions.items.1</ds-code></small></li>
 </ul>
 <ds-heading level="4" anchor="document-blocksmotion">document-blocks/motion</ds-heading>
 <ul>
-<li><strong>MUST</strong> — When neither is provided, the description field MUST explain the guidance — an empty duration object carries no information, so at least one of min, max, or description is required. <small><ds-code inline>document-blocks/motion§motionDuration.1</ds-code></small></li>
-<li><strong>MUST</strong> — P1x and P2x MUST be in [0, 1]. <small><ds-code inline>document-blocks/motion§motionEntry.function.1</ds-code></small></li>
+<li><strong>MUST</strong> — P1x and P2x MUST be between 0 and 1; P1y and P2y can be any number (values outside 0–1 give a bounce/overshoot). <small><ds-code inline>document-blocks/motion§motionEntry.function.1</ds-code></small></li>
 <li><strong>MUST</strong> — P1x — MUST be in [0, 1]. <small><ds-code inline>document-blocks/motion§motionEntry.function[prefixItems][0].1</ds-code></small></li>
 <li><strong>MUST</strong> — P2x — MUST be in [0, 1]. <small><ds-code inline>document-blocks/motion§motionEntry.function[prefixItems][2].1</ds-code></small></li>
-<li><strong>SHOULD</strong> — Ordering is significant, so tools SHOULD display easings in this order. <small><ds-code inline>document-blocks/motion§motion.1</ds-code></small></li>
-<li><strong>SHOULD</strong> — Ordering is significant, so tools SHOULD display easings in this order. <small><ds-code inline>document-blocks/motion§motion.items.1</ds-code></small></li>
+<li><strong>SHOULD</strong> — List the most common ones first; tools SHOULD keep this order. <small><ds-code inline>document-blocks/motion§motion.1</ds-code></small></li>
+<li><strong>SHOULD</strong> — Tools SHOULD keep this order for display. <small><ds-code inline>document-blocks/motion§motion.items.1</ds-code></small></li>
 </ul>
 <ds-heading level="4" anchor="document-blocksprinciples">document-blocks/principles</ds-heading>
 <ul>
-<li><strong>SHOULD</strong> — Ordering is significant, so tools SHOULD display principles in this order. <small><ds-code inline>document-blocks/principles§principles.items.1</ds-code></small></li>
-<li><strong>SHOULD</strong> — Authors SHOULD order by importance or by the natural progression of the design philosophy. <small><ds-code inline>document-blocks/principles§principles.items.2</ds-code></small></li>
+<li><strong>SHOULD</strong> — Tools SHOULD keep this order; authors SHOULD lead with the most important. <small><ds-code inline>document-blocks/principles§principles.items.1</ds-code></small></li>
 </ul>
 <ds-heading level="4" anchor="document-blocksscale">document-blocks/scale</ds-heading>
 <ul>
-<li><strong>MUST</strong> — MUST match the <ds-code inline>identifier</ds-code> of a token defined elsewhere in the system. <small><ds-code inline>document-blocks/scale§scaleStep.token.1</ds-code></small></li>
-<li><strong>MAY</strong> — Tools MAY fill this in from the token catalog. <small><ds-code inline>document-blocks/scale§scaleStep.value.1</ds-code></small></li>
-<li><strong>SHOULD</strong> — Tools SHOULD keep this order for display. <small><ds-code inline>document-blocks/scale§scale.1</ds-code></small></li>
-<li><strong>SHOULD</strong> — Ordering is significant, so tools SHOULD keep it for display. <small><ds-code inline>document-blocks/scale§scale.steps.1</ds-code></small></li>
-<li><strong>SHOULD</strong> — Consumers SHOULD treat adjacent steps as the natural next-smaller and next-larger options when adjusting a value. <small><ds-code inline>document-blocks/scale§scale.steps.2</ds-code></small></li>
+<li><strong>MUST</strong> — MUST match a token defined elsewhere in the system. <small><ds-code inline>document-blocks/scale§scaleStep.token.1</ds-code></small></li>
+<li><strong>MAY</strong> — Tools MAY fill this in automatically. <small><ds-code inline>document-blocks/scale§scaleStep.value.1</ds-code></small></li>
+<li><strong>SHOULD</strong> — Steps run smallest to largest; tools SHOULD keep this order. <small><ds-code inline>document-blocks/scale§scale.1</ds-code></small></li>
+<li><strong>SHOULD</strong> — Tools SHOULD keep this order. <small><ds-code inline>document-blocks/scale§scale.steps.1</ds-code></small></li>
+<li><strong>SHOULD</strong> — When adjusting a value, consumers SHOULD move to the adjacent step. <small><ds-code inline>document-blocks/scale§scale.steps.2</ds-code></small></li>
 </ul>
 <ds-heading level="4" anchor="document-blockssections">document-blocks/sections</ds-heading>
 <ul>
-<li><strong>MUST</strong> — A section MUST carry a <ds-code inline>title</ds-code>. <small><ds-code inline>document-blocks/sections§sectionEntry.1</ds-code></small></li>
-<li><strong>MUST</strong> — MUST be lowercase kebab-case and unique within the parent block. <small><ds-code inline>document-blocks/sections§sectionEntry.anchor.1</ds-code></small></li>
-<li><strong>MAY</strong> — When omitted, tools MAY derive an anchor from the title. <small><ds-code inline>document-blocks/sections§sectionEntry.anchor.2</ds-code></small></li>
-<li><strong>SHOULD</strong> — Ordering is significant, so tools SHOULD render sub-sections in this order. <small><ds-code inline>document-blocks/sections§sectionEntry.sections.1</ds-code></small></li>
-<li><strong>SHOULD</strong> — Ordering is significant, so tools SHOULD keep it. <small><ds-code inline>document-blocks/sections§sections.items.1</ds-code></small></li>
+<li><strong>MUST</strong> — MUST be lowercase kebab-case and unique in the block. <small><ds-code inline>document-blocks/sections§sectionEntry.anchor.1</ds-code></small></li>
+<li><strong>MAY</strong> — Left out, tools MAY derive one from the title. <small><ds-code inline>document-blocks/sections§sectionEntry.anchor.2</ds-code></small></li>
+<li><strong>SHOULD</strong> — Tools SHOULD keep this order. <small><ds-code inline>document-blocks/sections§sectionEntry.sections.1</ds-code></small></li>
+<li><strong>SHOULD</strong> — Tools SHOULD keep this order. <small><ds-code inline>document-blocks/sections§sections.items.1</ds-code></small></li>
 </ul>
 <ds-heading level="4" anchor="document-blocksstates">document-blocks/states</ds-heading>
 <ul>
-<li><strong>SHOULD</strong> — Ordering is significant, so tools SHOULD display states in this order. <small><ds-code inline>document-blocks/states§states.items.1</ds-code></small></li>
+<li><strong>SHOULD</strong> — Tools SHOULD keep this order for display. <small><ds-code inline>document-blocks/states§states.items.1</ds-code></small></li>
 </ul>
 <ds-heading level="4" anchor="document-blockssteps">document-blocks/steps</ds-heading>
 <ul>
-<li><strong>MUST</strong> — A step MUST carry a <ds-code inline>label</ds-code>. <small><ds-code inline>document-blocks/steps§stepEntry.1</ds-code></small></li>
 <li><strong>MUST</strong> — MUST be concrete and actionable: describe the action, not the goal. <small><ds-code inline>document-blocks/steps§stepEntry.instruction.1</ds-code></small></li>
 <li><strong>MAY</strong> — Tools MAY render optional steps distinctly (e.g., an 'optional' label). <small><ds-code inline>document-blocks/steps§stepEntry.optional.1</ds-code></small></li>
-<li><strong>SHOULD</strong> — Tools SHOULD render ordered procedures as numbered lists and unordered ones as a checklist or bulleted list. <small><ds-code inline>document-blocks/steps§steps.ordered.1</ds-code></small></li>
-<li><strong>MUST</strong> — Ordering is significant, so tools MUST preserve it for ordered procedures. <small><ds-code inline>document-blocks/steps§steps.items.1</ds-code></small></li>
+<li><strong>SHOULD</strong> — Tools SHOULD show ordered steps as a numbered list, unordered ones as a checklist. <small><ds-code inline>document-blocks/steps§steps.ordered.1</ds-code></small></li>
+<li><strong>MUST</strong> — Tools MUST preserve this order when <ds-code inline>ordered</ds-code> is true. <small><ds-code inline>document-blocks/steps§steps.items.1</ds-code></small></li>
 </ul>
 <ds-heading level="4" anchor="document-blocksvariants">document-blocks/variants</ds-heading>
 <ul>
-<li><strong>SHOULD</strong> — Ordering is significant, so tools SHOULD keep it for display. <small><ds-code inline>document-blocks/variants§enumVariant.values.1</ds-code></small></li>
-<li><strong>SHOULD</strong> — Ordering is significant, so tools SHOULD display dimensions in this order. <small><ds-code inline>document-blocks/variants§variants.items.1</ds-code></small></li>
+<li><strong>SHOULD</strong> — Tools SHOULD keep this order. <small><ds-code inline>document-blocks/variants§enumVariant.values.1</ds-code></small></li>
+<li><strong>SHOULD</strong> — Tools SHOULD keep this order. <small><ds-code inline>document-blocks/variants§variants.items.1</ds-code></small></li>
 </ul>
 <ds-heading level="3" anchor="root-schema">Root schema</ds-heading>
 <ds-heading level="4" anchor="dsds">dsds</ds-heading>
 <ul>
-<li><strong>MUST</strong> — The value MUST be relative. <small><ds-code inline>dsds§fileRef.$ref.1</ds-code></small></li>
-<li><strong>MUST</strong> — Resolvers MUST detect cycles. <small><ds-code inline>dsds§fileRef.$ref.2</ds-code></small></li>
-<li><strong>MUST</strong> — They MUST treat unresolvable files or pointers and shape mismatches as fatal. <small><ds-code inline>dsds§fileRef.$ref.3</ds-code></small></li>
-<li><strong>MUST</strong> — They MUST gate any remote dereferencing behind an allow-list (see the spec's reference-resolution and security rules). <small><ds-code inline>dsds§fileRef.$ref.4</ds-code></small></li>
+<li><strong>MUST</strong> — MUST be relative — no absolute paths, protocol-relative paths, or scheme URIs (http:, file:, …). <small><ds-code inline>dsds§fileRef.$ref.1</ds-code></small></li>
+<li><strong>MUST</strong> — Resolvers MUST catch cycles, MUST treat a broken file, pointer, or shape mismatch as a fatal error, and MUST only fetch remote files from an allow-list (see the spec's security rules). <small><ds-code inline>dsds§fileRef.$ref.2</ds-code></small></li>
 <li><strong>MUST</strong> — A group MUST hold at least one entity. <small><ds-code inline>dsds§entityGroup.1</ds-code></small></li>
-<li><strong>SHOULD</strong> — Order is significant: tools SHOULD keep it for display. <small><ds-code inline>dsds§entityGroup.entities.1</ds-code></small></li>
+<li><strong>SHOULD</strong> — Order matters; tools SHOULD keep it. <small><ds-code inline>dsds§entityGroup.entities.1</ds-code></small></li>
 </ul>
 <ds-heading level="3" anchor="entities">entities</ds-heading>
 <ds-heading level="4" anchor="entitieschunk">entities/chunk</ds-heading>
 <ul>
 <li><strong>MUST</strong> — MUST be lowercase kebab-case and unique within its entity group. <small><ds-code inline>entities/chunk§chunk.identifier.1</ds-code></small></li>
-<li><strong>MUST</strong> — MUST be relative — the pattern rejects absolute paths, protocol-relative references, and scheme-bearing URIs (http:, file:, …). <small><ds-code inline>entities/chunk§chunk.code[oneOf][1].src.1</ds-code></small></li>
-<li><strong>SHOULD</strong> — Resolvers SHOULD gate any remote dereferencing behind an allow-list, following the same rules a <ds-code inline>$ref</ds-code> fileRef obeys. <small><ds-code inline>entities/chunk§chunk.code[oneOf][1].src.2</ds-code></small></li>
-<li><strong>MUST</strong> — Content here is agent-only: hard MUST/MUST-NOT rules, verification checklists, and adaptation constraints an agent needs when copying the chunk into an application. <small><ds-code inline>entities/chunk§chunk.agentDocumentBlocks.1</ds-code></small></li>
+<li><strong>MUST</strong> — MUST be relative — no absolute paths, protocol-relative paths, or scheme URIs (http:, file:, …). <small><ds-code inline>entities/chunk§chunk.code[oneOf][1].src.1</ds-code></small></li>
+<li><strong>SHOULD</strong> — Resolvers SHOULD only fetch from an allow-list, the same rule a <ds-code inline>$ref</ds-code> fileRef follows. <small><ds-code inline>entities/chunk§chunk.code[oneOf][1].src.2</ds-code></small></li>
 </ul>
 <ds-heading level="4" anchor="entitiescomponent">entities/component</ds-heading>
 <ul>
 <li><strong>MUST</strong> — MUST be unique within its entity group. <small><ds-code inline>entities/component§component.identifier.1</ds-code></small></li>
-<li><strong>SHOULD</strong> — Order matters, so tools SHOULD keep it for display. <small><ds-code inline>entities/component§component.documentBlocks.1</ds-code></small></li>
-<li><strong>MUST</strong> — For example: hard MUST/MUST-NOT rules an agent should treat as firm limits; notes that correct a mistake an agent is likely to make, such as reaching for this entity when a confusable one fits better; constraints backed by test-run evidence; and machine-checkable criteria with verification modes. <small><ds-code inline>entities/component§component.agentDocumentBlocks.1</ds-code></small></li>
-<li><strong>MUST NOT</strong> — Tools MUST NOT render these blocks in human-facing docs. <small><ds-code inline>entities/component§component.agentDocumentBlocks.2</ds-code></small></li>
-<li><strong>SHOULD</strong> — Agents SHOULD read both arrays, human blocks first. <small><ds-code inline>entities/component§component.agentDocumentBlocks.3</ds-code></small></li>
+<li><strong>SHOULD</strong> — Tools SHOULD keep this order for display. <small><ds-code inline>entities/component§component.documentBlocks.1</ds-code></small></li>
+<li><strong>MUST NOT</strong> — Tools MUST NOT show these blocks to humans. <small><ds-code inline>entities/component§component.agentDocumentBlocks.1</ds-code></small></li>
+<li><strong>SHOULD</strong> — Agents SHOULD read both arrays, human docs first. <small><ds-code inline>entities/component§component.agentDocumentBlocks.2</ds-code></small></li>
 </ul>
 <ds-heading level="4" anchor="entitiesfoundation">entities/foundation</ds-heading>
 <ul>
 <li><strong>MUST</strong> — MUST be unique within its entity group. <small><ds-code inline>entities/foundation§foundation.identifier.1</ds-code></small></li>
-<li><strong>SHOULD</strong> — Order matters, so tools SHOULD keep it for display. <small><ds-code inline>entities/foundation§foundation.documentBlocks.1</ds-code></small></li>
-<li><strong>MUST</strong> — For example: hard MUST/MUST-NOT rules an agent should treat as firm limits; notes that correct a mistake an agent is likely to make, such as reaching for this entity when a confusable one fits better; constraints backed by test-run evidence; and machine-checkable criteria with verification modes. <small><ds-code inline>entities/foundation§foundation.agentDocumentBlocks.1</ds-code></small></li>
-<li><strong>MUST NOT</strong> — Tools MUST NOT render these blocks in human-facing docs. <small><ds-code inline>entities/foundation§foundation.agentDocumentBlocks.2</ds-code></small></li>
-<li><strong>SHOULD</strong> — Agents SHOULD read both arrays, human blocks first. <small><ds-code inline>entities/foundation§foundation.agentDocumentBlocks.3</ds-code></small></li>
+<li><strong>SHOULD</strong> — Tools SHOULD keep this order for display. <small><ds-code inline>entities/foundation§foundation.documentBlocks.1</ds-code></small></li>
+<li><strong>MUST NOT</strong> — Tools MUST NOT show these blocks to humans. <small><ds-code inline>entities/foundation§foundation.agentDocumentBlocks.1</ds-code></small></li>
+<li><strong>SHOULD</strong> — Agents SHOULD read both arrays, human docs first. <small><ds-code inline>entities/foundation§foundation.agentDocumentBlocks.2</ds-code></small></li>
 </ul>
 <ds-heading level="4" anchor="entitiesguide">entities/guide</ds-heading>
 <ul>
 <li><strong>MUST</strong> — MUST be lowercase kebab-case and unique within its entity group. <small><ds-code inline>entities/guide§guide.identifier.1</ds-code></small></li>
-<li><strong>SHOULD</strong> — A guide reads top to bottom, so order matters and tools SHOULD keep it for display. <small><ds-code inline>entities/guide§guide.documentBlocks.1</ds-code></small></li>
-<li><strong>MUST</strong> — For example: hard MUST/MUST-NOT rules an agent should treat as firm limits; notes that correct a mistake an agent is likely to make, such as reaching for this entity when a confusable one fits better; constraints backed by test-run evidence; and machine-checkable criteria with verification modes. <small><ds-code inline>entities/guide§guide.agentDocumentBlocks.1</ds-code></small></li>
-<li><strong>MUST NOT</strong> — Tools MUST NOT render these blocks in human-facing docs. <small><ds-code inline>entities/guide§guide.agentDocumentBlocks.2</ds-code></small></li>
-<li><strong>SHOULD</strong> — Agents SHOULD read both arrays, human blocks first. <small><ds-code inline>entities/guide§guide.agentDocumentBlocks.3</ds-code></small></li>
+<li><strong>SHOULD</strong> — A guide reads top to bottom, so tools SHOULD keep this order. <small><ds-code inline>entities/guide§guide.documentBlocks.1</ds-code></small></li>
+<li><strong>MUST NOT</strong> — Tools MUST NOT show these blocks to humans. <small><ds-code inline>entities/guide§guide.agentDocumentBlocks.1</ds-code></small></li>
+<li><strong>SHOULD</strong> — Agents SHOULD read both arrays, human docs first. <small><ds-code inline>entities/guide§guide.agentDocumentBlocks.2</ds-code></small></li>
 </ul>
 <ds-heading level="4" anchor="entitiespattern">entities/pattern</ds-heading>
 <ul>
 <li><strong>MUST</strong> — MUST be unique within its entity group. <small><ds-code inline>entities/pattern§pattern.identifier.1</ds-code></small></li>
-<li><strong>SHOULD</strong> — Order matters, so tools SHOULD keep it for display. <small><ds-code inline>entities/pattern§pattern.documentBlocks.1</ds-code></small></li>
-<li><strong>MUST</strong> — For example: hard MUST/MUST-NOT rules an agent should treat as firm limits; notes that correct a mistake an agent is likely to make, such as reaching for this entity when a confusable one fits better; constraints backed by test-run evidence; and machine-checkable criteria with verification modes. <small><ds-code inline>entities/pattern§pattern.agentDocumentBlocks.1</ds-code></small></li>
-<li><strong>MUST NOT</strong> — Tools MUST NOT render these blocks in human-facing docs. <small><ds-code inline>entities/pattern§pattern.agentDocumentBlocks.2</ds-code></small></li>
-<li><strong>SHOULD</strong> — Agents SHOULD read both arrays, human blocks first. <small><ds-code inline>entities/pattern§pattern.agentDocumentBlocks.3</ds-code></small></li>
+<li><strong>SHOULD</strong> — Order matters — <ds-code inline>interactions</ds-code> uses it to show the flow over time, and tools SHOULD keep it. <small><ds-code inline>entities/pattern§pattern.documentBlocks.1</ds-code></small></li>
+<li><strong>MUST NOT</strong> — Tools MUST NOT show these blocks to humans. <small><ds-code inline>entities/pattern§pattern.agentDocumentBlocks.1</ds-code></small></li>
+<li><strong>SHOULD</strong> — Agents SHOULD read both arrays, human docs first. <small><ds-code inline>entities/pattern§pattern.agentDocumentBlocks.2</ds-code></small></li>
 </ul>
 <ds-heading level="4" anchor="entitiestheme">entities/theme</ds-heading>
 <ul>
-<li><strong>MUST</strong> — MUST match the <ds-code inline>identifier</ds-code> of a token defined elsewhere in the system. <small><ds-code inline>entities/theme§tokenOverride.token.1</ds-code></small></li>
-<li><strong>SHOULD</strong> — Order matters, so tools SHOULD keep it for display. <small><ds-code inline>entities/theme§theme.documentBlocks.1</ds-code></small></li>
-<li><strong>MUST</strong> — For example: hard MUST/MUST-NOT rules an agent should treat as firm limits; notes that correct a mistake an agent is likely to make, such as reaching for this entity when a confusable one fits better; constraints backed by test-run evidence; and machine-checkable criteria with verification modes. <small><ds-code inline>entities/theme§theme.agentDocumentBlocks.1</ds-code></small></li>
-<li><strong>MUST NOT</strong> — Tools MUST NOT render these blocks in human-facing docs. <small><ds-code inline>entities/theme§theme.agentDocumentBlocks.2</ds-code></small></li>
-<li><strong>SHOULD</strong> — Agents SHOULD read both arrays, human blocks first. <small><ds-code inline>entities/theme§theme.agentDocumentBlocks.3</ds-code></small></li>
+<li><strong>MUST</strong> — MUST match a token's <ds-code inline>identifier</ds-code> defined elsewhere in the system. <small><ds-code inline>entities/theme§tokenOverride.token.1</ds-code></small></li>
+<li><strong>SHOULD</strong> — Tools SHOULD keep this order for display. <small><ds-code inline>entities/theme§theme.documentBlocks.1</ds-code></small></li>
+<li><strong>MUST NOT</strong> — Tools MUST NOT show these blocks to humans. <small><ds-code inline>entities/theme§theme.agentDocumentBlocks.1</ds-code></small></li>
+<li><strong>SHOULD</strong> — Agents SHOULD read both arrays, human docs first. <small><ds-code inline>entities/theme§theme.agentDocumentBlocks.2</ds-code></small></li>
 </ul>
 <ds-heading level="4" anchor="entitiestoken">entities/token</ds-heading>
 <ul>
-<li><strong>MUST</strong> — MUST be present unless an ancestor token group declares <ds-code inline>tokenType</ds-code> — children inherit the group's value when they omit their own. <small><ds-code inline>entities/token§token.tokenType.1</ds-code></small></li>
-<li><strong>SHOULD</strong> — Order matters, so tools SHOULD keep it for display. <small><ds-code inline>entities/token§token.documentBlocks.1</ds-code></small></li>
-<li><strong>MUST</strong> — For example: hard MUST/MUST-NOT rules an agent should treat as firm limits; notes that correct a mistake an agent is likely to make, such as reaching for this entity when a confusable one fits better; constraints backed by test-run evidence; and machine-checkable criteria with verification modes. <small><ds-code inline>entities/token§token.agentDocumentBlocks.1</ds-code></small></li>
-<li><strong>MUST NOT</strong> — Tools MUST NOT render these blocks in human-facing docs. <small><ds-code inline>entities/token§token.agentDocumentBlocks.2</ds-code></small></li>
-<li><strong>SHOULD</strong> — Agents SHOULD read both arrays, human blocks first. <small><ds-code inline>entities/token§token.agentDocumentBlocks.3</ds-code></small></li>
-<li><strong>MAY</strong> — Each token in children MAY override this value. <small><ds-code inline>entities/token§tokenGroup.tokenType.1</ds-code></small></li>
-<li><strong>MUST</strong> — Each item MUST be either a token or a tokenGroup. <small><ds-code inline>entities/token§tokenGroup.children.1</ds-code></small></li>
-<li><strong>SHOULD</strong> — Order often shows a meaningful progression (e.g., lightest to darkest, or smallest to largest), so it matters and tools SHOULD keep it for display. <small><ds-code inline>entities/token§tokenGroup.children.2</ds-code></small></li>
-<li><strong>MUST</strong> — For example: hard MUST/MUST-NOT rules an agent should treat as firm limits; notes that correct a mistake an agent is likely to make, such as reaching for this entity when a confusable one fits better; constraints backed by test-run evidence; and machine-checkable criteria with verification modes. <small><ds-code inline>entities/token§tokenGroup.agentDocumentBlocks.1</ds-code></small></li>
-<li><strong>MUST NOT</strong> — Tools MUST NOT render these blocks in human-facing docs. <small><ds-code inline>entities/token§tokenGroup.agentDocumentBlocks.2</ds-code></small></li>
-<li><strong>SHOULD</strong> — Agents SHOULD read both arrays, human blocks first. <small><ds-code inline>entities/token§tokenGroup.agentDocumentBlocks.3</ds-code></small></li>
+<li><strong>MUST</strong> — MUST be set here unless a parent group already declares it — a token inherits the group's value if it skips its own. <small><ds-code inline>entities/token§token.tokenType.1</ds-code></small></li>
+<li><strong>SHOULD</strong> — Tools SHOULD keep this order for display. <small><ds-code inline>entities/token§token.documentBlocks.1</ds-code></small></li>
+<li><strong>MUST NOT</strong> — Tools MUST NOT show these blocks to humans. <small><ds-code inline>entities/token§token.agentDocumentBlocks.1</ds-code></small></li>
+<li><strong>SHOULD</strong> — Agents SHOULD read both arrays, human docs first. <small><ds-code inline>entities/token§token.agentDocumentBlocks.2</ds-code></small></li>
+<li><strong>MAY</strong> — A child MAY override it. <small><ds-code inline>entities/token§tokenGroup.tokenType.1</ds-code></small></li>
+<li><strong>SHOULD</strong> — Order often shows a real progression (lightest to darkest, smallest to largest), so tools SHOULD keep it. <small><ds-code inline>entities/token§tokenGroup.children.1</ds-code></small></li>
+<li><strong>MUST NOT</strong> — Tools MUST NOT show these blocks to humans. <small><ds-code inline>entities/token§tokenGroup.agentDocumentBlocks.1</ds-code></small></li>
+<li><strong>SHOULD</strong> — Agents SHOULD read both arrays, human docs first. <small><ds-code inline>entities/token§tokenGroup.agentDocumentBlocks.2</ds-code></small></li>
 </ul>
 <ds-heading level="3" anchor="metadata">metadata</ds-heading>
 <ds-heading level="4" anchor="metadatacategory">metadata/category</ds-heading>
@@ -403,23 +381,23 @@
 </ul>
 <ds-heading level="4" anchor="metadatadoc-origin">metadata/doc-origin</ds-heading>
 <ul>
-<li><strong>SHOULD</strong> — 'ai-generated': produced by an AI model or agent with at most light human review; MAY contain plausible-but-wrong statements and SHOULD be verified before an agent treats it as ground truth. <small><ds-code inline>metadata/doc-origin§authorshipValue.1</ds-code></small></li>
-<li><strong>MAY</strong> — 'authored': written before or alongside the implementation as its specification — the code follows the doc; authoritative for intent, but MAY lag the shipped API. <small><ds-code inline>metadata/doc-origin§docOriginValue.1</ds-code></small></li>
-<li><strong>SHOULD</strong> — 'reconstructed': written after the fact from institutional knowledge, without systematically consulting the implementation; lowest fidelity to the API and SHOULD be verified before an agent relies on it for API facts. <small><ds-code inline>metadata/doc-origin§docOriginValue.2</ds-code></small></li>
-<li><strong>SHOULD</strong> — Agents SHOULD prefer 'generated' and 'extracted' documentation for API accuracy and 'authored' documentation for design intent. <small><ds-code inline>metadata/doc-origin§docOriginValue.3</ds-code></small></li>
-<li><strong>MAY</strong> — A document MAY be 'authored' overall while individual blocks were 'extracted' or 'generated'. <small><ds-code inline>metadata/doc-origin§docOrigin[oneOf][1].1</ds-code></small></li>
+<li><strong>SHOULD</strong> — 'ai-generated': mostly written by an AI with little to no human review — it MAY contain plausible-sounding mistakes and SHOULD be checked before an agent trusts it as fact. <small><ds-code inline>metadata/doc-origin§authorshipValue.1</ds-code></small></li>
+<li><strong>MAY</strong> — Best for intent, but MAY be behind the shipped API. <small><ds-code inline>metadata/doc-origin§docOriginValue.1</ds-code></small></li>
+<li><strong>SHOULD</strong> — 'reconstructed': written from memory or institutional knowledge, without checking the code — the least reliable for API facts, and SHOULD be verified before an agent relies on it. <small><ds-code inline>metadata/doc-origin§docOriginValue.2</ds-code></small></li>
+<li><strong>SHOULD</strong> — For API accuracy, agents SHOULD prefer 'generated' or 'extracted'; for design intent, prefer 'authored'. <small><ds-code inline>metadata/doc-origin§docOriginValue.3</ds-code></small></li>
+<li><strong>MAY</strong> — A document MAY be 'authored' overall while some blocks were 'extracted' or 'generated'. <small><ds-code inline>metadata/doc-origin§docOrigin[oneOf][1].1</ds-code></small></li>
 <li><strong>MUST NOT</strong> — MUST NOT contain markup. <small><ds-code inline>metadata/doc-origin§docOrigin[oneOf][1].note.1</ds-code></small></li>
 </ul>
 <ds-heading level="4" anchor="metadatagovernance">metadata/governance</ds-heading>
 <ul>
-<li><strong>SHOULD</strong> — Owners SHOULD be teams, roles, or group aliases (e.g., 'Design Systems', '@acme/design-system') rather than named individuals — person-level ownership goes stale on turnover, which is the exact situation this field exists for. <small><ds-code inline>metadata/governance§owner.1</ds-code></small></li>
-<li><strong>SHOULD</strong> — Tools SHOULD surface the owner wherever a reader might need to escalate a discrepancy. <small><ds-code inline>metadata/governance§owner.2</ds-code></small></li>
+<li><strong>SHOULD</strong> — Owners SHOULD be teams, roles, or group aliases ('Design Systems', '@acme/design-system'), not individuals — a named person goes stale the moment they leave, which is exactly what this field is meant to survive. <small><ds-code inline>metadata/governance§owner.1</ds-code></small></li>
+<li><strong>SHOULD</strong> — Tools SHOULD show the owner wherever a reader might need to flag a problem. <small><ds-code inline>metadata/governance§owner.2</ds-code></small></li>
 <li><strong>SHOULD</strong> — SHOULD name a team or role, not an individual. <small><ds-code inline>metadata/governance§owner[oneOf][1].name.1</ds-code></small></li>
-<li><strong>SHOULD</strong> — Freeform; tools SHOULD render it as a link when it parses as a URL or email. <small><ds-code inline>metadata/governance§owner[oneOf][1].contact.1</ds-code></small></li>
-<li><strong>SHOULD</strong> — Tools MAY treat an old or absent <ds-code inline>lastReviewed</ds-code> as a staleness signal, and agents SHOULD prefer recently reviewed documentation when sources conflict. <small><ds-code inline>metadata/governance§lastReviewed.1</ds-code></small></li>
+<li><strong>SHOULD</strong> — Freeform; tools SHOULD link it when it parses as a URL or email. <small><ds-code inline>metadata/governance§owner[oneOf][1].contact.1</ds-code></small></li>
+<li><strong>SHOULD</strong> — Tools MAY treat an old or missing <ds-code inline>lastReviewed</ds-code> as a staleness signal; agents SHOULD prefer more recently reviewed docs when sources disagree. <small><ds-code inline>metadata/governance§lastReviewed.1</ds-code></small></li>
 <li><strong>MUST NOT</strong> — MUST NOT contain markup. <small><ds-code inline>metadata/governance§lastReviewed[oneOf][1].note.1</ds-code></small></li>
-<li><strong>MAY</strong> — Lets tools detect drift: if the implementation has moved past this version, the documentation MAY be out of date even if recently reviewed. <small><ds-code inline>metadata/governance§lastReviewed[oneOf][1].reviewedAgainst.1</ds-code></small></li>
-<li><strong>SHOULD</strong> — <ds-code inline>lastReviewed</ds-code> is optional but SHOULD be set once a review process exists; its object form records who reviewed and which implementation version was verified (<ds-code inline>reviewedAgainst</ds-code>), so a tool can answer 'is this doc verified, against which version, and who vouches for it.' <small><ds-code inline>metadata/governance§governance.1</ds-code></small></li>
+<li><strong>MAY</strong> — Lets tools spot drift — if the code has moved past this version, the doc MAY be stale even if recently reviewed. <small><ds-code inline>metadata/governance§lastReviewed[oneOf][1].reviewedAgainst.1</ds-code></small></li>
+<li><strong>SHOULD</strong> — <ds-code inline>lastReviewed</ds-code> is optional but SHOULD be set once you have a review process; its object form records who reviewed it and which version, so a tool can answer 'is this verified, against what, and who vouches for it.' <small><ds-code inline>metadata/governance§governance.1</ds-code></small></li>
 </ul>
 <ds-heading level="4" anchor="metadatalast-updated">metadata/last-updated</ds-heading>
 <ul>
@@ -428,8 +406,8 @@
 <ds-heading level="4" anchor="metadatastatus">metadata/status</ds-heading>
 <ul>
 <li><strong>MUST</strong> — A deprecated entity MUST use the object form, because deprecation needs a deprecationNotice that says what to use instead. <small><ds-code inline>metadata/status§status.1</ds-code></small></li>
-<li><strong>MAY</strong> — An entity MAY be 'stable' overall while individual platforms are still 'experimental' or 'draft'. <small><ds-code inline>metadata/status§status[oneOf][1].1</ds-code></small></li>
-<li><strong>SHOULD</strong> — Tools SHOULD display this as the primary status indicator. <small><ds-code inline>metadata/status§status[oneOf][1].overall.1</ds-code></small></li>
+<li><strong>MAY</strong> — An entity MAY be 'stable' overall while some platforms are still 'experimental' or 'draft'. <small><ds-code inline>metadata/status§status[oneOf][1].1</ds-code></small></li>
+<li><strong>SHOULD</strong> — Tools SHOULD show this as the main status indicator. <small><ds-code inline>metadata/status§status[oneOf][1].overall.1</ds-code></small></li>
 <li><strong>MAY</strong> — Tools MAY surface this alongside the status indicator. <small><ds-code inline>metadata/status§status[oneOf][1].note.1</ds-code></small></li>
 <li><strong>MUST</strong> — MUST say what to use instead (non-empty) and give a migration path. <small><ds-code inline>metadata/status§status[oneOf][1].deprecationNotice.1</ds-code></small></li>
 <li><strong>SHOULD</strong> — Tools SHOULD display this prominently next to the status indicator. <small><ds-code inline>metadata/status§status[oneOf][1].deprecationNotice.2</ds-code></small></li>
@@ -440,7 +418,7 @@
 </ul>
 <ds-heading level="4" anchor="metadatathumbnail">metadata/thumbnail</ds-heading>
 <ul>
-<li><strong>MUST NOT</strong> — MUST be provided for accessibility and MUST NOT be empty. <small><ds-code inline>metadata/thumbnail§thumbnail.alt.1</ds-code></small></li>
+<li><strong>MUST NOT</strong> — MUST NOT be empty. <small><ds-code inline>metadata/thumbnail§thumbnail.alt.1</ds-code></small></li>
 </ul>
 
         <ds-back-to-top></ds-back-to-top>
