@@ -2,11 +2,11 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://designsystemdocspec.org/v0.15.1/entities/pattern.schema.json",
   "title": "DSDS Pattern Definitions",
-  "description": "Defines documents for interaction patterns. A pattern is a repeated answer to a common UX problem — navigation, error messaging, form validation, empty states, loading, and onboarding. A pattern document holds the identity of a multi-component solution. The `metadata` object holds optional fields like status, tags, and links. The `documentBlocks` array holds structured docs as typed entries.",
+  "description": "A pattern is a repeated answer to a common UX problem \u2014 navigation, error messaging, form validation, empty states, loading, onboarding. A pattern document holds the identity of a multi-component solution, its metadata, and its docs.",
   "$defs": {
     "pattern": {
       "type": "object",
-      "description": "A repeated, multi-component solution to a common UX problem. Patterns sit above individual components. They show how those components combine to meet a user need. The top level holds its identity: `identifier`, `name`, and `description`. The `metadata` object holds the shared entityMetadata fields (see metadata/metadata.schema.json). The `documentBlocks` array holds structured docs as typed entries: `interactions` for flow steps, `guidelines` for rules, `accessibility` for a11y specs, and so on.",
+      "description": "A repeated, multi-component answer to a common UX problem. A pattern sits above individual components and shows how they combine to meet a user need. Its identity is `identifier`, `name`, and `description`; its docs cover `interactions` (flow steps), `guidelines` (rules), `accessibility`, and more.",
       "required": [
         "kind",
         "identifier",
@@ -37,11 +37,11 @@
         },
         "relationships": {
           "$ref": "../common/relationship.schema.json#/$defs/relationships",
-          "description": "Typed dependency edges from this pattern to other entities — chiefly 'composes' the components it is built from (mark `required` true for essential ones), plus 'depends-on' and 'alternative-to'. Use the `links` metadata field for external resources. Inverse edges are derived by tooling."
+          "description": "Links from this pattern to other entities \u2014 mainly 'composes' the components it's built from (mark `required` true for the essential ones), plus 'depends-on' and 'alternative-to'. Tools derive the reverse edges. Use `links` metadata for external resources instead."
         },
         "documentBlocks": {
           "type": "array",
-          "description": "All structured docs for this pattern, as an ordered array of typed document block objects. Patterns accept the pattern-specific kind (interactions), the shared structural kinds (anatomy, variants, states), plus the general kinds (guidelines, use-cases, accessibility, content, sections, checklist). The `kind` property on each entry sets its shape. Order matters, so tools SHOULD keep it for display. Interaction entries rely on order to show the flow over time. Declare the components a pattern uses as typed `composes` edges in the entity's `relationships` array (with `role` describing what each component does), not in a dedicated block kind.",
+          "description": "All structured docs for this pattern, in order. Accepts `interactions`, the shared structural kinds (anatomy, variants, states), and every general kind. Order matters \u2014 `interactions` uses it to show the flow over time, and tools SHOULD keep it. Declare the components a pattern uses as `composes` edges in `relationships` (with `role` describing what each does), not as a block.",
           "items": {
             "$ref": "../document-blocks/document-blocks.schema.json#/$defs/patternDocumentBlock"
           },
@@ -49,7 +49,7 @@
         },
         "agentDocumentBlocks": {
           "type": "array",
-          "description": "Structured docs for agents (AI/LLM) only — a separate space that accepts the same block kinds as `documentBlocks`. `documentBlocks` is the default: put anything a human reader needs there. Use `agentDocumentBlocks` only for content that helps an agent build correctly but is noise for humans. For example: hard MUST/MUST-NOT rules an agent should treat as firm limits; notes that correct a mistake an agent is likely to make, such as reaching for this entity when a confusable one fits better; constraints backed by test-run evidence; and machine-checkable criteria with verification modes. A hard rule that humans also need (such as an accessibility requirement) belongs in `documentBlocks`, not here. Agent blocks add to the human docs — they never replace or duplicate them. Tools MUST NOT render these blocks in human-facing docs. Agents SHOULD read both arrays, human blocks first.",
+          "description": "Docs for agents (AI/LLM) only, using the same block kinds as `documentBlocks`. Put anything a human needs in `documentBlocks` \u2014 that's the default. Use this only for things that would be noise to a person: hard must/must-not rules, notes that correct a mistake agents commonly make (like picking a similar but wrong entity), evidence-backed constraints, and machine-checkable criteria. A rule humans need too still belongs in `documentBlocks`. This adds to the human docs, it never replaces them. Tools MUST NOT show these blocks to humans. Agents SHOULD read both arrays, human docs first.",
           "items": {
             "$ref": "../document-blocks/document-blocks.schema.json#/$defs/patternDocumentBlock"
           },

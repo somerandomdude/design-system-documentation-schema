@@ -2,11 +2,11 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://designsystemdocspec.org/v0.15.1/entities/chunk.schema.json",
   "title": "DSDS Chunk Definitions",
-  "description": "Defines documents for chunks. A chunk is a pre-composed block of code that represents a ready-to-use pattern in the design system — a copy-paste starting point built from the system's components. A chunk document holds the identity of the block, the code itself (`code`) and general document blocks for the rules around it (guidelines, use-cases, accessibility, and the rest). Chunks sit at the same level as components. Where a component documents a single building block, a chunk documents a composition of building blocks captured as code.",
+  "description": "A chunk is a ready-to-use block of code \u2014 a copy-paste starting point built from the system's components, like a layout or a settings form. A chunk document holds its identity, the code itself, and general docs (guidelines, use-cases, accessibility, and so on). Chunks sit alongside components: a component documents one building block, a chunk documents a composition of them, captured as code.",
   "$defs": {
     "chunk": {
       "type": "object",
-      "description": "A pre-composed block of code that captures a design system pattern. Chunks give consumers a working starting point assembled from system components — for example, a layout, a settings form, or a confirmation dialog. The top level holds its identity (`identifier`, `name`, optional `description`), the `code` block that consumers copy, and `documentBlocks`/`agentDocumentBlocks` carrying the general block kinds (guidelines, use-cases, accessibility, content, sections, checklist) — so a chunk can hold agent-only rules like any other entity. Chunks are intentionally simple: they document a code composition, not the full anatomy/API surface a component carries.",
+      "description": "A ready-to-use block of code \u2014 a layout, a settings form, a confirmation dialog. It has an identity (`identifier`, `name`, optional `description`), the `code` consumers copy, and `documentBlocks`/`agentDocumentBlocks` for the general kinds (guidelines, use-cases, accessibility, content, sections, checklist). Chunks are simple by design: they document a composition of code, not a full anatomy/API surface like a component does.",
       "required": [
         "kind",
         "identifier",
@@ -33,7 +33,7 @@
           "description": "What this chunk is, the pattern it captures, and which components it composes. CommonMark supported."
         },
         "code": {
-          "description": "The pre-composed block of code consumers copy to use the chunk. Provide it in exactly one of two forms: inline (`code` + `language`) when the source travels with the document, or referenced (`src` + `language`) when it lives in an external source file. The referenced form keeps long sources readable and lets a chunk share one canonical file with a live app. Consumers resolve `src` at read time — no build step inlines it.",
+          "description": "The code consumers copy to use the chunk. Give it one of two ways: inline (`code` + `language`) when it travels with the document, or referenced (`src` + `language`) when it lives in an outside file. Referenced code keeps long sources readable and lets a chunk share one file with a live app. `src` is resolved when read \u2014 there's no build step.",
           "oneOf": [
             {
               "type": "object",
@@ -46,7 +46,7 @@
               "properties": {
                 "code": {
                   "type": "string",
-                  "description": "The source code of the chunk — the block consumers copy and adapt."
+                  "description": "The source code of the chunk \u2014 the block consumers copy and adapt."
                 },
                 "language": {
                   "type": "string",
@@ -67,7 +67,7 @@
                 "src": {
                   "type": "string",
                   "pattern": "^(?![a-zA-Z][a-zA-Z0-9+.\\-]*:)(?!//)(?!/)",
-                  "description": "A relative path to the source file that holds the chunk's code (e.g., './chunks/confirmation-dialog.tsx'). MUST be relative — the pattern rejects absolute paths, protocol-relative references, and scheme-bearing URIs (http:, file:, …). Resolvers SHOULD gate any remote dereferencing behind an allow-list, following the same rules a `$ref` fileRef obeys. The file is read verbatim — no build step inlines it into the document.",
+                  "description": "A relative path to the file holding the chunk's code (e.g., './chunks/confirmation-dialog.tsx'). MUST be relative \u2014 no absolute paths, protocol-relative paths, or scheme URIs (http:, file:, \u2026). Resolvers SHOULD only fetch from an allow-list, the same rule a `$ref` fileRef follows. The file is read as-is \u2014 no build step.",
                   "minLength": 1
                 },
                 "language": {
@@ -81,7 +81,7 @@
         },
         "documentBlocks": {
           "type": "array",
-          "description": "Structured docs for this chunk, as an ordered array of general document blocks (guidelines, use-cases, accessibility, content, sections, checklist). Chunks accept the general kinds only — they document a code composition, not the anatomy/API surface a component carries.",
+          "description": "Docs for this chunk \u2014 the general block kinds only (guidelines, use-cases, accessibility, content, sections, checklist). Chunks document a composition of code, not the anatomy/API surface a component has.",
           "items": {
             "$ref": "../document-blocks/document-blocks.schema.json#/$defs/generalDocumentBlock"
           },
@@ -89,7 +89,7 @@
         },
         "agentDocumentBlocks": {
           "type": "array",
-          "description": "Structured docs for AI agents consuming this chunk, using the same general block kinds as `documentBlocks`. Content here is agent-only: hard MUST/MUST-NOT rules, verification checklists, and adaptation constraints an agent needs when copying the chunk into an application. Human-facing guidance belongs in `documentBlocks`.",
+          "description": "Docs for AI agents only, using the same general block kinds as `documentBlocks`. Agent-only content: hard must/must-not rules, verification checklists, and constraints an agent needs when adapting this chunk into an app. Guidance for humans belongs in `documentBlocks`.",
           "items": {
             "$ref": "../document-blocks/document-blocks.schema.json#/$defs/generalDocumentBlock"
           },
@@ -97,11 +97,11 @@
         },
         "relationships": {
           "$ref": "../common/relationship.schema.json#/$defs/relationships",
-          "description": "Typed dependency edges from this chunk to other entities — chiefly 'composes' the components it is built from (mark `required` true for essential ones). This is the graph agents read for impact and alternatives. Inverse edges are derived by tooling."
+          "description": "Links from this chunk to the entities it uses \u2014 mainly 'composes' the components it's built from (mark `required` true for the essential ones). Tools derive the reverse edges."
         },
         "metadata": {
           "$ref": "../metadata/metadata.schema.json#/$defs/entityMetadata",
-          "description": "Optional metadata: the shared entityMetadata fields (see metadata/metadata.schema.json). Declare the components this chunk composes as `relationships` edges, not links."
+          "description": "Optional metadata (see metadata/metadata.schema.json). Declare the components this chunk uses as `relationships`, not links."
         },
         "$extensions": {
           "$ref": "../common/extensions.schema.json#/$defs/extensions"
