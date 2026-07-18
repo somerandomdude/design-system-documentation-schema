@@ -50,13 +50,16 @@ const SPEC_NAV_CSS = `
 
   .nav {
     position: absolute;
-    inset: 0;
+    inset: 1em;
     background: var(--ds-color-bg-inverse);
     color: var(--ds-color-text-inverse);
-    overflow-y: auto;
+    /* overflow-y: auto; */
     padding: var(--ds-space-8, 24px) 0;
+    padding: 0;
     font-family: ${FONT.body};
     -webkit-overflow-scrolling: touch;
+    display: flex;
+    flex-direction: column;
   }
 
   /* ── Title ──────────────────────────────────────────── */
@@ -65,9 +68,9 @@ const SPEC_NAV_CSS = `
     font-weight: var(--ds-font-weight-bold, 700);
     letter-spacing: 0;
     text-transform: none;
-    color: var(--ds-color-text-inverse);
-    padding: 0 var(--ds-space-4, 16px);
-    margin-bottom: var(--ds-space-8, 24px);
+    background: var(--ds-color-text);
+    color: #fff;
+    padding: var(--ds-space-4) var(--ds-space-4, 16px);
   }
 
   .nav__title a {
@@ -77,7 +80,9 @@ const SPEC_NAV_CSS = `
 
   /* ── Items container ────────────────────────────────── */
   .nav__items {
-    margin-bottom: var(--ds-space-4, 16px);
+    padding: var(--ds-space-4, 16px) 0;
+    overflow-y: auto;
+    max-height: 100%;
   }
 
   /* ── Top-level links ────────────────────────────────── */

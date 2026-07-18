@@ -175,41 +175,10 @@ export const COMPONENTS = [
       },
     ],
   },
-  {
-    tag: "ds-tabs",
-    title: "Tabs",
-    category: "content",
-    notes: "Tabbed switcher. Slotted <ds-tab label> panels, or remote via target + active.",
-    demos: [
-      {
-        label: "Slotted panels",
-        html: `<ds-tabs>
-  <ds-tab label="JSON">A machine-readable DSDS document.</ds-tab>
-  <ds-tab label="Rendered">The same content, rendered for people.</ds-tab>
-</ds-tabs>`,
-      },
-    ],
-  },
 
   // ─── Layout / navigation ──────────────────────────────────────────────
   // Fixed-position, scroll-driven, and mobile-only components render in a
   // scoped iframe (iframe: true) so their positioning and behavior are real.
-  {
-    tag: "ds-toolbar",
-    title: "Toolbar",
-    category: "layout",
-    notes: "Top toolbar. Slots: start, (default) center, end, subtitle, nav. Optional sticky.",
-    demos: [
-      {
-        label: "Start / center / end slots",
-        html: `<ds-toolbar>
-  <strong slot="start">DSDS</strong>
-  <span>Schema Architecture</span>
-  <ds-badge slot="end" variant="draft">Draft</ds-badge>
-</ds-toolbar>`,
-      },
-    ],
-  },
   {
     tag: "ds-spec-nav",
     title: "Spec navigation",
@@ -283,17 +252,17 @@ export const COMPONENTS = [
 
   // ─── Schema-driven (render from static attributes / slotted content) ───
   {
-    tag: "ds-schema-header",
-    title: "Schema header",
+    tag: "ds-header",
+    title: "Header",
     category: "schema",
-    notes: "Header for a generated schema-reference page. Attrs: title, description, source.",
+    notes: "Page header, used at the top of every page. Attrs: title, description, source (schema pages only).",
     demos: [
       {
         label: "Page header",
-        html: `<ds-schema-header
+        html: `<ds-header
   title="Criterion Definitions"
   description="Shared definitions for testable success criteria and external standard references."
-  source="common/criterion.schema.json"></ds-schema-header>`,
+  source="common/criterion.schema.json"></ds-header>`,
       },
     ],
   },

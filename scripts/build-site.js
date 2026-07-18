@@ -21,6 +21,7 @@ const fs = require("fs");
 const path = require("path");
 
 const { buildSpecNav, DIR_GROUPS, readSpecVersion } = require("./nav");
+const { renderTemplate } = require("./render-template");
 const {
   esc,
   slug,
@@ -55,6 +56,24 @@ const SCHEMA_DIR = path.join(SPEC_DIR, "schema");
 const SITE_DIR = path.join(ROOT, "site");
 const DIST_DIR = path.join(SITE_DIR, "dist");
 const EXAMPLES_DIR = path.join(SPEC_DIR, "examples");
+const TEMPLATES_DIR = path.join(SITE_DIR, "templates");
+const PAGE_TEMPLATE_PATH = path.join(TEMPLATES_DIR, "page.template.html");
+const SUBTEMPLATES_DIR = path.join(TEMPLATES_DIR, "subtemplates");
+
+/**
+ * Render one of the content-block subtemplates in site/templates/subtemplates/.
+ * Each subtemplate is a single, self-contained block of markup (a def-section
+ * wrapper, a callout, an example, ...) with its own {%placeholders%} — the
+ * same substitution model as the page shell, just scoped to one block instead
+ * of the whole page. Trimmed so a template file's own trailing newline
+ * doesn't introduce stray blank lines when callers join blocks together.
+ */
+function renderSub(name, vars) {
+  return renderTemplate(
+    path.join(SUBTEMPLATES_DIR, `${name}.template.html`),
+    vars,
+  ).trim();
+}
 
 /**
  * Auto-discover schema files and build the full page registry.
@@ -189,70 +208,64 @@ function renderPropertyTable(defSchema) {
  * If `exampleData` is provided, it's rendered as a JSON code block after the definition.
  */
 function renderDefinition(defName, defSchema, exampleData) {
-  const parts = [];
   const hid = slug(defName);
+  const content = [];
 
-  // Definition section wrapper — handles heading, description, type badge
-  const descAttr = defSchema.description
-    ? ` description="${esc(defSchema.description)}"`
-    : "";
-  const typeAttr = defSchema.type ? ` type="${esc(defSchema.type)}"` : "";
-  parts.push(
-    `<ds-def-section name="${esc(defName)}" anchor="${hid}"${descAttr}${typeAttr}>`,
-  );
-
-  // If it's a simple string (like status), show that
+  // If it's a simple string (like status), show that and stop — a bare
+  // string def has no properties/oneOf/anyOf/example content to add.
   if (defSchema.type === "string" && !defSchema.properties) {
     if (defSchema.enum) {
-      parts.push(`<p><strong>Allowed values:</strong></p>`);
-      parts.push(`<ul class="enum-list">`);
-      for (const val of defSchema.enum) {
-        parts.push(`<li><ds-code inline>${esc(String(val))}</ds-code></li>`);
-      }
-      parts.push(`</ul>`);
+      const items = defSchema.enum
+        .map((val) => `<li><ds-code inline>${esc(String(val))}</ds-code></li>`)
+        .join("\n");
+      content.push(renderSub("enum-values", { items }));
     }
-    parts.push(`</ds-def-section>`);
-    return parts.join("\n");
+    return renderSub("def-section", {
+      name: esc(defName),
+      anchor: hid,
+      description_attr: defSchema.description
+        ? ` description="${esc(defSchema.description)}"`
+        : "",
+      type_attr: defSchema.type ? ` type="${esc(defSchema.type)}"` : "",
+      content: content.join("\n"),
+    });
   }
 
   // If it's a oneOf (like richText), show the alternatives
   if (defSchema.oneOf) {
-    parts.push(`<p><strong>Accepts one of:</strong></p>`);
-    parts.push(`<ul>`);
+    const items = [];
     for (const alt of defSchema.oneOf) {
       if (alt.$ref) {
         const refName = linkToRef(alt.$ref);
         if (refName) {
           const target = DEF_INDEX[refName];
-          if (target) {
-            parts.push(
-              `<li><a href="${target.pageSlug}.html#${slug(refName)}">${esc(refName)}</a></li>`,
-            );
-          } else {
-            parts.push(`<li><ds-code inline>${esc(refName)}</ds-code></li>`);
-          }
+          items.push(
+            target
+              ? `<li><a href="${target.pageSlug}.html#${slug(refName)}">${esc(refName)}</a></li>`
+              : `<li><ds-code inline>${esc(refName)}</ds-code></li>`,
+          );
         }
       } else if (alt.type === "string") {
-        parts.push(
+        items.push(
           `<li><strong>string</strong>${alt.description ? ` — ${esc(alt.description)}` : ""}</li>`,
         );
       } else if (alt.type === "object") {
-        parts.push(
+        items.push(
           `<li><strong>object</strong>${alt.description ? ` — ${esc(alt.description)}` : ""}</li>`,
         );
         if (alt.properties) {
-          parts.push(renderPropertyTable(alt));
+          items.push(renderPropertyTable(alt));
         }
       } else {
-        parts.push(`<li>${describeType(alt)}</li>`);
+        items.push(`<li>${describeType(alt)}</li>`);
       }
     }
-    parts.push(`</ul>`);
+    content.push(renderSub("oneof-alternatives", { items: items.join("\n") }));
   }
 
   // Property table
   if (defSchema.properties) {
-    parts.push(renderPropertyTable(defSchema));
+    content.push(renderPropertyTable(defSchema));
   }
 
   // additionalProperties (open maps like tokenApi)
@@ -262,8 +275,10 @@ function renderDefinition(defName, defSchema, exampleData) {
     typeof defSchema.additionalProperties === "object" &&
     !defSchema.properties
   ) {
-    parts.push(
-      `<p><strong>Open map:</strong> keys are strings, values are <ds-code inline>${esc(defSchema.additionalProperties.type || "any")}</ds-code></p>`,
+    content.push(
+      renderSub("additional-properties", {
+        value_type: esc(defSchema.additionalProperties.type || "any"),
+      }),
     );
   }
 
@@ -285,21 +300,22 @@ function renderDefinition(defName, defSchema, exampleData) {
           .map((r) => `<ds-code inline>${esc(r)}</ds-code>`)
           .join(", "),
       );
-      parts.push(
-        `<ds-note variant="warning"><strong>Constraint:</strong> At least one of ${propNames.join(", ")} must be present.</ds-note>`,
+      content.push(
+        renderSub("callout-warning", {
+          label: "Constraint",
+          message: `At least one of ${propNames.join(", ")} must be present.`,
+        }),
       );
     } else {
       // Mixed anyOf — show each branch
-      parts.push(`<p><strong>Constraints:</strong> at least one of:</p>`);
-      parts.push(`<ul>`);
-      for (const alt of defSchema.anyOf) {
-        if (alt.required) {
-          parts.push(
+      const items = defSchema.anyOf
+        .filter((alt) => alt.required)
+        .map(
+          (alt) =>
             `<li>${alt.required.map((r) => `<ds-code inline>${esc(r)}</ds-code>`).join(", ")} must be present</li>`,
-          );
-        }
-      }
-      parts.push(`</ul>`);
+        )
+        .join("\n");
+      content.push(renderSub("anyof-constraints", { items }));
     }
   }
 
@@ -317,8 +333,11 @@ function renderDefinition(defName, defSchema, exampleData) {
       .map((r) => `<ds-code inline>${esc(r)}</ds-code>`)
       .join(", ");
     if (conditions && requirements) {
-      parts.push(
-        `<ds-note variant="warning"><strong>Conditional:</strong> When ${conditions}, then ${requirements} is required.</ds-note>`,
+      content.push(
+        renderSub("callout-warning", {
+          label: "Conditional",
+          message: `When ${conditions}, then ${requirements} is required.`,
+        }),
       );
     }
   }
@@ -326,7 +345,6 @@ function renderDefinition(defName, defSchema, exampleData) {
   // Cross-references: list all $ref targets in this definition
   const refs = collectRefs(defSchema);
   if (refs.length > 0) {
-    parts.push(`<ds-cross-refs><strong>References:</strong> `);
     const refLinks = refs.map((refName) => {
       const target = DEF_INDEX[refName];
       if (target) {
@@ -334,22 +352,25 @@ function renderDefinition(defName, defSchema, exampleData) {
       }
       return `<ds-code inline>${esc(refName)}</ds-code>`;
     });
-    parts.push(refLinks.join(", "));
-    parts.push(`</ds-cross-refs>`);
+    content.push(renderSub("cross-refs", { refs: refLinks.join(", ") }));
   }
 
   // Example — render the matching example if one was provided
   if (exampleData !== undefined && exampleData !== null) {
-    parts.push(`<ds-def-example>`);
-    const jsonStr = JSON.stringify(exampleData, null, 2);
-    parts.push(
-      `<ds-code language="json" label="example">${esc(jsonStr)}</ds-code>`,
+    content.push(
+      renderSub("example", { json: esc(JSON.stringify(exampleData, null, 2)) }),
     );
-    parts.push(`</ds-def-example>`);
   }
 
-  parts.push(`</ds-def-section>`);
-  return parts.join("\n");
+  return renderSub("def-section", {
+    name: esc(defName),
+    anchor: hid,
+    description_attr: defSchema.description
+      ? ` description="${esc(defSchema.description)}"`
+      : "",
+    type_attr: defSchema.type ? ` type="${esc(defSchema.type)}"` : "",
+    content: content.join("\n"),
+  });
 }
 
 /**
@@ -441,27 +462,31 @@ function orderDefsByReference(defs) {
 /**
  * Render a full page body for a single schema file.
  */
+/**
+ * Render a schema page's header and content as separate strings — the page
+ * shell (see pageHtml/main.template.html) keeps the header in its own slot
+ * rather than folding it into the page's content.
+ */
 function renderSchemaPage(page) {
   const parts = [];
   const defs = page.data.$defs || {};
   const defNames = orderDefsByReference(defs);
   const examples = page.examples || {};
 
-  // Page header — title, description, source
   const relPath = page.group ? `${page.group}/${page.filename}` : page.filename;
-  const descAttr = page.data.description
-    ? ` description="${esc(page.data.description)}"`
-    : "";
-  parts.push(
-    `<ds-header title="${esc(page.title)}"${descAttr} source="${esc(relPath)}"></ds-header>`,
-  );
+  const header = renderSub("header", {
+    title: esc(page.title),
+    description_attr: page.data.description
+      ? ` description="${esc(page.data.description)}"`
+      : "",
+    source_attr: ` source="${esc(relPath)}"`,
+    badge: "",
+  });
 
   // Always render top-level properties when they exist (e.g., the root schema
   // has both its own properties AND $defs like entityGroup)
   if (page.data.properties) {
-    parts.push(
-      `<ds-heading level="2" anchor="properties-heading">Root Properties</ds-heading>`,
-    );
+    parts.push(renderSub("root-properties-heading", {}));
     parts.push(renderPropertyTable(page.data));
   }
 
@@ -469,30 +494,24 @@ function renderSchemaPage(page) {
     // Root-only schemas (no $defs) can still ship an example. By convention
     // the entire example file is treated as one root-level example document.
     if (page.examples !== null && page.examples !== undefined) {
-      const jsonStr = JSON.stringify(page.examples, null, 2);
-      parts.push(`<ds-def-example>`);
       parts.push(
-        `<ds-code language="json" label="example">${esc(jsonStr)}</ds-code>`,
+        renderSub("example", {
+          json: esc(JSON.stringify(page.examples, null, 2)),
+        }),
       );
-      parts.push(`</ds-def-example>`);
     }
-    return parts.join("\n");
+    return { header, content: parts.join("\n") };
   }
 
   // Definition index (if more than one definition)
   if (defNames.length > 1) {
-    parts.push(`<ds-def-index>`);
-    parts.push(
-      `<p><strong>${defNames.length} definitions</strong> in this file:</p>`,
-    );
-    parts.push(`<ul>`);
-    for (const defName of defNames) {
-      parts.push(
-        `<li><a href="#${slug(defName)}"><ds-code inline>${esc(defName)}</ds-code></a></li>`,
-      );
-    }
-    parts.push(`</ul>`);
-    parts.push(`</ds-def-index>`);
+    const items = defNames
+      .map(
+        (defName) =>
+          `<li><a href="#${slug(defName)}"><ds-code inline>${esc(defName)}</ds-code></a></li>`,
+      )
+      .join("\n");
+    parts.push(renderSub("def-index", { count: defNames.length, items }));
   }
 
   // Render each definition with its matching example (if any)
@@ -503,7 +522,7 @@ function renderSchemaPage(page) {
     parts.push(renderDefinition(defName, defs[defName], exampleData));
   }
 
-  return parts.join("\n");
+  return { header, content: parts.join("\n") };
 }
 
 // ---------------------------------------------------------------------------
@@ -513,7 +532,8 @@ function renderSchemaPage(page) {
 function pageHtml(
   title,
   activeSlug,
-  bodyHtml,
+  headerHtml,
+  contentHtml,
   pages,
   layout,
   version,
@@ -543,41 +563,30 @@ function pageHtml(
   const desc = description || DEFAULT_DESCRIPTION;
   const fullTitle = `${title}${titleSuffix}`;
 
-  return `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>${esc(fullTitle)}</title>
-  <meta name="description" content="${esc(desc)}">
-  <link rel="canonical" href="${pageUrl}">
-  <link rel="icon" href="favicon.svg" type="image/svg+xml">
-  <meta property="og:type" content="website">
-  <meta property="og:site_name" content="Design System Documentation Spec">
-  <meta property="og:title" content="${esc(fullTitle)}">
-  <meta property="og:description" content="${esc(desc)}">
-  <meta property="og:url" content="${pageUrl}">
-  <meta name="twitter:card" content="summary">
-  <meta name="dsds-version" content="${esc(v)}">
-  <link rel="stylesheet" href="tokens.css?v=${esc(v)}">
-  <link rel="stylesheet" href="style.css?v=${esc(v)}">
-  <script src="components.js?v=${esc(v)}"></script>
-</head>
-<body>
-  <a class="skip-link" href="#main-content">Skip to content</a>
-${buildSpecNav(activeSlug, pages, v)}
-  <div class="${contentCls}">
-    <main class="content__main" id="main-content" role="main">
-      <div class="content__inner">
-        ${bodyHtml}
+  // Each top-level section of the page (<head>, skip link, main content
+  // area) is its own subtemplate, so the page shell below is just the
+  // order they're assembled in — reorder or restructure a section by
+  // editing its file, not by hunting through the whole page shell.
+  const head = renderSub("head", {
+    title: esc(fullTitle),
+    description: esc(desc),
+    canonical: pageUrl,
+    version: esc(v),
+  });
+  const skipLink = renderSub("skip-link", {});
+  const main = renderSub("main", {
+    content_class: contentCls,
+    header: headerHtml,
+    content: contentHtml,
+    back_to_top: renderSub("back-to-top", {}),
+  });
 
-        <ds-back-to-top></ds-back-to-top>
-      </div>
-    </main>
-  </div>
-</body>
-</html>
-`;
+  return renderTemplate(PAGE_TEMPLATE_PATH, {
+    head,
+    skip_link: skipLink,
+    nav: buildSpecNav(activeSlug, pages, v),
+    main,
+  });
 }
 
 // ---------------------------------------------------------------------------
@@ -663,17 +672,19 @@ async function build() {
       "",
     );
 
-    const headerDescAttr = mdxPage.meta.description
-      ? ` description="${esc(mdxPage.meta.description)}"`
-      : "";
-    const headerBadge = badge ? `<ds-badge>${esc(badge)}</ds-badge>` : "";
-    body =
-      `<ds-header title="${esc(title)}"${headerDescAttr}>${headerBadge}</ds-header>\n` +
-      body;
+    const header = renderSub("header", {
+      title: esc(title),
+      description_attr: mdxPage.meta.description
+        ? ` description="${esc(mdxPage.meta.description)}"`
+        : "",
+      source_attr: "",
+      badge: badge ? `<ds-badge>${esc(badge)}</ds-badge>` : "",
+    });
 
     const html = pageHtml(
       title,
       slug,
+      header,
       body,
       pages,
       layout,
@@ -686,11 +697,12 @@ async function build() {
 
   // ── Schema-driven pages ───────────────────────────────────────────────
   for (const page of pages) {
-    const body = renderSchemaPage(page);
+    const { header, content } = renderSchemaPage(page);
     const html = pageHtml(
       page.title,
       page.slug,
-      body,
+      header,
+      content,
       pages,
       null,
       undefined,
@@ -743,188 +755,6 @@ async function build() {
   console.log(
     `\nDone. ${mdxPages.length + pages.length + 1} pages built to site/dist/\n`,
   );
-}
-
-// ── bundleComponents (unchanged) ──────────────────────────────────────────
-
-function processInline(text) {
-  text = text.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1">');
-  text = text.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>');
-  text = text.replace(/\*\*\*(.+?)\*\*\*/g, "<strong><em>$1</em></strong>");
-  text = text.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
-  text = text.replace(/(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)/g, "<em>$1</em>");
-  text = text.replace(/___(.+?)___/g, "<strong><em>$1</em></strong>");
-  text = text.replace(/__(.+?)__/g, "<strong>$1</strong>");
-  text = text.replace(/(?<!_)_(?!_)(.+?)(?<!_)_(?!_)/g, "<em>$1</em>");
-  text = text.replace(/`([^`]+)`/g, "<ds-code inline>$1</ds-code>");
-  return text;
-}
-
-function mdHeadingId(text) {
-  let plain = text.replace(/<[^>]+>/g, "");
-  plain = plain.replace(/[^\w\s-]/g, "");
-  return plain.trim().replace(/[\s]+/g, "-").toLowerCase();
-}
-
-function mdToHtml(mdText) {
-  const lines = mdText.split("\n");
-  const out = [];
-  let i = 0;
-
-  while (i < lines.length) {
-    const line = lines[i];
-
-    if (line.trim() === "") {
-      i++;
-      continue;
-    }
-
-    if (/^---+\s*$/.test(line)) {
-      out.push("<hr>");
-      i++;
-      continue;
-    }
-
-    const codeMatch = line.match(/^```(\w*)/);
-    if (codeMatch) {
-      const lang = codeMatch[1];
-      const codeLines = [];
-      i++;
-      while (i < lines.length && !lines[i].startsWith("```")) {
-        codeLines.push(lines[i]);
-        i++;
-      }
-      i++;
-      const codeText = esc(codeLines.join("\n"));
-      const langAttr = lang ? ` language="${lang}"` : "";
-      out.push(`<ds-code${langAttr}>${codeText}</ds-code>`);
-      continue;
-    }
-
-    const headingMatch = line.match(/^(#{1,6})\s+(.+)$/);
-    if (headingMatch) {
-      const level = headingMatch[1].length;
-      const text = processInline(headingMatch[2]);
-      const hid = mdHeadingId(text);
-      out.push(
-        `<ds-heading level="${level}" anchor="${hid}">${text}</ds-heading>`,
-      );
-      i++;
-      continue;
-    }
-
-    if (
-      line.includes("|") &&
-      i + 1 < lines.length &&
-      /^\|[\s\-:|]+\|/.test(lines[i + 1])
-    ) {
-      const headers = line
-        .trim()
-        .replace(/^\||\|$/g, "")
-        .split("|")
-        .map((c) => c.trim());
-      i += 2;
-      const rows = [];
-      while (
-        i < lines.length &&
-        lines[i].includes("|") &&
-        lines[i].trim().startsWith("|")
-      ) {
-        rows.push(
-          lines[i]
-            .trim()
-            .replace(/^\||\|$/g, "")
-            .split("|")
-            .map((c) => c.trim()),
-        );
-        i++;
-      }
-      out.push("<ds-table><table><thead><tr>");
-      for (const h of headers) out.push(`<th>${processInline(h)}</th>`);
-      out.push("</tr></thead><tbody>");
-      for (const row of rows) {
-        out.push("<tr>");
-        for (const cell of row) out.push(`<td>${processInline(cell)}</td>`);
-        for (let j = row.length; j < headers.length; j++) out.push("<td></td>");
-        out.push("</tr>");
-      }
-      out.push("</tbody></table></ds-table>");
-      continue;
-    }
-
-    if (line.startsWith(">")) {
-      const bqLines = [];
-      while (
-        i < lines.length &&
-        (lines[i].startsWith(">") ||
-          (lines[i].trim() !== "" && bqLines.length > 0))
-      ) {
-        bqLines.push(lines[i].replace(/^>\s?/, ""));
-        i++;
-        if (i < lines.length && lines[i].trim() === "") break;
-      }
-      out.push(`<blockquote>${mdToHtml(bqLines.join("\n"))}</blockquote>`);
-      continue;
-    }
-
-    if (/^[-*+]\s/.test(line)) {
-      const items = [];
-      while (
-        i < lines.length &&
-        (/^[-*+]\s/.test(lines[i]) ||
-          (lines[i].startsWith("  ") && items.length > 0))
-      ) {
-        if (/^[-*+]\s/.test(lines[i])) {
-          items.push(lines[i].replace(/^[-*+]\s/, ""));
-        } else {
-          items[items.length - 1] += " " + lines[i].trim();
-        }
-        i++;
-      }
-      out.push("<ul>");
-      for (const item of items) out.push(`<li>${processInline(item)}</li>`);
-      out.push("</ul>");
-      continue;
-    }
-
-    if (/^\d+\.\s/.test(line)) {
-      const items = [];
-      while (
-        i < lines.length &&
-        (/^\d+\.\s/.test(lines[i]) ||
-          (lines[i].startsWith("  ") && items.length > 0))
-      ) {
-        if (/^\d+\.\s/.test(lines[i])) {
-          items.push(lines[i].replace(/^\d+\.\s/, ""));
-        } else {
-          items[items.length - 1] += " " + lines[i].trim();
-        }
-        i++;
-      }
-      out.push("<ol>");
-      for (const item of items) out.push(`<li>${processInline(item)}</li>`);
-      out.push("</ol>");
-      continue;
-    }
-
-    const paraLines = [];
-    while (
-      i < lines.length &&
-      lines[i].trim() !== "" &&
-      !/^(#{1,6}\s|```|---|\||[-*+]\s|\d+\.\s|>)/.test(lines[i])
-    ) {
-      paraLines.push(lines[i]);
-      i++;
-    }
-    if (paraLines.length > 0) {
-      out.push(`<p>${processInline(paraLines.join(" "))}</p>`);
-      continue;
-    }
-
-    i++;
-  }
-
-  return out.join("\n");
 }
 
 // ---------------------------------------------------------------------------
