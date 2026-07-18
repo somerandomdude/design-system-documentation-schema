@@ -46,7 +46,6 @@ const TOP_LINKS = [
   },
   { label: "Stability & 1.0", href: "stability.html", slug: "stability" },
   { label: "Migration", href: "migration.html", slug: "migration" },
-  { label: "Interactive samples", href: "samples.html", slug: "samples" },
 ];
 
 function esc(text) {

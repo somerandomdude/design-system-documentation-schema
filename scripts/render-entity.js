@@ -465,7 +465,9 @@ function renderComponent(data) {
               "</strong><br><ds-code inline>" +
               esc(p.identifier) +
               "</ds-code></td><td>" +
-              (p.required ? "Yes" : "No") +
+              (p.required
+                ? '<span title="Required" aria-label="Required">✓</span>'
+                : "") +
               "</td><td>" +
               esc(p.description) +
               toks +

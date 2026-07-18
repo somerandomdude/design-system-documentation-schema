@@ -4,22 +4,22 @@ const DEF_SECTION_CSS = `
   ${BASE_RESET}
   :host {
     display: block;
-    margin: var(--ds-space-10) 0 var(--ds-space-12);
+    margin: var(--ds-space-8) 0 var(--ds-space-8);
   }
   :host(:first-of-type) {
     margin-top: 0;
   }
   h3 {
     font-family: ${FONT.mono};
-    font-size: var(--ds-font-size-2xl);
-    font-weight: 600;
+    font-size: var(--ds-font-size-lg);
+    font-weight: var(--ds-font-weight-bold);
     color: var(--ds-color-text);
     margin: 0 0 var(--ds-space-2);
   }
   .desc {
     color: var(--ds-color-text-secondary);
     font-family: ${FONT.body};
-    font-size: var(--ds-font-size-lg);
+    font-size: var(--ds-font-size-base);
     line-height: 1.6;
     margin: 0 0 var(--ds-space-4);
   }

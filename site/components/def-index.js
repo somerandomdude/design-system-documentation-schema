@@ -8,12 +8,11 @@ const DEF_INDEX_CSS = `
   }
   nav {
     background: var(--ds-color-bg-subtle);
-    border-radius: var(--ds-radius-lg);
-    padding: var(--ds-space-4) var(--ds-space-5);
+    padding: var(--ds-space-4) var(--ds-space-4);
   }
   ::slotted(p) {
     margin-bottom: var(--ds-space-2);
-    font-size: var(--ds-font-size-md);
+    font-size: var(--ds-font-size-base);
   }
   ::slotted(ul) {
     list-style: none;
@@ -21,7 +20,7 @@ const DEF_INDEX_CSS = `
     padding: 0;
     margin: 0;
     column-count: 2;
-    column-gap: var(--ds-space-6);
+    column-gap: var(--ds-space-8);
   }
 
   @media (max-width: 600px) {

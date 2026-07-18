@@ -4,8 +4,8 @@
 // Attributes:
 //   variant — "stable" | "experimental" | "draft" | "deprecated" |
 //             "required" | "encouraged" | "prohibited" | "informational" |
-//             "kind" | "category" | "token-type" | (default: neutral)
-//   size    — "sm" | "md" (default: "md")
+//             "discouraged" | "kind" | "category" | "token-type" |
+//             (default: neutral)
 //
 // Content:
 //   Text label inside the element.
@@ -20,17 +20,23 @@ const BADGE_CSS = `
   .badge {
     display: inline-block;
     font-family: ${FONT.body};
-    font-weight: var(--ds-font-weight-semibold);
+    /*font-weight: var(--ds-font-weight-bold);*/
     text-transform: none;
-    letter-spacing: var(--ds-tracking-normal);
-    border-radius: var(--ds-radius-md);
+    /*letter-spacing: var(--ds-tracking-normal);*/
     white-space: nowrap;
-    line-height: 1;
+    /*line-height: 1;*/
+    display: inline-flex;
+    align-items: center;
+    height: 24px;
+    padding: 0 1em;
+    font-size: .75em;
   }
 
   /* Sizes */
-  :host([size="sm"]) .badge { font-size: var(--ds-font-size-2xs); padding: 2px var(--ds-space-1); }
-  .badge                     { font-size: var(--ds-font-size-xs); padding: 3px var(--ds-space-2); }
+  /*
+  :host([size="sm"]) .badge { font-size: var(--ds-font-size-sm); padding: 2px var(--ds-space-1); }
+  .badge                     { font-size: var(--ds-font-size-sm); padding: 3px var(--ds-space-2); }
+  */
 
   /* Variants — Status */
   .badge--stable       { background: var(--ds-color-success-bg); color: var(--ds-color-success-text); }
@@ -59,7 +65,7 @@ const BADGE_CSS = `
 
 export class DsBadge extends HTMLElement {
   static get observedAttributes() {
-    return ["variant", "size"];
+    return ["variant"];
   }
 
   constructor() {

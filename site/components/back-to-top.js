@@ -6,12 +6,11 @@ const BACK_TO_TOP_CSS = `
 
   a {
     display: inline-block;
-    margin-top: var(--ds-space-12);
+    margin-top: var(--ds-space-8);
     font-family: ${FONT.body};
     font-size: var(--ds-font-size-base);
     color: var(--ds-color-text-secondary);
     text-decoration: none;
-    transition: color var(--ds-transition-normal);
   }
 
   a:hover {

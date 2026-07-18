@@ -4,7 +4,6 @@
 // Attributes:
 //   language — optional language label (e.g. "json", "bash")
 //   label   — optional label shown in top-right corner
-//   theme   — "light" | "dark" (default: "light")
 //   inline  — boolean, renders as inline <code> instead of block
 //
 // Content:
@@ -22,40 +21,24 @@ const CODE_CSS = `
   /* ── Block mode ──────────────────────────────────────── */
   .wrapper {
     position: relative;
-    border-radius: var(--ds-radius-lg);
     overflow: hidden;
+    background: var(--ds-color-bg-raised);
   }
-
-  /* Light theme */
-  .wrapper--light {
-    background: var(--ds-color-bg-subtle);
-    border: var(--ds-border-width-sm) solid var(--ds-color-border-light);
-  }
-  .wrapper--light pre { color: var(--ds-color-text); }
-  .wrapper--light .hl-k { color: var(--ds-syntax-light-key); }
-  .wrapper--light .hl-s { color: var(--ds-syntax-light-string); }
-  .wrapper--light .hl-n { color: var(--ds-syntax-light-number); }
-  .wrapper--light .hl-b { color: var(--ds-syntax-light-bool); }
-
-  /* Dark theme */
-  .wrapper--dark {
-    background: var(--ds-color-bg-dark);
-  }
-  .wrapper--dark pre { color: var(--ds-syntax-dark-text); }
-  .wrapper--dark .hl-k { color: var(--ds-syntax-dark-key); }
-  .wrapper--dark .hl-s { color: var(--ds-syntax-dark-string); }
-  .wrapper--dark .hl-n { color: var(--ds-syntax-dark-number); }
-  .wrapper--dark .hl-b { color: var(--ds-syntax-dark-bool); }
+  .wrapper pre { color: var(--ds-color-text); }
+  .wrapper .hl-k { color: var(--ds-syntax-light-key); }
+  .wrapper .hl-s { color: var(--ds-syntax-light-string); }
+  .wrapper .hl-n { color: var(--ds-syntax-light-number); }
+  .wrapper .hl-b { color: var(--ds-syntax-light-bool); }
 
   ds-badge[part="label"] {
     position: absolute;
     top: var(--ds-space-2);
-    right: var(--ds-space-3);
+    right: var(--ds-space-2);
   }
 
   pre {
     margin: 0;
-    padding: var(--ds-space-4) var(--ds-space-5);
+    padding: var(--ds-space-4) var(--ds-space-4);
     font-family: ${FONT.mono};
     font-size: var(--ds-font-size-base);
     line-height: var(--ds-line-height-loose);
@@ -74,16 +57,15 @@ const CODE_CSS = `
   .inline-code {
     font-family: ${FONT.mono};
     font-size: 0.875em;
-    background: var(--ds-color-bg-muted);
+    background: var(--ds-color-bg-raised);
+    color: var(--ds-color-text);
     padding: 1px 5px;
-    border-radius: var(--ds-radius-sm);
-    color: inherit;
   }
 `;
 
 export class DsCode extends HTMLElement {
   static get observedAttributes() {
-    return ["language", "label", "theme", "inline"];
+    return ["language", "label", "inline"];
   }
 
   constructor() {
@@ -116,7 +98,6 @@ export class DsCode extends HTMLElement {
     }
 
     // ── Block mode: render as <pre><code> with syntax highlighting ──
-    const theme = this.getAttribute("theme") || "light";
     const label =
       this.getAttribute("label") || this.getAttribute("language") || "";
     const lang = this.getAttribute("language") || "";
@@ -146,7 +127,7 @@ export class DsCode extends HTMLElement {
       : "";
 
     this._shadow.innerHTML = `
-      <div class="wrapper wrapper--${esc(theme)}" part="wrapper">
+      <div class="wrapper" part="wrapper">
         ${labelHtml}
         <pre part="pre"><code part="code">${highlighted}</code></pre>
       </div>

@@ -5,10 +5,6 @@
 // All styling is encapsulated in shadow DOM — the slotted table inherits
 // consistent typography, spacing, borders, and responsive overflow.
 //
-// Attributes:
-//   striped   — boolean, alternating row backgrounds
-//   compact   — boolean, tighter padding
-//
 // Usage:
 //   <ds-table>
 //     <table>
@@ -17,10 +13,6 @@
 //         <tr><td>kind</td><td>string</td></tr>
 //       </tbody>
 //     </table>
-//   </ds-table>
-//
-//   <ds-table striped compact>
-//     <table>...</table>
 //   </ds-table>
 // ═══════════════════════════════════════════════════════════════════════════
 
@@ -42,18 +34,8 @@ const TABLE_CSS = `
     width: 100%;
     border-collapse: collapse;
     font-family: ${FONT.body};
-    font-size: var(--ds-font-size-md);
+    font-size: var(--ds-font-size-base);
     color: var(--ds-color-text);
-  }
-
-  /* Striped — applied via a class toggled onto the slotted table */
-  :host([striped]) ::slotted(table) {
-    --ds-table-striped: 1;
-  }
-
-  /* Compact — applied via a class toggled onto the slotted table */
-  :host([compact]) ::slotted(table) {
-    --ds-table-compact: 1;
   }
 `;
 
@@ -66,25 +48,21 @@ export function ensureTableLightStyles() {
   var style = document.createElement("style");
   style.id = TABLE_LIGHT_DOM_ID;
   style.textContent = [
-    "ds-table table { width: 100%; border-collapse: collapse; font-size: var(--ds-font-size-md); }",
+    "ds-table table { width: 100%; border-collapse: collapse; font-size: var(--ds-font-size-base); }",
     "ds-table thead { background: transparent; }",
     "ds-table th {",
-    "  text-align: left; font-weight: var(--ds-font-weight-semibold); font-size: var(--ds-font-size-sm);",
+    "  text-align: left; font-weight: var(--ds-font-weight-bold); font-size: var(--ds-font-size-sm);",
     "  text-transform: none; letter-spacing: var(--ds-tracking-wide);",
     "  color: var(--ds-color-text-secondary);",
-    "  padding: var(--ds-space-2) var(--ds-space-4);",
-    "  border-bottom: var(--ds-border-width-md) solid var(--ds-color-border);",
+    "  padding: var(--ds-space-2) var(--ds-space-2);",
     "  white-space: nowrap;",
     "}",
     "ds-table td {",
-    "  padding: var(--ds-space-2) var(--ds-space-4);",
-    "  border-bottom: var(--ds-border-width-sm) solid var(--ds-color-border-light);",
+    "  padding: var(--ds-space-4) var(--ds-space-2);",
     "  vertical-align: top; line-height: var(--ds-line-height-relaxed);",
     "}",
     "ds-table tr:last-child td { border-bottom: none; }",
     "ds-table a { color: var(--ds-color-accent); }",
-    "ds-table[striped] tbody tr:nth-child(even) td { background: var(--ds-color-bg-subtle); }",
-    "ds-table[compact] th, ds-table[compact] td { padding: 5px 10px; font-size: 0.8rem; }",
     "ds-table td:first-child { white-space: nowrap; }",
     "ds-table td:first-child ds-code[inline] { white-space: nowrap; }",
   ].join("\n");
@@ -92,10 +70,6 @@ export function ensureTableLightStyles() {
 }
 
 export class DsTable extends HTMLElement {
-  static get observedAttributes() {
-    return ["striped", "compact"];
-  }
-
   constructor() {
     super();
     this._shadow = createShadow(this, TABLE_CSS);

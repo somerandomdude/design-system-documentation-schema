@@ -16,29 +16,42 @@ const PROP_TABLE_CSS = `
     width: 100%;
     max-width: 100%;
     border-collapse: collapse;
-    margin-bottom: var(--ds-space-6);
+    margin-bottom: var(--ds-space-8);
     font-family: ${FONT.body};
     font-size: var(--ds-font-size-base);
   }
 
   th {
     text-align: left;
-    font-weight: 600;
+    font-weight: var(--ds-font-weight-bold);
     font-size: var(--ds-font-size-sm);
     text-transform: none;
     letter-spacing: var(--ds-tracking-wide);
     color: var(--ds-color-text-secondary);
-    padding: var(--ds-space-2) var(--ds-space-4);
-    border-bottom: 2px solid var(--ds-color-border);
+    padding: var(--ds-space-2) var(--ds-space-2);
+    border-bottom: 2px solid var(--ds-color-bg-raised);
     background: transparent;
     white-space: nowrap;
   }
 
+  th:first-child, td:first-child {
+  padding-left:0
+  }
+
+  th:last-child, td:last-child {
+  padding-right:0
+  }
+
+
+
   td {
-    padding: var(--ds-space-2) var(--ds-space-4);
-    border-bottom: 1px solid var(--ds-color-border-light);
+    padding: var(--ds-space-4) var(--ds-space-2);
     vertical-align: top;
     line-height: 1.5;
+  }
+
+  tr:first-child td {
+  padding-top: var(--ds-space-2);
   }
 
   tr:last-child td {
@@ -75,7 +88,7 @@ const PROP_TABLE_CSS = `
   /* Column 1: Property name — monospace, bold */
   td:nth-child(1) code {
     font-family: ${FONT.mono};
-    font-weight: 600;
+    font-weight: var(--ds-font-weight-bold);
     color: var(--ds-color-text);
     white-space: nowrap;
     font-size: var(--ds-font-size-base);
@@ -90,9 +103,12 @@ const PROP_TABLE_CSS = `
     color: #666;
   }
 
-  /* Column 3: Required — narrow */
+  /* Column 3: Required — narrow, a checkmark when required */
   td:nth-child(3) {
     font-size: var(--ds-font-size-sm);
+  }
+  td:nth-child(3) .req {
+    font-weight: var(--ds-font-weight-bold);
   }
 
   /* Column 4: Description — gets all remaining space */
@@ -113,13 +129,12 @@ const PROP_TABLE_CSS = `
     font-size: var(--ds-font-size-base);
     background: var(--ds-color-bg-muted);
     padding: 1px 5px;
-    border-radius: var(--ds-radius-sm);
   }
 
   /* Type reference links inside cells */
   a.type-ref {
     font-family: ${FONT.mono};
-    font-size: var(--ds-font-size-md);
+    font-size: var(--ds-font-size-base);
     color: var(--ds-color-accent);
     text-decoration: none;
     border-bottom: 1px dashed var(--ds-color-accent);
@@ -176,12 +191,12 @@ export class DsPropTable extends HTMLElement {
         var statusCell;
         if (prop.hasAttribute("required")) {
           statusCell =
-            '<ds-badge variant="required" size="sm">required</ds-badge>';
+            '<span class="req" title="Required" aria-label="Required">✓</span>';
         } else if (prop.hasAttribute("conditional")) {
           statusCell =
-            '<ds-badge variant="experimental" size="sm">at least one</ds-badge>';
+            '<ds-badge variant="experimental">at least one</ds-badge>';
         } else {
-          statusCell = "optional";
+          statusCell = "";
         }
 
         return (

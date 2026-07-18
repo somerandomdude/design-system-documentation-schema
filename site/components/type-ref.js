@@ -5,16 +5,13 @@ const TYPE_REF_CSS = `
   :host { display: inline; }
   a {
     font-family: ${FONT.mono};
-    font-size: var(--ds-font-size-md);
-    color: var(--ds-color-accent);
-    text-decoration: none;
-    border-bottom: 1px dashed var(--ds-color-accent);
-    transition: color var(--ds-transition-fast), border-bottom-color var(--ds-transition-fast);
+    font-size: inherit;
+    color: inherit;
+    text-decoration-style: dashed;
+    text-decoration-thickness: .125em;
+    text-underline-offset: .25rem;
   }
-  a:hover {
-    color: var(--ds-color-accent-hover);
-    border-bottom-style: solid;
-  }
+
 `;
 
 export class DsTypeRef extends HTMLElement {

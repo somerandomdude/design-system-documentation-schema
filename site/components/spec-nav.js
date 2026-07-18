@@ -51,10 +51,10 @@ const SPEC_NAV_CSS = `
   .nav {
     position: absolute;
     inset: 0;
-    background: var(--ds-color-bg-dark, #1b1f24);
-    color: var(--ds-color-text-on-dark, #c9cdd3);
+    background: var(--ds-color-bg-inverse);
+    color: var(--ds-color-text-inverse);
     overflow-y: auto;
-    padding: var(--ds-space-6, 24px) 0;
+    padding: var(--ds-space-8, 24px) 0;
     font-family: ${FONT.body};
     -webkit-overflow-scrolling: touch;
   }
@@ -65,9 +65,9 @@ const SPEC_NAV_CSS = `
     font-weight: var(--ds-font-weight-bold, 700);
     letter-spacing: 0;
     text-transform: none;
-    color: var(--ds-color-text-on-dark-heading, #ffffff);
+    color: var(--ds-color-text-inverse);
     padding: 0 var(--ds-space-4, 16px);
-    margin-bottom: var(--ds-space-6, 24px);
+    margin-bottom: var(--ds-space-8, 24px);
   }
 
   .nav__title a {
@@ -84,13 +84,11 @@ const SPEC_NAV_CSS = `
   .nav__link {
     display: block;
     padding: 5px var(--ds-space-4, 16px);
-    color: var(--ds-color-text-on-dark, #c9cdd3);
+    color: var(--ds-color-text-inverse);
     text-decoration: none;
     font-size: var(--ds-font-size-base, 0.8125rem);
     line-height: var(--ds-line-height-normal, 1.4);
-    transition: background var(--ds-transition-fast, 0.1s ease),
-                color var(--ds-transition-fast, 0.1s ease);
-    border-left: var(--ds-border-width-lg, 3px) solid transparent;
+    border-left: var(--ds-border-width, 3px) solid transparent;
   }
 
   .nav__link:hover {
@@ -102,7 +100,7 @@ const SPEC_NAV_CSS = `
     background: var(--ds-color-bg-dark-active, #363b44);
     color: var(--ds-color-text-on-dark-heading, #ffffff);
     border-left-color: var(--ds-color-accent, #0055b3);
-    font-weight: var(--ds-font-weight-medium, 500);
+    font-weight: var(--ds-font-weight-bold, 500);
   }
 
   /* ── Group toggle ───────────────────────────────────── */
@@ -118,16 +116,15 @@ const SPEC_NAV_CSS = `
     padding: 6px var(--ds-space-4, 16px);
     background: none;
     border: none;
-    border-left: var(--ds-border-width-lg, 3px) solid transparent;
+    border-left: var(--ds-border-width, 3px) solid transparent;
     color: var(--ds-color-nav-group, #808690);
     font-family: ${FONT.body};
-    font-size: var(--ds-font-size-xs, 0.6875rem);
-    font-weight: var(--ds-font-weight-semibold, 600);
+    font-size: var(--ds-font-size-sm, 0.6875rem);
+    font-weight: var(--ds-font-weight-bold, 600);
     letter-spacing: 0;
     text-transform: none;
     cursor: default;
     text-align: left;
-    transition: color var(--ds-transition-fast, 0.1s ease);
   }
 
   .nav__group-arrow {
@@ -149,7 +146,6 @@ const SPEC_NAV_CSS = `
   @media (max-width: 900px) {
     :host {
       transform: translateX(-100%);
-      transition: transform var(--ds-transition-slow, 0.2s ease);
     }
 
     :host([open]) {

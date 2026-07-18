@@ -39,14 +39,11 @@ const NAV_TOGGLE_CSS = `
     background: var(--ds-color-bg-dark, #1b1f24);
     color: var(--ds-color-text-on-dark-heading, #ffffff);
     border: none;
-    border-radius: var(--ds-radius-lg, 6px);
     padding: var(--ds-space-2, 8px) var(--ds-space-4, 16px);
-    font-size: var(--ds-font-size-md, 0.875rem);
+    font-size: var(--ds-font-size-base, 0.875rem);
     font-family: ${FONT.body};
-    font-weight: var(--ds-font-weight-medium, 500);
+    font-weight: var(--ds-font-weight-bold, 500);
     cursor: pointer;
-    box-shadow: var(--ds-shadow-lg, 0 2px 6px rgba(0, 0, 0, 0.2));
-    transition: background var(--ds-transition-normal, 0.15s ease);
     -webkit-tap-highlight-color: transparent;
     line-height: 1;
   }
@@ -56,7 +53,7 @@ const NAV_TOGGLE_CSS = `
   }
 
   button:focus-visible {
-    outline: var(--ds-border-width-md, 2px) solid var(--ds-color-accent, #0055b3);
+    outline: var(--ds-border-width, 2px) solid var(--ds-color-accent, #0055b3);
     outline-offset: 2px;
   }
 

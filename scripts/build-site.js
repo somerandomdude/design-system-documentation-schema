@@ -21,7 +21,6 @@ const fs = require("fs");
 const path = require("path");
 
 const { buildSpecNav, DIR_GROUPS, readSpecVersion } = require("./nav");
-const { buildSamples } = require("./build-samples");
 const {
   esc,
   slug,
@@ -454,7 +453,7 @@ function renderSchemaPage(page) {
     ? ` description="${esc(page.data.description)}"`
     : "";
   parts.push(
-    `<ds-schema-header title="${esc(page.title)}"${descAttr} source="${esc(relPath)}"></ds-schema-header>`,
+    `<ds-header title="${esc(page.title)}"${descAttr} source="${esc(relPath)}"></ds-header>`,
   );
 
   // Always render top-level properties when they exist (e.g., the root schema
@@ -515,15 +514,13 @@ function pageHtml(
   title,
   activeSlug,
   bodyHtml,
-  hasToc,
   pages,
   layout,
   version,
   description,
 ) {
   const layoutCls = layout === "full" ? " content--full" : "";
-  const tocCls = hasToc ? " content--with-toc" : "";
-  const contentCls = "content" + layoutCls + tocCls;
+  const contentCls = "content" + layoutCls;
 
   // Derive the spec version from the schema if the caller didn't pass one
   // explicitly. This keeps every `DSDS <v>` string in the rendered HTML
@@ -538,10 +535,6 @@ function pageHtml(
   // like "0.2" is unlikely to appear coincidentally in a page title.
   const titleHasVersion = v && title.includes(v);
   const titleSuffix = v && !titleHasVersion ? ` — DSDS ${v}` : "";
-
-  const footerTitle = v
-    ? `Design System Documentation Spec (DSDS) ${v} — Draft Specification`
-    : "Design System Documentation Spec (DSDS) — Draft Specification";
 
   // The live server resolves extensionless paths; the root page is the
   // bare origin rather than /index.
@@ -579,14 +572,8 @@ ${buildSpecNav(activeSlug, pages, v)}
         ${bodyHtml}
 
         <ds-back-to-top></ds-back-to-top>
-
-        <ds-footer>
-          <p>${esc(footerTitle)}</p>
-          <p><a href="https://github.com/somerandomdude/design-system-documentation-schema">GitHub</a></p>
-        </ds-footer>
       </div>
     </main>
-    ${hasToc && layout !== "full" ? '<ds-toc target=".content__inner" selector="h2[id], h3[id]"></ds-toc>' : ""}
   </div>
 </body>
 </html>
@@ -652,10 +639,6 @@ async function build() {
     path.join(SITE_DIR, "style.css"),
     path.join(DIST_DIR, "style.css"),
   );
-  fs.copyFileSync(
-    path.join(SITE_DIR, "samples.css"),
-    path.join(DIST_DIR, "samples.css"),
-  );
 
   // Bundle web components into a single IIFE for file:// compatibility.
   bundleComponents(SITE_DIR, DIST_DIR);
@@ -672,23 +655,26 @@ async function build() {
 
     let body = mdxPage.html;
 
-    // Inject badge into the first heading if specified in frontmatter
-    if (badge) {
-      body = body.replace(
-        "<ds-heading",
-        '<div class="spec-header"><ds-heading class="spec-header__title"',
-      );
-      body = body.replace(
-        "</ds-heading>",
-        ` <ds-badge>${esc(badge)}</ds-badge></ds-heading>`,
-      );
-    }
+    // Every page opens with <ds-header> built from frontmatter. The title now
+    // lives there, so drop a leading compiled <h1> (its text duplicates the
+    // frontmatter title). Pages that open at h2 have no h1 to strip.
+    body = body.replace(
+      /^\s*<ds-heading\b[^>]*\blevel="1"[^>]*>[\s\S]*?<\/ds-heading>\s*/,
+      "",
+    );
+
+    const headerDescAttr = mdxPage.meta.description
+      ? ` description="${esc(mdxPage.meta.description)}"`
+      : "";
+    const headerBadge = badge ? `<ds-badge>${esc(badge)}</ds-badge>` : "";
+    body =
+      `<ds-header title="${esc(title)}"${headerDescAttr}>${headerBadge}</ds-header>\n` +
+      body;
 
     const html = pageHtml(
       title,
       slug,
       body,
-      true,
       pages,
       layout,
       undefined,
@@ -705,7 +691,6 @@ async function build() {
       page.title,
       page.slug,
       body,
-      true,
       pages,
       null,
       undefined,
@@ -720,9 +705,6 @@ async function build() {
       : page.filename;
     console.log(`  ✓  site/dist/${page.slug}.html  ← ${relSource}`);
   }
-
-  // ── Samples page ────────────────────────────────────────────────────
-  buildSamples();
 
   // ── Versioned bundled schema ──────────────────────────────────────
   //
@@ -944,10 +926,6 @@ function mdToHtml(mdText) {
 
   return out.join("\n");
 }
-
-// ---------------------------------------------------------------------------
-// Extract page headings for TOC
-// ---------------------------------------------------------------------------
 
 // ---------------------------------------------------------------------------
 // Component bundler

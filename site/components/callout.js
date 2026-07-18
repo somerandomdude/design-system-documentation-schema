@@ -1,8 +1,7 @@
 // ═══════════════════════════════════════════════════════════════════════════
 // <ds-callout>
 //
-// A callout / info box with an accent left border and subtle background.
-// Replaces the `.callout` CSS class with an encapsulated web component.
+// A callout / info box: an accent left border with a subtle tinted background.
 //
 // Attributes:
 //   variant — "info" | "tip" | "warning" (default: "info")
@@ -27,15 +26,14 @@ const CALLOUT_CSS = `
   :host { display: block; }
 
   .callout {
-    border-left: var(--ds-border-width-xl) solid var(--ds-color-accent);
+    border-left: var(--ds-border-width) solid var(--ds-color-accent);
     background: var(--ds-color-accent-subtle);
     padding: var(--ds-space-2) var(--ds-space-4);
-    border-radius: 0 var(--ds-radius-lg) var(--ds-radius-lg) 0;
-    margin: var(--ds-space-2) 0 var(--ds-space-6);
+    margin: var(--ds-space-2) 0 var(--ds-space-8);
     font-family: ${FONT.body};
-    font-size: var(--ds-font-size-md);
+    font-size: var(--ds-font-size-base);
     line-height: var(--ds-line-height-loose);
-    color: var(--ds-color-text);
+    color: var(--ds-color-text-inverse);
   }
 
   .callout--warning {
@@ -63,7 +61,7 @@ const CALLOUT_CSS = `
   ::slotted(ol),
   ::slotted(ul) {
     margin: var(--ds-space-2) 0 0;
-    padding-left: var(--ds-space-5);
+    padding-left: var(--ds-space-4);
   }
 
   ::slotted(a) {
