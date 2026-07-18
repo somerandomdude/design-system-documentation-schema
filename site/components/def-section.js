@@ -4,7 +4,7 @@ const DEF_SECTION_CSS = `
   ${BASE_RESET}
   :host {
     display: block;
-    margin: var(--ds-space-8) 0 var(--ds-space-8);
+    margin: 64px 0 64px;
   }
   :host(:first-of-type) {
     margin-top: 0;

@@ -17,13 +17,21 @@ import { createShadow, esc, escWithCode, BASE_RESET, FONT } from "./_shared.js";
 
 const HEADER_CSS = `
   ${BASE_RESET}
-  :host { display: flex; flex-direction: column; margin-bottom: var(--ds-space-8); min-height: 100vh; background: var(--ds-color-bg-accent); justify-content: end; }
+  :host { display: flex; flex-direction: column; margin-bottom: var(--ds-space-8); min-height: 100vh; background: var(--ds-color-bg-accent); justify-content: end; padding-left: var(--nav-width); }
+
+  @media (max-width: 900px) {
+  :host {
+  padding-left:0;
+  }
+  }
+
   h1 {
     /*font-size: var(--ds-font-size-xl);*/
     font-size: 4em;
     font-family: "DM Mono";
     font-weight: 500;
-    line-height: 1.3;
+    line-height: 1.1;
+    letter-spacing: -0.025;
     margin: 0 0 var(--ds-space-4);
     color: var(--ds-color-text);
   }
