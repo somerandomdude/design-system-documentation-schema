@@ -48,7 +48,9 @@ max-width: var(--content-max);
     font-size: var(--ds-font-size-base);
     margin: 0 0 var(--ds-space-4);
     max-width: 65ch;
-    font-size: 18px;
+    font-size: 22px;
+    line-height: 1.4;
+    font-weight: 450;
   }
   .source {
     font-size: var(--ds-font-size-sm);

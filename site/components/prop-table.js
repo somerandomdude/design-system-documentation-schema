@@ -9,13 +9,28 @@ const PROP_TABLE_CSS = `
      width (~500px). On narrow viewports that minimum exceeds the host,
      and without a scroller the rightmost column (Description) is clipped
      off-screen with no way to reach it. overflow-x: auto lets the table
-     scroll instead of losing its Description column. Mirrors <ds-table>. */
-  .table-scroll { overflow-x: auto; max-width: 100%; }
+     scroll instead of losing its Description column. Mirrors <ds-table>.
+
+     No overflow is set by default (only below 900px, see the media query
+     near the bottom): leaving both axes visible means this wrapper isn't a
+     scroll container, so the sticky header below sticks relative to the
+     PAGE as it scrolls. A wrapper that scrolls horizontally unavoidably
+     captures the vertical axis too (browsers force overflow-y to "auto" the
+     moment overflow-x isn't "visible"), which re-scopes position:sticky to
+     the wrapper's own scrolling instead of the page's — the two can't both
+     apply to the same table at once. Page-scroll stickiness is the more
+     useful default; the horizontal-scroll fallback only kicks in on narrow
+     viewports, where a wide table would otherwise clip content. */
+  .table-scroll { max-width: 100%; }
 
   table {
     width: 100%;
     max-width: 100%;
-    border-collapse: collapse;
+    /* separate + zero spacing (not collapse) so the sticky header's cells
+       keep their background/position correctly in Safari, which has long-
+       standing bugs with position:sticky inside a border-collapsed table. */
+    border-collapse: separate;
+    border-spacing: 0;
     margin-bottom: var(--ds-space-8);
     font-family: ${FONT.body};
     font-size: var(--ds-font-size-base);
@@ -30,8 +45,15 @@ const PROP_TABLE_CSS = `
     color: var(--ds-color-text-secondary);
     padding: var(--ds-space-2) var(--ds-space-2);
     border-bottom: 2px solid var(--ds-color-bg-raised);
-    background: transparent;
+    background: var(--ds-color-bg);
     white-space: nowrap;
+    position: sticky;
+    top: 0;
+    z-index: var(--ds-z-base, 1);
+  }
+
+  @media (max-width: 900px) {
+    .table-scroll { overflow-x: auto; }
   }
 
   th:first-child, td:first-child {

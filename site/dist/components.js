@@ -77,6 +77,9 @@
       position: relative;
       overflow: hidden;
       background: var(--ds-color-bg-raised);
+      inset: calc(var(--ds-space-4) * -1);
+      top: 0;
+      width: calc( 100% + (var(--ds-space-4) * 2));
     }
     .wrapper pre { color: var(--ds-color-text); }
     .wrapper .hl-k { color: var(--ds-syntax-light-key); }
@@ -289,6 +292,16 @@
   // All styling is encapsulated in shadow DOM — the slotted table inherits
   // consistent typography, spacing, borders, and responsive overflow.
   //
+  // The header row sticks to the top of the viewport as the page scrolls past
+  // a tall table. Below 900px wide, wide tables get a horizontal scrollbar
+  // instead — a wrapper that scrolls horizontally unavoidably captures the
+  // vertical axis too (browsers force overflow-y to "auto" the moment
+  // overflow-x isn't "visible"), which re-scopes position:sticky to that
+  // wrapper's own scrolling instead of the page's, so the two features can't
+  // both apply to the same table at the same time. Page-scroll stickiness is
+  // the more useful default; the horizontal-scroll fallback only kicks in
+  // where a wide table would otherwise clip content.
+  //
   // Usage:
   //   <ds-table>
   //     <table>
@@ -304,8 +317,16 @@
     ${BASE_RESET}
     :host { display: block; margin: var(--ds-space-4) 0; }
 
-    .table-wrap {
-      overflow-x: auto;
+    /* No overflow set here by default: leaving both axes "visible" means this
+       wrapper is NOT a scroll container, so the th's position:sticky (below)
+       sticks relative to the page as it scrolls — see the file header comment
+       for why that's mutually exclusive with a horizontal-scroll wrapper.
+       Below 900px, wide tables get a horizontal scrollbar instead (sacrificing
+       the sticky header there) so content doesn't clip on narrow screens. */
+    @media (max-width: 900px) {
+      .table-wrap {
+        overflow-x: auto;
+      }
     }
 
     /* Style the slotted <table> and its descendants via ::slotted
@@ -314,7 +335,11 @@
        on inheritance + the component's font/color context for cells. */
     ::slotted(table) {
       width: 100%;
-      border-collapse: collapse;
+      /* separate + zero spacing (not collapse) so the sticky header's cells
+         keep their background/position correctly in Safari, which has long-
+         standing bugs with position:sticky inside a border-collapsed table. */
+      border-collapse: separate;
+      border-spacing: 0;
       font-family: ${FONT.body};
       font-size: var(--ds-font-size-base);
       color: var(--ds-color-text);
@@ -330,14 +355,18 @@
     var style = document.createElement("style");
     style.id = TABLE_LIGHT_DOM_ID;
     style.textContent = [
-      "ds-table table { width: 100%; border-collapse: collapse; font-size: var(--ds-font-size-base); }",
-      "ds-table thead { background: transparent; }",
+      "ds-table table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: var(--ds-font-size-base); }",
+      "ds-table thead { background: var(--ds-color-bg); }",
       "ds-table th {",
       "  text-align: left; font-weight: var(--ds-font-weight-bold); font-size: var(--ds-font-size-sm);",
       "  text-transform: none; letter-spacing: var(--ds-tracking-wide);",
       "  color: var(--ds-color-text-secondary);",
       "  padding: var(--ds-space-2) var(--ds-space-2);",
       "  white-space: nowrap;",
+      "  position: sticky;",
+      "  top: 0;",
+      "  z-index: var(--ds-z-base, 1);",
+      "  background: var(--ds-color-bg);",
       "}",
       "ds-table td {",
       "  padding: var(--ds-space-4) var(--ds-space-2);",
@@ -549,7 +578,9 @@
       font-size: var(--ds-font-size-base);
       margin: 0 0 var(--ds-space-4);
       max-width: 65ch;
-      font-size: 18px;
+      font-size: 22px;
+      line-height: 1.4;
+      font-weight: 450;
     }
     .source {
       font-size: var(--ds-font-size-sm);
@@ -807,13 +838,28 @@
        width (~500px). On narrow viewports that minimum exceeds the host,
        and without a scroller the rightmost column (Description) is clipped
        off-screen with no way to reach it. overflow-x: auto lets the table
-       scroll instead of losing its Description column. Mirrors <ds-table>. */
-    .table-scroll { overflow-x: auto; max-width: 100%; }
+       scroll instead of losing its Description column. Mirrors <ds-table>.
+
+       No overflow is set by default (only below 900px, see the media query
+       near the bottom): leaving both axes visible means this wrapper isn't a
+       scroll container, so the sticky header below sticks relative to the
+       PAGE as it scrolls. A wrapper that scrolls horizontally unavoidably
+       captures the vertical axis too (browsers force overflow-y to "auto" the
+       moment overflow-x isn't "visible"), which re-scopes position:sticky to
+       the wrapper's own scrolling instead of the page's — the two can't both
+       apply to the same table at once. Page-scroll stickiness is the more
+       useful default; the horizontal-scroll fallback only kicks in on narrow
+       viewports, where a wide table would otherwise clip content. */
+    .table-scroll { max-width: 100%; }
 
     table {
       width: 100%;
       max-width: 100%;
-      border-collapse: collapse;
+      /* separate + zero spacing (not collapse) so the sticky header's cells
+         keep their background/position correctly in Safari, which has long-
+         standing bugs with position:sticky inside a border-collapsed table. */
+      border-collapse: separate;
+      border-spacing: 0;
       margin-bottom: var(--ds-space-8);
       font-family: ${FONT.body};
       font-size: var(--ds-font-size-base);
@@ -828,8 +874,15 @@
       color: var(--ds-color-text-secondary);
       padding: var(--ds-space-2) var(--ds-space-2);
       border-bottom: 2px solid var(--ds-color-bg-raised);
-      background: transparent;
+      background: var(--ds-color-bg);
       white-space: nowrap;
+      position: sticky;
+      top: 0;
+      z-index: var(--ds-z-base, 1);
+    }
+
+    @media (max-width: 900px) {
+      .table-scroll { overflow-x: auto; }
     }
 
     th:first-child, td:first-child {
