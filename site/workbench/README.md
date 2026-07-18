@@ -66,7 +66,7 @@ Edit `registry.js`. Each entry:
   category: "content",           // content | layout | schema
   notes: "One-line description of the API.",
   demos: [
-    { label: "Status variants", html: `<ds-badge variant="stable">stable</ds-badge>` },
+    { label: "Variants", html: `<ds-badge variant="kind">kind</ds-badge>` },
   ],
 }
 ```

@@ -52,9 +52,7 @@ const SPEC_NAV_CSS = `
     position: absolute;
     inset: 1em;
     background: var(--ds-color-bg-inverse);
-    color: var(--ds-color-text-inverse);
-    /* overflow-y: auto; */
-    padding: var(--ds-space-8, 24px) 0;
+    color: var(--ds-color-text);
     padding: 0;
     font-family: ${FONT.body};
     -webkit-overflow-scrolling: touch;
@@ -64,23 +62,26 @@ const SPEC_NAV_CSS = `
 
   /* ── Title ──────────────────────────────────────────── */
   .nav__title {
-    font-size: var(--ds-font-size-base, 0.8125rem);
-    font-weight: var(--ds-font-weight-bold, 700);
+    font-size: var(--ds-font-size-base);
+    font-weight: var(--ds-font-weight-bold);
     letter-spacing: 0;
     text-transform: none;
     background: var(--ds-color-text);
-    color: #fff;
-    padding: var(--ds-space-4) var(--ds-space-4, 16px);
+    color: var(--ds-color-bg-inverse);
+    padding: var(--ds-space-4);
   }
 
   .nav__title a {
     color: inherit;
     text-decoration: none;
+    display: flex;
+    gap: 8px;
+    line-height: 1.2;
   }
 
   /* ── Items container ────────────────────────────────── */
   .nav__items {
-    padding: var(--ds-space-4, 16px) 0;
+    padding: var(--ds-space-4) 0;
     overflow-y: auto;
     max-height: 100%;
   }
@@ -88,29 +89,29 @@ const SPEC_NAV_CSS = `
   /* ── Top-level links ────────────────────────────────── */
   .nav__link {
     display: block;
-    padding: 5px var(--ds-space-4, 16px);
-    color: var(--ds-color-text-inverse);
+    margin: 0 4px;
+    padding: 6px calc(var(--ds-space-4) - 4px);
+    color: var(--ds-color-text);
     text-decoration: none;
-    font-size: var(--ds-font-size-base, 0.8125rem);
-    line-height: var(--ds-line-height-normal, 1.4);
-    border-left: var(--ds-border-width, 3px) solid transparent;
+    font-size: var(--ds-font-size-base);
+    font-weight: 500;
+    line-height: var(--ds-line-height-normal);
+    border-left: var(--ds-border-width) solid transparent;
   }
 
   .nav__link:hover {
-    background: var(--ds-color-bg-dark-hover, #2a2f36);
-    color: var(--ds-color-text-on-dark-heading, #ffffff);
+    background: #1a1a1a;
+    color: #fff;
   }
 
   .nav__link--active {
-    background: var(--ds-color-bg-dark-active, #363b44);
-    color: var(--ds-color-text-on-dark-heading, #ffffff);
-    border-left-color: var(--ds-color-accent, #0055b3);
-    font-weight: var(--ds-font-weight-bold, 500);
+    background: #1a1a1a;
+    color: #fff;
   }
 
   /* ── Group toggle ───────────────────────────────────── */
   .nav__group {
-    margin-top: var(--ds-space-4, 16px);
+    margin-top: var(--ds-space-4);
   }
 
   .nav__group-toggle {
@@ -118,14 +119,14 @@ const SPEC_NAV_CSS = `
     align-items: center;
     justify-content: space-between;
     width: 100%;
-    padding: 6px var(--ds-space-4, 16px);
+    padding: 6px var(--ds-space-4);
     background: none;
     border: none;
-    border-left: var(--ds-border-width, 3px) solid transparent;
-    color: var(--ds-color-nav-group, #808690);
+    border-left: var(--ds-border-width) solid transparent;
+    color: var(--ds-color-nav-group);
     font-family: ${FONT.body};
-    font-size: var(--ds-font-size-sm, 0.6875rem);
-    font-weight: var(--ds-font-weight-bold, 600);
+    font-size: var(--ds-font-size-sm);
+    font-weight: var(--ds-font-weight-bold);
     letter-spacing: 0;
     text-transform: none;
     cursor: default;
@@ -139,12 +140,12 @@ const SPEC_NAV_CSS = `
   /* ── Group children — always visible ────────────────── */
   .nav__group-children {
     display: block;
-    padding-bottom: var(--ds-space-1, 4px);
+    padding-bottom: var(--ds-space-1);
   }
 
   .nav__link--child {
-    padding-left: var(--ds-space-4, 16px);
-    font-size: var(--ds-font-size-base, 0.8125rem);
+    padding-left: var(--ds-space-4);
+    font-size: var(--ds-font-size-base);
   }
 
   /* ── Mobile: slide off-screen by default ────────────── */
@@ -209,11 +210,7 @@ export class DsSpecNav extends HTMLElement {
     const active = this.getAttribute("active") || "";
 
     const titleHtml = title
-      ? '<div class="nav__title"><a href="' +
-        esc(titleHref) +
-        '">' +
-        esc(title) +
-        "</a></div>"
+      ? `<div class="nav__title"><a href="${esc(titleHref)}"><ds-logo size="2rem" fill="#fff"></ds-logo><span>${esc(title)}</span></a></div>`
       : "";
 
     const itemsHtml = this._buildFromChildren(active);

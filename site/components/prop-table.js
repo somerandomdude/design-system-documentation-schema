@@ -34,6 +34,12 @@ const PROP_TABLE_CSS = `
     margin-bottom: var(--ds-space-8);
     font-family: ${FONT.body};
     font-size: var(--ds-font-size-base);
+    position: relative;
+    inset: calc(var(--ds-space-2) * -1);
+    width: calc(100% + (var(--ds-space-2) * 2));
+    max-width: calc(100% + (var(--ds-space-2) * 2));
+    top: 0;
+    bottom: 0;
   }
 
   th {
@@ -42,10 +48,9 @@ const PROP_TABLE_CSS = `
     font-size: var(--ds-font-size-sm);
     text-transform: none;
     letter-spacing: var(--ds-tracking-wide);
-    color: var(--ds-color-text-secondary);
+    color: var(--ds-color-text);
     padding: var(--ds-space-2) var(--ds-space-2);
-    border-bottom: 2px solid var(--ds-color-bg-raised);
-    background: var(--ds-color-bg);
+    background: var(--ds-color-bg-raised);
     white-space: nowrap;
     position: sticky;
     top: 0;
@@ -55,7 +60,7 @@ const PROP_TABLE_CSS = `
   @media (max-width: 900px) {
     .table-scroll { overflow-x: auto; }
   }
-
+/*
   th:first-child, td:first-child {
   padding-left:0
   }
@@ -63,6 +68,7 @@ const PROP_TABLE_CSS = `
   th:last-child, td:last-child {
   padding-right:0
   }
+  */
 
 
 
@@ -122,7 +128,6 @@ const PROP_TABLE_CSS = `
   td:nth-child(2) {
     font-family: ${FONT.mono};
     font-size: var(--ds-font-size-sm);
-    color: #666;
   }
 
   /* Column 3: Required — narrow, a checkmark when required */
@@ -136,13 +141,12 @@ const PROP_TABLE_CSS = `
   /* Column 4: Description — gets all remaining space */
   td:nth-child(4) {
     font-size: var(--ds-font-size-base);
-    color: var(--ds-color-text-secondary);
   }
 
   td:nth-child(4) small {
     display: block;
     margin-top: var(--ds-space-1);
-    color: var(--ds-color-text-muted);
+    color: var(--ds-color-text);
     font-size: var(--ds-font-size-sm);
   }
 

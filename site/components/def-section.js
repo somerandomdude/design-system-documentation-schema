@@ -17,10 +17,10 @@ const DEF_SECTION_CSS = `
     margin: 0 0 var(--ds-space-2);
   }
   .desc {
-    color: var(--ds-color-text-secondary);
+    color: var(--ds-color-text);
     font-family: ${FONT.body};
     font-size: var(--ds-font-size-base);
-    line-height: 1.6;
+    line-height: var(--ds-line-height-loose);
     margin: 0 0 var(--ds-space-4);
   }
   .type-line { margin: 0 0 var(--ds-space-4); }
@@ -53,15 +53,15 @@ export class DsDefSection extends HTMLElement {
     // Set id on host for TOC linking
     if (anchor) this.id = anchor;
     var html = '<h3 id="' + esc(anchor) + '">' + esc(name) + "</h3>";
-    // Use escWithCode so CommonMark-style `inline code` spans in the
-    // description render as <ds-code inline> rather than literal
-    // backtick characters.
-    if (desc) html += '<p class="desc">' + escWithCode(desc) + "</p>";
     if (type)
       html +=
         '<p class="type-line"><ds-badge variant="kind" size="sm">' +
         esc(type) +
         "</ds-badge></p>";
+    // Use escWithCode so CommonMark-style `inline code` spans in the
+    // description render as <ds-code inline> rather than literal
+    // backtick characters.
+    if (desc) html += '<p class="desc">' + escWithCode(desc) + "</p>";
     html += "<slot></slot>";
     this._shadow.innerHTML = html;
   }

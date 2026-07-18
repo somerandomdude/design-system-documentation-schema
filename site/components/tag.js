@@ -26,7 +26,7 @@ const TAG_CSS = `
     font-weight: var(--ds-font-weight-bold);
     font-size: var(--ds-font-size-sm);
     line-height: 1;
-    color: var(--ds-color-text-secondary);
+    color: var(--ds-color-text);
     background: var(--ds-color-bg-subtle);
     border: var(--ds-border-width) solid var(--ds-color-border-light);
     padding: 2px var(--ds-space-1);

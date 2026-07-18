@@ -75,7 +75,7 @@ export function ensureTableLightStyles() {
     "ds-table th {",
     "  text-align: left; font-weight: var(--ds-font-weight-bold); font-size: var(--ds-font-size-sm);",
     "  text-transform: none; letter-spacing: var(--ds-tracking-wide);",
-    "  color: var(--ds-color-text-secondary);",
+    "  color: var(--ds-color-text);",
     "  padding: var(--ds-space-2) var(--ds-space-2);",
     "  white-space: nowrap;",
     "  position: sticky;",

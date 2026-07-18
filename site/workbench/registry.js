@@ -20,30 +20,34 @@
 export const COMPONENTS = [
   // ─── Content ──────────────────────────────────────────────────────────
   {
+    tag: "ds-logo",
+    title: "Logo",
+    category: "content",
+    notes: "The DSDS mark. Attrs: size, background, fill — all plain CSS values.",
+    demos: [
+      {
+        label: "Default",
+        html: `<ds-logo></ds-logo>`,
+      },
+      {
+        label: "Sized and recolored",
+        html: `<ds-logo size="24px"></ds-logo>
+<ds-logo size="64px" fill="#0055b3"></ds-logo>
+<ds-logo size="64px" fill="#fff" background="#0055b3"></ds-logo>`,
+      },
+    ],
+  },
+  {
     tag: "ds-badge",
     title: "Badge",
     category: "content",
-    notes: "Inline status / category / kind marker. Variant sets the color.",
+    notes: "Inline marker. Variant sets the color: kind (type-line badges), experimental (conditional-requirement marker), default neutral.",
     demos: [
       {
-        label: "Status variants",
-        html: `<ds-badge variant="stable">stable</ds-badge>
-<ds-badge variant="experimental">experimental</ds-badge>
-<ds-badge variant="draft">draft</ds-badge>
-<ds-badge variant="deprecated">deprecated</ds-badge>`,
-      },
-      {
-        label: "Semantic variants",
-        html: `<ds-badge variant="required">required</ds-badge>
-<ds-badge variant="encouraged">encouraged</ds-badge>
-<ds-badge variant="prohibited">prohibited</ds-badge>
-<ds-badge variant="informational">informational</ds-badge>`,
-      },
-      {
-        label: "Taxonomy variants",
-        html: `<ds-badge variant="kind">kind</ds-badge>
-<ds-badge variant="category">category</ds-badge>
-<ds-badge variant="token-type">token-type</ds-badge>`,
+        label: "Variants",
+        html: `<ds-badge>neutral (default)</ds-badge>
+<ds-badge variant="kind">kind</ds-badge>
+<ds-badge variant="experimental">experimental</ds-badge>`,
       },
     ],
   },

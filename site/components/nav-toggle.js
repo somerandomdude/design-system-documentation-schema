@@ -42,7 +42,7 @@ const NAV_TOGGLE_CSS = `
     padding: var(--ds-space-2, 8px) var(--ds-space-4, 16px);
     font-size: var(--ds-font-size-base, 0.875rem);
     font-family: ${FONT.body};
-    font-weight: var(--ds-font-weight-bold, 500);
+    font-weight: var(--ds-font-weight-bold, 700);
     cursor: pointer;
     -webkit-tap-highlight-color: transparent;
     line-height: 1;
@@ -53,7 +53,7 @@ const NAV_TOGGLE_CSS = `
   }
 
   button:focus-visible {
-    outline: var(--ds-border-width, 2px) solid var(--ds-color-accent, #0055b3);
+    outline: var(--ds-border-width, 1px) solid var(--ds-color-accent, #0055b3);
     outline-offset: 2px;
   }
 

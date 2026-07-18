@@ -1,4 +1,4 @@
-# Design System Documentation Spec (DSDS)
+# Design System Doc Spec (DSDS)
 
 A standard, machine-readable format for design system documentation.
 
@@ -412,8 +412,8 @@ This is the exact sequence for cutting a release that includes schema changes. S
 9. **Spot-check the rendered site.** Confirm the version reads correctly in three places:
 
    - Page `<title>` tags (e.g., `DSDS Last Updated Metadata — DSDS 0.15.2`).
-   - The nav title (`Design System Documentation Spec 0.15.2`).
-   - The footer (`Design System Documentation Spec (DSDS) 0.14.0 — Draft Specification`).
+   - The nav title (`Design System Doc Spec 0.15.2`).
+   - The footer (`Design System Doc Spec (DSDS) 0.14.0 — Draft Specification`).
 
    The new schema page should exist at `site/dist/<group>-<name>.html` (e.g., `site/dist/metadata-last-updated.html`), and the versioned bundle should exist at `site/dist/v<new-version>/dsds.bundled.schema.json`.
 

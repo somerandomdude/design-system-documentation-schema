@@ -33,7 +33,7 @@ const CALLOUT_CSS = `
     font-family: ${FONT.body};
     font-size: var(--ds-font-size-base);
     line-height: var(--ds-line-height-loose);
-    color: var(--ds-color-text-inverse);
+    color: var(--ds-color-text);
   }
 
   .callout--warning {

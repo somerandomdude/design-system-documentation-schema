@@ -6,7 +6,7 @@ const CROSS_REFS_CSS = `
     display: block;
     font-family: ${FONT.body};
     font-size: var(--ds-font-size-base);
-    color: var(--ds-color-text-secondary);
+    color: var(--ds-color-text);
     margin-top: var(--ds-space-4);
   }
   ::slotted(a) {

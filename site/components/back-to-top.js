@@ -9,7 +9,7 @@ const BACK_TO_TOP_CSS = `
     margin-top: var(--ds-space-8);
     font-family: ${FONT.body};
     font-size: var(--ds-font-size-base);
-    color: var(--ds-color-text-secondary);
+    color: var(--ds-color-text);
     text-decoration: none;
   }
 

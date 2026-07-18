@@ -2,8 +2,8 @@
    DSDS Design Tokens
 
    Centralized CSS custom properties for all visual attributes.
-   Every web component and stylesheet references these tokens.
-   Legacy aliases at the bottom bridge old variable names used in style.css.
+   Every web component and stylesheet references these tokens directly
+   (no legacy-name aliasing layer — style.css uses the --ds-* names too).
 
    Tokens are organized by category and use a constrained scale
    to enforce visual consistency across the system.
@@ -13,32 +13,36 @@
     /* ── Color: Background ──────────────────────────────────────────────── */
     /*--ds-color-bg: #1a1a1a;*/
 
-    --ds-color-bg: #c6ced2;
+    /*--ds-color-bg: #c6ced2;*/
+    --ds-color-bg: #d5cbc2;
     --ds-color-bg-inverse: #fff;
     /*--ds-color-bg-raised: #282828;*/
 
-    --ds-color-bg-raised: #fff;
-    --ds-color-bg-accent: #0187D5;
+    /* Raised/subtle/muted are all the same surface color right now (the
+       light theme has one alternate surface, not three) — aliased to a
+       single source rather than repeating the literal. */
+    --ds-color-bg-raised: var(--ds-color-bg-inverse);
+    /*--ds-color-bg-accent: #0187D5;*/
+    --ds-color-bg-accent: #f5a445;
+    --ds-color-bg-subtle: var(--ds-color-bg-raised);
+    --ds-color-bg-muted: var(--ds-color-bg-raised);
 
     /*
     --ds-color-bg: #ffffff;
-    --ds-color-bg-subtle: #f7f7f8;
-    --ds-color-bg-muted: #f0f1f3;
     --ds-color-bg-dark: #1b1f24;
     --ds-color-bg-dark-hover: #2a2f36;
-    --ds-color-bg-dark-active: #363b44;
     */
 
     /* ── Color: Text ────────────────────────────────────────────────────── */
     /*--ds-color-text: #fafafa;*/
     --ds-color-text: #1a1a1a;
-    --ds-color-text-inverse: #1a1a1a;
-    --ds-color-text-accent: #0187D5;
+    /* Same value as --ds-color-text in the current light theme. */
+    --ds-color-text-inverse: #fff;
+    --ds-color-text-secondary: #555555;
+    --ds-color-text-muted: #6e6e6e;
 
     /*
     --ds-color-text: #1a1a1a;
-    --ds-color-text-secondary: #555555;
-    --ds-color-text-muted: #6e6e6e;
     --ds-color-text-faint: #767676;
     --ds-color-text-on-dark: #c9cdd3;
     --ds-color-text-on-dark-heading: #ffffff;
@@ -54,39 +58,21 @@
     --ds-color-border-light: #e8e8eb;
 
     /* ── Color: Semantic — Status badges ────────────────────────────────── */
+    /* success-bg/-text back the callout "tip" variant via the encouraged-*
+       alias below, not a badge variant directly — ds-badge only has a
+       "kind" (info) and "experimental" (warning) variant. */
     --ds-color-success-bg: #c8e6c9;
     --ds-color-success-text: #1b5e20;
     --ds-color-warning-bg: #fff9c4;
     --ds-color-warning-text: #8c5800;
-    --ds-color-danger-bg: #ffcdd2;
-    --ds-color-danger-text: #8e1515;
-    --ds-color-danger-strong: #b91c1c;
-    --ds-color-danger-btn: #dc2626;
-    --ds-color-danger-btn-hover: #b91c1c;
-    --ds-color-neutral-bg: #e0e0e0;
-    --ds-color-neutral-text: #616161;
     --ds-color-info-bg: #e3f2fd;
     --ds-color-info-text: #1565c0;
-    --ds-color-purple-bg: #f3e5f5;
-    --ds-color-purple-text: #7b1fa2;
-    --ds-color-indigo-bg: #e8eaf6;
-    --ds-color-indigo-text: #283593;
-
-    /* ── Color: Semantic — Required/Conditional badges ──────────────────── */
-    --ds-color-required-bg: #bbdefb;
-    --ds-color-required-text: #0d47a1;
-    --ds-color-encouraged-bg: #c8e6c9;
-    --ds-color-encouraged-text: #1b5e20;
-    --ds-color-prohibited-bg: #ffcdd2;
-    --ds-color-prohibited-text: #b71c1c;
-    --ds-color-discouraged-bg: #fff3e0;
-    --ds-color-discouraged-text: #a93c00;
 
     /* ── Color: Semantic — Note/Callout ─────────────────────────────────── */
+    /* Same hue as success — reused for the callout "tip" variant. */
+    --ds-color-encouraged-bg: var(--ds-color-success-bg);
+    --ds-color-encouraged-text: var(--ds-color-success-text);
     --ds-color-note-warning-bg: #fffbeb;
-    --ds-color-note-warning-border: #fde68a;
-    --ds-color-note-info-bg: var(--ds-color-accent-subtle);
-    --ds-color-note-info-border: var(--ds-color-border-light);
 
     /* ── Color: Syntax highlighting ─────────────────────────────────────── */
     --ds-syntax-light-key: #59a6fa;
@@ -155,42 +141,4 @@
     /* ── Opacity ────────────────────────────────────────────────────────── */
     --ds-opacity-disabled: 0.45;
     --ds-opacity-overlay: 0.06;
-
-    /* ═══════════════════════════════════════════════════════════════════════
-     Legacy aliases — bridge from old variable names to new tokens.
-     These allow style.css to reference the new token system without
-     breaking existing light-DOM rules.
-     ═══════════════════════════════════════════════════════════════════════ */
-
-    --color-bg: var(--ds-color-bg);
-    --color-bg-subtle: var(--ds-color-bg-subtle);
-    --color-bg-code: var(--ds-color-bg-muted);
-    --color-bg-nav: var(--ds-color-bg-dark);
-    --color-bg-nav-hover: var(--ds-color-bg-dark-hover);
-    --color-bg-nav-active: var(--ds-color-bg-dark-active);
-    --color-text: var(--ds-color-text);
-    --color-text-secondary: var(--ds-color-text-secondary);
-    --color-text-nav: var(--ds-color-text-on-dark);
-    --color-text-nav-heading: var(--ds-color-text-on-dark-heading);
-    --color-text-nav-active: var(--ds-color-text-on-dark-heading);
-    --color-link: var(--ds-color-accent);
-    --color-link-hover: var(--ds-color-accent-hover);
-    --color-border: var(--ds-color-border);
-    --color-border-light: var(--ds-color-border-light);
-    --color-accent: var(--ds-color-accent);
-    --color-accent-subtle: var(--ds-color-accent-subtle);
-
-    --font-body: var(--ds-font-body);
-    --font-mono: var(--ds-font-mono);
-
-    --nav-width: var(--ds-width-nav);
-    --content-max: var(--ds-width-content);
-
-    --spacing-xs: var(--ds-space-1);
-    --spacing-sm: var(--ds-space-2);
-    --spacing-md: var(--ds-space-4);
-    --spacing-lg: var(--ds-space-8);
-    --spacing-xl: var(--ds-space-8);
-    --spacing-2xl: var(--ds-space-8);
-    --spacing-3xl: var(--ds-space-8);
 }

@@ -227,7 +227,7 @@ function blockAgentsRendered(agents) {
   };
 
   var html = '<div style="margin-top:var(--ds-space-4);padding-top:var(--ds-space-3);border-top:1px dashed var(--ds-color-border-light)">';
-  html += '<h3 style="font-size:var(--ds-font-size-sm);color:var(--ds-color-text-muted);letter-spacing:var(--ds-tracking-wide);margin:0 0 var(--ds-space-2)">Agent Context</h3>';
+  html += '<h3 style="font-size:var(--ds-font-size-sm);color:var(--ds-color-text);letter-spacing:var(--ds-tracking-wide);margin:0 0 var(--ds-space-2)">Agent Context</h3>';
 
   if (agents.intent) {
     html += '<p style="font-size:var(--ds-font-size-md);color:#666;margin:0 0 var(--ds-space-2)">' + esc(agents.intent) + '</p>';

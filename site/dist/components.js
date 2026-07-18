@@ -197,10 +197,7 @@
   // <ds-badge>
   //
   // Attributes:
-  //   variant — "stable" | "experimental" | "draft" | "deprecated" |
-  //             "required" | "encouraged" | "prohibited" | "informational" |
-  //             "discouraged" | "kind" | "category" | "token-type" |
-  //             (default: neutral)
+  //   variant — "kind" | "experimental" | (default: neutral)
   //
   // Content:
   //   Text label inside the element.
@@ -211,48 +208,25 @@
     :host { display: inline-flex; vertical-align: middle; }
 
     .badge {
-      display: inline-block;
-      font-family: ${FONT.body};
-      /*font-weight: var(--ds-font-weight-bold);*/
-      text-transform: none;
-      /*letter-spacing: var(--ds-tracking-normal);*/
-      white-space: nowrap;
-      /*line-height: 1;*/
       display: inline-flex;
+      font-family: ${FONT.body};
+      text-transform: none;
+      white-space: nowrap;
       align-items: center;
       height: 24px;
       padding: 0 1em;
       font-size: .75em;
     }
 
-    /* Sizes */
-    /*
-    :host([size="sm"]) .badge { font-size: var(--ds-font-size-sm); padding: 2px var(--ds-space-1); }
-    .badge                     { font-size: var(--ds-font-size-sm); padding: 3px var(--ds-space-2); }
-    */
-
-    /* Variants — Status */
-    .badge--stable       { background: var(--ds-color-success-bg); color: var(--ds-color-success-text); }
-    .badge--experimental { background: var(--ds-color-warning-bg); color: var(--ds-color-warning-text); }
-    .badge--draft        { background: var(--ds-color-neutral-bg); color: var(--ds-color-neutral-text); }
-    .badge--deprecated   { background: var(--ds-color-danger-bg); color: var(--ds-color-danger-text); }
-
-    /* Variants — Requirement */
-    .badge--required     { background: var(--ds-color-required-bg); color: var(--ds-color-required-text); }
-    .badge--encouraged   { background: var(--ds-color-encouraged-bg); color: var(--ds-color-encouraged-text); }
-    .badge--prohibited   { background: var(--ds-color-prohibited-bg); color: var(--ds-color-prohibited-text); }
-    .badge--informational { background: var(--ds-color-neutral-bg); color: #424242; }
-    .badge--discouraged  { background: var(--ds-color-discouraged-bg); color: var(--ds-color-discouraged-text); }
-
-    /* Variants — Taxonomy */
+    /* Used by <ds-def-section>'s type badge */
     .badge--kind         { background: var(--ds-color-info-bg); color: var(--ds-color-info-text); }
-    .badge--category     { background: var(--ds-color-purple-bg); color: var(--ds-color-purple-text); }
-    .badge--token-type   { background: var(--ds-color-indigo-bg); color: var(--ds-color-indigo-text); }
+    /* Used by <ds-prop-table>'s "at least one" conditional marker */
+    .badge--experimental { background: var(--ds-color-warning-bg); color: var(--ds-color-warning-text); }
 
     /* Default / neutral */
     .badge--neutral {
-      background: var(--ds-color-accent-subtle);
-      color: var(--ds-color-accent);
+      background: var(--ds-color-inverse);
+      color: var(--ds-color-text);
     }
   `;
 
@@ -360,7 +334,7 @@
       "ds-table th {",
       "  text-align: left; font-weight: var(--ds-font-weight-bold); font-size: var(--ds-font-size-sm);",
       "  text-transform: none; letter-spacing: var(--ds-tracking-wide);",
-      "  color: var(--ds-color-text-secondary);",
+      "  color: var(--ds-color-text);",
       "  padding: var(--ds-space-2) var(--ds-space-2);",
       "  white-space: nowrap;",
       "  position: sticky;",
@@ -412,7 +386,7 @@
     .heading {
       display: block;
       color: var(--ds-color-text);
-      font-family: var(--font-mono);
+      font-family: var(--ds-font-mono);
       line-height: var(--ds-line-height-snug);
     }
 
@@ -421,13 +395,13 @@
     .heading--3 { font-size: var(--ds-font-size-lg); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-8) 0 var(--ds-space-2); }
     .heading--4 { font-size: var(--ds-font-size-lg); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-4) 0 var(--ds-space-2); }
     .heading--5 { font-size: var(--ds-font-size-base); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-4) 0 var(--ds-space-2); }
-    .heading--6 { font-size: var(--ds-font-size-base); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-2) 0 var(--ds-space-2); color: var(--ds-color-text-secondary); }
+    .heading--6 { font-size: var(--ds-font-size-base); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-2) 0 var(--ds-space-2); color: var(--ds-color-text); }
 
     .anchor-link {
       display: inline;
       opacity: 0;
       margin-left: var(--ds-space-2);
-      color: var(--ds-color-text-secondary);
+      color: var(--ds-color-text);
       text-decoration: none;
       font-size: 0.75em;
       vertical-align: baseline;
@@ -497,7 +471,7 @@
       margin-top: var(--ds-space-8);
       font-family: ${FONT.body};
       font-size: var(--ds-font-size-base);
-      color: var(--ds-color-text-secondary);
+      color: var(--ds-color-text);
       text-decoration: none;
     }
 
@@ -547,7 +521,7 @@
 
   const HEADER_CSS = `
     ${BASE_RESET}
-    :host { display: flex; flex-direction: column; margin-bottom: var(--ds-space-8); min-height: 100vh; background: var(--ds-color-bg-accent); justify-content: end; padding-left: var(--nav-width); }
+    :host { display: flex; flex-direction: column; margin-bottom: var(--ds-space-8); min-height: 100vh; background: var(--ds-color-bg-accent); justify-content: end; padding-left: var(--ds-width-nav); }
 
     @media (max-width: 900px) {
     :host {
@@ -556,26 +530,24 @@
     }
 
     h1 {
-      /*font-size: var(--ds-font-size-xl);*/
       font-size: 4em;
-      font-family: "DM Mono";
+      font-family: ${FONT.mono};
       font-weight: 500;
       line-height: 1.1;
-      letter-spacing: -0.025;
+      letter-spacing: -0.025em;
       margin: 0 0 var(--ds-space-4);
       color: var(--ds-color-text);
     }
-  .header-container {
-  max-width: var(--content-max);
-    margin: 0 auto;
-    padding: var(--spacing-2xl) var(--spacing-xl);
-    width: 100%;
-  }
+    .header-container {
+      max-width: var(--ds-width-content);
+      margin: 0 auto;
+      padding: var(--ds-space-8) var(--ds-space-8);
+      width: 100%;
+    }
 
     .desc {
       color: var(--ds-color-text);
-      font-family: "DM Sans";
-      font-size: var(--ds-font-size-base);
+      font-family: ${FONT.body};
       margin: 0 0 var(--ds-space-4);
       max-width: 65ch;
       font-size: 22px;
@@ -615,7 +587,8 @@
           "</ds-code></p>";
       // Use escWithCode so backtick inline-code spans in the description
       // render as <ds-code inline> rather than literal `backticks`.
-      if (d) html += '<p class="desc">' + escWithCode(d) + "</p><div>";
+      if (d) html += '<p class="desc">' + escWithCode(d) + "</p>";
+      html += "</div>";
 
       this._shadow.innerHTML = html;
     }
@@ -639,10 +612,10 @@
       margin: 0 0 var(--ds-space-2);
     }
     .desc {
-      color: var(--ds-color-text-secondary);
+      color: var(--ds-color-text);
       font-family: ${FONT.body};
       font-size: var(--ds-font-size-base);
-      line-height: 1.6;
+      line-height: var(--ds-line-height-loose);
       margin: 0 0 var(--ds-space-4);
     }
     .type-line { margin: 0 0 var(--ds-space-4); }
@@ -675,15 +648,15 @@
       // Set id on host for TOC linking
       if (anchor) this.id = anchor;
       var html = '<h3 id="' + esc(anchor) + '">' + esc(name) + "</h3>";
-      // Use escWithCode so CommonMark-style `inline code` spans in the
-      // description render as <ds-code inline> rather than literal
-      // backtick characters.
-      if (desc) html += '<p class="desc">' + escWithCode(desc) + "</p>";
       if (type)
         html +=
           '<p class="type-line"><ds-badge variant="kind" size="sm">' +
           esc(type) +
           "</ds-badge></p>";
+      // Use escWithCode so CommonMark-style `inline code` spans in the
+      // description render as <ds-code inline> rather than literal
+      // backtick characters.
+      if (desc) html += '<p class="desc">' + escWithCode(desc) + "</p>";
       html += "<slot></slot>";
       this._shadow.innerHTML = html;
     }
@@ -736,7 +709,7 @@
       display: block;
       font-family: ${FONT.body};
       font-size: var(--ds-font-size-base);
-      color: var(--ds-color-text-secondary);
+      color: var(--ds-color-text);
       margin-top: var(--ds-space-4);
     }
     ::slotted(a) {
@@ -863,6 +836,12 @@
       margin-bottom: var(--ds-space-8);
       font-family: ${FONT.body};
       font-size: var(--ds-font-size-base);
+      position: relative;
+      inset: calc(var(--ds-space-2) * -1);
+      width: calc(100% + (var(--ds-space-2) * 2));
+      max-width: calc(100% + (var(--ds-space-2) * 2));
+      top: 0;
+      bottom: 0;
     }
 
     th {
@@ -871,10 +850,9 @@
       font-size: var(--ds-font-size-sm);
       text-transform: none;
       letter-spacing: var(--ds-tracking-wide);
-      color: var(--ds-color-text-secondary);
+      color: var(--ds-color-text);
       padding: var(--ds-space-2) var(--ds-space-2);
-      border-bottom: 2px solid var(--ds-color-bg-raised);
-      background: var(--ds-color-bg);
+      background: var(--ds-color-bg-raised);
       white-space: nowrap;
       position: sticky;
       top: 0;
@@ -884,7 +862,7 @@
     @media (max-width: 900px) {
       .table-scroll { overflow-x: auto; }
     }
-
+  /*
     th:first-child, td:first-child {
     padding-left:0
     }
@@ -892,6 +870,7 @@
     th:last-child, td:last-child {
     padding-right:0
     }
+    */
 
     td {
       padding: var(--ds-space-4) var(--ds-space-2);
@@ -949,7 +928,6 @@
     td:nth-child(2) {
       font-family: ${FONT.mono};
       font-size: var(--ds-font-size-sm);
-      color: #666;
     }
 
     /* Column 3: Required — narrow, a checkmark when required */
@@ -963,13 +941,12 @@
     /* Column 4: Description — gets all remaining space */
     td:nth-child(4) {
       font-size: var(--ds-font-size-base);
-      color: var(--ds-color-text-secondary);
     }
 
     td:nth-child(4) small {
       display: block;
       margin-top: var(--ds-space-1);
-      color: var(--ds-color-text-muted);
+      color: var(--ds-color-text);
       font-size: var(--ds-font-size-sm);
     }
 
@@ -1130,7 +1107,7 @@
       padding: var(--ds-space-2, 8px) var(--ds-space-4, 16px);
       font-size: var(--ds-font-size-base, 0.875rem);
       font-family: ${FONT.body};
-      font-weight: var(--ds-font-weight-bold, 500);
+      font-weight: var(--ds-font-weight-bold, 700);
       cursor: pointer;
       -webkit-tap-highlight-color: transparent;
       line-height: 1;
@@ -1141,7 +1118,7 @@
     }
 
     button:focus-visible {
-      outline: var(--ds-border-width, 2px) solid var(--ds-color-accent, #0055b3);
+      outline: var(--ds-border-width, 1px) solid var(--ds-color-accent, #0055b3);
       outline-offset: 2px;
     }
 
@@ -1322,9 +1299,7 @@
       position: absolute;
       inset: 1em;
       background: var(--ds-color-bg-inverse);
-      color: var(--ds-color-text-inverse);
-      /* overflow-y: auto; */
-      padding: var(--ds-space-8, 24px) 0;
+      color: var(--ds-color-text);
       padding: 0;
       font-family: ${FONT.body};
       -webkit-overflow-scrolling: touch;
@@ -1334,23 +1309,26 @@
 
     /* ── Title ──────────────────────────────────────────── */
     .nav__title {
-      font-size: var(--ds-font-size-base, 0.8125rem);
-      font-weight: var(--ds-font-weight-bold, 700);
+      font-size: var(--ds-font-size-base);
+      font-weight: var(--ds-font-weight-bold);
       letter-spacing: 0;
       text-transform: none;
       background: var(--ds-color-text);
-      color: #fff;
-      padding: var(--ds-space-4) var(--ds-space-4, 16px);
+      color: var(--ds-color-bg-inverse);
+      padding: var(--ds-space-4);
     }
 
     .nav__title a {
       color: inherit;
       text-decoration: none;
+      display: flex;
+      gap: 8px;
+      line-height: 1.2;
     }
 
     /* ── Items container ────────────────────────────────── */
     .nav__items {
-      padding: var(--ds-space-4, 16px) 0;
+      padding: var(--ds-space-4) 0;
       overflow-y: auto;
       max-height: 100%;
     }
@@ -1358,29 +1336,29 @@
     /* ── Top-level links ────────────────────────────────── */
     .nav__link {
       display: block;
-      padding: 5px var(--ds-space-4, 16px);
-      color: var(--ds-color-text-inverse);
+      margin: 0 4px;
+      padding: 6px calc(var(--ds-space-4) - 4px);
+      color: var(--ds-color-text);
       text-decoration: none;
-      font-size: var(--ds-font-size-base, 0.8125rem);
-      line-height: var(--ds-line-height-normal, 1.4);
-      border-left: var(--ds-border-width, 3px) solid transparent;
+      font-size: var(--ds-font-size-base);
+      font-weight: 500;
+      line-height: var(--ds-line-height-normal);
+      border-left: var(--ds-border-width) solid transparent;
     }
 
     .nav__link:hover {
-      background: var(--ds-color-bg-dark-hover, #2a2f36);
-      color: var(--ds-color-text-on-dark-heading, #ffffff);
+      background: #1a1a1a;
+      color: #fff;
     }
 
     .nav__link--active {
-      background: var(--ds-color-bg-dark-active, #363b44);
-      color: var(--ds-color-text-on-dark-heading, #ffffff);
-      border-left-color: var(--ds-color-accent, #0055b3);
-      font-weight: var(--ds-font-weight-bold, 500);
+      background: #1a1a1a;
+      color: #fff;
     }
 
     /* ── Group toggle ───────────────────────────────────── */
     .nav__group {
-      margin-top: var(--ds-space-4, 16px);
+      margin-top: var(--ds-space-4);
     }
 
     .nav__group-toggle {
@@ -1388,14 +1366,14 @@
       align-items: center;
       justify-content: space-between;
       width: 100%;
-      padding: 6px var(--ds-space-4, 16px);
+      padding: 6px var(--ds-space-4);
       background: none;
       border: none;
-      border-left: var(--ds-border-width, 3px) solid transparent;
-      color: var(--ds-color-nav-group, #808690);
+      border-left: var(--ds-border-width) solid transparent;
+      color: var(--ds-color-nav-group);
       font-family: ${FONT.body};
-      font-size: var(--ds-font-size-sm, 0.6875rem);
-      font-weight: var(--ds-font-weight-bold, 600);
+      font-size: var(--ds-font-size-sm);
+      font-weight: var(--ds-font-weight-bold);
       letter-spacing: 0;
       text-transform: none;
       cursor: default;
@@ -1409,12 +1387,12 @@
     /* ── Group children — always visible ────────────────── */
     .nav__group-children {
       display: block;
-      padding-bottom: var(--ds-space-1, 4px);
+      padding-bottom: var(--ds-space-1);
     }
 
     .nav__link--child {
-      padding-left: var(--ds-space-4, 16px);
-      font-size: var(--ds-font-size-base, 0.8125rem);
+      padding-left: var(--ds-space-4);
+      font-size: var(--ds-font-size-base);
     }
 
     /* ── Mobile: slide off-screen by default ────────────── */
@@ -1479,11 +1457,7 @@
       const active = this.getAttribute("active") || "";
 
       const titleHtml = title
-        ? '<div class="nav__title"><a href="' +
-          esc(titleHref) +
-          '">' +
-          esc(title) +
-          "</a></div>"
+        ? `<div class="nav__title"><a href="${esc(titleHref)}"><ds-logo size="2rem" fill="#fff"></ds-logo><span>${esc(title)}</span></a></div>`
         : "";
 
       const itemsHtml = this._buildFromChildren(active);
@@ -1609,7 +1583,7 @@
       font-family: ${FONT.body};
       font-size: var(--ds-font-size-base);
       line-height: var(--ds-line-height-loose);
-      color: var(--ds-color-text-inverse);
+      color: var(--ds-color-text);
     }
 
     .callout--warning {
@@ -1703,7 +1677,7 @@
       font-weight: var(--ds-font-weight-bold);
       font-size: var(--ds-font-size-sm);
       line-height: 1;
-      color: var(--ds-color-text-secondary);
+      color: var(--ds-color-text);
       background: var(--ds-color-bg-subtle);
       border: var(--ds-border-width) solid var(--ds-color-border-light);
       padding: 2px var(--ds-space-1);
@@ -1720,6 +1694,91 @@
       this._shadow = createShadow(this, TAG_CSS);
       this._shadow.innerHTML =
         '<span class="tag" part="tag"><slot></slot></span>';
+    }
+  }
+
+  // ── logo.js ──
+  // ═══════════════════════════════════════════════════════════════════════════
+  // <ds-logo>
+  //
+  // The DSDS mark, inlined as SVG so its fill can be recolored at runtime.
+  //
+  // Attributes:
+  //   size       — width/height, any CSS length (default: 40px)
+  //   background — host background color (default: transparent)
+  //   fill       — SVG fill color (default: var(--ds-color-text))
+  //
+  // Usage:
+  //   <ds-logo></ds-logo>
+  //   <ds-logo size="24px" fill="#fff" background="#0055b3"></ds-logo>
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  const LOGO_SVG = `
+    <svg viewBox="0 0 1550 1550" fill="none" xmlns="http://www.w3.org/2000/svg" part="svg">
+      <path fill-rule="evenodd" clip-rule="evenodd" d="M0 0H1550V1550H0V0ZM75 75V1475H1475V75H75Z"/>
+      <path fill-rule="evenodd" clip-rule="evenodd" d="M575 300H300V650H575C616.421 650 650 616.421 650 575V375C650 333.579 616.421 300 575 300ZM225 225V725H575C657.843 725 725 657.843 725 575V375C725 292.157 657.843 225 575 225H225Z"/>
+      <path fill-rule="evenodd" clip-rule="evenodd" d="M825 368.75C825 289.359 889.359 225 968.75 225H1181.25C1260.64 225 1325 289.359 1325 368.75H1250C1250 330.78 1219.22 300 1181.25 300H968.75C930.78 300 900 330.78 900 368.75C900 406.72 930.78 437.5 968.75 437.5H1181.25C1260.64 437.5 1325 501.859 1325 581.25C1325 660.641 1260.64 725 1181.25 725H968.75C889.359 725 825 660.641 825 581.25H900C900 619.22 930.78 650 968.75 650H1181.25C1219.22 650 1250 619.22 1250 581.25C1250 543.28 1219.22 512.5 1181.25 512.5H968.75C889.359 512.5 825 448.141 825 368.75Z"/>
+      <path fill-rule="evenodd" clip-rule="evenodd" d="M575 900H300V1250H575C616.421 1250 650 1216.42 650 1175V975C650 933.579 616.421 900 575 900ZM225 825V1325H575C657.843 1325 725 1257.84 725 1175V975C725 892.157 657.843 825 575 825H225Z"/>
+      <path fill-rule="evenodd" clip-rule="evenodd" d="M825 968.75C825 889.359 889.359 825 968.75 825H1181.25C1260.64 825 1325 889.359 1325 968.75H1250C1250 930.78 1219.22 900 1181.25 900H968.75C930.78 900 900 930.78 900 968.75C900 1006.72 930.78 1037.5 968.75 1037.5H1181.25C1260.64 1037.5 1325 1101.86 1325 1181.25C1325 1260.64 1260.64 1325 1181.25 1325H968.75C889.359 1325 825 1260.64 825 1181.25H900C900 1219.22 930.78 1250 968.75 1250H1181.25C1219.22 1250 1250 1219.22 1250 1181.25C1250 1143.28 1219.22 1112.5 1181.25 1112.5H968.75C889.359 1112.5 825 1048.14 825 968.75Z"/>
+    </svg>
+  `;
+
+  const LOGO_CSS = `
+    ${BASE_RESET}
+    :host {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: var(--logo-size, 40px);
+      height: var(--logo-size, 40px);
+      background: var(--logo-bg, transparent);
+      line-height: 0;
+      aspect-ratio: 1/1;
+    }
+
+    svg {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    svg path {
+      fill: var(--logo-fill, var(--ds-color-text));
+    }
+  `;
+
+  class DsLogo extends HTMLElement {
+    static get observedAttributes() {
+      return ["size", "background", "fill"];
+    }
+
+    constructor() {
+      super();
+      this._shadow = createShadow(this, LOGO_CSS);
+      this._shadow.innerHTML = LOGO_SVG;
+    }
+
+    connectedCallback() {
+      this._sync();
+    }
+
+    attributeChangedCallback() {
+      if (this.isConnected) this._sync();
+    }
+
+    _sync() {
+      const size = this.getAttribute("size");
+      const background = this.getAttribute("background");
+      const fill = this.getAttribute("fill");
+
+      if (size) this.style.setProperty("--logo-size", size);
+      else this.style.removeProperty("--logo-size");
+
+      if (background) this.style.setProperty("--logo-bg", background);
+      else this.style.removeProperty("--logo-bg");
+
+      if (fill) this.style.setProperty("--logo-fill", fill);
+      else this.style.removeProperty("--logo-fill");
     }
   }
 
@@ -1742,6 +1801,7 @@
     ["ds-spec-nav", DsSpecNav],
     ["ds-callout", DsCallout],
     ["ds-tag", DsTag],
+    ["ds-logo", DsLogo],
   ];
 
   for (const [name, ctor] of registry) {

@@ -25,6 +25,7 @@ import { DsNavToggle } from "./nav-toggle.js";
 import { DsSpecNav } from "./spec-nav.js";
 import { DsCallout } from "./callout.js";
 import { DsTag } from "./tag.js";
+import { DsLogo } from "./logo.js";
 
 const registry = [
   ["ds-code", DsCode],
@@ -44,6 +45,7 @@ const registry = [
   ["ds-spec-nav", DsSpecNav],
   ["ds-callout", DsCallout],
   ["ds-tag", DsTag],
+  ["ds-logo", DsLogo],
 ];
 
 for (const [name, ctor] of registry) {

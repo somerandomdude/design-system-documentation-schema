@@ -174,8 +174,8 @@ function buildSpecNav(activeSlug, pages, version) {
   const children = buildNavChildren(activeSlug, pages);
   const v = version || readSpecVersion() || "";
   const navTitle = v
-    ? `Design System Documentation Spec ${v}`
-    : "Design System Documentation Spec";
+    ? `Design System Doc Spec ${v}`
+    : "Design System Doc Spec";
 
   return (
     `  <ds-nav-toggle target="ds-spec-nav"></ds-nav-toggle>\n` +

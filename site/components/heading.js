@@ -18,7 +18,7 @@ const HEADING_CSS = `
   .heading {
     display: block;
     color: var(--ds-color-text);
-    font-family: var(--font-mono);
+    font-family: var(--ds-font-mono);
     line-height: var(--ds-line-height-snug);
   }
 
@@ -27,13 +27,13 @@ const HEADING_CSS = `
   .heading--3 { font-size: var(--ds-font-size-lg); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-8) 0 var(--ds-space-2); }
   .heading--4 { font-size: var(--ds-font-size-lg); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-4) 0 var(--ds-space-2); }
   .heading--5 { font-size: var(--ds-font-size-base); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-4) 0 var(--ds-space-2); }
-  .heading--6 { font-size: var(--ds-font-size-base); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-2) 0 var(--ds-space-2); color: var(--ds-color-text-secondary); }
+  .heading--6 { font-size: var(--ds-font-size-base); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-2) 0 var(--ds-space-2); color: var(--ds-color-text); }
 
   .anchor-link {
     display: inline;
     opacity: 0;
     margin-left: var(--ds-space-2);
-    color: var(--ds-color-text-secondary);
+    color: var(--ds-color-text);
     text-decoration: none;
     font-size: 0.75em;
     vertical-align: baseline;
