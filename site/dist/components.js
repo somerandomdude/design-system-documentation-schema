@@ -1360,6 +1360,8 @@
       font-family: ${FONT.body};
       display: flex;
       flex-direction: column;
+      outline: 4px solid transparent;
+      transition: outline var(--ds-duration-base) var(--ds-ease-standard);
     }
 
     /* ── Title ──────────────────────────────────────────── */
@@ -1423,6 +1425,7 @@
       overflow-y: auto;
       max-height: 100%;
       background: var(--ds-color-bg-inverse);
+      transition: max-height var(--ds-duration-base) var(--ds-ease-standard);
     }
 
     /* ── Top-level links ────────────────────────────────── */
@@ -1503,6 +1506,10 @@
         padding-top: 0;
         padding-bottom: 0;
         overflow: hidden;
+      }
+
+      :host([open]) .nav {
+        outline: 4px solid color-mix(#1a1a1a 30%, transparent);
       }
 
       :host([open]) .nav__items {
