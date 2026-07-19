@@ -26,7 +26,7 @@ const HEADER_CSS = `
   }
 
   h1 {
-    font-size: 4em;
+    font-size: clamp(2em, 4vw, 4em);
     font-family: ${FONT.mono};
     font-weight: 500;
     line-height: 1.1;
@@ -46,7 +46,7 @@ const HEADER_CSS = `
     font-family: ${FONT.body};
     margin: 0 0 var(--ds-space-4);
     max-width: 65ch;
-    font-size: 22px;
+    font-size: clamp(1.05em, 1.7vw, 1.375em);
     line-height: 1.4;
     font-weight: 450;
   }

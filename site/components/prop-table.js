@@ -21,7 +21,15 @@ const PROP_TABLE_CSS = `
      apply to the same table at once. Page-scroll stickiness is the more
      useful default; the horizontal-scroll fallback only kicks in on narrow
      viewports, where a wide table would otherwise clip content. */
-  .table-scroll { max-width: 100%; }
+  .table-scroll {
+  position: relative;
+  inset: calc(var(--ds-space-4) * -1);
+  width: calc(100% + (var(--ds-space-4) * 2));
+  max-width: calc(100% + (var(--ds-space-4) * 2));
+  top: 0;
+  bottom: 0;
+
+  }
 
   table {
     width: 100%;
@@ -35,11 +43,7 @@ const PROP_TABLE_CSS = `
     font-family: ${FONT.body};
     font-size: var(--ds-font-size-base);
     position: relative;
-    inset: calc(var(--ds-space-2) * -1);
-    width: calc(100% + (var(--ds-space-2) * 2));
-    max-width: calc(100% + (var(--ds-space-2) * 2));
-    top: 0;
-    bottom: 0;
+
   }
 
   th {
@@ -58,17 +62,15 @@ const PROP_TABLE_CSS = `
   }
 
   @media (max-width: 900px) {
-    .table-scroll { overflow-x: auto; }
-  }
-/*
-  th:first-child, td:first-child {
-  padding-left:0
+    .table-scroll {
+      overflow-x: auto;
+    }
   }
 
-  th:last-child, td:last-child {
-  padding-right:0
-  }
-  */
+@media (max-width: 640px) {
+th:nth-child(2), td:nth-child(2) { display: none; }
+th:nth-child(3), td:nth-child(3) {  display: none;  }
+}
 
 
 
@@ -170,6 +172,15 @@ const PROP_TABLE_CSS = `
     color: var(--ds-color-accent-hover);
     border-bottom-style: solid;
   }
+
+  th:first-child, td:first-child {
+    padding-left:var(--ds-space-4) !important;
+  }
+
+  th:last-child, td:last-child {
+    padding-right:var(--ds-space-4) !important;
+  }
+
 `;
 
 export class DsPropTable extends HTMLElement {

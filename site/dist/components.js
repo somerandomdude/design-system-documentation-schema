@@ -53,20 +53,64 @@
     mono: "var(--ds-font-mono)",
   };
 
-  // Shared inline SVG icons for the small color-coded blocks used by
-  // <ds-badge> and <ds-callout> variants. All monoline, stroke=currentColor,
-  // 24x24 viewBox — sized and colored by the containing block.
-  const ICONS = {
-    info:
-      '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="12" y1="11" x2="12" y2="16"/><circle cx="12" cy="7.5" r="1" fill="currentColor" stroke="none"/></svg>',
-    flask:
-      '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6"/><path d="M10 3v6L4.5 18.5A2 2 0 0 0 6.2 21h11.6a2 2 0 0 0 1.7-2.5L14 9V3"/><line x1="6.5" y1="15" x2="17.5" y2="15"/></svg>',
-    dot: '<svg viewBox="0 0 24 24" width="8" height="8" fill="currentColor"><circle cx="12" cy="12" r="10"/></svg>',
-    lightbulb:
-      '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.2 1 2.05V17a1 1 0 0 0 1 1h4a1 1 0 0 0 1-1v-.25c0-.85.4-1.55 1-2.05A7 7 0 0 0 12 2z"/></svg>',
-    warning:
-      '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 1 21h22L12 2z"/><line x1="12" y1="9" x2="12" y2="14"/><circle cx="12" cy="17.5" r="0.7" fill="currentColor" stroke="none"/></svg>',
+  // Icons live as real .svg files in site/assets/ (edit them directly there)
+  // instead of inline markup, so ICON_NAMES is just the name → file map.
+  // loadIcon() fetches + caches each file's markup on first use; every icon
+  // is monoline with stroke/fill="currentColor" so the containing element's
+  // `color` recolors it once inlined into the DOM.
+  const ICON_FILES = {
+    menu: "icon-menu.svg",
+    close: "icon-close.svg",
+    info: "icon-info.svg",
+    flask: "icon-flask.svg",
+    dot: "icon-dot.svg",
+    lightbulb: "icon-lightbulb.svg",
+    warning: "icon-warning.svg",
+    logo: "dsds.svg",
   };
+
+  const _iconCache = new Map();
+
+  /**
+   * Fetch (and cache) the raw markup of a named icon from site/assets/.
+   * Returns a Promise<string> — always resolves, with "" on failure so a
+   * missing/renamed file degrades to no icon rather than a thrown error.
+   *
+   * In the built site, scripts/build-site.js's bundler inlines every icon
+   * file's contents at build time via seedIcons() below, so this fetch never
+   * actually runs there — only in dev mode (served, never file://), where a
+   * live fetch means editing an .svg under site/assets/ shows up on refresh
+   * with no rebuild needed. The build-time inlining exists because fetch()
+   * of a same-directory file is blocked outright under file:// (opening
+   * site/dist/*.html directly, no server), which the bundle otherwise
+   * supports.
+   */
+  function loadIcon(name) {
+    if (_iconCache.has(name)) return _iconCache.get(name);
+    const file = ICON_FILES[name];
+    const promise = file
+      ? fetch("assets/" + file)
+          .then((res) => (res.ok ? res.text() : ""))
+          .catch(() => "")
+      : Promise.resolve("");
+    _iconCache.set(name, promise);
+    return promise;
+  }
+
+  /**
+   * Pre-populate the icon cache with already-known markup, so loadIcon()
+   * resolves instantly without a network request. Called once by the
+   * bundled components.js (injected by scripts/build-site.js) with every
+   * icon file's contents read at build time.
+   */
+  function seedIcons(map) {
+    for (const name of Object.keys(map)) {
+      _iconCache.set(name, Promise.resolve(map[name]));
+    }
+  }
+
+  // ── inlined icon assets (build-time, see above) ──
+  seedIcons({"menu":"<svg viewBox=\"0 0 24 24\" width=\"18\" height=\"18\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" xmlns=\"http://www.w3.org/2000/svg\">\n  <line x1=\"3\" y1=\"6\" x2=\"21\" y2=\"6\"/>\n  <line x1=\"3\" y1=\"12\" x2=\"21\" y2=\"12\"/>\n  <line x1=\"3\" y1=\"18\" x2=\"21\" y2=\"18\"/>\n</svg>\n","close":"<svg viewBox=\"0 0 24 24\" width=\"18\" height=\"18\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" xmlns=\"http://www.w3.org/2000/svg\">\n  <line x1=\"5\" y1=\"5\" x2=\"19\" y2=\"19\"/>\n  <line x1=\"19\" y1=\"5\" x2=\"5\" y2=\"19\"/>\n</svg>\n","info":"<svg viewBox=\"0 0 24 24\" width=\"14\" height=\"14\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" xmlns=\"http://www.w3.org/2000/svg\">\n  <circle cx=\"12\" cy=\"12\" r=\"9\"/>\n  <line x1=\"12\" y1=\"11\" x2=\"12\" y2=\"16\"/>\n  <circle cx=\"12\" cy=\"7.5\" r=\"1\" fill=\"currentColor\" stroke=\"none\"/>\n</svg>\n","flask":"<svg viewBox=\"0 0 24 24\" width=\"14\" height=\"14\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" xmlns=\"http://www.w3.org/2000/svg\">\n  <path d=\"M9 3h6\"/>\n  <path d=\"M10 3v6L4.5 18.5A2 2 0 0 0 6.2 21h11.6a2 2 0 0 0 1.7-2.5L14 9V3\"/>\n  <line x1=\"6.5\" y1=\"15\" x2=\"17.5\" y2=\"15\"/>\n</svg>\n","dot":"<svg viewBox=\"0 0 24 24\" width=\"8\" height=\"8\" fill=\"currentColor\" xmlns=\"http://www.w3.org/2000/svg\">\n  <circle cx=\"12\" cy=\"12\" r=\"10\"/>\n</svg>\n","lightbulb":"<svg viewBox=\"0 0 24 24\" width=\"14\" height=\"14\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" xmlns=\"http://www.w3.org/2000/svg\">\n  <path d=\"M9 18h6\"/>\n  <path d=\"M10 22h4\"/>\n  <path d=\"M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.2 1 2.05V17a1 1 0 0 0 1 1h4a1 1 0 0 0 1-1v-.25c0-.85.4-1.55 1-2.05A7 7 0 0 0 12 2z\"/>\n</svg>\n","warning":"<svg viewBox=\"0 0 24 24\" width=\"14\" height=\"14\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" xmlns=\"http://www.w3.org/2000/svg\">\n  <path d=\"M12 2 1 21h22L12 2z\"/>\n  <line x1=\"12\" y1=\"9\" x2=\"12\" y2=\"14\"/>\n  <circle cx=\"12\" cy=\"17.5\" r=\"0.7\" fill=\"currentColor\" stroke=\"none\"/>\n</svg>\n","logo":"<svg width=\"1550\" height=\"1550\" viewBox=\"0 0 1550 1550\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\">\n<path fill-rule=\"evenodd\" clip-rule=\"evenodd\" d=\"M0 0H1550V1550H0V0ZM75 75V1475H1475V75H75Z\" fill=\"black\"/>\n<path fill-rule=\"evenodd\" clip-rule=\"evenodd\" d=\"M575 300H300V650H575C616.421 650 650 616.421 650 575V375C650 333.579 616.421 300 575 300ZM225 225V725H575C657.843 725 725 657.843 725 575V375C725 292.157 657.843 225 575 225H225Z\" fill=\"black\"/>\n<path fill-rule=\"evenodd\" clip-rule=\"evenodd\" d=\"M825 368.75C825 289.359 889.359 225 968.75 225H1181.25C1260.64 225 1325 289.359 1325 368.75H1250C1250 330.78 1219.22 300 1181.25 300H968.75C930.78 300 900 330.78 900 368.75C900 406.72 930.78 437.5 968.75 437.5H1181.25C1260.64 437.5 1325 501.859 1325 581.25C1325 660.641 1260.64 725 1181.25 725H968.75C889.359 725 825 660.641 825 581.25H900C900 619.22 930.78 650 968.75 650H1181.25C1219.22 650 1250 619.22 1250 581.25C1250 543.28 1219.22 512.5 1181.25 512.5H968.75C889.359 512.5 825 448.141 825 368.75Z\" fill=\"black\"/>\n<path fill-rule=\"evenodd\" clip-rule=\"evenodd\" d=\"M575 900H300V1250H575C616.421 1250 650 1216.42 650 1175V975C650 933.579 616.421 900 575 900ZM225 825V1325H575C657.843 1325 725 1257.84 725 1175V975C725 892.157 657.843 825 575 825H225Z\" fill=\"black\"/>\n<path fill-rule=\"evenodd\" clip-rule=\"evenodd\" d=\"M825 968.75C825 889.359 889.359 825 968.75 825H1181.25C1260.64 825 1325 889.359 1325 968.75H1250C1250 930.78 1219.22 900 1181.25 900H968.75C930.78 900 900 930.78 900 968.75C900 1006.72 930.78 1037.5 968.75 1037.5H1181.25C1260.64 1037.5 1325 1101.86 1325 1181.25C1325 1260.64 1260.64 1325 1181.25 1325H968.75C889.359 1325 825 1260.64 825 1181.25H900C900 1219.22 930.78 1250 968.75 1250H1181.25C1219.22 1250 1250 1219.22 1250 1181.25C1250 1143.28 1219.22 1112.5 1181.25 1112.5H968.75C889.359 1112.5 825 1048.14 825 968.75Z\" fill=\"black\"/>\n</svg>\n"});
 
   // ── code.js ──
   // ═══════════════════════════════════════════════════════════════════════════
@@ -237,10 +281,10 @@
   // overall background.
   // ═══════════════════════════════════════════════════════════════════════════
 
-  const BADGE_ICON = {
-    kind: ICONS.info,
-    experimental: ICONS.flask,
-    neutral: ICONS.dot,
+  const BADGE_ICON_NAME = {
+    kind: "info",
+    experimental: "flask",
+    neutral: "dot",
   };
 
   const BADGE_CSS = `
@@ -296,7 +340,9 @@
       this._shadow = createShadow(this, BADGE_CSS);
       this._shadow.innerHTML =
         '<span class="badge" part="badge">' +
-        '<span class="badge__icon" part="icon"></span>' +
+        // Decorative — the variant's meaning is redundant with the visible
+        // label text next to it, so this is hidden from assistive tech.
+        '<span class="badge__icon" part="icon" aria-hidden="true"></span>' +
         '<span class="badge__label" part="label"><slot></slot></span>' +
         "</span>";
     }
@@ -314,7 +360,10 @@
       const el = this._shadow.querySelector(".badge");
       const icon = this._shadow.querySelector(".badge__icon");
       if (el) el.className = "badge badge--" + variant;
-      if (icon) icon.innerHTML = BADGE_ICON[variant] || ICONS.dot;
+      const name = BADGE_ICON_NAME[variant] || "dot";
+      loadIcon(name).then((svg) => {
+        if (icon) icon.innerHTML = svg;
+      });
     }
   }
 
@@ -369,6 +418,7 @@
        on inheritance + the component's font/color context for cells. */
     ::slotted(table) {
       width: 100%;
+      max-width: 100%;
       /* separate + zero spacing (not collapse) so the sticky header's cells
          keep their background/position correctly in Safari, which has long-
          standing bugs with position:sticky inside a border-collapsed table. */
@@ -377,6 +427,14 @@
       font-family: ${FONT.body};
       font-size: var(--ds-font-size-base);
       color: var(--ds-color-text);
+      /* Same bleed treatment as <ds-prop-table>: nudge the table out to the
+         edges of its container by --ds-space-2 on each side. */
+      position: relative;
+      inset: calc(var(--ds-space-4) * -1);
+      width: calc(100% + (var(--ds-space-4) * 2));
+      max-width: calc(100% + (var(--ds-space-4) * 2));
+      top: 0;
+      bottom: 0;
     }
   `;
 
@@ -389,8 +447,11 @@
     var style = document.createElement("style");
     style.id = TABLE_LIGHT_DOM_ID;
     style.textContent = [
-      "ds-table table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: var(--ds-font-size-base); }",
-      "ds-table thead { background: var(--ds-color-bg); }",
+      "ds-table table {",
+      "  width: calc(100% + (var(--ds-space-4) * 2)); max-width: calc(100% + (var(--ds-space-4) * 2));",
+      "  border-collapse: separate; border-spacing: 0; font-size: var(--ds-font-size-base);",
+      "  position: relative; inset: calc(var(--ds-space-4) * -1); top: 0; bottom: 0;",
+      "}",
       "ds-table th {",
       "  text-align: left; font-weight: var(--ds-font-weight-bold); font-size: var(--ds-font-size-sm);",
       "  text-transform: none; letter-spacing: var(--ds-tracking-wide);",
@@ -400,7 +461,7 @@
       "  position: sticky;",
       "  top: 0;",
       "  z-index: var(--ds-z-base, 1);",
-      "  background: var(--ds-color-bg);",
+      "  background: var(--ds-color-bg-raised);",
       "}",
       "ds-table td {",
       "  padding: var(--ds-space-4) var(--ds-space-2);",
@@ -410,6 +471,8 @@
       "ds-table a { color: var(--ds-color-accent); }",
       "ds-table td:first-child { white-space: nowrap; }",
       "ds-table td:first-child ds-code[inline] { white-space: nowrap; }",
+      "th:first-child, td:first-child { padding-left:var(--ds-space-4) !important;}",
+      "th:last-child, td:last-child { padding-right:var(--ds-space-4) !important; }"
     ].join("\n");
     document.head.appendChild(style);
   }
@@ -590,7 +653,7 @@
     }
 
     h1 {
-      font-size: 4em;
+      font-size: clamp(2em, 4vw, 4em);
       font-family: ${FONT.mono};
       font-weight: 500;
       line-height: 1.1;
@@ -610,7 +673,7 @@
       font-family: ${FONT.body};
       margin: 0 0 var(--ds-space-4);
       max-width: 65ch;
-      font-size: 22px;
+      font-size: clamp(1.05em, 1.7vw, 1.375em);
       line-height: 1.4;
       font-weight: 450;
     }
@@ -730,9 +793,9 @@
       font-family: ${FONT.mono};
       font-size: inherit;
       color: inherit;
-      text-decoration-style: dashed;
-      text-decoration-thickness: .125em;
-      text-underline-offset: .25rem;
+      text-decoration: underline;
+      background: var(--ds-color-bg-inverse);
+      padding: 0 0.25em;
     }
 
   `;
@@ -896,7 +959,15 @@
        apply to the same table at once. Page-scroll stickiness is the more
        useful default; the horizontal-scroll fallback only kicks in on narrow
        viewports, where a wide table would otherwise clip content. */
-    .table-scroll { max-width: 100%; }
+    .table-scroll {
+    position: relative;
+    inset: calc(var(--ds-space-4) * -1);
+    width: calc(100% + (var(--ds-space-4) * 2));
+    max-width: calc(100% + (var(--ds-space-4) * 2));
+    top: 0;
+    bottom: 0;
+
+    }
 
     table {
       width: 100%;
@@ -910,11 +981,7 @@
       font-family: ${FONT.body};
       font-size: var(--ds-font-size-base);
       position: relative;
-      inset: calc(var(--ds-space-2) * -1);
-      width: calc(100% + (var(--ds-space-2) * 2));
-      max-width: calc(100% + (var(--ds-space-2) * 2));
-      top: 0;
-      bottom: 0;
+
     }
 
     th {
@@ -933,17 +1000,15 @@
     }
 
     @media (max-width: 900px) {
-      .table-scroll { overflow-x: auto; }
-    }
-  /*
-    th:first-child, td:first-child {
-    padding-left:0
+      .table-scroll {
+        overflow-x: auto;
+      }
     }
 
-    th:last-child, td:last-child {
-    padding-right:0
-    }
-    */
+  @media (max-width: 640px) {
+  th:nth-child(2), td:nth-child(2) { display: none; }
+  th:nth-child(3), td:nth-child(3) {  display: none;  }
+  }
 
     td {
       padding: var(--ds-space-4) var(--ds-space-2);
@@ -1043,6 +1108,15 @@
       color: var(--ds-color-accent-hover);
       border-bottom-style: solid;
     }
+
+    th:first-child, td:first-child {
+      padding-left:var(--ds-space-4) !important;
+    }
+
+    th:last-child, td:last-child {
+      padding-right:var(--ds-space-4) !important;
+    }
+
   `;
 
   class DsPropTable extends HTMLElement {
@@ -1187,11 +1261,6 @@
   //   </ds-spec-nav>
   // ═══════════════════════════════════════════════════════════════════════════
 
-  const ICON_MENU =
-    '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>';
-  const ICON_CLOSE =
-    '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="5" y1="5" x2="19" y2="19"/><line x1="19" y1="5" x2="5" y2="19"/></svg>';
-
   const SPEC_NAV_CSS = `
     ${BASE_RESET}
     :host {
@@ -1232,7 +1301,7 @@
     .nav__title a {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 12px;
       min-width: 0;
       flex: 1;
       color: inherit;
@@ -1439,12 +1508,12 @@
         ? '<div class="nav__title">' +
           '<button class="nav__menu-btn" part="menu-btn" type="button" aria-label="Toggle navigation" aria-expanded="' +
           (isOpen ? "true" : "false") +
-          '"><span class="nav__menu-icon">' +
-          (isOpen ? ICON_CLOSE : ICON_MENU) +
-          "</span></button>" +
+          // The button's aria-label already names the control; its icon is
+          // decorative and filled in async once loadIcon() resolves below.
+          '"><span class="nav__menu-icon" aria-hidden="true"></span></button>' +
           '<a href="' +
           esc(titleHref) +
-          '"><ds-logo class="nav__logo" size="2rem" fill="#fff"></ds-logo><span>' +
+          '"><ds-logo class="nav__logo" size="2rem" fill="#fff" aria-hidden="true"></ds-logo><span>' +
           esc(title) +
           "</span></a>" +
           "</div>"
@@ -1466,14 +1535,22 @@
           this.open = !this.open;
         });
       }
+
+      this._updateMenuIcon(isOpen);
     }
 
     _syncMenuButton() {
       const isOpen = this.open;
       const btn = this._shadow.querySelector(".nav__menu-btn");
-      const icon = this._shadow.querySelector(".nav__menu-icon");
       if (btn) btn.setAttribute("aria-expanded", isOpen ? "true" : "false");
-      if (icon) icon.innerHTML = isOpen ? ICON_CLOSE : ICON_MENU;
+      this._updateMenuIcon(isOpen);
+    }
+
+    _updateMenuIcon(isOpen) {
+      const icon = this._shadow.querySelector(".nav__menu-icon");
+      loadIcon(isOpen ? "close" : "menu").then((svg) => {
+        if (icon) icon.innerHTML = svg;
+      });
     }
 
     _onKeydown(e) {
@@ -1566,42 +1643,32 @@
   // ═══════════════════════════════════════════════════════════════════════════
   // <ds-callout>
   //
-  // A callout / info box: a white background with a small color-coded icon
-  // block — the variant's meaning lives in the block's color + icon, not a
-  // tinted background.
+  // A callout / info box: a bold title above a plain white content box —
+  // the variant's meaning lives in the title's color, not an icon.
   //
   // Attributes:
   //   variant — "info" | "tip" | "warning" (default: "info")
+  //   title   — bold lead-in text shown above the content (e.g. "Tip:").
+  //             Omit for no title.
   //
   // Slots:
-  //   (default) — callout content (may include <strong>, links, lists, etc.)
+  //   (default) — callout content (may include links, lists, etc.)
   //
   // Usage:
-  //   <ds-callout>
-  //     <strong>Key idea:</strong> Some important information here.
+  //   <ds-callout title="Key idea:">
+  //     Some important information here.
   //   </ds-callout>
   //
-  //   <ds-callout variant="tip">
-  //     <strong>Tip:</strong> A helpful suggestion.
+  //   <ds-callout variant="tip" title="Tip:">
+  //     A helpful suggestion.
   //   </ds-callout>
   // ═══════════════════════════════════════════════════════════════════════════
-
-  const CALLOUT_ICON = {
-    info: ICONS.info,
-    tip: ICONS.lightbulb,
-    warning: ICONS.warning,
-  };
 
   const CALLOUT_CSS = `
     ${BASE_RESET}
     :host { display: block; }
 
     .callout {
-      display: flex;
-      align-items: flex-start;
-      gap: var(--ds-space-2);
-      background: var(--ds-color-bg-inverse);
-      padding: var(--ds-space-4);
       margin: var(--ds-space-2) 0 var(--ds-space-8);
       font-family: ${FONT.body};
       font-size: var(--ds-font-size-base);
@@ -1609,39 +1676,37 @@
       color: var(--ds-color-text);
     }
 
-    .callout__icon {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 28px;
-      height: 28px;
-      flex-shrink: 0;
+    .callout__title {
+      font-weight: var(--ds-font-weight-bold);
       background: var(--ds-color-accent);
-      color: var(--ds-color-bg-inverse);
+      color: var(--ds-color-text-inverse);
+      display: inline-block;
+      padding: var(--ds-space-2) var(--ds-space-4);
+      padding-right: calc(var(--ds-space-4) + var(--ds-space-2));
     }
 
-    .callout__icon svg {
-      display: block;
+    .callout__title:empty {
+      display: none;
     }
+
+    .callout--warning .callout__title { background: var(--ds-color-warning-text); }
+    .callout--tip .callout__title { background: var(--ds-color-encouraged-text); }
 
     .callout__content {
-      flex: 1;
-      min-width: 0;
+      background: var(--ds-color-bg-inverse);
+      padding: var(--ds-space-4);
     }
 
-    .callout--warning .callout__icon { background: var(--ds-color-warning-text); }
-    .callout--tip .callout__icon { background: var(--ds-color-encouraged-text); }
-
     ::slotted(strong) {
-      color: var(--ds-color-accent);
+      background: var(--ds-color-accent);
     }
 
     :host([variant="warning"]) ::slotted(strong) {
-      color: var(--ds-color-warning-text);
+      background: var(--ds-color-warning-text);
     }
 
     :host([variant="tip"]) ::slotted(strong) {
-      color: var(--ds-color-encouraged-text);
+      background: var(--ds-color-encouraged-text);
     }
 
     ::slotted(ol),
@@ -1655,11 +1720,19 @@
       text-decoration-thickness: 1px;
       text-underline-offset: 2px;
     }
+
+    ::slotted(p:first-child) {
+      margin-top: 0;
+    }
+
+    ::slotted(p:last-child) {
+      margin-bottom: 0 !important;
+    }
   `;
 
   class DsCallout extends HTMLElement {
     static get observedAttributes() {
-      return ["variant"];
+      return ["variant", "title"];
     }
 
     constructor() {
@@ -1667,25 +1740,26 @@
       this._shadow = createShadow(this, CALLOUT_CSS);
       this._shadow.innerHTML =
         '<div class="callout" part="callout">' +
-        '<span class="callout__icon" part="icon"></span>' +
+        '<span class="callout__title" part="title"></span>' +
         '<div class="callout__content" part="content"><slot></slot></div>' +
         "</div>";
     }
 
     connectedCallback() {
-      this._updateVariant();
+      this._render();
     }
 
     attributeChangedCallback() {
-      this._updateVariant();
+      this._render();
     }
 
-    _updateVariant() {
+    _render() {
       const variant = this.getAttribute("variant") || "info";
+      const title = this.getAttribute("title") || "";
       const el = this._shadow.querySelector(".callout");
-      const icon = this._shadow.querySelector(".callout__icon");
+      const titleEl = this._shadow.querySelector(".callout__title");
       if (el) el.className = "callout callout--" + variant;
-      if (icon) icon.innerHTML = CALLOUT_ICON[variant] || ICONS.info;
+      if (titleEl) titleEl.textContent = title;
     }
   }
 
@@ -1740,27 +1814,23 @@
   // ═══════════════════════════════════════════════════════════════════════════
   // <ds-logo>
   //
-  // The DSDS mark, inlined as SVG so its fill can be recolored at runtime.
+  // The DSDS mark, fetched from site/assets/dsds.svg and inlined so its fill
+  // can be recolored at runtime. Edit site/assets/dsds.svg directly to change
+  // the mark — this component just loads and colors whatever's there.
   //
   // Attributes:
   //   size       — width/height, any CSS length (default: 40px)
   //   background — host background color (default: transparent)
   //   fill       — SVG fill color (default: var(--ds-color-text))
+  //   label      — accessible label. Omit when the logo sits next to visible
+  //                text that already names it (the default: decorative,
+  //                aria-hidden). Set it when the logo is used standalone.
   //
   // Usage:
   //   <ds-logo></ds-logo>
   //   <ds-logo size="24px" fill="#fff" background="#0055b3"></ds-logo>
+  //   <ds-logo label="DSDS home"></ds-logo>
   // ═══════════════════════════════════════════════════════════════════════════
-
-  const LOGO_SVG = `
-    <svg viewBox="0 0 1550 1550" fill="none" xmlns="http://www.w3.org/2000/svg" part="svg">
-      <path fill-rule="evenodd" clip-rule="evenodd" d="M0 0H1550V1550H0V0ZM75 75V1475H1475V75H75Z"/>
-      <path fill-rule="evenodd" clip-rule="evenodd" d="M575 300H300V650H575C616.421 650 650 616.421 650 575V375C650 333.579 616.421 300 575 300ZM225 225V725H575C657.843 725 725 657.843 725 575V375C725 292.157 657.843 225 575 225H225Z"/>
-      <path fill-rule="evenodd" clip-rule="evenodd" d="M825 368.75C825 289.359 889.359 225 968.75 225H1181.25C1260.64 225 1325 289.359 1325 368.75H1250C1250 330.78 1219.22 300 1181.25 300H968.75C930.78 300 900 330.78 900 368.75C900 406.72 930.78 437.5 968.75 437.5H1181.25C1260.64 437.5 1325 501.859 1325 581.25C1325 660.641 1260.64 725 1181.25 725H968.75C889.359 725 825 660.641 825 581.25H900C900 619.22 930.78 650 968.75 650H1181.25C1219.22 650 1250 619.22 1250 581.25C1250 543.28 1219.22 512.5 1181.25 512.5H968.75C889.359 512.5 825 448.141 825 368.75Z"/>
-      <path fill-rule="evenodd" clip-rule="evenodd" d="M575 900H300V1250H575C616.421 1250 650 1216.42 650 1175V975C650 933.579 616.421 900 575 900ZM225 825V1325H575C657.843 1325 725 1257.84 725 1175V975C725 892.157 657.843 825 575 825H225Z"/>
-      <path fill-rule="evenodd" clip-rule="evenodd" d="M825 968.75C825 889.359 889.359 825 968.75 825H1181.25C1260.64 825 1325 889.359 1325 968.75H1250C1250 930.78 1219.22 900 1181.25 900H968.75C930.78 900 900 930.78 900 968.75C900 1006.72 930.78 1037.5 968.75 1037.5H1181.25C1260.64 1037.5 1325 1101.86 1325 1181.25C1325 1260.64 1260.64 1325 1181.25 1325H968.75C889.359 1325 825 1260.64 825 1181.25H900C900 1219.22 930.78 1250 968.75 1250H1181.25C1219.22 1250 1250 1219.22 1250 1181.25C1250 1143.28 1219.22 1112.5 1181.25 1112.5H968.75C889.359 1112.5 825 1048.14 825 968.75Z"/>
-    </svg>
-  `;
 
   const LOGO_CSS = `
     ${BASE_RESET}
@@ -1788,20 +1858,27 @@
 
   class DsLogo extends HTMLElement {
     static get observedAttributes() {
-      return ["size", "background", "fill"];
+      return ["size", "background", "fill", "label"];
     }
 
     constructor() {
       super();
       this._shadow = createShadow(this, LOGO_CSS);
-      this._shadow.innerHTML = LOGO_SVG;
+      loadIcon("logo").then((svg) => {
+        this._shadow.innerHTML = svg;
+        this._syncA11y();
+      });
     }
 
     connectedCallback() {
       this._sync();
     }
 
-    attributeChangedCallback() {
+    attributeChangedCallback(name) {
+      if (name === "label") {
+        this._syncA11y();
+        return;
+      }
       if (this.isConnected) this._sync();
     }
 
@@ -1818,6 +1895,25 @@
 
       if (fill) this.style.setProperty("--logo-fill", fill);
       else this.style.removeProperty("--logo-fill");
+
+      this._syncA11y();
+    }
+
+    _syncA11y() {
+      const svg = this._shadow.querySelector("svg");
+      if (!svg) return;
+      const label = this.getAttribute("label");
+      if (label) {
+        svg.setAttribute("role", "img");
+        svg.setAttribute("aria-label", esc(label));
+        svg.removeAttribute("aria-hidden");
+      } else {
+        // Decorative by default — used next to visible text (e.g. the nav
+        // title) that already names it.
+        svg.setAttribute("aria-hidden", "true");
+        svg.removeAttribute("role");
+        svg.removeAttribute("aria-label");
+      }
     }
   }
 

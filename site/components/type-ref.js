@@ -7,9 +7,9 @@ const TYPE_REF_CSS = `
     font-family: ${FONT.mono};
     font-size: inherit;
     color: inherit;
-    text-decoration-style: dashed;
-    text-decoration-thickness: .125em;
-    text-underline-offset: .25rem;
+    text-decoration: underline;
+    background: var(--ds-color-bg-inverse);
+    padding: 0 0.25em;
   }
 
 `;

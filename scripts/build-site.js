@@ -650,6 +650,13 @@ async function build() {
     path.join(DIST_DIR, "style.css"),
   );
 
+  // Copy icon/logo assets — components fetch these by page-relative path
+  // ("assets/<file>.svg") at runtime, so they need to exist alongside the
+  // built pages, not just in the source tree.
+  fs.cpSync(path.join(SITE_DIR, "assets"), path.join(DIST_DIR, "assets"), {
+    recursive: true,
+  });
+
   // Bundle web components into a single IIFE for file:// compatibility.
   bundleComponents(SITE_DIR, DIST_DIR);
 
@@ -830,6 +837,36 @@ function bundleComponents(siteDir, distDir) {
       .join("\n");
     parts.push(indented);
     parts.push("");
+
+    // fetch() of a same-directory file is blocked outright under file://
+    // (opening a built page directly, no server), which this bundle
+    // otherwise supports. Inline every icon's file contents right after
+    // _shared.js defines seedIcons()/loadIcon(), so no runtime fetch is
+    // ever needed in the built site. Keep this file list in sync with
+    // ICON_FILES in site/components/_shared.js.
+    if (file === "_shared.js") {
+      const ICON_FILES = {
+        menu: "icon-menu.svg",
+        close: "icon-close.svg",
+        info: "icon-info.svg",
+        flask: "icon-flask.svg",
+        dot: "icon-dot.svg",
+        lightbulb: "icon-lightbulb.svg",
+        warning: "icon-warning.svg",
+        logo: "dsds.svg",
+      };
+      const assetsDir = path.join(siteDir, "assets");
+      const seeded = {};
+      for (const [name, iconFile] of Object.entries(ICON_FILES)) {
+        const iconPath = path.join(assetsDir, iconFile);
+        if (fs.existsSync(iconPath)) {
+          seeded[name] = fs.readFileSync(iconPath, "utf-8");
+        }
+      }
+      parts.push("  // ── inlined icon assets (build-time, see above) ──");
+      parts.push(`  seedIcons(${JSON.stringify(seeded)});`);
+      parts.push("");
+    }
   }
 
   // Add registration code (strip imports already handled)

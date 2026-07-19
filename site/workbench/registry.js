@@ -94,24 +94,24 @@ export const COMPONENTS = [
     tag: "ds-callout",
     title: "Callout",
     category: "content",
-    notes: "Highlighted aside. variant info|tip|warning; slotted rich content.",
+    notes: "Highlighted aside. variant info|tip|warning; title attr sets the bold lead-in; slotted rich content.",
     demos: [
       {
         label: "Info (default)",
-        html: `<ds-callout>
-  <strong>Key idea:</strong> DSDS documents the how and why, not the token values themselves.
+        html: `<ds-callout title="Key idea:">
+  DSDS documents the how and why, not the token values themselves.
 </ds-callout>`,
       },
       {
         label: "Tip",
-        html: `<ds-callout variant="tip">
-  <strong>Tip:</strong> Use single-entity files plus a <ds-code inline>$ref</ds-code> manifest for large systems.
+        html: `<ds-callout variant="tip" title="Tip:">
+  Use single-entity files plus a <ds-code inline>$ref</ds-code> manifest for large systems.
 </ds-callout>`,
       },
       {
         label: "Warning",
-        html: `<ds-callout variant="warning">
-  <strong>Heads up:</strong> Pre-1.0, minor releases can carry breaking changes.
+        html: `<ds-callout variant="warning" title="Heads up:">
+  Pre-1.0, minor releases can carry breaking changes.
 </ds-callout>`,
       },
     ],

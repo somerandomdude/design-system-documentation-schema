@@ -36,12 +36,7 @@
 //   </ds-spec-nav>
 // ═══════════════════════════════════════════════════════════════════════════
 
-import { createShadow, esc, BASE_RESET, FONT } from "./_shared.js";
-
-const ICON_MENU =
-  '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>';
-const ICON_CLOSE =
-  '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="5" y1="5" x2="19" y2="19"/><line x1="19" y1="5" x2="5" y2="19"/></svg>';
+import { createShadow, esc, BASE_RESET, FONT, loadIcon } from "./_shared.js";
 
 const SPEC_NAV_CSS = `
   ${BASE_RESET}
@@ -83,7 +78,7 @@ const SPEC_NAV_CSS = `
   .nav__title a {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 12px;
     min-width: 0;
     flex: 1;
     color: inherit;
@@ -290,12 +285,12 @@ export class DsSpecNav extends HTMLElement {
       ? '<div class="nav__title">' +
         '<button class="nav__menu-btn" part="menu-btn" type="button" aria-label="Toggle navigation" aria-expanded="' +
         (isOpen ? "true" : "false") +
-        '"><span class="nav__menu-icon">' +
-        (isOpen ? ICON_CLOSE : ICON_MENU) +
-        "</span></button>" +
+        // The button's aria-label already names the control; its icon is
+        // decorative and filled in async once loadIcon() resolves below.
+        '"><span class="nav__menu-icon" aria-hidden="true"></span></button>' +
         '<a href="' +
         esc(titleHref) +
-        '"><ds-logo class="nav__logo" size="2rem" fill="#fff"></ds-logo><span>' +
+        '"><ds-logo class="nav__logo" size="2rem" fill="#fff" aria-hidden="true"></ds-logo><span>' +
         esc(title) +
         "</span></a>" +
         "</div>"
@@ -317,14 +312,22 @@ export class DsSpecNav extends HTMLElement {
         this.open = !this.open;
       });
     }
+
+    this._updateMenuIcon(isOpen);
   }
 
   _syncMenuButton() {
     const isOpen = this.open;
     const btn = this._shadow.querySelector(".nav__menu-btn");
-    const icon = this._shadow.querySelector(".nav__menu-icon");
     if (btn) btn.setAttribute("aria-expanded", isOpen ? "true" : "false");
-    if (icon) icon.innerHTML = isOpen ? ICON_CLOSE : ICON_MENU;
+    this._updateMenuIcon(isOpen);
+  }
+
+  _updateMenuIcon(isOpen) {
+    const icon = this._shadow.querySelector(".nav__menu-icon");
+    loadIcon(isOpen ? "close" : "menu").then((svg) => {
+      if (icon) icon.innerHTML = svg;
+    });
   }
 
   _onKeydown(e) {

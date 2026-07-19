@@ -1,29 +1,25 @@
 // ═══════════════════════════════════════════════════════════════════════════
 // <ds-logo>
 //
-// The DSDS mark, inlined as SVG so its fill can be recolored at runtime.
+// The DSDS mark, fetched from site/assets/dsds.svg and inlined so its fill
+// can be recolored at runtime. Edit site/assets/dsds.svg directly to change
+// the mark — this component just loads and colors whatever's there.
 //
 // Attributes:
 //   size       — width/height, any CSS length (default: 40px)
 //   background — host background color (default: transparent)
 //   fill       — SVG fill color (default: var(--ds-color-text))
+//   label      — accessible label. Omit when the logo sits next to visible
+//                text that already names it (the default: decorative,
+//                aria-hidden). Set it when the logo is used standalone.
 //
 // Usage:
 //   <ds-logo></ds-logo>
 //   <ds-logo size="24px" fill="#fff" background="#0055b3"></ds-logo>
+//   <ds-logo label="DSDS home"></ds-logo>
 // ═══════════════════════════════════════════════════════════════════════════
 
-import { createShadow, BASE_RESET } from "./_shared.js";
-
-const LOGO_SVG = `
-  <svg viewBox="0 0 1550 1550" fill="none" xmlns="http://www.w3.org/2000/svg" part="svg">
-    <path fill-rule="evenodd" clip-rule="evenodd" d="M0 0H1550V1550H0V0ZM75 75V1475H1475V75H75Z"/>
-    <path fill-rule="evenodd" clip-rule="evenodd" d="M575 300H300V650H575C616.421 650 650 616.421 650 575V375C650 333.579 616.421 300 575 300ZM225 225V725H575C657.843 725 725 657.843 725 575V375C725 292.157 657.843 225 575 225H225Z"/>
-    <path fill-rule="evenodd" clip-rule="evenodd" d="M825 368.75C825 289.359 889.359 225 968.75 225H1181.25C1260.64 225 1325 289.359 1325 368.75H1250C1250 330.78 1219.22 300 1181.25 300H968.75C930.78 300 900 330.78 900 368.75C900 406.72 930.78 437.5 968.75 437.5H1181.25C1260.64 437.5 1325 501.859 1325 581.25C1325 660.641 1260.64 725 1181.25 725H968.75C889.359 725 825 660.641 825 581.25H900C900 619.22 930.78 650 968.75 650H1181.25C1219.22 650 1250 619.22 1250 581.25C1250 543.28 1219.22 512.5 1181.25 512.5H968.75C889.359 512.5 825 448.141 825 368.75Z"/>
-    <path fill-rule="evenodd" clip-rule="evenodd" d="M575 900H300V1250H575C616.421 1250 650 1216.42 650 1175V975C650 933.579 616.421 900 575 900ZM225 825V1325H575C657.843 1325 725 1257.84 725 1175V975C725 892.157 657.843 825 575 825H225Z"/>
-    <path fill-rule="evenodd" clip-rule="evenodd" d="M825 968.75C825 889.359 889.359 825 968.75 825H1181.25C1260.64 825 1325 889.359 1325 968.75H1250C1250 930.78 1219.22 900 1181.25 900H968.75C930.78 900 900 930.78 900 968.75C900 1006.72 930.78 1037.5 968.75 1037.5H1181.25C1260.64 1037.5 1325 1101.86 1325 1181.25C1325 1260.64 1260.64 1325 1181.25 1325H968.75C889.359 1325 825 1260.64 825 1181.25H900C900 1219.22 930.78 1250 968.75 1250H1181.25C1219.22 1250 1250 1219.22 1250 1181.25C1250 1143.28 1219.22 1112.5 1181.25 1112.5H968.75C889.359 1112.5 825 1048.14 825 968.75Z"/>
-  </svg>
-`;
+import { createShadow, esc, BASE_RESET, loadIcon } from "./_shared.js";
 
 const LOGO_CSS = `
   ${BASE_RESET}
@@ -51,20 +47,27 @@ const LOGO_CSS = `
 
 export class DsLogo extends HTMLElement {
   static get observedAttributes() {
-    return ["size", "background", "fill"];
+    return ["size", "background", "fill", "label"];
   }
 
   constructor() {
     super();
     this._shadow = createShadow(this, LOGO_CSS);
-    this._shadow.innerHTML = LOGO_SVG;
+    loadIcon("logo").then((svg) => {
+      this._shadow.innerHTML = svg;
+      this._syncA11y();
+    });
   }
 
   connectedCallback() {
     this._sync();
   }
 
-  attributeChangedCallback() {
+  attributeChangedCallback(name) {
+    if (name === "label") {
+      this._syncA11y();
+      return;
+    }
     if (this.isConnected) this._sync();
   }
 
@@ -81,5 +84,24 @@ export class DsLogo extends HTMLElement {
 
     if (fill) this.style.setProperty("--logo-fill", fill);
     else this.style.removeProperty("--logo-fill");
+
+    this._syncA11y();
+  }
+
+  _syncA11y() {
+    const svg = this._shadow.querySelector("svg");
+    if (!svg) return;
+    const label = this.getAttribute("label");
+    if (label) {
+      svg.setAttribute("role", "img");
+      svg.setAttribute("aria-label", esc(label));
+      svg.removeAttribute("aria-hidden");
+    } else {
+      // Decorative by default — used next to visible text (e.g. the nav
+      // title) that already names it.
+      svg.setAttribute("aria-hidden", "true");
+      svg.removeAttribute("role");
+      svg.removeAttribute("aria-label");
+    }
   }
 }

@@ -50,6 +50,7 @@ const TABLE_CSS = `
      on inheritance + the component's font/color context for cells. */
   ::slotted(table) {
     width: 100%;
+    max-width: 100%;
     /* separate + zero spacing (not collapse) so the sticky header's cells
        keep their background/position correctly in Safari, which has long-
        standing bugs with position:sticky inside a border-collapsed table. */
@@ -58,6 +59,14 @@ const TABLE_CSS = `
     font-family: ${FONT.body};
     font-size: var(--ds-font-size-base);
     color: var(--ds-color-text);
+    /* Same bleed treatment as <ds-prop-table>: nudge the table out to the
+       edges of its container by --ds-space-2 on each side. */
+    position: relative;
+    inset: calc(var(--ds-space-4) * -1);
+    width: calc(100% + (var(--ds-space-4) * 2));
+    max-width: calc(100% + (var(--ds-space-4) * 2));
+    top: 0;
+    bottom: 0;
   }
 `;
 
@@ -70,8 +79,11 @@ export function ensureTableLightStyles() {
   var style = document.createElement("style");
   style.id = TABLE_LIGHT_DOM_ID;
   style.textContent = [
-    "ds-table table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: var(--ds-font-size-base); }",
-    "ds-table thead { background: var(--ds-color-bg); }",
+    "ds-table table {",
+    "  width: calc(100% + (var(--ds-space-4) * 2)); max-width: calc(100% + (var(--ds-space-4) * 2));",
+    "  border-collapse: separate; border-spacing: 0; font-size: var(--ds-font-size-base);",
+    "  position: relative; inset: calc(var(--ds-space-4) * -1); top: 0; bottom: 0;",
+    "}",
     "ds-table th {",
     "  text-align: left; font-weight: var(--ds-font-weight-bold); font-size: var(--ds-font-size-sm);",
     "  text-transform: none; letter-spacing: var(--ds-tracking-wide);",
@@ -81,7 +93,7 @@ export function ensureTableLightStyles() {
     "  position: sticky;",
     "  top: 0;",
     "  z-index: var(--ds-z-base, 1);",
-    "  background: var(--ds-color-bg);",
+    "  background: var(--ds-color-bg-raised);",
     "}",
     "ds-table td {",
     "  padding: var(--ds-space-4) var(--ds-space-2);",
@@ -91,6 +103,8 @@ export function ensureTableLightStyles() {
     "ds-table a { color: var(--ds-color-accent); }",
     "ds-table td:first-child { white-space: nowrap; }",
     "ds-table td:first-child ds-code[inline] { white-space: nowrap; }",
+    "th:first-child, td:first-child { padding-left:var(--ds-space-4) !important;}",
+    "th:last-child, td:last-child { padding-right:var(--ds-space-4) !important; }"
   ].join("\n");
   document.head.appendChild(style);
 }

@@ -96,6 +96,33 @@ const server = http.createServer((req, res) => {
 
     fs.readFile(target, (readErr, data) => {
       if (readErr) {
+        // Components fetch icons with a page-relative "assets/<file>.svg"
+        // path, which only resolves correctly for top-level pages (the
+        // real site is flat). Nested dev-only pages (e.g. /workbench/)
+        // request "workbench/assets/<file>.svg" instead — fall back to
+        // the real top-level assets/ dir before giving up.
+        const nestedAsset = req.url.split("?")[0].match(/\/assets\/([^/]+)$/);
+        if (nestedAsset) {
+          const fallback = path.join(
+            SERVE_DIR,
+            "assets",
+            decodeURIComponent(nestedAsset[1]),
+          );
+          if (fallback.startsWith(SERVE_DIR) && fallback !== target) {
+            fs.readFile(fallback, (fallbackErr, fallbackData) => {
+              if (fallbackErr) {
+                send(res, 404, `Not found: ${req.url}`, {
+                  "Content-Type": "text/plain; charset=utf-8",
+                });
+                return;
+              }
+              send(res, 200, fallbackData, {
+                "Content-Type": contentType(fallback),
+              });
+            });
+            return;
+          }
+        }
         send(res, 404, `Not found: ${req.url}`, {
           "Content-Type": "text/plain; charset=utf-8",
         });

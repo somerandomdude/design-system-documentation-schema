@@ -12,12 +12,12 @@
 // overall background.
 // ═══════════════════════════════════════════════════════════════════════════
 
-import { createShadow, BASE_RESET, FONT, ICONS } from "./_shared.js";
+import { createShadow, BASE_RESET, FONT, loadIcon } from "./_shared.js";
 
-const BADGE_ICON = {
-  kind: ICONS.info,
-  experimental: ICONS.flask,
-  neutral: ICONS.dot,
+const BADGE_ICON_NAME = {
+  kind: "info",
+  experimental: "flask",
+  neutral: "dot",
 };
 
 const BADGE_CSS = `
@@ -73,7 +73,9 @@ export class DsBadge extends HTMLElement {
     this._shadow = createShadow(this, BADGE_CSS);
     this._shadow.innerHTML =
       '<span class="badge" part="badge">' +
-      '<span class="badge__icon" part="icon"></span>' +
+      // Decorative — the variant's meaning is redundant with the visible
+      // label text next to it, so this is hidden from assistive tech.
+      '<span class="badge__icon" part="icon" aria-hidden="true"></span>' +
       '<span class="badge__label" part="label"><slot></slot></span>' +
       "</span>";
   }
@@ -91,6 +93,9 @@ export class DsBadge extends HTMLElement {
     const el = this._shadow.querySelector(".badge");
     const icon = this._shadow.querySelector(".badge__icon");
     if (el) el.className = "badge badge--" + variant;
-    if (icon) icon.innerHTML = BADGE_ICON[variant] || ICONS.dot;
+    const name = BADGE_ICON_NAME[variant] || "dot";
+    loadIcon(name).then((svg) => {
+      if (icon) icon.innerHTML = svg;
+    });
   }
 }

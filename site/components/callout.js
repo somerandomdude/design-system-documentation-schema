@@ -1,44 +1,34 @@
 // ═══════════════════════════════════════════════════════════════════════════
 // <ds-callout>
 //
-// A callout / info box: a white background with a small color-coded icon
-// block — the variant's meaning lives in the block's color + icon, not a
-// tinted background.
+// A callout / info box: a bold title above a plain white content box —
+// the variant's meaning lives in the title's color, not an icon.
 //
 // Attributes:
 //   variant — "info" | "tip" | "warning" (default: "info")
+//   title   — bold lead-in text shown above the content (e.g. "Tip:").
+//             Omit for no title.
 //
 // Slots:
-//   (default) — callout content (may include <strong>, links, lists, etc.)
+//   (default) — callout content (may include links, lists, etc.)
 //
 // Usage:
-//   <ds-callout>
-//     <strong>Key idea:</strong> Some important information here.
+//   <ds-callout title="Key idea:">
+//     Some important information here.
 //   </ds-callout>
 //
-//   <ds-callout variant="tip">
-//     <strong>Tip:</strong> A helpful suggestion.
+//   <ds-callout variant="tip" title="Tip:">
+//     A helpful suggestion.
 //   </ds-callout>
 // ═══════════════════════════════════════════════════════════════════════════
 
-import { createShadow, BASE_RESET, FONT, ICONS } from "./_shared.js";
-
-const CALLOUT_ICON = {
-  info: ICONS.info,
-  tip: ICONS.lightbulb,
-  warning: ICONS.warning,
-};
+import { createShadow, BASE_RESET, FONT } from "./_shared.js";
 
 const CALLOUT_CSS = `
   ${BASE_RESET}
   :host { display: block; }
 
   .callout {
-    display: flex;
-    align-items: flex-start;
-    gap: var(--ds-space-2);
-    background: var(--ds-color-bg-inverse);
-    padding: var(--ds-space-4);
     margin: var(--ds-space-2) 0 var(--ds-space-8);
     font-family: ${FONT.body};
     font-size: var(--ds-font-size-base);
@@ -46,39 +36,37 @@ const CALLOUT_CSS = `
     color: var(--ds-color-text);
   }
 
-  .callout__icon {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 28px;
-    height: 28px;
-    flex-shrink: 0;
+  .callout__title {
+    font-weight: var(--ds-font-weight-bold);
     background: var(--ds-color-accent);
-    color: var(--ds-color-bg-inverse);
+    color: var(--ds-color-text-inverse);
+    display: inline-block;
+    padding: var(--ds-space-2) var(--ds-space-4);
+    padding-right: calc(var(--ds-space-4) + var(--ds-space-2));
   }
 
-  .callout__icon svg {
-    display: block;
+  .callout__title:empty {
+    display: none;
   }
+
+  .callout--warning .callout__title { background: var(--ds-color-warning-text); }
+  .callout--tip .callout__title { background: var(--ds-color-encouraged-text); }
 
   .callout__content {
-    flex: 1;
-    min-width: 0;
+    background: var(--ds-color-bg-inverse);
+    padding: var(--ds-space-4);
   }
 
-  .callout--warning .callout__icon { background: var(--ds-color-warning-text); }
-  .callout--tip .callout__icon { background: var(--ds-color-encouraged-text); }
-
   ::slotted(strong) {
-    color: var(--ds-color-accent);
+    background: var(--ds-color-accent);
   }
 
   :host([variant="warning"]) ::slotted(strong) {
-    color: var(--ds-color-warning-text);
+    background: var(--ds-color-warning-text);
   }
 
   :host([variant="tip"]) ::slotted(strong) {
-    color: var(--ds-color-encouraged-text);
+    background: var(--ds-color-encouraged-text);
   }
 
   ::slotted(ol),
@@ -92,11 +80,19 @@ const CALLOUT_CSS = `
     text-decoration-thickness: 1px;
     text-underline-offset: 2px;
   }
+
+  ::slotted(p:first-child) {
+    margin-top: 0;
+  }
+
+  ::slotted(p:last-child) {
+    margin-bottom: 0 !important;
+  }
 `;
 
 export class DsCallout extends HTMLElement {
   static get observedAttributes() {
-    return ["variant"];
+    return ["variant", "title"];
   }
 
   constructor() {
@@ -104,24 +100,25 @@ export class DsCallout extends HTMLElement {
     this._shadow = createShadow(this, CALLOUT_CSS);
     this._shadow.innerHTML =
       '<div class="callout" part="callout">' +
-      '<span class="callout__icon" part="icon"></span>' +
+      '<span class="callout__title" part="title"></span>' +
       '<div class="callout__content" part="content"><slot></slot></div>' +
       "</div>";
   }
 
   connectedCallback() {
-    this._updateVariant();
+    this._render();
   }
 
   attributeChangedCallback() {
-    this._updateVariant();
+    this._render();
   }
 
-  _updateVariant() {
+  _render() {
     const variant = this.getAttribute("variant") || "info";
+    const title = this.getAttribute("title") || "";
     const el = this._shadow.querySelector(".callout");
-    const icon = this._shadow.querySelector(".callout__icon");
+    const titleEl = this._shadow.querySelector(".callout__title");
     if (el) el.className = "callout callout--" + variant;
-    if (icon) icon.innerHTML = CALLOUT_ICON[variant] || ICONS.info;
+    if (titleEl) titleEl.textContent = title;
   }
 }
