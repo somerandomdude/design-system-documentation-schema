@@ -1,12 +1,12 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://designsystemdocspec.org/v0.15.0/document-blocks/guidelines.schema.json",
-  "title": "DSDS Guidelines Document Block",
-  "description": "Actionable usage guidance for an artifact. Each item is a self-contained rule paired with a rationale. Guidelines tell the reader what to do (or not do) and why. They sit alongside other document block kinds in the `documentBlocks` array on any artifact.",
+  "$id": "https://designsystemdocspec.org/v0.15.2/document-blocks/guidelines.schema.json",
+  "title": "Guidelines document block",
+  "description": "Usage rules for an artifact. Each item pairs a rule with why it exists. Guidelines say what to do (or not do), and why.",
   "$defs": {
     "guidelineEntry": {
       "type": "object",
-      "description": "A single piece of usage guidance. Each guideline pairs a statement with a rationale. `level` sets the RFC 2119 enforcement level. `category` groups by discipline. `target` points to a specific anatomy part or content area. `criteria` holds testable success criteria that verify the rule, the test-definition layer of the documentation. `references` cites the external standards (such as WCAG) the rule addresses.",
+      "description": "One rule. `guidance` is the rule; `rationale` says why. `level` sets how strict it is. `category` groups it by discipline. `target` points at a specific part. `criteria` are tests that prove the rule holds. `references` cites outside standards like WCAG.",
       "required": [
         "guidance",
         "level"
@@ -14,31 +14,31 @@
       "properties": {
         "guidance": {
           "$ref": "../common/rich-text.schema.json#/$defs/richText",
-          "description": "The guidance statement. MUST be concrete and unambiguous. Avoid vague phrases like 'use sparingly' or 'when possible'."
+          "description": "The rule itself. MUST be concrete and clear \u2014 not 'use sparingly' or 'when possible'."
         },
         "rationale": {
           "$ref": "../common/rich-text.schema.json#/$defs/richText",
-          "description": "Why this guidance exists. Cite evidence, accessibility standards, or user research when available. MUST NOT restate the guidance."
+          "description": "Why the rule exists \u2014 cite evidence, accessibility standards, or research when you have it. MUST NOT just repeat the guidance."
         },
         "level": {
           "$ref": "../common/criterion.schema.json#/$defs/conformanceLevel",
-          "description": "How strictly the guideline should be followed, named for RFC 2119 requirement levels: 'must' (non-compliance is a defect), 'should' (follow in most cases; exceptions need justification), 'should-not' (avoid unless justified), 'must-not' (violations are defects). Agents treat must/must-not entries as hard constraints when generating or reviewing code."
+          "description": "How strict the rule is: 'must' (breaking it is a defect), 'should' (follow it unless you have a good reason not to), 'should-not', or 'must-not'. Agents treat must/must-not as non-negotiable when writing or reviewing code."
         },
         "evidence": {
           "type": "string",
-          "description": "Quantitative or empirical backing for this guideline: test run data, audit findings, issue references, or cited sources. Keeping evidence separate from rationale lets tools tell test-derived rules apart from conventional guidance. Example: '9/10 agent test runs failed touch-target minimums when height was overridden below 36px.'"
+          "description": "Data backing this rule \u2014 test results, audit findings, or cited sources (ex: '9/10 agent test runs failed touch-target minimums below 36px'). Kept separate from `rationale` so tools can tell tested rules from conventional guidance."
         },
         "category": {
           "type": "string",
-          "description": "The discipline this guideline belongs to. Used to group guidelines by concern. Standard values: 'visual-design' (color, typography, spacing, layout), 'interaction' (behavior, animation, transitions, gestures), 'accessibility' (inclusive design, assistive tech, WCAG), 'content' (text, imagery, tone, voice, labeling), 'motion' (animation timing, easing, reduced-motion), 'development' (implementation patterns, performance, code conventions). Custom values are allowed and SHOULD be lowercase kebab-case."
+          "description": "Groups the rule by discipline: 'visual-design', 'interaction', 'accessibility', 'content', 'motion', or 'development'. Custom values allowed, in lowercase kebab-case."
         },
         "target": {
           "type": "string",
-          "description": "The anatomy part or content area this guideline applies to (e.g., 'label', 'icon', 'helper-text'). When omitted, the guideline applies to the whole artifact."
+          "description": "The part this rule applies to (ex: 'label', 'icon'). Left out, it applies to the whole artifact."
         },
         "criteria": {
           "type": "array",
-          "description": "Testable success criteria that verify this guideline. Each criterion pairs a stable identifier with an objectively verifiable statement. This lets tooling and agents check implementations against the rule and report pass/fail. Attach criteria only when the success condition is objectively verifiable. Observed results belong in `evidence`.",
+          "description": "Tests that prove this rule is met. Only add these when success can be objectively verified. Test results belong in `evidence`, not here.",
           "items": {
             "$ref": "../common/criterion.schema.json#/$defs/criterion"
           },
@@ -46,7 +46,7 @@
         },
         "references": {
           "type": "array",
-          "description": "External standards this guideline addresses (e.g., WCAG success criteria, MDN or platform guidelines). Each entry cites a URL with an optional display label.",
+          "description": "Outside standards this rule follows (ex: WCAG, MDN, platform guidelines) \u2014 a URL and an optional label.",
           "items": {
             "$ref": "../common/criterion.schema.json#/$defs/reference"
           },
@@ -65,7 +65,7 @@
           "items": {
             "type": "string"
           },
-          "description": "Freeform keywords that relate guidelines across categories and disciplines (e.g., 'rtl', 'localization', 'validation', 'contrast').",
+          "description": "Freeform keywords that relate guidelines across categories and disciplines (ex: 'rtl', 'localization', 'validation', 'contrast').",
           "minItems": 1
         }
       },
@@ -73,7 +73,7 @@
     },
     "guidelines": {
       "type": "object",
-      "description": "Actionable usage rules for an artifact. Each item pairs a guidance statement with a rationale. Categorize by discipline, target a specific anatomy part, and link to external standards like WCAG. Use `guidelines` to answer *how* to use the artifact correctly: concrete do/don't rules, each with a rationale. For *whether* to use it at all, see the `use-cases` block. For the higher-level beliefs behind the rules (on foundations), see `principles`. Guidelines are the home for general documentation guidance in every discipline — including accessibility rules (category 'accessibility') and content rules (category 'content'); the `accessibility` and `content` blocks are reserved for specialized, structured data.",
+      "description": "Usage rules for an artifact \u2014 each a do/don't statement with a reason. Answers *how* to use it correctly. For *whether* to use it, see `use-cases`; for the beliefs behind the rules (on foundations), see `principles`. Accessibility and content rules go here too (categories 'accessibility'/'content') \u2014 the `accessibility` and `content` blocks are for structured reference data, not rules.",
       "required": [
         "kind",
         "items"
@@ -81,7 +81,7 @@
       "properties": {
         "items": {
           "type": "array",
-          "description": "The guideline rules. Each item is a guidance statement paired with a rationale. Order matters, so tools SHOULD display guidelines in this order. Authors SHOULD order by importance or group by category.",
+          "description": "The rules, in order. Tools SHOULD keep this order; authors SHOULD lead with the most important or group by category.",
           "items": {
             "$ref": "#/$defs/guidelineEntry"
           },
@@ -90,7 +90,10 @@
         "kind": {
           "type": "string",
           "const": "guidelines",
-          "description": "Identifies this document block as a guidelines spec."
+          "description": "Identifies this block as a guidelines spec."
+        },
+        "$extensions": {
+          "$ref": "../common/extensions.schema.json#/$defs/extensions"
         }
       },
       "additionalProperties": false

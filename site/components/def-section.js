@@ -4,23 +4,23 @@ const DEF_SECTION_CSS = `
   ${BASE_RESET}
   :host {
     display: block;
-    margin: var(--ds-space-10) 0 var(--ds-space-12);
+    margin: 64px 0 64px;
   }
   :host(:first-of-type) {
     margin-top: 0;
   }
-  h3 {
+  h2 {
     font-family: ${FONT.mono};
-    font-size: var(--ds-font-size-2xl);
-    font-weight: 600;
+    font-size: var(--ds-font-size-lg);
+    font-weight: var(--ds-font-weight-bold);
     color: var(--ds-color-text);
     margin: 0 0 var(--ds-space-2);
   }
   .desc {
-    color: var(--ds-color-text-secondary);
+    color: var(--ds-color-text);
     font-family: ${FONT.body};
-    font-size: var(--ds-font-size-lg);
-    line-height: 1.6;
+    font-size: var(--ds-font-size-base);
+    line-height: var(--ds-line-height-loose);
     margin: 0 0 var(--ds-space-4);
   }
   .type-line { margin: 0 0 var(--ds-space-4); }
@@ -52,16 +52,16 @@ export class DsDefSection extends HTMLElement {
     var type = this.getAttribute("type") || "";
     // Set id on host for TOC linking
     if (anchor) this.id = anchor;
-    var html = '<h3 id="' + esc(anchor) + '">' + esc(name) + "</h3>";
-    // Use escWithCode so CommonMark-style `inline code` spans in the
-    // description render as <ds-code inline> rather than literal
-    // backtick characters.
-    if (desc) html += '<p class="desc">' + escWithCode(desc) + "</p>";
+    var html = '<h2 id="' + esc(anchor) + '">' + esc(name) + "</h2>";
     if (type)
       html +=
         '<p class="type-line"><ds-badge variant="kind" size="sm">' +
         esc(type) +
         "</ds-badge></p>";
+    // Use escWithCode so CommonMark-style `inline code` spans in the
+    // description render as <ds-code inline> rather than literal
+    // backtick characters.
+    if (desc) html += '<p class="desc">' + escWithCode(desc) + "</p>";
     html += "<slot></slot>";
     this._shadow.innerHTML = html;
   }

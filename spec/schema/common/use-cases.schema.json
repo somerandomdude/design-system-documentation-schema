@@ -1,12 +1,12 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://designsystemdocspec.org/v0.15.0/common/use-cases.schema.json",
-  "title": "DSDS Use Cases Definition",
-  "description": "Documents what an artifact is used for — when it is the right choice and when a different artifact fits better. An optional `purpose` statement gives the umbrella answer. `items` holds scenario-driven use cases, each marked 'recommended' or 'discouraged'.",
+  "$id": "https://designsystemdocspec.org/v0.15.2/common/use-cases.schema.json",
+  "title": "Use cases definition",
+  "description": "When an artifact is the right choice and when another fits better. An optional `purpose` sums up what it is for; `items` holds scenarios marked 'recommended' or 'discouraged'.",
   "$defs": {
     "useCase": {
       "type": "object",
-      "description": "A single use case. It describes when an artifact or option is or is not a good fit.",
+      "description": "One scenario where an artifact is or isn't a good fit.",
       "required": [
         "description",
         "stance"
@@ -14,7 +14,7 @@
       "properties": {
         "description": {
           "$ref": "rich-text.schema.json#/$defs/richText",
-          "description": "Describes the scenario. Should be concrete and situation-driven — describe the user's situation, not the artifact's features."
+          "description": "The scenario. Describe the user's situation, not the artifact's features."
         },
         "stance": {
           "type": "string",
@@ -22,22 +22,22 @@
             "recommended",
             "discouraged"
           ],
-          "description": "Whether this scenario is one to follow ('recommended') or to avoid ('discouraged')."
+          "description": "'recommended' (use it here) or 'discouraged' (avoid it here)."
         },
         "alternative": {
           "type": "object",
-          "description": "The recommended alternative artifact for this scenario. Usually given for discouraged scenarios, to point the reader toward a better-suited component, pattern, or token.",
+          "description": "A better-suited artifact for this scenario. Usually set on discouraged scenarios.",
           "required": [
             "identifier"
           ],
           "properties": {
             "identifier": {
               "$ref": "entity-ref.schema.json#/$defs/entityIdentifier",
-              "description": "The identifier of the recommended alternative artifact (e.g., 'link', 'radio-group', 'icon-button', 'empty-state')."
+              "description": "Identifier of the alternative artifact (ex: 'link', 'radio-group', 'empty-state')."
             },
             "rationale": {
               "$ref": "rich-text.schema.json#/$defs/richText",
-              "description": "Why the alternative is a better fit for this scenario. Cite semantic differences, accessibility impact, or UX rationale when available."
+              "description": "Why the alternative fits better (semantics, accessibility, or UX)."
             }
           },
           "additionalProperties": false
@@ -47,7 +47,7 @@
     },
     "useCases": {
       "type": "object",
-      "description": "Documents what an artifact is used for — when it is the right choice and when to choose something else. The optional `purpose` statement is the umbrella answer: a short summary of what the artifact is for, framing the use cases beneath it. `items` holds scenario-driven `useCase` entries, each marked 'recommended' (when to use) or 'discouraged' (when to pick an alternative). Use a `use-cases` block to answer *whether* to use the artifact. For *how* to use it correctly, see `guidelines`. For the higher-level beliefs that shape a domain, see `principles`. For *what* it looks like and how it behaves, see variants, states, and anatomy.",
+      "description": "When to use an artifact and when to choose something else. Optional `purpose` sums up what it is for; `items` holds `useCase` scenarios marked 'recommended' or 'discouraged'. Answers *whether* to use the artifact \u2014 for *how*, see `guidelines`; for domain beliefs, see `principles`; for look and behavior, see variants, states, and anatomy.",
       "required": [
         "kind",
         "items"
@@ -56,19 +56,22 @@
         "kind": {
           "type": "string",
           "const": "use-cases",
-          "description": "Identifies this document block as a use-cases block."
+          "description": "Identifies this block as `use-cases`."
         },
         "purpose": {
           "$ref": "rich-text.schema.json#/$defs/richText",
-          "description": "The umbrella purpose statement for the artifact — one or two sentences saying what it is for, framing the use cases in `items` (e.g., 'Buttons trigger immediate actions. They are the primary mechanism for initiating changes within a surface.')."
+          "description": "One or two sentences on what the artifact is for, framing the `items` below (ex: 'Buttons trigger immediate actions within a surface.')."
         },
         "items": {
           "type": "array",
-          "description": "Scenario-driven use cases. They describe when this artifact is or is not the right choice. Order matters: tools SHOULD keep it for display. Authors SHOULD lead with recommended scenarios.",
+          "description": "The use-case scenarios. Order matters: tools SHOULD keep it for display, and authors SHOULD lead with recommended scenarios.",
           "items": {
             "$ref": "#/$defs/useCase"
           },
           "minItems": 1
+        },
+        "$extensions": {
+          "$ref": "extensions.schema.json#/$defs/extensions"
         }
       },
       "additionalProperties": false

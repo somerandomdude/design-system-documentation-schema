@@ -1,0 +1,69 @@
+# Stability and the road to 1.0 — DSDS 0.15.2
+
+DSDS {{VERSION}} is a **pre-1.0 draft**. This page is the contract behind that status. It covers:
+
+- what can change, and how you'll be told
+- what will never change
+- the record of the breaking window we already ran
+- the conditions for declaring 1.0
+
+Read this page, and you can price the risk of adopting now.
+
+## What never changes
+
+Published schema URLs are immutable. Every released version is served under its own path (`https://designsystemdocspec.org/v{{VERSION}}/…`), and a released path is never edited or removed. A document that pins its `$schema` to a released URL will validate against exactly that schema forever. Adopting DSDS at any version is therefore safe in the narrow sense: your documents cannot be broken retroactively — only left behind.
+
+## Version semantics
+
+| Change | Version bump | Your documents |
+|---|---|---|
+| Documentation-only edits | none | Unaffected |
+| Additions and loosenings (new optional fields, new union members, relaxed constraints) | patch | Remain valid unchanged |
+| Tightenings and behavior changes (new constraints, new required fields, moved fields) | minor | May need edits; a changelog entry lists every affected position |
+| Renames and removals | major (post-1.0) / batched minor pre-1.0 | Migration script provided |
+
+Pre-1.0, minors carry tightenings without a deprecation window — that is what pre-1.0 means here. Post-1.0, this table becomes the contract described below.
+
+## Deprecation policy
+
+From 0.13.0 onward, a form scheduled for removal:
+
+1. is marked `deprecated: true` in the schema, where JSON Schema supports it
+2. is flagged by a lint rule (a warning, never blocking)
+3. is documented with its replacement, in the schema description
+4. keeps validating for at least one further minor release
+
+Removals happen only in the release that executes the breaking backlog below. Each removal ships with a migration script (`scripts/migrate-to-*.js` — the same mechanism used for every past migration).
+
+Nothing is currently deprecated: the 0.14.0 window removed both previously deprecated surfaces (`link`'s inter-entity form and chunk's top-level shorthand).
+
+## The breaking backlog — executed at 0.14.0
+
+The backlog below was announced in 0.13.0. We carried it out in full — all at once, as this contract promised — in the 0.14.0 breaking window, with a migration script (`scripts/migrate-to-0.14.js`). Run `scripts/migrate-relationship-links.js` first if your documents still carry relationship-flavored links.
+
+| # | Change | Before | Since 0.14.0 |
+|---|---|---|---|
+| 1 | Block-kind casing | `useCases` | `use-cases` |
+| 2 | Procedural entry naming | `stepEntry.title` (string) | `label` (richText), matching `checklistItem` |
+| 3 | Scale step naming | `scaleStep.label` | `name`, matching sibling entries |
+| 4 | System info naming | `systemName` / `systemVersion` | `name` / `version` |
+| 5 | Status prose property | `description` on status object forms | `note`, matching `lastUpdated`/`lastReviewed`/`docOrigin` |
+| 6 | Event payload naming | `apiEvent.returns` | `payload` |
+| 7 | `link`'s deprecated inter-entity surface | validated with DSDS-010 warning | removed; `relationships` only (DSDS-010 graduated to the schema) |
+| 8 | Chunk's top-level `guidelines`/`useCases` | validated, marked deprecated | removed; `documentBlocks` only |
+| 9 | Draft metadata fields | `governance` / `docOrigin` marked "initial draft" | shapes frozen |
+
+**The backlog is now empty.** No further breaking changes are planned before 1.0. A new entry here would restart the clock on criterion 1 below.
+
+## Criteria for declaring 1.0
+
+1.0 is declared when all of the following hold, and not before:
+
+1. **The breaking backlog is executed** — the 0.14.0 window has shipped with its migration scripts, and at least one subsequent minor has passed without new entries being added to the backlog.
+2. **The draft fields have survived contact** — `governance` and `docOrigin` have been exercised by real documentation for a full review cycle without shape changes.
+3. **A second independent consumer exists** — at least one tool not maintained by the spec author reads or writes DSDS documents in earnest, so the spec's assumptions have been tested from outside.
+4. **The conformance surface is complete** — the [Conformance](conformance.html) page's classes, the normative-statements index, and the negative-fixture suite are published as the versioned conformance kit for independent validators.
+
+## The post-1.0 contract
+
+After 1.0, the 1.x line is **additive only**: new optional fields, new union members, new block kinds. Nothing existing tightens, gets renamed, or disappears. Anything breaking waits for 2.0. It arrives deprecation-first — a lint warning for at least two minors before removal — and ships with a migration script. The immutability guarantee above still applies to every released version.

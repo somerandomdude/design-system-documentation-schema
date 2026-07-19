@@ -1,5 +1,5 @@
 ---
-title: Schema Architecture
+title: Schema architecture
 slug: schema-architecture
 description: "The full DSDS schema reference — document structure, entity properties, document block types, and all shared models."
 ---
@@ -15,7 +15,7 @@ The handful of concepts you'll use constantly:
 - **Document** — `dsdsVersion` plus either a single `entity` or `entityGroups` of entities.
 - **Entity** — a `kind` (`component`, `token`, `theme`, `foundation`, `pattern`, or `guide`) with an `identifier`, a `name`, and usually a `description`.
 - **Metadata** — short facts in the optional `metadata` object: status, tags, links, and more.
-- **Document blocks** — the documentation, in the `documentBlocks` array. Two cover most needs: **`use-cases`** (when to use the thing) and **`guidelines`** (how to use it). **`sections`** holds free-form prose for anything else.
+- **Document blocks** — the documentation, in the `documentBlocks` array. Two cover most needs: **`use-cases`** (when to use the thing) and **`guidelines`** (how to use it). **`sections`** holds free-form documentation content for anything else.
 
 A complete, valid document using only the core:
 
@@ -267,7 +267,7 @@ These properties appear on every entity type. Token and token-group differ sligh
 
 Descriptive fields past `kind`, `identifier`, `name`, and `description` live in the `metadata` object, keyed by field name. Keeping them out of the top level keeps the entity small. It also lets new fields arrive without changing the entity shape. Every field is optional. Each appears at most once, since an object cannot repeat a key.
 
-Two fields offer a string shorthand for the common case. `status` takes a bare value (`"stable"`) or an object with per-platform readiness. `lastUpdated` takes a bare ISO date (`"2026-05-28"`) or an object with a note about what changed.
+Two fields offer a string shorthand for the common case. `status` can be a bare value like `stable`, or an object with per-platform readiness. `lastUpdated` can be a bare ISO date like `2026-05-28`, or an object with a note about what changed.
 
 <ds-metadata-kinds-table />
 
@@ -337,7 +337,7 @@ A broad foundation that governs one domain — color, typography, spacing, eleva
 
 Required properties: `kind`, `identifier`, `name`. (`description` is an optional top-level property; `status` is an optional `metadata` field — see [Entity metadata](#entity-metadata).)
 
-Foundations document base visual traits like color and spacing. They also cover cross-cutting concerns like accessibility, motion, and content rules. The `category` property names the domain (e.g., `"color"`, `"typography"`, `"spacing"`, `"motion"`, `"accessibility"`, `"content"`).
+Foundations document base visual traits like color and spacing. They also cover cross-cutting concerns like accessibility, motion, and content rules. The `category` property names the domain (ex: `"color"`, `"typography"`, `"spacing"`, `"motion"`, `"accessibility"`, `"content"`).
 
 ### Pattern
 
@@ -345,7 +345,7 @@ A broad interaction pattern — a repeating, multi-component answer to a common 
 
 Required properties: `kind`, `identifier`, `name`. (`description` is an optional top-level property; `status` is an optional `metadata` field — see [Entity metadata](#entity-metadata).)
 
-A pattern declares the components it uses as typed `composes` edges in its `relationships` array (with `role` describing what each component does), not through a dedicated block.
+A pattern declares the components it uses as typed `composes` edges in its `relationships` array. The `role` field on each edge describes what that component does. There's no dedicated block for this.
 
 ### Guide
 
@@ -365,7 +365,7 @@ More properties:
 
 <ds-prop-table schema="entities/chunk" def="chunk" />
 
-The `code` object carries the source in one of two forms: **inline** (`code` + `language`) when the source travels with the document, or **referenced** (`src` + `language`) when it lives in an external file the consumer resolves at read time. The referenced `src` is a relative path and follows the same resolution rules as a `$ref` fileRef — no build step inlines it. Structured docs live in `documentBlocks` (and agent-only rules in `agentDocumentBlocks`), both accepting the general block kinds — guidelines, use-cases, accessibility, content, sections, and checklist. (The flat top-level `guidelines` and `useCases` shorthand arrays were removed in the 0.14.0 breaking window; `scripts/migrate-to-0.14.js` folds them into `documentBlocks`.) A chunk declares the components it composes as typed `composes` edges in its `relationships` array.
+The `code` object carries the source in one of two forms. **Inline** (`code` + `language`) means the source travels with the document. **Referenced** (`src` + `language`) means it lives in an external file that the consumer resolves at read time. The referenced `src` is a relative path and follows the same resolution rules as a `$ref` fileRef — no build step inlines it. Structured docs live in `documentBlocks`, and agent-only rules live in `agentDocumentBlocks`. Both accept the general block kinds: guidelines, use-cases, accessibility, content, sections, and checklist. (The flat top-level `guidelines` and `useCases` shorthand arrays were removed in the 0.14.0 breaking window; `scripts/migrate-to-0.14.js` folds them into `documentBlocks`.) A chunk declares the components it composes as typed `composes` edges in its `relationships` array.
 
 ---
 
@@ -439,7 +439,7 @@ Status values MUST be lowercase kebab-case (pattern: `^[a-z][a-z0-9-]*$`). The f
 | `stable` | Production-ready, changes follow semver. |
 | `deprecated` | Scheduled for removal. `deprecationNotice` is required. |
 
-Custom values are permitted (e.g., `"sunset"`, `"archived"`, `"beta"`) and MUST follow the same pattern.
+Custom values are permitted (ex: `"sunset"`, `"archived"`, `"beta"`) and MUST follow the same pattern.
 
 ### Platform status entry
 
@@ -475,17 +475,26 @@ Each entity type accepts only the block types that fit it. Here is why:
 - **Patterns** get structural docs without code detail. They have visual layouts (anatomy), sub-types (variants), and states. They are not single-component code interfaces, so they take no `api` or `design-specifications`.
 - **Foundations** get domain-level docs. They govern a domain through principles, value scales, and motion definitions.
 - **Tokens** get only general block types. They are single values with usage notes but no visual structure or behavior.
-- **Guides** get reading-oriented docs: `steps` procedures, `imports` for setup, and the general `sections` block for prose. They carry no structural or measurable specs.
+- **Guides** get reading-oriented docs: `steps` procedures, `imports` for setup, and the general `sections` block for documentation content. They carry no structural or measurable specs.
 
 <ds-block-scope-table />
 
-**General** (available on all entity types): checklist, guidelines, use-cases, accessibility, content, and sections (free-form narrative prose).
+**General** (available on all entity types): checklist, guidelines, use-cases, accessibility, content, and sections (free-form documentation content).
 
 ### Known naming exceptions
 
-The naming exceptions previously recorded here were executed in the 0.14.0 breaking window: the block kind is now `use-cases`, step entries use `label` (richText), scale steps use `name`, `systemInfo` uses `name`/`version`, the status object forms use `note`, and `apiEvent` uses `payload`. One deliberate exception remains:
+The naming exceptions previously recorded here were resolved in the 0.14.0 breaking window:
 
-- Sub-entry identifiers on anatomy parts, states, variant values, motion entries, and scale steps are unpatterned (values like `2xl` are legal), unlike entity identifiers — a deliberate exception, not drift.
+- the block kind is now `use-cases`
+- step entries use `label` (richText)
+- scale steps use `name`
+- `systemInfo` uses `name`/`version`
+- the status object forms use `note`
+- `apiEvent` uses `payload`
+
+One deliberate exception remains:
+
+- Sub-entry identifiers — on anatomy parts, states, variant values, motion entries, and scale steps — don't follow a pattern. Values like `2xl` are legal here, unlike entity identifiers. This is a deliberate exception, not drift.
 
 New vocabulary MUST be lowercase kebab-case; the exceptions list is not a precedent.
 
@@ -559,7 +568,7 @@ The accessibility block is for **specialized, structured accessibility documenta
 - color contrast pairs
 - reduced-motion behaviors (`animation` → `behavior`)
 
-For **general documentation guidance** — rules with a rationale and a conformance level, like "Provide an aria-label for icon-only buttons" — use a `guidelines` block with `category: "accessibility"`. That is the line between the two: this block records what the artifact *does*; guidelines say what authors *should do*, and why.
+For **general documentation guidance** — rules with a rationale and a conformance level, like "Provide an aria-label for icon-only buttons" — use a `guidelines` block with `category: "accessibility"` instead. Here's the line between the two: this block records what the artifact *does*. Guidelines say what authors *should do*, and why.
 
 <ds-prop-table schema="document-blocks/accessibility" def="accessibility" />
 
@@ -570,7 +579,7 @@ DSDS has no standalone `examples` document block. Instead, the reusable `example
 Each `example` requires at least a `presentation` or a `value` (or both):
 
 - **Presentation**: A visual or interactive demo — one of `presentationImage`, `presentationVideo`, `presentationCode`, or `presentationUrl`.
-- **Value**: A literal value for API property examples (e.g., `"primary"`, `44`, `true`). When given without a presentation, the example is a concrete data point.
+- **Value**: A literal value for API property examples (ex: `"primary"`, `44`, `true`). When given without a presentation, the example is a concrete data point.
 
 Optional `title` and `description` provide context.
 
@@ -581,7 +590,7 @@ The content block is for **specialized, structured content documentation**. Ever
 - a terminology dictionary of recommended labels (`term` → `definition`, with usage context and cross-references)
 - localization entries (`concern` → handling: RTL, text expansion, pluralization)
 
-For **general documentation guidance** — voice, tone, and writing rules with a rationale and a conformance level, like "Use sentence case" — use a `guidelines` block with `category: "content"`. That is the line between the two: a guideline says "Use sentence case" (a _rule_); a content entry says "Add: takes an existing object and uses it in a new context" (a _reference_).
+For **general documentation guidance** — voice, tone, and writing rules with a rationale and a conformance level, like "Use sentence case" — use a `guidelines` block with `category: "content"` instead. Here's the line between the two: a guideline states a rule, like "Use sentence case." A content entry states a reference fact, like "Add: takes an existing object and uses it in a new context."
 
 At least one of `labels` or `localization` must be present.
 
@@ -595,7 +604,7 @@ At least one of `labels` or `localization` must be present.
 
 ### Sections (`sections`)
 
-Free-form prose in titled, optionally nested sections. It is the backbone for overviews, explanations, rationale, and any reading-oriented content the structured blocks miss. It is available on every entity type. Each `sectionEntry` pairs a `title` with an optional rich-text `body`, `examples`, `links`, and nested `sections` for a heading tree. Reach for a structured block first. Use `sections` only for what they cannot express.
+Free-form documentation content in titled, optionally nested sections. It is the backbone for overviews, explanations, rationale, and any reading-oriented content the structured blocks miss. It is available on every entity type. Each `sectionEntry` pairs a `title` with an optional rich-text `body`, `examples`, `links`, and nested `sections` for a heading tree. Reach for a structured block first. Use `sections` only for what they cannot express.
 
 #### Section entry
 
@@ -664,7 +673,7 @@ Events live here, in `api.events` — there is no separate events block. Past th
 
 ### Variants (`variants`)
 
-Documents every dimension of visual or behavioral variation. Each item is one axis of config (e.g., `"size"`, `"emphasis"`, `"full-width"`). Several axes document separate dimensions that combine on their own.
+Documents every dimension of visual or behavioral variation. Each item is one axis of config (ex: `"size"`, `"emphasis"`, `"full-width"`). Several axes document separate dimensions that combine on their own.
 
 Each variant value — and each flag — carries a `tokens` map. These are the token overrides applied when that value is chosen (or the flag is on). Per-variant values live here, on the variants block. `design-specifications` documents only the baseline.
 
@@ -759,7 +768,7 @@ Documents the interaction flow of a pattern as an ordered set of steps. The orde
 
 ## Guide-scoped document block types
 
-Only **guide** entities accept the `steps` block. Guides also accept `imports` and every general block type, including the free-form `sections` block (above), which carries a guide's prose.
+Only **guide** entities accept the `steps` block. Guides also accept `imports` and every general block type, including the free-form `sections` block (above), which carries a guide's documentation content.
 
 ### Steps (`steps`)
 
@@ -839,7 +848,7 @@ Custom values are permitted and SHOULD be lowercase strings matching `^[a-z][a-z
 
 ## Rich text
 
-Fields that hold human prose use the `richText` type: a string read as CommonMark markdown (0.27 or newer). There is no format flag. Plain sentences and inline HTML are both valid markdown, so write whichever fits, and tools render the value as markdown.
+Fields that hold human-written documentation content use the `richText` type: a string read as CommonMark markdown (0.27 or newer). There is no format flag. Plain sentences and inline HTML are both valid markdown, so write whichever fits, and tools render the value as markdown.
 
 ---
 
@@ -905,7 +914,7 @@ Each `modifications` entry has this shape:
 | Property | Type | Required | Description |
 |---|---|---|---|
 | `changeType` | `string` | Yes | `"added"`, `"modified"`, `"removed"`, or `"inherited"`. |
-| `target` | `string` | No | What was changed — a property name, variant name, guideline, etc. (e.g., `"variant:enterprise"`, `"prop:theme"`, `"guideline:accessibility"`). |
+| `target` | `string` | No | What was changed — a property name, variant name, guideline, etc. (ex: `"variant:enterprise"`, `"prop:theme"`, `"guideline:accessibility"`). |
 | `description` | `richText` | Yes | A human-readable description of the change. |
 
 ```json
@@ -939,7 +948,9 @@ See [`examples/extension-system.dsds.json`](examples/extension-system.dsds.json)
 
 ## Extensions
 
-The root document, each entity group, and each entity can carry a `$extensions` property. Keys MUST use vendor namespaces; reverse domain notation is recommended. A tool that does not know an extension MUST keep it. Extension data SHOULD NOT repeat info already in core fields.
+The root document, each entity group, each entity, and each document block can carry a `$extensions` property. Keys MUST use vendor namespaces; reverse domain notation is recommended. A tool that does not know an extension MUST keep it. Extension data SHOULD NOT repeat info already in core fields.
+
+A document block stays closed even with `$extensions` available — an unrecognized bare property still fails validation. `$extensions` is the one sanctioned way to attach extra structured data to a specific block (a Figma node id on `anatomy`, a lint-rule id on a `guideline`) without opening the block up to typos.
 
 ```json
 {
@@ -960,10 +971,10 @@ The root document, each entity group, and each entity can carry a `$extensions` 
 
 ### Casing
 
-Casing follows **position and provenance**:
+Casing follows **where a term appears and where it came from**:
 
 - **Schema identifiers** — `$def` type names and property names — are **camelCase** (`tokenGroup`, `documentBlocks`).
-- **Enumerated string values** are **kebab-case** (`token-group`, `visual-design`, `recommended`). Values quote an outside standard's casing only when the token has no natural lowercase form: WCAG levels (`A`, `AA`, `AAA`). RFC 2119 levels are DSDS-native data and follow kebab-case (`must`, `must-not`); the capitalized keywords belong to prose.
+- **Enumerated string values** are **kebab-case** (`token-group`, `visual-design`, `recommended`). Values quote an outside standard's casing only when the token has no natural lowercase form: WCAG levels (`A`, `AA`, `AAA`). RFC 2119 levels are DSDS-native data and follow kebab-case (`must`, `must-not`); the capitalized keywords belong in documentation content.
 - Keys beginning with `$` (`$schema`, `$ref`, `$extensions`) are reserved.
 
 So one concept can appear in several forms — the `token-group` kind and the `tokenGroup` type — because each follows its position's rule.

@@ -1,22 +1,24 @@
 // ═══════════════════════════════════════════════════════════════════════════
 // <ds-callout>
 //
-// A callout / info box with an accent left border and subtle background.
-// Replaces the `.callout` CSS class with an encapsulated web component.
+// A callout / info box: a bold title above a plain white content box —
+// the variant's meaning lives in the title's color, not an icon.
 //
 // Attributes:
 //   variant — "info" | "tip" | "warning" (default: "info")
+//   title   — bold lead-in text shown above the content (e.g. "Tip:").
+//             Omit for no title.
 //
 // Slots:
-//   (default) — callout content (may include <strong>, links, lists, etc.)
+//   (default) — callout content (may include links, lists, etc.)
 //
 // Usage:
-//   <ds-callout>
-//     <strong>Key idea:</strong> Some important information here.
+//   <ds-callout title="Key idea:">
+//     Some important information here.
 //   </ds-callout>
 //
-//   <ds-callout variant="tip">
-//     <strong>Tip:</strong> A helpful suggestion.
+//   <ds-callout variant="tip" title="Tip:">
+//     A helpful suggestion.
 //   </ds-callout>
 // ═══════════════════════════════════════════════════════════════════════════
 
@@ -27,43 +29,51 @@ const CALLOUT_CSS = `
   :host { display: block; }
 
   .callout {
-    border-left: var(--ds-border-width-xl) solid var(--ds-color-accent);
-    background: var(--ds-color-accent-subtle);
-    padding: var(--ds-space-2) var(--ds-space-4);
-    border-radius: 0 var(--ds-radius-lg) var(--ds-radius-lg) 0;
-    margin: var(--ds-space-2) 0 var(--ds-space-6);
+    margin: var(--ds-space-2) 0 var(--ds-space-8);
     font-family: ${FONT.body};
-    font-size: var(--ds-font-size-md);
+    font-size: var(--ds-font-size-base);
     line-height: var(--ds-line-height-loose);
     color: var(--ds-color-text);
   }
 
-  .callout--warning {
-    border-left-color: var(--ds-color-warning-text);
-    background: var(--ds-color-note-warning-bg);
+  .callout__title {
+    font-weight: var(--ds-font-weight-bold);
+    /* Default ("info") variant. */
+    background: var(--ds-color-text);
+    color: var(--ds-color-text-inverse);
+    display: inline-block;
+    padding: var(--ds-space-2) var(--ds-space-4);
+    padding-inline-end: calc(var(--ds-space-4) + var(--ds-space-2));
   }
 
-  .callout--tip {
-    border-left-color: var(--ds-color-encouraged-text);
-    background: var(--ds-color-encouraged-bg);
+  .callout__title:empty {
+    display: none;
+  }
+
+  .callout--warning .callout__title { background: var(--ds-color-warning-text); }
+  .callout--tip .callout__title { background: var(--ds-color-encouraged-text); }
+
+  .callout__content {
+    background: var(--ds-color-bg-inverse);
+    padding: var(--ds-space-4);
   }
 
   ::slotted(strong) {
-    color: var(--ds-color-accent);
+    background: var(--ds-color-accent);
   }
 
   :host([variant="warning"]) ::slotted(strong) {
-    color: var(--ds-color-warning-text);
+    background: var(--ds-color-warning-text);
   }
 
   :host([variant="tip"]) ::slotted(strong) {
-    color: var(--ds-color-encouraged-text);
+    background: var(--ds-color-encouraged-text);
   }
 
   ::slotted(ol),
   ::slotted(ul) {
     margin: var(--ds-space-2) 0 0;
-    padding-left: var(--ds-space-5);
+    padding-inline-start: var(--ds-space-4);
   }
 
   ::slotted(a) {
@@ -71,33 +81,45 @@ const CALLOUT_CSS = `
     text-decoration-thickness: 1px;
     text-underline-offset: 2px;
   }
+
+  ::slotted(p:first-child) {
+    margin-top: 0;
+  }
+
+  ::slotted(p:last-child) {
+    margin-bottom: 0 !important;
+  }
 `;
 
 export class DsCallout extends HTMLElement {
   static get observedAttributes() {
-    return ["variant"];
+    return ["variant", "title"];
   }
 
   constructor() {
     super();
     this._shadow = createShadow(this, CALLOUT_CSS);
     this._shadow.innerHTML =
-      '<div class="callout" part="callout"><slot></slot></div>';
+      '<div class="callout" part="callout">' +
+      '<span class="callout__title" part="title"></span>' +
+      '<div class="callout__content" part="content"><slot></slot></div>' +
+      "</div>";
   }
 
   connectedCallback() {
-    this._updateVariant();
+    this._render();
   }
 
   attributeChangedCallback() {
-    this._updateVariant();
+    this._render();
   }
 
-  _updateVariant() {
+  _render() {
     const variant = this.getAttribute("variant") || "info";
+    const title = this.getAttribute("title") || "";
     const el = this._shadow.querySelector(".callout");
-    if (el) {
-      el.className = "callout callout--" + variant;
-    }
+    const titleEl = this._shadow.querySelector(".callout__title");
+    if (el) el.className = "callout callout--" + variant;
+    if (titleEl) titleEl.textContent = title;
   }
 }

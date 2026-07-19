@@ -2,85 +2,100 @@
 // <ds-badge>
 //
 // Attributes:
-//   variant — "stable" | "experimental" | "draft" | "deprecated" |
-//             "required" | "encouraged" | "prohibited" | "informational" |
-//             "kind" | "category" | "token-type" | (default: neutral)
-//   size    — "sm" | "md" (default: "md")
+//   variant — "kind" | "experimental" | (default: neutral)
 //
 // Content:
 //   Text label inside the element.
+//
+// Design: a white chip with a small color-coded icon block on the left —
+// the variant's meaning lives in the block's color + icon, not the chip's
+// overall background.
 // ═══════════════════════════════════════════════════════════════════════════
 
-import { createShadow, BASE_RESET, FONT } from "./_shared.js";
+import { createShadow, BASE_RESET, FONT, loadIcon } from "./_shared.js";
+
+const BADGE_ICON_NAME = {
+  kind: "info",
+  experimental: "flask",
+  neutral: "dot",
+};
 
 const BADGE_CSS = `
   ${BASE_RESET}
   :host { display: inline-flex; vertical-align: middle; }
 
   .badge {
-    display: inline-block;
+    display: inline-flex;
+    align-items: stretch;
     font-family: ${FONT.body};
-    font-weight: var(--ds-font-weight-semibold);
     text-transform: none;
-    letter-spacing: var(--ds-tracking-normal);
-    border-radius: var(--ds-radius-md);
     white-space: nowrap;
-    line-height: 1;
+    height: 24px;
+    font-size: .75em;
+    background: var(--ds-color-bg-inverse);
+    color: var(--ds-color-text);
   }
 
-  /* Sizes */
-  :host([size="sm"]) .badge { font-size: var(--ds-font-size-2xs); padding: 2px var(--ds-space-1); }
-  .badge                     { font-size: var(--ds-font-size-xs); padding: 3px var(--ds-space-2); }
+  .badge__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    flex-shrink: 0;
+    color: var(--ds-color-bg-inverse);
+  }
 
-  /* Variants — Status */
-  .badge--stable       { background: var(--ds-color-success-bg); color: var(--ds-color-success-text); }
-  .badge--experimental { background: var(--ds-color-warning-bg); color: var(--ds-color-warning-text); }
-  .badge--draft        { background: var(--ds-color-neutral-bg); color: var(--ds-color-neutral-text); }
-  .badge--deprecated   { background: var(--ds-color-danger-bg); color: var(--ds-color-danger-text); }
+  .badge__icon svg {
+    display: block;
+  }
 
-  /* Variants — Requirement */
-  .badge--required     { background: var(--ds-color-required-bg); color: var(--ds-color-required-text); }
-  .badge--encouraged   { background: var(--ds-color-encouraged-bg); color: var(--ds-color-encouraged-text); }
-  .badge--prohibited   { background: var(--ds-color-prohibited-bg); color: var(--ds-color-prohibited-text); }
-  .badge--informational { background: var(--ds-color-neutral-bg); color: #424242; }
-  .badge--discouraged  { background: var(--ds-color-discouraged-bg); color: var(--ds-color-discouraged-text); }
+  .badge__label {
+    display: inline-flex;
+    align-items: center;
+    padding: 0 0.75em;
+  }
 
-  /* Variants — Taxonomy */
-  .badge--kind         { background: var(--ds-color-info-bg); color: var(--ds-color-info-text); }
-  .badge--category     { background: var(--ds-color-purple-bg); color: var(--ds-color-purple-text); }
-  .badge--token-type   { background: var(--ds-color-indigo-bg); color: var(--ds-color-indigo-text); }
-
+  /* Used by <ds-def-section>'s type badge */
+  .badge--kind .badge__icon { background: var(--ds-color-text); }
+  /* Used by <ds-prop-table>'s "at least one" conditional marker */
+  .badge--experimental .badge__icon { background: var(--ds-color-warning-text); }
   /* Default / neutral */
-  .badge--neutral {
-    background: var(--ds-color-accent-subtle);
-    color: var(--ds-color-accent);
-  }
+  .badge--neutral .badge__icon { background: var(--ds-color-accent); }
 `;
 
 export class DsBadge extends HTMLElement {
   static get observedAttributes() {
-    return ["variant", "size"];
+    return ["variant"];
   }
 
   constructor() {
     super();
     this._shadow = createShadow(this, BADGE_CSS);
-    this._shadow.innerHTML = `<span class="badge" part="badge"><slot></slot></span>`;
+    this._shadow.innerHTML =
+      '<span class="badge" part="badge">' +
+      // Decorative — the variant's meaning is redundant with the visible
+      // label text next to it, so this is hidden from assistive tech.
+      '<span class="badge__icon" part="icon" aria-hidden="true"></span>' +
+      '<span class="badge__label" part="label"><slot></slot></span>' +
+      "</span>";
   }
 
   connectedCallback() {
-    this._updateClass();
+    this._updateVariant();
   }
 
   attributeChangedCallback() {
-    this._updateClass();
+    this._updateVariant();
   }
 
-  _updateClass() {
+  _updateVariant() {
     const variant = this.getAttribute("variant") || "neutral";
     const el = this._shadow.querySelector(".badge");
-    if (el) {
-      el.className = "badge badge--" + variant;
-    }
+    const icon = this._shadow.querySelector(".badge__icon");
+    if (el) el.className = "badge badge--" + variant;
+    const name = BADGE_ICON_NAME[variant] || "dot";
+    loadIcon(name).then((svg) => {
+      if (icon) icon.innerHTML = svg;
+    });
   }
 }

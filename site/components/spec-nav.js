@@ -8,7 +8,7 @@
 //   title       — title text shown at the top (e.g. "DSDS 0.1")
 //   title-href  — link for the title (default: "index.html")
 //   active      — slug of the currently active page
-//   open        — boolean, reflects mobile open/closed state
+//   open        — boolean, whether the mobile links section is expanded
 //
 // Content model (light DOM):
 //   Top-level <a> elements become nav links.
@@ -19,9 +19,11 @@
 //   `active` attribute for highlighting.
 //
 // Mobile behavior:
-//   At ≤900px the nav is off-screen by default (translateX(-100%)).
-//   Setting the `open` attribute slides it into view.
-//   <ds-nav-toggle> controls the `open` attribute externally.
+//   The nav itself never hides — at ≤900px the links section (.nav__items)
+//   collapses to 0 height by default, and the logo in the title bar is
+//   replaced by a menu button in the same spot. Clicking it (or setting the
+//   `open` attribute) expands the links section back to its normal,
+//   desktop-style height.
 //
 // Usage:
 //   <ds-spec-nav title="DSDS 0.1" title-href="index.html" active="index">
@@ -34,80 +36,121 @@
 //   </ds-spec-nav>
 // ═══════════════════════════════════════════════════════════════════════════
 
-import { createShadow, esc, BASE_RESET, FONT } from "./_shared.js";
+import { createShadow, esc, BASE_RESET, FONT, loadIcon } from "./_shared.js";
 
 const SPEC_NAV_CSS = `
   ${BASE_RESET}
   :host {
     display: block;
     position: fixed;
-    top: 0;
-    left: 0;
-    bottom: 0;
+    inset-block-start: 0;
+    inset-inline-start: 0;
+    inset-block-end: 0;
     width: var(--ds-width-nav, 240px);
     z-index: var(--ds-z-nav, 100);
   }
 
   .nav {
     position: absolute;
-    inset: 0;
-    background: var(--ds-color-bg-dark, #1b1f24);
-    color: var(--ds-color-text-on-dark, #c9cdd3);
-    overflow-y: auto;
-    padding: var(--ds-space-6, 24px) 0;
+    inset: 1em;
+    color: var(--ds-color-text);
+    padding: 0;
     font-family: ${FONT.body};
-    -webkit-overflow-scrolling: touch;
+    display: flex;
+    flex-direction: column;
   }
 
   /* ── Title ──────────────────────────────────────────── */
   .nav__title {
-    font-size: var(--ds-font-size-base, 0.8125rem);
-    font-weight: var(--ds-font-weight-bold, 700);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: var(--ds-font-size-base);
+    font-weight: var(--ds-font-weight-bold);
     letter-spacing: 0;
     text-transform: none;
-    color: var(--ds-color-text-on-dark-heading, #ffffff);
-    padding: 0 var(--ds-space-4, 16px);
-    margin-bottom: var(--ds-space-6, 24px);
+    background: var(--ds-color-text);
+    color: var(--ds-color-bg-inverse);
+    padding: var(--ds-space-4);
   }
 
   .nav__title a {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+    flex: 1;
     color: inherit;
     text-decoration: none;
+    line-height: 1.2;
+  }
+
+  .nav__logo {
+    flex-shrink: 0;
+  }
+
+  /* Menu toggle — takes over the logo's spot at mobile widths. */
+  .nav__menu-btn {
+    display: none;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    padding: 0;
+    background: none;
+    border: none;
+    color: inherit;
+    font-size: 1.1rem;
+    line-height: 1;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .nav__menu-icon {
+    display: flex;
+  }
+
+  .nav__menu-icon svg {
+    display: block;
   }
 
   /* ── Items container ────────────────────────────────── */
   .nav__items {
-    margin-bottom: var(--ds-space-4, 16px);
+    padding: var(--ds-space-4) 0;
+    overflow-y: auto;
+    max-height: 100%;
+    background: var(--ds-color-bg-inverse);
   }
 
   /* ── Top-level links ────────────────────────────────── */
   .nav__link {
     display: block;
-    padding: 5px var(--ds-space-4, 16px);
-    color: var(--ds-color-text-on-dark, #c9cdd3);
+    margin: 0 4px;
+    padding: 6px calc(var(--ds-space-4) - 4px);
+    color: var(--ds-color-text);
     text-decoration: none;
-    font-size: var(--ds-font-size-base, 0.8125rem);
-    line-height: var(--ds-line-height-normal, 1.4);
-    transition: background var(--ds-transition-fast, 0.1s ease),
-                color var(--ds-transition-fast, 0.1s ease);
-    border-left: var(--ds-border-width-lg, 3px) solid transparent;
+    font-size: var(--ds-font-size-base);
+    font-weight: 500;
+    line-height: var(--ds-line-height-normal);
+    border-inline-start: var(--ds-border-width) solid transparent;
+    transition: background-color var(--ds-duration-base) var(--ds-ease-standard),
+      color var(--ds-duration-base) var(--ds-ease-standard);
   }
 
   .nav__link:hover {
-    background: var(--ds-color-bg-dark-hover, #2a2f36);
-    color: var(--ds-color-text-on-dark-heading, #ffffff);
+    background: #1a1a1a;
+    color: #fff;
   }
 
   .nav__link--active {
-    background: var(--ds-color-bg-dark-active, #363b44);
-    color: var(--ds-color-text-on-dark-heading, #ffffff);
-    border-left-color: var(--ds-color-accent, #0055b3);
-    font-weight: var(--ds-font-weight-medium, 500);
+    background: #1a1a1a;
+    color: #fff;
   }
 
   /* ── Group toggle ───────────────────────────────────── */
   .nav__group {
-    margin-top: var(--ds-space-4, 16px);
+    margin-top: var(--ds-space-4);
   }
 
   .nav__group-toggle {
@@ -115,19 +158,18 @@ const SPEC_NAV_CSS = `
     align-items: center;
     justify-content: space-between;
     width: 100%;
-    padding: 6px var(--ds-space-4, 16px);
+    padding: 6px var(--ds-space-4);
     background: none;
     border: none;
-    border-left: var(--ds-border-width-lg, 3px) solid transparent;
-    color: var(--ds-color-nav-group, #808690);
+    border-inline-start: var(--ds-border-width) solid transparent;
+    color: var(--ds-color-text);
     font-family: ${FONT.body};
-    font-size: var(--ds-font-size-xs, 0.6875rem);
-    font-weight: var(--ds-font-weight-semibold, 600);
+    font-size: var(--ds-font-size-xs);
+    font-weight: var(--ds-font-weight-bold);
     letter-spacing: 0;
     text-transform: none;
     cursor: default;
-    text-align: left;
-    transition: color var(--ds-transition-fast, 0.1s ease);
+    text-align: start;
   }
 
   .nav__group-arrow {
@@ -137,23 +179,34 @@ const SPEC_NAV_CSS = `
   /* ── Group children — always visible ────────────────── */
   .nav__group-children {
     display: block;
-    padding-bottom: var(--ds-space-1, 4px);
+    padding-bottom: var(--ds-space-1);
   }
 
   .nav__link--child {
-    padding-left: var(--ds-space-4, 16px);
-    font-size: var(--ds-font-size-base, 0.8125rem);
+    font-size: var(--ds-font-size-base);
   }
 
-  /* ── Mobile: slide off-screen by default ────────────── */
+  /* ── Mobile: nav stays put; only the links section collapses ───────── */
   @media (max-width: 900px) {
-    :host {
-      transform: translateX(-100%);
-      transition: transform var(--ds-transition-slow, 0.2s ease);
+    .nav__menu-btn {
+      display: flex;
     }
 
-    :host([open]) {
-      transform: translateX(0);
+    .nav__logo {
+      display: none;
+    }
+
+    .nav__items {
+      max-height: 0;
+      padding-top: 0;
+      padding-bottom: 0;
+      overflow: hidden;
+    }
+
+    :host([open]) .nav__items {
+      max-height: 100%;
+      padding: var(--ds-space-4) 0;
+      overflow-y: auto;
     }
   }
 
@@ -173,9 +226,12 @@ export class DsSpecNav extends HTMLElement {
   constructor() {
     super();
     this._shadow = createShadow(this, SPEC_NAV_CSS);
+    this._onKeydown = this._onKeydown.bind(this);
   }
 
   connectedCallback() {
+    document.addEventListener("keydown", this._onKeydown);
+
     // Light-DOM children (<a>, <ds-nav-group>) may not be parsed yet when
     // a blocking <script> in <head> registers the element — the parser
     // upgrades the element the instant it sees the opening tag, before it
@@ -194,11 +250,29 @@ export class DsSpecNav extends HTMLElement {
     }
   }
 
+  disconnectedCallback() {
+    document.removeEventListener("keydown", this._onKeydown);
+  }
+
   attributeChangedCallback(name) {
-    // The `open` attribute is handled purely by CSS (:host([open])).
-    if (name === "open") return;
+    if (name === "open") {
+      this._syncMenuButton();
+      return;
+    }
     // Only re-render after the initial render has happened.
     if (this._rendered && this.isConnected) this._render();
+  }
+
+  get open() {
+    return this.hasAttribute("open");
+  }
+
+  set open(val) {
+    if (val) {
+      this.setAttribute("open", "");
+    } else {
+      this.removeAttribute("open");
+    }
   }
 
   _render() {
@@ -206,13 +280,21 @@ export class DsSpecNav extends HTMLElement {
     const title = this.getAttribute("title") || "";
     const titleHref = this.getAttribute("title-href") || "index.html";
     const active = this.getAttribute("active") || "";
+    const isOpen = this.open;
 
     const titleHtml = title
-      ? '<div class="nav__title"><a href="' +
+      ? '<div class="nav__title">' +
+        '<button class="nav__menu-btn" part="menu-btn" type="button" aria-label="Toggle navigation" aria-expanded="' +
+        (isOpen ? "true" : "false") +
+        // The button's aria-label already names the control; its icon is
+        // decorative and filled in async once loadIcon() resolves below.
+        '"><span class="nav__menu-icon" aria-hidden="true"></span></button>' +
+        '<a href="' +
         esc(titleHref) +
-        '">' +
+        '"><ds-logo class="nav__logo" size="2rem" fill="#fff" aria-hidden="true"></ds-logo><span>' +
         esc(title) +
-        "</a></div>"
+        "</span></a>" +
+        "</div>"
       : "";
 
     const itemsHtml = this._buildFromChildren(active);
@@ -224,6 +306,37 @@ export class DsSpecNav extends HTMLElement {
       itemsHtml +
       "</div>" +
       "</nav>";
+
+    const btn = this._shadow.querySelector(".nav__menu-btn");
+    if (btn) {
+      btn.addEventListener("click", () => {
+        this.open = !this.open;
+      });
+    }
+
+    this._updateMenuIcon(isOpen);
+  }
+
+  _syncMenuButton() {
+    const isOpen = this.open;
+    const btn = this._shadow.querySelector(".nav__menu-btn");
+    if (btn) btn.setAttribute("aria-expanded", isOpen ? "true" : "false");
+    this._updateMenuIcon(isOpen);
+  }
+
+  _updateMenuIcon(isOpen) {
+    const icon = this._shadow.querySelector(".nav__menu-icon");
+    loadIcon(isOpen ? "close" : "menu").then((svg) => {
+      if (icon) icon.innerHTML = svg;
+    });
+  }
+
+  _onKeydown(e) {
+    if (e.key === "Escape" && this.open) {
+      this.open = false;
+      const btn = this._shadow.querySelector(".nav__menu-btn");
+      if (btn) btn.focus();
+    }
   }
 
   /**

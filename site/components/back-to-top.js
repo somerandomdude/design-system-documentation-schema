@@ -1,4 +1,4 @@
-import { createShadow, esc, BASE_RESET, FONT } from './_shared.js';
+import { createShadow, esc, BASE_RESET, FONT } from "./_shared.js";
 
 const BACK_TO_TOP_CSS = `
   ${BASE_RESET}
@@ -6,12 +6,12 @@ const BACK_TO_TOP_CSS = `
 
   a {
     display: inline-block;
-    margin-top: var(--ds-space-12);
+    margin-top: var(--ds-space-8);
     font-family: ${FONT.body};
     font-size: var(--ds-font-size-base);
-    color: var(--ds-color-text-secondary);
+    color: var(--ds-color-text);
     text-decoration: none;
-    transition: color var(--ds-transition-normal);
+    transition: color var(--ds-duration-fast) var(--ds-ease-standard);
   }
 
   a:hover {

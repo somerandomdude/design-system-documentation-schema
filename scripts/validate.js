@@ -277,10 +277,12 @@ function validateExamples(ajv) {
   const validate = ajv.compile(schema);
 
   // Examples plus the real-world documents in test/ (test/invalid/ has its
-  // own must-fail pass in Part 4).
+  // own must-fail pass in Part 4; Sanity UI fixtures are excluded from tests).
   const files = findFilesRecursive(EXAMPLES_DIR, ".dsds.json").concat(
     findFilesRecursive(path.join(ROOT, "test"), ".dsds.json").filter(
-      (f) => !f.includes(`${path.sep}invalid${path.sep}`),
+      (f) =>
+        !f.includes(`${path.sep}invalid${path.sep}`) &&
+        !f.includes("sanity-ui"),
     ),
   );
 
@@ -921,7 +923,9 @@ function validateSemantics() {
 
   const files = findFilesRecursive(EXAMPLES_DIR, ".dsds.json").concat(
     findFilesRecursive(path.join(ROOT, "test"), ".dsds.json").filter(
-      (f) => !f.includes(`${path.sep}invalid${path.sep}`),
+      (f) =>
+        !f.includes(`${path.sep}invalid${path.sep}`) &&
+        !f.includes("sanity-ui"),
     ),
   );
   let passed = 0;

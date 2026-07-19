@@ -1,12 +1,12 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://designsystemdocspec.org/v0.15.0/entities/guide.schema.json",
-  "title": "DSDS Guide Definitions",
-  "description": "Defines documents for long-form, reading-oriented guidance that is not tied to a single component, token, foundation, or pattern. A guide covers getting-started walkthroughs, contribution instructions, tutorials, conceptual overviews, migration guides, and any other narrative docs a design system needs. A guide document holds identity and metadata. The `category` metadata field sets the kind of guide (getting-started, contribution, tutorial, and so on). This keeps the entity flexible enough for any guide. The `metadata` object holds optional fields. The `documentBlocks` array holds structured docs as typed entries: narrative sections, procedures, guidelines, and use-cases.",
+  "$id": "https://designsystemdocspec.org/v0.15.2/entities/guide.schema.json",
+  "title": "Guide definitions",
+  "description": "A guide is long-form guidance not tied to one component, token, foundation, or pattern \u2014 a getting-started walkthrough, contribution guide, tutorial, overview, or migration guide. It holds identity and metadata; the `category` field says what kind of guide it is. Its docs are sections, procedures (steps), guidelines, and use-cases.",
   "$defs": {
     "guide": {
       "type": "object",
-      "description": "A long-form, reading-oriented document: a getting-started walkthrough, a contribution guide, a tutorial, a conceptual overview, a migration guide, or any narrative guidance the system needs. Guides fill the gap left by the artifact-bound entities (component, token, foundation, pattern). Those entities document a single thing, not a journey or a concept. The top level holds its identity: `identifier`, `name`, and `description`. The `metadata` object holds optional fields. Use `category` (e.g., 'getting-started', 'contribution', 'tutorial', 'concept', 'migration') to classify the guide, and `tags` for finer-grained discovery. The `documentBlocks` array holds structured docs as typed entries: sections (narrative prose), steps (procedures), guidelines, use-cases, imports, accessibility, and content.",
+      "description": "A long-form document meant to be read: a getting-started walkthrough, a contribution guide, a tutorial, an overview, or a migration guide. Other entities each document one thing (a component, token, foundation, pattern); a guide fills the gap for a journey or a concept instead. Its identity is `identifier`, `name`, and `description`. Use `category` (ex: 'getting-started', 'tutorial', 'migration') to classify it, and `tags` for discovery. Its docs cover sections, steps, guidelines, use-cases, imports, accessibility, and content.",
       "required": [
         "kind",
         "identifier",
@@ -21,11 +21,11 @@
         "identifier": {
           "type": "string",
           "pattern": "^[a-z][a-z0-9-]*$",
-          "description": "Machine-readable identifier for the guide (e.g., 'getting-started', 'contributing', 'theming-tutorial', 'migrating-to-v2'). MUST be lowercase kebab-case and unique within its entity group."
+          "description": "Machine-readable identifier for the guide (ex: 'getting-started', 'contributing', 'theming-tutorial', 'migrating-to-v2'). MUST be lowercase kebab-case and unique within its entity group."
         },
         "name": {
           "type": "string",
-          "description": "Display name shown in docs (e.g., 'Getting started', 'Contributing', 'Theming tutorial', 'Migrating to v2')."
+          "description": "Display name shown in docs (ex: 'Getting started', 'Contributing', 'Theming tutorial', 'Migrating to v2')."
         },
         "description": {
           "$ref": "../common/rich-text.schema.json#/$defs/richText",
@@ -33,15 +33,15 @@
         },
         "metadata": {
           "$ref": "../metadata/metadata.schema.json#/$defs/entityMetadata",
-          "description": "Optional metadata: the shared entityMetadata fields (see metadata/metadata.schema.json). Use `category` to classify the guide (e.g., 'getting-started', 'contribution', 'tutorial', 'concept', 'migration')."
+          "description": "Optional metadata (see metadata/metadata.schema.json). Use `category` to classify the guide (ex: 'getting-started', 'tutorial', 'migration')."
         },
         "relationships": {
           "$ref": "../common/relationship.schema.json#/$defs/relationships",
-          "description": "Typed dependency edges from this guide to the entities it documents or depends on. Inverse edges are derived by tooling. Use the `links` metadata field for external resources."
+          "description": "Links from this guide to the entities it covers or depends on. Tools derive the reverse edges. Use `links` metadata for external resources instead."
         },
         "documentBlocks": {
           "type": "array",
-          "description": "All structured docs for this guide, as an ordered array of typed document block objects. It accepts the guide-specific kind (steps), the reused imports kind (setup instructions), plus the general kinds (guidelines, use-cases, accessibility, content, sections, checklist). The free-form sections block is a guide's backbone. The `kind` property on each entry sets its shape. A guide reads top to bottom, so order matters and tools SHOULD keep it for display. Put links to external resources in the `links` metadata field or a section's `links`, not in document block entries; point at other entities through the `relationships` array.",
+          "description": "All structured docs for this guide, in order. Accepts `steps`, the reused `imports` kind for setup, and every general kind \u2014 `sections` is the backbone. A guide reads top to bottom, so tools SHOULD keep this order. Put external links in `links` metadata or a section's `links`; point at other entities through `relationships`.",
           "items": {
             "$ref": "../document-blocks/document-blocks.schema.json#/$defs/guideDocumentBlock"
           },
@@ -49,7 +49,7 @@
         },
         "agentDocumentBlocks": {
           "type": "array",
-          "description": "Structured docs for agents (AI/LLM) only — a separate space that accepts the same block kinds as `documentBlocks`. `documentBlocks` is the default: put anything a human reader needs there. Use `agentDocumentBlocks` only for content that helps an agent build correctly but is noise for humans. For example: hard MUST/MUST-NOT rules an agent should treat as firm limits; notes that correct a mistake an agent is likely to make, such as reaching for this entity when a confusable one fits better; constraints backed by test-run evidence; and machine-checkable criteria with verification modes. A hard rule that humans also need (such as an accessibility requirement) belongs in `documentBlocks`, not here. Agent blocks add to the human docs — they never replace or duplicate them. Tools MUST NOT render these blocks in human-facing docs. Agents SHOULD read both arrays, human blocks first.",
+          "description": "Docs for agents (AI/LLM) only, using the same block kinds as `documentBlocks`. Put anything a human needs in `documentBlocks` \u2014 that's the default. Use this only for things that would be noise to a person: hard must/must-not rules, notes that correct a mistake agents commonly make (like picking a similar but wrong entity), evidence-backed constraints, and machine-checkable criteria. A rule humans need too still belongs in `documentBlocks`. This adds to the human docs, it never replaces them. Tools MUST NOT show these blocks to humans. Agents SHOULD read both arrays, human docs first.",
           "items": {
             "$ref": "../document-blocks/document-blocks.schema.json#/$defs/guideDocumentBlock"
           },

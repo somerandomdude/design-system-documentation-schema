@@ -25,7 +25,7 @@ Each fixture pins one guard:
 | `criterion-automated-without-check` | `verification: automated` requires a `check` |
 | `criterion-check-without-verification` | a `check` requires an explicit `verification` mode |
 | `criterion-duplicate-identifier` | semantic: criterion identifiers unique within an entity (DSDS-002) |
-| `criterion-fixture-without-outcome` | criterion fixtures require a declared `outcome` |
+| `criterion-test-case-without-outcome` | criterion test cases require a declared `outcome` |
 | `criterion-manual-with-check` | `verification: manual` forbids a `check` |
 | `criterion-unknown-verification-mode` | `verification` is a closed enum: automated, assisted, manual |
 | `deprecated-as-bare-string` | deprecated status must use the object form |

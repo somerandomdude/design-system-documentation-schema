@@ -20,7 +20,7 @@
  *                                                       # only touch schemas
  *   node scripts/bump-version.js --help
  *
- * <new-version> is a bare version string (e.g., 0.2, 0.1.1, 1.0.0).
+ * <new-version> is a bare version string (ex: 0.2, 0.1.1, 1.0.0).
  * The leading "v" is not included — every URL in this repo is
  * constructed as `/v<version>/`.
  *
@@ -81,7 +81,7 @@ Usage:
   node scripts/bump-version.js <new-version> [options]
 
 Arguments:
-  <new-version>     Bare version string (e.g., 0.2, 0.1.1, 1.0.0).
+  <new-version>     Bare version string (ex: 0.2, 0.1.1, 1.0.0).
 
 Options:
   --dry-run         Print planned changes without modifying anything.
@@ -197,7 +197,7 @@ const NEW_URL_FRAGMENT = `designsystemdocspec.org/v${NEW_VERSION}/`;
 // In the root schema we also rewrite the title and the dsdsVersion.const
 // literal. Both follow the same drift-tolerant approach: match any prior
 // version, rewrite to the target.
-const ROOT_TITLE_REGEX = /(Design System Documentation Spec \(DSDS\) v)[A-Za-z0-9.\-]+/g;
+const ROOT_TITLE_REGEX = /(Design System Doc Spec \(DSDS\) v)[A-Za-z0-9.\-]+/g;
 const DSDS_VERSION_CONST_REGEX = /("dsdsVersion"\s*:\s*\{[\s\S]*?"const"\s*:\s*")([^"]+)(")/;
 
 // In docs and example content, two more string patterns reference the spec
@@ -207,12 +207,12 @@ const DSDS_VERSION_CONST_REGEX = /("dsdsVersion"\s*:\s*\{[\s\S]*?"const"\s*:\s*"
 //      in `.json` files or fenced code blocks inside MDX/markdown). These
 //      represent example DSDS documents that conform to the current spec.
 //
-//   2. Free-form mentions of "Design System Documentation Spec <X>" or
+//   2. Free-form mentions of "Design System Doc Spec <X>" or
 //      "DSDS <X>" in narrative prose (page titles, headings). We require a
 //      digit immediately after to avoid matching unrelated text like
 //      "DSDS sections".
 const DSDS_VERSION_LITERAL_REGEX = /("dsdsVersion"\s*:\s*")([A-Za-z0-9.\-]+)(")/g;
-const SPEC_DISPLAY_NAME_REGEX = /(Design System Documentation Spec )(\d[A-Za-z0-9.\-]*)/g;
+const SPEC_DISPLAY_NAME_REGEX = /(Design System Doc Spec )(\d[A-Za-z0-9.\-]*)/g;
 const DSDS_DISPLAY_NAME_REGEX = /(\bDSDS )(\d[A-Za-z0-9.\-]*)/g;
 
 // Track per-file metrics so we can report what changed and warn on drift.
@@ -362,7 +362,7 @@ for (const file of exampleFiles) {
 
 // Docs (README, MDX content pages): rewrite URL fragments, example
 // `dsdsVersion` literals inside fenced code blocks, and free-form
-// `Design System Documentation Spec <v>` / `DSDS <v>` display strings.
+// `Design System Doc Spec <v>` / `DSDS <v>` display strings.
 for (const file of docFiles) {
   if (processFile(file, false, { rewriteDisplayNames: true })) totalFiles++;
 }

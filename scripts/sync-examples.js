@@ -20,7 +20,7 @@
  *
  *   <!-- dsds:include <path>#/<key>/<nested>/<path> -->
  *     Navigates a dot-like path of keys into the JSON structure.
- *     Array indices are supported (e.g., #/tokenApi/0).
+ *     Array indices are supported (ex: #/tokenApi/0).
  *
  * Paths are resolved relative to the project root (the parent of scripts/).
  *

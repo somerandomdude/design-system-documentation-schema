@@ -1,63 +1,63 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://designsystemdocspec.org/v0.15.0/common/extends.schema.json",
-  "title": "DSDS Extends Definitions",
-  "description": "Shared definitions for declaring inheritance, both between DSDS documents and between single entities. The extends mechanism supports systems-of-systems setups, where one design system builds on a core system. An entity can also declare that it extends a base entity from the parent system.",
+  "$id": "https://designsystemdocspec.org/v0.15.2/common/extends.schema.json",
+  "title": "Extends definitions",
+  "description": "Declares inheritance between DSDS documents and between entities, for a system inheriting from a parent system.",
   "$defs": {
     "documentExtends": {
       "type": "object",
-      "description": "Says that this DSDS document inherits from another DSDS document. The base document supplies the core entities: components, tokens, themes, foundations, and patterns. This document layers on top, adding new entities or extending base ones. The declaration sets up the relationship. The consuming tools handle merge and resolution. A common case: a product-specific system that inherits from an organization's core design system.",
+      "description": "Declares that this document inherits from another DSDS document. The parent document supplies core entities; this document adds to or extends them. The declaration sets up the relationship; consuming tools handle merge and resolution.",
       "required": ["system"],
       "properties": {
         "system": {
           "type": "string",
-          "description": "The name or identifier of the base design system being extended (e.g., 'Acme Core Design System', 'acme-core', '@acme/design-system'). A display name or a package name, not a URL. Tools use it to resolve the base system from a registry, file system, or package manager."
+          "description": "Name or package identifier of the base system (ex: 'Acme Core Design System', '@acme/design-system'), not a URL. Tools use it to resolve the base system."
         },
         "url": {
           "type": "string",
           "format": "uri-reference",
-          "description": "URL or relative path to the base DSDS document (e.g., 'https://design.acme.com/v2/core.dsds.json', './core.dsds.json'). Relative paths are resolved against this document's location. When provided, tools MAY fetch and resolve the base document for merge, validation, or docs generation."
+          "description": "URL or relative path to the base DSDS document (ex: './core.dsds.json'). Relative paths resolve against this document. Tools MAY fetch it for merge, validation, or docs."
         },
         "version": {
           "type": "string",
-          "description": "The version of the base system this document extends (e.g., '2.0.0', '>=2.0.0', '^3.1.0'). Follows semver. When omitted, tools SHOULD resolve to the latest available version."
+          "description": "The parent system version this document extends (ex: '2.0.0', '^3.1.0'), as semver. When omitted, tools SHOULD use the latest."
         },
         "description": {
           "$ref": "rich-text.schema.json#/$defs/richText",
-          "description": "Description of the relationship: what this extension adds, changes, or narrows relative to the base system."
+          "description": "What this extension adds, changes, or narrows relative to the parent."
         }
       },
       "additionalProperties": false
     },
     "entityExtends": {
       "type": "object",
-      "description": "Says that this entity inherits from a base entity in a parent design system. The base entity supplies the core definition: identity, anatomy, API, variants, states, guidelines, and so on. This entity layers on top, adding properties, guidelines, or special behavior. For example, an enterprise Button might extend the core Button. It could add variants, accessibility requirements, or API props while inheriting the core's anatomy, states, and base guidelines. The declaration sets up the relationship. The consuming tools handle merge and resolution.",
+      "description": "Declares that this entity inherits from a parent entity in a parent system. The parent entity supplies the core definition (anatomy, API, variants, states, guidelines); this entity adds or overrides on top.",
       "required": ["identifier"],
       "properties": {
         "identifier": {
           "type": "string",
-          "description": "The identifier of the base entity being extended (e.g., 'button', 'color-text-primary', 'form-validation'). MUST match the `identifier` property of the base entity in the parent system."
+          "description": "Identifier of the parent entity (ex: 'button', 'color-text-primary'). MUST match the base entity's `identifier` in the parent system."
         },
         "system": {
           "type": "string",
-          "description": "The name or identifier of the system that owns the base entity (e.g., 'Acme Core Design System', 'acme-core'). When omitted, the base entity is resolved from the system declared in the root document's `extends` property. When provided, it lets you extend from a system other than the document's default base."
+          "description": "System that owns the parent entity. When omitted, resolves from the root document's `extends`; set it to extend a different system."
         },
         "url": {
           "type": "string",
           "format": "uri-reference",
-          "description": "URL or relative path to the base entity's docs or DSDS definition. Useful for cross-linking in docs sites."
+          "description": "URL or relative path to the parent entity's docs or definition, for cross-linking."
         },
         "version": {
           "type": "string",
-          "description": "The version of the base entity or base system this entity extends (e.g., '2.0.0'). When omitted, the version comes from the document-level extends declaration."
+          "description": "Version of the parent entity or system (ex: '2.0.0'). When omitted, inherits from the document-level `extends`."
         },
         "description": {
           "$ref": "rich-text.schema.json#/$defs/richText",
-          "description": "What this entity adds or changes relative to the base: new variants, more props, overridden guidelines, and so on."
+          "description": "What this entity adds or changes relative to the parent: new variants, more props, overridden guidelines, etc."
         },
         "modifications": {
           "type": "array",
-          "description": "Summary of what this entity changes relative to the base. Each entry describes one change. Tools MAY use these for changelog generation, diff views, or migration guides. When omitted, consuming tools must diff the entities to find the changes.",
+          "description": "Summary of changes relative to the parent, one entry per change. Tools MAY use them for changelogs, diffs, or migration guides; when omitted, tools must diff the entities.",
           "items": {
             "type": "object",
             "required": ["changeType", "description"],
@@ -65,11 +65,11 @@
               "changeType": {
                 "type": "string",
                 "enum": ["added", "modified", "removed", "inherited"],
-                "description": "The kind of change: 'added' (not in the base), 'modified' (changed from the base), 'removed' (in the base but dropped here), 'inherited' (carried from the base unchanged — usually omitted, since inheritance is the default, but useful for docs)."
+                "description": "The kind of change: 'added' (new here), 'modified' (changed from the base), 'removed' (dropped from the base), 'inherited' (carried over unchanged)."
               },
               "target": {
                 "type": "string",
-                "description": "What changed: a property name, guideline kind, variant name, or other identifier (e.g., 'variant:enterprise', 'prop:theme', 'guideline:accessibility', 'state:read-only')."
+                "description": "What changed (ex: 'variant:enterprise', 'prop:theme', 'state:read-only')."
               },
               "description": {
                 "$ref": "rich-text.schema.json#/$defs/richText",

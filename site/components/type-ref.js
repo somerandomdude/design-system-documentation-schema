@@ -1,19 +1,15 @@
-import { createShadow, esc, BASE_RESET, FONT } from './_shared.js';
+import { createShadow, esc, BASE_RESET, FONT } from "./_shared.js";
 
 const TYPE_REF_CSS = `
   ${BASE_RESET}
   :host { display: inline; }
   a {
     font-family: ${FONT.mono};
-    font-size: var(--ds-font-size-md);
-    color: var(--ds-color-accent);
-    text-decoration: none;
-    border-bottom: 1px dashed var(--ds-color-accent);
-    transition: color var(--ds-transition-fast), border-bottom-color var(--ds-transition-fast);
-  }
-  a:hover {
-    color: var(--ds-color-accent-hover);
-    border-bottom-style: solid;
+    font-size: inherit;
+    color: inherit;
+    text-decoration: underline;
+    background: var(--ds-color-bg-inverse);
+    padding: 0 0.25em;
   }
 `;
 
@@ -26,10 +22,23 @@ export class DsTypeRef extends HTMLElement {
     this._shadow = createShadow(this, TYPE_REF_CSS);
   }
   connectedCallback() {
+    // A single requestAnimationFrame tick isn't a reliable guarantee that
+    // this element's light-DOM children (read via textContent below) have
+    // finished parsing — see the equivalent note in spec-nav.js. Waiting
+    // for DOMContentLoaded when the document is still loading avoids an
+    // intermittent empty-link-text race.
     var self = this;
-    requestAnimationFrame(function () {
-      self._render();
-    });
+    if (document.readyState === "loading") {
+      document.addEventListener(
+        "DOMContentLoaded",
+        function () {
+          self._render();
+        },
+        { once: true },
+      );
+    } else {
+      this._render();
+    }
   }
   attributeChangedCallback() {
     if (this.isConnected) this._render();

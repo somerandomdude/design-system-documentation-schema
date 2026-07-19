@@ -1,12 +1,12 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://designsystemdocspec.org/v0.15.0/document-blocks/states.schema.json",
-  "title": "DSDS States Document Block",
-  "description": "Documents all interactive states a component can enter: hover, focus, active, disabled, loading, selected, error, and so on. Each item describes a single state: what triggers it, how appearance and behavior change, which design tokens are overridden, and how the state looks.",
+  "$id": "https://designsystemdocspec.org/v0.15.2/document-blocks/states.schema.json",
+  "title": "States document block",
+  "description": "Every interactive state a component can be in \u2014 hover, focus, disabled, loading, and so on. Each item covers what triggers it, how it looks and behaves, and which tokens change.",
   "$defs": {
     "stateEntry": {
       "type": "object",
-      "description": "A single interactive state of a component. States are transient or persistent visual or behavioral changes triggered by user interaction, system events, or data conditions.",
+      "description": "One state \u2014 a visual or behavioral change triggered by user interaction, a system event, or a data condition.",
       "required": [
         "identifier",
         "description"
@@ -14,11 +14,11 @@
       "properties": {
         "identifier": {
           "type": "string",
-          "description": "Machine-readable state identifier (e.g., 'default', 'hover', 'focus', 'active', 'disabled', 'loading', 'selected', 'error', 'read-only')."
+          "description": "Machine-readable state identifier (ex: 'default', 'hover', 'focus', 'active', 'disabled', 'loading', 'selected', 'error', 'read-only')."
         },
         "name": {
           "type": "string",
-          "description": "Human-readable name (e.g., 'Default', 'Hover', 'Focus', 'Active / Pressed', 'Disabled', 'Loading')."
+          "description": "Human-readable name (ex: 'Default', 'Hover', 'Focus', 'Active / Pressed', 'Disabled', 'Loading')."
         },
         "description": {
           "$ref": "../common/rich-text.schema.json#/$defs/richText",
@@ -26,11 +26,11 @@
         },
         "tokens": {
           "$ref": "../common/token-overrides.schema.json#/$defs/tokenOverrides",
-          "description": "Design token overrides applied when this state is active, as the shared token-override map: keys are token-purpose names, values are documented token identifiers. List only tokens that change from the default state. Each state carries its own overrides here; on components, baseline (default-state) values live on the design-specifications block (patterns have no such block — their anatomy carries the baseline)."
+          "description": "Token overrides for this state \u2014 only the ones that change from the default. The default values live on `design-specifications` for components (patterns don't have that block \u2014 their baseline lives in `anatomy`)."
         },
         "rationale": {
           "$ref": "../common/rich-text.schema.json#/$defs/richText",
-          "description": "Why this state exists — the user need or design rationale it addresses."
+          "description": "Why this state exists \u2014 the user need or design rationale it addresses."
         },
         "examples": {
           "type": "array",
@@ -45,7 +45,7 @@
     },
     "states": {
       "type": "object",
-      "description": "Documents all interactive states of a component or pattern. Each item describes a single state: what triggers it, how appearance and behavior change, which tokens are overridden, and how it looks. List states in a meaningful order. A typical order is default first, then hover, focus, active, followed by disabled, loading, and other special states. Ownership rule: a state is a runtime condition entered through interaction or system events (hover, focus, disabled, loading); a configuration the consumer chooses up front is a variant — document it in the variants block, not here.",
+      "description": "Every interactive state of a component or pattern. List them in a sensible order \u2014 usually default, hover, focus, active, then disabled, loading, and other special states. A state is something entered at runtime (hover, disabled, loading); a choice made up front is a variant \u2014 document that in `variants` instead.",
       "required": [
         "kind",
         "items"
@@ -54,15 +54,18 @@
         "kind": {
           "type": "string",
           "const": "states",
-          "description": "Identifies this document block as a states spec."
+          "description": "Identifies this block as a states spec."
         },
         "items": {
           "type": "array",
-          "description": "The interactive states. Each item documents a single state with its trigger, visual changes, token overrides, and optional examples. Ordering is significant, so tools SHOULD display states in this order.",
+          "description": "The states, in order. Tools SHOULD keep this order for display.",
           "items": {
             "$ref": "#/$defs/stateEntry"
           },
           "minItems": 1
+        },
+        "$extensions": {
+          "$ref": "../common/extensions.schema.json#/$defs/extensions"
         }
       },
       "additionalProperties": false

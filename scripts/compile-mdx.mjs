@@ -550,7 +550,7 @@ function postProcess(html) {
   // ── 6. Clean up paragraph-wrapped block elements ────────────────────
   //    MDX sometimes wraps block-level web components in <p> tags.
   out = out.replace(
-    /<p>\s*(<(?:ds-code|ds-table|ds-heading|ds-callout|ds-card|ds-example|ds-note|ds-def-section|ds-badge|ds-card-grid)[^>]*>[\s\S]*?<\/(?:ds-code|ds-table|ds-heading|ds-callout|ds-card|ds-example|ds-note|ds-def-section|ds-badge|ds-card-grid)>)\s*<\/p>/g,
+    /<p>\s*(<(?:ds-code|ds-table|ds-heading|ds-callout|ds-example|ds-def-section|ds-badge)[^>]*>[\s\S]*?<\/(?:ds-code|ds-table|ds-heading|ds-callout|ds-example|ds-def-section|ds-badge)>)\s*<\/p>/g,
     "$1",
   );
 

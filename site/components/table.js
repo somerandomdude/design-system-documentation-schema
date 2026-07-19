@@ -5,9 +5,15 @@
 // All styling is encapsulated in shadow DOM — the slotted table inherits
 // consistent typography, spacing, borders, and responsive overflow.
 //
-// Attributes:
-//   striped   — boolean, alternating row backgrounds
-//   compact   — boolean, tighter padding
+// The header row sticks to the top of the viewport as the page scrolls past
+// a tall table. Below 900px wide, wide tables get a horizontal scrollbar
+// instead — a wrapper that scrolls horizontally unavoidably captures the
+// vertical axis too (browsers force overflow-y to "auto" the moment
+// overflow-x isn't "visible"), which re-scopes position:sticky to that
+// wrapper's own scrolling instead of the page's, so the two features can't
+// both apply to the same table at the same time. Page-scroll stickiness is
+// the more useful default; the horizontal-scroll fallback only kicks in
+// where a wide table would otherwise clip content.
 //
 // Usage:
 //   <ds-table>
@@ -18,10 +24,6 @@
 //       </tbody>
 //     </table>
 //   </ds-table>
-//
-//   <ds-table striped compact>
-//     <table>...</table>
-//   </ds-table>
 // ═══════════════════════════════════════════════════════════════════════════
 
 import { createShadow, BASE_RESET, FONT } from "./_shared.js";
@@ -30,8 +32,16 @@ const TABLE_CSS = `
   ${BASE_RESET}
   :host { display: block; margin: var(--ds-space-4) 0; }
 
-  .table-wrap {
-    overflow-x: auto;
+  /* No overflow set here by default: leaving both axes "visible" means this
+     wrapper is NOT a scroll container, so the th's position:sticky (below)
+     sticks relative to the page as it scrolls — see the file header comment
+     for why that's mutually exclusive with a horizontal-scroll wrapper.
+     Below 900px, wide tables get a horizontal scrollbar instead (sacrificing
+     the sticky header there) so content doesn't clip on narrow screens. */
+  @media (max-width: 900px) {
+    .table-wrap {
+      overflow-x: auto;
+    }
   }
 
   /* Style the slotted <table> and its descendants via ::slotted
@@ -40,20 +50,23 @@ const TABLE_CSS = `
      on inheritance + the component's font/color context for cells. */
   ::slotted(table) {
     width: 100%;
-    border-collapse: collapse;
+    max-width: 100%;
+    /* separate + zero spacing (not collapse) so the sticky header's cells
+       keep their background/position correctly in Safari, which has long-
+       standing bugs with position:sticky inside a border-collapsed table. */
+    border-collapse: separate;
+    border-spacing: 0;
     font-family: ${FONT.body};
-    font-size: var(--ds-font-size-md);
+    font-size: var(--ds-font-size-base);
     color: var(--ds-color-text);
-  }
-
-  /* Striped — applied via a class toggled onto the slotted table */
-  :host([striped]) ::slotted(table) {
-    --ds-table-striped: 1;
-  }
-
-  /* Compact — applied via a class toggled onto the slotted table */
-  :host([compact]) ::slotted(table) {
-    --ds-table-compact: 1;
+    /* Same bleed treatment as <ds-prop-table>: nudge the table out to the
+       edges of its container by --ds-space-2 on each side. */
+    position: relative;
+    inset: calc(var(--ds-space-4) * -1);
+    width: calc(100% + (var(--ds-space-4) * 2));
+    max-width: calc(100% + (var(--ds-space-4) * 2));
+    top: 0;
+    bottom: 0;
   }
 `;
 
@@ -66,36 +79,37 @@ export function ensureTableLightStyles() {
   var style = document.createElement("style");
   style.id = TABLE_LIGHT_DOM_ID;
   style.textContent = [
-    "ds-table table { width: 100%; border-collapse: collapse; font-size: var(--ds-font-size-md); }",
-    "ds-table thead { background: transparent; }",
+    "ds-table table {",
+    "  width: calc(100% + (var(--ds-space-4) * 2)); max-width: calc(100% + (var(--ds-space-4) * 2));",
+    "  border-collapse: separate; border-spacing: 0; font-size: var(--ds-font-size-base);",
+    "  position: relative; inset: calc(var(--ds-space-4) * -1); top: 0; bottom: 0;",
+    "}",
     "ds-table th {",
-    "  text-align: left; font-weight: var(--ds-font-weight-semibold); font-size: var(--ds-font-size-sm);",
+    "  text-align: start; font-weight: var(--ds-font-weight-bold); font-size: var(--ds-font-size-sm);",
     "  text-transform: none; letter-spacing: var(--ds-tracking-wide);",
-    "  color: var(--ds-color-text-secondary);",
-    "  padding: var(--ds-space-2) var(--ds-space-4);",
-    "  border-bottom: var(--ds-border-width-md) solid var(--ds-color-border);",
+    "  color: var(--ds-color-text);",
+    "  padding: var(--ds-space-2) var(--ds-space-2);",
     "  white-space: nowrap;",
+    "  position: sticky;",
+    "  top: 0;",
+    "  z-index: var(--ds-z-base, 1);",
+    "  background: var(--ds-color-bg-raised);",
     "}",
     "ds-table td {",
-    "  padding: var(--ds-space-2) var(--ds-space-4);",
-    "  border-bottom: var(--ds-border-width-sm) solid var(--ds-color-border-light);",
+    "  padding: var(--ds-space-4) var(--ds-space-2);",
     "  vertical-align: top; line-height: var(--ds-line-height-relaxed);",
     "}",
     "ds-table tr:last-child td { border-bottom: none; }",
     "ds-table a { color: var(--ds-color-accent); }",
-    "ds-table[striped] tbody tr:nth-child(even) td { background: var(--ds-color-bg-subtle); }",
-    "ds-table[compact] th, ds-table[compact] td { padding: 5px 10px; font-size: 0.8rem; }",
     "ds-table td:first-child { white-space: nowrap; }",
     "ds-table td:first-child ds-code[inline] { white-space: nowrap; }",
+    "th:first-child, td:first-child { padding-inline-start: var(--ds-space-4) !important; }",
+    "th:last-child, td:last-child { padding-inline-end: var(--ds-space-4) !important; }"
   ].join("\n");
   document.head.appendChild(style);
 }
 
 export class DsTable extends HTMLElement {
-  static get observedAttributes() {
-    return ["striped", "compact"];
-  }
-
   constructor() {
     super();
     this._shadow = createShadow(this, TABLE_CSS);

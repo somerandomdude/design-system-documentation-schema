@@ -20,8 +20,8 @@
 const fs = require("fs");
 const path = require("path");
 
-const { buildSpecNav, DIR_GROUPS, readSpecVersion } = require("./nav");
-const { buildSamples } = require("./build-samples");
+const { buildSpecNav, DIR_GROUPS, readSpecVersion, TOP_LINKS } = require("./nav");
+const { renderTemplate } = require("./render-template");
 const {
   esc,
   slug,
@@ -54,8 +54,27 @@ const DEFAULT_DESCRIPTION =
   "A machine-readable format for design system documentation. DSDS structures components, tokens, themes, foundations, patterns, and guides as a single source of truth for humans, parsers, and agents.";
 const SCHEMA_DIR = path.join(SPEC_DIR, "schema");
 const SITE_DIR = path.join(ROOT, "site");
+const CONTENT_DIR = path.join(SITE_DIR, "content");
 const DIST_DIR = path.join(SITE_DIR, "dist");
 const EXAMPLES_DIR = path.join(SPEC_DIR, "examples");
+const TEMPLATES_DIR = path.join(SITE_DIR, "templates");
+const PAGE_TEMPLATE_PATH = path.join(TEMPLATES_DIR, "page.template.html");
+const SUBTEMPLATES_DIR = path.join(TEMPLATES_DIR, "subtemplates");
+
+/**
+ * Render one of the content-block subtemplates in site/templates/subtemplates/.
+ * Each subtemplate is a single, self-contained block of markup (a def-section
+ * wrapper, a callout, an example, ...) with its own {%placeholders%} — the
+ * same substitution model as the page shell, just scoped to one block instead
+ * of the whole page. Trimmed so a template file's own trailing newline
+ * doesn't introduce stray blank lines when callers join blocks together.
+ */
+function renderSub(name, vars) {
+  return renderTemplate(
+    path.join(SUBTEMPLATES_DIR, `${name}.template.html`),
+    vars,
+  ).trim();
+}
 
 /**
  * Auto-discover schema files and build the full page registry.
@@ -190,70 +209,65 @@ function renderPropertyTable(defSchema) {
  * If `exampleData` is provided, it's rendered as a JSON code block after the definition.
  */
 function renderDefinition(defName, defSchema, exampleData) {
-  const parts = [];
   const hid = slug(defName);
+  const content = [];
 
-  // Definition section wrapper — handles heading, description, type badge
-  const descAttr = defSchema.description
-    ? ` description="${esc(defSchema.description)}"`
-    : "";
-  const typeAttr = defSchema.type ? ` type="${esc(defSchema.type)}"` : "";
-  parts.push(
-    `<ds-def-section name="${esc(defName)}" anchor="${hid}"${descAttr}${typeAttr}>`,
-  );
-
-  // If it's a simple string (like status), show that
+  // If it's a simple string (like status), show that and stop — a bare
+  // string def has no properties/oneOf/anyOf/example content to add.
   if (defSchema.type === "string" && !defSchema.properties) {
     if (defSchema.enum) {
-      parts.push(`<p><strong>Allowed values:</strong></p>`);
-      parts.push(`<ul class="enum-list">`);
-      for (const val of defSchema.enum) {
-        parts.push(`<li><ds-code inline>${esc(String(val))}</ds-code></li>`);
-      }
-      parts.push(`</ul>`);
+      const items = defSchema.enum
+        .map((val) => `<li><ds-code inline>${esc(String(val))}</ds-code></li>`)
+        .join("\n");
+      content.push(renderSub("enum-values", { items }));
     }
-    parts.push(`</ds-def-section>`);
-    return parts.join("\n");
+    return renderSub("def-section", {
+      name: esc(defName),
+      anchor: hid,
+      description_attr: defSchema.description
+        ? ` description="${esc(defSchema.description)}"`
+        : "",
+      type_attr: defSchema.type ? ` type="${esc(defSchema.type)}"` : "",
+      content: content.join("\n"),
+    });
   }
 
   // If it's a oneOf (like richText), show the alternatives
   if (defSchema.oneOf) {
-    parts.push(`<p><strong>Accepts one of:</strong></p>`);
-    parts.push(`<ul>`);
+    const items = [];
     for (const alt of defSchema.oneOf) {
       if (alt.$ref) {
         const refName = linkToRef(alt.$ref);
         if (refName) {
           const target = DEF_INDEX[refName];
-          if (target) {
-            parts.push(
-              `<li><a href="${target.pageSlug}.html#${slug(refName)}">${esc(refName)}</a></li>`,
-            );
-          } else {
-            parts.push(`<li><ds-code inline>${esc(refName)}</ds-code></li>`);
-          }
+          items.push(
+            target
+              ? `<li><a href="${target.pageSlug}.html#${slug(refName)}">${esc(refName)}</a></li>`
+              : `<li><ds-code inline>${esc(refName)}</ds-code></li>`,
+          );
         }
       } else if (alt.type === "string") {
-        parts.push(
+        items.push(
           `<li><strong>string</strong>${alt.description ? ` — ${esc(alt.description)}` : ""}</li>`,
         );
       } else if (alt.type === "object") {
-        parts.push(
-          `<li><strong>object</strong>${alt.description ? ` — ${esc(alt.description)}` : ""}</li>`,
+        // The property table must nest inside the <li>, not sit as a
+        // sibling of it — a <ul> may only directly contain <li> elements.
+        items.push(
+          `<li><strong>object</strong>${alt.description ? ` — ${esc(alt.description)}` : ""}` +
+            (alt.properties ? renderPropertyTable(alt) : "") +
+            "</li>",
         );
-        if (alt.properties) {
-          parts.push(renderPropertyTable(alt));
-        }
       } else {
-        parts.push(`<li>${describeType(alt)}</li>`);
+        items.push(`<li>${describeType(alt)}</li>`);
       }
     }
-    parts.push(`</ul>`);
+    content.push(renderSub("oneof-alternatives", { items: items.join("\n") }));
   }
 
   // Property table
   if (defSchema.properties) {
-    parts.push(renderPropertyTable(defSchema));
+    content.push(renderPropertyTable(defSchema));
   }
 
   // additionalProperties (open maps like tokenApi)
@@ -263,8 +277,10 @@ function renderDefinition(defName, defSchema, exampleData) {
     typeof defSchema.additionalProperties === "object" &&
     !defSchema.properties
   ) {
-    parts.push(
-      `<p><strong>Open map:</strong> keys are strings, values are <ds-code inline>${esc(defSchema.additionalProperties.type || "any")}</ds-code></p>`,
+    content.push(
+      renderSub("additional-properties", {
+        value_type: esc(defSchema.additionalProperties.type || "any"),
+      }),
     );
   }
 
@@ -286,21 +302,22 @@ function renderDefinition(defName, defSchema, exampleData) {
           .map((r) => `<ds-code inline>${esc(r)}</ds-code>`)
           .join(", "),
       );
-      parts.push(
-        `<ds-note variant="warning"><strong>Constraint:</strong> At least one of ${propNames.join(", ")} must be present.</ds-note>`,
+      content.push(
+        renderSub("callout-warning", {
+          label: "Constraint",
+          message: `At least one of ${propNames.join(", ")} must be present.`,
+        }),
       );
     } else {
       // Mixed anyOf — show each branch
-      parts.push(`<p><strong>Constraints:</strong> at least one of:</p>`);
-      parts.push(`<ul>`);
-      for (const alt of defSchema.anyOf) {
-        if (alt.required) {
-          parts.push(
+      const items = defSchema.anyOf
+        .filter((alt) => alt.required)
+        .map(
+          (alt) =>
             `<li>${alt.required.map((r) => `<ds-code inline>${esc(r)}</ds-code>`).join(", ")} must be present</li>`,
-          );
-        }
-      }
-      parts.push(`</ul>`);
+        )
+        .join("\n");
+      content.push(renderSub("anyof-constraints", { items }));
     }
   }
 
@@ -318,8 +335,11 @@ function renderDefinition(defName, defSchema, exampleData) {
       .map((r) => `<ds-code inline>${esc(r)}</ds-code>`)
       .join(", ");
     if (conditions && requirements) {
-      parts.push(
-        `<ds-note variant="warning"><strong>Conditional:</strong> When ${conditions}, then ${requirements} is required.</ds-note>`,
+      content.push(
+        renderSub("callout-warning", {
+          label: "Conditional",
+          message: `When ${conditions}, then ${requirements} is required.`,
+        }),
       );
     }
   }
@@ -327,7 +347,6 @@ function renderDefinition(defName, defSchema, exampleData) {
   // Cross-references: list all $ref targets in this definition
   const refs = collectRefs(defSchema);
   if (refs.length > 0) {
-    parts.push(`<ds-cross-refs><strong>References:</strong> `);
     const refLinks = refs.map((refName) => {
       const target = DEF_INDEX[refName];
       if (target) {
@@ -335,22 +354,25 @@ function renderDefinition(defName, defSchema, exampleData) {
       }
       return `<ds-code inline>${esc(refName)}</ds-code>`;
     });
-    parts.push(refLinks.join(", "));
-    parts.push(`</ds-cross-refs>`);
+    content.push(renderSub("cross-refs", { refs: refLinks.join(", ") }));
   }
 
   // Example — render the matching example if one was provided
   if (exampleData !== undefined && exampleData !== null) {
-    parts.push(`<ds-def-example>`);
-    const jsonStr = JSON.stringify(exampleData, null, 2);
-    parts.push(
-      `<ds-code language="json" label="example">${esc(jsonStr)}</ds-code>`,
+    content.push(
+      renderSub("example", { json: esc(JSON.stringify(exampleData, null, 2)) }),
     );
-    parts.push(`</ds-def-example>`);
   }
 
-  parts.push(`</ds-def-section>`);
-  return parts.join("\n");
+  return renderSub("def-section", {
+    name: esc(defName),
+    anchor: hid,
+    description_attr: defSchema.description
+      ? ` description="${esc(defSchema.description)}"`
+      : "",
+    type_attr: defSchema.type ? ` type="${esc(defSchema.type)}"` : "",
+    content: content.join("\n"),
+  });
 }
 
 /**
@@ -442,27 +464,41 @@ function orderDefsByReference(defs) {
 /**
  * Render a full page body for a single schema file.
  */
+/**
+ * Render a schema page's header and content as separate strings — the page
+ * shell (see pageHtml/main.template.html) keeps the header in its own slot
+ * rather than folding it into the page's content.
+ */
 function renderSchemaPage(page) {
   const parts = [];
   const defs = page.data.$defs || {};
   const defNames = orderDefsByReference(defs);
   const examples = page.examples || {};
 
-  // Page header — title, description, source
   const relPath = page.group ? `${page.group}/${page.filename}` : page.filename;
-  const descAttr = page.data.description
-    ? ` description="${esc(page.data.description)}"`
-    : "";
+  const header = renderSub("header", {
+    title: esc(page.title),
+    description_attr: page.data.description
+      ? ` description="${esc(page.data.description)}"`
+      : "",
+    source_attr: ` source="${esc(relPath)}"`,
+    badge: "",
+  });
+
+  // The JSON view is a fixed-position toggle (see json-view.js), so its
+  // place in the content flow doesn't affect where it renders — pushed
+  // first just so it isn't lost if an early return below skips the rest.
   parts.push(
-    `<ds-schema-header title="${esc(page.title)}"${descAttr} source="${esc(relPath)}"></ds-schema-header>`,
+    renderSub("json-view", {
+      label: esc(relPath),
+      json: esc(JSON.stringify(page.data, null, 2)),
+    }),
   );
 
-  // Always render top-level properties when they exist (e.g., the root schema
+  // Always render top-level properties when they exist (ex: the root schema
   // has both its own properties AND $defs like entityGroup)
   if (page.data.properties) {
-    parts.push(
-      `<ds-heading level="2" anchor="properties-heading">Root Properties</ds-heading>`,
-    );
+    parts.push(renderSub("root-properties-heading", {}));
     parts.push(renderPropertyTable(page.data));
   }
 
@@ -470,30 +506,24 @@ function renderSchemaPage(page) {
     // Root-only schemas (no $defs) can still ship an example. By convention
     // the entire example file is treated as one root-level example document.
     if (page.examples !== null && page.examples !== undefined) {
-      const jsonStr = JSON.stringify(page.examples, null, 2);
-      parts.push(`<ds-def-example>`);
       parts.push(
-        `<ds-code language="json" label="example">${esc(jsonStr)}</ds-code>`,
+        renderSub("example", {
+          json: esc(JSON.stringify(page.examples, null, 2)),
+        }),
       );
-      parts.push(`</ds-def-example>`);
     }
-    return parts.join("\n");
+    return { header, content: parts.join("\n") };
   }
 
   // Definition index (if more than one definition)
   if (defNames.length > 1) {
-    parts.push(`<ds-def-index>`);
-    parts.push(
-      `<p><strong>${defNames.length} definitions</strong> in this file:</p>`,
-    );
-    parts.push(`<ul>`);
-    for (const defName of defNames) {
-      parts.push(
-        `<li><a href="#${slug(defName)}"><ds-code inline>${esc(defName)}</ds-code></a></li>`,
-      );
-    }
-    parts.push(`</ul>`);
-    parts.push(`</ds-def-index>`);
+    const items = defNames
+      .map(
+        (defName) =>
+          `<li><a href="#${slug(defName)}"><ds-code inline>${esc(defName)}</ds-code></a></li>`,
+      )
+      .join("\n");
+    parts.push(renderSub("def-index", { count: defNames.length, items }));
   }
 
   // Render each definition with its matching example (if any)
@@ -504,7 +534,7 @@ function renderSchemaPage(page) {
     parts.push(renderDefinition(defName, defs[defName], exampleData));
   }
 
-  return parts.join("\n");
+  return { header, content: parts.join("\n") };
 }
 
 // ---------------------------------------------------------------------------
@@ -514,16 +544,15 @@ function renderSchemaPage(page) {
 function pageHtml(
   title,
   activeSlug,
-  bodyHtml,
-  hasToc,
+  headerHtml,
+  contentHtml,
   pages,
   layout,
   version,
   description,
 ) {
   const layoutCls = layout === "full" ? " content--full" : "";
-  const tocCls = hasToc ? " content--with-toc" : "";
-  const contentCls = "content" + layoutCls + tocCls;
+  const contentCls = "content" + layoutCls;
 
   // Derive the spec version from the schema if the caller didn't pass one
   // explicitly. This keeps every `DSDS <v>` string in the rendered HTML
@@ -532,16 +561,12 @@ function pageHtml(
   const v = version || readSpecVersion() || "";
 
   // Skip the `— DSDS <v>` suffix when the title already names the
-  // version (e.g., the overview page title is "Design System Documentation
+  // version (ex: the overview page title is "Design System Documentation
   // Spec 0.2"). Otherwise the tab text reads "… Spec 0.2 — DSDS 0.2".
   // A bare `.includes(v)` check is precise enough — a 2-character version
   // like "0.2" is unlikely to appear coincidentally in a page title.
   const titleHasVersion = v && title.includes(v);
   const titleSuffix = v && !titleHasVersion ? ` — DSDS ${v}` : "";
-
-  const footerTitle = v
-    ? `Design System Documentation Spec (DSDS) ${v} — Draft Specification`
-    : "Design System Documentation Spec (DSDS) — Draft Specification";
 
   // The live server resolves extensionless paths; the root page is the
   // bare origin rather than /index.
@@ -550,47 +575,113 @@ function pageHtml(
   const desc = description || DEFAULT_DESCRIPTION;
   const fullTitle = `${title}${titleSuffix}`;
 
-  return `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>${esc(fullTitle)}</title>
-  <meta name="description" content="${esc(desc)}">
-  <link rel="canonical" href="${pageUrl}">
-  <link rel="icon" href="favicon.svg" type="image/svg+xml">
-  <meta property="og:type" content="website">
-  <meta property="og:site_name" content="Design System Documentation Spec">
-  <meta property="og:title" content="${esc(fullTitle)}">
-  <meta property="og:description" content="${esc(desc)}">
-  <meta property="og:url" content="${pageUrl}">
-  <meta name="twitter:card" content="summary">
-  <meta name="dsds-version" content="${esc(v)}">
-  <link rel="stylesheet" href="tokens.css?v=${esc(v)}">
-  <link rel="stylesheet" href="style.css?v=${esc(v)}">
-  <script src="components.js?v=${esc(v)}"></script>
-</head>
-<body>
-  <a class="skip-link" href="#main-content">Skip to content</a>
-${buildSpecNav(activeSlug, pages, v)}
-  <div class="${contentCls}">
-    <main class="content__main" id="main-content" role="main">
-      <div class="content__inner">
-        ${bodyHtml}
+  // Each top-level section of the page (<head>, skip link, main content
+  // area) is its own subtemplate, so the page shell below is just the
+  // order they're assembled in — reorder or restructure a section by
+  // editing its file, not by hunting through the whole page shell.
+  const head = renderSub("head", {
+    title: esc(fullTitle),
+    description: esc(desc),
+    canonical: pageUrl,
+    version: esc(v),
+  });
+  const skipLink = renderSub("skip-link", {});
+  const main = renderSub("main", {
+    content_class: contentCls,
+    header: headerHtml,
+    content: contentHtml,
+    back_to_top: renderSub("back-to-top", {}),
+  });
 
-        <ds-back-to-top></ds-back-to-top>
+  return renderTemplate(PAGE_TEMPLATE_PATH, {
+    head,
+    skip_link: skipLink,
+    nav: buildSpecNav(activeSlug, pages, v),
+    main,
+  });
+}
 
-        <ds-footer>
-          <p>${esc(footerTitle)}</p>
-          <p><a href="https://github.com/somerandomdude/design-system-documentation-schema">GitHub</a></p>
-        </ds-footer>
-      </div>
-    </main>
-    ${hasToc && layout !== "full" ? '<ds-toc target=".content__inner" selector="h2[id], h3[id]"></ds-toc>' : ""}
-  </div>
-</body>
-</html>
-`;
+// ---------------------------------------------------------------------------
+// Agent/crawler-facing indexes
+//
+// sitemap.xml is for search engines; llms.txt (https://llmstxt.org/) is the
+// equivalent convention for AI agents — a single curated, plain-markdown
+// index of every page, plus a link to the bundled JSON Schema (every
+// definition, machine-readable, in one versioned file), so an agent can get
+// a full picture of the spec without crawling or JS-rendering HTML. Both are
+// generated from the same page metadata the HTML build already collects —
+// one source of truth, no separate authoring.
+// ---------------------------------------------------------------------------
+
+function urlForSlug(slug) {
+  return slug === "index" ? `${SITE_URL}/` : `${SITE_URL}/${slug}`;
+}
+
+function buildSitemapXml(entries) {
+  const urls = entries
+    .map((e) => `  <url><loc>${urlForSlug(e.slug)}</loc></url>`)
+    .join("\n");
+  return (
+    `<?xml version="1.0" encoding="UTF-8"?>\n` +
+    `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls}\n</urlset>\n`
+  );
+}
+
+function buildLlmsTxt(entries, version) {
+  const guideOrder = TOP_LINKS.map((l) => l.slug);
+  const guides = entries
+    .filter((e) => e.group === "Guides")
+    .sort((a, b) => guideOrder.indexOf(a.slug) - guideOrder.indexOf(b.slug));
+
+  const schemaGroups = DIR_GROUPS.map((g) => ({
+    label: g.label,
+    items: entries.filter((e) => e.group === g.label),
+  })).filter((g) => g.items.length);
+
+  const lines = [];
+  lines.push(`# Design System Doc Spec (DSDS)`);
+  lines.push("");
+  lines.push(`> ${DEFAULT_DESCRIPTION}`);
+  lines.push("");
+  lines.push(
+    "This site documents DSDS, a versioned JSON Schema. Every definition " +
+      "below has an HTML page (for people) and a `$defs` entry in the " +
+      "bundled schema below (for parsers/agents) — prefer the JSON when " +
+      "you just need field names, types, and requiredness.",
+  );
+  lines.push("");
+  lines.push("## Machine-readable schema");
+  lines.push("");
+  lines.push(
+    `- [Bundled schema, v${version}](${SITE_URL}/v${version}/dsds.bundled.schema.json): every definition in one JSON file`,
+  );
+  lines.push(
+    `- [sitemap.xml](${SITE_URL}/sitemap.xml): every page on this site`,
+  );
+  lines.push("");
+  lines.push("## Guides");
+  lines.push("");
+  lines.push(
+    "Each guide below also has a plain-markdown mirror at the same path " +
+      "with a `.md` extension (e.g. `/quickstart.md`) — the raw prose, no " +
+      "HTML/JS.",
+  );
+  lines.push("");
+  for (const g of guides) {
+    lines.push(
+      `- [${g.title}](${urlForSlug(g.slug)}): ${g.description} ([markdown](${SITE_URL}/${g.slug}.md))`,
+    );
+  }
+  lines.push("");
+  for (const group of schemaGroups) {
+    lines.push(`## ${group.label}`);
+    lines.push("");
+    for (const item of group.items) {
+      lines.push(`- [${item.title}](${urlForSlug(item.slug)}): ${item.description}`);
+    }
+    lines.push("");
+  }
+  return lines.join("\n").trimEnd() + "\n";
 }
 
 // ---------------------------------------------------------------------------
@@ -652,13 +743,33 @@ async function build() {
     path.join(SITE_DIR, "style.css"),
     path.join(DIST_DIR, "style.css"),
   );
+
+  // Copy icon/logo assets — components fetch these by page-relative path
+  // ("assets/<file>.svg") at runtime, so they need to exist alongside the
+  // built pages, not just in the source tree.
+  fs.cpSync(path.join(SITE_DIR, "assets"), path.join(DIST_DIR, "assets"), {
+    recursive: true,
+  });
+
+  // Copy self-hosted font files — tokens.css references them by
+  // page-relative path ("fonts/<file>.ttf").
+  fs.cpSync(path.join(SITE_DIR, "fonts"), path.join(DIST_DIR, "fonts"), {
+    recursive: true,
+  });
+
+  // Copy robots.txt verbatim (points crawlers/agents at sitemap.xml).
   fs.copyFileSync(
-    path.join(SITE_DIR, "samples.css"),
-    path.join(DIST_DIR, "samples.css"),
+    path.join(SITE_DIR, "robots.txt"),
+    path.join(DIST_DIR, "robots.txt"),
   );
 
   // Bundle web components into a single IIFE for file:// compatibility.
   bundleComponents(SITE_DIR, DIST_DIR);
+
+  // Metadata for every page, collected as both page-writing loops run below —
+  // feeds sitemap.xml and llms.txt (see "Agent/crawler-facing indexes" above)
+  // so those stay in lockstep with whatever pages actually got built.
+  const sitemapEntries = [];
 
   // ── MDX content pages ─────────────────────────────────────────────────
   const { compileAllMdx } = await loadMdxCompiler();
@@ -672,40 +783,76 @@ async function build() {
 
     let body = mdxPage.html;
 
-    // Inject badge into the first heading if specified in frontmatter
-    if (badge) {
-      body = body.replace(
-        "<ds-heading",
-        '<div class="spec-header"><ds-heading class="spec-header__title"',
-      );
-      body = body.replace(
-        "</ds-heading>",
-        ` <ds-badge>${esc(badge)}</ds-badge></ds-heading>`,
-      );
-    }
+    // Every page opens with <ds-header> built from frontmatter. The title now
+    // lives there, so drop a leading compiled <h1> (its text duplicates the
+    // frontmatter title). Pages that open at h2 have no h1 to strip.
+    body = body.replace(
+      /^\s*<ds-heading\b[^>]*\blevel="1"[^>]*>[\s\S]*?<\/ds-heading>\s*/,
+      "",
+    );
+
+    const header = renderSub("header", {
+      title: esc(title),
+      description_attr: mdxPage.meta.description
+        ? ` description="${esc(mdxPage.meta.description)}"`
+        : "",
+      source_attr: "",
+      badge: badge ? `<ds-badge>${esc(badge)}</ds-badge>` : "",
+    });
 
     const html = pageHtml(
       title,
       slug,
+      header,
       body,
-      true,
       pages,
       layout,
       undefined,
       mdxPage.meta.description,
     );
     fs.writeFileSync(path.join(DIST_DIR, `${slug}.html`), html, "utf-8");
+
+    // Raw markdown mirror alongside the HTML — strips the YAML frontmatter
+    // (replacing it with a plain title heading, since the compiled HTML gets
+    // its H1 from <ds-header> instead) so an agent gets the actual prose
+    // (any <ds-*/> shortcodes included, verbatim) without parsing HTML or
+    // running JS. Named for the llms.txt convention of exposing plain-text/
+    // markdown alternates.
+    const rawMdx = fs.readFileSync(
+      path.join(CONTENT_DIR, mdxPage.file),
+      "utf-8",
+    );
+    // Strip the frontmatter, then a leading "# " h1 if the source opens with
+    // one (its text duplicates the frontmatter title) — mirrors the HTML
+    // path's equivalent strip of a leading level-1 <ds-heading> above, so
+    // there's exactly one h1 (the one we prepend next) either way.
+    const mdBody = rawMdx
+      .replace(/^---\n[\s\S]*?\n---\n/, "")
+      .trimStart()
+      .replace(/^#[ \t]+[^\n]*\n\s*/, "");
+    fs.writeFileSync(
+      path.join(DIST_DIR, `${slug}.md`),
+      `# ${title}\n\n${mdBody}`,
+      "utf-8",
+    );
+
+    sitemapEntries.push({
+      slug,
+      title,
+      description: mdxPage.meta.description || DEFAULT_DESCRIPTION,
+      group: "Guides",
+    });
   }
   console.log(`  ${mdxPages.length} MDX page(s) compiled.\n`);
 
   // ── Schema-driven pages ───────────────────────────────────────────────
   for (const page of pages) {
-    const body = renderSchemaPage(page);
+    const { header, content } = renderSchemaPage(page);
     const html = pageHtml(
       page.title,
       page.slug,
-      body,
-      true,
+      header,
+      content,
       pages,
       null,
       undefined,
@@ -719,10 +866,14 @@ async function build() {
       ? `${page.group}/${page.filename}`
       : page.filename;
     console.log(`  ✓  site/dist/${page.slug}.html  ← ${relSource}`);
-  }
 
-  // ── Samples page ────────────────────────────────────────────────────
-  buildSamples();
+    sitemapEntries.push({
+      slug: page.slug,
+      title: page.title,
+      description: page.data.description || DEFAULT_DESCRIPTION,
+      group: page.groupLabel,
+    });
+  }
 
   // ── Versioned bundled schema ──────────────────────────────────────
   //
@@ -758,196 +909,26 @@ async function build() {
     }
   }
 
+  // ── Agent/crawler indexes ──────────────────────────────────────────
+  const version = readSpecVersion() || "";
+  fs.writeFileSync(
+    path.join(DIST_DIR, "sitemap.xml"),
+    buildSitemapXml(sitemapEntries),
+    "utf-8",
+  );
+  fs.writeFileSync(
+    path.join(DIST_DIR, "llms.txt"),
+    buildLlmsTxt(sitemapEntries, version),
+    "utf-8",
+  );
+  console.log(
+    `  ✓  site/dist/sitemap.xml, site/dist/llms.txt  ← ${sitemapEntries.length} pages indexed\n`,
+  );
+
   console.log(
     `\nDone. ${mdxPages.length + pages.length + 1} pages built to site/dist/\n`,
   );
 }
-
-// ── bundleComponents (unchanged) ──────────────────────────────────────────
-
-function processInline(text) {
-  text = text.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1">');
-  text = text.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>');
-  text = text.replace(/\*\*\*(.+?)\*\*\*/g, "<strong><em>$1</em></strong>");
-  text = text.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
-  text = text.replace(/(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)/g, "<em>$1</em>");
-  text = text.replace(/___(.+?)___/g, "<strong><em>$1</em></strong>");
-  text = text.replace(/__(.+?)__/g, "<strong>$1</strong>");
-  text = text.replace(/(?<!_)_(?!_)(.+?)(?<!_)_(?!_)/g, "<em>$1</em>");
-  text = text.replace(/`([^`]+)`/g, "<ds-code inline>$1</ds-code>");
-  return text;
-}
-
-function mdHeadingId(text) {
-  let plain = text.replace(/<[^>]+>/g, "");
-  plain = plain.replace(/[^\w\s-]/g, "");
-  return plain.trim().replace(/[\s]+/g, "-").toLowerCase();
-}
-
-function mdToHtml(mdText) {
-  const lines = mdText.split("\n");
-  const out = [];
-  let i = 0;
-
-  while (i < lines.length) {
-    const line = lines[i];
-
-    if (line.trim() === "") {
-      i++;
-      continue;
-    }
-
-    if (/^---+\s*$/.test(line)) {
-      out.push("<hr>");
-      i++;
-      continue;
-    }
-
-    const codeMatch = line.match(/^```(\w*)/);
-    if (codeMatch) {
-      const lang = codeMatch[1];
-      const codeLines = [];
-      i++;
-      while (i < lines.length && !lines[i].startsWith("```")) {
-        codeLines.push(lines[i]);
-        i++;
-      }
-      i++;
-      const codeText = esc(codeLines.join("\n"));
-      const langAttr = lang ? ` language="${lang}"` : "";
-      out.push(`<ds-code${langAttr}>${codeText}</ds-code>`);
-      continue;
-    }
-
-    const headingMatch = line.match(/^(#{1,6})\s+(.+)$/);
-    if (headingMatch) {
-      const level = headingMatch[1].length;
-      const text = processInline(headingMatch[2]);
-      const hid = mdHeadingId(text);
-      out.push(
-        `<ds-heading level="${level}" anchor="${hid}">${text}</ds-heading>`,
-      );
-      i++;
-      continue;
-    }
-
-    if (
-      line.includes("|") &&
-      i + 1 < lines.length &&
-      /^\|[\s\-:|]+\|/.test(lines[i + 1])
-    ) {
-      const headers = line
-        .trim()
-        .replace(/^\||\|$/g, "")
-        .split("|")
-        .map((c) => c.trim());
-      i += 2;
-      const rows = [];
-      while (
-        i < lines.length &&
-        lines[i].includes("|") &&
-        lines[i].trim().startsWith("|")
-      ) {
-        rows.push(
-          lines[i]
-            .trim()
-            .replace(/^\||\|$/g, "")
-            .split("|")
-            .map((c) => c.trim()),
-        );
-        i++;
-      }
-      out.push("<ds-table><table><thead><tr>");
-      for (const h of headers) out.push(`<th>${processInline(h)}</th>`);
-      out.push("</tr></thead><tbody>");
-      for (const row of rows) {
-        out.push("<tr>");
-        for (const cell of row) out.push(`<td>${processInline(cell)}</td>`);
-        for (let j = row.length; j < headers.length; j++) out.push("<td></td>");
-        out.push("</tr>");
-      }
-      out.push("</tbody></table></ds-table>");
-      continue;
-    }
-
-    if (line.startsWith(">")) {
-      const bqLines = [];
-      while (
-        i < lines.length &&
-        (lines[i].startsWith(">") ||
-          (lines[i].trim() !== "" && bqLines.length > 0))
-      ) {
-        bqLines.push(lines[i].replace(/^>\s?/, ""));
-        i++;
-        if (i < lines.length && lines[i].trim() === "") break;
-      }
-      out.push(`<blockquote>${mdToHtml(bqLines.join("\n"))}</blockquote>`);
-      continue;
-    }
-
-    if (/^[-*+]\s/.test(line)) {
-      const items = [];
-      while (
-        i < lines.length &&
-        (/^[-*+]\s/.test(lines[i]) ||
-          (lines[i].startsWith("  ") && items.length > 0))
-      ) {
-        if (/^[-*+]\s/.test(lines[i])) {
-          items.push(lines[i].replace(/^[-*+]\s/, ""));
-        } else {
-          items[items.length - 1] += " " + lines[i].trim();
-        }
-        i++;
-      }
-      out.push("<ul>");
-      for (const item of items) out.push(`<li>${processInline(item)}</li>`);
-      out.push("</ul>");
-      continue;
-    }
-
-    if (/^\d+\.\s/.test(line)) {
-      const items = [];
-      while (
-        i < lines.length &&
-        (/^\d+\.\s/.test(lines[i]) ||
-          (lines[i].startsWith("  ") && items.length > 0))
-      ) {
-        if (/^\d+\.\s/.test(lines[i])) {
-          items.push(lines[i].replace(/^\d+\.\s/, ""));
-        } else {
-          items[items.length - 1] += " " + lines[i].trim();
-        }
-        i++;
-      }
-      out.push("<ol>");
-      for (const item of items) out.push(`<li>${processInline(item)}</li>`);
-      out.push("</ol>");
-      continue;
-    }
-
-    const paraLines = [];
-    while (
-      i < lines.length &&
-      lines[i].trim() !== "" &&
-      !/^(#{1,6}\s|```|---|\||[-*+]\s|\d+\.\s|>)/.test(lines[i])
-    ) {
-      paraLines.push(lines[i]);
-      i++;
-    }
-    if (paraLines.length > 0) {
-      out.push(`<p>${processInline(paraLines.join(" "))}</p>`);
-      continue;
-    }
-
-    i++;
-  }
-
-  return out.join("\n");
-}
-
-// ---------------------------------------------------------------------------
-// Extract page headings for TOC
-// ---------------------------------------------------------------------------
 
 // ---------------------------------------------------------------------------
 // Component bundler
@@ -1021,6 +1002,37 @@ function bundleComponents(siteDir, distDir) {
       .join("\n");
     parts.push(indented);
     parts.push("");
+
+    // fetch() of a same-directory file is blocked outright under file://
+    // (opening a built page directly, no server), which this bundle
+    // otherwise supports. Inline every icon's file contents right after
+    // _shared.js defines seedIcons()/loadIcon(), so no runtime fetch is
+    // ever needed in the built site. Keep this file list in sync with
+    // ICON_FILES in site/components/_shared.js.
+    if (file === "_shared.js") {
+      const ICON_FILES = {
+        menu: "icon-menu.svg",
+        close: "icon-close.svg",
+        info: "icon-info.svg",
+        flask: "icon-flask.svg",
+        dot: "icon-dot.svg",
+        lightbulb: "icon-lightbulb.svg",
+        warning: "icon-warning.svg",
+        brackets: "icon-brackets.svg",
+        logo: "dsds.svg",
+      };
+      const assetsDir = path.join(siteDir, "assets");
+      const seeded = {};
+      for (const [name, iconFile] of Object.entries(ICON_FILES)) {
+        const iconPath = path.join(assetsDir, iconFile);
+        if (fs.existsSync(iconPath)) {
+          seeded[name] = fs.readFileSync(iconPath, "utf-8");
+        }
+      }
+      parts.push("  // ── inlined icon assets (build-time, see above) ──");
+      parts.push(`  seedIcons(${JSON.stringify(seeded)});`);
+      parts.push("");
+    }
   }
 
   // Add registration code (strip imports already handled)

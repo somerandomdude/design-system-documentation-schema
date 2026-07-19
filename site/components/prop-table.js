@@ -2,35 +2,82 @@ import { createShadow, esc, BASE_RESET, FONT } from "./_shared.js";
 
 const PROP_TABLE_CSS = `
   ${BASE_RESET}
-  :host { display: block; margin: var(--ds-space-4) 0; max-width: 100%; overflow: hidden; }
+  :host { display: block; margin: var(--ds-space-4) 0; max-width: 100%; }
+
+  /* Horizontal-scroll wrapper. The property/type/required columns are
+     shrink-to-fit with nowrap content, so the table has a hard minimum
+     width (~500px). On narrow viewports that minimum exceeds the host,
+     and without a scroller the rightmost column (Description) is clipped
+     off-screen with no way to reach it. overflow-x: auto lets the table
+     scroll instead of losing its Description column. Mirrors <ds-table>.
+
+     No overflow is set by default (only below 900px, see the media query
+     near the bottom): leaving both axes visible means this wrapper isn't a
+     scroll container, so the sticky header below sticks relative to the
+     PAGE as it scrolls. A wrapper that scrolls horizontally unavoidably
+     captures the vertical axis too (browsers force overflow-y to "auto" the
+     moment overflow-x isn't "visible"), which re-scopes position:sticky to
+     the wrapper's own scrolling instead of the page's — the two can't both
+     apply to the same table at once. Page-scroll stickiness is the more
+     useful default; the horizontal-scroll fallback only kicks in on narrow
+     viewports, where a wide table would otherwise clip content. */
+  .table-scroll {
+    position: relative;
+    inset: calc(var(--ds-space-4) * -1);
+    width: calc(100% + (var(--ds-space-4) * 2));
+    max-width: calc(100% + (var(--ds-space-4) * 2));
+    top: 0;
+    bottom: 0;
+  }
 
   table {
     width: 100%;
     max-width: 100%;
-    border-collapse: collapse;
-    margin-bottom: var(--ds-space-6);
+    /* separate + zero spacing (not collapse) so the sticky header's cells
+       keep their background/position correctly in Safari, which has long-
+       standing bugs with position:sticky inside a border-collapsed table. */
+    border-collapse: separate;
+    border-spacing: 0;
+    margin-bottom: var(--ds-space-8);
     font-family: ${FONT.body};
     font-size: var(--ds-font-size-base);
+    position: relative;
   }
 
   th {
-    text-align: left;
-    font-weight: 600;
+    text-align: start;
+    font-weight: var(--ds-font-weight-bold);
     font-size: var(--ds-font-size-sm);
     text-transform: none;
     letter-spacing: var(--ds-tracking-wide);
-    color: var(--ds-color-text-secondary);
-    padding: var(--ds-space-2) var(--ds-space-4);
-    border-bottom: 2px solid var(--ds-color-border);
-    background: transparent;
+    color: var(--ds-color-text);
+    padding: var(--ds-space-2) var(--ds-space-2);
+    background: var(--ds-color-bg-raised);
     white-space: nowrap;
+    position: sticky;
+    top: 0;
+    z-index: var(--ds-z-base, 1);
+  }
+
+  @media (max-width: 900px) {
+    .table-scroll {
+      overflow-x: auto;
+    }
+  }
+
+  @media (max-width: 640px) {
+    th:nth-child(2), td:nth-child(2) { display: none; }
+    th:nth-child(3), td:nth-child(3) { display: none; }
   }
 
   td {
-    padding: var(--ds-space-2) var(--ds-space-4);
-    border-bottom: 1px solid var(--ds-color-border-light);
+    padding: var(--ds-space-4) var(--ds-space-2);
     vertical-align: top;
     line-height: 1.5;
+  }
+
+  tr:first-child td {
+    padding-top: var(--ds-space-2);
   }
 
   tr:last-child td {
@@ -38,7 +85,7 @@ const PROP_TABLE_CSS = `
   }
 
   /* Column sizing: cols 1, 3 shrink to fit; col 2 (Type) shrinks to fit but is allowed
-     to wrap when its content is a long union (e.g., the kind enum on guidelineEntry).
+     to wrap when its content is a long union (ex: the kind enum on guidelineEntry).
      Col 4 (Description) gets the remaining space.
 
      Property names (col 1) MUST never truncate — 'white-space: nowrap' plus the
@@ -47,7 +94,7 @@ const PROP_TABLE_CSS = `
      content is always a single short word.
 
      Type (col 2) is intentionally NOT nowrap. Some kind-enum types render as a
-     long pipe-separated list of inline code values (e.g., "required" |
+     long pipe-separated list of inline code values (ex: "required" |
      "encouraged" | "informational" | "discouraged" | "prohibited"). Forcing
      nowrap on that pushed Description down to ~0 width and made each row very
      tall. Allowing the type to wrap at its natural space-pipe-space boundaries
@@ -67,7 +114,7 @@ const PROP_TABLE_CSS = `
   /* Column 1: Property name — monospace, bold */
   td:nth-child(1) code {
     font-family: ${FONT.mono};
-    font-weight: 600;
+    font-weight: var(--ds-font-weight-bold);
     color: var(--ds-color-text);
     white-space: nowrap;
     font-size: var(--ds-font-size-base);
@@ -79,24 +126,28 @@ const PROP_TABLE_CSS = `
   td:nth-child(2) {
     font-family: ${FONT.mono};
     font-size: var(--ds-font-size-sm);
-    color: #666;
   }
 
-  /* Column 3: Required — narrow */
+  /* Column 3: Required — narrow, a checkmark when required */
+  th:nth-child(3), td:nth-child(3) {
+    text-align: center;
+  }
   td:nth-child(3) {
     font-size: var(--ds-font-size-sm);
+  }
+  td:nth-child(3) .req {
+    font-weight: var(--ds-font-weight-bold);
   }
 
   /* Column 4: Description — gets all remaining space */
   td:nth-child(4) {
     font-size: var(--ds-font-size-base);
-    color: var(--ds-color-text-secondary);
   }
 
   td:nth-child(4) small {
     display: block;
     margin-top: var(--ds-space-1);
-    color: var(--ds-color-text-muted);
+    color: var(--ds-color-text);
     font-size: var(--ds-font-size-sm);
   }
 
@@ -105,22 +156,34 @@ const PROP_TABLE_CSS = `
     font-size: var(--ds-font-size-base);
     background: var(--ds-color-bg-muted);
     padding: 1px 5px;
-    border-radius: var(--ds-radius-sm);
   }
 
   /* Type reference links inside cells */
   a.type-ref {
     font-family: ${FONT.mono};
-    font-size: var(--ds-font-size-md);
+    font-size: var(--ds-font-size-base);
     color: var(--ds-color-accent);
     text-decoration: none;
     border-bottom: 1px dashed var(--ds-color-accent);
+    transition: color var(--ds-duration-fast) var(--ds-ease-standard),
+      border-color var(--ds-duration-fast) var(--ds-ease-standard);
   }
 
   a.type-ref:hover {
-    color: var(--ds-color-accent-hover);
+    /* No separate "hover" token — mixed on the fly from the accent color. */
+    color: color-mix(in oklch, var(--ds-color-accent) 80%, black);
+    border-bottom-color: color-mix(in oklch, var(--ds-color-accent) 80%, black);
     border-bottom-style: solid;
   }
+
+  th:first-child, td:first-child {
+    padding-inline-start: var(--ds-space-4) !important;
+  }
+
+  th:last-child, td:last-child {
+    padding-inline-end: var(--ds-space-4) !important;
+  }
+
 `;
 
 export class DsPropTable extends HTMLElement {
@@ -130,11 +193,22 @@ export class DsPropTable extends HTMLElement {
   }
 
   connectedCallback() {
-    // Defer to let child <ds-prop> elements parse
+    // Defer to let child <ds-prop> elements parse. A single
+    // requestAnimationFrame tick isn't a reliable guarantee of that (see
+    // the equivalent note in spec-nav.js), so wait for DOMContentLoaded
+    // when the document is still loading.
     var self = this;
-    requestAnimationFrame(function () {
-      self._render();
-    });
+    if (document.readyState === "loading") {
+      document.addEventListener(
+        "DOMContentLoaded",
+        function () {
+          self._render();
+        },
+        { once: true },
+      );
+    } else {
+      this._render();
+    }
   }
 
   _render() {
@@ -168,12 +242,11 @@ export class DsPropTable extends HTMLElement {
         var statusCell;
         if (prop.hasAttribute("required")) {
           statusCell =
-            '<ds-badge variant="required" size="sm">required</ds-badge>';
+            '<span class="req" title="Required" aria-label="Required">✓</span>';
         } else if (prop.hasAttribute("conditional")) {
-          statusCell =
-            '<ds-badge variant="experimental" size="sm">at least one</ds-badge>';
+          statusCell = "at least 1";
         } else {
-          statusCell = "optional";
+          statusCell = "";
         }
 
         return (
@@ -196,11 +269,13 @@ export class DsPropTable extends HTMLElement {
       .join("\n");
 
     this._shadow.innerHTML =
+      '<div class="table-scroll" part="wrapper">' +
       '<table part="table">' +
       "<thead><tr><th>Property</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>" +
       "<tbody>" +
       trs +
-      "</tbody></table>";
+      "</tbody></table>" +
+      "</div>";
   }
 }
 

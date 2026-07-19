@@ -1,0 +1,386 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   workbench.css — Chrome for the redesign workbench.
+
+   This styles the workbench UI itself (top bar, layout, demo cards, code
+   panels) — NOT the components under test. Component styling comes entirely
+   from tokens.css + style.css + each component's shadow DOM, exactly as in
+   production, so what you see here is what ships.
+
+   Everything reads from the DSDS design tokens so the harness stays visually
+   consistent while you redesign; tweak tokens.css and this chrome updates too.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  color: var(--ds-color-text, #1a1a1a);
+  background: var(--ds-color-bg, #fff);
+}
+
+/* ── Top bar ──────────────────────────────────────────────────────────── */
+
+.wb-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-4, 16px);
+  padding: 10px var(--ds-space-8, 24px);
+  background: var(--ds-color-bg-dark, #1b1f24);
+  color: var(--ds-color-text-on-dark, #c9cdd3);
+  border-bottom: 1px solid rgb(255 255 255 / 8%);
+}
+
+.wb-topbar__brand {
+  font-weight: 700;
+  color: #fff;
+  font-size: 0.95rem;
+  letter-spacing: 0.01em;
+}
+
+.wb-topbar__brand small {
+  font-weight: 400;
+  color: var(--ds-color-text-on-dark, #c9cdd3);
+  margin-inline-start: 6px;
+}
+
+.wb-topbar__nav {
+  display: flex;
+  gap: 4px;
+  margin-inline-start: auto;
+}
+
+.wb-topbar__nav a {
+  color: var(--ds-color-text-on-dark, #c9cdd3);
+  text-decoration: none;
+  font-size: 0.85rem;
+  padding: 5px 10px;
+  border-radius: 6px;
+}
+
+.wb-topbar__nav a:hover {
+  background: rgb(255 255 255 / 8%);
+  color: #fff;
+}
+
+.wb-topbar__nav a[aria-current="page"] {
+  background: rgb(255 255 255 / 14%);
+  color: #fff;
+}
+
+/* ── Page layout ──────────────────────────────────────────────────────── */
+
+.wb-layout {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  align-items: start;
+}
+
+.wb-sidebar {
+  position: sticky;
+  top: 49px;
+  align-self: start;
+  max-height: calc(100vh - 49px);
+  overflow-y: auto;
+  padding: var(--ds-space-4, 20px) var(--ds-space-4, 16px);
+  border-inline-end: 1px solid var(--ds-color-border-light, #e8e8eb);
+  font-size: 0.85rem;
+}
+
+.wb-sidebar__group-label {
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--ds-color-text-muted, #6e6e6e);
+  margin: var(--ds-space-4, 16px) 0 6px;
+}
+
+.wb-sidebar a {
+  display: block;
+  color: var(--ds-color-text-secondary, #555);
+  text-decoration: none;
+  padding: 3px 8px;
+  border-radius: 5px;
+  line-height: 1.5;
+}
+
+.wb-sidebar a:hover {
+  background: var(--ds-color-bg-subtle, #f7f7f8);
+  color: var(--ds-color-text, #1a1a1a);
+}
+
+.wb-main {
+  padding: var(--ds-space-8, 24px) var(--ds-space-8, 32px);
+  max-width: 960px;
+  min-width: 0;
+}
+
+.wb-main--wide {
+  max-width: none;
+}
+
+/* ── Intro / headings ─────────────────────────────────────────────────── */
+
+.wb-intro h1 {
+  font-size: 1.6rem;
+  margin: 0 0 6px;
+}
+
+.wb-intro p {
+  color: var(--ds-color-text-secondary, #555);
+  margin: 0 0 var(--ds-space-8, 24px);
+  max-width: 62ch;
+  line-height: 1.6;
+}
+
+.wb-cat {
+  margin: var(--ds-space-8, 40px) 0 var(--ds-space-4, 16px);
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--ds-color-border, #d4d4d8);
+  font-size: 1.15rem;
+}
+
+.wb-cat__hint {
+  font-size: 0.85rem;
+  font-weight: 400;
+  color: var(--ds-color-text-muted, #6e6e6e);
+  margin-inline-start: 8px;
+}
+
+/* ── Demo card ────────────────────────────────────────────────────────── */
+
+.wb-demo {
+  border: 1px solid var(--ds-color-border-light, #e8e8eb);
+  border-radius: var(--ds-radius-lg, 10px);
+  margin-bottom: var(--ds-space-8, 24px);
+  overflow: hidden;
+  scroll-margin-top: 60px;
+}
+
+.wb-demo__head {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 10px var(--ds-space-4, 16px);
+  background: var(--ds-color-bg-subtle, #f7f7f8);
+  border-bottom: 1px solid var(--ds-color-border-light, #e8e8eb);
+}
+
+.wb-demo__title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.wb-demo__tag {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.78rem;
+  color: var(--ds-color-accent, #0055b3);
+}
+
+.wb-demo__notes {
+  padding: 0 var(--ds-space-4, 16px);
+  margin: 10px 0 0;
+  font-size: 0.83rem;
+  color: var(--ds-color-text-secondary, #555);
+  line-height: 1.55;
+}
+
+.wb-demo__focus {
+  margin-inline-start: auto;
+  font-size: 0.78rem;
+  text-decoration: none;
+  color: var(--ds-color-text-muted, #6e6e6e);
+  border: 1px solid var(--ds-color-border, #d4d4d8);
+  border-radius: 6px;
+  padding: 2px 8px;
+}
+
+.wb-demo__focus:hover {
+  color: var(--ds-color-accent, #0055b3);
+  border-color: var(--ds-color-accent, #0055b3);
+}
+
+.wb-variant {
+  padding: var(--ds-space-4, 16px);
+}
+
+.wb-variant + .wb-variant {
+  border-top: 1px dashed var(--ds-color-border-light, #e8e8eb);
+}
+
+.wb-variant__label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ds-color-text-muted, #6e6e6e);
+  margin-bottom: 10px;
+}
+
+.wb-variant__toggle {
+  font: inherit;
+  font-size: 0.72rem;
+  text-transform: none;
+  letter-spacing: 0;
+  cursor: pointer;
+  background: none;
+  border: 1px solid var(--ds-color-border, #d4d4d8);
+  border-radius: 5px;
+  padding: 2px 8px;
+  color: var(--ds-color-text-secondary, #555);
+}
+
+.wb-variant__toggle:hover {
+  border-color: var(--ds-color-accent, #0055b3);
+  color: var(--ds-color-accent, #0055b3);
+}
+
+/* The live render surface. A subtle checkerboard makes transparent edges and
+   spacing visible while styling. */
+.wb-stage {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: flex-start;
+  padding: var(--ds-space-4, 20px);
+  border-radius: var(--ds-radius-md, 8px);
+  background-color: var(--ds-color-bg, #fff);
+  background-image:
+    linear-gradient(45deg, #000 25%, transparent 25%),
+    linear-gradient(-45deg, #000 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #000 75%),
+    linear-gradient(-45deg, transparent 75%, #000 75%);
+  background-size: 16px 16px;
+  background-position: 0 0, 0 8px, 8px -8px, -8px 0;
+}
+
+.wb-stage--block {
+  display: block;
+}
+
+/* Give the stage a clean white inner card so components sit on a real surface,
+   not the checkerboard, unless we want to inspect edges. */
+.wb-stage > * {
+  position: relative;
+}
+
+.wb-code {
+  margin: 10px 0 0;
+  padding: 12px 14px;
+  background: var(--ds-color-bg-dark, #1b1f24);
+  color: #e6e6e6;
+  border-radius: var(--ds-radius-md, 8px);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.78rem;
+  line-height: 1.55;
+  overflow-x: auto;
+  white-space: pre;
+}
+
+.wb-code[hidden] {
+  display: none;
+}
+
+/* ── Focus (single component) mode ────────────────────────────────────── */
+
+.wb-focusbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: var(--ds-space-4, 20px);
+}
+
+.wb-focusbar a {
+  font-size: 0.83rem;
+  color: var(--ds-color-accent, #0055b3);
+  text-decoration: none;
+}
+
+.wb-focusbar a:hover {
+  text-decoration: underline;
+}
+
+/* ── Token reference ──────────────────────────────────────────────────── */
+
+.wb-swatches {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 12px;
+}
+
+.wb-swatch {
+  border: 1px solid var(--ds-color-border-light, #e8e8eb);
+  border-radius: var(--ds-radius-md, 8px);
+  overflow: hidden;
+  font-size: 0.75rem;
+}
+
+.wb-swatch__chip {
+  height: 56px;
+  border-bottom: 1px solid var(--ds-color-border-light, #e8e8eb);
+}
+
+.wb-swatch__meta {
+  padding: 8px 10px;
+}
+
+.wb-swatch__name {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: var(--ds-color-text, #1a1a1a);
+  word-break: break-all;
+}
+
+.wb-swatch__value {
+  color: var(--ds-color-text-muted, #6e6e6e);
+  margin-top: 2px;
+}
+
+.wb-scale-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 6px 0;
+  border-bottom: 1px dashed var(--ds-color-border-light, #e8e8eb);
+  font-size: 0.8rem;
+}
+
+.wb-scale-row__name {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  width: 220px;
+  color: var(--ds-color-text-secondary, #555);
+  flex: none;
+}
+
+.wb-scale-row__bar {
+  height: 14px;
+  background: var(--ds-color-accent, #0055b3);
+  border-radius: 3px;
+}
+
+.wb-scale-row__value {
+  color: var(--ds-color-text-muted, #6e6e6e);
+}
+
+/* ── Responsive ───────────────────────────────────────────────────────── */
+
+@media (max-width: 720px) {
+  .wb-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .wb-sidebar {
+    position: static;
+    max-height: none;
+    border-inline-end: none;
+    border-bottom: 1px solid var(--ds-color-border-light, #e8e8eb);
+  }
+}

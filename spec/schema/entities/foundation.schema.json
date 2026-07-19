@@ -1,12 +1,12 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://designsystemdocspec.org/v0.15.0/entities/foundation.schema.json",
-  "title": "DSDS Foundation Definitions",
-  "description": "Defines documents for foundations: the broad, cross-cutting design domains a system is built on, such as color, typography, spacing, elevation, motion, shape, accessibility, and content. A foundation document holds the identity and metadata of a domain. The `metadata` object holds the shared entityMetadata fields (see metadata/metadata.schema.json). The `documentBlocks` array holds structured docs as typed entries.",
+  "$id": "https://designsystemdocspec.org/v0.15.2/entities/foundation.schema.json",
+  "title": "Foundation definitions",
+  "description": "A foundation document covers a broad design domain a system is built on \u2014 color, typography, spacing, elevation, motion, shape, accessibility, content. It holds the domain's identity and metadata (see metadata/metadata.schema.json), plus its docs.",
   "$defs": {
     "foundation": {
       "type": "object",
-      "description": "The principles, guidelines, scales, and token references that govern a broad design domain across the system, such as color, typography, spacing, elevation, motion, accessibility, and content. Foundations are wider than a single visual attribute. A domain may be visual (color, spacing) or cross-cutting (accessibility, content). The top level holds its identity: `identifier`, `name`, and `description`. The `metadata` object holds the shared entityMetadata fields (see metadata/metadata.schema.json). The `documentBlocks` array holds structured docs as typed entries: principles, scale, motion, guidelines, accessibility, content, and so on.",
+      "description": "The principles, scales, and rules that govern a design domain \u2014 color, typography, spacing, elevation, motion, accessibility, content. A domain can be visual (color, spacing) or cross-cutting (accessibility, content). Its identity is `identifier`, `name`, and `description`; its docs cover principles, scale, motion, guidelines, accessibility, content, and more.",
       "required": [
         "kind",
         "identifier",
@@ -21,11 +21,11 @@
         "identifier": {
           "type": "string",
           "pattern": "^[a-z][a-z0-9-]*$",
-          "description": "Machine-readable identifier for the foundation (e.g., 'color', 'typography', 'spacing', 'elevation', 'motion', 'shape', 'accessibility', 'content'). MUST be unique within its entity group."
+          "description": "Machine-readable identifier for the foundation (ex: 'color', 'typography', 'spacing', 'elevation', 'motion', 'shape', 'accessibility', 'content'). MUST be unique within its entity group."
         },
         "name": {
           "type": "string",
-          "description": "Display name shown in docs (e.g., 'Color', 'Typography', 'Spacing', 'Elevation', 'Accessibility', 'Content')."
+          "description": "Display name shown in docs (ex: 'Color', 'Typography', 'Spacing', 'Elevation', 'Accessibility', 'Content')."
         },
         "description": {
           "$ref": "../common/rich-text.schema.json#/$defs/richText",
@@ -37,11 +37,11 @@
         },
         "relationships": {
           "$ref": "../common/relationship.schema.json#/$defs/relationships",
-          "description": "Typed dependency edges from this foundation to other entities — e.g. 'depends-on' the tokens it builds on. Inverse edges are derived by tooling. Use the `links` metadata field for external resources."
+          "description": "Links from this foundation to other entities \u2014 e.g. 'depends-on' the tokens it builds on. Tools derive the reverse edges. Use `links` metadata for external resources instead."
         },
         "documentBlocks": {
           "type": "array",
-          "description": "All structured docs for this foundation, as an ordered array of typed document block objects. It accepts the foundation-specific kinds (principles, scale, motion) plus the general kinds (guidelines, use-cases, accessibility, content, sections, checklist). The `kind` property on each entry sets its shape. Order matters, so tools SHOULD keep it for display. Put internal artifact links (such as token group references) in the `links` metadata field, not in document block entries.",
+          "description": "All structured docs for this foundation, in order. Accepts the foundation-specific kinds (principles, scale, motion) plus every general kind. Tools SHOULD keep this order for display. Put internal links (like a token group reference) in `links` metadata, not in a block entry.",
           "items": {
             "$ref": "../document-blocks/document-blocks.schema.json#/$defs/foundationDocumentBlock"
           },
@@ -49,7 +49,7 @@
         },
         "agentDocumentBlocks": {
           "type": "array",
-          "description": "Structured docs for agents (AI/LLM) only — a separate space that accepts the same block kinds as `documentBlocks`. `documentBlocks` is the default: put anything a human reader needs there. Use `agentDocumentBlocks` only for content that helps an agent build correctly but is noise for humans. For example: hard MUST/MUST-NOT rules an agent should treat as firm limits; notes that correct a mistake an agent is likely to make, such as reaching for this entity when a confusable one fits better; constraints backed by test-run evidence; and machine-checkable criteria with verification modes. A hard rule that humans also need (such as an accessibility requirement) belongs in `documentBlocks`, not here. Agent blocks add to the human docs — they never replace or duplicate them. Tools MUST NOT render these blocks in human-facing docs. Agents SHOULD read both arrays, human blocks first.",
+          "description": "Docs for agents (AI/LLM) only, using the same block kinds as `documentBlocks`. Put anything a human needs in `documentBlocks` \u2014 that's the default. Use this only for things that would be noise to a person: hard must/must-not rules, notes that correct a mistake agents commonly make (like picking a similar but wrong entity), evidence-backed constraints, and machine-checkable criteria. A rule humans need too still belongs in `documentBlocks`. This adds to the human docs, it never replaces them. Tools MUST NOT show these blocks to humans. Agents SHOULD read both arrays, human docs first.",
           "items": {
             "$ref": "../document-blocks/document-blocks.schema.json#/$defs/foundationDocumentBlock"
           },

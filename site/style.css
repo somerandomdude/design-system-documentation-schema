@@ -1,41 +1,48 @@
 /* DSDS Spec Site — Stylesheet
    Design tokens are defined in tokens.css, loaded via <link> in every page.
-   Legacy --color-*, --font-*, --spacing-* aliases are provided
-   by tokens.css for backward compatibility with any remaining
-   light-DOM rules in this file. */
+   Reference --ds-* tokens directly — no legacy alias layer. */
 
-/* Reset */
 *,
 *::before,
 *::after {
     box-sizing: border-box;
 }
 
+:target {
+    scroll-margin-top: 5vh;
+}
+
 html {
     font-size: 16px;
-    -webkit-text-size-adjust: 100%;
+    -webkit-text-size-adjust: 100%; /* still required by Safari; no unprefixed fallback there */
+    text-size-adjust: 100%;
+    scroll-behavior: smooth;
+    background: #1a1a1a;
 }
 
 body {
-    font-family: var(--font-body);
-    color: var(--color-text);
-    background: var(--color-bg);
+    font-family: var(--ds-font-body);
+    font-weight: var(--ds-font-weight-regular);
+    color: var(--ds-color-text);
+    background: var(--ds-color-bg);
     line-height: 1.6;
     display: flex;
     min-height: 100vh;
+    text-rendering: geometricprecision;
+    -webkit-font-smoothing: antialiased;
+    padding: 0;
+    margin: 0;
 }
 
 /* Skip link — visually hidden until keyboard-focused */
 .skip-link {
     position: fixed;
-    top: 0.5rem;
-    left: 0.5rem;
+    inset-block-start: 0.5rem;
+    inset-inline-start: 0.5rem;
     z-index: var(--ds-z-skip-link, 300);
     padding: 0.5rem 1rem;
-    background: var(--color-bg);
-    color: var(--color-text);
-    border-radius: 4px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+    background: var(--ds-color-bg);
+    color: var(--ds-color-text);
     text-decoration: none;
     transform: translateY(calc(-100% - 1rem));
 }
@@ -44,20 +51,13 @@ body {
     transform: none;
 }
 
-/* Main content area — sits between left nav and right TOC */
+/* Main content area — the nav is fixed-position and sits on top of this
+   (not pushing it via margin), so padding reserves the same visual inset
+   instead of shifting the box itself. */
 .content {
-    margin-left: var(--nav-width);
     flex: 1;
     min-width: 0;
     display: flex;
-}
-
-.content--with-toc {
-    /* When TOC is present, the main area shares space */
-}
-
-.content--wide .content__inner {
-    max-width: none;
 }
 
 .content__main {
@@ -65,65 +65,40 @@ body {
     min-width: 0;
 }
 
-.content__inner {
-    max-width: var(--content-max);
-    margin: 0 auto;
-    padding: var(--spacing-2xl) var(--spacing-xl);
+.content__container {
+    padding-inline-start: var(--ds-width-nav);
 }
 
-/* Header / hero area */
-.spec-header {
-    margin-bottom: var(--spacing-2xl);
+.content__inner {
+    max-width: var(--ds-width-content);
+    margin: 0 auto;
+    padding: var(--ds-space-8) var(--ds-space-8);
+
+    /* Generous bottom padding so the page doesn't end abruptly right after
+       the last line of content. */
+    padding-bottom: calc(var(--ds-space-8) * 4);
 }
 
 /* Typography */
 
 p {
-    margin-bottom: var(--spacing-md);
-}
-
-/* ── Shared utility classes ─────────────────────────────────────────── */
-
-/* Standalone pages (quickstart, samples) don't use the fixed-nav layout,
-   so we reset body to simple block flow. */
-body.page-standalone {
-    display: block;
-    min-height: auto;
-}
-
-/* Centered content container */
-.container {
-    max-width: var(--content-max);
-    margin: 0 auto;
-    padding: 0 var(--spacing-lg);
-}
-
-/* Lead paragraph — larger, muted intro text below a heading */
-.lead {
-    font-size: 0.95rem;
-    color: var(--color-text-secondary);
-    margin: 0 0 var(--spacing-md);
-    line-height: 1.6;
-}
-
-@media (max-width: 640px) {
-    .container {
-        padding: 0 var(--spacing-md);
-    }
+    margin-bottom: var(--ds-space-4);
 }
 
 a {
-    color: var(--color-link);
+    color: var(--ds-color-accent);
     text-decoration-thickness: 1px;
     text-underline-offset: 2px;
+    transition: color var(--ds-duration-fast) var(--ds-ease-standard);
 }
 
 a:hover {
-    color: var(--color-link-hover);
+    /* No separate "hover" token — mixed on the fly from the accent color. */
+    color: color-mix(in oklch, var(--ds-color-accent) 80%, black);
 }
 
 strong {
-    font-weight: 600;
+    font-weight: var(--ds-font-weight-bold);
 }
 
 em {
@@ -132,35 +107,38 @@ em {
 
 hr {
     border: none;
-    margin: var(--spacing-2xl) 0;
+    margin: var(--ds-space-8) 0;
     height: 0;
 }
 
 /* Lists */
 ul,
 ol {
-    margin-bottom: var(--spacing-md);
-    padding-left: var(--spacing-lg);
+    margin-bottom: var(--ds-space-4);
+    padding-inline-start: var(--ds-space-8);
 }
 
 li {
-    margin-bottom: var(--spacing-xs);
+    margin-bottom: var(--ds-space-1);
     line-height: 1.6;
 }
 
 li > ul,
 li > ol {
-    margin-top: var(--spacing-xs);
+    margin-top: var(--ds-space-1);
     margin-bottom: 0;
+}
+
+ul {
+    list-style: square;
 }
 
 /* Blockquotes / notes */
 blockquote {
-    border-left: 3px solid var(--color-accent);
-    background: var(--color-accent-subtle);
-    padding: var(--spacing-md) var(--spacing-lg);
-    margin-bottom: var(--spacing-lg);
-    border-radius: 0 4px 4px 0;
+    border-inline-start: 1px solid var(--ds-color-accent);
+    background: var(--ds-color-accent-subtle);
+    padding: var(--ds-space-4) var(--ds-space-8);
+    margin-bottom: var(--ds-space-8);
     font-size: 0.9375rem;
 }
 
@@ -168,21 +146,19 @@ blockquote p:last-child {
     margin-bottom: 0;
 }
 
-/* Hide TOC on narrower screens, show on wide */
-@media (max-width: 1200px) {
-    ds-toc {
-        display: none;
-    }
-}
-
 @media (max-width: 900px) {
     .content {
-        margin-left: 0;
+        padding-inline-start: 0;
     }
 
     .content__inner {
-        padding: var(--spacing-xl) var(--spacing-md);
-        padding-top: calc(var(--spacing-xl) + 48px);
+        padding: var(--ds-space-8) var(--ds-space-4);
+        padding-top: calc(var(--ds-space-8) + 48px);
+        padding-bottom: calc(var(--ds-space-8) * 4);
+    }
+
+    .content__container {
+        padding: 0;
     }
 }
 
@@ -190,17 +166,65 @@ blockquote p:last-child {
 @media print {
     ds-spec-nav,
     ds-nav-toggle,
-    ds-back-to-top,
-    ds-toc {
+    ds-back-to-top {
         display: none;
     }
 
     .content {
-        margin-left: 0;
+        padding-inline-start: 0;
     }
 
     pre {
         white-space: pre-wrap;
-        word-wrap: break-word;
+        overflow-wrap: break-word;
     }
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: var(--ds-font-mono);
+}
+
+h1 { font-size: var(--ds-font-size-xl); font-weight: var(--ds-font-weight-bold); margin: 0 0 var(--ds-space-4); }
+h2 { font-size: var(--ds-font-size-lg); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-8) 0 var(--ds-space-2); }
+h3 { font-size: var(--ds-font-size-lg); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-8) 0 var(--ds-space-2); }
+h4 { font-size: var(--ds-font-size-lg); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-4) 0 var(--ds-space-2); }
+h5 { font-size: var(--ds-font-size-base); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-4) 0 var(--ds-space-2); }
+h6 { font-size: var(--ds-font-size-base); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-2) 0 var(--ds-space-2); color: var(--ds-color-text); }
+
+/* ── Page transitions ─────────────────────────────────────────────────
+   Opts every same-origin navigation into the browser's native
+   cross-document view transition (a plain cross-fade unless overridden
+   below). Browsers without support just navigate normally — no fallback
+   needed. Durations come from the same tokens as the rest of the site's
+   motion, so prefers-reduced-motion (tokens.css) turns this off too. */
+@view-transition {
+    navigation: auto;
+}
+
+@keyframes move-out {
+    from {
+        opacity: 1;
+    }
+
+    to {
+        opacity: 0;
+    }
+}
+
+@keyframes move-in {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+::view-transition-old(root) {
+    animation: 0.3s ease-in both move-out; /* FIX */
+}
+
+::view-transition-new(root) {
+    animation: 0.3s ease-in both move-in 0.4s; /* FIX */
 }

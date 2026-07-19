@@ -89,7 +89,7 @@ function collectDefs() {
     }
   }
 
-  // Also collect $defs from the root schema itself (e.g., collectionDoc)
+  // Also collect $defs from the root schema itself (ex: collectionDoc)
   const rootData = readJSON(ROOT_SCHEMA);
   for (const [name, body] of Object.entries(rootData.$defs || {})) {
     if (name in allDefs) {
@@ -183,7 +183,7 @@ function buildBundled() {
   if (!version) {
     console.error(
       "  ✗ Could not derive spec version from dsds.schema.json.\n" +
-      "    Expected: properties.dsdsVersion.const (e.g., \"0.1\").",
+      "    Expected: properties.dsdsVersion.const (ex: \"0.1\").",
     );
     process.exit(1);
   }
@@ -202,7 +202,7 @@ function buildBundled() {
   const bundled = {
     $schema: "https://json-schema.org/draft/2020-12/schema",
     $id: `https://designsystemdocspec.org/v${version}/dsds.bundled.schema.json`,
-    title: `Design System Documentation Spec (DSDS) v${version} — Bundled`,
+    title: `Design System Doc Spec (DSDS) v${version} — Bundled`,
     description:
       "Single-file bundled version of the DSDS schema. " +
       "Auto-generated from the split schema files by scripts/bundle.js. " +

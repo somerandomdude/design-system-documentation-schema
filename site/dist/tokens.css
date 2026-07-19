@@ -2,33 +2,62 @@
    DSDS Design Tokens
 
    Centralized CSS custom properties for all visual attributes.
-   Every web component and stylesheet references these tokens.
-   Legacy aliases at the bottom bridge old variable names used in style.css.
+   Every web component and stylesheet references these tokens directly
+   (no legacy-name aliasing layer — style.css uses the --ds-* names too).
 
    Tokens are organized by category and use a constrained scale
    to enforce visual consistency across the system.
    ═══════════════════════════════════════════════════════════════════════════ */
 
+@font-face {
+    font-family: "DM Sans";
+    src: url("fonts/DMSans-VariableFont_opsz,wght.ttf") format("truetype-variations");
+    font-weight: 100 1000;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "DM Mono";
+    src: url("fonts/DMMono-Medium.ttf") format("truetype");
+    font-weight: 500;
+    font-style: normal;
+    font-display: swap;
+}
+
 :root {
+    --ds-color-accent-seed: #f5a445;
+
     /* ── Color: Background ──────────────────────────────────────────────── */
-    --ds-color-bg: #ffffff;
-    --ds-color-bg-subtle: #f7f7f8;
-    --ds-color-bg-muted: #f0f1f3;
+    --ds-color-bg: #d5cbc2;
+
+    /* Progressive enhancement: browsers without relative-color-syntax
+       support keep the static fallback above; browsers that support it
+       override with a value derived from the accent seed. */
+    /* stylelint-disable-next-line declaration-block-no-duplicate-custom-properties */
+    --ds-color-bg: oklch(from var(--ds-color-accent-seed) calc(l + 0.135) calc(c - 0.13) h);
+    --ds-color-bg-inverse: #fff;
+    --ds-color-bg-raised: var(--ds-color-bg-inverse);
+    --ds-color-bg-accent: var(--ds-color-accent-seed);
+    --ds-color-bg-subtle: var(--ds-color-bg-raised);
+    --ds-color-bg-muted: var(--ds-color-bg-raised);
     --ds-color-bg-dark: #1b1f24;
-    --ds-color-bg-dark-hover: #2a2f36;
-    --ds-color-bg-dark-active: #363b44;
 
     /* ── Color: Text ────────────────────────────────────────────────────── */
     --ds-color-text: #1a1a1a;
-    --ds-color-text-secondary: #555555;
-    --ds-color-text-muted: #6e6e6e;
-    --ds-color-text-faint: #767676;
-    --ds-color-text-on-dark: #c9cdd3;
-    --ds-color-text-on-dark-heading: #ffffff;
+    --ds-color-text-inverse: #fff;
 
     /* ── Color: Accent / Link ───────────────────────────────────────────── */
-    --ds-color-accent: #0055b3;
-    --ds-color-accent-hover: #003d82;
+
+    /* Derived from the accent seed (same one --ds-color-bg above uses), not
+       a disconnected, hand-picked blue — same progressive-enhancement
+       pattern: static fallback for browsers without relative-color-syntax
+       support, then an oklch(from ...) override for browsers that have it.
+       Hover/interaction states aren't separate tokens — see the
+       color-mix(in oklch, ...) calls at each :hover call site instead. */
+    --ds-color-accent: #642500;
+    /* stylelint-disable-next-line declaration-block-no-duplicate-custom-properties */
+    --ds-color-accent: oklch(from var(--ds-color-accent-seed) calc(l - 0.43) calc(c - 0.043) calc(h - 21.92));
     --ds-color-accent-subtle: #e8f0fe;
 
     /* ── Color: Border ──────────────────────────────────────────────────── */
@@ -36,190 +65,90 @@
     --ds-color-border-light: #e8e8eb;
 
     /* ── Color: Semantic — Status badges ────────────────────────────────── */
-    --ds-color-success-bg: #c8e6c9;
-    --ds-color-success-text: #1b5e20;
-    --ds-color-warning-bg: #fff9c4;
-    --ds-color-warning-text: #8c5800;
-    --ds-color-danger-bg: #ffcdd2;
-    --ds-color-danger-text: #8e1515;
-    --ds-color-danger-strong: #b91c1c;
-    --ds-color-danger-btn: #dc2626;
-    --ds-color-danger-btn-hover: #b91c1c;
-    --ds-color-neutral-bg: #e0e0e0;
-    --ds-color-neutral-text: #616161;
-    --ds-color-info-bg: #e3f2fd;
-    --ds-color-info-text: #1565c0;
-    --ds-color-purple-bg: #f3e5f5;
-    --ds-color-purple-text: #7b1fa2;
-    --ds-color-indigo-bg: #e8eaf6;
-    --ds-color-indigo-text: #283593;
 
-    /* ── Color: Semantic — Required/Conditional badges ──────────────────── */
-    --ds-color-required-bg: #bbdefb;
-    --ds-color-required-text: #0d47a1;
-    --ds-color-encouraged-bg: #c8e6c9;
-    --ds-color-encouraged-text: #1b5e20;
-    --ds-color-prohibited-bg: #ffcdd2;
-    --ds-color-prohibited-text: #b71c1c;
-    --ds-color-discouraged-bg: #fff3e0;
-    --ds-color-discouraged-text: #a93c00;
+    /* success-text backs the callout "tip" variant via the encouraged-text
+       alias below, not a badge variant directly — ds-badge's "kind" variant
+       uses --ds-color-text (see badge.js), not a semantic color. */
+    --ds-color-success-text: #1b5e20;
+    --ds-color-warning-text: #8c5800;
 
     /* ── Color: Semantic — Note/Callout ─────────────────────────────────── */
-    --ds-color-note-warning-bg: #fffbeb;
-    --ds-color-note-warning-border: #fde68a;
-    --ds-color-note-info-bg: var(--ds-color-accent-subtle);
-    --ds-color-note-info-border: var(--ds-color-border-light);
 
-    /* ── Color: Syntax highlighting — Light ─────────────────────────────── */
-    --ds-syntax-light-key: #0451a5;
-    --ds-syntax-light-string: #a31515;
-    --ds-syntax-light-number: #098658;
-    --ds-syntax-light-bool: #0000ff;
+    /* Same hue as success — reused for the callout "tip" variant. */
+    --ds-color-encouraged-text: var(--ds-color-success-text);
 
-    /* ── Color: Syntax highlighting — Dark ──────────────────────────────── */
-    --ds-syntax-dark-key: #79c0ff;
-    --ds-syntax-dark-string: #a5d6ff;
-    --ds-syntax-dark-number: #56d364;
-    --ds-syntax-dark-bool: #ff7b72;
-    --ds-syntax-dark-text: #e6edf3;
-    --ds-syntax-dark-label: #636c76;
-
-    /* ── Color: Nav (dark sidebar) ──────────────────────────────────────── */
-    --ds-color-nav-group: #808690;
+    /* ── Color: Syntax highlighting ─────────────────────────────────────── */
+    --ds-syntax-light-key: #0558B2;
+    --ds-syntax-light-string: #BE2709;
+    --ds-syntax-light-number: #267860;
+    --ds-syntax-light-bool: #4231DD;
 
     /* ── Font Family ────────────────────────────────────────────────────── */
     --ds-font-body:
-        -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
-        Arial, sans-serif;
+        "DM Sans", -apple-system, blinkmacsystemfont, "Segoe UI", roboto, "Helvetica Neue",
+        arial, sans-serif;
     --ds-font-mono:
-        "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
+       "DM Mono", "SFMono-Regular", consolas, "Liberation Mono", menlo, courier, monospace;
 
-    /* ── Font Size — Constrained scale ──────────────────────────────────── */
-    --ds-font-size-2xs: 0.625rem; /* 10px — smallest badge */
-    --ds-font-size-xs: 0.6875rem; /* 11px — badges, nav group labels */
-    --ds-font-size-sm: 0.75rem; /* 12px — small text, labels, source paths */
-    --ds-font-size-base: 0.8125rem; /* 13px — body text in compact contexts */
-    --ds-font-size-md: 0.875rem; /* 14px — standard body, inline code */
-    --ds-font-size-lg: 0.9375rem; /* 15px — descriptions, lead text */
-    --ds-font-size-xl: 1rem; /* 16px — h4 */
-    --ds-font-size-2xl: 1.125rem; /* 18px — h3 */
-    --ds-font-size-3xl: 1.375rem; /* 22px — h2 */
-    --ds-font-size-4xl: 1.75rem; /* 28px — h1 */
-    --ds-font-size-5xl: 2rem; /* 32px — hero title */
+    /* ── Font Size ──────────────────────────────────────────────────────── */
+    --ds-font-size-xs: 0.67rem;
+    --ds-font-size-sm: 0.75rem; /* 12px — small text, labels, badges */
+    --ds-font-size-base: 0.875rem; /* 14px — body */
+    --ds-font-size-lg: 1.125rem; /* 18px — subheads (h2–h4) */
+    --ds-font-size-xl: 1.75rem; /* 28px — h1 */
 
     /* ── Font Weight ────────────────────────────────────────────────────── */
-    --ds-font-weight-normal: 400;
-    --ds-font-weight-medium: 500;
-    --ds-font-weight-semibold: 600;
-    --ds-font-weight-bold: 700;
-    --ds-font-weight-extrabold: 800;
+    --ds-font-weight-regular: 460;
+    --ds-font-weight-bold: 600;
 
     /* ── Line Height ────────────────────────────────────────────────────── */
-    --ds-line-height-tight: 1.2;
     --ds-line-height-snug: 1.3;
     --ds-line-height-normal: 1.4;
     --ds-line-height-relaxed: 1.5;
     --ds-line-height-loose: 1.6;
 
     /* ── Spacing — 4px base scale ───────────────────────────────────────── */
-    --ds-space-0: 0;
     --ds-space-1: 4px;
     --ds-space-2: 8px;
-    --ds-space-3: 12px;
     --ds-space-4: 16px;
-    --ds-space-5: 20px;
-    --ds-space-6: 24px;
     --ds-space-8: 32px;
-    --ds-space-10: 40px;
-    --ds-space-12: 48px;
-    --ds-space-16: 64px;
-
-    /* ── Border Radius ──────────────────────────────────────────────────── */
-    --ds-radius-sm: 3px;
-    --ds-radius-md: 4px;
-    --ds-radius-lg: 6px;
-    --ds-radius-xl: 8px;
-    --ds-radius-full: 99999999px;
 
     /* ── Border Width ───────────────────────────────────────────────────── */
-    --ds-border-width-sm: 1px;
-    --ds-border-width-md: 2px;
-    --ds-border-width-lg: 3px;
-    --ds-border-width-xl: 4px;
-
-    /* ── Shadow ─────────────────────────────────────────────────────────── */
-    --ds-shadow-sm:
-        0 1px 4px rgba(0, 0, 0, 0.06), 0 2px 8px rgba(0, 0, 0, 0.04);
-    --ds-shadow-md: 0 2px 8px rgba(0, 85, 179, 0.08);
-    --ds-shadow-lg: 0 2px 6px rgba(0, 0, 0, 0.2);
+    --ds-border-width: 1px;
 
     /* ── Layout Widths ──────────────────────────────────────────────────── */
     --ds-width-nav: 240px;
-    --ds-width-toc: 220px;
-    --ds-width-sidebar: 280px;
     --ds-width-content: 820px;
-    --ds-width-wide: 1600px;
 
     /* ── Z-Index ────────────────────────────────────────────────────────── */
     --ds-z-base: 1;
-    --ds-z-toolbar: 90;
     --ds-z-nav: 100;
-    --ds-z-toggle: 101;
     --ds-z-overlay: 200;
     --ds-z-skip-link: 300;
 
-    /* ── Transition ─────────────────────────────────────────────────────── */
-    --ds-transition-fast: 0.1s ease;
-    --ds-transition-normal: 0.15s ease;
-    --ds-transition-slow: 0.2s ease;
-
     /* ── Letter Spacing ─────────────────────────────────────────────────── */
-    --ds-tracking-tight: 0.02em;
-    --ds-tracking-normal: 0.03em;
     --ds-tracking-wide: 0.04em;
-    --ds-tracking-wider: 0.06em;
-    --ds-tracking-widest: 0.08em;
 
-    /* ── Opacity ────────────────────────────────────────────────────────── */
-    --ds-opacity-disabled: 0.45;
-    --ds-opacity-overlay: 0.06;
+    /* ── Motion ─────────────────────────────────────────────────────────── */
 
-    /* ═══════════════════════════════════════════════════════════════════════
-     Legacy aliases — bridge from old variable names to new tokens.
-     These allow style.css to reference the new token system without
-     breaking existing light-DOM rules.
-     ═══════════════════════════════════════════════════════════════════════ */
+    /* Small on purpose — one pair of durations and one easing curve, used
+       only for the handful of obvious hover/toggle states that benefit
+       from it (links, nav items, icon buttons). Not a general-purpose
+       animation system. */
+    --ds-duration-fast: 200ms;
+    --ds-duration-base: 300ms;
+    --ds-ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+}
 
-    --color-bg: var(--ds-color-bg);
-    --color-bg-subtle: var(--ds-color-bg-subtle);
-    --color-bg-code: var(--ds-color-bg-muted);
-    --color-bg-nav: var(--ds-color-bg-dark);
-    --color-bg-nav-hover: var(--ds-color-bg-dark-hover);
-    --color-bg-nav-active: var(--ds-color-bg-dark-active);
-    --color-text: var(--ds-color-text);
-    --color-text-secondary: var(--ds-color-text-secondary);
-    --color-text-nav: var(--ds-color-text-on-dark);
-    --color-text-nav-heading: var(--ds-color-text-on-dark-heading);
-    --color-text-nav-active: var(--ds-color-text-on-dark-heading);
-    --color-link: var(--ds-color-accent);
-    --color-link-hover: var(--ds-color-accent-hover);
-    --color-border: var(--ds-color-border);
-    --color-border-light: var(--ds-color-border-light);
-    --color-accent: var(--ds-color-accent);
-    --color-accent-subtle: var(--ds-color-accent-subtle);
-
-    --font-body: var(--ds-font-body);
-    --font-mono: var(--ds-font-mono);
-
-    --nav-width: var(--ds-width-nav);
-    --toc-width: var(--ds-width-toc);
-    --content-max: var(--ds-width-content);
-
-    --spacing-xs: var(--ds-space-1);
-    --spacing-sm: var(--ds-space-2);
-    --spacing-md: var(--ds-space-4);
-    --spacing-lg: var(--ds-space-6);
-    --spacing-xl: var(--ds-space-8);
-    --spacing-2xl: var(--ds-space-12);
-    --spacing-3xl: var(--ds-space-16);
+/* Collapsing the duration tokens to 0 here — rather than adding
+   `@media (prefers-reduced-motion: reduce)` overrides at every call site —
+   is enough on its own: every transition/animation in this file and every
+   component's shadow DOM sets its duration from one of these two tokens
+   (custom properties inherit through shadow boundaries), so this one block
+   silences all of them at once. */
+@media (prefers-reduced-motion: reduce) {
+    :root {
+        --ds-duration-fast: 0s;
+        --ds-duration-base: 0s;
+    }
 }

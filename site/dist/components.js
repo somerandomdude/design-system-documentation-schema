@@ -53,116 +53,65 @@
     mono: "var(--ds-font-mono)",
   };
 
-  // ── button.js ──
-  const BUTTON_CSS = `
-    ${BASE_RESET}
-    :host { display: inline-flex; }
+  // Icons live as real .svg files in site/assets/ (edit them directly there)
+  // instead of inline markup, so ICON_NAMES is just the name → file map.
+  // loadIcon() fetches + caches each file's markup on first use; every icon
+  // is monoline with stroke/fill="currentColor" so the containing element's
+  // `color` recolors it once inlined into the DOM.
+  const ICON_FILES = {
+    menu: "icon-menu.svg",
+    close: "icon-close.svg",
+    info: "icon-info.svg",
+    flask: "icon-flask.svg",
+    dot: "icon-dot.svg",
+    lightbulb: "icon-lightbulb.svg",
+    warning: "icon-warning.svg",
+    brackets: "icon-brackets.svg",
+    logo: "dsds.svg",
+  };
 
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: var(--ds-space-1);
-      border: none;
-      border-radius: var(--ds-radius-lg);
-      font-family: ${FONT.body};
-      font-weight: var(--ds-font-weight-semibold);
-      line-height: 1;
-      cursor: pointer;
-      text-decoration: none;
-      white-space: nowrap;
-      transition: background var(--ds-transition-normal), color var(--ds-transition-normal), border-color var(--ds-transition-normal), opacity var(--ds-transition-normal);
-    }
+  const _iconCache = new Map();
 
-    /* Sizes */
-    :host([size="sm"]) .btn { font-size: var(--ds-font-size-sm); padding: 5px 10px; }
-    .btn                     { font-size: var(--ds-font-size-base); padding: 7px 14px; }
-    :host([size="lg"]) .btn  { font-size: var(--ds-font-size-lg); padding: 10px var(--ds-space-5); }
+  /**
+   * Fetch (and cache) the raw markup of a named icon from site/assets/.
+   * Returns a Promise<string> — always resolves, with "" on failure so a
+   * missing/renamed file degrades to no icon rather than a thrown error.
+   *
+   * In the built site, scripts/build-site.js's bundler inlines every icon
+   * file's contents at build time via seedIcons() below, so this fetch never
+   * actually runs there — only in dev mode (served, never file://), where a
+   * live fetch means editing an .svg under site/assets/ shows up on refresh
+   * with no rebuild needed. The build-time inlining exists because fetch()
+   * of a same-directory file is blocked outright under file:// (opening
+   * site/dist/*.html directly, no server), which the bundle otherwise
+   * supports.
+   */
+  function loadIcon(name) {
+    if (_iconCache.has(name)) return _iconCache.get(name);
+    const file = ICON_FILES[name];
+    const promise = file
+      ? fetch("assets/" + file)
+          .then((res) => (res.ok ? res.text() : ""))
+          .catch(() => "")
+      : Promise.resolve("");
+    _iconCache.set(name, promise);
+    return promise;
+  }
 
-    /* Variants */
-    .btn--primary {
-      background: var(--ds-color-accent);
-      color: #fff;
-    }
-    .btn--primary:hover { background: var(--ds-color-accent-hover); }
-
-    .btn--secondary {
-      background: transparent;
-      color: var(--ds-color-accent);
-      box-shadow: inset 0 0 0 var(--ds-border-width-sm) var(--ds-color-border);
-    }
-    .btn--secondary:hover {
-      background: var(--ds-color-accent-subtle);
-    }
-
-    .btn--ghost {
-      background: transparent;
-      color: var(--ds-color-accent);
-    }
-    .btn--ghost:hover {
-      background: var(--ds-color-accent-subtle);
-    }
-
-    .btn--danger {
-      background: var(--ds-color-danger-btn);
-      color: #fff;
-    }
-    .btn--danger:hover { background: var(--ds-color-danger-btn-hover); }
-
-    /* Disabled */
-    :host([disabled]) .btn {
-      opacity: var(--ds-opacity-disabled);
-      cursor: not-allowed;
-      pointer-events: none;
-    }
-
-    /* Focus ring */
-    .btn:focus-visible {
-      outline: var(--ds-border-width-md) solid var(--ds-color-accent);
-      outline-offset: 2px;
-    }
-
-    ::slotted([slot="icon-start"]),
-    ::slotted([slot="icon-end"]) {
-      display: inline-flex;
-      width: 1em;
-      height: 1em;
-    }
-  `;
-
-  class DsButton extends HTMLElement {
-    static get observedAttributes() {
-      return ["variant", "size", "disabled", "href"];
-    }
-
-    constructor() {
-      super();
-      this._shadow = createShadow(this, BUTTON_CSS);
-      this._render();
-    }
-
-    attributeChangedCallback() {
-      this._render();
-    }
-
-    _render() {
-      const variant = this.getAttribute("variant") || "secondary";
-      const href = this.getAttribute("href");
-      const disabled = this.hasAttribute("disabled");
-      const tag = href && !disabled ? "a" : "button";
-      const hrefAttr = tag === "a" ? ` href="${esc(href)}"` : "";
-      const disabledAttr = tag === "button" && disabled ? " disabled" : "";
-      const role = tag === "a" ? ' role="button"' : "";
-
-      this._shadow.innerHTML = `
-        <${tag} class="btn btn--${esc(variant)}"${hrefAttr}${disabledAttr}${role} part="button">
-          <slot name="icon-start"></slot>
-          <slot></slot>
-          <slot name="icon-end"></slot>
-        </${tag}>
-      `;
+  /**
+   * Pre-populate the icon cache with already-known markup, so loadIcon()
+   * resolves instantly without a network request. Called once by the
+   * bundled components.js (injected by scripts/build-site.js) with every
+   * icon file's contents read at build time.
+   */
+  function seedIcons(map) {
+    for (const name of Object.keys(map)) {
+      _iconCache.set(name, Promise.resolve(map[name]));
     }
   }
+
+  // ── inlined icon assets (build-time, see above) ──
+  seedIcons({"menu":"<svg viewBox=\"0 0 24 24\" width=\"18\" height=\"18\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" xmlns=\"http://www.w3.org/2000/svg\">\n  <line x1=\"3\" y1=\"6\" x2=\"21\" y2=\"6\"/>\n  <line x1=\"3\" y1=\"12\" x2=\"21\" y2=\"12\"/>\n  <line x1=\"3\" y1=\"18\" x2=\"21\" y2=\"18\"/>\n</svg>\n","close":"<svg viewBox=\"0 0 24 24\" width=\"18\" height=\"18\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" xmlns=\"http://www.w3.org/2000/svg\">\n  <line x1=\"5\" y1=\"5\" x2=\"19\" y2=\"19\"/>\n  <line x1=\"19\" y1=\"5\" x2=\"5\" y2=\"19\"/>\n</svg>\n","info":"<svg viewBox=\"0 0 24 24\" width=\"14\" height=\"14\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" xmlns=\"http://www.w3.org/2000/svg\">\n  <circle cx=\"12\" cy=\"12\" r=\"9\"/>\n  <line x1=\"12\" y1=\"11\" x2=\"12\" y2=\"16\"/>\n  <circle cx=\"12\" cy=\"7.5\" r=\"1\" fill=\"currentColor\" stroke=\"none\"/>\n</svg>\n","flask":"<svg viewBox=\"0 0 24 24\" width=\"14\" height=\"14\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" xmlns=\"http://www.w3.org/2000/svg\">\n  <path d=\"M9 3h6\"/>\n  <path d=\"M10 3v6L4.5 18.5A2 2 0 0 0 6.2 21h11.6a2 2 0 0 0 1.7-2.5L14 9V3\"/>\n  <line x1=\"6.5\" y1=\"15\" x2=\"17.5\" y2=\"15\"/>\n</svg>\n","dot":"<svg viewBox=\"0 0 24 24\" width=\"8\" height=\"8\" fill=\"currentColor\" xmlns=\"http://www.w3.org/2000/svg\">\n  <circle cx=\"12\" cy=\"12\" r=\"10\"/>\n</svg>\n","lightbulb":"<svg viewBox=\"0 0 24 24\" width=\"14\" height=\"14\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" xmlns=\"http://www.w3.org/2000/svg\">\n  <path d=\"M9 18h6\"/>\n  <path d=\"M10 22h4\"/>\n  <path d=\"M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.2 1 2.05V17a1 1 0 0 0 1 1h4a1 1 0 0 0 1-1v-.25c0-.85.4-1.55 1-2.05A7 7 0 0 0 12 2z\"/>\n</svg>\n","warning":"<svg viewBox=\"0 0 24 24\" width=\"14\" height=\"14\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" xmlns=\"http://www.w3.org/2000/svg\">\n  <path d=\"M12 2 1 21h22L12 2z\"/>\n  <line x1=\"12\" y1=\"9\" x2=\"12\" y2=\"14\"/>\n  <circle cx=\"12\" cy=\"17.5\" r=\"0.7\" fill=\"currentColor\" stroke=\"none\"/>\n</svg>\n","brackets":"<svg viewBox=\"0 0 24 24\" width=\"18\" height=\"18\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" xmlns=\"http://www.w3.org/2000/svg\">\n  <path d=\"M8 5c-1.5 0-2 .8-2 2v3c0 1.4-.6 2-2 2 1.4 0 2 .6 2 2v3c0 1.2.5 2 2 2\"/>\n  <path d=\"M16 5c1.5 0 2 .8 2 2v3c0 1.4.6 2 2 2-1.4 0-2 .6-2 2v3c0 1.2-.5 2-2 2\"/>\n</svg>\n","logo":"<svg width=\"1550\" height=\"1550\" viewBox=\"0 0 1550 1550\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\">\n<path fill-rule=\"evenodd\" clip-rule=\"evenodd\" d=\"M0 0H1550V1550H0V0ZM75 75V1475H1475V75H75Z\" fill=\"black\"/>\n<path fill-rule=\"evenodd\" clip-rule=\"evenodd\" d=\"M575 300H300V650H575C616.421 650 650 616.421 650 575V375C650 333.579 616.421 300 575 300ZM225 225V725H575C657.843 725 725 657.843 725 575V375C725 292.157 657.843 225 575 225H225Z\" fill=\"black\"/>\n<path fill-rule=\"evenodd\" clip-rule=\"evenodd\" d=\"M825 368.75C825 289.359 889.359 225 968.75 225H1181.25C1260.64 225 1325 289.359 1325 368.75H1250C1250 330.78 1219.22 300 1181.25 300H968.75C930.78 300 900 330.78 900 368.75C900 406.72 930.78 437.5 968.75 437.5H1181.25C1260.64 437.5 1325 501.859 1325 581.25C1325 660.641 1260.64 725 1181.25 725H968.75C889.359 725 825 660.641 825 581.25H900C900 619.22 930.78 650 968.75 650H1181.25C1219.22 650 1250 619.22 1250 581.25C1250 543.28 1219.22 512.5 1181.25 512.5H968.75C889.359 512.5 825 448.141 825 368.75Z\" fill=\"black\"/>\n<path fill-rule=\"evenodd\" clip-rule=\"evenodd\" d=\"M575 900H300V1250H575C616.421 1250 650 1216.42 650 1175V975C650 933.579 616.421 900 575 900ZM225 825V1325H575C657.843 1325 725 1257.84 725 1175V975C725 892.157 657.843 825 575 825H225Z\" fill=\"black\"/>\n<path fill-rule=\"evenodd\" clip-rule=\"evenodd\" d=\"M825 968.75C825 889.359 889.359 825 968.75 825H1181.25C1260.64 825 1325 889.359 1325 968.75H1250C1250 930.78 1219.22 900 1181.25 900H968.75C930.78 900 900 930.78 900 968.75C900 1006.72 930.78 1037.5 968.75 1037.5H1181.25C1260.64 1037.5 1325 1101.86 1325 1181.25C1325 1260.64 1260.64 1325 1181.25 1325H968.75C889.359 1325 825 1260.64 825 1181.25H900C900 1219.22 930.78 1250 968.75 1250H1181.25C1219.22 1250 1250 1219.22 1250 1181.25C1250 1143.28 1219.22 1112.5 1181.25 1112.5H968.75C889.359 1112.5 825 1048.14 825 968.75Z\" fill=\"black\"/>\n</svg>\n"});
 
   // ── code.js ──
   // ═══════════════════════════════════════════════════════════════════════════
@@ -171,13 +120,45 @@
   // Attributes:
   //   language — optional language label (e.g. "json", "bash")
   //   label   — optional label shown in top-right corner
-  //   theme   — "light" | "dark" (default: "light")
   //   inline  — boolean, renders as inline <code> instead of block
+  //   wrap    — boolean, wraps long lines (white-space: pre-wrap) instead of
+  //             the default horizontal-scrolling single-line-per-line layout
   //
   // Content:
   //   Text content inside the element is rendered as code.
   //   For JSON content, set language="json" for syntax highlighting.
   // ═══════════════════════════════════════════════════════════════════════════
+
+  // Syntax-highlight a JSON string. Runs on the RAW (un-escaped) source, then
+  // HTML-escapes per token — NOT the other way around. In valid JSON the only
+  // characters that need HTML escaping (`<`, `>`, `&`, `"`) live inside string
+  // literals, which this regex matches as whole tokens; the gaps between tokens
+  // are structural (`{ } [ ] : ,` and whitespace) and always HTML-safe, so they
+  // pass through untouched. Escaping first and matching second (the previous
+  // approach) desynced on any string containing `&`, `<`, or `>`: those became
+  // `&amp;`/`&lt;`/`&gt;`, and the string matcher's content class excluded `&`,
+  // so it couldn't cross them — mispairing every following quote and cascading
+  // wrong colors down the rest of the block (the JSON spec view is full of such
+  // characters, so it broke entirely).
+  function highlightJson(raw) {
+    return raw.replace(
+      /("(?:\\.|[^"\\])*")(\s*:)?|\b(?:true|false|null)\b|-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?/g,
+      function (m, str, colon) {
+        // A quoted token followed by `:` is a key; otherwise a string value.
+        if (str !== undefined) {
+          const cls = colon ? "hl-k" : "hl-s";
+          return (
+            '<span class="' + cls + '">' + esc(str) + "</span>" +
+            (colon || "")
+          );
+        }
+        // Numbers, booleans, and null contain no HTML-special characters.
+        const cls =
+          m === "true" || m === "false" || m === "null" ? "hl-b" : "hl-n";
+        return '<span class="' + cls + '">' + m + "</span>";
+      },
+    );
+  }
 
   const CODE_CSS = `
     ${BASE_RESET}
@@ -187,45 +168,46 @@
     /* ── Block mode ──────────────────────────────────────── */
     .wrapper {
       position: relative;
-      border-radius: var(--ds-radius-lg);
       overflow: hidden;
+      background: var(--ds-color-bg-raised);
+      inset: calc(var(--ds-space-4) * -1);
+      top: 0;
+      width: calc(100% + (var(--ds-space-4) * 2));
     }
+    .wrapper pre { color: var(--ds-color-text); }
+    .wrapper .hl-k { color: var(--ds-syntax-light-key); }
+    .wrapper .hl-s { color: var(--ds-syntax-light-string); }
+    .wrapper .hl-n { color: var(--ds-syntax-light-number); }
+    .wrapper .hl-b { color: var(--ds-syntax-light-bool); }
 
-    /* Light theme */
-    .wrapper--light {
-      background: var(--ds-color-bg-subtle);
-      border: var(--ds-border-width-sm) solid var(--ds-color-border-light);
-    }
-    .wrapper--light pre { color: var(--ds-color-text); }
-    .wrapper--light .hl-k { color: var(--ds-syntax-light-key); }
-    .wrapper--light .hl-s { color: var(--ds-syntax-light-string); }
-    .wrapper--light .hl-n { color: var(--ds-syntax-light-number); }
-    .wrapper--light .hl-b { color: var(--ds-syntax-light-bool); }
-
-    /* Dark theme */
-    .wrapper--dark {
-      background: var(--ds-color-bg-dark);
-    }
-    .wrapper--dark pre { color: var(--ds-syntax-dark-text); }
-    .wrapper--dark .hl-k { color: var(--ds-syntax-dark-key); }
-    .wrapper--dark .hl-s { color: var(--ds-syntax-dark-string); }
-    .wrapper--dark .hl-n { color: var(--ds-syntax-dark-number); }
-    .wrapper--dark .hl-b { color: var(--ds-syntax-dark-bool); }
-
-    ds-badge[part="label"] {
+    /* Styled like <ds-callout>'s .callout__title — a solid, bold tab, not a
+       pill — instead of a <ds-badge>. */
+    .code__label {
       position: absolute;
-      top: var(--ds-space-2);
-      right: var(--ds-space-3);
+      inset-block-start: 0;
+      inset-inline-end: 0;
+      font-family: ${FONT.body};
+      font-weight: 520;
+      font-size: var(--ds-font-size-sm);
+      background: var(--ds-color-text);
+      color: var(--ds-color-text-inverse);
+      padding: var(--ds-space-2) var(--ds-space-4);
     }
 
     pre {
       margin: 0;
-      padding: var(--ds-space-4) var(--ds-space-5);
+      padding: var(--ds-space-4) var(--ds-space-4);
       font-family: ${FONT.mono};
       font-size: var(--ds-font-size-base);
       line-height: var(--ds-line-height-loose);
       overflow-x: auto;
       white-space: pre;
+    }
+
+    :host([wrap]) pre {
+      white-space: pre-wrap;
+      overflow-wrap: break-word;
+      overflow-x: visible;
     }
 
     code {
@@ -239,16 +221,15 @@
     .inline-code {
       font-family: ${FONT.mono};
       font-size: 0.875em;
-      background: var(--ds-color-bg-muted);
+      background: var(--ds-color-bg-raised);
+      color: var(--ds-color-text);
       padding: 1px 5px;
-      border-radius: var(--ds-radius-sm);
-      color: inherit;
     }
   `;
 
   class DsCode extends HTMLElement {
     static get observedAttributes() {
-      return ["language", "label", "theme", "inline"];
+      return ["language", "label", "inline", "wrap"];
     }
 
     constructor() {
@@ -260,11 +241,22 @@
       // Defer render to ensure the browser has finished parsing the
       // element's inner text content. When the custom element is
       // defined synchronously, connectedCallback fires as soon as the
-      // opening tag is parsed — before child text nodes exist.
+      // opening tag is parsed — before child text nodes exist. A single
+      // requestAnimationFrame tick isn't a reliable guarantee of that (see
+      // the equivalent note in spec-nav.js), so wait for DOMContentLoaded
+      // when the document is still loading.
       var self = this;
-      requestAnimationFrame(function () {
-        self._render();
-      });
+      if (document.readyState === "loading") {
+        document.addEventListener(
+          "DOMContentLoaded",
+          function () {
+            self._render();
+          },
+          { once: true },
+        );
+      } else {
+        this._render();
+      }
     }
 
     attributeChangedCallback() {
@@ -281,39 +273,26 @@
       }
 
       // ── Block mode: render as <pre><code> with syntax highlighting ──
-      const theme = this.getAttribute("theme") || "light";
       const label =
         this.getAttribute("label") || this.getAttribute("language") || "";
       const lang = this.getAttribute("language") || "";
-      const rawBlock = this.textContent || "";
+      const rawBlock = (this.textContent || "").trim();
 
-      let highlighted = esc(rawBlock.trim());
-
-      if (lang === "json") {
-        highlighted = highlighted.replace(
-          /(&quot;(\\u[a-fA-F0-9]{4}|\\[^u]|[^\\&])*?&quot;)(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+-]?\d+)?/g,
-          function (m) {
-            let cls = "hl-n";
-            if (/^&quot;/.test(m)) {
-              cls = /:$/.test(m) ? "hl-k" : "hl-s";
-            } else if (/true|false/.test(m)) {
-              cls = "hl-b";
-            } else if (/null/.test(m)) {
-              cls = "hl-b";
-            }
-            return '<span class="' + cls + '">' + m + "</span>";
-          },
-        );
-      }
+      const highlighted =
+        lang === "json" ? highlightJson(rawBlock) : esc(rawBlock);
 
       const labelHtml = label
-        ? `<ds-badge size="sm" part="label">${esc(label)}</ds-badge>`
+        ? `<span class="code__label" part="label">${esc(label)}</span>`
         : "";
 
+      // tabindex lets keyboard users reach and scroll this block — `pre`
+      // scrolls horizontally (overflow-x: auto) but sits outside the
+      // natural tab order otherwise. No role/aria-label here: that would
+      // make every instance an identically-named landmark region.
       this._shadow.innerHTML = `
-        <div class="wrapper wrapper--${esc(theme)}" part="wrapper">
+        <div class="wrapper" part="wrapper">
           ${labelHtml}
-          <pre part="pre"><code part="code">${highlighted}</code></pre>
+          <pre part="pre" tabindex="0"><code part="code">${highlighted}</code></pre>
         </div>
       `;
     }
@@ -324,84 +303,99 @@
   // <ds-badge>
   //
   // Attributes:
-  //   variant — "stable" | "experimental" | "draft" | "deprecated" |
-  //             "required" | "encouraged" | "prohibited" | "informational" |
-  //             "kind" | "category" | "token-type" | (default: neutral)
-  //   size    — "sm" | "md" (default: "md")
+  //   variant — "kind" | "experimental" | (default: neutral)
   //
   // Content:
   //   Text label inside the element.
+  //
+  // Design: a white chip with a small color-coded icon block on the left —
+  // the variant's meaning lives in the block's color + icon, not the chip's
+  // overall background.
   // ═══════════════════════════════════════════════════════════════════════════
+
+  const BADGE_ICON_NAME = {
+    kind: "info",
+    experimental: "flask",
+    neutral: "dot",
+  };
 
   const BADGE_CSS = `
     ${BASE_RESET}
     :host { display: inline-flex; vertical-align: middle; }
 
     .badge {
-      display: inline-block;
+      display: inline-flex;
+      align-items: stretch;
       font-family: ${FONT.body};
-      font-weight: var(--ds-font-weight-semibold);
       text-transform: none;
-      letter-spacing: var(--ds-tracking-normal);
-      border-radius: var(--ds-radius-md);
       white-space: nowrap;
-      line-height: 1;
+      height: 24px;
+      font-size: .75em;
+      background: var(--ds-color-bg-inverse);
+      color: var(--ds-color-text);
     }
 
-    /* Sizes */
-    :host([size="sm"]) .badge { font-size: var(--ds-font-size-2xs); padding: 2px var(--ds-space-1); }
-    .badge                     { font-size: var(--ds-font-size-xs); padding: 3px var(--ds-space-2); }
+    .badge__icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      flex-shrink: 0;
+      color: var(--ds-color-bg-inverse);
+    }
 
-    /* Variants — Status */
-    .badge--stable       { background: var(--ds-color-success-bg); color: var(--ds-color-success-text); }
-    .badge--experimental { background: var(--ds-color-warning-bg); color: var(--ds-color-warning-text); }
-    .badge--draft        { background: var(--ds-color-neutral-bg); color: var(--ds-color-neutral-text); }
-    .badge--deprecated   { background: var(--ds-color-danger-bg); color: var(--ds-color-danger-text); }
+    .badge__icon svg {
+      display: block;
+    }
 
-    /* Variants — Requirement */
-    .badge--required     { background: var(--ds-color-required-bg); color: var(--ds-color-required-text); }
-    .badge--encouraged   { background: var(--ds-color-encouraged-bg); color: var(--ds-color-encouraged-text); }
-    .badge--prohibited   { background: var(--ds-color-prohibited-bg); color: var(--ds-color-prohibited-text); }
-    .badge--informational { background: var(--ds-color-neutral-bg); color: #424242; }
-    .badge--discouraged  { background: var(--ds-color-discouraged-bg); color: var(--ds-color-discouraged-text); }
+    .badge__label {
+      display: inline-flex;
+      align-items: center;
+      padding: 0 0.75em;
+    }
 
-    /* Variants — Taxonomy */
-    .badge--kind         { background: var(--ds-color-info-bg); color: var(--ds-color-info-text); }
-    .badge--category     { background: var(--ds-color-purple-bg); color: var(--ds-color-purple-text); }
-    .badge--token-type   { background: var(--ds-color-indigo-bg); color: var(--ds-color-indigo-text); }
-
+    /* Used by <ds-def-section>'s type badge */
+    .badge--kind .badge__icon { background: var(--ds-color-text); }
+    /* Used by <ds-prop-table>'s "at least one" conditional marker */
+    .badge--experimental .badge__icon { background: var(--ds-color-warning-text); }
     /* Default / neutral */
-    .badge--neutral {
-      background: var(--ds-color-accent-subtle);
-      color: var(--ds-color-accent);
-    }
+    .badge--neutral .badge__icon { background: var(--ds-color-accent); }
   `;
 
   class DsBadge extends HTMLElement {
     static get observedAttributes() {
-      return ["variant", "size"];
+      return ["variant"];
     }
 
     constructor() {
       super();
       this._shadow = createShadow(this, BADGE_CSS);
-      this._shadow.innerHTML = `<span class="badge" part="badge"><slot></slot></span>`;
+      this._shadow.innerHTML =
+        '<span class="badge" part="badge">' +
+        // Decorative — the variant's meaning is redundant with the visible
+        // label text next to it, so this is hidden from assistive tech.
+        '<span class="badge__icon" part="icon" aria-hidden="true"></span>' +
+        '<span class="badge__label" part="label"><slot></slot></span>' +
+        "</span>";
     }
 
     connectedCallback() {
-      this._updateClass();
+      this._updateVariant();
     }
 
     attributeChangedCallback() {
-      this._updateClass();
+      this._updateVariant();
     }
 
-    _updateClass() {
+    _updateVariant() {
       const variant = this.getAttribute("variant") || "neutral";
       const el = this._shadow.querySelector(".badge");
-      if (el) {
-        el.className = "badge badge--" + variant;
-      }
+      const icon = this._shadow.querySelector(".badge__icon");
+      if (el) el.className = "badge badge--" + variant;
+      const name = BADGE_ICON_NAME[variant] || "dot";
+      loadIcon(name).then((svg) => {
+        if (icon) icon.innerHTML = svg;
+      });
     }
   }
 
@@ -413,9 +407,15 @@
   // All styling is encapsulated in shadow DOM — the slotted table inherits
   // consistent typography, spacing, borders, and responsive overflow.
   //
-  // Attributes:
-  //   striped   — boolean, alternating row backgrounds
-  //   compact   — boolean, tighter padding
+  // The header row sticks to the top of the viewport as the page scrolls past
+  // a tall table. Below 900px wide, wide tables get a horizontal scrollbar
+  // instead — a wrapper that scrolls horizontally unavoidably captures the
+  // vertical axis too (browsers force overflow-y to "auto" the moment
+  // overflow-x isn't "visible"), which re-scopes position:sticky to that
+  // wrapper's own scrolling instead of the page's, so the two features can't
+  // both apply to the same table at the same time. Page-scroll stickiness is
+  // the more useful default; the horizontal-scroll fallback only kicks in
+  // where a wide table would otherwise clip content.
   //
   // Usage:
   //   <ds-table>
@@ -426,18 +426,22 @@
   //       </tbody>
   //     </table>
   //   </ds-table>
-  //
-  //   <ds-table striped compact>
-  //     <table>...</table>
-  //   </ds-table>
   // ═══════════════════════════════════════════════════════════════════════════
 
   const TABLE_CSS = `
     ${BASE_RESET}
     :host { display: block; margin: var(--ds-space-4) 0; }
 
-    .table-wrap {
-      overflow-x: auto;
+    /* No overflow set here by default: leaving both axes "visible" means this
+       wrapper is NOT a scroll container, so the th's position:sticky (below)
+       sticks relative to the page as it scrolls — see the file header comment
+       for why that's mutually exclusive with a horizontal-scroll wrapper.
+       Below 900px, wide tables get a horizontal scrollbar instead (sacrificing
+       the sticky header there) so content doesn't clip on narrow screens. */
+    @media (max-width: 900px) {
+      .table-wrap {
+        overflow-x: auto;
+      }
     }
 
     /* Style the slotted <table> and its descendants via ::slotted
@@ -446,20 +450,23 @@
        on inheritance + the component's font/color context for cells. */
     ::slotted(table) {
       width: 100%;
-      border-collapse: collapse;
+      max-width: 100%;
+      /* separate + zero spacing (not collapse) so the sticky header's cells
+         keep their background/position correctly in Safari, which has long-
+         standing bugs with position:sticky inside a border-collapsed table. */
+      border-collapse: separate;
+      border-spacing: 0;
       font-family: ${FONT.body};
-      font-size: var(--ds-font-size-md);
+      font-size: var(--ds-font-size-base);
       color: var(--ds-color-text);
-    }
-
-    /* Striped — applied via a class toggled onto the slotted table */
-    :host([striped]) ::slotted(table) {
-      --ds-table-striped: 1;
-    }
-
-    /* Compact — applied via a class toggled onto the slotted table */
-    :host([compact]) ::slotted(table) {
-      --ds-table-compact: 1;
+      /* Same bleed treatment as <ds-prop-table>: nudge the table out to the
+         edges of its container by --ds-space-2 on each side. */
+      position: relative;
+      inset: calc(var(--ds-space-4) * -1);
+      width: calc(100% + (var(--ds-space-4) * 2));
+      max-width: calc(100% + (var(--ds-space-4) * 2));
+      top: 0;
+      bottom: 0;
     }
   `;
 
@@ -472,36 +479,37 @@
     var style = document.createElement("style");
     style.id = TABLE_LIGHT_DOM_ID;
     style.textContent = [
-      "ds-table table { width: 100%; border-collapse: collapse; font-size: var(--ds-font-size-md); }",
-      "ds-table thead { background: transparent; }",
+      "ds-table table {",
+      "  width: calc(100% + (var(--ds-space-4) * 2)); max-width: calc(100% + (var(--ds-space-4) * 2));",
+      "  border-collapse: separate; border-spacing: 0; font-size: var(--ds-font-size-base);",
+      "  position: relative; inset: calc(var(--ds-space-4) * -1); top: 0; bottom: 0;",
+      "}",
       "ds-table th {",
-      "  text-align: left; font-weight: var(--ds-font-weight-semibold); font-size: var(--ds-font-size-sm);",
+      "  text-align: start; font-weight: var(--ds-font-weight-bold); font-size: var(--ds-font-size-sm);",
       "  text-transform: none; letter-spacing: var(--ds-tracking-wide);",
-      "  color: var(--ds-color-text-secondary);",
-      "  padding: var(--ds-space-2) var(--ds-space-4);",
-      "  border-bottom: var(--ds-border-width-md) solid var(--ds-color-border);",
+      "  color: var(--ds-color-text);",
+      "  padding: var(--ds-space-2) var(--ds-space-2);",
       "  white-space: nowrap;",
+      "  position: sticky;",
+      "  top: 0;",
+      "  z-index: var(--ds-z-base, 1);",
+      "  background: var(--ds-color-bg-raised);",
       "}",
       "ds-table td {",
-      "  padding: var(--ds-space-2) var(--ds-space-4);",
-      "  border-bottom: var(--ds-border-width-sm) solid var(--ds-color-border-light);",
+      "  padding: var(--ds-space-4) var(--ds-space-2);",
       "  vertical-align: top; line-height: var(--ds-line-height-relaxed);",
       "}",
       "ds-table tr:last-child td { border-bottom: none; }",
       "ds-table a { color: var(--ds-color-accent); }",
-      "ds-table[striped] tbody tr:nth-child(even) td { background: var(--ds-color-bg-subtle); }",
-      "ds-table[compact] th, ds-table[compact] td { padding: 5px 10px; font-size: 0.8rem; }",
       "ds-table td:first-child { white-space: nowrap; }",
       "ds-table td:first-child ds-code[inline] { white-space: nowrap; }",
+      "th:first-child, td:first-child { padding-inline-start: var(--ds-space-4) !important; }",
+      "th:last-child, td:last-child { padding-inline-end: var(--ds-space-4) !important; }"
     ].join("\n");
     document.head.appendChild(style);
   }
 
   class DsTable extends HTMLElement {
-    static get observedAttributes() {
-      return ["striped", "compact"];
-    }
-
     constructor() {
       super();
       this._shadow = createShadow(this, TABLE_CSS);
@@ -521,8 +529,6 @@
   // Attributes:
   //   level    — 1–6 (default: 2)
   //   anchor   — auto-generated anchor id (default: derived from text content)
-  //   badge    — optional badge text shown after the heading
-  //   badge-variant — variant for the badge
   //
   // Slots:
   //   (default) — heading text
@@ -535,48 +541,35 @@
     .heading {
       display: block;
       color: var(--ds-color-text);
-      font-family: ${FONT.body};
+      font-family: var(--ds-font-mono);
       line-height: var(--ds-line-height-snug);
+      letter-spacing: -0.025em;
     }
 
-    .heading--1 { font-size: var(--ds-font-size-4xl); font-weight: var(--ds-font-weight-semibold); margin: 0 0 var(--ds-space-4); }
-    .heading--2 { font-size: var(--ds-font-size-3xl); font-weight: var(--ds-font-weight-semibold); margin: var(--ds-space-12) 0 var(--ds-space-3); }
-    .heading--3 { font-size: var(--ds-font-size-2xl); font-weight: var(--ds-font-weight-semibold); margin: var(--ds-space-6) 0 var(--ds-space-3); }
-    .heading--4 { font-size: var(--ds-font-size-xl); font-weight: var(--ds-font-weight-semibold); margin: var(--ds-space-5) 0 var(--ds-space-2); }
-    .heading--5 { font-size: var(--ds-font-size-lg); font-weight: var(--ds-font-weight-semibold); margin: var(--ds-space-4) 0 var(--ds-space-2); }
-    .heading--6 { font-size: var(--ds-font-size-md); font-weight: var(--ds-font-weight-semibold); margin: var(--ds-space-3) 0 var(--ds-space-2); color: var(--ds-color-text-secondary); }
+    .heading--1 { font-size: var(--ds-font-size-xl); font-weight: var(--ds-font-weight-bold); margin: 0 0 var(--ds-space-4); }
+    .heading--2 { font-size: var(--ds-font-size-lg); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-8) 0 var(--ds-space-2); }
+    .heading--3 { font-size: var(--ds-font-size-lg); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-8) 0 var(--ds-space-2); }
+    .heading--4 { font-size: var(--ds-font-size-lg); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-4) 0 var(--ds-space-2); }
+    .heading--5 { font-size: var(--ds-font-size-base); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-4) 0 var(--ds-space-2); }
+    .heading--6 { font-size: var(--ds-font-size-base); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-2) 0 var(--ds-space-2); color: var(--ds-color-text); }
 
     .anchor-link {
       display: inline;
       opacity: 0;
-      margin-left: var(--ds-space-2);
-      color: var(--ds-color-text-secondary);
+      margin-inline-start: var(--ds-space-2);
+      color: var(--ds-color-text);
       text-decoration: none;
       font-size: 0.75em;
       vertical-align: baseline;
-      transition: opacity var(--ds-transition-normal);
+      transition: opacity var(--ds-duration-fast) var(--ds-ease-standard);
     }
     .heading:hover .anchor-link { opacity: 0.6; }
     .anchor-link:hover { opacity: 1 !important; }
-
-    .badge {
-      display: inline-block;
-      margin-left: var(--ds-space-2);
-      font-size: var(--ds-font-size-xs);
-      font-weight: var(--ds-font-weight-semibold);
-      letter-spacing: var(--ds-tracking-normal);
-      text-transform: none;
-      padding: 2px var(--ds-space-2);
-      border-radius: var(--ds-radius-sm);
-      background: var(--ds-color-accent-subtle);
-      color: var(--ds-color-accent);
-      vertical-align: middle;
-    }
   `;
 
   class DsHeading extends HTMLElement {
     static get observedAttributes() {
-      return ["level", "anchor", "badge", "badge-variant"];
+      return ["level", "anchor"];
     }
 
     constructor() {
@@ -604,16 +597,9 @@
           .toLowerCase()
           .replace(/[^a-z0-9]+/g, "-")
           .replace(/^-|-$/g, "");
-      const badge = this.getAttribute("badge");
-
       // Set id on the host element so document.querySelector and TOC
       // scanning can find this heading by id without reaching into shadow DOM.
       if (anchor) this.id = anchor;
-
-      let badgeHtml = "";
-      if (badge) {
-        badgeHtml = ' <span class="badge">' + esc(badge) + "</span>";
-      }
 
       const tag = "h" + level;
       this._shadow.innerHTML =
@@ -623,1199 +609,12 @@
         level +
         '" part="heading">' +
         "<slot></slot>" +
-        badgeHtml +
         ' <a class="anchor-link" href="#' +
         esc(anchor) +
         '" part="anchor">#</a>' +
         "</" +
         tag +
         ">";
-    }
-  }
-
-  // ── card.js ──
-  // ═══════════════════════════════════════════════════════════════════════════
-  // <ds-card>
-  //
-  // Attributes:
-  //   href     — if set, the card is clickable and navigates
-  //   variant  — "default" | "outlined" | "elevated" (default: "outlined")
-  //   padding  — "sm" | "md" | "lg" (default: "md")
-  //
-  // Slots:
-  //   header  — card header area
-  //   (default) — card body
-  //   footer  — card footer area
-  // ═══════════════════════════════════════════════════════════════════════════
-
-  const CARD_CSS = `
-    ${BASE_RESET}
-    :host { display: block; }
-
-    .card {
-      border-radius: var(--ds-radius-xl);
-      font-family: ${FONT.body};
-      color: var(--ds-color-text);
-      transition: border-color var(--ds-transition-normal), box-shadow var(--ds-transition-normal);
-    }
-
-    .card--outlined {
-      border: var(--ds-border-width-sm) solid var(--ds-color-border);
-      background: var(--ds-color-bg);
-    }
-
-    .card--elevated {
-      border: var(--ds-border-width-sm) solid var(--ds-color-border-light);
-      background: var(--ds-color-bg);
-      box-shadow: var(--ds-shadow-sm);
-    }
-
-    .card--default {
-      background: var(--ds-color-bg-subtle);
-    }
-
-    :host([href]) .card {
-      cursor: pointer;
-      text-decoration: none;
-      display: block;
-      color: inherit;
-    }
-    :host([href]) .card:hover {
-      border-color: var(--ds-color-accent);
-      box-shadow: var(--ds-shadow-md);
-    }
-
-    /* Padding sizes */
-    :host([padding="sm"]) .card__body { padding: var(--ds-space-3); }
-    .card__body                        { padding: var(--ds-space-5); }
-    :host([padding="lg"]) .card__body  { padding: 28px; }
-
-    .card__header {
-      padding: var(--ds-space-3) var(--ds-space-5);
-      border-bottom: var(--ds-border-width-sm) solid var(--ds-color-border-light);
-      font-weight: var(--ds-font-weight-semibold);
-      font-size: 0.9rem;
-    }
-    :host([padding="sm"]) .card__header { padding: var(--ds-space-2) var(--ds-space-3); }
-    :host([padding="lg"]) .card__header { padding: var(--ds-space-4) 28px; }
-
-    .card__footer {
-      padding: var(--ds-space-3) var(--ds-space-5);
-      border-top: var(--ds-border-width-sm) solid var(--ds-color-border-light);
-      font-size: 0.82rem;
-      color: var(--ds-color-text-secondary);
-    }
-    :host([padding="sm"]) .card__footer { padding: var(--ds-space-2) var(--ds-space-3); }
-    :host([padding="lg"]) .card__footer { padding: var(--ds-space-4) 28px; }
-
-    /* Focus */
-    :host([href]) .card:focus-visible {
-      outline: var(--ds-border-width-md) solid var(--ds-color-accent);
-      outline-offset: 2px;
-    }
-  `;
-
-  class DsCard extends HTMLElement {
-    static get observedAttributes() {
-      return ["href", "variant", "padding"];
-    }
-
-    constructor() {
-      super();
-      this._shadow = createShadow(this, CARD_CSS);
-      this._render();
-    }
-
-    attributeChangedCallback() {
-      this._render();
-    }
-
-    _render() {
-      const variant = this.getAttribute("variant") || "outlined";
-      const href = this.getAttribute("href");
-      const tag = href ? "a" : "div";
-      const hrefAttr = href ? ' href="' + esc(href) + '"' : "";
-      const tabindex = href ? ' tabindex="0"' : "";
-
-      this._shadow.innerHTML =
-        "<" +
-        tag +
-        ' class="card card--' +
-        esc(variant) +
-        '"' +
-        hrefAttr +
-        tabindex +
-        ' part="card">' +
-        '<div class="card__header" part="header"><slot name="header"></slot></div>' +
-        '<div class="card__body" part="body"><slot></slot></div>' +
-        '<div class="card__footer" part="footer"><slot name="footer"></slot></div>' +
-        "</" +
-        tag +
-        ">";
-
-      // Hide header/footer slots if empty
-      var self = this;
-      requestAnimationFrame(function () {
-        var header = self._shadow.querySelector(".card__header");
-        var footer = self._shadow.querySelector(".card__footer");
-        if (header && !self.querySelector("[slot=header]"))
-          header.style.display = "none";
-        if (footer && !self.querySelector("[slot=footer]"))
-          footer.style.display = "none";
-      });
-    }
-  }
-
-  // ── tabs.js ──
-  // ═══════════════════════════════════════════════════════════════════════════
-  // <ds-tabs>
-  //
-  // A tab bar that toggles visibility of <ds-tab> panels. Panels can live
-  // inside the component (default) or in a remote container via the `target`
-  // attribute. This split layout lets the tab bar sit in a fixed header
-  // while panels scroll independently below.
-  //
-  // Attributes:
-  //   target  — CSS selector for a remote container holding <ds-tab> children.
-  //             When set, the component renders only the tab bar and controls
-  //             panels found in the target container. When omitted, panels are
-  //             expected as direct children (slotted).
-  //   active  — id of the initially active tab. Defaults to the first tab.
-  //
-  // Usage (remote panels):
-  //   <div class="header">
-  //     <ds-tabs target="#panels" active="tab-one"></ds-tabs>
-  //   </div>
-  //   <div id="panels">
-  //     <ds-tab label="First" id="tab-one">Content 1</ds-tab>
-  //     <ds-tab label="Second" id="tab-two">Content 2</ds-tab>
-  //   </div>
-  //
-  // Usage (local panels):
-  //   <ds-tabs>
-  //     <ds-tab label="First" id="t1">Content 1</ds-tab>
-  //     <ds-tab label="Second" id="t2">Content 2</ds-tab>
-  //   </ds-tabs>
-  //
-  // Child element: <ds-tab label="..." id="...">content</ds-tab>
-  // ═══════════════════════════════════════════════════════════════════════════
-
-  const TABS_CSS = `
-    ${BASE_RESET}
-    :host { display: block; }
-
-    .tab-bar {
-      display: flex;
-      gap: 0;
-      border-bottom: var(--ds-border-width-md) solid var(--ds-color-border);
-      overflow-x: auto;
-    }
-
-    .tab-btn {
-      font-family: ${FONT.body};
-      padding: var(--ds-space-3) var(--ds-space-5);
-      border: none;
-      background: none;
-      font-size: var(--ds-font-size-md);
-      font-weight: var(--ds-font-weight-semibold);
-      color: var(--ds-color-text-secondary);
-      cursor: pointer;
-      border-bottom: var(--ds-border-width-lg) solid transparent;
-      margin-bottom: calc(-1 * var(--ds-border-width-md));
-      transition: color var(--ds-transition-normal), border-color var(--ds-transition-normal);
-      white-space: nowrap;
-    }
-    .tab-btn:hover { color: var(--ds-color-text); }
-    .tab-btn--active {
-      color: var(--ds-color-text);
-      border-bottom-color: var(--ds-color-text);
-    }
-    .tab-btn:focus-visible {
-      outline: var(--ds-border-width-md) solid var(--ds-color-accent);
-      outline-offset: -2px;
-    }
-
-    /* Only used in local (non-target) mode */
-    .tab-panels {
-      padding: var(--ds-space-4) 0;
-    }
-
-    ::slotted(ds-tab) { display: none; }
-    ::slotted(ds-tab[active]) { display: block; }
-  `;
-
-  /* Light-DOM styles for remote <ds-tab> panels (not slotted, so shadow
-     CSS can't reach them). Injected once into the document head. */
-  const TAB_LIGHT_STYLE_ID = "ds-tab-light-styles";
-
-  function ensureTabLightStyles() {
-    if (document.getElementById(TAB_LIGHT_STYLE_ID)) return;
-    var style = document.createElement("style");
-    style.id = TAB_LIGHT_STYLE_ID;
-    style.textContent =
-      "ds-tab { display: none; }\nds-tab[active] { display: block; }";
-    document.head.appendChild(style);
-  }
-
-  class DsTabs extends HTMLElement {
-    static get observedAttributes() {
-      return ["active", "target"];
-    }
-
-    constructor() {
-      super();
-      this._shadow = createShadow(this, TABS_CSS);
-      this._built = false;
-    }
-
-    connectedCallback() {
-      // Children (local or remote) may not be parsed yet when a blocking
-      // <script> in <head> registers the element. Wait for the parser to
-      // finish before reading them.
-      if (document.readyState === "loading") {
-        document.addEventListener("DOMContentLoaded", () => this._init(), {
-          once: true,
-        });
-      } else {
-        this._init();
-      }
-    }
-
-    attributeChangedCallback(name) {
-      if (!this._built || !this.isConnected) return;
-      if (name === "active") {
-        this._activate(this.getAttribute("active"));
-      } else if (name === "target") {
-        this._init();
-      }
-    }
-
-    /* ── Internal ────────────────────────────────────────── */
-
-    /**
-     * Resolve the <ds-tab> panels — either from a remote target container
-     * or from direct children.
-     */
-    _getTabs() {
-      var targetSel = this.getAttribute("target");
-      if (targetSel) {
-        var container = document.querySelector(targetSel);
-        if (container) {
-          return Array.from(container.querySelectorAll(":scope > ds-tab"));
-        }
-        return [];
-      }
-      return Array.from(this.querySelectorAll(":scope > ds-tab"));
-    }
-
-    /**
-     * Returns true when the component is operating in remote-target mode.
-     */
-    _isRemote() {
-      return !!this.getAttribute("target");
-    }
-
-    /**
-     * Build the tab bar and set initial active state.
-     */
-    _init() {
-      if (this._isRemote()) {
-        ensureTabLightStyles();
-      }
-      this._buildBar();
-      this._activate(this.getAttribute("active") || null);
-      this._built = true;
-    }
-
-    /**
-     * Build the tab bar from <ds-tab> labels.
-     */
-    _buildBar() {
-      var tabs = this._getTabs();
-      var bar = document.createElement("div");
-      bar.className = "tab-bar";
-      bar.setAttribute("role", "tablist");
-      bar.setAttribute("part", "bar");
-
-      var self = this;
-      tabs.forEach(function (tab) {
-        var btn = document.createElement("button");
-        btn.className = "tab-btn";
-        btn.textContent = tab.getAttribute("label") || tab.id || "Tab";
-        btn.setAttribute("role", "tab");
-        btn.setAttribute("data-tab", tab.id);
-        btn.addEventListener("click", function () {
-          self._activate(tab.id);
-        });
-        bar.appendChild(btn);
-      });
-
-      this._shadow.innerHTML = "";
-      this._shadow.appendChild(bar);
-
-      // In local mode, add a slot for the panel content
-      if (!this._isRemote()) {
-        var panels = document.createElement("div");
-        panels.className = "tab-panels";
-        panels.innerHTML = "<slot></slot>";
-        this._shadow.appendChild(panels);
-      }
-    }
-
-    /**
-     * Activate a tab by id — toggles the `active` attribute on <ds-tab>
-     * elements and updates the bar button states.
-     */
-    _activate(id) {
-      var tabs = this._getTabs();
-      if (!id && tabs.length > 0) id = tabs[0].id;
-
-      tabs.forEach(function (tab) {
-        if (tab.id === id) {
-          tab.setAttribute("active", "");
-        } else {
-          tab.removeAttribute("active");
-        }
-      });
-
-      this._shadow.querySelectorAll(".tab-btn").forEach(function (btn) {
-        if (btn.getAttribute("data-tab") === id) {
-          btn.classList.add("tab-btn--active");
-          btn.setAttribute("aria-selected", "true");
-        } else {
-          btn.classList.remove("tab-btn--active");
-          btn.setAttribute("aria-selected", "false");
-        }
-      });
-    }
-  }
-
-  // <ds-tab> — individual tab panel (used as child of <ds-tabs> or a remote container)
-  // Attributes: label, id, active
-  class DsTab extends HTMLElement {
-    constructor() {
-      super();
-    }
-  }
-
-  // ── sidebar.js ──
-  // ═══════════════════════════════════════════════════════════════════════════
-  // <ds-sidebar>
-  //
-  // Attributes:
-  //   open      — boolean, whether sidebar is expanded
-  //   position  — "left" | "right" (default: "left")
-  //   width     — CSS width (default: "280px")
-  //   collapsible — boolean, adds a toggle button
-  //
-  // Slots:
-  //   header   — sidebar header content
-  //   (default) — sidebar body
-  //   footer   — sidebar footer content
-  // ═══════════════════════════════════════════════════════════════════════════
-
-  const SIDEBAR_CSS = `
-    ${BASE_RESET}
-    :host { display: block; position: relative; }
-
-    .sidebar {
-      position: fixed;
-      top: 0;
-      bottom: 0;
-      overflow-y: auto;
-      overflow-x: hidden;
-      background: var(--ds-color-bg-dark);
-      color: var(--ds-color-text-on-dark);
-      font-family: ${FONT.body};
-      transition: transform var(--ds-transition-slow), width var(--ds-transition-slow);
-      z-index: var(--ds-z-nav);
-      -webkit-overflow-scrolling: touch;
-    }
-
-    :host([position="right"]) .sidebar { right: 0; }
-    :host(:not([position="right"])) .sidebar { left: 0; }
-
-    :host(:not([open])) .sidebar { transform: translateX(-100%); }
-    :host([position="right"]:not([open])) .sidebar { transform: translateX(100%); }
-    :host([open]) .sidebar { transform: translateX(0); }
-
-    .sidebar__header {
-      padding: var(--ds-space-5) var(--ds-space-4) var(--ds-space-3);
-      font-size: var(--ds-font-size-base);
-      font-weight: var(--ds-font-weight-bold);
-      letter-spacing: 0;
-      text-transform: none;
-      color: var(--ds-color-text-on-dark-heading);
-    }
-
-    .sidebar__body {
-      padding: 0;
-      flex: 1;
-    }
-
-    .sidebar__footer {
-      padding: var(--ds-space-3) var(--ds-space-4);
-      border-top: var(--ds-border-width-sm) solid rgba(255,255,255,0.1);
-      font-size: var(--ds-font-size-sm);
-    }
-
-    .toggle-btn {
-      position: absolute;
-      top: var(--ds-space-3);
-      background: var(--ds-color-bg-dark);
-      border: var(--ds-border-width-sm) solid rgba(255,255,255,0.15);
-      color: var(--ds-color-text-on-dark-heading);
-      width: 28px;
-      height: 28px;
-      border-radius: var(--ds-radius-full);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      font-size: var(--ds-font-size-sm);
-      z-index: var(--ds-z-toggle);
-      transition: background var(--ds-transition-normal);
-    }
-    .toggle-btn:hover { background: var(--ds-color-bg-dark-hover); }
-
-    :host(:not([position="right"])) .toggle-btn { right: -14px; }
-    :host([position="right"]) .toggle-btn { left: -14px; }
-  `;
-
-  class DsSidebar extends HTMLElement {
-    static get observedAttributes() {
-      return ["open", "position", "width", "collapsible"];
-    }
-
-    constructor() {
-      super();
-      this._shadow = createShadow(this, SIDEBAR_CSS);
-      this._render();
-    }
-
-    attributeChangedCallback() {
-      this._render();
-    }
-
-    _render() {
-      const width = this.getAttribute("width") || "280px";
-      const collapsible = this.hasAttribute("collapsible");
-      const open = this.hasAttribute("open");
-
-      var toggleHtml = "";
-      if (collapsible) {
-        toggleHtml =
-          '<button class="toggle-btn" part="toggle">' +
-          (open ? "\u2190" : "\u2192") +
-          "</button>";
-      }
-
-      this._shadow.innerHTML =
-        '<div class="sidebar" style="width:' +
-        esc(width) +
-        '" part="sidebar">' +
-        toggleHtml +
-        '<div class="sidebar__header" part="header"><slot name="header"></slot></div>' +
-        '<div class="sidebar__body" part="body"><slot></slot></div>' +
-        '<div class="sidebar__footer" part="footer"><slot name="footer"></slot></div>' +
-        "</div>";
-
-      if (collapsible) {
-        var self = this;
-        var btn = this._shadow.querySelector(".toggle-btn");
-        if (btn) {
-          btn.addEventListener("click", function () {
-            if (self.hasAttribute("open")) {
-              self.removeAttribute("open");
-            } else {
-              self.setAttribute("open", "");
-            }
-          });
-        }
-      }
-
-      // Hide empty header/footer
-      var self2 = this;
-      requestAnimationFrame(function () {
-        var hdr = self2._shadow.querySelector(".sidebar__header");
-        var ftr = self2._shadow.querySelector(".sidebar__footer");
-        if (hdr && !self2.querySelector("[slot=header]"))
-          hdr.style.display = "none";
-        if (ftr && !self2.querySelector("[slot=footer]"))
-          ftr.style.display = "none";
-      });
-    }
-  }
-
-  // ── scrollspy.js ──
-  const SCROLLSPY_CSS = `
-    ${BASE_RESET}
-    :host { display: block; }
-  `;
-
-  class DsScrollspy extends HTMLElement {
-    static get observedAttributes() {
-      return ["target", "selector", "offset"];
-    }
-
-    constructor() {
-      super();
-      this._shadow = createShadow(this, SCROLLSPY_CSS);
-      this._shadow.innerHTML = "<slot></slot>";
-      this._observer = null;
-      this._activeId = null;
-    }
-
-    connectedCallback() {
-      this._setup();
-    }
-
-    disconnectedCallback() {
-      if (this._observer) this._observer.disconnect();
-    }
-
-    attributeChangedCallback() {
-      if (this.isConnected) this._setup();
-    }
-
-    _setup() {
-      if (this._observer) this._observer.disconnect();
-
-      const selector = this.getAttribute("selector") || "h2, h3";
-      const offset = parseInt(this.getAttribute("offset"), 10) || 80;
-      const targetSel = this.getAttribute("target");
-      const root = targetSel ? document.querySelector(targetSel) : null;
-
-      const headings = (root || document).querySelectorAll(selector);
-      if (!headings.length) return;
-
-      var self = this;
-
-      this._observer = new IntersectionObserver(
-        function (entries) {
-          entries.forEach(function (entry) {
-            if (entry.isIntersecting) {
-              self._setActive(entry.target.id);
-            }
-          });
-        },
-        {
-          root: root,
-          rootMargin: "-" + offset + "px 0px -60% 0px",
-          threshold: 0,
-        },
-      );
-
-      headings.forEach(function (h) {
-        if (h.id) self._observer.observe(h);
-      });
-    }
-
-    _setActive(id) {
-      if (id === this._activeId) return;
-      this._activeId = id;
-
-      var links = this.querySelectorAll("a");
-      links.forEach(function (a) {
-        if (a.getAttribute("href") === "#" + id) {
-          a.classList.add("active");
-        } else {
-          a.classList.remove("active");
-        }
-      });
-
-      this.dispatchEvent(
-        new CustomEvent("scrollspy-change", {
-          detail: { id: id },
-          bubbles: true,
-        }),
-      );
-    }
-  }
-
-  // ── toolbar.js ──
-  const TOOLBAR_CSS = `
-    ${BASE_RESET}
-    :host { display: block; }
-
-    .toolbar {
-      background: var(--ds-color-bg);
-      border-bottom: 1px solid var(--ds-color-border);
-      font-family: ${FONT.body};
-    }
-
-    :host([sticky]) .toolbar {
-      position: sticky;
-      top: 0;
-      z-index: var(--ds-z-toolbar);
-    }
-
-    /* Primary row: start / center / end */
-    .toolbar__row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: var(--ds-space-4);
-      padding: var(--ds-space-2) var(--ds-space-5);
-      min-height: var(--ds-space-12);
-    }
-
-    .toolbar__start {
-      display: flex;
-      align-items: center;
-      gap: var(--ds-space-3);
-      min-width: 0;
-    }
-
-    .toolbar__center {
-      display: flex;
-      align-items: center;
-      gap: var(--ds-space-3);
-      flex: 1;
-      min-width: 0;
-    }
-
-    .toolbar__end {
-      display: flex;
-      align-items: center;
-      gap: var(--ds-space-2);
-      flex-shrink: 0;
-    }
-
-    ::slotted([slot="start"]) {
-      font-size: 0.9rem;
-      font-weight: 600;
-      color: var(--ds-color-text);
-    }
-
-    /* Subtitle — sits below the title in the start area */
-    .toolbar__subtitle {
-      display: none;
-      padding: 0 var(--ds-space-5) 6px;
-      font-size: 0.82rem;
-      color: var(--ds-color-text-secondary);
-      line-height: 1.4;
-    }
-    .toolbar__subtitle.visible { display: block; }
-
-    /* Nav row — horizontal link strip below the primary row */
-    .toolbar__nav {
-      display: none;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: var(--ds-space-1) 14px;
-      padding: var(--ds-space-1) var(--ds-space-5) var(--ds-space-2);
-      font-size: 0.82rem;
-      border-top: 1px solid var(--ds-color-border-light);
-    }
-    .toolbar__nav.visible { display: flex; }
-
-    ::slotted([slot="nav"]) {
-      color: var(--ds-color-accent);
-      text-decoration: none;
-      padding: 2px 0;
-      font-size: 0.82rem;
-    }
-  `;
-
-  class DsToolbar extends HTMLElement {
-    static get observedAttributes() {
-      return ["sticky"];
-    }
-
-    constructor() {
-      super();
-      this._shadow = createShadow(this, TOOLBAR_CSS);
-      // Default to sticky
-      if (!this.hasAttribute("sticky")) this.setAttribute("sticky", "");
-      this._shadow.innerHTML =
-        '<div class="toolbar" part="toolbar">' +
-        '<div class="toolbar__row">' +
-        '<div class="toolbar__start" part="start"><slot name="start"></slot></div>' +
-        '<div class="toolbar__center" part="center"><slot></slot></div>' +
-        '<div class="toolbar__end" part="end"><slot name="end"></slot></div>' +
-        "</div>" +
-        '<div class="toolbar__subtitle" part="subtitle"><slot name="subtitle"></slot></div>' +
-        '<div class="toolbar__nav" part="nav"><slot name="nav"></slot></div>' +
-        "</div>";
-    }
-
-    connectedCallback() {
-      // Show subtitle and nav rows only when their slots are populated
-      var self = this;
-      requestAnimationFrame(function () {
-        var subtitleSlot = self._shadow.querySelector('slot[name="subtitle"]');
-        var navSlot = self._shadow.querySelector('slot[name="nav"]');
-        if (subtitleSlot) {
-          var subAssigned = subtitleSlot.assignedNodes({ flatten: true });
-          if (subAssigned.length > 0) {
-            subtitleSlot.parentElement.classList.add("visible");
-          }
-        }
-        if (navSlot) {
-          var navAssigned = navSlot.assignedNodes({ flatten: true });
-          if (navAssigned.length > 0) {
-            navSlot.parentElement.classList.add("visible");
-          }
-        }
-      });
-    }
-  }
-
-  // ── sidenav.js ──
-  const SIDENAV_CSS = `
-    ${BASE_RESET}
-    :host { display: block; }
-
-    .sidenav {
-      position: fixed;
-      top: 0;
-      left: 0;
-      bottom: 0;
-      overflow-y: auto;
-      background: var(--ds-color-bg-dark);
-      color: var(--ds-color-text-on-dark);
-      font-family: ${FONT.body};
-      z-index: var(--ds-z-nav);
-      -webkit-overflow-scrolling: touch;
-      padding: var(--ds-space-5) 0;
-    }
-
-    .sidenav__title {
-      font-size: var(--ds-font-size-base);
-      font-weight: 700;
-      letter-spacing: 0;
-      text-transform: none;
-      color: var(--ds-color-bg);
-      padding: 0 var(--ds-space-4);
-      margin-bottom: var(--ds-space-5);
-    }
-    .sidenav__title a { color: inherit; text-decoration: none; }
-
-    /* Nav links */
-    .nav-link {
-      display: block;
-      padding: 5px var(--ds-space-4);
-      color: var(--ds-color-text-on-dark);
-      text-decoration: none;
-      font-size: var(--ds-font-size-base);
-      line-height: 1.4;
-      border-left: 3px solid transparent;
-      transition: background var(--ds-transition-fast), color var(--ds-transition-fast);
-    }
-    .nav-link:hover {
-      background: var(--ds-color-bg-dark-hover);
-      color: var(--ds-color-bg);
-    }
-    .nav-link--active {
-      background: var(--ds-color-bg-dark-active);
-      color: var(--ds-color-bg);
-      border-left-color: var(--ds-color-accent);
-      font-weight: 500;
-    }
-    .nav-link--child {
-      padding-left: 26px;
-    }
-
-    /* Collapsible group */
-    .nav-group { margin-top: var(--ds-space-1); }
-
-    .nav-group__toggle {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      width: 100%;
-      padding: 6px var(--ds-space-4);
-      background: none;
-      border: none;
-      border-left: 3px solid transparent;
-      color: var(--ds-color-nav-group);
-      font-family: ${FONT.body};
-      font-size: var(--ds-font-size-xs);
-      font-weight: 600;
-      letter-spacing: var(--ds-tracking-widest);
-      text-transform: none;
-      cursor: pointer;
-      text-align: left;
-      transition: color var(--ds-transition-fast);
-    }
-    .nav-group__toggle:hover { color: var(--ds-color-text-on-dark); }
-    .nav-group--open > .nav-group__toggle { color: var(--ds-color-text-on-dark); }
-
-    .nav-group__arrow {
-      font-size: var(--ds-font-size-sm);
-      transition: transform var(--ds-transition-normal);
-      line-height: 1;
-    }
-    .nav-group--open > .nav-group__toggle .nav-group__arrow { transform: rotate(90deg); }
-
-    .nav-group__children { display: none; padding-bottom: var(--ds-space-1); }
-    .nav-group--open > .nav-group__children { display: block; }
-
-    /* Slotted mode */
-    ::slotted(ds-nav-link),
-    ::slotted(ds-nav-group) { display: block; }
-  `;
-
-  class DsSidenav extends HTMLElement {
-    static get observedAttributes() {
-      return ["width", "items", "title"];
-    }
-
-    constructor() {
-      super();
-      this._shadow = createShadow(this, SIDENAV_CSS);
-    }
-
-    connectedCallback() {
-      this._render();
-    }
-
-    attributeChangedCallback() {
-      if (this.isConnected) this._render();
-    }
-
-    _render() {
-      const width = this.getAttribute("width") || "240px";
-      const title = this.getAttribute("title") || "";
-      const itemsAttr = this.getAttribute("items");
-
-      let contentHtml = "";
-
-      if (itemsAttr) {
-        // JSON-driven mode
-        const items = JSON.parse(itemsAttr);
-        contentHtml = this._renderItems(items);
-      }
-
-      const titleHtml = title
-        ? '<div class="sidenav__title" part="title">' + esc(title) + "</div>"
-        : "";
-
-      this._shadow.innerHTML =
-        '<nav class="sidenav" style="width:' +
-        esc(width) +
-        '" part="nav">' +
-        titleHtml +
-        (itemsAttr ? contentHtml : "<slot></slot>") +
-        "</nav>";
-
-      // Attach group toggle listeners
-      var self = this;
-      this._shadow
-        .querySelectorAll(".nav-group__toggle")
-        .forEach(function (btn) {
-          btn.addEventListener("click", function () {
-            var group = btn.parentElement;
-            group.classList.toggle("nav-group--open");
-          });
-        });
-    }
-
-    _renderItems(items) {
-      var self = this;
-      return items
-        .map(function (item) {
-          if (item.children) {
-            const openCls = item.open ? " nav-group--open" : "";
-            const childHtml = item.children
-              .map(function (child) {
-                const activeCls = child.active ? " nav-link--active" : "";
-                return (
-                  '<a class="nav-link nav-link--child' +
-                  activeCls +
-                  '" href="' +
-                  esc(child.href || "#") +
-                  '">' +
-                  esc(child.label) +
-                  "</a>"
-                );
-              })
-              .join("");
-
-            return (
-              '<div class="nav-group' +
-              openCls +
-              '">' +
-              '<button class="nav-group__toggle">' +
-              esc(item.label) +
-              '<span class="nav-group__arrow">\u25B6</span>' +
-              "</button>" +
-              '<div class="nav-group__children">' +
-              childHtml +
-              "</div></div>"
-            );
-          } else {
-            const activeCls = item.active ? " nav-link--active" : "";
-            return (
-              '<a class="nav-link' +
-              activeCls +
-              '" href="' +
-              esc(item.href || "#") +
-              '">' +
-              esc(item.label) +
-              "</a>"
-            );
-          }
-        })
-        .join("");
-    }
-  }
-
-  // <ds-nav-group> — declarative nav group (used as child of <ds-sidenav>)
-  // Attributes: label, open
-  class DsNavGroup extends HTMLElement {
-    constructor() {
-      super();
-    }
-  }
-
-  // <ds-nav-link> — declarative nav link (used as child of <ds-sidenav> or <ds-nav-group>)
-  // Attributes: href, active
-  class DsNavLink extends HTMLElement {
-    constructor() {
-      super();
-    }
-  }
-
-  // ── toc.js ──
-  const TOC_CSS = `
-    ${BASE_RESET}
-    :host {
-      display: block;
-      position: sticky;
-      top: 0;
-      align-self: flex-start;
-      width: var(--ds-width-toc, 220px);
-      flex-shrink: 0;
-      max-height: 100vh;
-      overflow-y: auto;
-      padding: var(--ds-space-12) var(--ds-space-4) var(--ds-space-12) 0;
-      border-left: 1px solid var(--ds-color-border-light);
-      font-size: var(--ds-font-size-sm);
-      -webkit-overflow-scrolling: touch;
-    }
-
-    .toc__title {
-      font-size: var(--ds-font-size-xs);
-      font-weight: 600;
-      letter-spacing: var(--ds-tracking-widest);
-      text-transform: none;
-      color: var(--ds-color-text-secondary);
-      padding: 0 var(--ds-space-4);
-      margin: 0 0 var(--ds-space-2);
-    }
-
-    ul {
-      list-style: none;
-      padding: 0;
-      margin: 0;
-    }
-
-    li {
-      margin: 0;
-    }
-
-    a {
-      display: block;
-      padding: var(--ds-radius-sm) var(--ds-space-4);
-      color: var(--ds-color-text-secondary);
-      text-decoration: none;
-      line-height: 1.4;
-      transition: color 0.1s ease, border-left-color 0.1s ease;
-      border-left: 2px solid transparent;
-      margin-left: -1px;
-    }
-
-    a:hover {
-      color: var(--ds-color-accent);
-      border-left-color: var(--ds-color-accent);
-    }
-
-    a.active {
-      color: var(--ds-color-accent);
-      border-left-color: var(--ds-color-accent);
-      font-weight: 500;
-    }
-
-    a.sub {
-      padding-left: 26px;
-      font-size: var(--ds-font-size-xs);
-      color: var(--ds-color-text-muted);
-    }
-
-    a.sub:hover,
-    a.sub.active {
-      color: var(--ds-color-accent);
-    }
-  `;
-
-  class DsToc extends HTMLElement {
-    static get observedAttributes() {
-      return ["target", "selector", "label", "offset"];
-    }
-
-    constructor() {
-      super();
-      this._shadow = createShadow(this, TOC_CSS);
-      this._observer = null;
-      this._activeId = null;
-    }
-
-    connectedCallback() {
-      // Defer to let headings render (especially <ds-heading> which defers too)
-      var self = this;
-      requestAnimationFrame(function () {
-        requestAnimationFrame(function () {
-          self._build();
-        });
-      });
-    }
-
-    disconnectedCallback() {
-      if (this._observer) this._observer.disconnect();
-    }
-
-    attributeChangedCallback() {
-      if (this.isConnected) {
-        var self = this;
-        requestAnimationFrame(function () {
-          self._build();
-        });
-      }
-    }
-
-    _build() {
-      var label = this.getAttribute("label") || "On this page";
-      var selector = this.getAttribute("selector") || "h2[id], h3[id]";
-      var offset = parseInt(this.getAttribute("offset"), 10) || 80;
-      var targetSel = this.getAttribute("target");
-      var root = targetSel ? document.querySelector(targetSel) : document;
-
-      if (!root) return;
-
-      // Query native headings, ds-heading elements, and ds-def-section
-      // elements (the per-$defs section wrapper on schema pages — it sets
-      // its own host `id` for TOC linking but isn't a heading tag).
-      var headingSet = new Set();
-      var headings = [];
-      var all = root.querySelectorAll(
-        selector + ", ds-heading[id], ds-def-section[id]",
-      );
-      all.forEach(function (el) {
-        if (!headingSet.has(el)) {
-          headingSet.add(el);
-          headings.push(el);
-        }
-      });
-      if (headings.length === 0) {
-        this._shadow.innerHTML = "";
-        return;
-      }
-
-      // Build the link list
-      var items = [];
-      for (var i = 0; i < headings.length; i++) {
-        var h = headings[i];
-        var id = h.id || h.getAttribute("anchor") || "";
-        // For ds-def-section the visible heading text is the `name`
-        // attribute (rendered as an <h3> inside the shadow DOM); the host
-        // element's textContent also contains the description and child
-        // markup, so prefer the explicit attribute when present.
-        var tagName = h.tagName.toLowerCase();
-        var text;
-        if (tagName === "ds-def-section") {
-          text = h.getAttribute("name") || id;
-        } else {
-          text = h.textContent.replace(/#\s*$/, "").trim() || id;
-        }
-        // Default to level 3 (sub-section); promote known top-level
-        // heading shapes to level 2.
-        var level = 3;
-        if (tagName === "h1" || tagName === "h2") {
-          level = 2;
-        } else if (tagName === "ds-heading") {
-          var lvl = h.getAttribute("level");
-          if (lvl === "1" || lvl === "2") level = 2;
-        } else if (tagName === "ds-def-section") {
-          // Each $defs entry is a top-level landmark on its page.
-          level = 2;
-        }
-        if (id && text) {
-          items.push({ id: id, text: text, level: level });
-        }
-      }
-
-      if (items.length === 0) {
-        this._shadow.innerHTML = "";
-        return;
-      }
-
-      var lis = items
-        .map(function (item) {
-          var cls = item.level === 3 ? ' class="sub"' : "";
-          return (
-            '<li><a href="#' +
-            esc(item.id) +
-            '"' +
-            cls +
-            ' data-toc-id="' +
-            esc(item.id) +
-            '">' +
-            esc(item.text) +
-            "</a></li>"
-          );
-        })
-        .join("\n");
-
-      this._shadow.innerHTML =
-        '<p class="toc__title">' +
-        esc(label) +
-        "</p>" +
-        '<nav aria-label="' +
-        esc(label) +
-        '"><ul>' +
-        lis +
-        "</ul></nav>";
-
-      // Set up IntersectionObserver for scroll tracking
-      if (this._observer) this._observer.disconnect();
-
-      var self = this;
-
-      this._observer = new IntersectionObserver(
-        function (entries) {
-          for (var j = 0; j < entries.length; j++) {
-            if (entries[j].isIntersecting) {
-              self._setActive(entries[j].target.id);
-            }
-          }
-        },
-        {
-          rootMargin: "-" + offset + "px 0px -60% 0px",
-          threshold: 0,
-        },
-      );
-
-      for (var k = 0; k < headings.length; k++) {
-        if (headings[k].id) {
-          this._observer.observe(headings[k]);
-        }
-      }
-    }
-
-    _setActive(id) {
-      if (id === this._activeId) return;
-      this._activeId = id;
-
-      var links = this._shadow.querySelectorAll("a[data-toc-id]");
-      for (var i = 0; i < links.length; i++) {
-        if (links[i].getAttribute("data-toc-id") === id) {
-          links[i].classList.add("active");
-        } else {
-          links[i].classList.remove("active");
-        }
-      }
     }
   }
 
@@ -1826,12 +625,12 @@
 
     a {
       display: inline-block;
-      margin-top: var(--ds-space-12);
+      margin-top: var(--ds-space-8);
       font-family: ${FONT.body};
       font-size: var(--ds-font-size-base);
-      color: var(--ds-color-text-secondary);
+      color: var(--ds-color-text);
       text-decoration: none;
-      transition: color var(--ds-transition-normal);
+      transition: color var(--ds-duration-fast) var(--ds-ease-standard);
     }
 
     a:hover {
@@ -1862,68 +661,73 @@
     }
   }
 
-  // ── footer.js ──
-  const FOOTER_CSS = `
+  // ── header.js ──
+  // ═══════════════════════════════════════════════════════════════════════════
+  // <ds-header>
+  //
+  // The page header block, used at the top of every page: a title, an optional
+  // description, and an optional source path (for schema-reference pages).
+  //
+  // Attributes:
+  //   title       — page title (rendered as the h1)
+  //   description — optional lead paragraph (supports inline `code`)
+  //   source      — optional source path shown as "Source: <code>" (schema pages)
+  //
+  // Slots:
+  //   (default) — extra inline content next to the title (e.g. a status badge)
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  const HEADER_CSS = `
     ${BASE_RESET}
-    :host { display: block; }
+    :host { display: flex; flex-direction: column; margin-bottom: var(--ds-space-8); min-height: 100vh; background: var(--ds-color-bg-accent); justify-content: end; padding-inline-start: var(--ds-width-nav); }
 
-    .footer {
-      margin-top: var(--ds-space-16);
-      padding-top: var(--ds-space-6);
-      border-top: 1px solid var(--ds-color-border-light);
-      font-family: ${FONT.body};
-      font-size: var(--ds-font-size-base);
-      color: var(--ds-color-text-faint);
+    @media (max-width: 900px) {
+      :host {
+        padding-inline-start: 0;
+      }
     }
 
-    ::slotted(p) {
-      margin: 0 0 var(--ds-space-1);
-    }
-
-    ::slotted(a) {
-      color: #777;
-    }
-  `;
-
-  class DsFooter extends HTMLElement {
-    constructor() {
-      super();
-      this._shadow = createShadow(this, FOOTER_CSS);
-      this._shadow.innerHTML =
-        '<div class="footer" part="footer"><slot></slot></div>';
-    }
-  }
-
-  // ── schema-header.js ──
-  const SCHEMA_HEADER_CSS = `
-    ${BASE_RESET}
-    :host { display: block; margin-bottom: var(--ds-space-6); }
     h1 {
-      font-size: var(--ds-font-size-4xl);
-      font-weight: 700;
-      line-height: 1.3;
+      font-size: clamp(2em, 4vw, 4em);
+      font-family: ${FONT.mono};
+      font-weight: 500;
+      line-height: 1.1;
+      letter-spacing: -0.025em;
+      word-spacing: -0.25em;
       margin: 0 0 var(--ds-space-4);
       color: var(--ds-color-text);
     }
+    .header-container {
+      max-width: var(--ds-width-content);
+      margin: 0 auto;
+      padding: var(--ds-space-8) var(--ds-space-8);
+      width: 100%;
+      padding-bottom: 64px;
+    }
+
     .desc {
-      color: var(--ds-color-text-secondary);
+      color: var(--ds-color-text);
       font-family: ${FONT.body};
-      font-size: var(--ds-font-size-lg);
       margin: 0 0 var(--ds-space-4);
+      max-width: 65ch;
+      font-size: clamp(1.05em, 1.7vw, 1.375em);
+      font-weight: 500;
+      line-height: 1.4;
     }
     .source {
       font-size: var(--ds-font-size-sm);
-      margin: 0 0 var(--ds-space-6);
+      margin: 0 0 var(--ds-space-8);
+      display: none;
     }
   `;
 
-  class DsSchemaHeader extends HTMLElement {
+  class DsHeader extends HTMLElement {
     static get observedAttributes() {
       return ["title", "description", "source"];
     }
     constructor() {
       super();
-      this._shadow = createShadow(this, SCHEMA_HEADER_CSS);
+      this._shadow = createShadow(this, HEADER_CSS);
     }
     connectedCallback() {
       this._render();
@@ -1935,7 +739,7 @@
       var t = this.getAttribute("title") || "";
       var d = this.getAttribute("description") || "";
       var s = this.getAttribute("source") || "";
-      var html = "<h1>" + esc(t) + " <slot></slot></h1>";
+      var html = `<div class="header-container"><h1>${esc(t)}<slot></slot></h1>`;
       if (s)
         html +=
           '<p class="source">Source: <ds-code inline>' +
@@ -1944,6 +748,7 @@
       // Use escWithCode so backtick inline-code spans in the description
       // render as <ds-code inline> rather than literal `backticks`.
       if (d) html += '<p class="desc">' + escWithCode(d) + "</p>";
+      html += "</div>";
 
       this._shadow.innerHTML = html;
     }
@@ -1954,23 +759,23 @@
     ${BASE_RESET}
     :host {
       display: block;
-      margin: var(--ds-space-10) 0 var(--ds-space-12);
+      margin: 64px 0 64px;
     }
     :host(:first-of-type) {
       margin-top: 0;
     }
-    h3 {
+    h2 {
       font-family: ${FONT.mono};
-      font-size: var(--ds-font-size-2xl);
-      font-weight: 600;
+      font-size: var(--ds-font-size-lg);
+      font-weight: var(--ds-font-weight-bold);
       color: var(--ds-color-text);
       margin: 0 0 var(--ds-space-2);
     }
     .desc {
-      color: var(--ds-color-text-secondary);
+      color: var(--ds-color-text);
       font-family: ${FONT.body};
-      font-size: var(--ds-font-size-lg);
-      line-height: 1.6;
+      font-size: var(--ds-font-size-base);
+      line-height: var(--ds-line-height-loose);
       margin: 0 0 var(--ds-space-4);
     }
     .type-line { margin: 0 0 var(--ds-space-4); }
@@ -2002,16 +807,16 @@
       var type = this.getAttribute("type") || "";
       // Set id on host for TOC linking
       if (anchor) this.id = anchor;
-      var html = '<h3 id="' + esc(anchor) + '">' + esc(name) + "</h3>";
-      // Use escWithCode so CommonMark-style `inline code` spans in the
-      // description render as <ds-code inline> rather than literal
-      // backtick characters.
-      if (desc) html += '<p class="desc">' + escWithCode(desc) + "</p>";
+      var html = '<h2 id="' + esc(anchor) + '">' + esc(name) + "</h2>";
       if (type)
         html +=
           '<p class="type-line"><ds-badge variant="kind" size="sm">' +
           esc(type) +
           "</ds-badge></p>";
+      // Use escWithCode so CommonMark-style `inline code` spans in the
+      // description render as <ds-code inline> rather than literal
+      // backtick characters.
+      if (desc) html += '<p class="desc">' + escWithCode(desc) + "</p>";
       html += "<slot></slot>";
       this._shadow.innerHTML = html;
     }
@@ -2023,15 +828,11 @@
     :host { display: inline; }
     a {
       font-family: ${FONT.mono};
-      font-size: var(--ds-font-size-md);
-      color: var(--ds-color-accent);
-      text-decoration: none;
-      border-bottom: 1px dashed var(--ds-color-accent);
-      transition: color var(--ds-transition-fast), border-bottom-color var(--ds-transition-fast);
-    }
-    a:hover {
-      color: var(--ds-color-accent-hover);
-      border-bottom-style: solid;
+      font-size: inherit;
+      color: inherit;
+      text-decoration: underline;
+      background: var(--ds-color-bg-inverse);
+      padding: 0 0.25em;
     }
   `;
 
@@ -2044,10 +845,23 @@
       this._shadow = createShadow(this, TYPE_REF_CSS);
     }
     connectedCallback() {
+      // A single requestAnimationFrame tick isn't a reliable guarantee that
+      // this element's light-DOM children (read via textContent below) have
+      // finished parsing — see the equivalent note in spec-nav.js. Waiting
+      // for DOMContentLoaded when the document is still loading avoids an
+      // intermittent empty-link-text race.
       var self = this;
-      requestAnimationFrame(function () {
-        self._render();
-      });
+      if (document.readyState === "loading") {
+        document.addEventListener(
+          "DOMContentLoaded",
+          function () {
+            self._render();
+          },
+          { once: true },
+        );
+      } else {
+        this._render();
+      }
     }
     attributeChangedCallback() {
       if (this.isConnected) this._render();
@@ -2060,51 +874,6 @@
     }
   }
 
-  // ── note.js ──
-  const NOTE_CSS = `
-    ${BASE_RESET}
-    :host { display: block; }
-    .note {
-      border-radius: var(--ds-radius-md);
-      padding: var(--ds-space-2) var(--ds-space-4);
-      font-family: ${FONT.body};
-      font-size: var(--ds-font-size-base);
-      margin-bottom: var(--ds-space-4);
-      line-height: 1.5;
-    }
-    .note--warning {
-      background: var(--ds-color-note-warning-bg);
-      border: 1px solid var(--ds-color-note-warning-border);
-    }
-    .note--info {
-      background: var(--ds-color-accent-subtle);
-      border: 1px solid var(--ds-color-border-light);
-    }
-  `;
-
-  class DsNote extends HTMLElement {
-    static get observedAttributes() {
-      return ["variant"];
-    }
-    constructor() {
-      super();
-      this._shadow = createShadow(this, NOTE_CSS);
-      this._shadow.innerHTML =
-        '<div class="note note--info" part="note"><slot></slot></div>';
-    }
-    connectedCallback() {
-      this._updateVariant();
-    }
-    attributeChangedCallback() {
-      this._updateVariant();
-    }
-    _updateVariant() {
-      var v = this.getAttribute("variant") || "info";
-      var el = this._shadow.querySelector(".note");
-      if (el) el.className = "note note--" + v;
-    }
-  }
-
   // ── cross-refs.js ──
   const CROSS_REFS_CSS = `
     ${BASE_RESET}
@@ -2112,7 +881,7 @@
       display: block;
       font-family: ${FONT.body};
       font-size: var(--ds-font-size-base);
-      color: var(--ds-color-text-secondary);
+      color: var(--ds-color-text);
       margin-top: var(--ds-space-4);
     }
     ::slotted(a) {
@@ -2137,21 +906,43 @@
       margin-bottom: var(--ds-space-8);
     }
     nav {
-      background: var(--ds-color-bg-subtle);
-      border-radius: var(--ds-radius-lg);
-      padding: var(--ds-space-4) var(--ds-space-5);
+      /*background: var(--ds-color-bg-subtle);
+      padding: var(--ds-space-4) var(--ds-space-4);
+      */
     }
+    /*
     ::slotted(p) {
       margin-bottom: var(--ds-space-2);
-      font-size: var(--ds-font-size-md);
+      font-size: var(--ds-font-size-base);
     }
+    */
+    .defindex__title {
+      font-size: var(--ds-font-size-base);
+      font-weight: var(--ds-font-weight-bold);
+      /* Default ("info") variant. */
+      background: var(--ds-color-text);
+      color: var(--ds-color-text-inverse);
+      display: inline-block;
+      padding: var(--ds-space-2) var(--ds-space-4);
+      padding-inline-end: calc(var(--ds-space-4) + var(--ds-space-2));
+    }
+
+    .defindex__title:empty {
+      display: none;
+    }
+
+    .defindex__content {
+      background: var(--ds-color-bg-inverse);
+      padding: var(--ds-space-4);
+    }
+
     ::slotted(ul) {
       list-style: none;
       list-style-type: none;
       padding: 0;
       margin: 0;
-      column-count: 2;
-      column-gap: var(--ds-space-6);
+      column-count: 3;
+      column-gap: var(--ds-space-8);
     }
 
     @media (max-width: 600px) {
@@ -2169,21 +960,37 @@
     var s = document.createElement("style");
     s.id = DEF_INDEX_LIGHT_ID;
     s.textContent = [
-      "ds-def-index ul { padding-left: 0 !important; margin-left: 0 !important; list-style: none !important; }",
-      "ds-def-index li { margin-bottom: var(--ds-space-1); font-size: var(--ds-font-size-base); break-inside: avoid; padding-left: 0; }",
+      "ds-def-index ul { padding-inline-start: 0 !important; margin-inline-start: 0 !important; margin-block-end: 0 !important; list-style: none !important; }",
+      "ds-def-index li { margin-bottom: var(--ds-space-1); font-size: var(--ds-font-size-base); break-inside: avoid; padding-inline-start: 0; }",
       "ds-def-index li a { font-family: var(--ds-font-mono); }",
     ].join("\n");
     document.head.appendChild(s);
   }
 
   class DsDefIndex extends HTMLElement {
+    static get observedAttributes() {
+      return ["title"];
+    }
+
     constructor() {
       super();
       this._shadow = createShadow(this, DEF_INDEX_CSS);
-      this._shadow.innerHTML = '<nav part="nav"><slot></slot></nav>';
+      this._shadow.innerHTML = '<nav part="nav"><span class="defindex__title" part="title"></span><div class="defindex__content" part="content"><slot></slot></div></nav>';
     }
+
     connectedCallback() {
       ensureDefIndexLightStyles();
+      this._render();
+    }
+
+    attributeChangedCallback() {
+      this._render();
+    }
+
+    _render() {
+      const title = this.getAttribute("title") || "";
+      const titleEl = this._shadow.querySelector(".defindex__title");
+      if (titleEl) titleEl.textContent = title;
     }
   }
 
@@ -2208,35 +1015,82 @@
   // ── prop-table.js ──
   const PROP_TABLE_CSS = `
     ${BASE_RESET}
-    :host { display: block; margin: var(--ds-space-4) 0; max-width: 100%; overflow: hidden; }
+    :host { display: block; margin: var(--ds-space-4) 0; max-width: 100%; }
+
+    /* Horizontal-scroll wrapper. The property/type/required columns are
+       shrink-to-fit with nowrap content, so the table has a hard minimum
+       width (~500px). On narrow viewports that minimum exceeds the host,
+       and without a scroller the rightmost column (Description) is clipped
+       off-screen with no way to reach it. overflow-x: auto lets the table
+       scroll instead of losing its Description column. Mirrors <ds-table>.
+
+       No overflow is set by default (only below 900px, see the media query
+       near the bottom): leaving both axes visible means this wrapper isn't a
+       scroll container, so the sticky header below sticks relative to the
+       PAGE as it scrolls. A wrapper that scrolls horizontally unavoidably
+       captures the vertical axis too (browsers force overflow-y to "auto" the
+       moment overflow-x isn't "visible"), which re-scopes position:sticky to
+       the wrapper's own scrolling instead of the page's — the two can't both
+       apply to the same table at once. Page-scroll stickiness is the more
+       useful default; the horizontal-scroll fallback only kicks in on narrow
+       viewports, where a wide table would otherwise clip content. */
+    .table-scroll {
+      position: relative;
+      inset: calc(var(--ds-space-4) * -1);
+      width: calc(100% + (var(--ds-space-4) * 2));
+      max-width: calc(100% + (var(--ds-space-4) * 2));
+      top: 0;
+      bottom: 0;
+    }
 
     table {
       width: 100%;
       max-width: 100%;
-      border-collapse: collapse;
-      margin-bottom: var(--ds-space-6);
+      /* separate + zero spacing (not collapse) so the sticky header's cells
+         keep their background/position correctly in Safari, which has long-
+         standing bugs with position:sticky inside a border-collapsed table. */
+      border-collapse: separate;
+      border-spacing: 0;
+      margin-bottom: var(--ds-space-8);
       font-family: ${FONT.body};
       font-size: var(--ds-font-size-base);
+      position: relative;
     }
 
     th {
-      text-align: left;
-      font-weight: 600;
+      text-align: start;
+      font-weight: var(--ds-font-weight-bold);
       font-size: var(--ds-font-size-sm);
       text-transform: none;
       letter-spacing: var(--ds-tracking-wide);
-      color: var(--ds-color-text-secondary);
-      padding: var(--ds-space-2) var(--ds-space-4);
-      border-bottom: 2px solid var(--ds-color-border);
-      background: transparent;
+      color: var(--ds-color-text);
+      padding: var(--ds-space-2) var(--ds-space-2);
+      background: var(--ds-color-bg-raised);
       white-space: nowrap;
+      position: sticky;
+      top: 0;
+      z-index: var(--ds-z-base, 1);
+    }
+
+    @media (max-width: 900px) {
+      .table-scroll {
+        overflow-x: auto;
+      }
+    }
+
+    @media (max-width: 640px) {
+      th:nth-child(2), td:nth-child(2) { display: none; }
+      th:nth-child(3), td:nth-child(3) { display: none; }
     }
 
     td {
-      padding: var(--ds-space-2) var(--ds-space-4);
-      border-bottom: 1px solid var(--ds-color-border-light);
+      padding: var(--ds-space-4) var(--ds-space-2);
       vertical-align: top;
       line-height: 1.5;
+    }
+
+    tr:first-child td {
+      padding-top: var(--ds-space-2);
     }
 
     tr:last-child td {
@@ -2244,7 +1098,7 @@
     }
 
     /* Column sizing: cols 1, 3 shrink to fit; col 2 (Type) shrinks to fit but is allowed
-       to wrap when its content is a long union (e.g., the kind enum on guidelineEntry).
+       to wrap when its content is a long union (ex: the kind enum on guidelineEntry).
        Col 4 (Description) gets the remaining space.
 
        Property names (col 1) MUST never truncate — 'white-space: nowrap' plus the
@@ -2253,7 +1107,7 @@
        content is always a single short word.
 
        Type (col 2) is intentionally NOT nowrap. Some kind-enum types render as a
-       long pipe-separated list of inline code values (e.g., "required" |
+       long pipe-separated list of inline code values (ex: "required" |
        "encouraged" | "informational" | "discouraged" | "prohibited"). Forcing
        nowrap on that pushed Description down to ~0 width and made each row very
        tall. Allowing the type to wrap at its natural space-pipe-space boundaries
@@ -2273,7 +1127,7 @@
     /* Column 1: Property name — monospace, bold */
     td:nth-child(1) code {
       font-family: ${FONT.mono};
-      font-weight: 600;
+      font-weight: var(--ds-font-weight-bold);
       color: var(--ds-color-text);
       white-space: nowrap;
       font-size: var(--ds-font-size-base);
@@ -2285,24 +1139,28 @@
     td:nth-child(2) {
       font-family: ${FONT.mono};
       font-size: var(--ds-font-size-sm);
-      color: #666;
     }
 
-    /* Column 3: Required — narrow */
+    /* Column 3: Required — narrow, a checkmark when required */
+    th:nth-child(3), td:nth-child(3) {
+      text-align: center;
+    }
     td:nth-child(3) {
       font-size: var(--ds-font-size-sm);
+    }
+    td:nth-child(3) .req {
+      font-weight: var(--ds-font-weight-bold);
     }
 
     /* Column 4: Description — gets all remaining space */
     td:nth-child(4) {
       font-size: var(--ds-font-size-base);
-      color: var(--ds-color-text-secondary);
     }
 
     td:nth-child(4) small {
       display: block;
       margin-top: var(--ds-space-1);
-      color: var(--ds-color-text-muted);
+      color: var(--ds-color-text);
       font-size: var(--ds-font-size-sm);
     }
 
@@ -2311,22 +1169,34 @@
       font-size: var(--ds-font-size-base);
       background: var(--ds-color-bg-muted);
       padding: 1px 5px;
-      border-radius: var(--ds-radius-sm);
     }
 
     /* Type reference links inside cells */
     a.type-ref {
       font-family: ${FONT.mono};
-      font-size: var(--ds-font-size-md);
+      font-size: var(--ds-font-size-base);
       color: var(--ds-color-accent);
       text-decoration: none;
       border-bottom: 1px dashed var(--ds-color-accent);
+      transition: color var(--ds-duration-fast) var(--ds-ease-standard),
+        border-color var(--ds-duration-fast) var(--ds-ease-standard);
     }
 
     a.type-ref:hover {
-      color: var(--ds-color-accent-hover);
+      /* No separate "hover" token — mixed on the fly from the accent color. */
+      color: color-mix(in oklch, var(--ds-color-accent) 80%, black);
+      border-bottom-color: color-mix(in oklch, var(--ds-color-accent) 80%, black);
       border-bottom-style: solid;
     }
+
+    th:first-child, td:first-child {
+      padding-inline-start: var(--ds-space-4) !important;
+    }
+
+    th:last-child, td:last-child {
+      padding-inline-end: var(--ds-space-4) !important;
+    }
+
   `;
 
   class DsPropTable extends HTMLElement {
@@ -2336,11 +1206,22 @@
     }
 
     connectedCallback() {
-      // Defer to let child <ds-prop> elements parse
+      // Defer to let child <ds-prop> elements parse. A single
+      // requestAnimationFrame tick isn't a reliable guarantee of that (see
+      // the equivalent note in spec-nav.js), so wait for DOMContentLoaded
+      // when the document is still loading.
       var self = this;
-      requestAnimationFrame(function () {
-        self._render();
-      });
+      if (document.readyState === "loading") {
+        document.addEventListener(
+          "DOMContentLoaded",
+          function () {
+            self._render();
+          },
+          { once: true },
+        );
+      } else {
+        this._render();
+      }
     }
 
     _render() {
@@ -2374,12 +1255,11 @@
           var statusCell;
           if (prop.hasAttribute("required")) {
             statusCell =
-              '<ds-badge variant="required" size="sm">required</ds-badge>';
+              '<span class="req" title="Required" aria-label="Required">✓</span>';
           } else if (prop.hasAttribute("conditional")) {
-            statusCell =
-              '<ds-badge variant="experimental" size="sm">at least one</ds-badge>';
+            statusCell = "at least 1";
           } else {
-            statusCell = "optional";
+            statusCell = "";
           }
 
           return (
@@ -2402,11 +1282,13 @@
         .join("\n");
 
       this._shadow.innerHTML =
+        '<div class="table-scroll" part="wrapper">' +
         '<table part="table">' +
         "<thead><tr><th>Property</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>" +
         "<tbody>" +
         trs +
-        "</tbody></table>";
+        "</tbody></table>" +
+        "</div>";
     }
   }
 
@@ -2416,191 +1298,6 @@
   class DsProp extends HTMLElement {
     constructor() {
       super();
-    }
-  }
-
-  // ── nav-toggle.js ──
-  /**
-   * <ds-nav-toggle>
-   *
-   * A mobile hamburger menu button that toggles a navigation sidebar open/closed.
-   * Hidden by default on desktop viewports; appears at narrow widths.
-   *
-   * Attributes:
-   *   target — CSS selector for the nav element to toggle (default: ".nav")
-   *   label  — accessible label text (default: "Toggle navigation")
-   *   open   — boolean, reflects whether the nav is currently open
-   *
-   * Behavior:
-   *   - Clicking the button toggles the `open` attribute on itself
-   *   - Adds/removes a `nav--open` class on the target element
-   *   - Pressing Escape while nav is open closes it
-   *   - Renders ☰ when closed, ✕ when open
-   *
-   * Usage:
-   *   <ds-nav-toggle target=".nav"></ds-nav-toggle>
-   */
-
-  const NAV_TOGGLE_CSS = `
-    ${BASE_RESET}
-    :host {
-      display: none;
-      position: fixed;
-      bottom: var(--ds-space-4, 16px);
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: var(--ds-z-overlay, 200);
-    }
-
-    button {
-      display: flex;
-      align-items: center;
-      gap: var(--ds-space-2, 8px);
-      background: var(--ds-color-bg-dark, #1b1f24);
-      color: var(--ds-color-text-on-dark-heading, #ffffff);
-      border: none;
-      border-radius: var(--ds-radius-lg, 6px);
-      padding: var(--ds-space-2, 8px) var(--ds-space-4, 16px);
-      font-size: var(--ds-font-size-md, 0.875rem);
-      font-family: ${FONT.body};
-      font-weight: var(--ds-font-weight-medium, 500);
-      cursor: pointer;
-      box-shadow: var(--ds-shadow-lg, 0 2px 6px rgba(0, 0, 0, 0.2));
-      transition: background var(--ds-transition-normal, 0.15s ease);
-      -webkit-tap-highlight-color: transparent;
-      line-height: 1;
-    }
-
-    button:hover {
-      background: var(--ds-color-bg-dark-hover, #2a2f36);
-    }
-
-    button:focus-visible {
-      outline: var(--ds-border-width-md, 2px) solid var(--ds-color-accent, #0055b3);
-      outline-offset: 2px;
-    }
-
-    .icon {
-      font-size: 1.1em;
-      line-height: 1;
-      width: 1em;
-      text-align: center;
-    }
-
-    /* Show on narrow viewports */
-    @media (max-width: 900px) {
-      :host {
-        display: block;
-      }
-    }
-  `;
-
-  class DsNavToggle extends HTMLElement {
-    static get observedAttributes() {
-      return ["target", "label", "open"];
-    }
-
-    constructor() {
-      super();
-      this._shadow = createShadow(this, NAV_TOGGLE_CSS);
-      this._targetEl = null;
-      this._onKeydown = this._onKeydown.bind(this);
-      this._render();
-    }
-
-    connectedCallback() {
-      document.addEventListener("keydown", this._onKeydown);
-      this._resolveTarget();
-    }
-
-    disconnectedCallback() {
-      document.removeEventListener("keydown", this._onKeydown);
-    }
-
-    attributeChangedCallback(name) {
-      if (name === "open") {
-        this._syncTarget();
-        this._updateIcon();
-      } else if (name === "target") {
-        this._resolveTarget();
-      } else {
-        this._render();
-      }
-    }
-
-    get open() {
-      return this.hasAttribute("open");
-    }
-
-    set open(val) {
-      if (val) {
-        this.setAttribute("open", "");
-      } else {
-        this.removeAttribute("open");
-      }
-    }
-
-    toggle() {
-      this.open = !this.open;
-    }
-
-    _render() {
-      const label = this.getAttribute("label") || "Toggle navigation";
-      const isOpen = this.hasAttribute("open");
-      const icon = isOpen ? "\u2715" : "\u2630";
-
-      this._shadow.innerHTML =
-        '<button part="button" aria-label="' +
-        esc(label) +
-        '" aria-expanded="' +
-        (isOpen ? "true" : "false") +
-        '">' +
-        '<span class="icon" part="icon">' +
-        icon +
-        "</span>" +
-        "<span>Menu</span>" +
-        "</button>";
-
-      const btn = this._shadow.querySelector("button");
-      if (btn) {
-        const self = this;
-        btn.addEventListener("click", function () {
-          self.toggle();
-        });
-      }
-    }
-
-    _updateIcon() {
-      const isOpen = this.hasAttribute("open");
-      const icon = this._shadow.querySelector(".icon");
-      const btn = this._shadow.querySelector("button");
-      if (icon) icon.textContent = isOpen ? "\u2715" : "\u2630";
-      if (btn) btn.setAttribute("aria-expanded", isOpen ? "true" : "false");
-    }
-
-    _resolveTarget() {
-      const selector = this.getAttribute("target") || ".nav";
-      this._targetEl = document.querySelector(selector);
-    }
-
-    _syncTarget() {
-      // Lazily resolve the target if it wasn't found at connect time
-      // (the toggle is parsed before the nav element in the DOM).
-      if (!this._targetEl) this._resolveTarget();
-      if (!this._targetEl) return;
-      if (this.hasAttribute("open")) {
-        this._targetEl.setAttribute("open", "");
-      } else {
-        this._targetEl.removeAttribute("open");
-      }
-    }
-
-    _onKeydown(e) {
-      if (e.key === "Escape" && this.open) {
-        this.open = false;
-        const btn = this._shadow.querySelector("button");
-        if (btn) btn.focus();
-      }
     }
   }
 
@@ -2615,7 +1312,7 @@
   //   title       — title text shown at the top (e.g. "DSDS 0.1")
   //   title-href  — link for the title (default: "index.html")
   //   active      — slug of the currently active page
-  //   open        — boolean, reflects mobile open/closed state
+  //   open        — boolean, whether the mobile links section is expanded
   //
   // Content model (light DOM):
   //   Top-level <a> elements become nav links.
@@ -2626,9 +1323,11 @@
   //   `active` attribute for highlighting.
   //
   // Mobile behavior:
-  //   At ≤900px the nav is off-screen by default (translateX(-100%)).
-  //   Setting the `open` attribute slides it into view.
-  //   <ds-nav-toggle> controls the `open` attribute externally.
+  //   The nav itself never hides — at ≤900px the links section (.nav__items)
+  //   collapses to 0 height by default, and the logo in the title bar is
+  //   replaced by a menu button in the same spot. Clicking it (or setting the
+  //   `open` attribute) expands the links section back to its normal,
+  //   desktop-style height.
   //
   // Usage:
   //   <ds-spec-nav title="DSDS 0.1" title-href="index.html" active="index">
@@ -2646,73 +1345,114 @@
     :host {
       display: block;
       position: fixed;
-      top: 0;
-      left: 0;
-      bottom: 0;
+      inset-block-start: 0;
+      inset-inline-start: 0;
+      inset-block-end: 0;
       width: var(--ds-width-nav, 240px);
       z-index: var(--ds-z-nav, 100);
     }
 
     .nav {
       position: absolute;
-      inset: 0;
-      background: var(--ds-color-bg-dark, #1b1f24);
-      color: var(--ds-color-text-on-dark, #c9cdd3);
-      overflow-y: auto;
-      padding: var(--ds-space-6, 24px) 0;
+      inset: 1em;
+      color: var(--ds-color-text);
+      padding: 0;
       font-family: ${FONT.body};
-      -webkit-overflow-scrolling: touch;
+      display: flex;
+      flex-direction: column;
     }
 
     /* ── Title ──────────────────────────────────────────── */
     .nav__title {
-      font-size: var(--ds-font-size-base, 0.8125rem);
-      font-weight: var(--ds-font-weight-bold, 700);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: var(--ds-font-size-base);
+      font-weight: var(--ds-font-weight-bold);
       letter-spacing: 0;
       text-transform: none;
-      color: var(--ds-color-text-on-dark-heading, #ffffff);
-      padding: 0 var(--ds-space-4, 16px);
-      margin-bottom: var(--ds-space-6, 24px);
+      background: var(--ds-color-text);
+      color: var(--ds-color-bg-inverse);
+      padding: var(--ds-space-4);
     }
 
     .nav__title a {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+      flex: 1;
       color: inherit;
       text-decoration: none;
+      line-height: 1.2;
+    }
+
+    .nav__logo {
+      flex-shrink: 0;
+    }
+
+    /* Menu toggle — takes over the logo's spot at mobile widths. */
+    .nav__menu-btn {
+      display: none;
+      flex-shrink: 0;
+      align-items: center;
+      justify-content: center;
+      width: 2rem;
+      height: 2rem;
+      padding: 0;
+      background: none;
+      border: none;
+      color: inherit;
+      font-size: 1.1rem;
+      line-height: 1;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .nav__menu-icon {
+      display: flex;
+    }
+
+    .nav__menu-icon svg {
+      display: block;
     }
 
     /* ── Items container ────────────────────────────────── */
     .nav__items {
-      margin-bottom: var(--ds-space-4, 16px);
+      padding: var(--ds-space-4) 0;
+      overflow-y: auto;
+      max-height: 100%;
+      background: var(--ds-color-bg-inverse);
     }
 
     /* ── Top-level links ────────────────────────────────── */
     .nav__link {
       display: block;
-      padding: 5px var(--ds-space-4, 16px);
-      color: var(--ds-color-text-on-dark, #c9cdd3);
+      margin: 0 4px;
+      padding: 6px calc(var(--ds-space-4) - 4px);
+      color: var(--ds-color-text);
       text-decoration: none;
-      font-size: var(--ds-font-size-base, 0.8125rem);
-      line-height: var(--ds-line-height-normal, 1.4);
-      transition: background var(--ds-transition-fast, 0.1s ease),
-                  color var(--ds-transition-fast, 0.1s ease);
-      border-left: var(--ds-border-width-lg, 3px) solid transparent;
+      font-size: var(--ds-font-size-base);
+      font-weight: 500;
+      line-height: var(--ds-line-height-normal);
+      border-inline-start: var(--ds-border-width) solid transparent;
+      transition: background-color var(--ds-duration-base) var(--ds-ease-standard),
+        color var(--ds-duration-base) var(--ds-ease-standard);
     }
 
     .nav__link:hover {
-      background: var(--ds-color-bg-dark-hover, #2a2f36);
-      color: var(--ds-color-text-on-dark-heading, #ffffff);
+      background: #1a1a1a;
+      color: #fff;
     }
 
     .nav__link--active {
-      background: var(--ds-color-bg-dark-active, #363b44);
-      color: var(--ds-color-text-on-dark-heading, #ffffff);
-      border-left-color: var(--ds-color-accent, #0055b3);
-      font-weight: var(--ds-font-weight-medium, 500);
+      background: #1a1a1a;
+      color: #fff;
     }
 
     /* ── Group toggle ───────────────────────────────────── */
     .nav__group {
-      margin-top: var(--ds-space-4, 16px);
+      margin-top: var(--ds-space-4);
     }
 
     .nav__group-toggle {
@@ -2720,19 +1460,18 @@
       align-items: center;
       justify-content: space-between;
       width: 100%;
-      padding: 6px var(--ds-space-4, 16px);
+      padding: 6px var(--ds-space-4);
       background: none;
       border: none;
-      border-left: var(--ds-border-width-lg, 3px) solid transparent;
-      color: var(--ds-color-nav-group, #808690);
+      border-inline-start: var(--ds-border-width) solid transparent;
+      color: var(--ds-color-text);
       font-family: ${FONT.body};
-      font-size: var(--ds-font-size-xs, 0.6875rem);
-      font-weight: var(--ds-font-weight-semibold, 600);
+      font-size: var(--ds-font-size-xs);
+      font-weight: var(--ds-font-weight-bold);
       letter-spacing: 0;
       text-transform: none;
       cursor: default;
-      text-align: left;
-      transition: color var(--ds-transition-fast, 0.1s ease);
+      text-align: start;
     }
 
     .nav__group-arrow {
@@ -2742,23 +1481,34 @@
     /* ── Group children — always visible ────────────────── */
     .nav__group-children {
       display: block;
-      padding-bottom: var(--ds-space-1, 4px);
+      padding-bottom: var(--ds-space-1);
     }
 
     .nav__link--child {
-      padding-left: var(--ds-space-4, 16px);
-      font-size: var(--ds-font-size-base, 0.8125rem);
+      font-size: var(--ds-font-size-base);
     }
 
-    /* ── Mobile: slide off-screen by default ────────────── */
+    /* ── Mobile: nav stays put; only the links section collapses ───────── */
     @media (max-width: 900px) {
-      :host {
-        transform: translateX(-100%);
-        transition: transform var(--ds-transition-slow, 0.2s ease);
+      .nav__menu-btn {
+        display: flex;
       }
 
-      :host([open]) {
-        transform: translateX(0);
+      .nav__logo {
+        display: none;
+      }
+
+      .nav__items {
+        max-height: 0;
+        padding-top: 0;
+        padding-bottom: 0;
+        overflow: hidden;
+      }
+
+      :host([open]) .nav__items {
+        max-height: 100%;
+        padding: var(--ds-space-4) 0;
+        overflow-y: auto;
       }
     }
 
@@ -2778,9 +1528,12 @@
     constructor() {
       super();
       this._shadow = createShadow(this, SPEC_NAV_CSS);
+      this._onKeydown = this._onKeydown.bind(this);
     }
 
     connectedCallback() {
+      document.addEventListener("keydown", this._onKeydown);
+
       // Light-DOM children (<a>, <ds-nav-group>) may not be parsed yet when
       // a blocking <script> in <head> registers the element — the parser
       // upgrades the element the instant it sees the opening tag, before it
@@ -2799,11 +1552,29 @@
       }
     }
 
+    disconnectedCallback() {
+      document.removeEventListener("keydown", this._onKeydown);
+    }
+
     attributeChangedCallback(name) {
-      // The `open` attribute is handled purely by CSS (:host([open])).
-      if (name === "open") return;
+      if (name === "open") {
+        this._syncMenuButton();
+        return;
+      }
       // Only re-render after the initial render has happened.
       if (this._rendered && this.isConnected) this._render();
+    }
+
+    get open() {
+      return this.hasAttribute("open");
+    }
+
+    set open(val) {
+      if (val) {
+        this.setAttribute("open", "");
+      } else {
+        this.removeAttribute("open");
+      }
     }
 
     _render() {
@@ -2811,13 +1582,21 @@
       const title = this.getAttribute("title") || "";
       const titleHref = this.getAttribute("title-href") || "index.html";
       const active = this.getAttribute("active") || "";
+      const isOpen = this.open;
 
       const titleHtml = title
-        ? '<div class="nav__title"><a href="' +
+        ? '<div class="nav__title">' +
+          '<button class="nav__menu-btn" part="menu-btn" type="button" aria-label="Toggle navigation" aria-expanded="' +
+          (isOpen ? "true" : "false") +
+          // The button's aria-label already names the control; its icon is
+          // decorative and filled in async once loadIcon() resolves below.
+          '"><span class="nav__menu-icon" aria-hidden="true"></span></button>' +
+          '<a href="' +
           esc(titleHref) +
-          '">' +
+          '"><ds-logo class="nav__logo" size="2rem" fill="#fff" aria-hidden="true"></ds-logo><span>' +
           esc(title) +
-          "</a></div>"
+          "</span></a>" +
+          "</div>"
         : "";
 
       const itemsHtml = this._buildFromChildren(active);
@@ -2829,6 +1608,37 @@
         itemsHtml +
         "</div>" +
         "</nav>";
+
+      const btn = this._shadow.querySelector(".nav__menu-btn");
+      if (btn) {
+        btn.addEventListener("click", () => {
+          this.open = !this.open;
+        });
+      }
+
+      this._updateMenuIcon(isOpen);
+    }
+
+    _syncMenuButton() {
+      const isOpen = this.open;
+      const btn = this._shadow.querySelector(".nav__menu-btn");
+      if (btn) btn.setAttribute("aria-expanded", isOpen ? "true" : "false");
+      this._updateMenuIcon(isOpen);
+    }
+
+    _updateMenuIcon(isOpen) {
+      const icon = this._shadow.querySelector(".nav__menu-icon");
+      loadIcon(isOpen ? "close" : "menu").then((svg) => {
+        if (icon) icon.innerHTML = svg;
+      });
+    }
+
+    _onKeydown(e) {
+      if (e.key === "Escape" && this.open) {
+        this.open = false;
+        const btn = this._shadow.querySelector(".nav__menu-btn");
+        if (btn) btn.focus();
+      }
     }
 
     /**
@@ -2909,74 +1719,28 @@
     }
   }
 
-  // ── step-number.js ──
-  // ═══════════════════════════════════════════════════════════════════════════
-  // <ds-step-number>
-  //
-  // A numbered step circle used in quickstart-style section headings.
-  //
-  // Attributes:
-  //   (none — uses slotted text content for the number)
-  //
-  // Content:
-  //   The step number (e.g., "1", "2", "3")
-  //
-  // Usage:
-  //   <ds-step-number>1</ds-step-number> What is DSDS?
-  // ═══════════════════════════════════════════════════════════════════════════
-
-  const STEP_NUMBER_CSS = `
-    ${BASE_RESET}
-    :host {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      vertical-align: middle;
-      position: relative;
-      top: -1px;
-      width: 28px;
-      height: 28px;
-      border-radius: var(--ds-radius-full);
-      background: var(--ds-color-accent);
-      color: #fff;
-      font-family: ${FONT.body};
-      font-size: var(--ds-font-size-base);
-      font-weight: var(--ds-font-weight-bold);
-      line-height: 28px;
-      text-align: center;
-      margin-right: var(--ds-space-2);
-      flex-shrink: 0;
-    }
-  `;
-
-  class DsStepNumber extends HTMLElement {
-    constructor() {
-      super();
-      this._shadow = createShadow(this, STEP_NUMBER_CSS);
-      this._shadow.innerHTML = '<slot></slot>';
-    }
-  }
-
   // ── callout.js ──
   // ═══════════════════════════════════════════════════════════════════════════
   // <ds-callout>
   //
-  // A callout / info box with an accent left border and subtle background.
-  // Replaces the `.callout` CSS class with an encapsulated web component.
+  // A callout / info box: a bold title above a plain white content box —
+  // the variant's meaning lives in the title's color, not an icon.
   //
   // Attributes:
   //   variant — "info" | "tip" | "warning" (default: "info")
+  //   title   — bold lead-in text shown above the content (e.g. "Tip:").
+  //             Omit for no title.
   //
   // Slots:
-  //   (default) — callout content (may include <strong>, links, lists, etc.)
+  //   (default) — callout content (may include links, lists, etc.)
   //
   // Usage:
-  //   <ds-callout>
-  //     <strong>Key idea:</strong> Some important information here.
+  //   <ds-callout title="Key idea:">
+  //     Some important information here.
   //   </ds-callout>
   //
-  //   <ds-callout variant="tip">
-  //     <strong>Tip:</strong> A helpful suggestion.
+  //   <ds-callout variant="tip" title="Tip:">
+  //     A helpful suggestion.
   //   </ds-callout>
   // ═══════════════════════════════════════════════════════════════════════════
 
@@ -2985,43 +1749,51 @@
     :host { display: block; }
 
     .callout {
-      border-left: var(--ds-border-width-xl) solid var(--ds-color-accent);
-      background: var(--ds-color-accent-subtle);
-      padding: var(--ds-space-2) var(--ds-space-4);
-      border-radius: 0 var(--ds-radius-lg) var(--ds-radius-lg) 0;
-      margin: var(--ds-space-2) 0 var(--ds-space-6);
+      margin: var(--ds-space-2) 0 var(--ds-space-8);
       font-family: ${FONT.body};
-      font-size: var(--ds-font-size-md);
+      font-size: var(--ds-font-size-base);
       line-height: var(--ds-line-height-loose);
       color: var(--ds-color-text);
     }
 
-    .callout--warning {
-      border-left-color: var(--ds-color-warning-text);
-      background: var(--ds-color-note-warning-bg);
+    .callout__title {
+      font-weight: var(--ds-font-weight-bold);
+      /* Default ("info") variant. */
+      background: var(--ds-color-text);
+      color: var(--ds-color-text-inverse);
+      display: inline-block;
+      padding: var(--ds-space-2) var(--ds-space-4);
+      padding-inline-end: calc(var(--ds-space-4) + var(--ds-space-2));
     }
 
-    .callout--tip {
-      border-left-color: var(--ds-color-encouraged-text);
-      background: var(--ds-color-encouraged-bg);
+    .callout__title:empty {
+      display: none;
+    }
+
+    .callout--warning .callout__title { background: var(--ds-color-warning-text); }
+    .callout--tip .callout__title { background: var(--ds-color-encouraged-text); }
+
+    .callout__content {
+      background: var(--ds-color-bg-inverse);
+      padding: var(--ds-space-4);
     }
 
     ::slotted(strong) {
-      color: var(--ds-color-accent);
+      background: var(--ds-color-accent);
     }
 
     :host([variant="warning"]) ::slotted(strong) {
-      color: var(--ds-color-warning-text);
+      background: var(--ds-color-warning-text);
     }
 
     :host([variant="tip"]) ::slotted(strong) {
-      color: var(--ds-color-encouraged-text);
+      background: var(--ds-color-encouraged-text);
     }
 
     ::slotted(ol),
     ::slotted(ul) {
       margin: var(--ds-space-2) 0 0;
-      padding-left: var(--ds-space-5);
+      padding-inline-start: var(--ds-space-4);
     }
 
     ::slotted(a) {
@@ -3029,157 +1801,46 @@
       text-decoration-thickness: 1px;
       text-underline-offset: 2px;
     }
+
+    ::slotted(p:first-child) {
+      margin-top: 0;
+    }
+
+    ::slotted(p:last-child) {
+      margin-bottom: 0 !important;
+    }
   `;
 
   class DsCallout extends HTMLElement {
     static get observedAttributes() {
-      return ["variant"];
+      return ["variant", "title"];
     }
 
     constructor() {
       super();
       this._shadow = createShadow(this, CALLOUT_CSS);
       this._shadow.innerHTML =
-        '<div class="callout" part="callout"><slot></slot></div>';
+        '<div class="callout" part="callout">' +
+        '<span class="callout__title" part="title"></span>' +
+        '<div class="callout__content" part="content"><slot></slot></div>' +
+        "</div>";
     }
 
     connectedCallback() {
-      this._updateVariant();
+      this._render();
     }
 
     attributeChangedCallback() {
-      this._updateVariant();
+      this._render();
     }
 
-    _updateVariant() {
+    _render() {
       const variant = this.getAttribute("variant") || "info";
+      const title = this.getAttribute("title") || "";
       const el = this._shadow.querySelector(".callout");
-      if (el) {
-        el.className = "callout callout--" + variant;
-      }
-    }
-  }
-
-  // ── card-grid.js ──
-  // ═══════════════════════════════════════════════════════════════════════════
-  // <ds-card-grid>
-  //
-  // A responsive grid layout for cards. Replaces the `.card-grid` CSS class.
-  //
-  // Attributes:
-  //   min-width — minimum column width for auto-fill (default: "240px")
-  //   gap       — gap between grid items (default: uses --ds-space-2)
-  //
-  // Slots:
-  //   (default) — card elements to lay out in the grid
-  // ═══════════════════════════════════════════════════════════════════════════
-
-  const CARD_GRID_CSS = `
-    ${BASE_RESET}
-    :host {
-      display: block;
-      margin: var(--ds-space-2) 0 var(--ds-space-6);
-    }
-
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: var(--_gap, var(--ds-space-2));
-    }
-
-    @media (max-width: 640px) {
-      .grid {
-        grid-template-columns: 1fr;
-      }
-    }
-  `;
-
-  class DsCardGrid extends HTMLElement {
-    static get observedAttributes() {
-      return ["min-width", "gap"];
-    }
-
-    constructor() {
-      super();
-      this._shadow = createShadow(this, CARD_GRID_CSS);
-      this._shadow.innerHTML =
-        '<div class="grid" part="grid"><slot></slot></div>';
-    }
-
-    connectedCallback() {
-      this._applyCustomProps();
-    }
-
-    attributeChangedCallback() {
-      this._applyCustomProps();
-    }
-
-    _applyCustomProps() {
-      const minWidth = this.getAttribute("min-width");
-      const gap = this.getAttribute("gap");
-      const grid = this._shadow.querySelector(".grid");
-      if (!grid) return;
-
-      if (minWidth) {
-        grid.style.setProperty("--_min-width", minWidth);
-      } else {
-        grid.style.removeProperty("--_min-width");
-      }
-
-      if (gap) {
-        grid.style.setProperty("--_gap", gap);
-      } else {
-        grid.style.removeProperty("--_gap");
-      }
-    }
-  }
-
-  // ── page-footer.js ──
-  // ═══════════════════════════════════════════════════════════════════════════
-  // <ds-page-footer>
-  //
-  // A footer bar for standalone pages (quickstart, samples, etc.).
-  // Renders a top-bordered, centered footer with muted text and styled links.
-  //
-  // Slots:
-  //   (default) — footer content (paragraphs, links, etc.)
-  //
-  // Usage:
-  //   <ds-page-footer>
-  //     <p>Design System Documentation Spec (DSDS) 0.1</p>
-  //     <p><a href="https://github.com/...">GitHub</a> · <a href="index.html">Full Spec</a></p>
-  //   </ds-page-footer>
-  // ═══════════════════════════════════════════════════════════════════════════
-
-  const PAGE_FOOTER_CSS = `
-    ${BASE_RESET}
-    :host { display: block; }
-
-    .page-footer {
-      border-top: var(--ds-border-width-sm) solid var(--ds-color-border);
-      padding: var(--ds-space-6);
-      text-align: center;
-      color: var(--ds-color-text-faint);
-      font-family: ${FONT.body};
-      font-size: var(--ds-font-size-sm);
-      margin-top: var(--ds-space-12);
-    }
-
-    ::slotted(p) {
-      margin: 0 0 var(--ds-space-1);
-    }
-
-    ::slotted(a) {
-      color: var(--ds-color-accent);
-    }
-  `;
-
-  class DsPageFooter extends HTMLElement {
-    constructor() {
-      super();
-      this._shadow = createShadow(this, PAGE_FOOTER_CSS);
-      this._shadow.innerHTML =
-        '<div class="page-footer" part="page-footer"><slot></slot></div>';
+      const titleEl = this._shadow.querySelector(".callout__title");
+      if (el) el.className = "callout callout--" + variant;
+      if (titleEl) titleEl.textContent = title;
     }
   }
 
@@ -3189,20 +1850,11 @@
   //
   // A pill-shaped tag for keyword and category labels.
   //
-  // Attributes:
-  //   size    — "sm" | "md" (default: "md")
-  //   removable — boolean, shows a remove button
-  //
-  // Events:
-  //   ds-tag-remove — fired when the remove button is clicked
-  //
   // Slots:
   //   (default) — tag label text
   //
   // Usage:
-  //   <ds-tag>action</ds-tag>
-  //   <ds-tag size="sm">color</ds-tag>
-  //   <ds-tag removable>draft</ds-tag>
+  //   <ds-tag>color</ds-tag>
   // ═══════════════════════════════════════════════════════════════════════════
 
   const TAG_CSS = `
@@ -3215,121 +1867,372 @@
     .tag {
       display: inline-flex;
       align-items: center;
-      gap: var(--ds-space-1, 4px);
       font-family: ${FONT.body};
-      font-weight: var(--ds-font-weight-medium, 500);
-      font-size: var(--ds-font-size-xs, 0.6875rem);
+      font-weight: var(--ds-font-weight-bold);
+      font-size: var(--ds-font-size-sm);
       line-height: 1;
-      color: var(--ds-color-text-secondary, #555);
-      background: var(--ds-color-bg-subtle, #f0f0f4);
-      border: var(--ds-border-width-sm, 1px) solid var(--ds-color-border-light, #e0e0e4);
-      border-radius: var(--ds-radius-full, 9999px);
-      padding: 3px var(--ds-space-2, 8px);
+      color: var(--ds-color-text);
+      background: var(--ds-color-bg-subtle);
+      border: var(--ds-border-width) solid var(--ds-color-border-light);
+      padding: 2px var(--ds-space-1);
       white-space: nowrap;
       max-width: 100%;
       overflow: hidden;
       text-overflow: ellipsis;
     }
-
-    :host([size="sm"]) .tag {
-      font-size: var(--ds-font-size-2xs, 0.625rem);
-      padding: 2px var(--ds-space-1, 4px);
-    }
-
-    .remove {
-      display: none;
-      align-items: center;
-      justify-content: center;
-      background: none;
-      border: none;
-      padding: 0;
-      margin: 0 -2px 0 0;
-      cursor: pointer;
-      color: var(--ds-color-text-faint, #999);
-      font-size: 0.75em;
-      line-height: 1;
-      width: 14px;
-      height: 14px;
-      border-radius: var(--ds-radius-full, 9999px);
-      transition: color var(--ds-transition-fast, 0.1s ease),
-                  background var(--ds-transition-fast, 0.1s ease);
-    }
-
-    .remove:hover {
-      color: var(--ds-color-text, #1b1f24);
-      background: rgba(0, 0, 0, 0.08);
-    }
-
-    :host([removable]) .remove {
-      display: inline-flex;
-    }
   `;
 
   class DsTag extends HTMLElement {
-    static get observedAttributes() {
-      return ["size", "removable"];
-    }
-
     constructor() {
       super();
       this._shadow = createShadow(this, TAG_CSS);
       this._shadow.innerHTML =
-        '<span class="tag" part="tag">' +
-        "<slot></slot>" +
-        '<button class="remove" part="remove" aria-label="Remove">\u00d7</button>' +
-        "</span>";
+        '<span class="tag" part="tag"><slot></slot></span>';
+    }
+  }
 
-      const btn = this._shadow.querySelector(".remove");
-      if (btn) {
-        const self = this;
-        btn.addEventListener("click", function (e) {
-          e.stopPropagation();
-          self.dispatchEvent(
-            new CustomEvent("ds-tag-remove", {
-              bubbles: true,
-              detail: { label: self.textContent.trim() },
-            }),
-          );
-        });
+  // ── logo.js ──
+  // ═══════════════════════════════════════════════════════════════════════════
+  // <ds-logo>
+  //
+  // The DSDS mark, fetched from site/assets/dsds.svg and inlined so its fill
+  // can be recolored at runtime. Edit site/assets/dsds.svg directly to change
+  // the mark — this component just loads and colors whatever's there.
+  //
+  // Attributes:
+  //   size       — width/height, any CSS length (default: 40px)
+  //   background — host background color (default: transparent)
+  //   fill       — SVG fill color (default: var(--ds-color-text))
+  //   label      — accessible label. Omit when the logo sits next to visible
+  //                text that already names it (the default: decorative,
+  //                aria-hidden). Set it when the logo is used standalone.
+  //
+  // Usage:
+  //   <ds-logo></ds-logo>
+  //   <ds-logo size="24px" fill="#fff" background="#0055b3"></ds-logo>
+  //   <ds-logo label="DSDS home"></ds-logo>
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  const LOGO_CSS = `
+    ${BASE_RESET}
+    :host {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: var(--logo-size, 40px);
+      height: var(--logo-size, 40px);
+      background: var(--logo-bg, transparent);
+      line-height: 0;
+      aspect-ratio: 1/1;
+    }
+
+    svg {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    svg path {
+      fill: var(--logo-fill, var(--ds-color-text));
+    }
+  `;
+
+  class DsLogo extends HTMLElement {
+    static get observedAttributes() {
+      return ["size", "background", "fill", "label"];
+    }
+
+    constructor() {
+      super();
+      this._shadow = createShadow(this, LOGO_CSS);
+      loadIcon("logo").then((svg) => {
+        this._shadow.innerHTML = svg;
+        this._syncA11y();
+      });
+    }
+
+    connectedCallback() {
+      this._sync();
+    }
+
+    attributeChangedCallback(name) {
+      if (name === "label") {
+        this._syncA11y();
+        return;
       }
+      if (this.isConnected) this._sync();
+    }
+
+    _sync() {
+      const size = this.getAttribute("size");
+      const background = this.getAttribute("background");
+      const fill = this.getAttribute("fill");
+
+      if (size) this.style.setProperty("--logo-size", size);
+      else this.style.removeProperty("--logo-size");
+
+      if (background) this.style.setProperty("--logo-bg", background);
+      else this.style.removeProperty("--logo-bg");
+
+      if (fill) this.style.setProperty("--logo-fill", fill);
+      else this.style.removeProperty("--logo-fill");
+
+      this._syncA11y();
+    }
+
+    _syncA11y() {
+      const svg = this._shadow.querySelector("svg");
+      if (!svg) return;
+      const label = this.getAttribute("label");
+      if (label) {
+        svg.setAttribute("role", "img");
+        svg.setAttribute("aria-label", esc(label));
+        svg.removeAttribute("aria-hidden");
+      } else {
+        // Decorative by default — used next to visible text (e.g. the nav
+        // title) that already names it.
+        svg.setAttribute("aria-hidden", "true");
+        svg.removeAttribute("role");
+        svg.removeAttribute("aria-label");
+      }
+    }
+  }
+
+  // ── icon-button.js ──
+  // ═══════════════════════════════════════════════════════════════════════════
+  // <ds-icon-button>
+  //
+  // A minimal icon-only button: a slotted icon plus a required accessible
+  // label. No built-in positioning, color variants, or sizes — that's left to
+  // whatever's using it (e.g. wrap it and set :host on the wrapper to make a
+  // fixed floating button).
+  //
+  // Attributes:
+  //   label — accessible name (required — this button has no visible text)
+  //
+  // Slots:
+  //   (default) — icon markup (e.g. an inline <svg>)
+  //
+  // Usage:
+  //   <ds-icon-button label="Toggle JSON view">
+  //     <svg>...</svg>
+  //   </ds-icon-button>
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  const ICON_BUTTON_CSS = `
+    ${BASE_RESET}
+    :host { display: inline-flex; }
+
+    button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 2.5rem;
+      height: 2.5rem;
+      padding: 0;
+      background: var(--ds-color-text);
+      color: var(--ds-color-bg-inverse);
+      border: none;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      transition: background-color var(--ds-duration-fast) var(--ds-ease-standard);
+    }
+
+    button:hover {
+      background: var(--ds-color-accent);
+    }
+
+    ::slotted(*) {
+      display: block;
+    }
+  `;
+
+  class DsIconButton extends HTMLElement {
+    static get observedAttributes() {
+      return ["label"];
+    }
+
+    constructor() {
+      super();
+      this._shadow = createShadow(this, ICON_BUTTON_CSS);
+      this._shadow.innerHTML =
+        '<button type="button" part="button"><slot></slot></button>';
+    }
+
+    connectedCallback() {
+      this._syncLabel();
+    }
+
+    attributeChangedCallback() {
+      this._syncLabel();
+    }
+
+    _syncLabel() {
+      const btn = this._shadow.querySelector("button");
+      if (btn) btn.setAttribute("aria-label", this.getAttribute("label") || "");
+    }
+  }
+
+  // ── json-view.js ──
+  // ═══════════════════════════════════════════════════════════════════════════
+  // <ds-json-view>
+  //
+  // A "View as JSON" toggle for spec definition pages: a fixed floating
+  // button in the bottom-right corner. Closed, it shows a curly-braces icon;
+  // clicking it opens a full-viewport overlay (above the nav and content)
+  // showing the page's raw schema JSON in a <ds-code> block, and the same
+  // button swaps to a close icon to return to the documentation view.
+  //
+  // Attributes:
+  //   label — the source file path, used only for the overlay's accessible
+  //           name (e.g. "Raw JSON: common/criterion.schema.json")
+  //
+  // Slots:
+  //   (default) — the JSON content, typically a single <ds-code language="json">
+  //
+  // Usage:
+  //   <ds-json-view label="common/criterion.schema.json">
+  //     <ds-code language="json">{ ... }</ds-code>
+  //   </ds-json-view>
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  const JSON_VIEW_CSS = `
+    ${BASE_RESET}
+    :host {
+      display: block;
+      position: fixed;
+      inset-inline-end: var(--ds-space-4);
+      bottom: var(--ds-space-4);
+      z-index: calc(var(--ds-z-overlay, 200) + 1);
+    }
+
+    /* Positioned + given a higher z-index than the overlay below — without
+       this, the button is a plain static-flow box, and a fixed+z-indexed
+       sibling (the overlay) paints above static content regardless of DOM
+       order, so the button would vanish behind the overlay once it's open. */
+    .json-view__btn {
+      position: relative;
+      z-index: calc(var(--ds-z-overlay, 200) + 1);
+    }
+
+    .json-view__icon svg {
+      display: block;
+    }
+
+    /* Sits above everything else on the page — including the fixed nav —
+       while open. Hidden entirely (not just visually) when closed so its
+       content isn't reachable by keyboard/AT. */
+    .json-view__overlay {
+      /*display: none;*/
+      height: 0;
+      position: fixed;
+      inset: 0;
+      z-index: var(--ds-z-overlay, 200);
+      background: var(--ds-color-bg-inverse);
+      overflow-y: auto;
+      padding: 0 var(--ds-space-4) 0;
+      transition: .3s var(--ds-ease-standard);
+      margin-top: 100vh;
+    }
+
+    .json-view__overlay--open {
+      /*display: block;*/
+      height: 100vh;
+      padding: var(--ds-space-8) var(--ds-space-4) var(--ds-space-4);
+      margin: 0;
+    }
+
+    ::slotted(ds-code) {
+      display: block;
+    }
+  `;
+
+  class DsJsonView extends HTMLElement {
+    static get observedAttributes() {
+      return ["label"];
+    }
+
+    constructor() {
+      super();
+      this._shadow = createShadow(this, JSON_VIEW_CSS);
+      this._open = false;
+      this._onKeydown = this._onKeydown.bind(this);
+    }
+
+    connectedCallback() {
+      document.addEventListener("keydown", this._onKeydown);
+      this._render();
+    }
+
+    disconnectedCallback() {
+      document.removeEventListener("keydown", this._onKeydown);
+    }
+
+    _render() {
+      const label = this.getAttribute("label") || "";
+      const dialogLabel = label ? `Raw JSON: ${label}` : "Raw JSON";
+
+      this._shadow.innerHTML =
+        '<ds-icon-button class="json-view__btn" part="button" label="View as JSON">' +
+        '<span class="json-view__icon" part="icon"></span>' +
+        "</ds-icon-button>" +
+        '<div class="json-view__overlay" part="overlay" role="dialog" aria-modal="true" tabindex="-1" aria-label="' +
+        esc(dialogLabel) +
+        '">' +
+        '<div class="json-view__body" part="body"><slot></slot></div>' +
+        "</div>";
+
+      const btn = this._shadow.querySelector(".json-view__btn");
+      if (btn) btn.addEventListener("click", () => this._setOpen(!this._open));
+
+      this._updateIcon();
+    }
+
+    _setOpen(open) {
+      this._open = open;
+      const overlay = this._shadow.querySelector(".json-view__overlay");
+      if (overlay) {
+        overlay.classList.toggle("json-view__overlay--open", open);
+        if (open) overlay.focus();
+      }
+      this._updateIcon();
+    }
+
+    _updateIcon() {
+      const btn = this._shadow.querySelector(".json-view__btn");
+      const icon = this._shadow.querySelector(".json-view__icon");
+      if (btn) btn.setAttribute("label", this._open ? "Close JSON view" : "View as JSON");
+      loadIcon(this._open ? "close" : "brackets").then((svg) => {
+        if (icon) icon.innerHTML = svg;
+      });
+    }
+
+    _onKeydown(e) {
+      if (e.key === "Escape" && this._open) this._setOpen(false);
     }
   }
 
   // ── Registration ──
   const registry = [
-    ["ds-button", DsButton],
     ["ds-code", DsCode],
     ["ds-badge", DsBadge],
     ["ds-table", DsTable],
     ["ds-heading", DsHeading],
-    ["ds-card", DsCard],
-    ["ds-tabs", DsTabs],
-    ["ds-tab", DsTab],
-    ["ds-sidebar", DsSidebar],
-    ["ds-scrollspy", DsScrollspy],
-    ["ds-toolbar", DsToolbar],
-    ["ds-sidenav", DsSidenav],
-    ["ds-nav-group", DsNavGroup],
-    ["ds-nav-link", DsNavLink],
-    ["ds-toc", DsToc],
     ["ds-back-to-top", DsBackToTop],
-    ["ds-footer", DsFooter],
-    ["ds-schema-header", DsSchemaHeader],
+    ["ds-header", DsHeader],
     ["ds-def-section", DsDefSection],
     ["ds-type-ref", DsTypeRef],
-    ["ds-note", DsNote],
     ["ds-cross-refs", DsCrossRefs],
     ["ds-def-index", DsDefIndex],
     ["ds-def-example", DsDefExample],
     ["ds-prop-table", DsPropTable],
     ["ds-prop", DsProp],
-    ["ds-nav-toggle", DsNavToggle],
     ["ds-spec-nav", DsSpecNav],
-    ["ds-step-number", DsStepNumber],
     ["ds-callout", DsCallout],
-    ["ds-card-grid", DsCardGrid],
-    ["ds-page-footer", DsPageFooter],
     ["ds-tag", DsTag],
+    ["ds-logo", DsLogo],
+    ["ds-icon-button", DsIconButton],
+    ["ds-json-view", DsJsonView],
   ];
 
   for (const [name, ctor] of registry) {
