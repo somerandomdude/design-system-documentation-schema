@@ -891,19 +891,42 @@
       margin-bottom: var(--ds-space-8);
     }
     nav {
-      background: var(--ds-color-bg-subtle);
+      /*background: var(--ds-color-bg-subtle);
       padding: var(--ds-space-4) var(--ds-space-4);
+      */
     }
+    /*
     ::slotted(p) {
       margin-bottom: var(--ds-space-2);
       font-size: var(--ds-font-size-base);
     }
+    */
+    .defindex__title {
+      font-size: var(--ds-font-size-base);
+      font-weight: var(--ds-font-weight-bold);
+      /* Default ("info") variant. */
+      background: var(--ds-color-text);
+      color: var(--ds-color-text-inverse);
+      display: inline-block;
+      padding: var(--ds-space-2) var(--ds-space-4);
+      padding-inline-end: calc(var(--ds-space-4) + var(--ds-space-2));
+    }
+
+    .defindex__title:empty {
+      display: none;
+    }
+
+    .defindex__content {
+      background: var(--ds-color-bg-inverse);
+      padding: var(--ds-space-4);
+    }
+
     ::slotted(ul) {
       list-style: none;
       list-style-type: none;
       padding: 0;
       margin: 0;
-      column-count: 2;
+      column-count: 3;
       column-gap: var(--ds-space-8);
     }
 
@@ -922,7 +945,7 @@
     var s = document.createElement("style");
     s.id = DEF_INDEX_LIGHT_ID;
     s.textContent = [
-      "ds-def-index ul { padding-inline-start: 0 !important; margin-inline-start: 0 !important; list-style: none !important; }",
+      "ds-def-index ul { padding-inline-start: 0 !important; margin-inline-start: 0 !important; margin-block-end: 0 !important; list-style: none !important; }",
       "ds-def-index li { margin-bottom: var(--ds-space-1); font-size: var(--ds-font-size-base); break-inside: avoid; padding-inline-start: 0; }",
       "ds-def-index li a { font-family: var(--ds-font-mono); }",
     ].join("\n");
@@ -930,13 +953,29 @@
   }
 
   class DsDefIndex extends HTMLElement {
+    static get observedAttributes() {
+      return ["title"];
+    }
+
     constructor() {
       super();
       this._shadow = createShadow(this, DEF_INDEX_CSS);
-      this._shadow.innerHTML = '<nav part="nav"><slot></slot></nav>';
+      this._shadow.innerHTML = '<nav part="nav"><span class="defindex__title" part="title"></span><div class="defindex__content" part="content"><slot></slot></div></nav>';
     }
+
     connectedCallback() {
       ensureDefIndexLightStyles();
+      this._render();
+    }
+
+    attributeChangedCallback() {
+      this._render();
+    }
+
+    _render() {
+      const title = this.getAttribute("title") || "";
+      const titleEl = this._shadow.querySelector(".defindex__title");
+      if (titleEl) titleEl.textContent = title;
     }
   }
 
@@ -1382,8 +1421,8 @@
       font-weight: 500;
       line-height: var(--ds-line-height-normal);
       border-inline-start: var(--ds-border-width) solid transparent;
-      transition: background-color var(--ds-duration-fast) var(--ds-ease-standard),
-        color var(--ds-duration-fast) var(--ds-ease-standard);
+      transition: background-color var(--ds-duration-base) var(--ds-ease-standard),
+        color var(--ds-duration-base) var(--ds-ease-standard);
     }
 
     .nav__link:hover {
@@ -2069,17 +2108,23 @@
        while open. Hidden entirely (not just visually) when closed so its
        content isn't reachable by keyboard/AT. */
     .json-view__overlay {
-      display: none;
+      /*display: none;*/
+      height: 0;
       position: fixed;
       inset: 0;
       z-index: var(--ds-z-overlay, 200);
       background: var(--ds-color-bg-inverse);
       overflow-y: auto;
-      padding: var(--ds-space-8) var(--ds-space-4) var(--ds-space-4);
+      padding: 0 var(--ds-space-4) 0;
+      transition: .3s var(--ds-ease-standard);
+      margin-top: 100vh;
     }
 
     .json-view__overlay--open {
-      display: block;
+      /*display: block;*/
+      height: 100vh;
+      padding: var(--ds-space-8) var(--ds-space-4) var(--ds-space-4);
+      margin: 0;
     }
 
     ::slotted(ds-code) {

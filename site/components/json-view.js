@@ -49,17 +49,23 @@ const JSON_VIEW_CSS = `
      while open. Hidden entirely (not just visually) when closed so its
      content isn't reachable by keyboard/AT. */
   .json-view__overlay {
-    display: none;
+    /*display: none;*/
+    height: 0;
     position: fixed;
     inset: 0;
     z-index: var(--ds-z-overlay, 200);
     background: var(--ds-color-bg-inverse);
     overflow-y: auto;
-    padding: var(--ds-space-8) var(--ds-space-4) var(--ds-space-4);
+    padding: 0 var(--ds-space-4) 0;
+    transition: .3s var(--ds-ease-standard);
+    margin-top: 100vh;
   }
 
   .json-view__overlay--open {
-    display: block;
+    /*display: block;*/
+    height: 100vh;
+    padding: var(--ds-space-8) var(--ds-space-4) var(--ds-space-4);
+    margin: 0;
   }
 
   ::slotted(ds-code) {
