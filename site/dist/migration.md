@@ -1,7 +1,5 @@
 # Migration — DSDS 0.15.2
 
-# Migration
-
 This page covers moving existing DSDS documents to a newer spec version. Each breaking release gets a section here: what changed, what the migration script does for you, and what it leaves for a human.
 
 The [Stability page](stability.html) explains when breaking changes happen. Short version: they are batched, announced one minor ahead, and shipped with a migration script.

@@ -1,7 +1,5 @@
 # Interoperability — DSDS 0.15.2
 
-# Interoperability
-
 No open standard covers the whole of design-system documentation — components, tokens, and guidelines together. The standards that do exist each cover one layer well. The [W3C Design Tokens format](https://www.w3.org/community/reports/design-tokens/CG-FINAL-format-20251028/) (DTCG) trades token **values**. [Custom Elements Manifest](https://github.com/webcomponents/custom-elements-manifest) (CEM) describes component **code APIs**. DSDS sits in the layer above both: it documents meaning, usage, and intent, and **points at** the other formats instead of duplicating what they already own. This page spells out each relationship.
 
 ## What DSDS does not define

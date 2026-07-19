@@ -1,7 +1,5 @@
 # Stability and the road to 1.0 — DSDS 0.15.2
 
-# Stability and the road to 1.0
-
 DSDS {{VERSION}} is a **pre-1.0 draft**. This page is the contract behind that status. It covers:
 
 - what can change, and how you'll be told

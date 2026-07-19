@@ -822,7 +822,14 @@ async function build() {
       path.join(CONTENT_DIR, mdxPage.file),
       "utf-8",
     );
-    const mdBody = rawMdx.replace(/^---\n[\s\S]*?\n---\n/, "").trimStart();
+    // Strip the frontmatter, then a leading "# " h1 if the source opens with
+    // one (its text duplicates the frontmatter title) — mirrors the HTML
+    // path's equivalent strip of a leading level-1 <ds-heading> above, so
+    // there's exactly one h1 (the one we prepend next) either way.
+    const mdBody = rawMdx
+      .replace(/^---\n[\s\S]*?\n---\n/, "")
+      .trimStart()
+      .replace(/^#[ \t]+[^\n]*\n\s*/, "");
     fs.writeFileSync(
       path.join(DIST_DIR, `${slug}.md`),
       `# ${title}\n\n${mdBody}`,

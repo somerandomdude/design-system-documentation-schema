@@ -1,7 +1,5 @@
 # DSDS for humans and agents
 
-# DSDS for humans and agents
-
 A DSDS document has two readers: people and AI agents. The same file serves both. Most of what you write is for people. A small, optional part is just for agents.
 
 This page explains the split, and when to use each.

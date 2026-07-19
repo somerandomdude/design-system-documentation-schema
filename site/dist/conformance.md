@@ -1,14 +1,12 @@
 # Conformance — DSDS 0.15.2
 
-# Conformance
-
 This page defines what it means to conform to the Design System Doc Spec {{VERSION}}, and indexes every normative statement the spec makes.
 
 The key words **MUST**, **MUST NOT**, **SHOULD**, **SHOULD NOT**, and **MAY** in the DSDS schemas and on this page are to be interpreted as described in [RFC 2119](https://www.rfc-editor.org/rfc/rfc2119) (as clarified by [RFC 8174](https://www.rfc-editor.org/rfc/rfc8174)): they are normative only when they appear in upper case.
 
 ## Where the normative text lives
 
-DSDS keeps its normative language inside the schema `description` strings, next to the structures that enforce it. The schema *is* the specification — not a picture of one. The index at the bottom of this page is **generated from the schemas** on every build, so it can't drift from them. Cite statements by their location-based ID (e.g. `common/link§link.kind.1`). An ID only changes when the schema path it points to changes — that's the signal that a citation needs a re-check.
+DSDS keeps its normative language inside the schema `description` strings, next to the structures that enforce it. The schema *is* the specification. The index at the bottom of this page is generated from the schemas on every build to avoid drift. Cite statements by their location-based ID (ex: `common/link§link.kind.1`). An ID only changes when the schema path it points to changes. That's signals a citation needs to be checked.
 
 ## Conformance classes
 
@@ -26,7 +24,7 @@ A JSON document that validates against the DSDS schema for the version its `dsds
 - `docOrigin` block-key resolution
 - extension-key namespacing
 
-Schema validity alone is necessary, but not sufficient.
+Schema validity alone is necessary, but not enough.
 
 ### Conforming producer
 

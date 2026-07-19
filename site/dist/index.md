@@ -1,7 +1,5 @@
 # Design system doc spec 0.15.2
 
-# Design system doc spec {{VERSION}}
-
 **Draft Specification — 16 July 2026:**
 This is a draft. It can still change. No standards body has endorsed it yet. We welcome feedback and contributions on GitHub.
 

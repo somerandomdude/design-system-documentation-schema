@@ -15,6 +15,37 @@
 
 import { createShadow, esc, BASE_RESET, FONT } from "./_shared.js";
 
+// Syntax-highlight a JSON string. Runs on the RAW (un-escaped) source, then
+// HTML-escapes per token — NOT the other way around. In valid JSON the only
+// characters that need HTML escaping (`<`, `>`, `&`, `"`) live inside string
+// literals, which this regex matches as whole tokens; the gaps between tokens
+// are structural (`{ } [ ] : ,` and whitespace) and always HTML-safe, so they
+// pass through untouched. Escaping first and matching second (the previous
+// approach) desynced on any string containing `&`, `<`, or `>`: those became
+// `&amp;`/`&lt;`/`&gt;`, and the string matcher's content class excluded `&`,
+// so it couldn't cross them — mispairing every following quote and cascading
+// wrong colors down the rest of the block (the JSON spec view is full of such
+// characters, so it broke entirely).
+function highlightJson(raw) {
+  return raw.replace(
+    /("(?:\\.|[^"\\])*")(\s*:)?|\b(?:true|false|null)\b|-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?/g,
+    function (m, str, colon) {
+      // A quoted token followed by `:` is a key; otherwise a string value.
+      if (str !== undefined) {
+        const cls = colon ? "hl-k" : "hl-s";
+        return (
+          '<span class="' + cls + '">' + esc(str) + "</span>" +
+          (colon || "")
+        );
+      }
+      // Numbers, booleans, and null contain no HTML-special characters.
+      const cls =
+        m === "true" || m === "false" || m === "null" ? "hl-b" : "hl-n";
+      return '<span class="' + cls + '">' + m + "</span>";
+    },
+  );
+}
+
 const CODE_CSS = `
   ${BASE_RESET}
   :host { display: block; }
@@ -131,26 +162,10 @@ export class DsCode extends HTMLElement {
     const label =
       this.getAttribute("label") || this.getAttribute("language") || "";
     const lang = this.getAttribute("language") || "";
-    const rawBlock = this.textContent || "";
+    const rawBlock = (this.textContent || "").trim();
 
-    let highlighted = esc(rawBlock.trim());
-
-    if (lang === "json") {
-      highlighted = highlighted.replace(
-        /(&quot;(\\u[a-fA-F0-9]{4}|\\[^u]|[^\\&])*?&quot;)(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+-]?\d+)?/g,
-        function (m) {
-          let cls = "hl-n";
-          if (/^&quot;/.test(m)) {
-            cls = /:$/.test(m) ? "hl-k" : "hl-s";
-          } else if (/true|false/.test(m)) {
-            cls = "hl-b";
-          } else if (/null/.test(m)) {
-            cls = "hl-b";
-          }
-          return '<span class="' + cls + '">' + m + "</span>";
-        },
-      );
-    }
+    const highlighted =
+      lang === "json" ? highlightJson(rawBlock) : esc(rawBlock);
 
     const labelHtml = label
       ? `<span class="code__label" part="label">${esc(label)}</span>`
