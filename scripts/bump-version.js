@@ -20,7 +20,7 @@
  *                                                       # only touch schemas
  *   node scripts/bump-version.js --help
  *
- * <new-version> is a bare version string (e.g., 0.2, 0.1.1, 1.0.0).
+ * <new-version> is a bare version string (ex: 0.2, 0.1.1, 1.0.0).
  * The leading "v" is not included — every URL in this repo is
  * constructed as `/v<version>/`.
  *
@@ -81,7 +81,7 @@ Usage:
   node scripts/bump-version.js <new-version> [options]
 
 Arguments:
-  <new-version>     Bare version string (e.g., 0.2, 0.1.1, 1.0.0).
+  <new-version>     Bare version string (ex: 0.2, 0.1.1, 1.0.0).
 
 Options:
   --dry-run         Print planned changes without modifying anything.

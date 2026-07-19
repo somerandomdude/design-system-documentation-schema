@@ -89,7 +89,7 @@ function collectDefs() {
     }
   }
 
-  // Also collect $defs from the root schema itself (e.g., collectionDoc)
+  // Also collect $defs from the root schema itself (ex: collectionDoc)
   const rootData = readJSON(ROOT_SCHEMA);
   for (const [name, body] of Object.entries(rootData.$defs || {})) {
     if (name in allDefs) {
@@ -183,7 +183,7 @@ function buildBundled() {
   if (!version) {
     console.error(
       "  ✗ Could not derive spec version from dsds.schema.json.\n" +
-      "    Expected: properties.dsdsVersion.const (e.g., \"0.1\").",
+      "    Expected: properties.dsdsVersion.const (ex: \"0.1\").",
     );
     process.exit(1);
   }

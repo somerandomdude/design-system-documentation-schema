@@ -178,11 +178,11 @@ Every normative statement is enforced at one of three tiers, or is explicitly ad
 
 #### document-blocks/design-specifications
 
-- **MUST** — If the system has tokens, this MUST be a token identifier (e.g., 'color-action-primary', 'space-4'), not a raw value — that keeps it from drifting out of sync with the token system. <small>`document-blocks/design-specifications§designValue.1`</small>
-- **MUST** — Keys say what the value controls (e.g., 'background', 'min-height') and MUST be lowercase kebab-case. <small>`document-blocks/design-specifications§designProperties.1`</small>
-- **MUST** — Keys name the relationship (e.g., 'icon-to-label') and MUST be lowercase kebab-case. <small>`document-blocks/design-specifications§spacingSpec.internal.1`</small>
-- **MUST** — Keys name the relationship (e.g., 'button-to-button') and MUST be lowercase kebab-case. <small>`document-blocks/design-specifications§spacingSpec.external.1`</small>
-- **MUST** — Keys name the element (e.g., 'label', 'helper-text') and MUST be lowercase kebab-case. <small>`document-blocks/design-specifications§typographySpec.1`</small>
+- **MUST** — If the system has tokens, this MUST be a token identifier (ex: 'color-action-primary', 'space-4'), not a raw value — that keeps it from drifting out of sync with the token system. <small>`document-blocks/design-specifications§designValue.1`</small>
+- **MUST** — Keys say what the value controls (ex: 'background', 'min-height') and MUST be lowercase kebab-case. <small>`document-blocks/design-specifications§designProperties.1`</small>
+- **MUST** — Keys name the relationship (ex: 'icon-to-label') and MUST be lowercase kebab-case. <small>`document-blocks/design-specifications§spacingSpec.internal.1`</small>
+- **MUST** — Keys name the relationship (ex: 'button-to-button') and MUST be lowercase kebab-case. <small>`document-blocks/design-specifications§spacingSpec.external.1`</small>
+- **MUST** — Keys name the element (ex: 'label', 'helper-text') and MUST be lowercase kebab-case. <small>`document-blocks/design-specifications§typographySpec.1`</small>
 
 #### document-blocks/guidelines
 
@@ -234,7 +234,7 @@ Every normative statement is enforced at one of three tiers, or is explicitly ad
 #### document-blocks/steps
 
 - **MUST** — MUST be concrete and actionable: describe the action, not the goal. <small>`document-blocks/steps§stepEntry.instruction.1`</small>
-- **MAY** — Tools MAY render optional steps distinctly (e.g., an 'optional' label). <small>`document-blocks/steps§stepEntry.optional.1`</small>
+- **MAY** — Tools MAY render optional steps distinctly (ex: an 'optional' label). <small>`document-blocks/steps§stepEntry.optional.1`</small>
 - **SHOULD** — Tools SHOULD show ordered steps as a numbered list, unordered ones as a checklist. <small>`document-blocks/steps§steps.ordered.1`</small>
 - **MUST** — Tools MUST preserve this order when `ordered` is true. <small>`document-blocks/steps§steps.items.1`</small>
 

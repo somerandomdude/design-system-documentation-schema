@@ -377,7 +377,7 @@ This is the exact sequence for cutting a release that includes schema changes. S
 
 4. **Bump `package.json#version`** to the target version (e.g. `0.2.0` → `0.2.1`).
 
-5. **Add a CHANGELOG entry** at the top of `CHANGELOG`, mirroring the format of the prior release. Include a one-line header noting where the bundled schema is now served (e.g., "Schema files are now served at `https://designsystemdocspec.org/v0.15.2/...`") and an "Additions" or "Breaking changes" section describing every schema-visible change.
+5. **Add a CHANGELOG entry** at the top of `CHANGELOG`, mirroring the format of the prior release. Include a one-line header noting where the bundled schema is now served (ex: "Schema files are now served at `https://designsystemdocspec.org/v0.15.2/...`") and an "Additions" or "Breaking changes" section describing every schema-visible change.
 
 6. **Run the version bump.** Preview the change first:
 
@@ -411,11 +411,11 @@ This is the exact sequence for cutting a release that includes schema changes. S
 
 9. **Spot-check the rendered site.** Confirm the version reads correctly in three places:
 
-   - Page `<title>` tags (e.g., `DSDS Last Updated Metadata — DSDS 0.15.2`).
+   - Page `<title>` tags (ex: `DSDS Last Updated Metadata — DSDS 0.15.2`).
    - The nav title (`Design System Doc Spec 0.15.2`).
    - The footer (`Design System Doc Spec (DSDS) 0.14.0 — Draft Specification`).
 
-   The new schema page should exist at `site/dist/<group>-<name>.html` (e.g., `site/dist/metadata-last-updated.html`), and the versioned bundle should exist at `site/dist/v<new-version>/dsds.bundled.schema.json`.
+   The new schema page should exist at `site/dist/<group>-<name>.html` (ex: `site/dist/metadata-last-updated.html`), and the versioned bundle should exist at `site/dist/v<new-version>/dsds.bundled.schema.json`.
 
 10. **Commit.** Stage the schema changes, example updates, README, CHANGELOG, `package.json`, and the entire `site/dist/` tree (including the new versioned subdirectory) in one commit. The historical versioned subdirectories under `site/dist/v<older>/` must stay untouched.
 

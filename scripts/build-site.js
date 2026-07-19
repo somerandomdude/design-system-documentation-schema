@@ -495,7 +495,7 @@ function renderSchemaPage(page) {
     }),
   );
 
-  // Always render top-level properties when they exist (e.g., the root schema
+  // Always render top-level properties when they exist (ex: the root schema
   // has both its own properties AND $defs like entityGroup)
   if (page.data.properties) {
     parts.push(renderSub("root-properties-heading", {}));
@@ -561,7 +561,7 @@ function pageHtml(
   const v = version || readSpecVersion() || "";
 
   // Skip the `— DSDS <v>` suffix when the title already names the
-  // version (e.g., the overview page title is "Design System Documentation
+  // version (ex: the overview page title is "Design System Documentation
   // Spec 0.2"). Otherwise the tab text reads "… Spec 0.2 — DSDS 0.2".
   // A bare `.includes(v)` check is precise enough — a 2-character version
   // like "0.2" is unlikely to appear coincidentally in a page title.

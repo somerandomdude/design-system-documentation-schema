@@ -39,7 +39,7 @@ const DEFAULT_SCHEMA_GROUPS = [
 
 // The common "envelope" every entity shares. A `delta` prop-table omits these
 // so a per-entity table can show only the properties unique to that entity
-// (e.g., a token's `tokenType`/`source`) without re-listing the shared fields
+// (ex: a token's `tokenType`/`source`) without re-listing the shared fields
 // already documented in the Common entity properties section. Defined once
 // here so the notion of "common" has a single source of truth.
 const ENTITY_ENVELOPE = [
@@ -227,7 +227,7 @@ function describeType(prop, defIndex = {}) {
   }
 
   // object with properties (inline sub-object) — surface its field names so a
-  // reader sees the shape (e.g., `object {file, path}`) rather than a bare
+  // reader sees the shape (ex: `object {file, path}`) rather than a bare
   // "object". Falls back to "object" for wide objects.
   if (prop.type === "object" && prop.properties) {
     const keys = Object.keys(prop.properties);
@@ -359,7 +359,7 @@ function renderPropertyTable(defSchema, defIndex = {}, opts = {}) {
     });
   }
 
-  // Nothing left after filtering (e.g., a delta table for an entity with no
+  // Nothing left after filtering (ex: a delta table for an entity with no
   // properties beyond the common envelope) — render nothing.
   if (propElements.length === 0) return "";
 
@@ -380,7 +380,7 @@ function renderPropertyTable(defSchema, defIndex = {}, opts = {}) {
 /**
  * Load a schema by relative path and produce the rendered property table
  * for one of its `$defs`. The schemaRef is the path under
- * `spec/schema/` without the `.schema.json` suffix (e.g., `entities/component`
+ * `spec/schema/` without the `.schema.json` suffix (ex: `entities/component`
  * or `common/agents`). Pass `"root"` to load `dsds.schema.json`.
  *
  * @param {string} schemaRef

@@ -85,7 +85,7 @@ const PROP_TABLE_CSS = `
   }
 
   /* Column sizing: cols 1, 3 shrink to fit; col 2 (Type) shrinks to fit but is allowed
-     to wrap when its content is a long union (e.g., the kind enum on guidelineEntry).
+     to wrap when its content is a long union (ex: the kind enum on guidelineEntry).
      Col 4 (Description) gets the remaining space.
 
      Property names (col 1) MUST never truncate — 'white-space: nowrap' plus the
@@ -94,7 +94,7 @@ const PROP_TABLE_CSS = `
      content is always a single short word.
 
      Type (col 2) is intentionally NOT nowrap. Some kind-enum types render as a
-     long pipe-separated list of inline code values (e.g., "required" |
+     long pipe-separated list of inline code values (ex: "required" |
      "encouraged" | "informational" | "discouraged" | "prohibited"). Forcing
      nowrap on that pushed Description down to ~0 width and made each row very
      tall. Allowing the type to wrap at its natural space-pipe-space boundaries
