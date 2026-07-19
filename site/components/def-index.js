@@ -1,4 +1,4 @@
-import { createShadow, esc, BASE_RESET, FONT } from "./_shared.js";
+import { createShadow, BASE_RESET } from "./_shared.js";
 
 const DEF_INDEX_CSS = `
   ${BASE_RESET}

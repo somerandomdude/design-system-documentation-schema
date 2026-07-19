@@ -1,4 +1,4 @@
-import { createShadow, esc, BASE_RESET, FONT } from './_shared.js';
+import { createShadow, esc, BASE_RESET, FONT } from "./_shared.js";
 
 const TYPE_REF_CSS = `
   ${BASE_RESET}
@@ -11,7 +11,6 @@ const TYPE_REF_CSS = `
     background: var(--ds-color-bg-inverse);
     padding: 0 0.25em;
   }
-
 `;
 
 export class DsTypeRef extends HTMLElement {

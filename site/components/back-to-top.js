@@ -1,4 +1,4 @@
-import { createShadow, esc, BASE_RESET, FONT } from './_shared.js';
+import { createShadow, esc, BASE_RESET, FONT } from "./_shared.js";
 
 const BACK_TO_TOP_CSS = `
   ${BASE_RESET}

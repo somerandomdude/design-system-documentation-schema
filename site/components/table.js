@@ -103,7 +103,7 @@ export function ensureTableLightStyles() {
     "ds-table a { color: var(--ds-color-accent); }",
     "ds-table td:first-child { white-space: nowrap; }",
     "ds-table td:first-child ds-code[inline] { white-space: nowrap; }",
-    "th:first-child, td:first-child { padding-inline-start: var(--ds-space-4) !important;}",
+    "th:first-child, td:first-child { padding-inline-start: var(--ds-space-4) !important; }",
     "th:last-child, td:last-child { padding-inline-end: var(--ds-space-4) !important; }"
   ].join("\n");
   document.head.appendChild(style);

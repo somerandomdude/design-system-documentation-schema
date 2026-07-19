@@ -1,4 +1,4 @@
-import { createShadow, esc, BASE_RESET, FONT } from './_shared.js';
+import { createShadow, BASE_RESET, FONT } from "./_shared.js";
 
 const CROSS_REFS_CSS = `
   ${BASE_RESET}

@@ -22,13 +22,12 @@ const PROP_TABLE_CSS = `
      useful default; the horizontal-scroll fallback only kicks in on narrow
      viewports, where a wide table would otherwise clip content. */
   .table-scroll {
-  position: relative;
-  inset: calc(var(--ds-space-4) * -1);
-  width: calc(100% + (var(--ds-space-4) * 2));
-  max-width: calc(100% + (var(--ds-space-4) * 2));
-  top: 0;
-  bottom: 0;
-
+    position: relative;
+    inset: calc(var(--ds-space-4) * -1);
+    width: calc(100% + (var(--ds-space-4) * 2));
+    max-width: calc(100% + (var(--ds-space-4) * 2));
+    top: 0;
+    bottom: 0;
   }
 
   table {
@@ -43,7 +42,6 @@ const PROP_TABLE_CSS = `
     font-family: ${FONT.body};
     font-size: var(--ds-font-size-base);
     position: relative;
-
   }
 
   th {
@@ -67,12 +65,10 @@ const PROP_TABLE_CSS = `
     }
   }
 
-@media (max-width: 640px) {
-th:nth-child(2), td:nth-child(2) { display: none; }
-th:nth-child(3), td:nth-child(3) {  display: none;  }
-}
-
-
+  @media (max-width: 640px) {
+    th:nth-child(2), td:nth-child(2) { display: none; }
+    th:nth-child(3), td:nth-child(3) { display: none; }
+  }
 
   td {
     padding: var(--ds-space-4) var(--ds-space-2);
@@ -81,7 +77,7 @@ th:nth-child(3), td:nth-child(3) {  display: none;  }
   }
 
   tr:first-child td {
-  padding-top: var(--ds-space-2);
+    padding-top: var(--ds-space-2);
   }
 
   tr:last-child td {

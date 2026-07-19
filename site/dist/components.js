@@ -141,7 +141,7 @@
       background: var(--ds-color-bg-raised);
       inset: calc(var(--ds-space-4) * -1);
       top: 0;
-      width: calc( 100% + (var(--ds-space-4) * 2));
+      width: calc(100% + (var(--ds-space-4) * 2));
     }
     .wrapper pre { color: var(--ds-color-text); }
     .wrapper .hl-k { color: var(--ds-syntax-light-key); }
@@ -488,7 +488,7 @@
       "ds-table a { color: var(--ds-color-accent); }",
       "ds-table td:first-child { white-space: nowrap; }",
       "ds-table td:first-child ds-code[inline] { white-space: nowrap; }",
-      "th:first-child, td:first-child { padding-inline-start: var(--ds-space-4) !important;}",
+      "th:first-child, td:first-child { padding-inline-start: var(--ds-space-4) !important; }",
       "th:last-child, td:last-child { padding-inline-end: var(--ds-space-4) !important; }"
     ].join("\n");
     document.head.appendChild(style);
@@ -667,9 +667,9 @@
     :host { display: flex; flex-direction: column; margin-bottom: var(--ds-space-8); min-height: 100vh; background: var(--ds-color-bg-accent); justify-content: end; padding-inline-start: var(--ds-width-nav); }
 
     @media (max-width: 900px) {
-    :host {
-    padding-inline-start: 0;
-    }
+      :host {
+        padding-inline-start: 0;
+      }
     }
 
     h1 {
@@ -819,7 +819,6 @@
       background: var(--ds-color-bg-inverse);
       padding: 0 0.25em;
     }
-
   `;
 
   class DsTypeRef extends HTMLElement {
@@ -982,13 +981,12 @@
        useful default; the horizontal-scroll fallback only kicks in on narrow
        viewports, where a wide table would otherwise clip content. */
     .table-scroll {
-    position: relative;
-    inset: calc(var(--ds-space-4) * -1);
-    width: calc(100% + (var(--ds-space-4) * 2));
-    max-width: calc(100% + (var(--ds-space-4) * 2));
-    top: 0;
-    bottom: 0;
-
+      position: relative;
+      inset: calc(var(--ds-space-4) * -1);
+      width: calc(100% + (var(--ds-space-4) * 2));
+      max-width: calc(100% + (var(--ds-space-4) * 2));
+      top: 0;
+      bottom: 0;
     }
 
     table {
@@ -1003,7 +1001,6 @@
       font-family: ${FONT.body};
       font-size: var(--ds-font-size-base);
       position: relative;
-
     }
 
     th {
@@ -1027,10 +1024,10 @@
       }
     }
 
-  @media (max-width: 640px) {
-  th:nth-child(2), td:nth-child(2) { display: none; }
-  th:nth-child(3), td:nth-child(3) {  display: none;  }
-  }
+    @media (max-width: 640px) {
+      th:nth-child(2), td:nth-child(2) { display: none; }
+      th:nth-child(3), td:nth-child(3) { display: none; }
+    }
 
     td {
       padding: var(--ds-space-4) var(--ds-space-2);
@@ -1039,7 +1036,7 @@
     }
 
     tr:first-child td {
-    padding-top: var(--ds-space-2);
+      padding-top: var(--ds-space-2);
     }
 
     tr:last-child td {

@@ -27,7 +27,7 @@ const CODE_CSS = `
     background: var(--ds-color-bg-raised);
     inset: calc(var(--ds-space-4) * -1);
     top: 0;
-    width: calc( 100% + (var(--ds-space-4) * 2));
+    width: calc(100% + (var(--ds-space-4) * 2));
   }
   .wrapper pre { color: var(--ds-color-text); }
   .wrapper .hl-k { color: var(--ds-syntax-light-key); }

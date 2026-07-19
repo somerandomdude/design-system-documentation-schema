@@ -20,9 +20,9 @@ const HEADER_CSS = `
   :host { display: flex; flex-direction: column; margin-bottom: var(--ds-space-8); min-height: 100vh; background: var(--ds-color-bg-accent); justify-content: end; padding-inline-start: var(--ds-width-nav); }
 
   @media (max-width: 900px) {
-  :host {
-  padding-inline-start: 0;
-  }
+    :host {
+      padding-inline-start: 0;
+    }
   }
 
   h1 {

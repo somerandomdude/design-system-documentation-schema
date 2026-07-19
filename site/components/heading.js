@@ -9,7 +9,7 @@
 //   (default) — heading text
 // ═══════════════════════════════════════════════════════════════════════════
 
-import { createShadow, esc, BASE_RESET, FONT } from "./_shared.js";
+import { createShadow, esc, BASE_RESET } from "./_shared.js";
 
 const HEADING_CSS = `
   ${BASE_RESET}
