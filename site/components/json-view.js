@@ -27,7 +27,7 @@ const JSON_VIEW_CSS = `
   :host {
     display: block;
     position: fixed;
-    right: var(--ds-space-4);
+    inset-inline-end: var(--ds-space-4);
     bottom: var(--ds-space-4);
     z-index: calc(var(--ds-z-overlay, 200) + 1);
   }

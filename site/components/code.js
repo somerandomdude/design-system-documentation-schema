@@ -39,8 +39,8 @@ const CODE_CSS = `
      pill — instead of a <ds-badge>. */
   .code__label {
     position: absolute;
-    top: 0;
-    right: 0;
+    inset-block-start: 0;
+    inset-inline-end: 0;
     font-family: ${FONT.body};
     font-weight: var(--ds-font-weight-bold);
     font-size: var(--ds-font-size-sm);

@@ -47,7 +47,7 @@ const PROP_TABLE_CSS = `
   }
 
   th {
-    text-align: left;
+    text-align: start;
     font-weight: var(--ds-font-weight-bold);
     font-size: var(--ds-font-size-sm);
     text-transform: none;
@@ -181,11 +181,11 @@ th:nth-child(3), td:nth-child(3) {  display: none;  }
   }
 
   th:first-child, td:first-child {
-    padding-left:var(--ds-space-4) !important;
+    padding-inline-start: var(--ds-space-4) !important;
   }
 
   th:last-child, td:last-child {
-    padding-right:var(--ds-space-4) !important;
+    padding-inline-end: var(--ds-space-4) !important;
   }
 
 `;

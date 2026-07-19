@@ -20,6 +20,7 @@ const HEADING_CSS = `
     color: var(--ds-color-text);
     font-family: var(--ds-font-mono);
     line-height: var(--ds-line-height-snug);
+    letter-spacing: -0.025em;
   }
 
   .heading--1 { font-size: var(--ds-font-size-xl); font-weight: var(--ds-font-weight-bold); margin: 0 0 var(--ds-space-4); }
@@ -32,7 +33,7 @@ const HEADING_CSS = `
   .anchor-link {
     display: inline;
     opacity: 0;
-    margin-left: var(--ds-space-2);
+    margin-inline-start: var(--ds-space-2);
     color: var(--ds-color-text);
     text-decoration: none;
     font-size: 0.75em;

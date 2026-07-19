@@ -38,8 +38,8 @@ export function ensureDefIndexLightStyles() {
   var s = document.createElement("style");
   s.id = DEF_INDEX_LIGHT_ID;
   s.textContent = [
-    "ds-def-index ul { padding-left: 0 !important; margin-left: 0 !important; list-style: none !important; }",
-    "ds-def-index li { margin-bottom: var(--ds-space-1); font-size: var(--ds-font-size-base); break-inside: avoid; padding-left: 0; }",
+    "ds-def-index ul { padding-inline-start: 0 !important; margin-inline-start: 0 !important; list-style: none !important; }",
+    "ds-def-index li { margin-bottom: var(--ds-space-1); font-size: var(--ds-font-size-base); break-inside: avoid; padding-inline-start: 0; }",
     "ds-def-index li a { font-family: var(--ds-font-mono); }",
   ].join("\n");
   document.head.appendChild(s);

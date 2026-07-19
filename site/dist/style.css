@@ -15,7 +15,8 @@
 
 html {
     font-size: 16px;
-    -webkit-text-size-adjust: 100%;
+    -webkit-text-size-adjust: 100%; /* still required by Safari; no unprefixed fallback there */
+    text-size-adjust: 100%;
 }
 
 body {
@@ -34,8 +35,8 @@ body {
 /* Skip link — visually hidden until keyboard-focused */
 .skip-link {
     position: fixed;
-    top: 0.5rem;
-    left: 0.5rem;
+    inset-block-start: 0.5rem;
+    inset-inline-start: 0.5rem;
     z-index: var(--ds-z-skip-link, 300);
     padding: 0.5rem 1rem;
     background: var(--ds-color-bg);
@@ -67,7 +68,7 @@ body {
 }
 
 .content__container {
-    padding-left: var(--ds-width-nav);
+    padding-inline-start: var(--ds-width-nav);
 }
 
 .content__inner {
@@ -151,7 +152,7 @@ hr {
 ul,
 ol {
     margin-bottom: var(--ds-space-4);
-    padding-left: var(--ds-space-8);
+    padding-inline-start: var(--ds-space-8);
 }
 
 li {
@@ -171,7 +172,7 @@ ul {
 
 /* Blockquotes / notes */
 blockquote {
-    border-left: 1px solid var(--ds-color-accent);
+    border-inline-start: 1px solid var(--ds-color-accent);
     background: var(--ds-color-accent-subtle);
     padding: var(--ds-space-4) var(--ds-space-8);
     margin-bottom: var(--ds-space-8);
@@ -184,7 +185,7 @@ blockquote p:last-child {
 
 @media (max-width: 900px) {
     .content {
-        padding-left: 0;
+        padding-inline-start: 0;
     }
 
     .content__inner {
@@ -207,7 +208,7 @@ blockquote p:last-child {
     }
 
     .content {
-        padding-left: 0;
+        padding-inline-start: 0;
     }
 
     pre {
@@ -238,8 +239,32 @@ h6 { font-size: var(--ds-font-size-base); font-weight: var(--ds-font-weight-bold
     navigation: auto;
 }
 
-::view-transition-old(root),
+/* Create a custom animation */
+@keyframes move-out {
+    from {
+        opacity: 1;
+    }
+
+    to {
+        opacity: 0;
+    }
+}
+
+@keyframes move-in {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+/* Apply the custom animation to the old and new page states */
+::view-transition-old(root) {
+    animation: 0.3s ease-in both move-out; /* FIX */
+}
+
 ::view-transition-new(root) {
-    animation-duration: var(--ds-duration-base);
-    animation-timing-function: var(--ds-ease-standard);
+    animation: 0.3s ease-in both move-in 0.4s; /* FIX */
 }

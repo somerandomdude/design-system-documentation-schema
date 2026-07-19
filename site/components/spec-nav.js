@@ -43,9 +43,9 @@ const SPEC_NAV_CSS = `
   :host {
     display: block;
     position: fixed;
-    top: 0;
-    left: 0;
-    bottom: 0;
+    inset-block-start: 0;
+    inset-inline-start: 0;
+    inset-block-end: 0;
     width: var(--ds-width-nav, 240px);
     z-index: var(--ds-z-nav, 100);
   }
@@ -56,7 +56,6 @@ const SPEC_NAV_CSS = `
     color: var(--ds-color-text);
     padding: 0;
     font-family: ${FONT.body};
-    -webkit-overflow-scrolling: touch;
     display: flex;
     flex-direction: column;
   }
@@ -134,7 +133,7 @@ const SPEC_NAV_CSS = `
     font-size: var(--ds-font-size-base);
     font-weight: 500;
     line-height: var(--ds-line-height-normal);
-    border-left: var(--ds-border-width) solid transparent;
+    border-inline-start: var(--ds-border-width) solid transparent;
     transition: background-color var(--ds-duration-fast) var(--ds-ease-standard),
       color var(--ds-duration-fast) var(--ds-ease-standard);
   }
@@ -162,7 +161,7 @@ const SPEC_NAV_CSS = `
     padding: 6px var(--ds-space-4);
     background: none;
     border: none;
-    border-left: var(--ds-border-width) solid transparent;
+    border-inline-start: var(--ds-border-width) solid transparent;
     color: var(--ds-color-text);
     font-family: ${FONT.body};
     font-size: var(--ds-font-size-xs);
@@ -170,7 +169,7 @@ const SPEC_NAV_CSS = `
     letter-spacing: 0;
     text-transform: none;
     cursor: default;
-    text-align: left;
+    text-align: start;
   }
 
   .nav__group-arrow {

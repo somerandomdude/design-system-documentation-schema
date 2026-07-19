@@ -43,7 +43,7 @@ const CALLOUT_CSS = `
     color: var(--ds-color-text-inverse);
     display: inline-block;
     padding: var(--ds-space-2) var(--ds-space-4);
-    padding-right: calc(var(--ds-space-4) + var(--ds-space-2));
+    padding-inline-end: calc(var(--ds-space-4) + var(--ds-space-2));
   }
 
   .callout__title:empty {
@@ -73,7 +73,7 @@ const CALLOUT_CSS = `
   ::slotted(ol),
   ::slotted(ul) {
     margin: var(--ds-space-2) 0 0;
-    padding-left: var(--ds-space-4);
+    padding-inline-start: var(--ds-space-4);
   }
 
   ::slotted(a) {

@@ -111,7 +111,7 @@
   }
 
   // ── inlined icon assets (build-time, see above) ──
-  seedIcons({"menu":"<svg viewBox=\"0 0 24 24\" width=\"18\" height=\"18\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" xmlns=\"http://www.w3.org/2000/svg\">\n  <line x1=\"3\" y1=\"6\" x2=\"21\" y2=\"6\"/>\n  <line x1=\"3\" y1=\"12\" x2=\"21\" y2=\"12\"/>\n  <line x1=\"3\" y1=\"18\" x2=\"21\" y2=\"18\"/>\n</svg>\n","close":"<svg viewBox=\"0 0 24 24\" width=\"18\" height=\"18\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" xmlns=\"http://www.w3.org/2000/svg\">\n  <line x1=\"5\" y1=\"5\" x2=\"19\" y2=\"19\"/>\n  <line x1=\"19\" y1=\"5\" x2=\"5\" y2=\"19\"/>\n</svg>\n","info":"<svg viewBox=\"0 0 24 24\" width=\"14\" height=\"14\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" xmlns=\"http://www.w3.org/2000/svg\">\n  <circle cx=\"12\" cy=\"12\" r=\"9\"/>\n  <line x1=\"12\" y1=\"11\" x2=\"12\" y2=\"16\"/>\n  <circle cx=\"12\" cy=\"7.5\" r=\"1\" fill=\"currentColor\" stroke=\"none\"/>\n</svg>\n","flask":"<svg viewBox=\"0 0 24 24\" width=\"14\" height=\"14\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" xmlns=\"http://www.w3.org/2000/svg\">\n  <path d=\"M9 3h6\"/>\n  <path d=\"M10 3v6L4.5 18.5A2 2 0 0 0 6.2 21h11.6a2 2 0 0 0 1.7-2.5L14 9V3\"/>\n  <line x1=\"6.5\" y1=\"15\" x2=\"17.5\" y2=\"15\"/>\n</svg>\n","dot":"<svg viewBox=\"0 0 24 24\" width=\"8\" height=\"8\" fill=\"currentColor\" xmlns=\"http://www.w3.org/2000/svg\">\n  <circle cx=\"12\" cy=\"12\" r=\"10\"/>\n</svg>\n","lightbulb":"<svg viewBox=\"0 0 24 24\" width=\"14\" height=\"14\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" xmlns=\"http://www.w3.org/2000/svg\">\n  <path d=\"M9 18h6\"/>\n  <path d=\"M10 22h4\"/>\n  <path d=\"M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.2 1 2.05V17a1 1 0 0 0 1 1h4a1 1 0 0 0 1-1v-.25c0-.85.4-1.55 1-2.05A7 7 0 0 0 12 2z\"/>\n</svg>\n","warning":"<svg viewBox=\"0 0 24 24\" width=\"14\" height=\"14\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" xmlns=\"http://www.w3.org/2000/svg\">\n  <path d=\"M12 2 1 21h22L12 2z\"/>\n  <line x1=\"12\" y1=\"9\" x2=\"12\" y2=\"14\"/>\n  <circle cx=\"12\" cy=\"17.5\" r=\"0.7\" fill=\"currentColor\" stroke=\"none\"/>\n</svg>\n","brackets":"<svg viewBox=\"0 0 24 24\" width=\"18\" height=\"18\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" xmlns=\"http://www.w3.org/2000/svg\">\n  <path d=\"M8 3c-1.5 0-2 .8-2 2v3c0 1.4-.6 2-2 2 1.4 0 2 .6 2 2v3c0 1.2.5 2 2 2\"/>\n  <path d=\"M16 3c1.5 0 2 .8 2 2v3c0 1.4.6 2 2 2-1.4 0-2 .6-2 2v3c0 1.2-.5 2-2 2\"/>\n</svg>\n","logo":"<svg width=\"1550\" height=\"1550\" viewBox=\"0 0 1550 1550\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\">\n<path fill-rule=\"evenodd\" clip-rule=\"evenodd\" d=\"M0 0H1550V1550H0V0ZM75 75V1475H1475V75H75Z\" fill=\"black\"/>\n<path fill-rule=\"evenodd\" clip-rule=\"evenodd\" d=\"M575 300H300V650H575C616.421 650 650 616.421 650 575V375C650 333.579 616.421 300 575 300ZM225 225V725H575C657.843 725 725 657.843 725 575V375C725 292.157 657.843 225 575 225H225Z\" fill=\"black\"/>\n<path fill-rule=\"evenodd\" clip-rule=\"evenodd\" d=\"M825 368.75C825 289.359 889.359 225 968.75 225H1181.25C1260.64 225 1325 289.359 1325 368.75H1250C1250 330.78 1219.22 300 1181.25 300H968.75C930.78 300 900 330.78 900 368.75C900 406.72 930.78 437.5 968.75 437.5H1181.25C1260.64 437.5 1325 501.859 1325 581.25C1325 660.641 1260.64 725 1181.25 725H968.75C889.359 725 825 660.641 825 581.25H900C900 619.22 930.78 650 968.75 650H1181.25C1219.22 650 1250 619.22 1250 581.25C1250 543.28 1219.22 512.5 1181.25 512.5H968.75C889.359 512.5 825 448.141 825 368.75Z\" fill=\"black\"/>\n<path fill-rule=\"evenodd\" clip-rule=\"evenodd\" d=\"M575 900H300V1250H575C616.421 1250 650 1216.42 650 1175V975C650 933.579 616.421 900 575 900ZM225 825V1325H575C657.843 1325 725 1257.84 725 1175V975C725 892.157 657.843 825 575 825H225Z\" fill=\"black\"/>\n<path fill-rule=\"evenodd\" clip-rule=\"evenodd\" d=\"M825 968.75C825 889.359 889.359 825 968.75 825H1181.25C1260.64 825 1325 889.359 1325 968.75H1250C1250 930.78 1219.22 900 1181.25 900H968.75C930.78 900 900 930.78 900 968.75C900 1006.72 930.78 1037.5 968.75 1037.5H1181.25C1260.64 1037.5 1325 1101.86 1325 1181.25C1325 1260.64 1260.64 1325 1181.25 1325H968.75C889.359 1325 825 1260.64 825 1181.25H900C900 1219.22 930.78 1250 968.75 1250H1181.25C1219.22 1250 1250 1219.22 1250 1181.25C1250 1143.28 1219.22 1112.5 1181.25 1112.5H968.75C889.359 1112.5 825 1048.14 825 968.75Z\" fill=\"black\"/>\n</svg>\n"});
+  seedIcons({"menu":"<svg viewBox=\"0 0 24 24\" width=\"18\" height=\"18\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" xmlns=\"http://www.w3.org/2000/svg\">\n  <line x1=\"3\" y1=\"6\" x2=\"21\" y2=\"6\"/>\n  <line x1=\"3\" y1=\"12\" x2=\"21\" y2=\"12\"/>\n  <line x1=\"3\" y1=\"18\" x2=\"21\" y2=\"18\"/>\n</svg>\n","close":"<svg viewBox=\"0 0 24 24\" width=\"18\" height=\"18\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" xmlns=\"http://www.w3.org/2000/svg\">\n  <line x1=\"5\" y1=\"5\" x2=\"19\" y2=\"19\"/>\n  <line x1=\"19\" y1=\"5\" x2=\"5\" y2=\"19\"/>\n</svg>\n","info":"<svg viewBox=\"0 0 24 24\" width=\"14\" height=\"14\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" xmlns=\"http://www.w3.org/2000/svg\">\n  <circle cx=\"12\" cy=\"12\" r=\"9\"/>\n  <line x1=\"12\" y1=\"11\" x2=\"12\" y2=\"16\"/>\n  <circle cx=\"12\" cy=\"7.5\" r=\"1\" fill=\"currentColor\" stroke=\"none\"/>\n</svg>\n","flask":"<svg viewBox=\"0 0 24 24\" width=\"14\" height=\"14\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" xmlns=\"http://www.w3.org/2000/svg\">\n  <path d=\"M9 3h6\"/>\n  <path d=\"M10 3v6L4.5 18.5A2 2 0 0 0 6.2 21h11.6a2 2 0 0 0 1.7-2.5L14 9V3\"/>\n  <line x1=\"6.5\" y1=\"15\" x2=\"17.5\" y2=\"15\"/>\n</svg>\n","dot":"<svg viewBox=\"0 0 24 24\" width=\"8\" height=\"8\" fill=\"currentColor\" xmlns=\"http://www.w3.org/2000/svg\">\n  <circle cx=\"12\" cy=\"12\" r=\"10\"/>\n</svg>\n","lightbulb":"<svg viewBox=\"0 0 24 24\" width=\"14\" height=\"14\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" xmlns=\"http://www.w3.org/2000/svg\">\n  <path d=\"M9 18h6\"/>\n  <path d=\"M10 22h4\"/>\n  <path d=\"M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.2 1 2.05V17a1 1 0 0 0 1 1h4a1 1 0 0 0 1-1v-.25c0-.85.4-1.55 1-2.05A7 7 0 0 0 12 2z\"/>\n</svg>\n","warning":"<svg viewBox=\"0 0 24 24\" width=\"14\" height=\"14\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" xmlns=\"http://www.w3.org/2000/svg\">\n  <path d=\"M12 2 1 21h22L12 2z\"/>\n  <line x1=\"12\" y1=\"9\" x2=\"12\" y2=\"14\"/>\n  <circle cx=\"12\" cy=\"17.5\" r=\"0.7\" fill=\"currentColor\" stroke=\"none\"/>\n</svg>\n","brackets":"<svg viewBox=\"0 0 24 24\" width=\"18\" height=\"18\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" xmlns=\"http://www.w3.org/2000/svg\">\n  <path d=\"M8 5c-1.5 0-2 .8-2 2v3c0 1.4-.6 2-2 2 1.4 0 2 .6 2 2v3c0 1.2.5 2 2 2\"/>\n  <path d=\"M16 5c1.5 0 2 .8 2 2v3c0 1.4.6 2 2 2-1.4 0-2 .6-2 2v3c0 1.2-.5 2-2 2\"/>\n</svg>\n","logo":"<svg width=\"1550\" height=\"1550\" viewBox=\"0 0 1550 1550\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\">\n<path fill-rule=\"evenodd\" clip-rule=\"evenodd\" d=\"M0 0H1550V1550H0V0ZM75 75V1475H1475V75H75Z\" fill=\"black\"/>\n<path fill-rule=\"evenodd\" clip-rule=\"evenodd\" d=\"M575 300H300V650H575C616.421 650 650 616.421 650 575V375C650 333.579 616.421 300 575 300ZM225 225V725H575C657.843 725 725 657.843 725 575V375C725 292.157 657.843 225 575 225H225Z\" fill=\"black\"/>\n<path fill-rule=\"evenodd\" clip-rule=\"evenodd\" d=\"M825 368.75C825 289.359 889.359 225 968.75 225H1181.25C1260.64 225 1325 289.359 1325 368.75H1250C1250 330.78 1219.22 300 1181.25 300H968.75C930.78 300 900 330.78 900 368.75C900 406.72 930.78 437.5 968.75 437.5H1181.25C1260.64 437.5 1325 501.859 1325 581.25C1325 660.641 1260.64 725 1181.25 725H968.75C889.359 725 825 660.641 825 581.25H900C900 619.22 930.78 650 968.75 650H1181.25C1219.22 650 1250 619.22 1250 581.25C1250 543.28 1219.22 512.5 1181.25 512.5H968.75C889.359 512.5 825 448.141 825 368.75Z\" fill=\"black\"/>\n<path fill-rule=\"evenodd\" clip-rule=\"evenodd\" d=\"M575 900H300V1250H575C616.421 1250 650 1216.42 650 1175V975C650 933.579 616.421 900 575 900ZM225 825V1325H575C657.843 1325 725 1257.84 725 1175V975C725 892.157 657.843 825 575 825H225Z\" fill=\"black\"/>\n<path fill-rule=\"evenodd\" clip-rule=\"evenodd\" d=\"M825 968.75C825 889.359 889.359 825 968.75 825H1181.25C1260.64 825 1325 889.359 1325 968.75H1250C1250 930.78 1219.22 900 1181.25 900H968.75C930.78 900 900 930.78 900 968.75C900 1006.72 930.78 1037.5 968.75 1037.5H1181.25C1260.64 1037.5 1325 1101.86 1325 1181.25C1325 1260.64 1260.64 1325 1181.25 1325H968.75C889.359 1325 825 1260.64 825 1181.25H900C900 1219.22 930.78 1250 968.75 1250H1181.25C1219.22 1250 1250 1219.22 1250 1181.25C1250 1143.28 1219.22 1112.5 1181.25 1112.5H968.75C889.359 1112.5 825 1048.14 825 968.75Z\" fill=\"black\"/>\n</svg>\n"});
 
   // ── code.js ──
   // ═══════════════════════════════════════════════════════════════════════════
@@ -153,8 +153,8 @@
        pill — instead of a <ds-badge>. */
     .code__label {
       position: absolute;
-      top: 0;
-      right: 0;
+      inset-block-start: 0;
+      inset-inline-end: 0;
       font-family: ${FONT.body};
       font-weight: var(--ds-font-weight-bold);
       font-size: var(--ds-font-size-sm);
@@ -470,7 +470,7 @@
       "  position: relative; inset: calc(var(--ds-space-4) * -1); top: 0; bottom: 0;",
       "}",
       "ds-table th {",
-      "  text-align: left; font-weight: var(--ds-font-weight-bold); font-size: var(--ds-font-size-sm);",
+      "  text-align: start; font-weight: var(--ds-font-weight-bold); font-size: var(--ds-font-size-sm);",
       "  text-transform: none; letter-spacing: var(--ds-tracking-wide);",
       "  color: var(--ds-color-text);",
       "  padding: var(--ds-space-2) var(--ds-space-2);",
@@ -488,8 +488,8 @@
       "ds-table a { color: var(--ds-color-accent); }",
       "ds-table td:first-child { white-space: nowrap; }",
       "ds-table td:first-child ds-code[inline] { white-space: nowrap; }",
-      "th:first-child, td:first-child { padding-left:var(--ds-space-4) !important;}",
-      "th:last-child, td:last-child { padding-right:var(--ds-space-4) !important; }"
+      "th:first-child, td:first-child { padding-inline-start: var(--ds-space-4) !important;}",
+      "th:last-child, td:last-child { padding-inline-end: var(--ds-space-4) !important; }"
     ].join("\n");
     document.head.appendChild(style);
   }
@@ -528,6 +528,7 @@
       color: var(--ds-color-text);
       font-family: var(--ds-font-mono);
       line-height: var(--ds-line-height-snug);
+      letter-spacing: -0.025em;
     }
 
     .heading--1 { font-size: var(--ds-font-size-xl); font-weight: var(--ds-font-weight-bold); margin: 0 0 var(--ds-space-4); }
@@ -540,7 +541,7 @@
     .anchor-link {
       display: inline;
       opacity: 0;
-      margin-left: var(--ds-space-2);
+      margin-inline-start: var(--ds-space-2);
       color: var(--ds-color-text);
       text-decoration: none;
       font-size: 0.75em;
@@ -663,11 +664,11 @@
 
   const HEADER_CSS = `
     ${BASE_RESET}
-    :host { display: flex; flex-direction: column; margin-bottom: var(--ds-space-8); min-height: 100vh; background: var(--ds-color-bg-accent); justify-content: end; padding-left: var(--ds-width-nav); }
+    :host { display: flex; flex-direction: column; margin-bottom: var(--ds-space-8); min-height: 100vh; background: var(--ds-color-bg-accent); justify-content: end; padding-inline-start: var(--ds-width-nav); }
 
     @media (max-width: 900px) {
     :host {
-    padding-left:0;
+    padding-inline-start: 0;
     }
     }
 
@@ -677,6 +678,7 @@
       font-weight: 500;
       line-height: 1.1;
       letter-spacing: -0.025em;
+      word-spacing: -0.25em;
       margin: 0 0 var(--ds-space-4);
       color: var(--ds-color-text);
     }
@@ -921,8 +923,8 @@
     var s = document.createElement("style");
     s.id = DEF_INDEX_LIGHT_ID;
     s.textContent = [
-      "ds-def-index ul { padding-left: 0 !important; margin-left: 0 !important; list-style: none !important; }",
-      "ds-def-index li { margin-bottom: var(--ds-space-1); font-size: var(--ds-font-size-base); break-inside: avoid; padding-left: 0; }",
+      "ds-def-index ul { padding-inline-start: 0 !important; margin-inline-start: 0 !important; list-style: none !important; }",
+      "ds-def-index li { margin-bottom: var(--ds-space-1); font-size: var(--ds-font-size-base); break-inside: avoid; padding-inline-start: 0; }",
       "ds-def-index li a { font-family: var(--ds-font-mono); }",
     ].join("\n");
     document.head.appendChild(s);
@@ -1005,7 +1007,7 @@
     }
 
     th {
-      text-align: left;
+      text-align: start;
       font-weight: var(--ds-font-weight-bold);
       font-size: var(--ds-font-size-sm);
       text-transform: none;
@@ -1137,11 +1139,11 @@
     }
 
     th:first-child, td:first-child {
-      padding-left:var(--ds-space-4) !important;
+      padding-inline-start: var(--ds-space-4) !important;
     }
 
     th:last-child, td:last-child {
-      padding-right:var(--ds-space-4) !important;
+      padding-inline-end: var(--ds-space-4) !important;
     }
 
   `;
@@ -1292,9 +1294,9 @@
     :host {
       display: block;
       position: fixed;
-      top: 0;
-      left: 0;
-      bottom: 0;
+      inset-block-start: 0;
+      inset-inline-start: 0;
+      inset-block-end: 0;
       width: var(--ds-width-nav, 240px);
       z-index: var(--ds-z-nav, 100);
     }
@@ -1305,7 +1307,6 @@
       color: var(--ds-color-text);
       padding: 0;
       font-family: ${FONT.body};
-      -webkit-overflow-scrolling: touch;
       display: flex;
       flex-direction: column;
     }
@@ -1383,7 +1384,7 @@
       font-size: var(--ds-font-size-base);
       font-weight: 500;
       line-height: var(--ds-line-height-normal);
-      border-left: var(--ds-border-width) solid transparent;
+      border-inline-start: var(--ds-border-width) solid transparent;
       transition: background-color var(--ds-duration-fast) var(--ds-ease-standard),
         color var(--ds-duration-fast) var(--ds-ease-standard);
     }
@@ -1411,7 +1412,7 @@
       padding: 6px var(--ds-space-4);
       background: none;
       border: none;
-      border-left: var(--ds-border-width) solid transparent;
+      border-inline-start: var(--ds-border-width) solid transparent;
       color: var(--ds-color-text);
       font-family: ${FONT.body};
       font-size: var(--ds-font-size-xs);
@@ -1419,7 +1420,7 @@
       letter-spacing: 0;
       text-transform: none;
       cursor: default;
-      text-align: left;
+      text-align: start;
     }
 
     .nav__group-arrow {
@@ -1711,7 +1712,7 @@
       color: var(--ds-color-text-inverse);
       display: inline-block;
       padding: var(--ds-space-2) var(--ds-space-4);
-      padding-right: calc(var(--ds-space-4) + var(--ds-space-2));
+      padding-inline-end: calc(var(--ds-space-4) + var(--ds-space-2));
     }
 
     .callout__title:empty {
@@ -1741,7 +1742,7 @@
     ::slotted(ol),
     ::slotted(ul) {
       margin: var(--ds-space-2) 0 0;
-      padding-left: var(--ds-space-4);
+      padding-inline-start: var(--ds-space-4);
     }
 
     ::slotted(a) {
@@ -2049,7 +2050,7 @@
     :host {
       display: block;
       position: fixed;
-      right: var(--ds-space-4);
+      inset-inline-end: var(--ds-space-4);
       bottom: var(--ds-space-4);
       z-index: calc(var(--ds-z-overlay, 200) + 1);
     }
