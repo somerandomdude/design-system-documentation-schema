@@ -53,6 +53,21 @@
     mono: "var(--ds-font-mono)",
   };
 
+  // Shared inline SVG icons for the small color-coded blocks used by
+  // <ds-badge> and <ds-callout> variants. All monoline, stroke=currentColor,
+  // 24x24 viewBox — sized and colored by the containing block.
+  const ICONS = {
+    info:
+      '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="12" y1="11" x2="12" y2="16"/><circle cx="12" cy="7.5" r="1" fill="currentColor" stroke="none"/></svg>',
+    flask:
+      '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6"/><path d="M10 3v6L4.5 18.5A2 2 0 0 0 6.2 21h11.6a2 2 0 0 0 1.7-2.5L14 9V3"/><line x1="6.5" y1="15" x2="17.5" y2="15"/></svg>',
+    dot: '<svg viewBox="0 0 24 24" width="8" height="8" fill="currentColor"><circle cx="12" cy="12" r="10"/></svg>',
+    lightbulb:
+      '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.2 1 2.05V17a1 1 0 0 0 1 1h4a1 1 0 0 0 1-1v-.25c0-.85.4-1.55 1-2.05A7 7 0 0 0 12 2z"/></svg>',
+    warning:
+      '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 1 21h22L12 2z"/><line x1="12" y1="9" x2="12" y2="14"/><circle cx="12" cy="17.5" r="0.7" fill="currentColor" stroke="none"/></svg>',
+  };
+
   // ── code.js ──
   // ═══════════════════════════════════════════════════════════════════════════
   // <ds-code>
@@ -201,7 +216,17 @@
   //
   // Content:
   //   Text label inside the element.
+  //
+  // Design: a white chip with a small color-coded icon block on the left —
+  // the variant's meaning lives in the block's color + icon, not the chip's
+  // overall background.
   // ═══════════════════════════════════════════════════════════════════════════
+
+  const BADGE_ICON = {
+    kind: ICONS.info,
+    experimental: ICONS.flask,
+    neutral: ICONS.dot,
+  };
 
   const BADGE_CSS = `
     ${BASE_RESET}
@@ -209,25 +234,41 @@
 
     .badge {
       display: inline-flex;
+      align-items: stretch;
       font-family: ${FONT.body};
       text-transform: none;
       white-space: nowrap;
-      align-items: center;
       height: 24px;
-      padding: 0 1em;
       font-size: .75em;
+      background: var(--ds-color-bg-inverse);
+      color: var(--ds-color-text);
+    }
+
+    .badge__icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      flex-shrink: 0;
+      color: var(--ds-color-bg-inverse);
+    }
+
+    .badge__icon svg {
+      display: block;
+    }
+
+    .badge__label {
+      display: inline-flex;
+      align-items: center;
+      padding: 0 0.75em;
     }
 
     /* Used by <ds-def-section>'s type badge */
-    .badge--kind         { background: var(--ds-color-info-bg); color: var(--ds-color-info-text); }
+    .badge--kind .badge__icon { background: var(--ds-color-info-text); }
     /* Used by <ds-prop-table>'s "at least one" conditional marker */
-    .badge--experimental { background: var(--ds-color-warning-bg); color: var(--ds-color-warning-text); }
-
+    .badge--experimental .badge__icon { background: var(--ds-color-warning-text); }
     /* Default / neutral */
-    .badge--neutral {
-      background: var(--ds-color-inverse);
-      color: var(--ds-color-text);
-    }
+    .badge--neutral .badge__icon { background: var(--ds-color-accent); }
   `;
 
   class DsBadge extends HTMLElement {
@@ -238,23 +279,27 @@
     constructor() {
       super();
       this._shadow = createShadow(this, BADGE_CSS);
-      this._shadow.innerHTML = `<span class="badge" part="badge"><slot></slot></span>`;
+      this._shadow.innerHTML =
+        '<span class="badge" part="badge">' +
+        '<span class="badge__icon" part="icon"></span>' +
+        '<span class="badge__label" part="label"><slot></slot></span>' +
+        "</span>";
     }
 
     connectedCallback() {
-      this._updateClass();
+      this._updateVariant();
     }
 
     attributeChangedCallback() {
-      this._updateClass();
+      this._updateVariant();
     }
 
-    _updateClass() {
+    _updateVariant() {
       const variant = this.getAttribute("variant") || "neutral";
       const el = this._shadow.querySelector(".badge");
-      if (el) {
-        el.className = "badge badge--" + variant;
-      }
+      const icon = this._shadow.querySelector(".badge__icon");
+      if (el) el.className = "badge badge--" + variant;
+      if (icon) icon.innerHTML = BADGE_ICON[variant] || ICONS.dot;
     }
   }
 
@@ -1483,7 +1528,9 @@
   // ═══════════════════════════════════════════════════════════════════════════
   // <ds-callout>
   //
-  // A callout / info box: an accent left border with a subtle tinted background.
+  // A callout / info box: a white background with a small color-coded icon
+  // block — the variant's meaning lives in the block's color + icon, not a
+  // tinted background.
   //
   // Attributes:
   //   variant — "info" | "tip" | "warning" (default: "info")
@@ -1501,14 +1548,22 @@
   //   </ds-callout>
   // ═══════════════════════════════════════════════════════════════════════════
 
+  const CALLOUT_ICON = {
+    info: ICONS.info,
+    tip: ICONS.lightbulb,
+    warning: ICONS.warning,
+  };
+
   const CALLOUT_CSS = `
     ${BASE_RESET}
     :host { display: block; }
 
     .callout {
-      border-left: var(--ds-border-width) solid var(--ds-color-accent);
-      background: var(--ds-color-accent-subtle);
-      padding: var(--ds-space-2) var(--ds-space-4);
+      display: flex;
+      align-items: flex-start;
+      gap: var(--ds-space-2);
+      background: var(--ds-color-bg-inverse);
+      padding: var(--ds-space-4);
       margin: var(--ds-space-2) 0 var(--ds-space-8);
       font-family: ${FONT.body};
       font-size: var(--ds-font-size-base);
@@ -1516,15 +1571,28 @@
       color: var(--ds-color-text);
     }
 
-    .callout--warning {
-      border-left-color: var(--ds-color-warning-text);
-      background: var(--ds-color-note-warning-bg);
+    .callout__icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      flex-shrink: 0;
+      background: var(--ds-color-accent);
+      color: var(--ds-color-bg-inverse);
     }
 
-    .callout--tip {
-      border-left-color: var(--ds-color-encouraged-text);
-      background: var(--ds-color-encouraged-bg);
+    .callout__icon svg {
+      display: block;
     }
+
+    .callout__content {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .callout--warning .callout__icon { background: var(--ds-color-warning-text); }
+    .callout--tip .callout__icon { background: var(--ds-color-encouraged-text); }
 
     ::slotted(strong) {
       color: var(--ds-color-accent);
@@ -1560,7 +1628,10 @@
       super();
       this._shadow = createShadow(this, CALLOUT_CSS);
       this._shadow.innerHTML =
-        '<div class="callout" part="callout"><slot></slot></div>';
+        '<div class="callout" part="callout">' +
+        '<span class="callout__icon" part="icon"></span>' +
+        '<div class="callout__content" part="content"><slot></slot></div>' +
+        "</div>";
     }
 
     connectedCallback() {
@@ -1574,9 +1645,9 @@
     _updateVariant() {
       const variant = this.getAttribute("variant") || "info";
       const el = this._shadow.querySelector(".callout");
-      if (el) {
-        el.className = "callout callout--" + variant;
-      }
+      const icon = this._shadow.querySelector(".callout__icon");
+      if (el) el.className = "callout callout--" + variant;
+      if (icon) icon.innerHTML = CALLOUT_ICON[variant] || ICONS.info;
     }
   }
 

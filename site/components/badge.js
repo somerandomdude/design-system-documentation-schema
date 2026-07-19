@@ -6,9 +6,19 @@
 //
 // Content:
 //   Text label inside the element.
+//
+// Design: a white chip with a small color-coded icon block on the left —
+// the variant's meaning lives in the block's color + icon, not the chip's
+// overall background.
 // ═══════════════════════════════════════════════════════════════════════════
 
-import { createShadow, BASE_RESET, FONT } from "./_shared.js";
+import { createShadow, BASE_RESET, FONT, ICONS } from "./_shared.js";
+
+const BADGE_ICON = {
+  kind: ICONS.info,
+  experimental: ICONS.flask,
+  neutral: ICONS.dot,
+};
 
 const BADGE_CSS = `
   ${BASE_RESET}
@@ -16,25 +26,41 @@ const BADGE_CSS = `
 
   .badge {
     display: inline-flex;
+    align-items: stretch;
     font-family: ${FONT.body};
     text-transform: none;
     white-space: nowrap;
-    align-items: center;
     height: 24px;
-    padding: 0 1em;
     font-size: .75em;
+    background: var(--ds-color-bg-inverse);
+    color: var(--ds-color-text);
+  }
+
+  .badge__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    flex-shrink: 0;
+    color: var(--ds-color-bg-inverse);
+  }
+
+  .badge__icon svg {
+    display: block;
+  }
+
+  .badge__label {
+    display: inline-flex;
+    align-items: center;
+    padding: 0 0.75em;
   }
 
   /* Used by <ds-def-section>'s type badge */
-  .badge--kind         { background: var(--ds-color-info-bg); color: var(--ds-color-info-text); }
+  .badge--kind .badge__icon { background: var(--ds-color-info-text); }
   /* Used by <ds-prop-table>'s "at least one" conditional marker */
-  .badge--experimental { background: var(--ds-color-warning-bg); color: var(--ds-color-warning-text); }
-
+  .badge--experimental .badge__icon { background: var(--ds-color-warning-text); }
   /* Default / neutral */
-  .badge--neutral {
-    background: var(--ds-color-inverse);
-    color: var(--ds-color-text);
-  }
+  .badge--neutral .badge__icon { background: var(--ds-color-accent); }
 `;
 
 export class DsBadge extends HTMLElement {
@@ -45,22 +71,26 @@ export class DsBadge extends HTMLElement {
   constructor() {
     super();
     this._shadow = createShadow(this, BADGE_CSS);
-    this._shadow.innerHTML = `<span class="badge" part="badge"><slot></slot></span>`;
+    this._shadow.innerHTML =
+      '<span class="badge" part="badge">' +
+      '<span class="badge__icon" part="icon"></span>' +
+      '<span class="badge__label" part="label"><slot></slot></span>' +
+      "</span>";
   }
 
   connectedCallback() {
-    this._updateClass();
+    this._updateVariant();
   }
 
   attributeChangedCallback() {
-    this._updateClass();
+    this._updateVariant();
   }
 
-  _updateClass() {
+  _updateVariant() {
     const variant = this.getAttribute("variant") || "neutral";
     const el = this._shadow.querySelector(".badge");
-    if (el) {
-      el.className = "badge badge--" + variant;
-    }
+    const icon = this._shadow.querySelector(".badge__icon");
+    if (el) el.className = "badge badge--" + variant;
+    if (icon) icon.innerHTML = BADGE_ICON[variant] || ICONS.dot;
   }
 }
