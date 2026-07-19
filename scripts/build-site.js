@@ -667,6 +667,12 @@ async function build() {
     recursive: true,
   });
 
+  // Copy self-hosted font files — tokens.css references them by
+  // page-relative path ("fonts/<file>.ttf").
+  fs.cpSync(path.join(SITE_DIR, "fonts"), path.join(DIST_DIR, "fonts"), {
+    recursive: true,
+  });
+
   // Bundle web components into a single IIFE for file:// compatibility.
   bundleComponents(SITE_DIR, DIST_DIR);
 
