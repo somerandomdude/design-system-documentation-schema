@@ -1,0 +1,371 @@
+# DSDS quick start guide
+
+## What is DSDS?
+
+DSDS (Design System Doc Spec) is a JSON format for documenting design systems. It puts every piece of docs — components, tokens, themes, foundations, patterns — in a machine-readable shape.
+
+<ds-callout title="Key idea:">
+
+DSDS documents the *how and why* of your design system — not the token values themselves. It complements the [W3C Design Tokens Format](https://www.w3.org/community/reports/design-tokens/CG-FINAL-format-20251028/) which handles the *what*.
+
+</ds-callout>
+
+### What you get
+
+- **Structured** — every section has a defined shape, no guessing
+- **Machine-readable** — tools can parse, generate, validate, and transform it
+- **Portable** — not locked to any docs tool or platform
+- **Extensible** — add vendor metadata without breaking compatibility
+- **Validatable** — JSON Schema catches errors before they reach consumers
+
+---
+
+## Document structure
+
+A DSDS file requires `dsdsVersion` and one of two shapes:
+
+### Single-entity files
+
+Use `entity` when each component, token, or pattern lives in its own file. The `kind` field on the entity identifies its type.
+
+```json
+{
+  "$schema": "https://designsystemdocspec.org/v{{VERSION}}/dsds.bundled.schema.json",
+  "dsdsVersion": "{{VERSION}}",
+  "entity": {
+    "kind": "component",
+    "identifier": "button",
+    "name": "Button",
+    "description": "An interactive element that triggers an action.",
+    "metadata": { "status": "stable" },
+    "documentBlocks": []
+  }
+}
+```
+
+### Multi-entity files
+
+Use `entityGroups` to put several entities in one file, or as a manifest that points to separate entity files.
+
+```json
+{
+  "dsdsVersion": "{{VERSION}}",
+  "entityGroups": [
+    {
+      "name": "My Design System",
+      "entities": [
+        { "kind": "foundation", "identifier": "spacing", "...": "" },
+        { "kind": "token-group", "identifier": "color-palette", "...": "" },
+        { "kind": "theme", "identifier": "dark", "...": "" },
+        { "kind": "component", "identifier": "button", "...": "" }
+      ]
+    }
+  ]
+}
+```
+
+- `dsdsVersion` — the spec version this document targets; `"{{VERSION}}"` for this release
+- `entityGroups` — array of named groups
+- `entities` — one array per group; mix kinds freely in display order. Each entity's `kind` says what type it is
+
+### Linking files with `$ref`
+
+Entity arrays accept `$ref` objects that point to other DSDS files. This lets you keep entities in their own files and pull them together in a manifest:
+
+```json
+{
+  "dsdsVersion": "{{VERSION}}",
+  "entityGroups": [
+    {
+      "name": "Acme Design System",
+      "entities": [
+        { "$ref": "./button.dsds.json#/entity" },
+        { "$ref": "./link.dsds.json#/entity" }
+      ]
+    }
+  ]
+}
+```
+
+The `#/entity` fragment is a JSON Pointer. It targets the `entity` value in the linked file. Tools resolve `$ref` objects before they validate, with a library like [`json-schema-ref-parser`](https://github.com/APIDevTools/json-schema-ref-parser).
+
+<ds-callout variant="tip" title="Tip:">
+
+Use single-entity files plus a `$ref` manifest for large systems where a different team owns each component. Use one multi-entity file for smaller systems, or when you want everything in one place.
+
+</ds-callout>
+
+---
+
+## Entity types
+
+Every entity has a `kind` field that tells tools what type of thing it is. There are eight kinds.
+
+| Kind | Code | Description |
+|------|------|-------------|
+| component | `"component"` | A reusable UI element — buttons, inputs, modals. Supports anatomy, API, variants, states, and design specs. |
+| token | `"token"` | A single design token — color, spacing, typography. Carries type, category, and usage rules. Link to W3C DTCG definitions via `source`. |
+| token-group | `"token-group"` | A nested group of related tokens. Recursive — groups can contain groups. |
+| theme | `"theme"` | A named set of token overrides — dark mode, high-contrast, compact density, brand variants. It lists which token names change; the DTCG file holds the values. |
+| foundation | `"foundation"` | A design base — color, typography, spacing, elevation. Carries principles, scales, and motion definitions. |
+| pattern | `"pattern"` | A broad action pattern — nav, error messaging, empty states. It shows how components combine to solve a user need. |
+| guide | `"guide"` | A long document meant to be read start to finish — getting-started, contribution, tutorial, migration. It carries narrative sections and step-by-step instructions. |
+| chunk | `"chunk"` | A ready-made block of code that captures a pattern — a copy-paste starting point built from the system's components. It requires `code` and declares what it composes via `relationships`. |
+
+### Common properties
+
+Every entity shares the same envelope: `kind`, `identifier`, `name`, optional `description` and `metadata`, plus `documentBlocks` and `agentDocumentBlocks`. See [Common entity properties](schema-architecture.html#common-entity-properties) for the full table, including the token exceptions.
+
+The optional `agentDocumentBlocks` array is a separate space for agent-only docs. It holds generation limits with `evidence` and notes that tell apart similar entities. It uses the same block kinds as `documentBlocks`. Tools never show it to humans; agents read both arrays.
+
+### Status: string or object
+
+For the simple case, status is a string in `metadata`:
+
+```json
+"metadata": { "status": "stable" }
+```
+
+When you need per-platform tracking:
+
+```json
+"metadata": {
+  "status": {
+    "overall": "stable",
+    "platforms": {
+      "react": { "status": "stable", "since": "1.0.0" },
+      "ios": { "status": "experimental", "since": "3.0.0" }
+    }
+  }
+}
+```
+
+---
+
+## The document block system
+
+Structured docs live in the `documentBlocks` array on each entity. Each document block entry is typed by its `kind` field.
+
+<ds-block-applies-table />
+
+### Use cases: when to use it
+
+The `use-cases` block lists scenarios. An optional `purpose` statement gives the broad answer. Each item has a `stance`: `"recommended"` (do use) or `"discouraged"` (don't use, with an alternative):
+
+```json
+{
+  "kind": "use-cases",
+  "purpose": "Buttons trigger immediate actions within a surface.",
+  "items": [
+    {
+      "description": "When the user needs to trigger an action such as submitting a form.",
+      "stance": "recommended"
+    },
+    {
+      "description": "When the action navigates to a different page.",
+      "stance": "discouraged",
+      "alternative": {
+        "identifier": "link",
+        "rationale": "Links carry native navigation semantics."
+      }
+    }
+  ]
+}
+```
+
+### Guidelines: how to use it
+
+Each guideline pairs a `guidance` statement with a `rationale` and an RFC 2119 `level`:
+
+```json
+{
+  "kind": "guidelines",
+  "items": [
+    {
+      "guidance": "Limit each surface to one primary button.",
+      "rationale": "Multiple primary buttons dilute visual hierarchy.",
+      "level": "must",
+      "category": "visual-design"
+    }
+  ]
+}
+```
+
+The `level` field is named for RFC 2119. Its values are lowercase kebab-case, like every DSDS vocabulary: `"must"`, `"should"`, `"should-not"`, `"must-not"`. Tools display them as badges: <ds-badge>MUST</ds-badge>, <ds-badge>SHOULD</ds-badge>, <ds-badge>SHOULD NOT</ds-badge>, <ds-badge>MUST NOT</ds-badge>. Agents treat must/must-not entries as hard limits. Optional `evidence` records the backing. `criteria` define testable success conditions that checks can run against.
+
+### Criteria: how to verify it
+
+A criterion turns a guideline into something checkable. Each one pairs a stable `identifier` with a testable `statement`. Test runs report pass or fail against the identifier.
+
+The `verification` field says how a result is produced:
+
+- **`automated`** — a runner decides the outcome. A `check` names the tool (its `scheme`) and carries that tool's config. Required for this mode.
+- **`assisted`** — a tool surfaces candidates; a human decides.
+- **`manual`** — pure human judgment. No `check` applies; `techniques` and `failures` act as the reviewer's procedure.
+
+When `verification` is omitted, tools must not assume the criterion is automatable. The set is closed — it answers *who decides*. A named procedure such as a design review is the *how*; put it in `techniques` on a `manual` criterion.
+
+`examples` on a criterion are test cases. Each declares an `outcome` — `"pass"` or `"fail"` — so a runner can confirm the check still detects what it claims to:
+
+```json
+{
+  "identifier": "icon-button-name-present",
+  "statement": "Every icon-only button exposes a non-empty accessible name.",
+  "level": "must",
+  "verification": "automated",
+  "check": { "scheme": "axe-core", "rule": "button-name" },
+  "examples": [
+    {
+      "title": "Labelled icon button",
+      "outcome": "pass",
+      "presentation": { "kind": "code", "code": "<Button aria-label=\"Close dialog\"><CloseIcon /></Button>", "language": "jsx" }
+    },
+    {
+      "title": "Unlabelled icon button",
+      "outcome": "fail",
+      "presentation": { "kind": "code", "code": "<Button><CloseIcon /></Button>", "language": "jsx" }
+    }
+  ]
+}
+```
+
+The `statement` is always the source of truth. The `check` just puts it into action — how it runs is up to the named tool, not DSDS.
+
+### For humans and agents
+
+A DSDS document has two readers: people and agents. `documentBlocks` is the default home — the docs a person reads and acts on. Agents read it too.
+
+`agentDocumentBlocks` is an optional, agent-only space. Put firm, ready-to-act notes there — the kind that would clutter the docs for people. Examples: hard MUST / MUST NOT rules, notes that tell look-alikes apart, and checks an agent can run.
+
+Tools never show `agentDocumentBlocks` to people, and agents read both arrays. For when to use each, see [DSDS for humans and agents](humans-and-agents.html).
+
+---
+
+## Conventions and traps
+
+Four conventions catch most first-time authors. Knowing them up front saves a validation round-trip.
+
+**`status` has exactly two shapes.** A bare string, or an object with `overall`. There is no `value` property:
+
+```json
+"status": "stable"
+"status": { "overall": "stable", "platforms": { "react": { "status": "stable" } } }
+```
+
+**It's always `identifier`, never `name`, for machine keys.** API properties, anatomy parts, criteria, variants — the machine-readable key is `identifier` everywhere. `name` is only ever a display name.
+
+**`tokens` is a purpose-keyed map, not an array.** Keys say what the token controls; values name the token:
+
+```json
+"tokens": { "text-color": "color-button-fg", "background": "color-button-bg" }
+```
+
+**Flag vs. enum variants.** A boolean on/off dimension is a `flag` variant. A set of named options is an `enum` variant. A single-entry enum is valid — dimensions often ship one value at a time.
+
+---
+
+## Minimal examples
+
+These are the smallest valid entities — the bare minimum. Copy one, fill in your content, and add document block entries as you go.
+
+### Component
+
+A component needs `kind`, `identifier`, `name`, and `description`. Everything else is optional.
+
+<ds-example file="component.json" label="minimal component" />
+
+### Token
+
+A token needs `kind`, `identifier`, and `tokenType`. Use the optional `source` property to link back to the W3C DTCG file that holds the real value.
+
+<ds-example file="token.json" label="minimal token" />
+
+### Token group
+
+Groups arrange tokens in a tree. The `children` array can contain tokens or nested groups.
+
+<ds-example file="token-group.json" label="minimal token-group" />
+
+### Theme
+
+A theme provides `overrides` — an array of token names that differ from the default. The DTCG file holds the real override values.
+
+<ds-example file="theme.json" label="minimal theme" />
+
+### Foundation
+
+A foundation documents a design base. Guidelines like `principles`, `scale`, and `motion` are specific to foundations.
+
+<ds-example file="foundation.json" label="minimal foundation" />
+
+### Pattern
+
+A pattern shows how components combine to solve a user need. It supports `interactions` for flow steps.
+
+<ds-example file="pattern.json" label="minimal pattern" />
+
+### Full document
+
+Here's a complete, minimal DSDS file with one of each entity type:
+
+<ds-example file="minimal.dsds.json" label="minimal.dsds.json" />
+
+---
+
+## Validate your document
+
+DSDS ships with a JSON Schema for validating your documents.
+
+### Using the bundled schema
+
+Add `$schema` to get editor autocompletion and inline validation:
+
+```json
+{
+  "$schema": "https://designsystemdocspec.org/v{{VERSION}}/dsds.bundled.schema.json",
+  "dsdsVersion": "{{VERSION}}",
+  "entity": {
+    "kind": "component",
+    "identifier": "my-component",
+    "name": "My Component",
+    "description": "What this component is and does."
+  }
+}
+```
+
+### Using the CLI
+
+```bash
+# Clone the repo
+git clone https://github.com/somerandomdude/design-system-documentation-schema.git
+cd design-system-documentation-schema
+npm install
+
+# Validate the built-in examples
+npm run validate
+
+# Validate your own file
+npx ajv validate -s spec/schema/dsds.bundled.schema.json -d my-system.dsds.json
+```
+
+---
+
+## Next steps
+
+You've seen the basics. Here's where to go deeper.
+
+| Resource | Description |
+|----------|-------------|
+| [Full Spec](index.html) | Complete schema reference for every field and constraint |
+| [JSON Schema](https://github.com/somerandomdude/design-system-documentation-schema/tree/main/spec/schema) | The raw `.schema.json` files — use for editor autocompletion |
+| [Example Files](https://github.com/somerandomdude/design-system-documentation-schema/tree/main/spec/examples) | Complete, valid example documents for every entity and guideline type |
+| [GitHub Discussions](https://github.com/somerandomdude/design-system-documentation-schema/discussions) | Ask questions, share ideas, propose changes |
+
+<ds-callout variant="tip" title="Getting started recipe:">
+
+1. Copy the [minimal document](#full-document) above
+2. Replace the example entities with your own design system's components and tokens
+3. Add `documentBlocks` entries to each entity as your docs grow
+4. Validate with `npm run validate` to catch schema errors early
+
+</ds-callout>

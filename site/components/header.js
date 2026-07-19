@@ -49,8 +49,8 @@ const HEADER_CSS = `
     margin: 0 0 var(--ds-space-4);
     max-width: 65ch;
     font-size: clamp(1.05em, 1.7vw, 1.375em);
+    font-weight: 500;
     line-height: 1.4;
-    font-weight: 450;
   }
   .source {
     font-size: var(--ds-font-size-sm);

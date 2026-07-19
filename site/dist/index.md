@@ -1,0 +1,44 @@
+# Design system doc spec 0.15.2
+
+# Design system doc spec {{VERSION}}
+
+**Draft Specification — 16 July 2026:**
+This is a draft. It can still change. No standards body has endorsed it yet. We welcome feedback and contributions on GitHub.
+
+* **Latest version:** [Github repo](https://github.com/somerandomdude/design-system-documentation-schema)
+* **Feedback:** [GitHub Issues](https://github.com/somerandomdude/design-system-documentation-schema/issues)
+
+---
+
+## A machine-readable format for design system documentation
+This standard puts design system docs in one shared format that any tool can read. It covers [components](/entities-component), [design tokens](/entities-token), [themes](/entities-theme), [foundations](/entities-foundation), [patterns](/entities-pattern), and [guides](/entities-guide). The goal: one source of truth that feeds your docs, trains your agents, and reaches every touchpoint.
+
+## Core principles
+
+- **Information is more valuable when it's portable.** Tools change. Needs change. Budgets change. A design system's source of truth should survive any rebuild, reorg, or rethink.
+- **Documentation shouldn't have to pick a side.** Humans, parsers, and agents all need the same docs. Teams shouldn't have to write a separate version for each. This standard works as the source of truth for all of them.
+- **A format that grows with you.** Getting started should be easy. A docs standard should also grow as your system's needs grow.
+
+---
+
+## Flexible and modular
+Design systems have different documentation needs. The schema can be as simple or as detailed as you need. DSDS has strong opinions, but it doesn't force them on you.
+
+All structured docs use one **document block** system. Each block is a typed object with a `kind` field. The spec defines 17 block kinds, including `guidelines`, `use-cases`, `api`, `states`, `motion`, and `accessibility`. See the [document blocks overview](/document-blocks-document-blocks) for the full list.
+
+Each entity type accepts only the block types that fit it. Components accept component-scoped and general types. Patterns accept pattern-scoped and general types. Foundations and tokens each accept their own scoped types plus general types.
+
+---
+
+## Next steps
+
+New to DSDS? Start with the [Quick Start Guide](quickstart.html). It covers document structure, entity types, the document block system, and minimal examples you can copy.
+
+For the full schema reference — document structure, entity properties, document block types, and all shared models — see [Schema Architecture](schema-architecture.html).
+
+See the schema files in `spec/schema/` for the JSON Schema definitions. See the examples in `spec/examples/` for working examples of each entity and block type.
+
+## Contributors
+- [PJ Onori](https://pjonori.com): Current maintainer
+- [Afyia Smith](https://afyiasmith.co/): the `governance` and `docOrigin` metadata schemas (introduced in 0.12.1).
+- [Suleiman Ali Shakir](https://iamsuleiman.com/): Documentation copy-edits.

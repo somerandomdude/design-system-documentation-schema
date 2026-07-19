@@ -156,7 +156,7 @@
       inset-block-start: 0;
       inset-inline-end: 0;
       font-family: ${FONT.body};
-      font-weight: var(--ds-font-weight-bold);
+      font-weight: 520;
       font-size: var(--ds-font-size-sm);
       background: var(--ds-color-text);
       color: var(--ds-color-text-inverse);
@@ -696,8 +696,8 @@
       margin: 0 0 var(--ds-space-4);
       max-width: 65ch;
       font-size: clamp(1.05em, 1.7vw, 1.375em);
+      font-weight: 500;
       line-height: 1.4;
-      font-weight: 450;
     }
     .source {
       font-size: var(--ds-font-size-sm);

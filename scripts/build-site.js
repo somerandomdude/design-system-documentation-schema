@@ -20,7 +20,7 @@
 const fs = require("fs");
 const path = require("path");
 
-const { buildSpecNav, DIR_GROUPS, readSpecVersion } = require("./nav");
+const { buildSpecNav, DIR_GROUPS, readSpecVersion, TOP_LINKS } = require("./nav");
 const { renderTemplate } = require("./render-template");
 const {
   esc,
@@ -54,6 +54,7 @@ const DEFAULT_DESCRIPTION =
   "A machine-readable format for design system documentation. DSDS structures components, tokens, themes, foundations, patterns, and guides as a single source of truth for humans, parsers, and agents.";
 const SCHEMA_DIR = path.join(SPEC_DIR, "schema");
 const SITE_DIR = path.join(ROOT, "site");
+const CONTENT_DIR = path.join(SITE_DIR, "content");
 const DIST_DIR = path.join(SITE_DIR, "dist");
 const EXAMPLES_DIR = path.join(SPEC_DIR, "examples");
 const TEMPLATES_DIR = path.join(SITE_DIR, "templates");
@@ -601,6 +602,89 @@ function pageHtml(
 }
 
 // ---------------------------------------------------------------------------
+// Agent/crawler-facing indexes
+//
+// sitemap.xml is for search engines; llms.txt (https://llmstxt.org/) is the
+// equivalent convention for AI agents — a single curated, plain-markdown
+// index of every page, plus a link to the bundled JSON Schema (every
+// definition, machine-readable, in one versioned file), so an agent can get
+// a full picture of the spec without crawling or JS-rendering HTML. Both are
+// generated from the same page metadata the HTML build already collects —
+// one source of truth, no separate authoring.
+// ---------------------------------------------------------------------------
+
+function urlForSlug(slug) {
+  return slug === "index" ? `${SITE_URL}/` : `${SITE_URL}/${slug}`;
+}
+
+function buildSitemapXml(entries) {
+  const urls = entries
+    .map((e) => `  <url><loc>${urlForSlug(e.slug)}</loc></url>`)
+    .join("\n");
+  return (
+    `<?xml version="1.0" encoding="UTF-8"?>\n` +
+    `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls}\n</urlset>\n`
+  );
+}
+
+function buildLlmsTxt(entries, version) {
+  const guideOrder = TOP_LINKS.map((l) => l.slug);
+  const guides = entries
+    .filter((e) => e.group === "Guides")
+    .sort((a, b) => guideOrder.indexOf(a.slug) - guideOrder.indexOf(b.slug));
+
+  const schemaGroups = DIR_GROUPS.map((g) => ({
+    label: g.label,
+    items: entries.filter((e) => e.group === g.label),
+  })).filter((g) => g.items.length);
+
+  const lines = [];
+  lines.push(`# Design System Doc Spec (DSDS)`);
+  lines.push("");
+  lines.push(`> ${DEFAULT_DESCRIPTION}`);
+  lines.push("");
+  lines.push(
+    "This site documents DSDS, a versioned JSON Schema. Every definition " +
+      "below has an HTML page (for people) and a `$defs` entry in the " +
+      "bundled schema below (for parsers/agents) — prefer the JSON when " +
+      "you just need field names, types, and requiredness.",
+  );
+  lines.push("");
+  lines.push("## Machine-readable schema");
+  lines.push("");
+  lines.push(
+    `- [Bundled schema, v${version}](${SITE_URL}/v${version}/dsds.bundled.schema.json): every definition in one JSON file`,
+  );
+  lines.push(
+    `- [sitemap.xml](${SITE_URL}/sitemap.xml): every page on this site`,
+  );
+  lines.push("");
+  lines.push("## Guides");
+  lines.push("");
+  lines.push(
+    "Each guide below also has a plain-markdown mirror at the same path " +
+      "with a `.md` extension (e.g. `/quickstart.md`) — the raw prose, no " +
+      "HTML/JS.",
+  );
+  lines.push("");
+  for (const g of guides) {
+    lines.push(
+      `- [${g.title}](${urlForSlug(g.slug)}): ${g.description} ([markdown](${SITE_URL}/${g.slug}.md))`,
+    );
+  }
+  lines.push("");
+  for (const group of schemaGroups) {
+    lines.push(`## ${group.label}`);
+    lines.push("");
+    for (const item of group.items) {
+      lines.push(`- [${item.title}](${urlForSlug(item.slug)}): ${item.description}`);
+    }
+    lines.push("");
+  }
+  return lines.join("\n").trimEnd() + "\n";
+}
+
+// ---------------------------------------------------------------------------
 // Main build
 // ---------------------------------------------------------------------------
 
@@ -673,8 +757,19 @@ async function build() {
     recursive: true,
   });
 
+  // Copy robots.txt verbatim (points crawlers/agents at sitemap.xml).
+  fs.copyFileSync(
+    path.join(SITE_DIR, "robots.txt"),
+    path.join(DIST_DIR, "robots.txt"),
+  );
+
   // Bundle web components into a single IIFE for file:// compatibility.
   bundleComponents(SITE_DIR, DIST_DIR);
+
+  // Metadata for every page, collected as both page-writing loops run below —
+  // feeds sitemap.xml and llms.txt (see "Agent/crawler-facing indexes" above)
+  // so those stay in lockstep with whatever pages actually got built.
+  const sitemapEntries = [];
 
   // ── MDX content pages ─────────────────────────────────────────────────
   const { compileAllMdx } = await loadMdxCompiler();
@@ -716,6 +811,30 @@ async function build() {
       mdxPage.meta.description,
     );
     fs.writeFileSync(path.join(DIST_DIR, `${slug}.html`), html, "utf-8");
+
+    // Raw markdown mirror alongside the HTML — strips the YAML frontmatter
+    // (replacing it with a plain title heading, since the compiled HTML gets
+    // its H1 from <ds-header> instead) so an agent gets the actual prose
+    // (any <ds-*/> shortcodes included, verbatim) without parsing HTML or
+    // running JS. Named for the llms.txt convention of exposing plain-text/
+    // markdown alternates.
+    const rawMdx = fs.readFileSync(
+      path.join(CONTENT_DIR, mdxPage.file),
+      "utf-8",
+    );
+    const mdBody = rawMdx.replace(/^---\n[\s\S]*?\n---\n/, "").trimStart();
+    fs.writeFileSync(
+      path.join(DIST_DIR, `${slug}.md`),
+      `# ${title}\n\n${mdBody}`,
+      "utf-8",
+    );
+
+    sitemapEntries.push({
+      slug,
+      title,
+      description: mdxPage.meta.description || DEFAULT_DESCRIPTION,
+      group: "Guides",
+    });
   }
   console.log(`  ${mdxPages.length} MDX page(s) compiled.\n`);
 
@@ -740,6 +859,13 @@ async function build() {
       ? `${page.group}/${page.filename}`
       : page.filename;
     console.log(`  ✓  site/dist/${page.slug}.html  ← ${relSource}`);
+
+    sitemapEntries.push({
+      slug: page.slug,
+      title: page.title,
+      description: page.data.description || DEFAULT_DESCRIPTION,
+      group: page.groupLabel,
+    });
   }
 
   // ── Versioned bundled schema ──────────────────────────────────────
@@ -775,6 +901,22 @@ async function build() {
       );
     }
   }
+
+  // ── Agent/crawler indexes ──────────────────────────────────────────
+  const version = readSpecVersion() || "";
+  fs.writeFileSync(
+    path.join(DIST_DIR, "sitemap.xml"),
+    buildSitemapXml(sitemapEntries),
+    "utf-8",
+  );
+  fs.writeFileSync(
+    path.join(DIST_DIR, "llms.txt"),
+    buildLlmsTxt(sitemapEntries, version),
+    "utf-8",
+  );
+  console.log(
+    `  ✓  site/dist/sitemap.xml, site/dist/llms.txt  ← ${sitemapEntries.length} pages indexed\n`,
+  );
 
   console.log(
     `\nDone. ${mdxPages.length + pages.length + 1} pages built to site/dist/\n`,

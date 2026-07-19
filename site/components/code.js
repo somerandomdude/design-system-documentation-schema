@@ -42,7 +42,7 @@ const CODE_CSS = `
     inset-block-start: 0;
     inset-inline-end: 0;
     font-family: ${FONT.body};
-    font-weight: var(--ds-font-weight-bold);
+    font-weight: 520;
     font-size: var(--ds-font-size-sm);
     background: var(--ds-color-text);
     color: var(--ds-color-text-inverse);
