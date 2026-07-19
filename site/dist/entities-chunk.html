@@ -109,7 +109,122 @@
     <div class="content__container">
         <div class="content__inner">
 
-          <ds-def-section name="chunk" anchor="chunk" description="A ready-to-use block of code — a layout, a settings form, a confirmation dialog. It has an identity (`identifier`, `name`, optional `description`), the `code` consumers copy, and `documentBlocks`/`agentDocumentBlocks` for the general kinds (guidelines, use-cases, accessibility, content, sections, checklist). Chunks are simple by design: they document a composition of code, not a full anatomy/API surface like a component does." type="object">
+          <ds-json-view label="entities/chunk.schema.json">
+  <ds-code language="json" wrap>{
+  &quot;$schema&quot;: &quot;https://json-schema.org/draft/2020-12/schema&quot;,
+  &quot;$id&quot;: &quot;https://designsystemdocspec.org/v0.15.2/entities/chunk.schema.json&quot;,
+  &quot;title&quot;: &quot;DSDS Chunk Definitions&quot;,
+  &quot;description&quot;: &quot;A chunk is a ready-to-use block of code — a copy-paste starting point built from the system's components, like a layout or a settings form. A chunk document holds its identity, the code itself, and general docs (guidelines, use-cases, accessibility, and so on). Chunks sit alongside components: a component documents one building block, a chunk documents a composition of them, captured as code.&quot;,
+  &quot;$defs&quot;: {
+    &quot;chunk&quot;: {
+      &quot;type&quot;: &quot;object&quot;,
+      &quot;description&quot;: &quot;A ready-to-use block of code — a layout, a settings form, a confirmation dialog. It has an identity (`identifier`, `name`, optional `description`), the `code` consumers copy, and `documentBlocks`/`agentDocumentBlocks` for the general kinds (guidelines, use-cases, accessibility, content, sections, checklist). Chunks are simple by design: they document a composition of code, not a full anatomy/API surface like a component does.&quot;,
+      &quot;required&quot;: [
+        &quot;kind&quot;,
+        &quot;identifier&quot;,
+        &quot;name&quot;,
+        &quot;code&quot;
+      ],
+      &quot;properties&quot;: {
+        &quot;kind&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;const&quot;: &quot;chunk&quot;,
+          &quot;description&quot;: &quot;Identifies this entity as a chunk.&quot;
+        },
+        &quot;identifier&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;pattern&quot;: &quot;^[a-z][a-z0-9-]*$&quot;,
+          &quot;description&quot;: &quot;Machine-readable identifier for the chunk (e.g., 'search-bar', 'settings-form', 'confirmation-dialog'). MUST be lowercase kebab-case and unique within its entity group.&quot;
+        },
+        &quot;name&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;description&quot;: &quot;Display name shown in docs (e.g., 'Search bar', 'Settings form', 'Confirmation dialog').&quot;
+        },
+        &quot;description&quot;: {
+          &quot;$ref&quot;: &quot;../common/rich-text.schema.json#/$defs/richText&quot;,
+          &quot;description&quot;: &quot;What this chunk is, the pattern it captures, and which components it composes. CommonMark supported.&quot;
+        },
+        &quot;code&quot;: {
+          &quot;description&quot;: &quot;The code consumers copy to use the chunk. Give it one of two ways: inline (`code` + `language`) when it travels with the document, or referenced (`src` + `language`) when it lives in an outside file. Referenced code keeps long sources readable and lets a chunk share one file with a live app. `src` is resolved when read — there's no build step.&quot;,
+          &quot;oneOf&quot;: [
+            {
+              &quot;type&quot;: &quot;object&quot;,
+              &quot;title&quot;: &quot;Inline code&quot;,
+              &quot;description&quot;: &quot;The source travels inside the document as a string.&quot;,
+              &quot;required&quot;: [
+                &quot;code&quot;,
+                &quot;language&quot;
+              ],
+              &quot;properties&quot;: {
+                &quot;code&quot;: {
+                  &quot;type&quot;: &quot;string&quot;,
+                  &quot;description&quot;: &quot;The source code of the chunk — the block consumers copy and adapt.&quot;
+                },
+                &quot;language&quot;: {
+                  &quot;type&quot;: &quot;string&quot;,
+                  &quot;description&quot;: &quot;The programming language or syntax of the code (e.g., 'jsx', 'tsx', 'html', 'css', 'vue', 'svelte').&quot;
+                }
+              },
+              &quot;additionalProperties&quot;: false
+            },
+            {
+              &quot;type&quot;: &quot;object&quot;,
+              &quot;title&quot;: &quot;Referenced code&quot;,
+              &quot;description&quot;: &quot;The source lives in an external file the consumer resolves at read time.&quot;,
+              &quot;required&quot;: [
+                &quot;src&quot;,
+                &quot;language&quot;
+              ],
+              &quot;properties&quot;: {
+                &quot;src&quot;: {
+                  &quot;type&quot;: &quot;string&quot;,
+                  &quot;pattern&quot;: &quot;^(?![a-zA-Z][a-zA-Z0-9+.\\-]*:)(?!//)(?!/)&quot;,
+                  &quot;description&quot;: &quot;A relative path to the file holding the chunk's code (e.g., './chunks/confirmation-dialog.tsx'). MUST be relative — no absolute paths, protocol-relative paths, or scheme URIs (http:, file:, …). Resolvers SHOULD only fetch from an allow-list, the same rule a `$ref` fileRef follows. The file is read as-is — no build step.&quot;,
+                  &quot;minLength&quot;: 1
+                },
+                &quot;language&quot;: {
+                  &quot;type&quot;: &quot;string&quot;,
+                  &quot;description&quot;: &quot;The programming language or syntax of the referenced file (e.g., 'jsx', 'tsx', 'html', 'css', 'vue', 'svelte').&quot;
+                }
+              },
+              &quot;additionalProperties&quot;: false
+            }
+          ]
+        },
+        &quot;documentBlocks&quot;: {
+          &quot;type&quot;: &quot;array&quot;,
+          &quot;description&quot;: &quot;Docs for this chunk — the general block kinds only (guidelines, use-cases, accessibility, content, sections, checklist). Chunks document a composition of code, not the anatomy/API surface a component has.&quot;,
+          &quot;items&quot;: {
+            &quot;$ref&quot;: &quot;../document-blocks/document-blocks.schema.json#/$defs/generalDocumentBlock&quot;
+          },
+          &quot;minItems&quot;: 1
+        },
+        &quot;agentDocumentBlocks&quot;: {
+          &quot;type&quot;: &quot;array&quot;,
+          &quot;description&quot;: &quot;Docs for AI agents only, using the same general block kinds as `documentBlocks`. Agent-only content: hard must/must-not rules, verification checklists, and constraints an agent needs when adapting this chunk into an app. Guidance for humans belongs in `documentBlocks`.&quot;,
+          &quot;items&quot;: {
+            &quot;$ref&quot;: &quot;../document-blocks/document-blocks.schema.json#/$defs/generalDocumentBlock&quot;
+          },
+          &quot;minItems&quot;: 1
+        },
+        &quot;relationships&quot;: {
+          &quot;$ref&quot;: &quot;../common/relationship.schema.json#/$defs/relationships&quot;,
+          &quot;description&quot;: &quot;Links from this chunk to the entities it uses — mainly 'composes' the components it's built from (mark `required` true for the essential ones). Tools derive the reverse edges.&quot;
+        },
+        &quot;metadata&quot;: {
+          &quot;$ref&quot;: &quot;../metadata/metadata.schema.json#/$defs/entityMetadata&quot;,
+          &quot;description&quot;: &quot;Optional metadata (see metadata/metadata.schema.json). Declare the components this chunk uses as `relationships`, not links.&quot;
+        },
+        &quot;$extensions&quot;: {
+          &quot;$ref&quot;: &quot;../common/extensions.schema.json#/$defs/extensions&quot;
+        }
+      },
+      &quot;additionalProperties&quot;: false
+    }
+  }
+}</ds-code>
+</ds-json-view>
+<ds-def-section name="chunk" anchor="chunk" description="A ready-to-use block of code — a layout, a settings form, a confirmation dialog. It has an identity (`identifier`, `name`, optional `description`), the `code` consumers copy, and `documentBlocks`/`agentDocumentBlocks` for the general kinds (guidelines, use-cases, accessibility, content, sections, checklist). Chunks are simple by design: they document a composition of code, not a full anatomy/API surface like a component does." type="object">
 <ds-prop-table>
   <ds-prop name="kind" type="&lt;ds-code inline&gt;&quot;chunk&quot;&lt;/ds-code&gt;" required>Identifies this entity as a chunk.</ds-prop>
   <ds-prop name="identifier" type="string" required>Machine-readable identifier for the chunk (e.g., 'search-bar', 'settings-form', 'confirmation-dialog'). MUST be lowercase kebab-case and unique within its entity group.<br><small>Pattern: <ds-code inline>^[a-z][a-z0-9-]*$</ds-code></small></ds-prop>

@@ -109,7 +109,89 @@
     <div class="content__container">
         <div class="content__inner">
 
-          <ds-def-index>
+          <ds-json-view label="document-blocks/checklist.schema.json">
+  <ds-code language="json" wrap>{
+  &quot;$schema&quot;: &quot;https://json-schema.org/draft/2020-12/schema&quot;,
+  &quot;$id&quot;: &quot;https://designsystemdocspec.org/v0.15.2/document-blocks/checklist.schema.json&quot;,
+  &quot;title&quot;: &quot;DSDS Checklist Document Block&quot;,
+  &quot;description&quot;: &quot;A checklist of things to check off — built for agents, but useful for people too. Each item is a short, actionable line, with optional extra detail, a level that marks how strict it is, and an optional link to the criterion that proves it. Use `checklist` for a hands-on pass over something; use `guidelines` for the rules behind it.&quot;,
+  &quot;$defs&quot;: {
+    &quot;checklistItem&quot;: {
+      &quot;type&quot;: &quot;object&quot;,
+      &quot;description&quot;: &quot;One thing to check, do, or confirm. `label` is the action itself. `description` adds detail. `level` says how strict it is. `criterion` links to the test that proves it. `optional` lets it be skipped. Only `label` is required.&quot;,
+      &quot;required&quot;: [
+        &quot;label&quot;
+      ],
+      &quot;properties&quot;: {
+        &quot;label&quot;: {
+          &quot;$ref&quot;: &quot;../common/rich-text.schema.json#/$defs/richText&quot;,
+          &quot;description&quot;: &quot;The check itself, written as an instruction you can act on and mark done or not (e.g., 'Give every icon-only button an aria-label'). MUST be specific — not 'check accessibility'.&quot;
+        },
+        &quot;description&quot;: {
+          &quot;$ref&quot;: &quot;../common/rich-text.schema.json#/$defs/richText&quot;,
+          &quot;description&quot;: &quot;Extra detail — how to do it, what to watch for, or why it matters. Keep the instruction itself in `label`.&quot;
+        },
+        &quot;level&quot;: {
+          &quot;$ref&quot;: &quot;../common/criterion.schema.json#/$defs/conformanceLevel&quot;,
+          &quot;description&quot;: &quot;How strict this item is: 'must' (a hard requirement), 'should' (do it unless you have a reason not to), 'should-not', or 'must-not'. Agents treat must/must-not as non-negotiable. Left out, it's just a recommendation.&quot;
+        },
+        &quot;criterion&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;pattern&quot;: &quot;^[a-z][a-z0-9-]*$&quot;,
+          &quot;description&quot;: &quot;Optional link to a testable criterion (from a guideline or accessibility block) that proves this item passes. MUST be lowercase kebab-case.&quot;
+        },
+        &quot;category&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;description&quot;: &quot;Groups items in a long checklist by discipline: 'visual-design', 'interaction', 'accessibility', 'content', 'motion', 'development', or a custom lowercase kebab-case value.&quot;
+        },
+        &quot;optional&quot;: {
+          &quot;type&quot;: &quot;boolean&quot;,
+          &quot;default&quot;: false,
+          &quot;description&quot;: &quot;Whether this item can be skipped. Defaults to false. Tools MAY mark optional items differently.&quot;
+        }
+      },
+      &quot;additionalProperties&quot;: false
+    },
+    &quot;checklist&quot;: {
+      &quot;type&quot;: &quot;object&quot;,
+      &quot;description&quot;: &quot;A checklist for an artifact — the concrete steps an agent (or a person) works through when building, reviewing, or integrating it. Turns rules into an actual pass, like 'accessibility review' or 'before you ship'. A general block kind, accepted on every entity type, and just as at home in `agentDocumentBlocks`.&quot;,
+      &quot;required&quot;: [
+        &quot;kind&quot;,
+        &quot;items&quot;
+      ],
+      &quot;properties&quot;: {
+        &quot;kind&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;const&quot;: &quot;checklist&quot;,
+          &quot;description&quot;: &quot;Identifies this block as a checklist.&quot;
+        },
+        &quot;title&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;description&quot;: &quot;An optional heading naming the checklist (e.g., 'Accessibility review', 'Before you ship').&quot;
+        },
+        &quot;ordered&quot;: {
+          &quot;type&quot;: &quot;boolean&quot;,
+          &quot;default&quot;: false,
+          &quot;description&quot;: &quot;Whether items must be done in order. Defaults to false — items can be checked off in any order. Set true when each item depends on the last. Tools SHOULD show unordered checklists as checkboxes and ordered ones as a numbered list.&quot;
+        },
+        &quot;items&quot;: {
+          &quot;type&quot;: &quot;array&quot;,
+          &quot;description&quot;: &quot;The checklist items, in order. Order matters when `ordered` is true, so tools MUST preserve it.&quot;,
+          &quot;items&quot;: {
+            &quot;$ref&quot;: &quot;#/$defs/checklistItem&quot;
+          },
+          &quot;minItems&quot;: 1
+        },
+        &quot;$extensions&quot;: {
+          &quot;$ref&quot;: &quot;../common/extensions.schema.json#/$defs/extensions&quot;
+        }
+      },
+      &quot;additionalProperties&quot;: false
+    }
+  }
+}</ds-code>
+</ds-json-view>
+<ds-def-index>
 <p><strong>2 definitions</strong> in this file:</p>
 <ul>
 <li><a href="#checklist"><ds-code inline>checklist</ds-code></a></li>

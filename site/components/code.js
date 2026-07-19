@@ -5,6 +5,8 @@
 //   language — optional language label (e.g. "json", "bash")
 //   label   — optional label shown in top-right corner
 //   inline  — boolean, renders as inline <code> instead of block
+//   wrap    — boolean, wraps long lines (white-space: pre-wrap) instead of
+//             the default horizontal-scrolling single-line-per-line layout
 //
 // Content:
 //   Text content inside the element is rendered as code.
@@ -49,6 +51,12 @@ const CODE_CSS = `
     white-space: pre;
   }
 
+  :host([wrap]) pre {
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
+    overflow-x: visible;
+  }
+
   code {
     font-family: inherit;
     font-size: inherit;
@@ -68,7 +76,7 @@ const CODE_CSS = `
 
 export class DsCode extends HTMLElement {
   static get observedAttributes() {
-    return ["language", "label", "inline"];
+    return ["language", "label", "inline", "wrap"];
   }
 
   constructor() {

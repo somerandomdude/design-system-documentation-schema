@@ -109,7 +109,384 @@
     <div class="content__container">
         <div class="content__inner">
 
-          <ds-def-index>
+          <ds-json-view label="document-blocks/api.schema.json">
+  <ds-code language="json" wrap>{
+  &quot;$schema&quot;: &quot;https://json-schema.org/draft/2020-12/schema&quot;,
+  &quot;$id&quot;: &quot;https://designsystemdocspec.org/v0.15.2/document-blocks/api.schema.json&quot;,
+  &quot;title&quot;: &quot;DSDS API Document Block&quot;,
+  &quot;description&quot;: &quot;Documents the code-level interface of a component: configurable properties, emitted events, content slots, CSS custom properties, CSS shadow parts, data attributes, and public methods. When a component supports multiple platforms, each platform gets its own API block. The `platform` property says which implementation it describes.&quot;,
+  &quot;$defs&quot;: {
+    &quot;apiProperty&quot;: {
+      &quot;type&quot;: &quot;object&quot;,
+      &quot;description&quot;: &quot;A configurable property of a component.&quot;,
+      &quot;required&quot;: [
+        &quot;identifier&quot;,
+        &quot;type&quot;,
+        &quot;description&quot;
+      ],
+      &quot;properties&quot;: {
+        &quot;identifier&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;description&quot;: &quot;The property identifier as used in code (e.g., 'variant', 'size', 'disabled', 'onClick').&quot;
+        },
+        &quot;type&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;description&quot;: &quot;The property's type as it would appear in a type signature (e.g., 'boolean', 'number', 'string', 'ReactNode', 'IconComponent'). For enum properties, use `values` instead of listing members here. When `schema` is present it is authoritative; `type` is its display summary and MUST NOT disagree with it.&quot;
+        },
+        &quot;values&quot;: {
+          &quot;type&quot;: &quot;array&quot;,
+          &quot;description&quot;: &quot;The accepted values for enum-like properties (e.g., ['default', 'primary', 'ghost']). Use this instead of listing members in `type`. When `schema` is present it is authoritative; `values` is its display summary and MUST NOT disagree with it.&quot;,
+          &quot;items&quot;: {
+            &quot;type&quot;: &quot;string&quot;
+          },
+          &quot;minItems&quot;: 1
+        },
+        &quot;schema&quot;: {
+          &quot;type&quot;: &quot;object&quot;,
+          &quot;description&quot;: &quot;A JSON Schema (Draft 2020-12) object that defines the property's type in machine-readable form. It follows the same conventions as OpenAPI parameter schemas. When present, `schema` is the authoritative type definition; `type` and `values` are display summaries of it and MUST NOT disagree.&quot;
+        },
+        &quot;description&quot;: {
+          &quot;$ref&quot;: &quot;../common/rich-text.schema.json#/$defs/richText&quot;,
+          &quot;description&quot;: &quot;What this property controls, how it affects the component, and any constraints or side effects.&quot;
+        },
+        &quot;required&quot;: {
+          &quot;type&quot;: &quot;boolean&quot;,
+          &quot;default&quot;: false,
+          &quot;description&quot;: &quot;Whether the consumer must provide this property. Defaults to false.&quot;
+        },
+        &quot;defaultValue&quot;: {
+          &quot;description&quot;: &quot;The default value in its native JSON type. Accepts any JSON type: string, number, boolean, object, array, or null.&quot;
+        },
+        &quot;examples&quot;: {
+          &quot;type&quot;: &quot;array&quot;,
+          &quot;description&quot;: &quot;Example values for this property.&quot;,
+          &quot;items&quot;: {
+            &quot;$ref&quot;: &quot;../common/example.schema.json#/$defs/example&quot;
+          },
+          &quot;minItems&quot;: 1
+        },
+        &quot;since&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;description&quot;: &quot;The version in which this property was introduced.&quot;
+        },
+        &quot;deprecated&quot;: {
+          &quot;type&quot;: &quot;boolean&quot;,
+          &quot;default&quot;: false,
+          &quot;description&quot;: &quot;Whether this property is deprecated. Defaults to false.&quot;
+        },
+        &quot;deprecationNotice&quot;: {
+          &quot;$ref&quot;: &quot;../common/status.schema.json#/$defs/deprecationNotice&quot;,
+          &quot;description&quot;: &quot;Required when `deprecated` is true. MUST say what to use instead (non-empty) and SHOULD give a migration path.&quot;
+        }
+      },
+      &quot;if&quot;: {
+        &quot;properties&quot;: {
+          &quot;deprecated&quot;: {
+            &quot;const&quot;: true
+          }
+        },
+        &quot;required&quot;: [
+          &quot;deprecated&quot;
+        ]
+      },
+      &quot;then&quot;: {
+        &quot;required&quot;: [
+          &quot;deprecationNotice&quot;
+        ]
+      },
+      &quot;additionalProperties&quot;: false
+    },
+    &quot;apiEvent&quot;: {
+      &quot;type&quot;: &quot;object&quot;,
+      &quot;description&quot;: &quot;An event emitted by a component.&quot;,
+      &quot;required&quot;: [
+        &quot;identifier&quot;,
+        &quot;description&quot;
+      ],
+      &quot;properties&quot;: {
+        &quot;identifier&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;description&quot;: &quot;The event identifier (e.g., 'onClick', 'onChange', 'onDismiss').&quot;
+        },
+        &quot;description&quot;: {
+          &quot;$ref&quot;: &quot;../common/rich-text.schema.json#/$defs/richText&quot;,
+          &quot;description&quot;: &quot;When this event fires, what it communicates, and how consumers should respond. Add any behavioral context worth noting in documentation content (DOM propagation, cancelability, deprecation, and conditions under which it does not fire). This is the single home for event documentation.&quot;
+        },
+        &quot;payload&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;description&quot;: &quot;The event's payload or handler signature (e.g., '(event: MouseEvent) =&gt; void', '{ value: string, index: number }') — what a listener receives.&quot;
+        },
+        &quot;since&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;description&quot;: &quot;The version in which this event was introduced.&quot;
+        }
+      },
+      &quot;additionalProperties&quot;: false
+    },
+    &quot;apiSlot&quot;: {
+      &quot;type&quot;: &quot;object&quot;,
+      &quot;description&quot;: &quot;A content insertion point of a component.&quot;,
+      &quot;required&quot;: [
+        &quot;identifier&quot;,
+        &quot;description&quot;
+      ],
+      &quot;properties&quot;: {
+        &quot;identifier&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;description&quot;: &quot;The slot identifier. Use 'default' for the unnamed/default slot.&quot;
+        },
+        &quot;description&quot;: {
+          &quot;$ref&quot;: &quot;../common/rich-text.schema.json#/$defs/richText&quot;,
+          &quot;description&quot;: &quot;The slot's purpose and where it renders in the component. Content rules belong in `acceptedContent`, not here.&quot;
+        },
+        &quot;acceptedContent&quot;: {
+          &quot;$ref&quot;: &quot;../common/rich-text.schema.json#/$defs/richText&quot;,
+          &quot;description&quot;: &quot;Allowed content (e.g., 'Plain text or a text node. Do not nest interactive elements.').&quot;
+        },
+        &quot;since&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;description&quot;: &quot;The version in which this slot was introduced.&quot;
+        }
+      },
+      &quot;additionalProperties&quot;: false
+    },
+    &quot;apiCssCustomProperty&quot;: {
+      &quot;type&quot;: &quot;object&quot;,
+      &quot;description&quot;: &quot;A CSS custom property exposed by a component for external styling.&quot;,
+      &quot;required&quot;: [
+        &quot;identifier&quot;,
+        &quot;description&quot;
+      ],
+      &quot;properties&quot;: {
+        &quot;identifier&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;pattern&quot;: &quot;^--&quot;,
+          &quot;description&quot;: &quot;The full custom-property identifier including the -- prefix (e.g., '--button-background', '--button-border-radius').&quot;
+        },
+        &quot;description&quot;: {
+          &quot;$ref&quot;: &quot;../common/rich-text.schema.json#/$defs/richText&quot;,
+          &quot;description&quot;: &quot;What attribute this property controls.&quot;
+        },
+        &quot;defaultValue&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;description&quot;: &quot;The default value (e.g., 'var(--color-action-primary)', '1rem', 'transparent').&quot;
+        },
+        &quot;type&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;description&quot;: &quot;The expected CSS value type (e.g., 'color', 'dimension', 'number').&quot;
+        },
+        &quot;since&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;description&quot;: &quot;The version in which this custom property was introduced.&quot;
+        }
+      },
+      &quot;additionalProperties&quot;: false
+    },
+    &quot;apiCssPart&quot;: {
+      &quot;type&quot;: &quot;object&quot;,
+      &quot;description&quot;: &quot;A CSS shadow part exposed by a web component for external styling via ::part() selectors.&quot;,
+      &quot;required&quot;: [
+        &quot;identifier&quot;,
+        &quot;description&quot;
+      ],
+      &quot;properties&quot;: {
+        &quot;identifier&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;description&quot;: &quot;The part identifier as used in ::part() selectors.&quot;
+        },
+        &quot;description&quot;: {
+          &quot;$ref&quot;: &quot;../common/rich-text.schema.json#/$defs/richText&quot;,
+          &quot;description&quot;: &quot;What element this part exposes and what styling it enables.&quot;
+        },
+        &quot;since&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;description&quot;: &quot;The version in which this part was introduced.&quot;
+        }
+      },
+      &quot;additionalProperties&quot;: false
+    },
+    &quot;apiDataAttribute&quot;: {
+      &quot;type&quot;: &quot;object&quot;,
+      &quot;description&quot;: &quot;A data attribute used by a component to reflect state or variant info into the DOM.&quot;,
+      &quot;required&quot;: [
+        &quot;identifier&quot;,
+        &quot;description&quot;
+      ],
+      &quot;properties&quot;: {
+        &quot;identifier&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;pattern&quot;: &quot;^data-&quot;,
+          &quot;description&quot;: &quot;The full attribute identifier including the data- prefix (e.g., 'data-state', 'data-variant').&quot;
+        },
+        &quot;description&quot;: {
+          &quot;$ref&quot;: &quot;../common/rich-text.schema.json#/$defs/richText&quot;,
+          &quot;description&quot;: &quot;What this attribute reflects and how to use it for styling or testing.&quot;
+        },
+        &quot;values&quot;: {
+          &quot;type&quot;: &quot;array&quot;,
+          &quot;items&quot;: {
+            &quot;type&quot;: &quot;string&quot;
+          },
+          &quot;description&quot;: &quot;The set of possible values (e.g., ['default', 'hover', 'active', 'disabled']).&quot;,
+          &quot;minItems&quot;: 1
+        },
+        &quot;since&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;description&quot;: &quot;The version in which this attribute was introduced.&quot;
+        }
+      },
+      &quot;additionalProperties&quot;: false
+    },
+    &quot;apiMethod&quot;: {
+      &quot;type&quot;: &quot;object&quot;,
+      &quot;description&quot;: &quot;A public method on a component instance.&quot;,
+      &quot;required&quot;: [
+        &quot;identifier&quot;,
+        &quot;description&quot;
+      ],
+      &quot;properties&quot;: {
+        &quot;identifier&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;description&quot;: &quot;The method identifier (e.g., 'focus', 'reset', 'scrollTo').&quot;
+        },
+        &quot;description&quot;: {
+          &quot;$ref&quot;: &quot;../common/rich-text.schema.json#/$defs/richText&quot;,
+          &quot;description&quot;: &quot;What this method does, when to call it, and any side effects.&quot;
+        },
+        &quot;parameters&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;description&quot;: &quot;The parameter signature (e.g., '(options?: { preventScroll: boolean }) =&gt; void').&quot;
+        },
+        &quot;returnType&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;description&quot;: &quot;The return value (e.g., 'void', 'Promise&lt;void&gt;', 'HTMLElement | null').&quot;
+        },
+        &quot;since&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;description&quot;: &quot;The version in which this method was introduced.&quot;
+        }
+      },
+      &quot;additionalProperties&quot;: false
+    },
+    &quot;api&quot;: {
+      &quot;type&quot;: &quot;object&quot;,
+      &quot;description&quot;: &quot;Documents the code-level interface of a component on a single platform. Lists configurable properties, emitted events, content slots, CSS hooks, data attributes, and public methods. For multi-platform components (e.g., React + Web Component + Vue), create one API block per platform. Use `platform` to tell them apart.&quot;,
+      &quot;required&quot;: [
+        &quot;kind&quot;
+      ],
+      &quot;properties&quot;: {
+        &quot;kind&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;const&quot;: &quot;api&quot;,
+          &quot;description&quot;: &quot;Identifies this document block as an API spec.&quot;
+        },
+        &quot;platform&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;description&quot;: &quot;The platform or framework this API describes (e.g., 'react', 'web-component', 'vue', 'angular', 'ios', 'android'). When omitted, the API is taken to be the single/default platform.&quot;
+        },
+        &quot;properties&quot;: {
+          &quot;type&quot;: &quot;array&quot;,
+          &quot;description&quot;: &quot;Configurable properties (props, attributes, inputs) that consumers pass to the component.&quot;,
+          &quot;minItems&quot;: 1,
+          &quot;items&quot;: {
+            &quot;$ref&quot;: &quot;#/$defs/apiProperty&quot;
+          }
+        },
+        &quot;events&quot;: {
+          &quot;type&quot;: &quot;array&quot;,
+          &quot;description&quot;: &quot;Events emitted by the component that consumers can listen to.&quot;,
+          &quot;minItems&quot;: 1,
+          &quot;items&quot;: {
+            &quot;$ref&quot;: &quot;#/$defs/apiEvent&quot;
+          }
+        },
+        &quot;slots&quot;: {
+          &quot;type&quot;: &quot;array&quot;,
+          &quot;description&quot;: &quot;Content insertion points where consumers can project child content.&quot;,
+          &quot;minItems&quot;: 1,
+          &quot;items&quot;: {
+            &quot;$ref&quot;: &quot;#/$defs/apiSlot&quot;
+          }
+        },
+        &quot;cssCustomProperties&quot;: {
+          &quot;type&quot;: &quot;array&quot;,
+          &quot;description&quot;: &quot;CSS custom properties exposed for external styling.&quot;,
+          &quot;minItems&quot;: 1,
+          &quot;items&quot;: {
+            &quot;$ref&quot;: &quot;#/$defs/apiCssCustomProperty&quot;
+          }
+        },
+        &quot;cssParts&quot;: {
+          &quot;type&quot;: &quot;array&quot;,
+          &quot;description&quot;: &quot;CSS shadow parts exposed for external styling via ::part() selectors.&quot;,
+          &quot;minItems&quot;: 1,
+          &quot;items&quot;: {
+            &quot;$ref&quot;: &quot;#/$defs/apiCssPart&quot;
+          }
+        },
+        &quot;dataAttributes&quot;: {
+          &quot;type&quot;: &quot;array&quot;,
+          &quot;description&quot;: &quot;Data attributes that reflect component state or config into the DOM.&quot;,
+          &quot;minItems&quot;: 1,
+          &quot;items&quot;: {
+            &quot;$ref&quot;: &quot;#/$defs/apiDataAttribute&quot;
+          }
+        },
+        &quot;methods&quot;: {
+          &quot;type&quot;: &quot;array&quot;,
+          &quot;description&quot;: &quot;Public methods on the component instance.&quot;,
+          &quot;minItems&quot;: 1,
+          &quot;items&quot;: {
+            &quot;$ref&quot;: &quot;#/$defs/apiMethod&quot;
+          }
+        },
+        &quot;$extensions&quot;: {
+          &quot;$ref&quot;: &quot;../common/extensions.schema.json#/$defs/extensions&quot;
+        }
+      },
+      &quot;additionalProperties&quot;: false,
+      &quot;anyOf&quot;: [
+        {
+          &quot;required&quot;: [
+            &quot;properties&quot;
+          ]
+        },
+        {
+          &quot;required&quot;: [
+            &quot;events&quot;
+          ]
+        },
+        {
+          &quot;required&quot;: [
+            &quot;slots&quot;
+          ]
+        },
+        {
+          &quot;required&quot;: [
+            &quot;cssCustomProperties&quot;
+          ]
+        },
+        {
+          &quot;required&quot;: [
+            &quot;cssParts&quot;
+          ]
+        },
+        {
+          &quot;required&quot;: [
+            &quot;dataAttributes&quot;
+          ]
+        },
+        {
+          &quot;required&quot;: [
+            &quot;methods&quot;
+          ]
+        }
+      ]
+    }
+  }
+}</ds-code>
+</ds-json-view>
+<ds-def-index>
 <p><strong>8 definitions</strong> in this file:</p>
 <ul>
 <li><a href="#api"><ds-code inline>api</ds-code></a></li>
@@ -135,7 +512,7 @@
   <ds-prop name="platform" type="string">The platform or framework this API describes (e.g., 'react', 'web-component', 'vue', 'angular', 'ios', 'android'). When omitted, the API is taken to be the single/default platform.</ds-prop>
   <ds-prop name="$extensions" type="&lt;ds-type-ref href=&quot;common-extensions.html#extensions&quot;&gt;extensions&lt;/ds-type-ref&gt;"></ds-prop>
 </ds-prop-table>
-<ds-callout bordered variant="warning"><strong>Constraint:</strong> At least one of <ds-code inline>properties</ds-code>, <ds-code inline>events</ds-code>, <ds-code inline>slots</ds-code>, <ds-code inline>cssCustomProperties</ds-code>, <ds-code inline>cssParts</ds-code>, <ds-code inline>dataAttributes</ds-code>, <ds-code inline>methods</ds-code> must be present.</ds-callout>
+<ds-callout variant="warning" title="Constraint:">At least one of <ds-code inline>properties</ds-code>, <ds-code inline>events</ds-code>, <ds-code inline>slots</ds-code>, <ds-code inline>cssCustomProperties</ds-code>, <ds-code inline>cssParts</ds-code>, <ds-code inline>dataAttributes</ds-code>, <ds-code inline>methods</ds-code> must be present.</ds-callout>
 <ds-cross-refs><strong>References:</strong> <ds-type-ref href="document-blocks-api.html#apiproperty">apiProperty</ds-type-ref>, <ds-type-ref href="document-blocks-api.html#apievent">apiEvent</ds-type-ref>, <ds-type-ref href="document-blocks-api.html#apislot">apiSlot</ds-type-ref>, <ds-type-ref href="document-blocks-api.html#apicsscustomproperty">apiCssCustomProperty</ds-type-ref>, <ds-type-ref href="document-blocks-api.html#apicsspart">apiCssPart</ds-type-ref>, <ds-type-ref href="document-blocks-api.html#apidataattribute">apiDataAttribute</ds-type-ref>, <ds-type-ref href="document-blocks-api.html#apimethod">apiMethod</ds-type-ref>, <ds-type-ref href="common-extensions.html#extensions">extensions</ds-type-ref></ds-cross-refs>
 <ds-def-example>
 <ds-code language="json" label="example">{
@@ -235,7 +612,7 @@
   <ds-prop name="deprecated" type="boolean">Whether this property is deprecated. Defaults to false.<br><small>Default: <ds-code inline>false</ds-code></small></ds-prop>
   <ds-prop name="deprecationNotice" type="&lt;ds-type-ref href=&quot;common-status.html#deprecationnotice&quot;&gt;deprecationNotice&lt;/ds-type-ref&gt;">Required when <ds-code inline>deprecated</ds-code> is true. MUST say what to use instead (non-empty) and SHOULD give a migration path.</ds-prop>
 </ds-prop-table>
-<ds-callout bordered variant="warning"><strong>Conditional:</strong> When <ds-code inline>deprecated</ds-code> is <ds-code inline>"true"</ds-code>, then <ds-code inline>deprecationNotice</ds-code> is required.</ds-callout>
+<ds-callout variant="warning" title="Conditional:">When <ds-code inline>deprecated</ds-code> is <ds-code inline>"true"</ds-code>, then <ds-code inline>deprecationNotice</ds-code> is required.</ds-callout>
 <ds-cross-refs><strong>References:</strong> <ds-type-ref href="common-rich-text.html#richtext">richText</ds-type-ref>, <ds-type-ref href="common-example.html#example">example</ds-type-ref>, <ds-type-ref href="common-status.html#deprecationnotice">deprecationNotice</ds-type-ref></ds-cross-refs>
 <ds-def-example>
 <ds-code language="json" label="example">[

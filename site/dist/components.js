@@ -66,6 +66,7 @@
     dot: "icon-dot.svg",
     lightbulb: "icon-lightbulb.svg",
     warning: "icon-warning.svg",
+    brackets: "icon-brackets.svg",
     logo: "dsds.svg",
   };
 
@@ -110,7 +111,7 @@
   }
 
   // ── inlined icon assets (build-time, see above) ──
-  seedIcons({"menu":"<svg viewBox=\"0 0 24 24\" width=\"18\" height=\"18\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" xmlns=\"http://www.w3.org/2000/svg\">\n  <line x1=\"3\" y1=\"6\" x2=\"21\" y2=\"6\"/>\n  <line x1=\"3\" y1=\"12\" x2=\"21\" y2=\"12\"/>\n  <line x1=\"3\" y1=\"18\" x2=\"21\" y2=\"18\"/>\n</svg>\n","close":"<svg viewBox=\"0 0 24 24\" width=\"18\" height=\"18\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" xmlns=\"http://www.w3.org/2000/svg\">\n  <line x1=\"5\" y1=\"5\" x2=\"19\" y2=\"19\"/>\n  <line x1=\"19\" y1=\"5\" x2=\"5\" y2=\"19\"/>\n</svg>\n","info":"<svg viewBox=\"0 0 24 24\" width=\"14\" height=\"14\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" xmlns=\"http://www.w3.org/2000/svg\">\n  <circle cx=\"12\" cy=\"12\" r=\"9\"/>\n  <line x1=\"12\" y1=\"11\" x2=\"12\" y2=\"16\"/>\n  <circle cx=\"12\" cy=\"7.5\" r=\"1\" fill=\"currentColor\" stroke=\"none\"/>\n</svg>\n","flask":"<svg viewBox=\"0 0 24 24\" width=\"14\" height=\"14\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" xmlns=\"http://www.w3.org/2000/svg\">\n  <path d=\"M9 3h6\"/>\n  <path d=\"M10 3v6L4.5 18.5A2 2 0 0 0 6.2 21h11.6a2 2 0 0 0 1.7-2.5L14 9V3\"/>\n  <line x1=\"6.5\" y1=\"15\" x2=\"17.5\" y2=\"15\"/>\n</svg>\n","dot":"<svg viewBox=\"0 0 24 24\" width=\"8\" height=\"8\" fill=\"currentColor\" xmlns=\"http://www.w3.org/2000/svg\">\n  <circle cx=\"12\" cy=\"12\" r=\"10\"/>\n</svg>\n","lightbulb":"<svg viewBox=\"0 0 24 24\" width=\"14\" height=\"14\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" xmlns=\"http://www.w3.org/2000/svg\">\n  <path d=\"M9 18h6\"/>\n  <path d=\"M10 22h4\"/>\n  <path d=\"M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.2 1 2.05V17a1 1 0 0 0 1 1h4a1 1 0 0 0 1-1v-.25c0-.85.4-1.55 1-2.05A7 7 0 0 0 12 2z\"/>\n</svg>\n","warning":"<svg viewBox=\"0 0 24 24\" width=\"14\" height=\"14\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" xmlns=\"http://www.w3.org/2000/svg\">\n  <path d=\"M12 2 1 21h22L12 2z\"/>\n  <line x1=\"12\" y1=\"9\" x2=\"12\" y2=\"14\"/>\n  <circle cx=\"12\" cy=\"17.5\" r=\"0.7\" fill=\"currentColor\" stroke=\"none\"/>\n</svg>\n","logo":"<svg width=\"1550\" height=\"1550\" viewBox=\"0 0 1550 1550\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\">\n<path fill-rule=\"evenodd\" clip-rule=\"evenodd\" d=\"M0 0H1550V1550H0V0ZM75 75V1475H1475V75H75Z\" fill=\"black\"/>\n<path fill-rule=\"evenodd\" clip-rule=\"evenodd\" d=\"M575 300H300V650H575C616.421 650 650 616.421 650 575V375C650 333.579 616.421 300 575 300ZM225 225V725H575C657.843 725 725 657.843 725 575V375C725 292.157 657.843 225 575 225H225Z\" fill=\"black\"/>\n<path fill-rule=\"evenodd\" clip-rule=\"evenodd\" d=\"M825 368.75C825 289.359 889.359 225 968.75 225H1181.25C1260.64 225 1325 289.359 1325 368.75H1250C1250 330.78 1219.22 300 1181.25 300H968.75C930.78 300 900 330.78 900 368.75C900 406.72 930.78 437.5 968.75 437.5H1181.25C1260.64 437.5 1325 501.859 1325 581.25C1325 660.641 1260.64 725 1181.25 725H968.75C889.359 725 825 660.641 825 581.25H900C900 619.22 930.78 650 968.75 650H1181.25C1219.22 650 1250 619.22 1250 581.25C1250 543.28 1219.22 512.5 1181.25 512.5H968.75C889.359 512.5 825 448.141 825 368.75Z\" fill=\"black\"/>\n<path fill-rule=\"evenodd\" clip-rule=\"evenodd\" d=\"M575 900H300V1250H575C616.421 1250 650 1216.42 650 1175V975C650 933.579 616.421 900 575 900ZM225 825V1325H575C657.843 1325 725 1257.84 725 1175V975C725 892.157 657.843 825 575 825H225Z\" fill=\"black\"/>\n<path fill-rule=\"evenodd\" clip-rule=\"evenodd\" d=\"M825 968.75C825 889.359 889.359 825 968.75 825H1181.25C1260.64 825 1325 889.359 1325 968.75H1250C1250 930.78 1219.22 900 1181.25 900H968.75C930.78 900 900 930.78 900 968.75C900 1006.72 930.78 1037.5 968.75 1037.5H1181.25C1260.64 1037.5 1325 1101.86 1325 1181.25C1325 1260.64 1260.64 1325 1181.25 1325H968.75C889.359 1325 825 1260.64 825 1181.25H900C900 1219.22 930.78 1250 968.75 1250H1181.25C1219.22 1250 1250 1219.22 1250 1181.25C1250 1143.28 1219.22 1112.5 1181.25 1112.5H968.75C889.359 1112.5 825 1048.14 825 968.75Z\" fill=\"black\"/>\n</svg>\n"});
+  seedIcons({"menu":"<svg viewBox=\"0 0 24 24\" width=\"18\" height=\"18\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" xmlns=\"http://www.w3.org/2000/svg\">\n  <line x1=\"3\" y1=\"6\" x2=\"21\" y2=\"6\"/>\n  <line x1=\"3\" y1=\"12\" x2=\"21\" y2=\"12\"/>\n  <line x1=\"3\" y1=\"18\" x2=\"21\" y2=\"18\"/>\n</svg>\n","close":"<svg viewBox=\"0 0 24 24\" width=\"18\" height=\"18\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" xmlns=\"http://www.w3.org/2000/svg\">\n  <line x1=\"5\" y1=\"5\" x2=\"19\" y2=\"19\"/>\n  <line x1=\"19\" y1=\"5\" x2=\"5\" y2=\"19\"/>\n</svg>\n","info":"<svg viewBox=\"0 0 24 24\" width=\"14\" height=\"14\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" xmlns=\"http://www.w3.org/2000/svg\">\n  <circle cx=\"12\" cy=\"12\" r=\"9\"/>\n  <line x1=\"12\" y1=\"11\" x2=\"12\" y2=\"16\"/>\n  <circle cx=\"12\" cy=\"7.5\" r=\"1\" fill=\"currentColor\" stroke=\"none\"/>\n</svg>\n","flask":"<svg viewBox=\"0 0 24 24\" width=\"14\" height=\"14\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" xmlns=\"http://www.w3.org/2000/svg\">\n  <path d=\"M9 3h6\"/>\n  <path d=\"M10 3v6L4.5 18.5A2 2 0 0 0 6.2 21h11.6a2 2 0 0 0 1.7-2.5L14 9V3\"/>\n  <line x1=\"6.5\" y1=\"15\" x2=\"17.5\" y2=\"15\"/>\n</svg>\n","dot":"<svg viewBox=\"0 0 24 24\" width=\"8\" height=\"8\" fill=\"currentColor\" xmlns=\"http://www.w3.org/2000/svg\">\n  <circle cx=\"12\" cy=\"12\" r=\"10\"/>\n</svg>\n","lightbulb":"<svg viewBox=\"0 0 24 24\" width=\"14\" height=\"14\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" xmlns=\"http://www.w3.org/2000/svg\">\n  <path d=\"M9 18h6\"/>\n  <path d=\"M10 22h4\"/>\n  <path d=\"M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.2 1 2.05V17a1 1 0 0 0 1 1h4a1 1 0 0 0 1-1v-.25c0-.85.4-1.55 1-2.05A7 7 0 0 0 12 2z\"/>\n</svg>\n","warning":"<svg viewBox=\"0 0 24 24\" width=\"14\" height=\"14\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" xmlns=\"http://www.w3.org/2000/svg\">\n  <path d=\"M12 2 1 21h22L12 2z\"/>\n  <line x1=\"12\" y1=\"9\" x2=\"12\" y2=\"14\"/>\n  <circle cx=\"12\" cy=\"17.5\" r=\"0.7\" fill=\"currentColor\" stroke=\"none\"/>\n</svg>\n","brackets":"<svg viewBox=\"0 0 24 24\" width=\"18\" height=\"18\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" xmlns=\"http://www.w3.org/2000/svg\">\n  <path d=\"M8 3c-1.5 0-2 .8-2 2v3c0 1.4-.6 2-2 2 1.4 0 2 .6 2 2v3c0 1.2.5 2 2 2\"/>\n  <path d=\"M16 3c1.5 0 2 .8 2 2v3c0 1.4.6 2 2 2-1.4 0-2 .6-2 2v3c0 1.2-.5 2-2 2\"/>\n</svg>\n","logo":"<svg width=\"1550\" height=\"1550\" viewBox=\"0 0 1550 1550\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\">\n<path fill-rule=\"evenodd\" clip-rule=\"evenodd\" d=\"M0 0H1550V1550H0V0ZM75 75V1475H1475V75H75Z\" fill=\"black\"/>\n<path fill-rule=\"evenodd\" clip-rule=\"evenodd\" d=\"M575 300H300V650H575C616.421 650 650 616.421 650 575V375C650 333.579 616.421 300 575 300ZM225 225V725H575C657.843 725 725 657.843 725 575V375C725 292.157 657.843 225 575 225H225Z\" fill=\"black\"/>\n<path fill-rule=\"evenodd\" clip-rule=\"evenodd\" d=\"M825 368.75C825 289.359 889.359 225 968.75 225H1181.25C1260.64 225 1325 289.359 1325 368.75H1250C1250 330.78 1219.22 300 1181.25 300H968.75C930.78 300 900 330.78 900 368.75C900 406.72 930.78 437.5 968.75 437.5H1181.25C1260.64 437.5 1325 501.859 1325 581.25C1325 660.641 1260.64 725 1181.25 725H968.75C889.359 725 825 660.641 825 581.25H900C900 619.22 930.78 650 968.75 650H1181.25C1219.22 650 1250 619.22 1250 581.25C1250 543.28 1219.22 512.5 1181.25 512.5H968.75C889.359 512.5 825 448.141 825 368.75Z\" fill=\"black\"/>\n<path fill-rule=\"evenodd\" clip-rule=\"evenodd\" d=\"M575 900H300V1250H575C616.421 1250 650 1216.42 650 1175V975C650 933.579 616.421 900 575 900ZM225 825V1325H575C657.843 1325 725 1257.84 725 1175V975C725 892.157 657.843 825 575 825H225Z\" fill=\"black\"/>\n<path fill-rule=\"evenodd\" clip-rule=\"evenodd\" d=\"M825 968.75C825 889.359 889.359 825 968.75 825H1181.25C1260.64 825 1325 889.359 1325 968.75H1250C1250 930.78 1219.22 900 1181.25 900H968.75C930.78 900 900 930.78 900 968.75C900 1006.72 930.78 1037.5 968.75 1037.5H1181.25C1260.64 1037.5 1325 1101.86 1325 1181.25C1325 1260.64 1260.64 1325 1181.25 1325H968.75C889.359 1325 825 1260.64 825 1181.25H900C900 1219.22 930.78 1250 968.75 1250H1181.25C1219.22 1250 1250 1219.22 1250 1181.25C1250 1143.28 1219.22 1112.5 1181.25 1112.5H968.75C889.359 1112.5 825 1048.14 825 968.75Z\" fill=\"black\"/>\n</svg>\n"});
 
   // ── code.js ──
   // ═══════════════════════════════════════════════════════════════════════════
@@ -120,6 +121,8 @@
   //   language — optional language label (e.g. "json", "bash")
   //   label   — optional label shown in top-right corner
   //   inline  — boolean, renders as inline <code> instead of block
+  //   wrap    — boolean, wraps long lines (white-space: pre-wrap) instead of
+  //             the default horizontal-scrolling single-line-per-line layout
   //
   // Content:
   //   Text content inside the element is rendered as code.
@@ -162,6 +165,12 @@
       white-space: pre;
     }
 
+    :host([wrap]) pre {
+      white-space: pre-wrap;
+      overflow-wrap: break-word;
+      overflow-x: visible;
+    }
+
     code {
       font-family: inherit;
       font-size: inherit;
@@ -181,7 +190,7 @@
 
   class DsCode extends HTMLElement {
     static get observedAttributes() {
-      return ["language", "label", "inline"];
+      return ["language", "label", "inline", "wrap"];
     }
 
     constructor() {
@@ -666,6 +675,7 @@
       margin: 0 auto;
       padding: var(--ds-space-8) var(--ds-space-8);
       width: 100%;
+      padding-bottom: 64px;
     }
 
     .desc {
@@ -1917,6 +1927,213 @@
     }
   }
 
+  // ── icon-button.js ──
+  // ═══════════════════════════════════════════════════════════════════════════
+  // <ds-icon-button>
+  //
+  // A minimal icon-only button: a slotted icon plus a required accessible
+  // label. No built-in positioning, color variants, or sizes — that's left to
+  // whatever's using it (e.g. wrap it and set :host on the wrapper to make a
+  // fixed floating button).
+  //
+  // Attributes:
+  //   label — accessible name (required — this button has no visible text)
+  //
+  // Slots:
+  //   (default) — icon markup (e.g. an inline <svg>)
+  //
+  // Usage:
+  //   <ds-icon-button label="Toggle JSON view">
+  //     <svg>...</svg>
+  //   </ds-icon-button>
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  const ICON_BUTTON_CSS = `
+    ${BASE_RESET}
+    :host { display: inline-flex; }
+
+    button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 2.5rem;
+      height: 2.5rem;
+      padding: 0;
+      background: var(--ds-color-text);
+      color: var(--ds-color-bg-inverse);
+      border: none;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    button:hover {
+      background: var(--ds-color-accent);
+    }
+
+    ::slotted(*) {
+      display: block;
+    }
+  `;
+
+  class DsIconButton extends HTMLElement {
+    static get observedAttributes() {
+      return ["label"];
+    }
+
+    constructor() {
+      super();
+      this._shadow = createShadow(this, ICON_BUTTON_CSS);
+      this._shadow.innerHTML =
+        '<button type="button" part="button"><slot></slot></button>';
+    }
+
+    connectedCallback() {
+      this._syncLabel();
+    }
+
+    attributeChangedCallback() {
+      this._syncLabel();
+    }
+
+    _syncLabel() {
+      const btn = this._shadow.querySelector("button");
+      if (btn) btn.setAttribute("aria-label", this.getAttribute("label") || "");
+    }
+  }
+
+  // ── json-view.js ──
+  // ═══════════════════════════════════════════════════════════════════════════
+  // <ds-json-view>
+  //
+  // A "View as JSON" toggle for spec definition pages: a fixed floating
+  // button in the bottom-right corner. Closed, it shows a curly-braces icon;
+  // clicking it opens a full-viewport overlay (above the nav and content)
+  // showing the page's raw schema JSON in a <ds-code> block, and the same
+  // button swaps to a close icon to return to the documentation view.
+  //
+  // Attributes:
+  //   label — the source file path, used only for the overlay's accessible
+  //           name (e.g. "Raw JSON: common/criterion.schema.json")
+  //
+  // Slots:
+  //   (default) — the JSON content, typically a single <ds-code language="json">
+  //
+  // Usage:
+  //   <ds-json-view label="common/criterion.schema.json">
+  //     <ds-code language="json">{ ... }</ds-code>
+  //   </ds-json-view>
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  const JSON_VIEW_CSS = `
+    ${BASE_RESET}
+    :host {
+      display: block;
+      position: fixed;
+      right: var(--ds-space-4);
+      bottom: var(--ds-space-4);
+      z-index: calc(var(--ds-z-overlay, 200) + 1);
+    }
+
+    /* Positioned + given a higher z-index than the overlay below — without
+       this, the button is a plain static-flow box, and a fixed+z-indexed
+       sibling (the overlay) paints above static content regardless of DOM
+       order, so the button would vanish behind the overlay once it's open. */
+    .json-view__btn {
+      position: relative;
+      z-index: calc(var(--ds-z-overlay, 200) + 1);
+    }
+
+    .json-view__icon svg {
+      display: block;
+    }
+
+    /* Sits above everything else on the page — including the fixed nav —
+       while open. Hidden entirely (not just visually) when closed so its
+       content isn't reachable by keyboard/AT. */
+    .json-view__overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: var(--ds-z-overlay, 200);
+      background: var(--ds-color-bg-inverse);
+      overflow-y: auto;
+      padding: var(--ds-space-8) var(--ds-space-4) var(--ds-space-4);
+    }
+
+    .json-view__overlay--open {
+      display: block;
+    }
+
+    ::slotted(ds-code) {
+      display: block;
+    }
+  `;
+
+  class DsJsonView extends HTMLElement {
+    static get observedAttributes() {
+      return ["label"];
+    }
+
+    constructor() {
+      super();
+      this._shadow = createShadow(this, JSON_VIEW_CSS);
+      this._open = false;
+      this._onKeydown = this._onKeydown.bind(this);
+    }
+
+    connectedCallback() {
+      document.addEventListener("keydown", this._onKeydown);
+      this._render();
+    }
+
+    disconnectedCallback() {
+      document.removeEventListener("keydown", this._onKeydown);
+    }
+
+    _render() {
+      const label = this.getAttribute("label") || "";
+      const dialogLabel = label ? `Raw JSON: ${label}` : "Raw JSON";
+
+      this._shadow.innerHTML =
+        '<ds-icon-button class="json-view__btn" part="button" label="View as JSON">' +
+        '<span class="json-view__icon" part="icon"></span>' +
+        "</ds-icon-button>" +
+        '<div class="json-view__overlay" part="overlay" role="dialog" aria-modal="true" tabindex="-1" aria-label="' +
+        esc(dialogLabel) +
+        '">' +
+        '<div class="json-view__body" part="body"><slot></slot></div>' +
+        "</div>";
+
+      const btn = this._shadow.querySelector(".json-view__btn");
+      if (btn) btn.addEventListener("click", () => this._setOpen(!this._open));
+
+      this._updateIcon();
+    }
+
+    _setOpen(open) {
+      this._open = open;
+      const overlay = this._shadow.querySelector(".json-view__overlay");
+      if (overlay) {
+        overlay.classList.toggle("json-view__overlay--open", open);
+        if (open) overlay.focus();
+      }
+      this._updateIcon();
+    }
+
+    _updateIcon() {
+      const btn = this._shadow.querySelector(".json-view__btn");
+      const icon = this._shadow.querySelector(".json-view__icon");
+      if (btn) btn.setAttribute("label", this._open ? "Close JSON view" : "View as JSON");
+      loadIcon(this._open ? "close" : "brackets").then((svg) => {
+        if (icon) icon.innerHTML = svg;
+      });
+    }
+
+    _onKeydown(e) {
+      if (e.key === "Escape" && this._open) this._setOpen(false);
+    }
+  }
+
   // ── Registration ──
   const registry = [
     ["ds-code", DsCode],
@@ -1936,6 +2153,8 @@
     ["ds-callout", DsCallout],
     ["ds-tag", DsTag],
     ["ds-logo", DsLogo],
+    ["ds-icon-button", DsIconButton],
+    ["ds-json-view", DsJsonView],
   ];
 
   for (const [name, ctor] of registry) {

@@ -109,7 +109,100 @@
     <div class="content__container">
         <div class="content__inner">
 
-          <ds-def-index>
+          <ds-json-view label="metadata/governance.schema.json">
+  <ds-code language="json" wrap>{
+  &quot;$schema&quot;: &quot;https://json-schema.org/draft/2020-12/schema&quot;,
+  &quot;$id&quot;: &quot;https://designsystemdocspec.org/v0.15.2/metadata/governance.schema.json&quot;,
+  &quot;title&quot;: &quot;DSDS Governance Metadata Field&quot;,
+  &quot;description&quot;: &quot;Who's accountable for this entity's docs, and when someone last confirmed they're accurate. Answers 'who do I ask when the doc contradicts the code,' and lets tools flag docs nobody has checked in a while. Different from `lastUpdated`: that records when the doc changed; this records when someone confirmed it's still true. A doc untouched for a year but reviewed last month is healthy.&quot;,
+  &quot;$defs&quot;: {
+    &quot;owner&quot;: {
+      &quot;description&quot;: &quot;Who's accountable for this entity's docs. A bare string names the owner — the common case. Use the object form to add contact info. Owners SHOULD be teams, roles, or group aliases ('Design Systems', '@acme/design-system'), not individuals — a named person goes stale the moment they leave, which is exactly what this field is meant to survive. Tools SHOULD show the owner wherever a reader might need to flag a problem.&quot;,
+      &quot;oneOf&quot;: [
+        {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;description&quot;: &quot;Name or alias of the owning team, role, or group (e.g., 'Design Systems', '@acme/design-system').&quot;,
+          &quot;minLength&quot;: 1
+        },
+        {
+          &quot;type&quot;: &quot;object&quot;,
+          &quot;description&quot;: &quot;The owner's name plus a way to reach them.&quot;,
+          &quot;required&quot;: [
+            &quot;name&quot;
+          ],
+          &quot;properties&quot;: {
+            &quot;name&quot;: {
+              &quot;type&quot;: &quot;string&quot;,
+              &quot;description&quot;: &quot;Name or alias of the owning team, role, or group (e.g., 'Design Systems'). SHOULD name a team or role, not an individual.&quot;,
+              &quot;minLength&quot;: 1
+            },
+            &quot;contact&quot;: {
+              &quot;type&quot;: &quot;string&quot;,
+              &quot;description&quot;: &quot;How to reach the owner — a URL, email, or channel (e.g., 'design-system@acme.com', '#design-system'). Freeform; tools SHOULD link it when it parses as a URL or email.&quot;,
+              &quot;minLength&quot;: 1
+            }
+          },
+          &quot;additionalProperties&quot;: false
+        }
+      ]
+    },
+    &quot;lastReviewed&quot;: {
+      &quot;description&quot;: &quot;When a human last confirmed this entity's docs are accurate. A bare date ('2026-06-12') covers the common case. Use the object form to record who reviewed it and what they found. A review doesn't have to change anything: confirming the doc is correct updates `lastReviewed` and leaves `lastUpdated` alone. Tools MAY treat an old or missing `lastReviewed` as a staleness signal; agents SHOULD prefer more recently reviewed docs when sources disagree.&quot;,
+      &quot;oneOf&quot;: [
+        {
+          &quot;$ref&quot;: &quot;../common/dated-note.schema.json#/$defs/isoDate&quot;,
+          &quot;description&quot;: &quot;ISO 8601 date (YYYY-MM-DD) of the most recent review of this entity's documentation.&quot;
+        },
+        {
+          &quot;type&quot;: &quot;object&quot;,
+          &quot;description&quot;: &quot;The date plus who reviewed it, what version it was checked against, and an optional note on the outcome.&quot;,
+          &quot;required&quot;: [
+            &quot;date&quot;
+          ],
+          &quot;properties&quot;: {
+            &quot;date&quot;: {
+              &quot;$ref&quot;: &quot;../common/dated-note.schema.json#/$defs/isoDate&quot;,
+              &quot;description&quot;: &quot;ISO 8601 date (YYYY-MM-DD) of the most recent review of this entity's documentation.&quot;
+            },
+            &quot;reviewedBy&quot;: {
+              &quot;type&quot;: &quot;string&quot;,
+              &quot;description&quot;: &quot;Who did the review — a team, role, or person (e.g., 'jane.doe'). Unlike `owner`, naming a person here is fine — it's a record of what happened, not an ongoing responsibility.&quot;,
+              &quot;minLength&quot;: 1
+            },
+            &quot;note&quot;: {
+              &quot;$ref&quot;: &quot;../common/dated-note.schema.json#/$defs/plainNote&quot;,
+              &quot;description&quot;: &quot;Plain-text note on the review outcome (e.g., 'Verified against v3.1; prop table still accurate', 'Guidelines section needs a rewrite — tracked in DS-412'). MUST NOT contain markup.&quot;
+            },
+            &quot;reviewedAgainst&quot;: {
+              &quot;type&quot;: &quot;string&quot;,
+              &quot;description&quot;: &quot;The version the doc was checked against in this review (e.g., '@acme/ui@3.1.0'). Lets tools spot drift — if the code has moved past this version, the doc MAY be stale even if recently reviewed. Lives inside the review record, so it can't exist without one.&quot;,
+              &quot;minLength&quot;: 1
+            }
+          },
+          &quot;additionalProperties&quot;: false
+        }
+      ]
+    },
+    &quot;governance&quot;: {
+      &quot;type&quot;: &quot;object&quot;,
+      &quot;description&quot;: &quot;Who's accountable for this entity's docs, and their review state. `owner` is required — without one, this field answers nothing it's meant to. `lastReviewed` is optional but SHOULD be set once you have a review process; its object form records who reviewed it and which version, so a tool can answer 'is this verified, against what, and who vouches for it.'&quot;,
+      &quot;required&quot;: [
+        &quot;owner&quot;
+      ],
+      &quot;properties&quot;: {
+        &quot;owner&quot;: {
+          &quot;$ref&quot;: &quot;#/$defs/owner&quot;
+        },
+        &quot;lastReviewed&quot;: {
+          &quot;$ref&quot;: &quot;#/$defs/lastReviewed&quot;
+        }
+      },
+      &quot;additionalProperties&quot;: false
+    }
+  }
+}</ds-code>
+</ds-json-view>
+<ds-def-index>
 <p><strong>3 definitions</strong> in this file:</p>
 <ul>
 <li><a href="#governance"><ds-code inline>governance</ds-code></a></li>

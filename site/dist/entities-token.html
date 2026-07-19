@@ -109,7 +109,186 @@
     <div class="content__container">
         <div class="content__inner">
 
-          <ds-def-index>
+          <ds-json-view label="entities/token.schema.json">
+  <ds-code language="json" wrap>{
+  &quot;$schema&quot;: &quot;https://json-schema.org/draft/2020-12/schema&quot;,
+  &quot;$id&quot;: &quot;https://designsystemdocspec.org/v0.15.2/entities/token.schema.json&quot;,
+  &quot;title&quot;: &quot;DSDS Token and Token Group Definitions&quot;,
+  &quot;description&quot;: &quot;Docs for individual tokens and token groups. Token values, aliases, and type live in the DTCG file — DSDS documents only the purpose, guidelines, and organization. A token group is a flexible unit: a full collection, a family (all color tokens), or a sub-family (one hue). Groups can hold tokens, nested groups, or both, forming a hierarchy. Both tokens and groups have an optional display `name` — when it's left out, the `identifier` serves as the label. Description and status are optional, to keep things terse at scale.&quot;,
+  &quot;$defs&quot;: {
+    &quot;token&quot;: {
+      &quot;type&quot;: &quot;object&quot;,
+      &quot;description&quot;: &quot;One design token: identifier, type, use cases, guidelines, accessibility notes. `name` is optional — left out, the `identifier` is the display label. Description and status are also optional. When a token is inside a group and skips its own status, it inherits the group's.&quot;,
+      &quot;required&quot;: [
+        &quot;kind&quot;,
+        &quot;identifier&quot;
+      ],
+      &quot;properties&quot;: {
+        &quot;kind&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;const&quot;: &quot;token&quot;,
+          &quot;description&quot;: &quot;Identifies this entity as a token.&quot;
+        },
+        &quot;identifier&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;description&quot;: &quot;The token identifier. No fixed pattern, to support DTCG and design-tool naming styles (dots, slashes, dashes). Also serves as the display label.&quot;
+        },
+        &quot;name&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;description&quot;: &quot;Optional display name (e.g., 'Primary Text'). Left out, the `identifier` is the label — the same rule every entity follows.&quot;
+        },
+        &quot;tokenType&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;description&quot;: &quot;The token's type, per the DTCG spec (e.g., 'color', 'dimension', 'fontFamily', 'fontWeight', 'duration', 'cubicBezier', 'number', 'shadow'). MUST be set here unless a parent group already declares it — a token inherits the group's value if it skips its own. Every token needs a `tokenType` somewhere in its ancestry; having none anywhere is a defect.&quot;
+        },
+        &quot;description&quot;: {
+          &quot;$ref&quot;: &quot;../common/rich-text.schema.json#/$defs/richText&quot;,
+          &quot;description&quot;: &quot;What this token represents and when to use it. Optional, so keep it terse at scale. CommonMark supported.&quot;
+        },
+        &quot;source&quot;: {
+          &quot;type&quot;: &quot;object&quot;,
+          &quot;description&quot;: &quot;Points to the DTCG (W3C Design Tokens) file. DSDS doesn't copy token values — the DTCG file is the source of truth for resolved values, aliases, and type.&quot;,
+          &quot;required&quot;: [
+            &quot;file&quot;
+          ],
+          &quot;properties&quot;: {
+            &quot;file&quot;: {
+              &quot;type&quot;: &quot;string&quot;,
+              &quot;description&quot;: &quot;URI or relative path to the DTCG file containing this token's definition.&quot;
+            },
+            &quot;path&quot;: {
+              &quot;type&quot;: &quot;string&quot;,
+              &quot;description&quot;: &quot;The dot-path to this token within the DTCG file (e.g., 'color.text.primary').&quot;
+            }
+          },
+          &quot;additionalProperties&quot;: false
+        },
+        &quot;metadata&quot;: {
+          &quot;$ref&quot;: &quot;../metadata/metadata.schema.json#/$defs/entityMetadata&quot;,
+          &quot;description&quot;: &quot;Optional metadata: the shared entityMetadata fields (see metadata/metadata.schema.json).&quot;
+        },
+        &quot;relationships&quot;: {
+          &quot;$ref&quot;: &quot;../common/relationship.schema.json#/$defs/relationships&quot;,
+          &quot;description&quot;: &quot;Links to other entities — e.g. 'depends-on' a token this one aliases, 'part-of' a token group. Tools derive the reverse edges.&quot;
+        },
+        &quot;documentBlocks&quot;: {
+          &quot;type&quot;: &quot;array&quot;,
+          &quot;description&quot;: &quot;All structured docs for this token, in order. Tokens accept the general kinds only. Tools SHOULD keep this order for display.&quot;,
+          &quot;items&quot;: {
+            &quot;$ref&quot;: &quot;../document-blocks/document-blocks.schema.json#/$defs/generalDocumentBlock&quot;
+          },
+          &quot;minItems&quot;: 1
+        },
+        &quot;agentDocumentBlocks&quot;: {
+          &quot;type&quot;: &quot;array&quot;,
+          &quot;description&quot;: &quot;Docs for agents (AI/LLM) only, using the same block kinds as `documentBlocks`. Put anything a human needs in `documentBlocks` — that's the default. Use this only for things that would be noise to a person: hard must/must-not rules, notes that correct a mistake agents commonly make (like picking a similar but wrong entity), evidence-backed constraints, and machine-checkable criteria. A rule humans need too still belongs in `documentBlocks`. This adds to the human docs, it never replaces them. Tools MUST NOT show these blocks to humans. Agents SHOULD read both arrays, human docs first.&quot;,
+          &quot;items&quot;: {
+            &quot;$ref&quot;: &quot;../document-blocks/document-blocks.schema.json#/$defs/generalDocumentBlock&quot;
+          },
+          &quot;minItems&quot;: 1
+        },
+        &quot;$extensions&quot;: {
+          &quot;$ref&quot;: &quot;../common/extensions.schema.json#/$defs/extensions&quot;
+        }
+      },
+      &quot;additionalProperties&quot;: false
+    },
+    &quot;tokenGroup&quot;: {
+      &quot;type&quot;: &quot;object&quot;,
+      &quot;description&quot;: &quot;A group of related tokens — a full collection, a family (all color tokens), a sub-family (one hue with its scale), or any other grouping. Groups nest to form a hierarchy: a top-level 'color' group might hold 'color-text', 'color-background', and 'color-border', each with its own tokens. `name` is optional — left out, the `identifier` is the label. Description and status are also optional. A child that skips its own status inherits the group's.&quot;,
+      &quot;required&quot;: [
+        &quot;kind&quot;,
+        &quot;identifier&quot;
+      ],
+      &quot;properties&quot;: {
+        &quot;kind&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;const&quot;: &quot;token-group&quot;,
+          &quot;description&quot;: &quot;Identifies this entity as a token-group.&quot;
+        },
+        &quot;identifier&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;description&quot;: &quot;The token group identifier. No fixed pattern, to support DTCG and design-tool naming styles (dots, slashes, dashes). Also serves as the display label.&quot;
+        },
+        &quot;name&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;description&quot;: &quot;Optional display name (e.g., 'Primary Text'). Left out, the `identifier` is the label — the same rule every entity follows.&quot;
+        },
+        &quot;description&quot;: {
+          &quot;$ref&quot;: &quot;../common/rich-text.schema.json#/$defs/richText&quot;,
+          &quot;description&quot;: &quot;What this token group covers and how it is organized. Optional, so keep it terse at scale. CommonMark supported.&quot;
+        },
+        &quot;tokenType&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;description&quot;: &quot;If every token in this group shares a type, declare it here instead of repeating it on each child. A child MAY override it. Common values: 'color', 'dimension', 'fontFamily', 'fontWeight', 'duration', 'cubicBezier', 'number', 'shadow'.&quot;
+        },
+        &quot;source&quot;: {
+          &quot;type&quot;: &quot;object&quot;,
+          &quot;description&quot;: &quot;Points to the DTCG (W3C Design Tokens) file. DSDS doesn't copy token values — the DTCG file is the source of truth for resolved values, aliases, and type.&quot;,
+          &quot;required&quot;: [
+            &quot;file&quot;
+          ],
+          &quot;properties&quot;: {
+            &quot;file&quot;: {
+              &quot;type&quot;: &quot;string&quot;,
+              &quot;description&quot;: &quot;URI or relative path to the DTCG file containing this group's definition.&quot;
+            },
+            &quot;path&quot;: {
+              &quot;type&quot;: &quot;string&quot;,
+              &quot;description&quot;: &quot;The dot-path to this group within the DTCG file (e.g., 'color.text').&quot;
+            }
+          },
+          &quot;additionalProperties&quot;: false
+        },
+        &quot;children&quot;: {
+          &quot;type&quot;: &quot;array&quot;,
+          &quot;description&quot;: &quot;The tokens and/or nested groups inside this group, in order. Order often shows a real progression (lightest to darkest, smallest to largest), so tools SHOULD keep it. Children inherit `tokenType` and status from this group when they skip their own.&quot;,
+          &quot;items&quot;: {
+            &quot;oneOf&quot;: [
+              {
+                &quot;$ref&quot;: &quot;#/$defs/token&quot;
+              },
+              {
+                &quot;$ref&quot;: &quot;#/$defs/tokenGroup&quot;
+              }
+            ]
+          },
+          &quot;minItems&quot;: 1
+        },
+        &quot;metadata&quot;: {
+          &quot;$ref&quot;: &quot;../metadata/metadata.schema.json#/$defs/entityMetadata&quot;,
+          &quot;description&quot;: &quot;Optional metadata: the shared entityMetadata fields (see metadata/metadata.schema.json).&quot;
+        },
+        &quot;relationships&quot;: {
+          &quot;$ref&quot;: &quot;../common/relationship.schema.json#/$defs/relationships&quot;,
+          &quot;description&quot;: &quot;Links to other entities — e.g. 'depends-on' a token this one aliases, 'part-of' a token group. Tools derive the reverse edges.&quot;
+        },
+        &quot;documentBlocks&quot;: {
+          &quot;type&quot;: &quot;array&quot;,
+          &quot;description&quot;: &quot;All structured docs for this group, in order — the general kinds only. Use this for docs about the group as a whole; put docs for individual tokens on the token itself, inside `children`.&quot;,
+          &quot;items&quot;: {
+            &quot;$ref&quot;: &quot;../document-blocks/document-blocks.schema.json#/$defs/generalDocumentBlock&quot;
+          },
+          &quot;minItems&quot;: 1
+        },
+        &quot;agentDocumentBlocks&quot;: {
+          &quot;type&quot;: &quot;array&quot;,
+          &quot;description&quot;: &quot;Docs for agents (AI/LLM) only, using the same block kinds as `documentBlocks`. Put anything a human needs in `documentBlocks` — that's the default. Use this only for things that would be noise to a person: hard must/must-not rules, notes that correct a mistake agents commonly make (like picking a similar but wrong entity), evidence-backed constraints, and machine-checkable criteria. A rule humans need too still belongs in `documentBlocks`. This adds to the human docs, it never replaces them. Tools MUST NOT show these blocks to humans. Agents SHOULD read both arrays, human docs first.&quot;,
+          &quot;items&quot;: {
+            &quot;$ref&quot;: &quot;../document-blocks/document-blocks.schema.json#/$defs/generalDocumentBlock&quot;
+          },
+          &quot;minItems&quot;: 1
+        },
+        &quot;$extensions&quot;: {
+          &quot;$ref&quot;: &quot;../common/extensions.schema.json#/$defs/extensions&quot;
+        }
+      },
+      &quot;additionalProperties&quot;: false
+    }
+  }
+}</ds-code>
+</ds-json-view>
+<ds-def-index>
 <p><strong>2 definitions</strong> in this file:</p>
 <ul>
 <li><a href="#tokengroup"><ds-code inline>tokenGroup</ds-code></a></li>

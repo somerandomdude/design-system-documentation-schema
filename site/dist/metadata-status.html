@@ -109,7 +109,73 @@
     <div class="content__container">
         <div class="content__inner">
 
-          <ds-def-section name="status" anchor="status" description="Lifecycle status of the entity. A bare string sets the overall status (e.g., 'stable', 'beta') and covers the common case. Use the object form to add per-platform readiness, an explanatory note, or a deprecation notice. A deprecated entity MUST use the object form, because deprecation needs a deprecationNotice that says what to use instead.">
+          <ds-json-view label="metadata/status.schema.json">
+  <ds-code language="json" wrap>{
+  &quot;$schema&quot;: &quot;https://json-schema.org/draft/2020-12/schema&quot;,
+  &quot;$id&quot;: &quot;https://designsystemdocspec.org/v0.15.2/metadata/status.schema.json&quot;,
+  &quot;title&quot;: &quot;DSDS Status Metadata Field&quot;,
+  &quot;description&quot;: &quot;Lifecycle status of an entity. A bare string sets the overall status. The object form adds per-platform readiness, an optional explanatory note, and a deprecation notice.&quot;,
+  &quot;$defs&quot;: {
+    &quot;status&quot;: {
+      &quot;description&quot;: &quot;Lifecycle status of the entity. A bare string sets the overall status (e.g., 'stable', 'beta') and covers the common case. Use the object form to add per-platform readiness, an explanatory note, or a deprecation notice. A deprecated entity MUST use the object form, because deprecation needs a deprecationNotice that says what to use instead.&quot;,
+      &quot;oneOf&quot;: [
+        {
+          &quot;$ref&quot;: &quot;../common/status.schema.json#/$defs/statusValue&quot;,
+          &quot;not&quot;: {
+            &quot;const&quot;: &quot;deprecated&quot;
+          }
+        },
+        {
+          &quot;type&quot;: &quot;object&quot;,
+          &quot;description&quot;: &quot;The full form: overall status, optional per-platform readiness, and a deprecation notice when needed. An entity MAY be 'stable' overall while some platforms are still 'experimental' or 'draft'.&quot;,
+          &quot;required&quot;: [
+            &quot;overall&quot;
+          ],
+          &quot;properties&quot;: {
+            &quot;overall&quot;: {
+              &quot;$ref&quot;: &quot;../common/status.schema.json#/$defs/statusValue&quot;,
+              &quot;description&quot;: &quot;The entity's overall status — an editorial call on maturity that doesn't have to match its most or least advanced platform. Tools SHOULD show this as the main status indicator.&quot;
+            },
+            &quot;note&quot;: {
+              &quot;$ref&quot;: &quot;../common/dated-note.schema.json#/$defs/plainNote&quot;,
+              &quot;description&quot;: &quot;Optional plain-text note explaining what this status represents for the entity — the reasoning behind it, its scope, or any caveats (e.g., 'Stable on web; the API is frozen and changes follow semver. Mobile parity is still in progress.'). Separate from deprecationNotice, which covers only the deprecated case. Tools MAY surface this alongside the status indicator.&quot;
+            },
+            &quot;platforms&quot;: {
+              &quot;type&quot;: &quot;object&quot;,
+              &quot;description&quot;: &quot;Per-platform readiness. Keys are platform identifiers (freeform strings; common values include 'react', 'web-component', 'ios', 'android', 'flutter', 'figma', 'sketch', 'compose'). Values describe the entity's status on that platform.&quot;,
+              &quot;additionalProperties&quot;: {
+                &quot;$ref&quot;: &quot;../common/status.schema.json#/$defs/platformStatus&quot;
+              },
+              &quot;minProperties&quot;: 1,
+              &quot;propertyNames&quot;: {
+                &quot;pattern&quot;: &quot;^[a-z][a-z0-9-]*$&quot;
+              }
+            },
+            &quot;deprecationNotice&quot;: {
+              &quot;$ref&quot;: &quot;../common/status.schema.json#/$defs/deprecationNotice&quot;,
+              &quot;description&quot;: &quot;Required when overall status is 'deprecated'. MUST say what to use instead (non-empty) and give a migration path. Tools SHOULD display this prominently next to the status indicator.&quot;
+            }
+          },
+          &quot;if&quot;: {
+            &quot;properties&quot;: {
+              &quot;overall&quot;: {
+                &quot;const&quot;: &quot;deprecated&quot;
+              }
+            }
+          },
+          &quot;then&quot;: {
+            &quot;required&quot;: [
+              &quot;deprecationNotice&quot;
+            ]
+          },
+          &quot;additionalProperties&quot;: false
+        }
+      ]
+    }
+  }
+}</ds-code>
+</ds-json-view>
+<ds-def-section name="status" anchor="status" description="Lifecycle status of the entity. A bare string sets the overall status (e.g., 'stable', 'beta') and covers the common case. Use the object form to add per-platform readiness, an explanatory note, or a deprecation notice. A deprecated entity MUST use the object form, because deprecation needs a deprecationNotice that says what to use instead.">
 <p><strong>Accepts one of:</strong></p>
 <ul>
 <li><a href="common-status.html#statusvalue">statusValue</a></li>

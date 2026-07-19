@@ -109,7 +109,111 @@
     <div class="content__container">
         <div class="content__inner">
 
-          <ds-def-index>
+          <ds-json-view label="document-blocks/guidelines.schema.json">
+  <ds-code language="json" wrap>{
+  &quot;$schema&quot;: &quot;https://json-schema.org/draft/2020-12/schema&quot;,
+  &quot;$id&quot;: &quot;https://designsystemdocspec.org/v0.15.2/document-blocks/guidelines.schema.json&quot;,
+  &quot;title&quot;: &quot;DSDS Guidelines Document Block&quot;,
+  &quot;description&quot;: &quot;Usage rules for an artifact. Each item pairs a rule with why it exists. Guidelines say what to do (or not do), and why.&quot;,
+  &quot;$defs&quot;: {
+    &quot;guidelineEntry&quot;: {
+      &quot;type&quot;: &quot;object&quot;,
+      &quot;description&quot;: &quot;One rule. `guidance` is the rule; `rationale` says why. `level` sets how strict it is. `category` groups it by discipline. `target` points at a specific part. `criteria` are tests that prove the rule holds. `references` cites outside standards like WCAG.&quot;,
+      &quot;required&quot;: [
+        &quot;guidance&quot;,
+        &quot;level&quot;
+      ],
+      &quot;properties&quot;: {
+        &quot;guidance&quot;: {
+          &quot;$ref&quot;: &quot;../common/rich-text.schema.json#/$defs/richText&quot;,
+          &quot;description&quot;: &quot;The rule itself. MUST be concrete and clear — not 'use sparingly' or 'when possible'.&quot;
+        },
+        &quot;rationale&quot;: {
+          &quot;$ref&quot;: &quot;../common/rich-text.schema.json#/$defs/richText&quot;,
+          &quot;description&quot;: &quot;Why the rule exists — cite evidence, accessibility standards, or research when you have it. MUST NOT just repeat the guidance.&quot;
+        },
+        &quot;level&quot;: {
+          &quot;$ref&quot;: &quot;../common/criterion.schema.json#/$defs/conformanceLevel&quot;,
+          &quot;description&quot;: &quot;How strict the rule is: 'must' (breaking it is a defect), 'should' (follow it unless you have a good reason not to), 'should-not', or 'must-not'. Agents treat must/must-not as non-negotiable when writing or reviewing code.&quot;
+        },
+        &quot;evidence&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;description&quot;: &quot;Data backing this rule — test results, audit findings, or cited sources (e.g., '9/10 agent test runs failed touch-target minimums below 36px'). Kept separate from `rationale` so tools can tell tested rules from conventional guidance.&quot;
+        },
+        &quot;category&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;description&quot;: &quot;Groups the rule by discipline: 'visual-design', 'interaction', 'accessibility', 'content', 'motion', or 'development'. Custom values allowed, in lowercase kebab-case.&quot;
+        },
+        &quot;target&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;description&quot;: &quot;The part this rule applies to (e.g., 'label', 'icon'). Left out, it applies to the whole artifact.&quot;
+        },
+        &quot;criteria&quot;: {
+          &quot;type&quot;: &quot;array&quot;,
+          &quot;description&quot;: &quot;Tests that prove this rule is met. Only add these when success can be objectively verified. Test results belong in `evidence`, not here.&quot;,
+          &quot;items&quot;: {
+            &quot;$ref&quot;: &quot;../common/criterion.schema.json#/$defs/criterion&quot;
+          },
+          &quot;minItems&quot;: 1
+        },
+        &quot;references&quot;: {
+          &quot;type&quot;: &quot;array&quot;,
+          &quot;description&quot;: &quot;Outside standards this rule follows (e.g., WCAG, MDN, platform guidelines) — a URL and an optional label.&quot;,
+          &quot;items&quot;: {
+            &quot;$ref&quot;: &quot;../common/criterion.schema.json#/$defs/reference&quot;
+          },
+          &quot;minItems&quot;: 1
+        },
+        &quot;examples&quot;: {
+          &quot;type&quot;: &quot;array&quot;,
+          &quot;description&quot;: &quot;Examples showing encouraged and discouraged approaches.&quot;,
+          &quot;items&quot;: {
+            &quot;$ref&quot;: &quot;../common/example.schema.json#/$defs/example&quot;
+          },
+          &quot;minItems&quot;: 1
+        },
+        &quot;tags&quot;: {
+          &quot;type&quot;: &quot;array&quot;,
+          &quot;items&quot;: {
+            &quot;type&quot;: &quot;string&quot;
+          },
+          &quot;description&quot;: &quot;Freeform keywords that relate guidelines across categories and disciplines (e.g., 'rtl', 'localization', 'validation', 'contrast').&quot;,
+          &quot;minItems&quot;: 1
+        }
+      },
+      &quot;additionalProperties&quot;: false
+    },
+    &quot;guidelines&quot;: {
+      &quot;type&quot;: &quot;object&quot;,
+      &quot;description&quot;: &quot;Usage rules for an artifact — each a do/don't statement with a reason. Answers *how* to use it correctly. For *whether* to use it, see `use-cases`; for the beliefs behind the rules (on foundations), see `principles`. Accessibility and content rules go here too (categories 'accessibility'/'content') — the `accessibility` and `content` blocks are for structured reference data, not rules.&quot;,
+      &quot;required&quot;: [
+        &quot;kind&quot;,
+        &quot;items&quot;
+      ],
+      &quot;properties&quot;: {
+        &quot;items&quot;: {
+          &quot;type&quot;: &quot;array&quot;,
+          &quot;description&quot;: &quot;The rules, in order. Tools SHOULD keep this order; authors SHOULD lead with the most important or group by category.&quot;,
+          &quot;items&quot;: {
+            &quot;$ref&quot;: &quot;#/$defs/guidelineEntry&quot;
+          },
+          &quot;minItems&quot;: 1
+        },
+        &quot;kind&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;const&quot;: &quot;guidelines&quot;,
+          &quot;description&quot;: &quot;Identifies this block as a guidelines spec.&quot;
+        },
+        &quot;$extensions&quot;: {
+          &quot;$ref&quot;: &quot;../common/extensions.schema.json#/$defs/extensions&quot;
+        }
+      },
+      &quot;additionalProperties&quot;: false
+    }
+  }
+}</ds-code>
+</ds-json-view>
+<ds-def-index>
 <p><strong>2 definitions</strong> in this file:</p>
 <ul>
 <li><a href="#guidelines"><ds-code inline>guidelines</ds-code></a></li>

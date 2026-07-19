@@ -109,7 +109,65 @@
     <div class="content__container">
         <div class="content__inner">
 
-          <ds-def-index>
+          <ds-json-view label="common/status.schema.json">
+  <ds-code language="json" wrap>{
+  &quot;$schema&quot;: &quot;https://json-schema.org/draft/2020-12/schema&quot;,
+  &quot;$id&quot;: &quot;https://designsystemdocspec.org/v0.15.2/common/status.schema.json&quot;,
+  &quot;title&quot;: &quot;DSDS Status Definition&quot;,
+  &quot;description&quot;: &quot;Shared status vocabulary. `statusValue` is the lifecycle string (draft, experimental, stable, deprecated, or custom). `platformStatus` captures one platform's readiness, and requires a `deprecationNotice` when that platform is deprecated.&quot;,
+  &quot;$defs&quot;: {
+    &quot;statusValue&quot;: {
+      &quot;type&quot;: &quot;string&quot;,
+      &quot;pattern&quot;: &quot;^[a-z][a-z0-9-]*$&quot;,
+      &quot;description&quot;: &quot;A lifecycle status value. MUST be lowercase kebab-case. Standard values: 'draft' (in development), 'experimental' (available; API may change), 'stable' (production-ready, semver), 'deprecated' (scheduled for removal). Custom values (ex: 'sunset', 'beta') are allowed and MUST follow the same pattern.&quot;
+    },
+    &quot;deprecationNotice&quot;: {
+      &quot;type&quot;: &quot;string&quot;,
+      &quot;minLength&quot;: 1,
+      &quot;description&quot;: &quot;A non-empty notice for a deprecated artifact. MUST say what to use instead and, where one exists, give a migration path.&quot;
+    },
+    &quot;platformStatus&quot;: {
+      &quot;type&quot;: &quot;object&quot;,
+      &quot;description&quot;: &quot;Readiness of an artifact on one platform: lifecycle stage, the version it landed in, and an optional deprecation notice.&quot;,
+      &quot;required&quot;: [
+        &quot;status&quot;
+      ],
+      &quot;properties&quot;: {
+        &quot;status&quot;: {
+          &quot;$ref&quot;: &quot;#/$defs/statusValue&quot;,
+          &quot;description&quot;: &quot;Lifecycle status on this platform. Same vocabulary as overall status; custom values allowed.&quot;
+        },
+        &quot;since&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;description&quot;: &quot;The version this entity became available on this platform.&quot;
+        },
+        &quot;deprecationNotice&quot;: {
+          &quot;$ref&quot;: &quot;#/$defs/deprecationNotice&quot;,
+          &quot;description&quot;: &quot;Required when status is 'deprecated'; says what to use instead on this platform.&quot;
+        },
+        &quot;note&quot;: {
+          &quot;$ref&quot;: &quot;dated-note.schema.json#/$defs/plainNote&quot;,
+          &quot;description&quot;: &quot;Free-text notes on this platform's status (ex: 'Web Component wrapper; native implementation planned for v4').&quot;
+        }
+      },
+      &quot;if&quot;: {
+        &quot;properties&quot;: {
+          &quot;status&quot;: {
+            &quot;const&quot;: &quot;deprecated&quot;
+          }
+        }
+      },
+      &quot;then&quot;: {
+        &quot;required&quot;: [
+          &quot;deprecationNotice&quot;
+        ]
+      },
+      &quot;additionalProperties&quot;: false
+    }
+  }
+}</ds-code>
+</ds-json-view>
+<ds-def-index>
 <p><strong>3 definitions</strong> in this file:</p>
 <ul>
 <li><a href="#platformstatus"><ds-code inline>platformStatus</ds-code></a></li>
@@ -124,7 +182,7 @@
   <ds-prop name="deprecationNotice" type="&lt;ds-type-ref href=&quot;common-status.html#deprecationnotice&quot;&gt;deprecationNotice&lt;/ds-type-ref&gt;">Required when status is 'deprecated'; says what to use instead on this platform.</ds-prop>
   <ds-prop name="note" type="&lt;ds-type-ref href=&quot;common-dated-note.html#plainnote&quot;&gt;plainNote&lt;/ds-type-ref&gt;">Free-text notes on this platform's status (ex: 'Web Component wrapper; native implementation planned for v4').</ds-prop>
 </ds-prop-table>
-<ds-callout bordered variant="warning"><strong>Conditional:</strong> When <ds-code inline>status</ds-code> is <ds-code inline>"deprecated"</ds-code>, then <ds-code inline>deprecationNotice</ds-code> is required.</ds-callout>
+<ds-callout variant="warning" title="Conditional:">When <ds-code inline>status</ds-code> is <ds-code inline>"deprecated"</ds-code>, then <ds-code inline>deprecationNotice</ds-code> is required.</ds-callout>
 <ds-cross-refs><strong>References:</strong> <ds-type-ref href="common-status.html#statusvalue">statusValue</ds-type-ref>, <ds-type-ref href="common-status.html#deprecationnotice">deprecationNotice</ds-type-ref>, <ds-type-ref href="common-dated-note.html#plainnote">plainNote</ds-type-ref></ds-cross-refs>
 <ds-def-example>
 <ds-code language="json" label="example">[

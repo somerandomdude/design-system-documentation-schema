@@ -109,7 +109,91 @@
     <div class="content__container">
         <div class="content__inner">
 
-          <ds-def-index>
+          <ds-json-view label="document-blocks/sections.schema.json">
+  <ds-code language="json" wrap>{
+  &quot;$schema&quot;: &quot;https://json-schema.org/draft/2020-12/schema&quot;,
+  &quot;$id&quot;: &quot;https://designsystemdocspec.org/v0.15.2/document-blocks/sections.schema.json&quot;,
+  &quot;title&quot;: &quot;DSDS Sections Document Block&quot;,
+  &quot;description&quot;: &quot;Free-form documentation content, organized into titled sections that can nest. Use it for anything that doesn't fit the structured blocks (api, anatomy, variants) — overviews, explanations, rationale. Each section has a heading, a body, examples, links, and optional sub-sections.&quot;,
+  &quot;$defs&quot;: {
+    &quot;sectionEntry&quot;: {
+      &quot;type&quot;: &quot;object&quot;,
+      &quot;description&quot;: &quot;One section: a heading, a body, and optionally examples, links, and nested sub-sections. Sub-sections let you build a heading hierarchy (h2 → h3 → h4). Only `title` is required — a section can be just a heading that groups its children.&quot;,
+      &quot;required&quot;: [
+        &quot;title&quot;
+      ],
+      &quot;properties&quot;: {
+        &quot;title&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;description&quot;: &quot;The section heading (e.g., 'Installation', 'Core concepts').&quot;
+        },
+        &quot;anchor&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;pattern&quot;: &quot;^[a-z][a-z0-9-]*$&quot;,
+          &quot;description&quot;: &quot;A stable URL fragment for linking to this section (e.g., 'installation'). MUST be lowercase kebab-case and unique in the block. Left out, tools MAY derive one from the title.&quot;
+        },
+        &quot;body&quot;: {
+          &quot;$ref&quot;: &quot;../common/rich-text.schema.json#/$defs/richText&quot;,
+          &quot;description&quot;: &quot;The section's content, as markdown. Can be omitted when the section only groups sub-sections.&quot;
+        },
+        &quot;examples&quot;: {
+          &quot;type&quot;: &quot;array&quot;,
+          &quot;description&quot;: &quot;Examples for this section — code, images, videos, or live links.&quot;,
+          &quot;items&quot;: {
+            &quot;$ref&quot;: &quot;../common/example.schema.json#/$defs/example&quot;
+          },
+          &quot;minItems&quot;: 1
+        },
+        &quot;links&quot;: {
+          &quot;type&quot;: &quot;array&quot;,
+          &quot;description&quot;: &quot;'See also' links for this section. To reference another entity, use `relationships` instead.&quot;,
+          &quot;items&quot;: {
+            &quot;$ref&quot;: &quot;../common/link.schema.json#/$defs/link&quot;
+          },
+          &quot;minItems&quot;: 1
+        },
+        &quot;sections&quot;: {
+          &quot;type&quot;: &quot;array&quot;,
+          &quot;description&quot;: &quot;Sub-sections nested beneath this one, to any depth. Tools SHOULD keep this order.&quot;,
+          &quot;items&quot;: {
+            &quot;$ref&quot;: &quot;#/$defs/sectionEntry&quot;
+          },
+          &quot;minItems&quot;: 1
+        }
+      },
+      &quot;additionalProperties&quot;: false
+    },
+    &quot;sections&quot;: {
+      &quot;type&quot;: &quot;object&quot;,
+      &quot;description&quot;: &quot;One or more titled sections of documentation content. Use it for anything a guide needs that the structured blocks don't capture: overviews, concepts, rationale, FAQs.&quot;,
+      &quot;required&quot;: [
+        &quot;kind&quot;,
+        &quot;items&quot;
+      ],
+      &quot;properties&quot;: {
+        &quot;kind&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;const&quot;: &quot;sections&quot;,
+          &quot;description&quot;: &quot;Identifies this block as sections.&quot;
+        },
+        &quot;items&quot;: {
+          &quot;type&quot;: &quot;array&quot;,
+          &quot;description&quot;: &quot;The sections, in order. Tools SHOULD keep this order.&quot;,
+          &quot;items&quot;: {
+            &quot;$ref&quot;: &quot;#/$defs/sectionEntry&quot;
+          },
+          &quot;minItems&quot;: 1
+        },
+        &quot;$extensions&quot;: {
+          &quot;$ref&quot;: &quot;../common/extensions.schema.json#/$defs/extensions&quot;
+        }
+      },
+      &quot;additionalProperties&quot;: false
+    }
+  }
+}</ds-code>
+</ds-json-view>
+<ds-def-index>
 <p><strong>2 definitions</strong> in this file:</p>
 <ul>
 <li><a href="#sections"><ds-code inline>sections</ds-code></a></li>

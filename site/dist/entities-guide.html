@@ -109,7 +109,74 @@
     <div class="content__container">
         <div class="content__inner">
 
-          <ds-def-section name="guide" anchor="guide" description="A long-form document meant to be read: a getting-started walkthrough, a contribution guide, a tutorial, an overview, or a migration guide. Other entities each document one thing (a component, token, foundation, pattern); a guide fills the gap for a journey or a concept instead. Its identity is `identifier`, `name`, and `description`. Use `category` (e.g., 'getting-started', 'tutorial', 'migration') to classify it, and `tags` for discovery. Its docs cover sections, steps, guidelines, use-cases, imports, accessibility, and content." type="object">
+          <ds-json-view label="entities/guide.schema.json">
+  <ds-code language="json" wrap>{
+  &quot;$schema&quot;: &quot;https://json-schema.org/draft/2020-12/schema&quot;,
+  &quot;$id&quot;: &quot;https://designsystemdocspec.org/v0.15.2/entities/guide.schema.json&quot;,
+  &quot;title&quot;: &quot;DSDS Guide Definitions&quot;,
+  &quot;description&quot;: &quot;A guide is long-form guidance not tied to one component, token, foundation, or pattern — a getting-started walkthrough, contribution guide, tutorial, overview, or migration guide. It holds identity and metadata; the `category` field says what kind of guide it is. Its docs are sections, procedures (steps), guidelines, and use-cases.&quot;,
+  &quot;$defs&quot;: {
+    &quot;guide&quot;: {
+      &quot;type&quot;: &quot;object&quot;,
+      &quot;description&quot;: &quot;A long-form document meant to be read: a getting-started walkthrough, a contribution guide, a tutorial, an overview, or a migration guide. Other entities each document one thing (a component, token, foundation, pattern); a guide fills the gap for a journey or a concept instead. Its identity is `identifier`, `name`, and `description`. Use `category` (e.g., 'getting-started', 'tutorial', 'migration') to classify it, and `tags` for discovery. Its docs cover sections, steps, guidelines, use-cases, imports, accessibility, and content.&quot;,
+      &quot;required&quot;: [
+        &quot;kind&quot;,
+        &quot;identifier&quot;,
+        &quot;name&quot;
+      ],
+      &quot;properties&quot;: {
+        &quot;kind&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;const&quot;: &quot;guide&quot;,
+          &quot;description&quot;: &quot;Identifies this entity as a guide.&quot;
+        },
+        &quot;identifier&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;pattern&quot;: &quot;^[a-z][a-z0-9-]*$&quot;,
+          &quot;description&quot;: &quot;Machine-readable identifier for the guide (e.g., 'getting-started', 'contributing', 'theming-tutorial', 'migrating-to-v2'). MUST be lowercase kebab-case and unique within its entity group.&quot;
+        },
+        &quot;name&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;description&quot;: &quot;Display name shown in docs (e.g., 'Getting started', 'Contributing', 'Theming tutorial', 'Migrating to v2').&quot;
+        },
+        &quot;description&quot;: {
+          &quot;$ref&quot;: &quot;../common/rich-text.schema.json#/$defs/richText&quot;,
+          &quot;description&quot;: &quot;What this guide covers, who it is for, and what the reader will accomplish. CommonMark supported.&quot;
+        },
+        &quot;metadata&quot;: {
+          &quot;$ref&quot;: &quot;../metadata/metadata.schema.json#/$defs/entityMetadata&quot;,
+          &quot;description&quot;: &quot;Optional metadata (see metadata/metadata.schema.json). Use `category` to classify the guide (e.g., 'getting-started', 'tutorial', 'migration').&quot;
+        },
+        &quot;relationships&quot;: {
+          &quot;$ref&quot;: &quot;../common/relationship.schema.json#/$defs/relationships&quot;,
+          &quot;description&quot;: &quot;Links from this guide to the entities it covers or depends on. Tools derive the reverse edges. Use `links` metadata for external resources instead.&quot;
+        },
+        &quot;documentBlocks&quot;: {
+          &quot;type&quot;: &quot;array&quot;,
+          &quot;description&quot;: &quot;All structured docs for this guide, in order. Accepts `steps`, the reused `imports` kind for setup, and every general kind — `sections` is the backbone. A guide reads top to bottom, so tools SHOULD keep this order. Put external links in `links` metadata or a section's `links`; point at other entities through `relationships`.&quot;,
+          &quot;items&quot;: {
+            &quot;$ref&quot;: &quot;../document-blocks/document-blocks.schema.json#/$defs/guideDocumentBlock&quot;
+          },
+          &quot;minItems&quot;: 1
+        },
+        &quot;agentDocumentBlocks&quot;: {
+          &quot;type&quot;: &quot;array&quot;,
+          &quot;description&quot;: &quot;Docs for agents (AI/LLM) only, using the same block kinds as `documentBlocks`. Put anything a human needs in `documentBlocks` — that's the default. Use this only for things that would be noise to a person: hard must/must-not rules, notes that correct a mistake agents commonly make (like picking a similar but wrong entity), evidence-backed constraints, and machine-checkable criteria. A rule humans need too still belongs in `documentBlocks`. This adds to the human docs, it never replaces them. Tools MUST NOT show these blocks to humans. Agents SHOULD read both arrays, human docs first.&quot;,
+          &quot;items&quot;: {
+            &quot;$ref&quot;: &quot;../document-blocks/document-blocks.schema.json#/$defs/guideDocumentBlock&quot;
+          },
+          &quot;minItems&quot;: 1
+        },
+        &quot;$extensions&quot;: {
+          &quot;$ref&quot;: &quot;../common/extensions.schema.json#/$defs/extensions&quot;
+        }
+      },
+      &quot;additionalProperties&quot;: false
+    }
+  }
+}</ds-code>
+</ds-json-view>
+<ds-def-section name="guide" anchor="guide" description="A long-form document meant to be read: a getting-started walkthrough, a contribution guide, a tutorial, an overview, or a migration guide. Other entities each document one thing (a component, token, foundation, pattern); a guide fills the gap for a journey or a concept instead. Its identity is `identifier`, `name`, and `description`. Use `category` (e.g., 'getting-started', 'tutorial', 'migration') to classify it, and `tags` for discovery. Its docs cover sections, steps, guidelines, use-cases, imports, accessibility, and content." type="object">
 <ds-prop-table>
   <ds-prop name="kind" type="&lt;ds-code inline&gt;&quot;guide&quot;&lt;/ds-code&gt;" required>Identifies this entity as a guide.</ds-prop>
   <ds-prop name="identifier" type="string" required>Machine-readable identifier for the guide (e.g., 'getting-started', 'contributing', 'theming-tutorial', 'migrating-to-v2'). MUST be lowercase kebab-case and unique within its entity group.<br><small>Pattern: <ds-code inline>^[a-z][a-z0-9-]*$</ds-code></small></ds-prop>

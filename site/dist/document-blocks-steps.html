@@ -109,7 +109,85 @@
     <div class="content__container">
         <div class="content__inner">
 
-          <ds-def-index>
+          <ds-json-view label="document-blocks/steps.schema.json">
+  <ds-code language="json" wrap>{
+  &quot;$schema&quot;: &quot;https://json-schema.org/draft/2020-12/schema&quot;,
+  &quot;$id&quot;: &quot;https://designsystemdocspec.org/v0.15.2/document-blocks/steps.schema.json&quot;,
+  &quot;title&quot;: &quot;DSDS Steps Document Block&quot;,
+  &quot;description&quot;: &quot;A procedure — the steps a reader follows to complete a task, like getting started, a tutorial, or a migration. Each step has a short label, an instruction, optional examples, and an optional expected result so the reader knows it worked.&quot;,
+  &quot;$defs&quot;: {
+    &quot;stepEntry&quot;: {
+      &quot;type&quot;: &quot;object&quot;,
+      &quot;description&quot;: &quot;One step: a short label, an instruction for what to do, and optionally examples, an expected result, and whether it can be skipped. Only `label` is required.&quot;,
+      &quot;required&quot;: [
+        &quot;label&quot;
+      ],
+      &quot;properties&quot;: {
+        &quot;label&quot;: {
+          &quot;$ref&quot;: &quot;../common/rich-text.schema.json#/$defs/richText&quot;,
+          &quot;description&quot;: &quot;A short label for the step (e.g., 'Install the package', 'Wrap your app in the provider', 'Run the validator'). Concise enough to serve as a numbered list item or heading.&quot;
+        },
+        &quot;instruction&quot;: {
+          &quot;$ref&quot;: &quot;../common/rich-text.schema.json#/$defs/richText&quot;,
+          &quot;description&quot;: &quot;What the reader should do in this step. Supports markdown by default. MUST be concrete and actionable: describe the action, not the goal.&quot;
+        },
+        &quot;examples&quot;: {
+          &quot;type&quot;: &quot;array&quot;,
+          &quot;description&quot;: &quot;Illustrative material for the step: a code snippet, a terminal command, a screenshot, or a live URL. Most procedural steps carry a single code example.&quot;,
+          &quot;items&quot;: {
+            &quot;$ref&quot;: &quot;../common/example.schema.json#/$defs/example&quot;
+          },
+          &quot;minItems&quot;: 1
+        },
+        &quot;expectedResult&quot;: {
+          &quot;$ref&quot;: &quot;../common/rich-text.schema.json#/$defs/richText&quot;,
+          &quot;description&quot;: &quot;What the reader should see once the step succeeds (e.g., 'The dev server starts on port 3000', 'A themed button renders'). Lets readers confirm progress and spot problems on their own. Most useful in tutorials and getting-started guides.&quot;
+        },
+        &quot;optional&quot;: {
+          &quot;type&quot;: &quot;boolean&quot;,
+          &quot;default&quot;: false,
+          &quot;description&quot;: &quot;Whether the step can be skipped without breaking the procedure. Defaults to false. Tools MAY render optional steps distinctly (e.g., an 'optional' label).&quot;
+        }
+      },
+      &quot;additionalProperties&quot;: false
+    },
+    &quot;steps&quot;: {
+      &quot;type&quot;: &quot;object&quot;,
+      &quot;description&quot;: &quot;A procedure — the steps a reader works through start to finish, like installation or a migration.&quot;,
+      &quot;required&quot;: [
+        &quot;kind&quot;,
+        &quot;items&quot;
+      ],
+      &quot;properties&quot;: {
+        &quot;kind&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;const&quot;: &quot;steps&quot;,
+          &quot;description&quot;: &quot;Identifies this block as a procedure.&quot;
+        },
+        &quot;title&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;description&quot;: &quot;An optional heading for the whole procedure (e.g., 'Installation', 'Build your first component', 'Submitting a contribution').&quot;
+        },
+        &quot;ordered&quot;: {
+          &quot;type&quot;: &quot;boolean&quot;,
+          &quot;default&quot;: true,
+          &quot;description&quot;: &quot;Whether the steps must be done in order. Defaults to true. Set false for independent steps. Tools SHOULD show ordered steps as a numbered list, unordered ones as a checklist.&quot;
+        },
+        &quot;items&quot;: {
+          &quot;type&quot;: &quot;array&quot;,
+          &quot;description&quot;: &quot;The steps, in order. Tools MUST preserve this order when `ordered` is true.&quot;,
+          &quot;items&quot;: {
+            &quot;$ref&quot;: &quot;#/$defs/stepEntry&quot;
+          },
+          &quot;minItems&quot;: 1
+        }
+      },
+      &quot;additionalProperties&quot;: false
+    }
+  }
+}</ds-code>
+</ds-json-view>
+<ds-def-index>
 <p><strong>2 definitions</strong> in this file:</p>
 <ul>
 <li><a href="#steps"><ds-code inline>steps</ds-code></a></li>

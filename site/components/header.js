@@ -39,6 +39,7 @@ const HEADER_CSS = `
     margin: 0 auto;
     padding: var(--ds-space-8) var(--ds-space-8);
     width: 100%;
+    padding-bottom: 64px;
   }
 
   .desc {

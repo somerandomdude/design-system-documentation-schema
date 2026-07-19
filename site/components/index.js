@@ -25,6 +25,8 @@ import { DsSpecNav } from "./spec-nav.js";
 import { DsCallout } from "./callout.js";
 import { DsTag } from "./tag.js";
 import { DsLogo } from "./logo.js";
+import { DsIconButton } from "./icon-button.js";
+import { DsJsonView } from "./json-view.js";
 
 const registry = [
   ["ds-code", DsCode],
@@ -44,6 +46,8 @@ const registry = [
   ["ds-callout", DsCallout],
   ["ds-tag", DsTag],
   ["ds-logo", DsLogo],
+  ["ds-icon-button", DsIconButton],
+  ["ds-json-view", DsJsonView],
 ];
 
 for (const [name, ctor] of registry) {

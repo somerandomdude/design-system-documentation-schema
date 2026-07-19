@@ -109,7 +109,74 @@
     <div class="content__container">
         <div class="content__inner">
 
-          <ds-def-section name="foundation" anchor="foundation" description="The principles, scales, and rules that govern a design domain — color, typography, spacing, elevation, motion, accessibility, content. A domain can be visual (color, spacing) or cross-cutting (accessibility, content). Its identity is `identifier`, `name`, and `description`; its docs cover principles, scale, motion, guidelines, accessibility, content, and more." type="object">
+          <ds-json-view label="entities/foundation.schema.json">
+  <ds-code language="json" wrap>{
+  &quot;$schema&quot;: &quot;https://json-schema.org/draft/2020-12/schema&quot;,
+  &quot;$id&quot;: &quot;https://designsystemdocspec.org/v0.15.2/entities/foundation.schema.json&quot;,
+  &quot;title&quot;: &quot;DSDS Foundation Definitions&quot;,
+  &quot;description&quot;: &quot;A foundation document covers a broad design domain a system is built on — color, typography, spacing, elevation, motion, shape, accessibility, content. It holds the domain's identity and metadata (see metadata/metadata.schema.json), plus its docs.&quot;,
+  &quot;$defs&quot;: {
+    &quot;foundation&quot;: {
+      &quot;type&quot;: &quot;object&quot;,
+      &quot;description&quot;: &quot;The principles, scales, and rules that govern a design domain — color, typography, spacing, elevation, motion, accessibility, content. A domain can be visual (color, spacing) or cross-cutting (accessibility, content). Its identity is `identifier`, `name`, and `description`; its docs cover principles, scale, motion, guidelines, accessibility, content, and more.&quot;,
+      &quot;required&quot;: [
+        &quot;kind&quot;,
+        &quot;identifier&quot;,
+        &quot;name&quot;
+      ],
+      &quot;properties&quot;: {
+        &quot;kind&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;const&quot;: &quot;foundation&quot;,
+          &quot;description&quot;: &quot;Identifies this entity as a foundation.&quot;
+        },
+        &quot;identifier&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;pattern&quot;: &quot;^[a-z][a-z0-9-]*$&quot;,
+          &quot;description&quot;: &quot;Machine-readable identifier for the foundation (e.g., 'color', 'typography', 'spacing', 'elevation', 'motion', 'shape', 'accessibility', 'content'). MUST be unique within its entity group.&quot;
+        },
+        &quot;name&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;description&quot;: &quot;Display name shown in docs (e.g., 'Color', 'Typography', 'Spacing', 'Elevation', 'Accessibility', 'Content').&quot;
+        },
+        &quot;description&quot;: {
+          &quot;$ref&quot;: &quot;../common/rich-text.schema.json#/$defs/richText&quot;,
+          &quot;description&quot;: &quot;What this foundation covers, the design domain it governs, and its role in the system. CommonMark supported.&quot;
+        },
+        &quot;metadata&quot;: {
+          &quot;$ref&quot;: &quot;../metadata/metadata.schema.json#/$defs/entityMetadata&quot;,
+          &quot;description&quot;: &quot;Optional metadata: the shared entityMetadata fields (see metadata/metadata.schema.json).&quot;
+        },
+        &quot;relationships&quot;: {
+          &quot;$ref&quot;: &quot;../common/relationship.schema.json#/$defs/relationships&quot;,
+          &quot;description&quot;: &quot;Links from this foundation to other entities — e.g. 'depends-on' the tokens it builds on. Tools derive the reverse edges. Use `links` metadata for external resources instead.&quot;
+        },
+        &quot;documentBlocks&quot;: {
+          &quot;type&quot;: &quot;array&quot;,
+          &quot;description&quot;: &quot;All structured docs for this foundation, in order. Accepts the foundation-specific kinds (principles, scale, motion) plus every general kind. Tools SHOULD keep this order for display. Put internal links (like a token group reference) in `links` metadata, not in a block entry.&quot;,
+          &quot;items&quot;: {
+            &quot;$ref&quot;: &quot;../document-blocks/document-blocks.schema.json#/$defs/foundationDocumentBlock&quot;
+          },
+          &quot;minItems&quot;: 1
+        },
+        &quot;agentDocumentBlocks&quot;: {
+          &quot;type&quot;: &quot;array&quot;,
+          &quot;description&quot;: &quot;Docs for agents (AI/LLM) only, using the same block kinds as `documentBlocks`. Put anything a human needs in `documentBlocks` — that's the default. Use this only for things that would be noise to a person: hard must/must-not rules, notes that correct a mistake agents commonly make (like picking a similar but wrong entity), evidence-backed constraints, and machine-checkable criteria. A rule humans need too still belongs in `documentBlocks`. This adds to the human docs, it never replaces them. Tools MUST NOT show these blocks to humans. Agents SHOULD read both arrays, human docs first.&quot;,
+          &quot;items&quot;: {
+            &quot;$ref&quot;: &quot;../document-blocks/document-blocks.schema.json#/$defs/foundationDocumentBlock&quot;
+          },
+          &quot;minItems&quot;: 1
+        },
+        &quot;$extensions&quot;: {
+          &quot;$ref&quot;: &quot;../common/extensions.schema.json#/$defs/extensions&quot;
+        }
+      },
+      &quot;additionalProperties&quot;: false
+    }
+  }
+}</ds-code>
+</ds-json-view>
+<ds-def-section name="foundation" anchor="foundation" description="The principles, scales, and rules that govern a design domain — color, typography, spacing, elevation, motion, accessibility, content. A domain can be visual (color, spacing) or cross-cutting (accessibility, content). Its identity is `identifier`, `name`, and `description`; its docs cover principles, scale, motion, guidelines, accessibility, content, and more." type="object">
 <ds-prop-table>
   <ds-prop name="kind" type="&lt;ds-code inline&gt;&quot;foundation&quot;&lt;/ds-code&gt;" required>Identifies this entity as a foundation.</ds-prop>
   <ds-prop name="identifier" type="string" required>Machine-readable identifier for the foundation (e.g., 'color', 'typography', 'spacing', 'elevation', 'motion', 'shape', 'accessibility', 'content'). MUST be unique within its entity group.<br><small>Pattern: <ds-code inline>^[a-z][a-z0-9-]*$</ds-code></small></ds-prop>

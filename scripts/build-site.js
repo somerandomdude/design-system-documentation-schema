@@ -484,6 +484,16 @@ function renderSchemaPage(page) {
     badge: "",
   });
 
+  // The JSON view is a fixed-position toggle (see json-view.js), so its
+  // place in the content flow doesn't affect where it renders — pushed
+  // first just so it isn't lost if an early return below skips the rest.
+  parts.push(
+    renderSub("json-view", {
+      label: esc(relPath),
+      json: esc(JSON.stringify(page.data, null, 2)),
+    }),
+  );
+
   // Always render top-level properties when they exist (e.g., the root schema
   // has both its own properties AND $defs like entityGroup)
   if (page.data.properties) {
@@ -853,6 +863,7 @@ function bundleComponents(siteDir, distDir) {
         dot: "icon-dot.svg",
         lightbulb: "icon-lightbulb.svg",
         warning: "icon-warning.svg",
+        brackets: "icon-brackets.svg",
         logo: "dsds.svg",
       };
       const assetsDir = path.join(siteDir, "assets");

@@ -109,7 +109,75 @@
     <div class="content__container">
         <div class="content__inner">
 
-          <ds-def-index>
+          <ds-json-view label="document-blocks/interactions.schema.json">
+  <ds-code language="json" wrap>{
+  &quot;$schema&quot;: &quot;https://json-schema.org/draft/2020-12/schema&quot;,
+  &quot;$id&quot;: &quot;https://designsystemdocspec.org/v0.15.2/document-blocks/interactions.schema.json&quot;,
+  &quot;title&quot;: &quot;DSDS Interactions Document Block&quot;,
+  &quot;description&quot;: &quot;The step-by-step flow of a pattern: what triggers each step, what happens, and which components are involved. Read the items in order to follow the user's journey from start to finish.&quot;,
+  &quot;$defs&quot;: {
+    &quot;interactionEntry&quot;: {
+      &quot;type&quot;: &quot;object&quot;,
+      &quot;description&quot;: &quot;One step in the flow: what triggers it, what happens, which components are involved, and optional examples.&quot;,
+      &quot;required&quot;: [
+        &quot;description&quot;
+      ],
+      &quot;properties&quot;: {
+        &quot;trigger&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;description&quot;: &quot;What starts this step — a user action, system event, or condition (e.g., 'User submits the form'). Left out, this step just continues the last one.&quot;
+        },
+        &quot;description&quot;: {
+          &quot;$ref&quot;: &quot;../common/rich-text.schema.json#/$defs/richText&quot;,
+          &quot;description&quot;: &quot;What happens — the system's response, visual changes, and feedback the user sees.&quot;
+        },
+        &quot;components&quot;: {
+          &quot;type&quot;: &quot;array&quot;,
+          &quot;description&quot;: &quot;The components involved in this step. Each `identifier` MUST match a documented component; the optional `role` says what it does here. Links the pattern's flow back to each component's own docs.&quot;,
+          &quot;items&quot;: {
+            &quot;$ref&quot;: &quot;../common/entity-ref.schema.json#/$defs/entityRef&quot;
+          },
+          &quot;minItems&quot;: 1
+        },
+        &quot;examples&quot;: {
+          &quot;type&quot;: &quot;array&quot;,
+          &quot;description&quot;: &quot;Examples of this step — a screenshot, a screen recording, or code.&quot;,
+          &quot;items&quot;: {
+            &quot;$ref&quot;: &quot;../common/example.schema.json#/$defs/example&quot;
+          },
+          &quot;minItems&quot;: 1
+        }
+      },
+      &quot;additionalProperties&quot;: false
+    },
+    &quot;interactions&quot;: {
+      &quot;type&quot;: &quot;object&quot;,
+      &quot;description&quot;: &quot;The step-by-step flow of a pattern. Order matters — it's the timeline of the user's journey. Authors SHOULD cover the trigger, the response, any recovery steps, and completion. Add more than one `interactions` block to document alternate flows (e.g., happy path vs. error path).&quot;,
+      &quot;required&quot;: [
+        &quot;kind&quot;,
+        &quot;items&quot;
+      ],
+      &quot;properties&quot;: {
+        &quot;kind&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;const&quot;: &quot;interactions&quot;,
+          &quot;description&quot;: &quot;Identifies this block as an interactions spec.&quot;
+        },
+        &quot;items&quot;: {
+          &quot;type&quot;: &quot;array&quot;,
+          &quot;description&quot;: &quot;The steps, in time order. Tools SHOULD keep this order so the sequence stays clear.&quot;,
+          &quot;items&quot;: {
+            &quot;$ref&quot;: &quot;#/$defs/interactionEntry&quot;
+          },
+          &quot;minItems&quot;: 1
+        }
+      },
+      &quot;additionalProperties&quot;: false
+    }
+  }
+}</ds-code>
+</ds-json-view>
+<ds-def-index>
 <p><strong>2 definitions</strong> in this file:</p>
 <ul>
 <li><a href="#interactions"><ds-code inline>interactions</ds-code></a></li>

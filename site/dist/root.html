@@ -109,7 +109,278 @@
     <div class="content__container">
         <div class="content__inner">
 
-          <ds-heading level="2" anchor="properties-heading">Root Properties</ds-heading>
+          <ds-json-view label="documentation/dsds.schema.json">
+  <ds-code language="json" wrap>{
+  &quot;$schema&quot;: &quot;https://json-schema.org/draft/2020-12/schema&quot;,
+  &quot;$id&quot;: &quot;https://designsystemdocspec.org/v0.15.2/dsds.schema.json&quot;,
+  &quot;title&quot;: &quot;Design System Doc Spec (DSDS) v0.15.2&quot;,
+  &quot;description&quot;: &quot;DSDS is a machine-readable format for design system documentation. A DSDS document is either one entity (a component, token, pattern, and so on) or a group of entities. Each entity's `kind` says what it is: component, token, token-group, theme, foundation, pattern, guide, or chunk. Entity schemas live in entities/, document block schemas in document-blocks/, and shared schemas in common/.&quot;,
+  &quot;type&quot;: &quot;object&quot;,
+  &quot;required&quot;: [
+    &quot;dsdsVersion&quot;
+  ],
+  &quot;oneOf&quot;: [
+    {
+      &quot;required&quot;: [
+        &quot;entityGroups&quot;
+      ]
+    },
+    {
+      &quot;required&quot;: [
+        &quot;entity&quot;
+      ]
+    }
+  ],
+  &quot;properties&quot;: {
+    &quot;$schema&quot;: {
+      &quot;type&quot;: &quot;string&quot;,
+      &quot;description&quot;: &quot;URI reference to the DSDS JSON Schema for validation.&quot;
+    },
+    &quot;dsdsVersion&quot;: {
+      &quot;type&quot;: &quot;string&quot;,
+      &quot;const&quot;: &quot;0.15.2&quot;,
+      &quot;description&quot;: &quot;The DSDS spec version this document follows.&quot;
+    },
+    &quot;systemInfo&quot;: {
+      &quot;$ref&quot;: &quot;common/system-info.schema.json#/$defs/systemInfo&quot;
+    },
+    &quot;extends&quot;: {
+      &quot;$ref&quot;: &quot;common/extends.schema.json#/$defs/documentExtends&quot;,
+      &quot;description&quot;: &quot;Declares that this DSDS document inherits from another DSDS document. Typically used for a core/extension setup: the base document provides the core entities, and this document adds to or extends them.&quot;
+    },
+    &quot;documentBlocks&quot;: {
+      &quot;type&quot;: &quot;array&quot;,
+      &quot;description&quot;: &quot;Structured docs for the design system as a whole — its purpose, system-wide guidelines, overviews. Accepts the general block kinds: `use-cases`, `guidelines`, `sections`, `accessibility`, `content`, or `checklist`.&quot;,
+      &quot;items&quot;: {
+        &quot;$ref&quot;: &quot;document-blocks/document-blocks.schema.json#/$defs/generalDocumentBlock&quot;
+      },
+      &quot;minItems&quot;: 1
+    },
+    &quot;entityGroups&quot;: {
+      &quot;type&quot;: &quot;array&quot;,
+      &quot;description&quot;: &quot;One or more entity groups. Each group has a name and an `entities` array holding any mix of entities — components, tokens, token groups, themes, foundations, patterns, guides, chunks — in display order. Multiple groups let one file organize entities into sections (e.g., one for foundations, one for components). A group can be inline or a `$ref` to another DSDS file.&quot;,
+      &quot;items&quot;: {
+        &quot;oneOf&quot;: [
+          {
+            &quot;$ref&quot;: &quot;#/$defs/entityGroup&quot;
+          },
+          {
+            &quot;$ref&quot;: &quot;#/$defs/fileRef&quot;
+          }
+        ]
+      },
+      &quot;minItems&quot;: 1
+    },
+    &quot;entity&quot;: {
+      &quot;$ref&quot;: &quot;#/$defs/anyEntity&quot;,
+      &quot;description&quot;: &quot;A single entity — component, token, token group, theme, foundation, pattern, guide, or chunk. Use this instead of `entityGroups` when each entity lives in its own file. The `kind` field says which type it is.&quot;
+    },
+    &quot;$extensions&quot;: {
+      &quot;$ref&quot;: &quot;common/extensions.schema.json#/$defs/extensions&quot;
+    }
+  },
+  &quot;additionalProperties&quot;: false,
+  &quot;$defs&quot;: {
+    &quot;anyEntity&quot;: {
+      &quot;type&quot;: &quot;object&quot;,
+      &quot;description&quot;: &quot;Every entity has a `kind`. It says which type the entity is, and the `if`/`then` branches below pick the matching schema for it.&quot;,
+      &quot;required&quot;: [
+        &quot;kind&quot;
+      ],
+      &quot;properties&quot;: {
+        &quot;kind&quot;: {
+          &quot;enum&quot;: [
+            &quot;component&quot;,
+            &quot;pattern&quot;,
+            &quot;foundation&quot;,
+            &quot;theme&quot;,
+            &quot;token&quot;,
+            &quot;token-group&quot;,
+            &quot;guide&quot;,
+            &quot;chunk&quot;
+          ]
+        }
+      },
+      &quot;allOf&quot;: [
+        {
+          &quot;if&quot;: {
+            &quot;required&quot;: [
+              &quot;kind&quot;
+            ],
+            &quot;properties&quot;: {
+              &quot;kind&quot;: {
+                &quot;const&quot;: &quot;component&quot;
+              }
+            }
+          },
+          &quot;then&quot;: {
+            &quot;$ref&quot;: &quot;entities/component.schema.json#/$defs/component&quot;
+          }
+        },
+        {
+          &quot;if&quot;: {
+            &quot;required&quot;: [
+              &quot;kind&quot;
+            ],
+            &quot;properties&quot;: {
+              &quot;kind&quot;: {
+                &quot;const&quot;: &quot;pattern&quot;
+              }
+            }
+          },
+          &quot;then&quot;: {
+            &quot;$ref&quot;: &quot;entities/pattern.schema.json#/$defs/pattern&quot;
+          }
+        },
+        {
+          &quot;if&quot;: {
+            &quot;required&quot;: [
+              &quot;kind&quot;
+            ],
+            &quot;properties&quot;: {
+              &quot;kind&quot;: {
+                &quot;const&quot;: &quot;foundation&quot;
+              }
+            }
+          },
+          &quot;then&quot;: {
+            &quot;$ref&quot;: &quot;entities/foundation.schema.json#/$defs/foundation&quot;
+          }
+        },
+        {
+          &quot;if&quot;: {
+            &quot;required&quot;: [
+              &quot;kind&quot;
+            ],
+            &quot;properties&quot;: {
+              &quot;kind&quot;: {
+                &quot;const&quot;: &quot;theme&quot;
+              }
+            }
+          },
+          &quot;then&quot;: {
+            &quot;$ref&quot;: &quot;entities/theme.schema.json#/$defs/theme&quot;
+          }
+        },
+        {
+          &quot;if&quot;: {
+            &quot;required&quot;: [
+              &quot;kind&quot;
+            ],
+            &quot;properties&quot;: {
+              &quot;kind&quot;: {
+                &quot;const&quot;: &quot;token&quot;
+              }
+            }
+          },
+          &quot;then&quot;: {
+            &quot;$ref&quot;: &quot;entities/token.schema.json#/$defs/token&quot;
+          }
+        },
+        {
+          &quot;if&quot;: {
+            &quot;required&quot;: [
+              &quot;kind&quot;
+            ],
+            &quot;properties&quot;: {
+              &quot;kind&quot;: {
+                &quot;const&quot;: &quot;token-group&quot;
+              }
+            }
+          },
+          &quot;then&quot;: {
+            &quot;$ref&quot;: &quot;entities/token.schema.json#/$defs/tokenGroup&quot;
+          }
+        },
+        {
+          &quot;if&quot;: {
+            &quot;required&quot;: [
+              &quot;kind&quot;
+            ],
+            &quot;properties&quot;: {
+              &quot;kind&quot;: {
+                &quot;const&quot;: &quot;guide&quot;
+              }
+            }
+          },
+          &quot;then&quot;: {
+            &quot;$ref&quot;: &quot;entities/guide.schema.json#/$defs/guide&quot;
+          }
+        },
+        {
+          &quot;if&quot;: {
+            &quot;required&quot;: [
+              &quot;kind&quot;
+            ],
+            &quot;properties&quot;: {
+              &quot;kind&quot;: {
+                &quot;const&quot;: &quot;chunk&quot;
+              }
+            }
+          },
+          &quot;then&quot;: {
+            &quot;$ref&quot;: &quot;entities/chunk.schema.json#/$defs/chunk&quot;
+          }
+        }
+      ]
+    },
+    &quot;fileRef&quot;: {
+      &quot;type&quot;: &quot;object&quot;,
+      &quot;description&quot;: &quot;A link to a DSDS entity or entity group in another file. A tool like `json-schema-ref-parser` resolves it before validation and bundling. Point at a specific value with a JSON Pointer fragment (e.g., './button.dsds.json#/entity', './groups/tokens.dsds.json#/entityGroups/0').&quot;,
+      &quot;required&quot;: [
+        &quot;$ref&quot;
+      ],
+      &quot;properties&quot;: {
+        &quot;$ref&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;pattern&quot;: &quot;^(?![a-zA-Z][a-zA-Z0-9+.\\-]*:)(?!//)(?!/)&quot;,
+          &quot;description&quot;: &quot;A relative path to another DSDS file, optionally with a JSON Pointer fragment for one value in it (e.g., './button.dsds.json#/entity'). MUST be relative — no absolute paths, protocol-relative paths, or scheme URIs (http:, file:, …). To reference another system, use `extends.url` instead. Resolvers MUST catch cycles, MUST treat a broken file, pointer, or shape mismatch as a fatal error, and MUST only fetch remote files from an allow-list (see the spec's security rules).&quot;,
+          &quot;minLength&quot;: 1
+        }
+      },
+      &quot;additionalProperties&quot;: false
+    },
+    &quot;entityGroup&quot;: {
+      &quot;type&quot;: &quot;object&quot;,
+      &quot;description&quot;: &quot;A named collection of entities. They all live in one `entities` array, in display order, and can mix any type — each entity's `kind` says what it is, so there's no need for separate arrays per type. A group MUST hold at least one entity.&quot;,
+      &quot;required&quot;: [
+        &quot;name&quot;,
+        &quot;entities&quot;
+      ],
+      &quot;properties&quot;: {
+        &quot;name&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;description&quot;: &quot;Human-readable name of the collection (e.g., 'Acme Design System', 'Color Tokens', 'Button Documentation'). Used only as a display label.&quot;,
+          &quot;minLength&quot;: 1
+        },
+        &quot;description&quot;: {
+          &quot;$ref&quot;: &quot;common/rich-text.schema.json#/$defs/richText&quot;
+        },
+        &quot;entities&quot;: {
+          &quot;type&quot;: &quot;array&quot;,
+          &quot;description&quot;: &quot;The group's entities, in display order — any mix of kinds. Each item can be inline or a `$ref` to another DSDS file. Order matters; tools SHOULD keep it.&quot;,
+          &quot;items&quot;: {
+            &quot;oneOf&quot;: [
+              {
+                &quot;$ref&quot;: &quot;#/$defs/anyEntity&quot;
+              },
+              {
+                &quot;$ref&quot;: &quot;#/$defs/fileRef&quot;
+              }
+            ]
+          },
+          &quot;minItems&quot;: 1
+        },
+        &quot;$extensions&quot;: {
+          &quot;$ref&quot;: &quot;common/extensions.schema.json#/$defs/extensions&quot;
+        }
+      },
+      &quot;additionalProperties&quot;: false
+    }
+  }
+}</ds-code>
+</ds-json-view>
+<ds-heading level="2" anchor="properties-heading">Root Properties</ds-heading>
 <ds-prop-table>
   <ds-prop name="dsdsVersion" type="&lt;ds-code inline&gt;&quot;0.15.2&quot;&lt;/ds-code&gt;" required>The DSDS spec version this document follows.</ds-prop>
   <ds-prop name="$schema" type="string">URI reference to the DSDS JSON Schema for validation.</ds-prop>

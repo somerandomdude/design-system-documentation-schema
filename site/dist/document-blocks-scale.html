@@ -109,7 +109,90 @@
     <div class="content__container">
         <div class="content__inner">
 
-          <ds-def-index>
+          <ds-json-view label="document-blocks/scale.schema.json">
+  <ds-code language="json" wrap>{
+  &quot;$schema&quot;: &quot;https://json-schema.org/draft/2020-12/schema&quot;,
+  &quot;$id&quot;: &quot;https://designsystemdocspec.org/v0.15.2/document-blocks/scale.schema.json&quot;,
+  &quot;title&quot;: &quot;DSDS Scale Document Block&quot;,
+  &quot;description&quot;: &quot;An ordered progression of values — a type scale, spacing scale, elevation scale, or similar. Each step links to a token, with an optional name, display value, and usage notes. A scale is the limited set designers and engineers choose from, instead of picking arbitrary values.&quot;,
+  &quot;$defs&quot;: {
+    &quot;scaleStep&quot;: {
+      &quot;type&quot;: &quot;object&quot;,
+      &quot;description&quot;: &quot;One step in the scale — a `token` (if it's token-backed), a literal `value` (if not), or both. At least one is required. Don't invent a token identifier just to pass validation; a value-only step is fine.&quot;,
+      &quot;anyOf&quot;: [
+        {
+          &quot;required&quot;: [
+            &quot;token&quot;
+          ]
+        },
+        {
+          &quot;required&quot;: [
+            &quot;value&quot;
+          ]
+        }
+      ],
+      &quot;properties&quot;: {
+        &quot;token&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;description&quot;: &quot;The token that supplies this step's value. MUST match a token defined elsewhere in the system. Omit if this step isn't token-backed and use `value` instead.&quot;
+        },
+        &quot;name&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;description&quot;: &quot;A short name for this step (e.g., 'sm', 'lg', 'heading-1') — the shorthand people use to talk about it without naming a raw value.&quot;
+        },
+        &quot;value&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;description&quot;: &quot;The resolved value, for display (e.g., '16px'). Just a convenience — the real value lives in the token. Tools MAY fill this in automatically.&quot;
+        },
+        &quot;description&quot;: {
+          &quot;$ref&quot;: &quot;../common/rich-text.schema.json#/$defs/richText&quot;,
+          &quot;description&quot;: &quot;Usage notes — when to use this step, what it pairs with, and any limits (e.g., 'The base unit; use for default padding.').&quot;
+        }
+      },
+      &quot;additionalProperties&quot;: false
+    },
+    &quot;scale&quot;: {
+      &quot;type&quot;: &quot;object&quot;,
+      &quot;description&quot;: &quot;An ordered scale — a deliberate progression that keeps design decisions consistent. Used for spacing, type, elevation, and similar graduated systems. Steps run smallest to largest; tools SHOULD keep this order.&quot;,
+      &quot;required&quot;: [
+        &quot;kind&quot;,
+        &quot;identifier&quot;,
+        &quot;description&quot;,
+        &quot;steps&quot;
+      ],
+      &quot;properties&quot;: {
+        &quot;kind&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;const&quot;: &quot;scale&quot;,
+          &quot;description&quot;: &quot;Identifies this block as a scale spec.&quot;
+        },
+        &quot;identifier&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;description&quot;: &quot;Machine-readable identifier for the scale (e.g., 'spacing-scale', 'type-scale').&quot;
+        },
+        &quot;name&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;description&quot;: &quot;Human-readable name of the scale (e.g., 'Spacing Scale', 'Type Scale', 'Elevation Levels').&quot;
+        },
+        &quot;description&quot;: {
+          &quot;$ref&quot;: &quot;../common/rich-text.schema.json#/$defs/richText&quot;,
+          &quot;description&quot;: &quot;What the scale is, how it was built (e.g., geometric progression), and how to use it — why these values, and when it's okay to deviate.&quot;
+        },
+        &quot;steps&quot;: {
+          &quot;type&quot;: &quot;array&quot;,
+          &quot;description&quot;: &quot;The steps, smallest to largest. Tools SHOULD keep this order. When adjusting a value, consumers SHOULD move to the adjacent step.&quot;,
+          &quot;items&quot;: {
+            &quot;$ref&quot;: &quot;#/$defs/scaleStep&quot;
+          },
+          &quot;minItems&quot;: 1
+        }
+      },
+      &quot;additionalProperties&quot;: false
+    }
+  }
+}</ds-code>
+</ds-json-view>
+<ds-def-index>
 <p><strong>2 definitions</strong> in this file:</p>
 <ul>
 <li><a href="#scale"><ds-code inline>scale</ds-code></a></li>
@@ -173,7 +256,7 @@
   <ds-prop name="name" type="string">A short name for this step (e.g., 'sm', 'lg', 'heading-1') — the shorthand people use to talk about it without naming a raw value.</ds-prop>
   <ds-prop name="description" type="&lt;ds-type-ref href=&quot;common-rich-text.html#richtext&quot;&gt;richText&lt;/ds-type-ref&gt;">Usage notes — when to use this step, what it pairs with, and any limits (e.g., 'The base unit; use for default padding.').</ds-prop>
 </ds-prop-table>
-<ds-callout bordered variant="warning"><strong>Constraint:</strong> At least one of <ds-code inline>token</ds-code>, <ds-code inline>value</ds-code> must be present.</ds-callout>
+<ds-callout variant="warning" title="Constraint:">At least one of <ds-code inline>token</ds-code>, <ds-code inline>value</ds-code> must be present.</ds-callout>
 <ds-cross-refs><strong>References:</strong> <ds-type-ref href="common-rich-text.html#richtext">richText</ds-type-ref></ds-cross-refs>
 <ds-def-example>
 <ds-code language="json" label="example">[

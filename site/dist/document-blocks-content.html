@@ -109,7 +109,137 @@
     <div class="content__container">
         <div class="content__inner">
 
-          <ds-def-index>
+          <ds-json-view label="document-blocks/content.schema.json">
+  <ds-code language="json" wrap>{
+  &quot;$schema&quot;: &quot;https://json-schema.org/draft/2020-12/schema&quot;,
+  &quot;$id&quot;: &quot;https://designsystemdocspec.org/v0.15.2/document-blocks/content.schema.json&quot;,
+  &quot;title&quot;: &quot;DSDS Content Document Block&quot;,
+  &quot;description&quot;: &quot;Two kinds of content reference data: a dictionary of standard labels ('Add', 'Cancel', 'Delete') with definitions and usage notes, and localization notes (RTL, text expansion, pluralization, and other i18n concerns). At least one of `labels` or `localization` is required. For voice, tone, or capitalization rules, use a `guidelines` block (category 'content') instead.&quot;,
+  &quot;$defs&quot;: {
+    &quot;contentLabelEntry&quot;: {
+      &quot;type&quot;: &quot;object&quot;,
+      &quot;description&quot;: &quot;One standard label in the dictionary: the label text, what it means, when to use it, and related terms.&quot;,
+      &quot;required&quot;: [
+        &quot;term&quot;,
+        &quot;definition&quot;
+      ],
+      &quot;properties&quot;: {
+        &quot;term&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;description&quot;: &quot;The label text as it should appear in the UI (e.g., 'Add', 'Cancel', 'Delete').&quot;
+        },
+        &quot;definition&quot;: {
+          &quot;$ref&quot;: &quot;../common/rich-text.schema.json#/$defs/richText&quot;,
+          &quot;description&quot;: &quot;What the label means — the action it represents. Be concrete (e.g., for Delete: 'Destroys an existing object so it no longer exists').&quot;
+        },
+        &quot;usage&quot;: {
+          &quot;$ref&quot;: &quot;../common/rich-text.schema.json#/$defs/richText&quot;,
+          &quot;description&quot;: &quot;When and how to use it, with any formatting rules or caveats (e.g., 'Combine with the object: Add user, Add role').&quot;
+        },
+        &quot;alternatives&quot;: {
+          &quot;type&quot;: &quot;array&quot;,
+          &quot;items&quot;: {
+            &quot;type&quot;: &quot;string&quot;
+          },
+          &quot;description&quot;: &quot;Related terms that are often confused with this one, listed to help authors pick the right label. These SHOULD match other `term` values in this block's `labels` array, so tools can cross-reference them.&quot;,
+          &quot;minItems&quot;: 1
+        },
+        &quot;context&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;description&quot;: &quot;Where this label normally appears (e.g., 'Buttons in dialogs', 'Toolbar actions').&quot;
+        },
+        &quot;examples&quot;: {
+          &quot;type&quot;: &quot;array&quot;,
+          &quot;description&quot;: &quot;Examples of the label in context — do/don't pairs, screenshots, or code.&quot;,
+          &quot;items&quot;: {
+            &quot;$ref&quot;: &quot;../common/example.schema.json#/$defs/example&quot;
+          },
+          &quot;minItems&quot;: 1
+        }
+      },
+      &quot;additionalProperties&quot;: false
+    },
+    &quot;localizationEntry&quot;: {
+      &quot;type&quot;: &quot;object&quot;,
+      &quot;description&quot;: &quot;One localization concern — something that affects how content is written, translated, or displayed across languages.&quot;,
+      &quot;required&quot;: [
+        &quot;concern&quot;,
+        &quot;description&quot;
+      ],
+      &quot;properties&quot;: {
+        &quot;concern&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;description&quot;: &quot;Which concern this is: 'rtl' (right-to-left layout), 'text-expansion' (text growing in translation), 'pluralization' (plural forms), 'date-format', 'number-format', 'currency', 'text-direction' (mixed-direction text), 'icon-direction' (icons that imply direction), 'truncation', 'sorting' (locale-specific order), or 'concatenation' (don't build sentences by joining strings). Custom values allowed, in lowercase kebab-case.&quot;
+        },
+        &quot;description&quot;: {
+          &quot;$ref&quot;: &quot;../common/rich-text.schema.json#/$defs/richText&quot;,
+          &quot;description&quot;: &quot;What to do about this concern — what changes across locales, and what to avoid.&quot;
+        },
+        &quot;examples&quot;: {
+          &quot;type&quot;: &quot;array&quot;,
+          &quot;description&quot;: &quot;Examples showing the concern — before/after screenshots for RTL, or code for pluralization.&quot;,
+          &quot;items&quot;: {
+            &quot;$ref&quot;: &quot;../common/example.schema.json#/$defs/example&quot;
+          },
+          &quot;minItems&quot;: 1
+        }
+      },
+      &quot;additionalProperties&quot;: false
+    },
+    &quot;content&quot;: {
+      &quot;type&quot;: &quot;object&quot;,
+      &quot;description&quot;: &quot;A label dictionary and localization notes for an artifact or the whole system. Each entry is a fact, not a rule — general content guidance belongs in `guidelines` (category 'content') instead. A guideline says 'Use sentence case' (a rule); a content entry says 'Add: takes an existing object and uses it in a new context' (a definition).&quot;,
+      &quot;required&quot;: [
+        &quot;kind&quot;
+      ],
+      &quot;anyOf&quot;: [
+        {
+          &quot;required&quot;: [
+            &quot;labels&quot;
+          ]
+        },
+        {
+          &quot;required&quot;: [
+            &quot;localization&quot;
+          ]
+        }
+      ],
+      &quot;properties&quot;: {
+        &quot;kind&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;const&quot;: &quot;content&quot;,
+          &quot;description&quot;: &quot;Identifies this block as a content spec.&quot;
+        },
+        &quot;description&quot;: {
+          &quot;$ref&quot;: &quot;../common/rich-text.schema.json#/$defs/richText&quot;,
+          &quot;description&quot;: &quot;A short overview of what this block covers. Voice-and-tone philosophy belongs in a `guidelines` block (category 'content'), not here.&quot;
+        },
+        &quot;labels&quot;: {
+          &quot;type&quot;: &quot;array&quot;,
+          &quot;description&quot;: &quot;The label dictionary. Order matters for display, so tools SHOULD keep it; authors MAY sort alphabetically or by frequency.&quot;,
+          &quot;items&quot;: {
+            &quot;$ref&quot;: &quot;#/$defs/contentLabelEntry&quot;
+          },
+          &quot;minItems&quot;: 1
+        },
+        &quot;localization&quot;: {
+          &quot;type&quot;: &quot;array&quot;,
+          &quot;description&quot;: &quot;The localization notes. Order matters for display, so tools SHOULD keep it; authors SHOULD lead with the highest-impact concerns.&quot;,
+          &quot;items&quot;: {
+            &quot;$ref&quot;: &quot;#/$defs/localizationEntry&quot;
+          },
+          &quot;minItems&quot;: 1
+        },
+        &quot;$extensions&quot;: {
+          &quot;$ref&quot;: &quot;../common/extensions.schema.json#/$defs/extensions&quot;
+        }
+      },
+      &quot;additionalProperties&quot;: false
+    }
+  }
+}</ds-code>
+</ds-json-view>
+<ds-def-index>
 <p><strong>3 definitions</strong> in this file:</p>
 <ul>
 <li><a href="#content"><ds-code inline>content</ds-code></a></li>
@@ -125,7 +255,7 @@
   <ds-prop name="description" type="&lt;ds-type-ref href=&quot;common-rich-text.html#richtext&quot;&gt;richText&lt;/ds-type-ref&gt;">A short overview of what this block covers. Voice-and-tone philosophy belongs in a <ds-code inline>guidelines</ds-code> block (category 'content'), not here.</ds-prop>
   <ds-prop name="$extensions" type="&lt;ds-type-ref href=&quot;common-extensions.html#extensions&quot;&gt;extensions&lt;/ds-type-ref&gt;"></ds-prop>
 </ds-prop-table>
-<ds-callout bordered variant="warning"><strong>Constraint:</strong> At least one of <ds-code inline>labels</ds-code>, <ds-code inline>localization</ds-code> must be present.</ds-callout>
+<ds-callout variant="warning" title="Constraint:">At least one of <ds-code inline>labels</ds-code>, <ds-code inline>localization</ds-code> must be present.</ds-callout>
 <ds-cross-refs><strong>References:</strong> <ds-type-ref href="common-rich-text.html#richtext">richText</ds-type-ref>, <ds-type-ref href="document-blocks-content.html#contentlabelentry">contentLabelEntry</ds-type-ref>, <ds-type-ref href="document-blocks-content.html#localizationentry">localizationEntry</ds-type-ref>, <ds-type-ref href="common-extensions.html#extensions">extensions</ds-type-ref></ds-cross-refs>
 <ds-def-example>
 <ds-code language="json" label="example">{

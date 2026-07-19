@@ -109,7 +109,210 @@
     <div class="content__container">
         <div class="content__inner">
 
-          <ds-def-index>
+          <ds-json-view label="document-blocks/variants.schema.json">
+  <ds-code language="json" wrap>{
+  &quot;$schema&quot;: &quot;https://json-schema.org/draft/2020-12/schema&quot;,
+  &quot;$id&quot;: &quot;https://designsystemdocspec.org/v0.15.2/document-blocks/variants.schema.json&quot;,
+  &quot;title&quot;: &quot;DSDS Variants Document Block&quot;,
+  &quot;description&quot;: &quot;Every way a component can be configured — a toggle (flag variant, like 'disabled') or a set of options (enum variant, like size: sm | md | lg). Each can explain why it exists.&quot;,
+  &quot;$defs&quot;: {
+    &quot;variantValue&quot;: {
+      &quot;type&quot;: &quot;object&quot;,
+      &quot;description&quot;: &quot;A single option within an enum variant dimension.&quot;,
+      &quot;required&quot;: [
+        &quot;identifier&quot;,
+        &quot;description&quot;
+      ],
+      &quot;properties&quot;: {
+        &quot;identifier&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;description&quot;: &quot;Machine-readable value identifier (e.g., 'sm', 'md', 'lg', 'primary', 'secondary').&quot;
+        },
+        &quot;name&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;description&quot;: &quot;Human-readable name (e.g., 'Small', 'Medium', 'Large', 'Primary', 'Secondary').&quot;
+        },
+        &quot;description&quot;: {
+          &quot;$ref&quot;: &quot;../common/rich-text.schema.json#/$defs/richText&quot;,
+          &quot;description&quot;: &quot;What this value looks like, when to use it, and how it differs from other values in this dimension.&quot;
+        },
+        &quot;rationale&quot;: {
+          &quot;$ref&quot;: &quot;../common/rich-text.schema.json#/$defs/richText&quot;,
+          &quot;description&quot;: &quot;Why this value exists (e.g., 'High emphasis directs users to the one key action'). For guidance comparing values, use `use-cases` instead.&quot;
+        },
+        &quot;examples&quot;: {
+          &quot;type&quot;: &quot;array&quot;,
+          &quot;description&quot;: &quot;Examples showing this variant value in isolation or in context.&quot;,
+          &quot;items&quot;: {
+            &quot;$ref&quot;: &quot;../common/example.schema.json#/$defs/example&quot;
+          },
+          &quot;minItems&quot;: 1
+        },
+        &quot;tokens&quot;: {
+          &quot;$ref&quot;: &quot;../common/token-overrides.schema.json#/$defs/tokenOverrides&quot;,
+          &quot;description&quot;: &quot;Token overrides applied when this value is selected.&quot;
+        }
+      },
+      &quot;additionalProperties&quot;: false
+    },
+    &quot;flagVariant&quot;: {
+      &quot;type&quot;: &quot;object&quot;,
+      &quot;description&quot;: &quot;A toggle — on or off. Use it for binary capabilities like 'disabled' or 'full-width'. No `values` array; it's simply active or not.&quot;,
+      &quot;required&quot;: [
+        &quot;kind&quot;,
+        &quot;identifier&quot;,
+        &quot;description&quot;
+      ],
+      &quot;properties&quot;: {
+        &quot;kind&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;const&quot;: &quot;flag&quot;,
+          &quot;description&quot;: &quot;Identifies this variant as a boolean flag.&quot;
+        },
+        &quot;identifier&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;description&quot;: &quot;Machine-readable identifier of the flag (e.g., 'disabled', 'full-width', 'icon-only', 'loading').&quot;
+        },
+        &quot;name&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;description&quot;: &quot;Human-readable name of the flag (e.g., 'Disabled', 'Full Width', 'Icon Only', 'Loading').&quot;
+        },
+        &quot;description&quot;: {
+          &quot;$ref&quot;: &quot;../common/rich-text.schema.json#/$defs/richText&quot;,
+          &quot;description&quot;: &quot;What this flag controls and how it affects the component's appearance or behavior when active.&quot;
+        },
+        &quot;rationale&quot;: {
+          &quot;$ref&quot;: &quot;../common/rich-text.schema.json#/$defs/richText&quot;,
+          &quot;description&quot;: &quot;Why this flag exists (e.g., 'Prevents interaction during submission to avoid duplicate requests').&quot;
+        },
+        &quot;examples&quot;: {
+          &quot;type&quot;: &quot;array&quot;,
+          &quot;description&quot;: &quot;Examples showing the component with this flag active.&quot;,
+          &quot;items&quot;: {
+            &quot;$ref&quot;: &quot;../common/example.schema.json#/$defs/example&quot;
+          },
+          &quot;minItems&quot;: 1
+        },
+        &quot;tokens&quot;: {
+          &quot;$ref&quot;: &quot;../common/token-overrides.schema.json#/$defs/tokenOverrides&quot;,
+          &quot;description&quot;: &quot;Token overrides applied when this flag is active.&quot;
+        }
+      },
+      &quot;additionalProperties&quot;: false
+    },
+    &quot;enumVariant&quot;: {
+      &quot;type&quot;: &quot;object&quot;,
+      &quot;description&quot;: &quot;A set of options where you pick one, like 'size' (sm | md | lg) or 'emphasis' (primary | secondary | ghost).&quot;,
+      &quot;required&quot;: [
+        &quot;kind&quot;,
+        &quot;identifier&quot;,
+        &quot;description&quot;,
+        &quot;values&quot;
+      ],
+      &quot;properties&quot;: {
+        &quot;kind&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;const&quot;: &quot;enum&quot;,
+          &quot;description&quot;: &quot;Identifies this variant as an enumerated set of values.&quot;
+        },
+        &quot;identifier&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;description&quot;: &quot;Machine-readable name for this dimension (e.g., 'size', 'emphasis') — the axis, not one of its values.&quot;
+        },
+        &quot;name&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;description&quot;: &quot;Human-readable name of the variant dimension (e.g., 'Size', 'Emphasis', 'Shape').&quot;
+        },
+        &quot;description&quot;: {
+          &quot;$ref&quot;: &quot;../common/rich-text.schema.json#/$defs/richText&quot;,
+          &quot;description&quot;: &quot;What this dimension of variation controls and how its values affect the component's appearance or behavior.&quot;
+        },
+        &quot;values&quot;: {
+          &quot;type&quot;: &quot;array&quot;,
+          &quot;description&quot;: &quot;The possible values. A single value is fine — dimensions often start with just one while more are added over time. Tools SHOULD keep this order.&quot;,
+          &quot;items&quot;: {
+            &quot;$ref&quot;: &quot;#/$defs/variantValue&quot;
+          },
+          &quot;minItems&quot;: 1
+        }
+      },
+      &quot;additionalProperties&quot;: false
+    },
+    &quot;variants&quot;: {
+      &quot;type&quot;: &quot;object&quot;,
+      &quot;description&quot;: &quot;Every way a component or pattern can be configured — a toggle or a set of options. Multiple items combine independently. A variant is a choice the consumer makes up front (e.g., 'size', 'full-width'); a condition entered at runtime (hover, disabled, loading) is a state — document that in `states` instead.&quot;,
+      &quot;required&quot;: [
+        &quot;kind&quot;,
+        &quot;items&quot;
+      ],
+      &quot;properties&quot;: {
+        &quot;kind&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;const&quot;: &quot;variants&quot;,
+          &quot;description&quot;: &quot;Identifies this block as a variants spec.&quot;
+        },
+        &quot;items&quot;: {
+          &quot;type&quot;: &quot;array&quot;,
+          &quot;description&quot;: &quot;The variant dimensions, in order. Tools SHOULD keep this order.&quot;,
+          &quot;items&quot;: {
+            &quot;type&quot;: &quot;object&quot;,
+            &quot;description&quot;: &quot;One variant dimension. `kind: 'flag'` makes it a toggle; `kind: 'enum'` makes it a set of options. We use `if`/`then` instead of `oneOf` so an invalid entry gives one clear error instead of many.&quot;,
+            &quot;required&quot;: [
+              &quot;kind&quot;
+            ],
+            &quot;properties&quot;: {
+              &quot;kind&quot;: {
+                &quot;enum&quot;: [
+                  &quot;flag&quot;,
+                  &quot;enum&quot;
+                ]
+              }
+            },
+            &quot;allOf&quot;: [
+              {
+                &quot;if&quot;: {
+                  &quot;required&quot;: [
+                    &quot;kind&quot;
+                  ],
+                  &quot;properties&quot;: {
+                    &quot;kind&quot;: {
+                      &quot;const&quot;: &quot;flag&quot;
+                    }
+                  }
+                },
+                &quot;then&quot;: {
+                  &quot;$ref&quot;: &quot;#/$defs/flagVariant&quot;
+                }
+              },
+              {
+                &quot;if&quot;: {
+                  &quot;required&quot;: [
+                    &quot;kind&quot;
+                  ],
+                  &quot;properties&quot;: {
+                    &quot;kind&quot;: {
+                      &quot;const&quot;: &quot;enum&quot;
+                    }
+                  }
+                },
+                &quot;then&quot;: {
+                  &quot;$ref&quot;: &quot;#/$defs/enumVariant&quot;
+                }
+              }
+            ]
+          },
+          &quot;minItems&quot;: 1
+        },
+        &quot;$extensions&quot;: {
+          &quot;$ref&quot;: &quot;../common/extensions.schema.json#/$defs/extensions&quot;
+        }
+      },
+      &quot;additionalProperties&quot;: false
+    }
+  }
+}</ds-code>
+</ds-json-view>
+<ds-def-index>
 <p><strong>4 definitions</strong> in this file:</p>
 <ul>
 <li><a href="#variants"><ds-code inline>variants</ds-code></a></li>

@@ -109,7 +109,277 @@
     <div class="content__container">
         <div class="content__inner">
 
-          <ds-def-index>
+          <ds-json-view label="document-blocks/accessibility.schema.json">
+  <ds-code language="json" wrap>{
+  &quot;$schema&quot;: &quot;https://json-schema.org/draft/2020-12/schema&quot;,
+  &quot;$id&quot;: &quot;https://designsystemdocspec.org/v0.15.2/document-blocks/accessibility.schema.json&quot;,
+  &quot;title&quot;: &quot;DSDS Accessibility Document Block&quot;,
+  &quot;description&quot;: &quot;Specialized, structured accessibility documentation: keyboard interactions, ARIA attributes, screen reader announcements, focus behaviors, color contrast pairs, and reduced-motion behaviors. Every entry is a verifiable statement of what the artifact does — a fact a test or review can confirm. For general documentation guidance — rules about what authors should do, with rationale and a conformance level — use a `guidelines` block (category 'accessibility').&quot;,
+  &quot;$defs&quot;: {
+    &quot;keyboardInteraction&quot;: {
+      &quot;type&quot;: &quot;object&quot;,
+      &quot;description&quot;: &quot;A keyboard interaction spec documenting what happens when a specific key or key combination is pressed.&quot;,
+      &quot;required&quot;: [
+        &quot;key&quot;,
+        &quot;action&quot;
+      ],
+      &quot;properties&quot;: {
+        &quot;key&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;description&quot;: &quot;The key or key combination (e.g., 'Enter', 'Space', 'Tab', 'Shift+Tab', 'Escape', 'Arrow Down', 'Home', 'End').&quot;
+        },
+        &quot;action&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;description&quot;: &quot;What happens when this key is pressed (e.g., 'Activates the button', 'Moves focus to the next item in the list', 'Closes the dialog and returns focus to the trigger').&quot;
+        },
+        &quot;context&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;description&quot;: &quot;Preconditions for this interaction (e.g., 'When the menu is open', 'When focus is on the trigger element', 'When the component is not disabled'). When omitted, the interaction applies in all contexts.&quot;
+        }
+      },
+      &quot;additionalProperties&quot;: false
+    },
+    &quot;ariaAttribute&quot;: {
+      &quot;type&quot;: &quot;object&quot;,
+      &quot;description&quot;: &quot;An ARIA attribute used by the artifact: what it communicates and when to apply it.&quot;,
+      &quot;required&quot;: [
+        &quot;attribute&quot;,
+        &quot;description&quot;
+      ],
+      &quot;properties&quot;: {
+        &quot;attribute&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;description&quot;: &quot;The ARIA attribute name (e.g., 'role', 'aria-label', 'aria-expanded', 'aria-disabled', 'aria-live', 'aria-controls').&quot;
+        },
+        &quot;value&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;description&quot;: &quot;The expected value or value pattern (e.g., 'true | false', 'string', 'button', 'dialog', 'assertive | polite').&quot;
+        },
+        &quot;description&quot;: {
+          &quot;$ref&quot;: &quot;../common/rich-text.schema.json#/$defs/richText&quot;,
+          &quot;description&quot;: &quot;What this attribute communicates to assistive technology and when to apply it. Include guidance on dynamic value changes when applicable.&quot;
+        },
+        &quot;required&quot;: {
+          &quot;type&quot;: &quot;boolean&quot;,
+          &quot;default&quot;: false,
+          &quot;description&quot;: &quot;Whether this attribute is always required on the artifact. Defaults to false, meaning the attribute is conditionally required or optional.&quot;
+        }
+      },
+      &quot;additionalProperties&quot;: false
+    },
+    &quot;colorContrastEntry&quot;: {
+      &quot;type&quot;: &quot;object&quot;,
+      &quot;description&quot;: &quot;A foreground/background color pairing the artifact uses. The pair is the documentation — which combinations occur, and where. Measured contrast ratios are conformance results, not documentation: verify pairs with a criterion (verification: automated) whose check computes ratios from live token values, so the measurement cannot drift from the palette.&quot;,
+      &quot;required&quot;: [
+        &quot;foreground&quot;,
+        &quot;background&quot;
+      ],
+      &quot;properties&quot;: {
+        &quot;foreground&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;description&quot;: &quot;The foreground token name or resolved color value (e.g., 'color-text-primary', '#1a1a1a', 'var(--button-text-color)').&quot;
+        },
+        &quot;background&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;description&quot;: &quot;The background token name or resolved color value (e.g., 'color-background-default', '#ffffff', 'var(--button-background)').&quot;
+        },
+        &quot;context&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;description&quot;: &quot;Where this foreground/background combination is used (e.g., 'Label text on primary button background in light mode', 'Secondary text on card surface').&quot;
+        }
+      },
+      &quot;additionalProperties&quot;: false
+    },
+    &quot;accessibility&quot;: {
+      &quot;type&quot;: &quot;object&quot;,
+      &quot;description&quot;: &quot;Specialized, structured accessibility documentation for an artifact. Every field is data: keyboard interactions, ARIA attributes, per-state announcements, per-trigger focus behaviors, color pairings, and per-animation reduced-motion behaviors. Each entry states what the artifact does, verifiably. This block carries no prose rules — general documentation guidance, with rationale and a conformance level, belongs in a `guidelines` block (category 'accessibility'), and the two blocks complement each other on the same artifact.&quot;,
+      &quot;required&quot;: [
+        &quot;kind&quot;
+      ],
+      &quot;properties&quot;: {
+        &quot;kind&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;const&quot;: &quot;accessibility&quot;,
+          &quot;description&quot;: &quot;Identifies this document block as an accessibility spec.&quot;
+        },
+        &quot;wcagLevel&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;enum&quot;: [
+            &quot;A&quot;,
+            &quot;AA&quot;,
+            &quot;AAA&quot;
+          ],
+          &quot;description&quot;: &quot;The minimum WCAG conformance level targeted by this artifact. Most design systems target AA. Set to AAA when the artifact exceeds standard requirements.&quot;
+        },
+        &quot;criteria&quot;: {
+          &quot;type&quot;: &quot;array&quot;,
+          &quot;description&quot;: &quot;Testable accessibility success criteria for this artifact (e.g., 'All interactive targets present a hit area of at least 44×44 px'). Each criterion pairs a stable identifier with an objectively verifiable statement. This lets accessibility checks run against the docs and report pass/fail. The structured data below (keyboard interactions, ARIA attributes, contrast pairs) shows how these conditions are met.&quot;,
+          &quot;items&quot;: {
+            &quot;$ref&quot;: &quot;../common/criterion.schema.json#/$defs/criterion&quot;
+          },
+          &quot;minItems&quot;: 1
+        },
+        &quot;keyboardInteractions&quot;: {
+          &quot;type&quot;: &quot;array&quot;,
+          &quot;description&quot;: &quot;Keyboard interaction specs: what happens when each key or key combination is pressed while the artifact has focus.&quot;,
+          &quot;minItems&quot;: 1,
+          &quot;items&quot;: {
+            &quot;$ref&quot;: &quot;#/$defs/keyboardInteraction&quot;
+          }
+        },
+        &quot;ariaAttributes&quot;: {
+          &quot;type&quot;: &quot;array&quot;,
+          &quot;description&quot;: &quot;ARIA attribute docs. Lists every ARIA attribute the artifact uses, what it communicates, and when to apply it.&quot;,
+          &quot;minItems&quot;: 1,
+          &quot;items&quot;: {
+            &quot;$ref&quot;: &quot;#/$defs/ariaAttribute&quot;
+          }
+        },
+        &quot;announcements&quot;: {
+          &quot;type&quot;: &quot;array&quot;,
+          &quot;description&quot;: &quot;Screen reader announcements, one entry per state or situation. Name a specific screen reader on an entry when behavior differs between them.&quot;,
+          &quot;items&quot;: {
+            &quot;$ref&quot;: &quot;#/$defs/announcement&quot;
+          },
+          &quot;minItems&quot;: 1
+        },
+        &quot;focusBehaviors&quot;: {
+          &quot;type&quot;: &quot;array&quot;,
+          &quot;description&quot;: &quot;Focus movement, one entry per trigger: how focus enters, moves within, and leaves the artifact — including trapping and restoration.&quot;,
+          &quot;items&quot;: {
+            &quot;$ref&quot;: &quot;#/$defs/focusBehavior&quot;
+          },
+          &quot;minItems&quot;: 1
+        },
+        &quot;colorContrast&quot;: {
+          &quot;type&quot;: &quot;array&quot;,
+          &quot;description&quot;: &quot;The foreground/background color pairings this artifact uses, one entry per pairing. Pairs are declarations of intent; measure them with an automated contrast criterion, not by hand.&quot;,
+          &quot;minItems&quot;: 1,
+          &quot;items&quot;: {
+            &quot;$ref&quot;: &quot;#/$defs/colorContrastEntry&quot;
+          }
+        },
+        &quot;reducedMotion&quot;: {
+          &quot;type&quot;: &quot;array&quot;,
+          &quot;description&quot;: &quot;Animations and their prefers-reduced-motion behavior, one entry per animation.&quot;,
+          &quot;items&quot;: {
+            &quot;$ref&quot;: &quot;#/$defs/reducedMotionEntry&quot;
+          },
+          &quot;minItems&quot;: 1
+        },
+        &quot;$extensions&quot;: {
+          &quot;$ref&quot;: &quot;../common/extensions.schema.json#/$defs/extensions&quot;
+        }
+      },
+      &quot;additionalProperties&quot;: false,
+      &quot;anyOf&quot;: [
+        {
+          &quot;required&quot;: [
+            &quot;wcagLevel&quot;
+          ]
+        },
+        {
+          &quot;required&quot;: [
+            &quot;criteria&quot;
+          ]
+        },
+        {
+          &quot;required&quot;: [
+            &quot;keyboardInteractions&quot;
+          ]
+        },
+        {
+          &quot;required&quot;: [
+            &quot;ariaAttributes&quot;
+          ]
+        },
+        {
+          &quot;required&quot;: [
+            &quot;announcements&quot;
+          ]
+        },
+        {
+          &quot;required&quot;: [
+            &quot;focusBehaviors&quot;
+          ]
+        },
+        {
+          &quot;required&quot;: [
+            &quot;colorContrast&quot;
+          ]
+        },
+        {
+          &quot;required&quot;: [
+            &quot;reducedMotion&quot;
+          ]
+        }
+      ]
+    },
+    &quot;announcement&quot;: {
+      &quot;type&quot;: &quot;object&quot;,
+      &quot;description&quot;: &quot;What a screen reader announces in one context or state.&quot;,
+      &quot;required&quot;: [
+        &quot;context&quot;,
+        &quot;announcement&quot;
+      ],
+      &quot;properties&quot;: {
+        &quot;context&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;description&quot;: &quot;The state or situation being announced (e.g., 'default', 'disabled via aria-disabled', 'loading', 'validation failure'). Use 'default' for the resting state.&quot;
+        },
+        &quot;announcement&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;description&quot;: &quot;What is announced (e.g., '[label], button, dimmed'). Use bracketed placeholders for content that varies.&quot;
+        },
+        &quot;screenReader&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;description&quot;: &quot;The specific screen reader this announcement applies to (e.g., 'VoiceOver', 'NVDA', 'JAWS'). When omitted, the announcement applies to all screen readers.&quot;
+        }
+      },
+      &quot;additionalProperties&quot;: false
+    },
+    &quot;focusBehavior&quot;: {
+      &quot;type&quot;: &quot;object&quot;,
+      &quot;description&quot;: &quot;How focus moves at one moment in the artifact's lifecycle.&quot;,
+      &quot;required&quot;: [
+        &quot;trigger&quot;,
+        &quot;behavior&quot;
+      ],
+      &quot;properties&quot;: {
+        &quot;trigger&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;description&quot;: &quot;The moment or event (e.g., 'default', 'open', 'close', 'validation failure', 'disabled'). Use 'default' for normal tab-order participation.&quot;
+        },
+        &quot;behavior&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;description&quot;: &quot;What focus does (e.g., 'Moves to the error summary', 'Returns to the trigger element', 'Participates in the normal tab order').&quot;
+        }
+      },
+      &quot;additionalProperties&quot;: false
+    },
+    &quot;reducedMotionEntry&quot;: {
+      &quot;type&quot;: &quot;object&quot;,
+      &quot;description&quot;: &quot;One animation and its behavior under prefers-reduced-motion.&quot;,
+      &quot;required&quot;: [
+        &quot;animation&quot;,
+        &quot;behavior&quot;
+      ],
+      &quot;properties&quot;: {
+        &quot;animation&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;description&quot;: &quot;The animation or transition (e.g., 'loading spinner rotation', 'background-color 100ms transition').&quot;
+        },
+        &quot;behavior&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;description&quot;: &quot;What happens when reduced motion is preferred (e.g., 'Replaced with a static ellipsis indicator', 'Transition removed; state changes apply instantly').&quot;
+        }
+      },
+      &quot;additionalProperties&quot;: false
+    }
+  }
+}</ds-code>
+</ds-json-view>
+<ds-def-index>
 <p><strong>7 definitions</strong> in this file:</p>
 <ul>
 <li><a href="#accessibility"><ds-code inline>accessibility</ds-code></a></li>
@@ -134,7 +404,7 @@
   <ds-prop name="reducedMotion" type="&lt;ds-type-ref href=&quot;document-blocks-accessibility.html#reducedmotionentry&quot;&gt;reducedMotionEntry&lt;/ds-type-ref&gt;[]" conditional>Animations and their prefers-reduced-motion behavior, one entry per animation.<br><small>Min items: 1</small></ds-prop>
   <ds-prop name="$extensions" type="&lt;ds-type-ref href=&quot;common-extensions.html#extensions&quot;&gt;extensions&lt;/ds-type-ref&gt;"></ds-prop>
 </ds-prop-table>
-<ds-callout bordered variant="warning"><strong>Constraint:</strong> At least one of <ds-code inline>wcagLevel</ds-code>, <ds-code inline>criteria</ds-code>, <ds-code inline>keyboardInteractions</ds-code>, <ds-code inline>ariaAttributes</ds-code>, <ds-code inline>announcements</ds-code>, <ds-code inline>focusBehaviors</ds-code>, <ds-code inline>colorContrast</ds-code>, <ds-code inline>reducedMotion</ds-code> must be present.</ds-callout>
+<ds-callout variant="warning" title="Constraint:">At least one of <ds-code inline>wcagLevel</ds-code>, <ds-code inline>criteria</ds-code>, <ds-code inline>keyboardInteractions</ds-code>, <ds-code inline>ariaAttributes</ds-code>, <ds-code inline>announcements</ds-code>, <ds-code inline>focusBehaviors</ds-code>, <ds-code inline>colorContrast</ds-code>, <ds-code inline>reducedMotion</ds-code> must be present.</ds-callout>
 <ds-cross-refs><strong>References:</strong> <ds-type-ref href="common-criterion.html#criterion">criterion</ds-type-ref>, <ds-type-ref href="document-blocks-accessibility.html#keyboardinteraction">keyboardInteraction</ds-type-ref>, <ds-type-ref href="document-blocks-accessibility.html#ariaattribute">ariaAttribute</ds-type-ref>, <ds-type-ref href="document-blocks-accessibility.html#announcement">announcement</ds-type-ref>, <ds-type-ref href="document-blocks-accessibility.html#focusbehavior">focusBehavior</ds-type-ref>, <ds-type-ref href="document-blocks-accessibility.html#colorcontrastentry">colorContrastEntry</ds-type-ref>, <ds-type-ref href="document-blocks-accessibility.html#reducedmotionentry">reducedMotionEntry</ds-type-ref>, <ds-type-ref href="common-extensions.html#extensions">extensions</ds-type-ref></ds-cross-refs>
 <ds-def-example>
 <ds-code language="json" label="example">{

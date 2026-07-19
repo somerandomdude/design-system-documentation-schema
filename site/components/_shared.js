@@ -62,6 +62,7 @@ const ICON_FILES = {
   dot: "icon-dot.svg",
   lightbulb: "icon-lightbulb.svg",
   warning: "icon-warning.svg",
+  brackets: "icon-brackets.svg",
   logo: "dsds.svg",
 };
 

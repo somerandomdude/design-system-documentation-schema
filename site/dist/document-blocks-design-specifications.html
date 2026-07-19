@@ -109,7 +109,245 @@
     <div class="content__container">
         <div class="content__inner">
 
-          <ds-def-index>
+          <ds-json-view label="document-blocks/design-specifications.schema.json">
+  <ds-code language="json" wrap>{
+  &quot;$schema&quot;: &quot;https://json-schema.org/draft/2020-12/schema&quot;,
+  &quot;$id&quot;: &quot;https://designsystemdocspec.org/v0.15.2/document-blocks/design-specifications.schema.json&quot;,
+  &quot;title&quot;: &quot;DSDS Design Specifications Document Block&quot;,
+  &quot;description&quot;: &quot;The visual specs of a component: property values, spacing, size limits, typography, and how it responds to breakpoints. Makes every visual decision explicit and measurable, so design and code stay in sync.&quot;,
+  &quot;$defs&quot;: {
+    &quot;designValue&quot;: {
+      &quot;description&quot;: &quot;A design value. If the system has tokens, this MUST be a token identifier (e.g., 'color-action-primary', 'space-4'), not a raw value — that keeps it from drifting out of sync with the token system. A raw CSS value (e.g., '#0055b3', '16px') is only allowed when there's no token layer.&quot;,
+      &quot;type&quot;: &quot;string&quot;
+    },
+    &quot;designProperties&quot;: {
+      &quot;type&quot;: &quot;object&quot;,
+      &quot;description&quot;: &quot;A map of property name to value. Keys say what the value controls (e.g., 'background', 'min-height') and MUST be lowercase kebab-case. Values are token names ('color-action-primary') or raw CSS ('#0055b3', '16px') — use either, or mix them.&quot;,
+      &quot;additionalProperties&quot;: {
+        &quot;$ref&quot;: &quot;#/$defs/designValue&quot;
+      },
+      &quot;propertyNames&quot;: {
+        &quot;pattern&quot;: &quot;^[a-z][a-z0-9-]*$&quot;
+      },
+      &quot;examples&quot;: [
+        {
+          &quot;background&quot;: &quot;color-action-primary&quot;,
+          &quot;text-color&quot;: &quot;color-text-on-action&quot;,
+          &quot;border-color&quot;: &quot;transparent&quot;,
+          &quot;border-width&quot;: &quot;0px&quot;,
+          &quot;border-radius&quot;: &quot;radius-medium&quot;
+        },
+        {
+          &quot;background&quot;: &quot;#0055b3&quot;,
+          &quot;text-color&quot;: &quot;#ffffff&quot;,
+          &quot;border-radius&quot;: &quot;8px&quot;,
+          &quot;min-height&quot;: &quot;40px&quot;
+        },
+        {
+          &quot;background&quot;: &quot;button-primary-bg&quot;,
+          &quot;text-color&quot;: &quot;button-primary-text&quot;,
+          &quot;border-color&quot;: &quot;button-primary-border&quot;
+        }
+      ],
+      &quot;minProperties&quot;: 1
+    },
+    &quot;spacingSpec&quot;: {
+      &quot;type&quot;: &quot;object&quot;,
+      &quot;description&quot;: &quot;Spacing around and inside the component. `internal` is spacing the component owns; `external` is spacing it recommends but the parent layout controls.&quot;,
+      &quot;properties&quot;: {
+        &quot;internal&quot;: {
+          &quot;type&quot;: &quot;object&quot;,
+          &quot;description&quot;: &quot;Padding and gaps inside the component. Keys name the relationship (e.g., 'icon-to-label') and MUST be lowercase kebab-case. Values are token names or raw CSS (e.g., 'space-4', '8px').&quot;,
+          &quot;additionalProperties&quot;: {
+            &quot;$ref&quot;: &quot;#/$defs/designValue&quot;
+          },
+          &quot;propertyNames&quot;: {
+            &quot;pattern&quot;: &quot;^[a-z][a-z0-9-]*$&quot;
+          },
+          &quot;minProperties&quot;: 1
+        },
+        &quot;external&quot;: {
+          &quot;type&quot;: &quot;object&quot;,
+          &quot;description&quot;: &quot;Recommended margins between this component and its siblings or container. Keys name the relationship (e.g., 'button-to-button') and MUST be lowercase kebab-case. This is a recommendation — the parent layout has final control.&quot;,
+          &quot;additionalProperties&quot;: {
+            &quot;$ref&quot;: &quot;#/$defs/designValue&quot;
+          },
+          &quot;propertyNames&quot;: {
+            &quot;pattern&quot;: &quot;^[a-z][a-z0-9-]*$&quot;
+          },
+          &quot;minProperties&quot;: 1
+        }
+      },
+      &quot;additionalProperties&quot;: false,
+      &quot;minProperties&quot;: 1
+    },
+    &quot;sizingSpec&quot;: {
+      &quot;type&quot;: &quot;object&quot;,
+      &quot;description&quot;: &quot;The component's size limits — min/max width and height, and any aspect ratio.&quot;,
+      &quot;properties&quot;: {
+        &quot;minWidth&quot;: {
+          &quot;$ref&quot;: &quot;#/$defs/designValue&quot;,
+          &quot;description&quot;: &quot;Minimum width as a token name or raw value (e.g., 'size-button-min-width', '64px').&quot;
+        },
+        &quot;maxWidth&quot;: {
+          &quot;$ref&quot;: &quot;#/$defs/designValue&quot;,
+          &quot;description&quot;: &quot;Maximum width as a token name or raw value (e.g., 'size-dialog-max-width', '600px', 'none').&quot;
+        },
+        &quot;minHeight&quot;: {
+          &quot;$ref&quot;: &quot;#/$defs/designValue&quot;,
+          &quot;description&quot;: &quot;Minimum height as a token name or raw value (e.g., 'size-button-min-height', '44px').&quot;
+        },
+        &quot;maxHeight&quot;: {
+          &quot;$ref&quot;: &quot;#/$defs/designValue&quot;,
+          &quot;description&quot;: &quot;Maximum height as a token name or raw value.&quot;
+        },
+        &quot;aspectRatio&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;description&quot;: &quot;Aspect ratio as a ratio string (e.g., '16/9', '1/1', '4/3').&quot;
+        }
+      },
+      &quot;additionalProperties&quot;: false,
+      &quot;minProperties&quot;: 1
+    },
+    &quot;typographyEntrySpec&quot;: {
+      &quot;type&quot;: &quot;object&quot;,
+      &quot;description&quot;: &quot;Typography for one text element in the component. Maps CSS typography properties to token names or raw values. If `typeToken` is set, the individual properties just document what it resolves to.&quot;,
+      &quot;properties&quot;: {
+        &quot;fontFamily&quot;: {
+          &quot;$ref&quot;: &quot;#/$defs/designValue&quot;,
+          &quot;description&quot;: &quot;Font family as a token name or raw value (e.g., 'font-family-body', 'Inter, sans-serif').&quot;
+        },
+        &quot;fontSize&quot;: {
+          &quot;$ref&quot;: &quot;#/$defs/designValue&quot;,
+          &quot;description&quot;: &quot;Font size as a token name or raw value (e.g., 'font-size-body', '14px', '0.875rem').&quot;
+        },
+        &quot;fontWeight&quot;: {
+          &quot;$ref&quot;: &quot;#/$defs/designValue&quot;,
+          &quot;description&quot;: &quot;Font weight as a token name or raw value (e.g., 'font-weight-regular', '400', 'bold').&quot;
+        },
+        &quot;lineHeight&quot;: {
+          &quot;$ref&quot;: &quot;#/$defs/designValue&quot;,
+          &quot;description&quot;: &quot;Line height as a token name or raw value (e.g., 'line-height-body', '1.5', '20px').&quot;
+        },
+        &quot;letterSpacing&quot;: {
+          &quot;$ref&quot;: &quot;#/$defs/designValue&quot;,
+          &quot;description&quot;: &quot;Letter spacing as a token name or raw value (e.g., 'letter-spacing-body', '0.01em').&quot;
+        },
+        &quot;textTransform&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;description&quot;: &quot;Text transform value (e.g., 'uppercase', 'capitalize', 'none').&quot;
+        },
+        &quot;typeToken&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;description&quot;: &quot;A single token covering multiple typography properties at once (e.g., '$body-compact-01', 'type-scale-body-sm'). When set, the individual properties just describe what it resolves to.&quot;
+        }
+      },
+      &quot;additionalProperties&quot;: false,
+      &quot;minProperties&quot;: 1
+    },
+    &quot;typographySpec&quot;: {
+      &quot;type&quot;: &quot;object&quot;,
+      &quot;description&quot;: &quot;Typography for each text element in the component. Keys name the element (e.g., 'label', 'helper-text') and MUST be lowercase kebab-case.&quot;,
+      &quot;additionalProperties&quot;: {
+        &quot;$ref&quot;: &quot;#/$defs/typographyEntrySpec&quot;
+      },
+      &quot;propertyNames&quot;: {
+        &quot;pattern&quot;: &quot;^[a-z][a-z0-9-]*$&quot;
+      },
+      &quot;minProperties&quot;: 1
+    },
+    &quot;responsiveEntry&quot;: {
+      &quot;type&quot;: &quot;object&quot;,
+      &quot;description&quot;: &quot;How the component adapts at one breakpoint.&quot;,
+      &quot;required&quot;: [
+        &quot;breakpoint&quot;,
+        &quot;description&quot;
+      ],
+      &quot;properties&quot;: {
+        &quot;breakpoint&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;description&quot;: &quot;The breakpoint name or value at which this behavior applies (e.g., 'small', 'medium', 'large', '768px', 'min-width: 1024px').&quot;
+        },
+        &quot;description&quot;: {
+          &quot;$ref&quot;: &quot;../common/rich-text.schema.json#/$defs/richText&quot;,
+          &quot;description&quot;: &quot;How the component's layout, sizing, or behavior changes at this breakpoint.&quot;
+        }
+      },
+      &quot;additionalProperties&quot;: false
+    },
+    &quot;designSpecifications&quot;: {
+      &quot;type&quot;: &quot;object&quot;,
+      &quot;description&quot;: &quot;The component's default, baseline specs — properties, spacing, size, typography, and responsive behavior. Per-variant and per-state overrides don't go here; they live on the `variants` and `states` blocks.&quot;,
+      &quot;required&quot;: [
+        &quot;kind&quot;
+      ],
+      &quot;properties&quot;: {
+        &quot;kind&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;const&quot;: &quot;design-specifications&quot;,
+          &quot;description&quot;: &quot;Identifies this block as a design specifications spec.&quot;
+        },
+        &quot;properties&quot;: {
+          &quot;$ref&quot;: &quot;#/$defs/designProperties&quot;,
+          &quot;description&quot;: &quot;The default property values (e.g., 'background', 'border-radius').&quot;
+        },
+        &quot;spacing&quot;: {
+          &quot;$ref&quot;: &quot;#/$defs/spacingSpec&quot;,
+          &quot;description&quot;: &quot;The default spacing.&quot;
+        },
+        &quot;sizing&quot;: {
+          &quot;$ref&quot;: &quot;#/$defs/sizingSpec&quot;,
+          &quot;description&quot;: &quot;The default size limits.&quot;
+        },
+        &quot;typography&quot;: {
+          &quot;$ref&quot;: &quot;#/$defs/typographySpec&quot;,
+          &quot;description&quot;: &quot;The default typography.&quot;
+        },
+        &quot;responsive&quot;: {
+          &quot;type&quot;: &quot;array&quot;,
+          &quot;description&quot;: &quot;How the component adapts across breakpoints, smallest to largest.&quot;,
+          &quot;items&quot;: {
+            &quot;$ref&quot;: &quot;#/$defs/responsiveEntry&quot;
+          },
+          &quot;minItems&quot;: 1
+        },
+        &quot;$extensions&quot;: {
+          &quot;$ref&quot;: &quot;../common/extensions.schema.json#/$defs/extensions&quot;
+        }
+      },
+      &quot;anyOf&quot;: [
+        {
+          &quot;required&quot;: [
+            &quot;properties&quot;
+          ]
+        },
+        {
+          &quot;required&quot;: [
+            &quot;spacing&quot;
+          ]
+        },
+        {
+          &quot;required&quot;: [
+            &quot;sizing&quot;
+          ]
+        },
+        {
+          &quot;required&quot;: [
+            &quot;typography&quot;
+          ]
+        },
+        {
+          &quot;required&quot;: [
+            &quot;responsive&quot;
+          ]
+        }
+      ],
+      &quot;additionalProperties&quot;: false
+    }
+  }
+}</ds-code>
+</ds-json-view>
+<ds-def-index>
 <p><strong>8 definitions</strong> in this file:</p>
 <ul>
 <li><a href="#designspecifications"><ds-code inline>designSpecifications</ds-code></a></li>
@@ -132,7 +370,7 @@
   <ds-prop name="responsive" type="&lt;ds-type-ref href=&quot;document-blocks-design-specifications.html#responsiveentry&quot;&gt;responsiveEntry&lt;/ds-type-ref&gt;[]" conditional>How the component adapts across breakpoints, smallest to largest.<br><small>Min items: 1</small></ds-prop>
   <ds-prop name="$extensions" type="&lt;ds-type-ref href=&quot;common-extensions.html#extensions&quot;&gt;extensions&lt;/ds-type-ref&gt;"></ds-prop>
 </ds-prop-table>
-<ds-callout bordered variant="warning"><strong>Constraint:</strong> At least one of <ds-code inline>properties</ds-code>, <ds-code inline>spacing</ds-code>, <ds-code inline>sizing</ds-code>, <ds-code inline>typography</ds-code>, <ds-code inline>responsive</ds-code> must be present.</ds-callout>
+<ds-callout variant="warning" title="Constraint:">At least one of <ds-code inline>properties</ds-code>, <ds-code inline>spacing</ds-code>, <ds-code inline>sizing</ds-code>, <ds-code inline>typography</ds-code>, <ds-code inline>responsive</ds-code> must be present.</ds-callout>
 <ds-cross-refs><strong>References:</strong> <ds-type-ref href="document-blocks-design-specifications.html#designproperties">designProperties</ds-type-ref>, <ds-type-ref href="document-blocks-design-specifications.html#spacingspec">spacingSpec</ds-type-ref>, <ds-type-ref href="document-blocks-design-specifications.html#sizingspec">sizingSpec</ds-type-ref>, <ds-type-ref href="document-blocks-design-specifications.html#typographyspec">typographySpec</ds-type-ref>, <ds-type-ref href="document-blocks-design-specifications.html#responsiveentry">responsiveEntry</ds-type-ref>, <ds-type-ref href="common-extensions.html#extensions">extensions</ds-type-ref></ds-cross-refs>
 <ds-def-example>
 <ds-code language="json" label="example">{

@@ -109,7 +109,76 @@
     <div class="content__container">
         <div class="content__inner">
 
-          <ds-def-index>
+          <ds-json-view label="common/relationship.schema.json">
+  <ds-code language="json" wrap>{
+  &quot;$schema&quot;: &quot;https://json-schema.org/draft/2020-12/schema&quot;,
+  &quot;$id&quot;: &quot;https://designsystemdocspec.org/v0.15.2/common/relationship.schema.json&quot;,
+  &quot;title&quot;: &quot;DSDS Relationship Definitions&quot;,
+  &quot;description&quot;: &quot;How one entity relates to another (source → target). Relationships include: source depends on the target, souce is built from the target, source replaces the target, etc. Each relationship has a `relation` type and a target entity. You declare it on one entity, and tools work out the reverse direction. A relationship's target MUST be a documented entity. Use `link`, to point to external resources.&quot;,
+  &quot;$defs&quot;: {
+    &quot;relationType&quot;: {
+      &quot;description&quot;: &quot;The relation type, in canonical direction (source → target): 'depends-on' (source needs the target), 'composes' (source is built from the target), 'part-of' (source is a member of the target), 'alternative-to' (interchangeable; symmetric), 'replaces' (source supersedes a deprecated target), 'extends' (source inherits from the target). Tools work out the reverse relationship direction direction (target → source) and MUST NOT require them to be manually authored. Custom relations MUST be vendor-namespaced (e.g. 'acme.themes').&quot;,
+      &quot;anyOf&quot;: [
+        {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;enum&quot;: [
+            &quot;depends-on&quot;,
+            &quot;composes&quot;,
+            &quot;part-of&quot;,
+            &quot;alternative-to&quot;,
+            &quot;replaces&quot;,
+            &quot;extends&quot;
+          ]
+        },
+        {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;pattern&quot;: &quot;^[a-z0-9-]+(\\.[a-z0-9-]+)+$&quot;
+        }
+      ]
+    },
+    &quot;relationship&quot;: {
+      &quot;type&quot;: &quot;object&quot;,
+      &quot;description&quot;: &quot;Defines what entity the source relates to (`target`: the other entity's `identifier`) and how it relates (`relation`). Optional `role`, `required`, and `versionConstraint` add detail.&quot;,
+      &quot;required&quot;: [
+        &quot;relation&quot;,
+        &quot;target&quot;
+      ],
+      &quot;properties&quot;: {
+        &quot;relation&quot;: {
+          &quot;$ref&quot;: &quot;#/$defs/relationType&quot;
+        },
+        &quot;target&quot;: {
+          &quot;$ref&quot;: &quot;entity-ref.schema.json#/$defs/entityIdentifier&quot;,
+          &quot;description&quot;: &quot;Identifier of the target entity. MUST match a documented entity.&quot;
+        },
+        &quot;role&quot;: {
+          &quot;$ref&quot;: &quot;entity-ref.schema.json#/$defs/entityRole&quot;,
+          &quot;description&quot;: &quot;What the target does here (ex: 'Provides semantic text color'). When omitted, the edge is a general association.&quot;
+        },
+        &quot;required&quot;: {
+          &quot;type&quot;: &quot;boolean&quot;,
+          &quot;default&quot;: false,
+          &quot;description&quot;: &quot;Whether the target is required for the source to function. Meaningful for 'depends-on' and 'composes'; ignored for symmetric relations. Defaults to false.&quot;
+        },
+        &quot;versionConstraint&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;description&quot;: &quot;A semver range the target must satisfy (e.g., '&gt;=2.0.0', '^3'). Advisory metadata, not a hard validation rule.&quot;
+        }
+      },
+      &quot;additionalProperties&quot;: false
+    },
+    &quot;relationships&quot;: {
+      &quot;type&quot;: &quot;array&quot;,
+      &quot;description&quot;: &quot;The links this entity points at other entities. You list each one here, on this entity; the order doesn't matter, and you don't repeat it on the other entity (tools show the reverse side for you).&quot;,
+      &quot;items&quot;: {
+        &quot;$ref&quot;: &quot;#/$defs/relationship&quot;
+      },
+      &quot;minItems&quot;: 1
+    }
+  }
+}</ds-code>
+</ds-json-view>
+<ds-def-index>
 <p><strong>3 definitions</strong> in this file:</p>
 <ul>
 <li><a href="#relationships"><ds-code inline>relationships</ds-code></a></li>

@@ -109,7 +109,89 @@
     <div class="content__container">
         <div class="content__inner">
 
-          <ds-def-index>
+          <ds-json-view label="common/use-cases.schema.json">
+  <ds-code language="json" wrap>{
+  &quot;$schema&quot;: &quot;https://json-schema.org/draft/2020-12/schema&quot;,
+  &quot;$id&quot;: &quot;https://designsystemdocspec.org/v0.15.2/common/use-cases.schema.json&quot;,
+  &quot;title&quot;: &quot;DSDS Use Cases Definition&quot;,
+  &quot;description&quot;: &quot;When an artifact is the right choice and when another fits better. An optional `purpose` sums up what it is for; `items` holds scenarios marked 'recommended' or 'discouraged'.&quot;,
+  &quot;$defs&quot;: {
+    &quot;useCase&quot;: {
+      &quot;type&quot;: &quot;object&quot;,
+      &quot;description&quot;: &quot;One scenario where an artifact is or isn't a good fit.&quot;,
+      &quot;required&quot;: [
+        &quot;description&quot;,
+        &quot;stance&quot;
+      ],
+      &quot;properties&quot;: {
+        &quot;description&quot;: {
+          &quot;$ref&quot;: &quot;rich-text.schema.json#/$defs/richText&quot;,
+          &quot;description&quot;: &quot;The scenario. Describe the user's situation, not the artifact's features.&quot;
+        },
+        &quot;stance&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;enum&quot;: [
+            &quot;recommended&quot;,
+            &quot;discouraged&quot;
+          ],
+          &quot;description&quot;: &quot;'recommended' (use it here) or 'discouraged' (avoid it here).&quot;
+        },
+        &quot;alternative&quot;: {
+          &quot;type&quot;: &quot;object&quot;,
+          &quot;description&quot;: &quot;A better-suited artifact for this scenario. Usually set on discouraged scenarios.&quot;,
+          &quot;required&quot;: [
+            &quot;identifier&quot;
+          ],
+          &quot;properties&quot;: {
+            &quot;identifier&quot;: {
+              &quot;$ref&quot;: &quot;entity-ref.schema.json#/$defs/entityIdentifier&quot;,
+              &quot;description&quot;: &quot;Identifier of the alternative artifact (e.g., 'link', 'radio-group', 'empty-state').&quot;
+            },
+            &quot;rationale&quot;: {
+              &quot;$ref&quot;: &quot;rich-text.schema.json#/$defs/richText&quot;,
+              &quot;description&quot;: &quot;Why the alternative fits better (semantics, accessibility, or UX).&quot;
+            }
+          },
+          &quot;additionalProperties&quot;: false
+        }
+      },
+      &quot;additionalProperties&quot;: false
+    },
+    &quot;useCases&quot;: {
+      &quot;type&quot;: &quot;object&quot;,
+      &quot;description&quot;: &quot;When to use an artifact and when to choose something else. Optional `purpose` sums up what it is for; `items` holds `useCase` scenarios marked 'recommended' or 'discouraged'. Answers *whether* to use the artifact — for *how*, see `guidelines`; for domain beliefs, see `principles`; for look and behavior, see variants, states, and anatomy.&quot;,
+      &quot;required&quot;: [
+        &quot;kind&quot;,
+        &quot;items&quot;
+      ],
+      &quot;properties&quot;: {
+        &quot;kind&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;const&quot;: &quot;use-cases&quot;,
+          &quot;description&quot;: &quot;Identifies this block as `use-cases`.&quot;
+        },
+        &quot;purpose&quot;: {
+          &quot;$ref&quot;: &quot;rich-text.schema.json#/$defs/richText&quot;,
+          &quot;description&quot;: &quot;One or two sentences on what the artifact is for, framing the `items` below (e.g., 'Buttons trigger immediate actions within a surface.').&quot;
+        },
+        &quot;items&quot;: {
+          &quot;type&quot;: &quot;array&quot;,
+          &quot;description&quot;: &quot;The use-case scenarios. Order matters: tools SHOULD keep it for display, and authors SHOULD lead with recommended scenarios.&quot;,
+          &quot;items&quot;: {
+            &quot;$ref&quot;: &quot;#/$defs/useCase&quot;
+          },
+          &quot;minItems&quot;: 1
+        },
+        &quot;$extensions&quot;: {
+          &quot;$ref&quot;: &quot;extensions.schema.json#/$defs/extensions&quot;
+        }
+      },
+      &quot;additionalProperties&quot;: false
+    }
+  }
+}</ds-code>
+</ds-json-view>
+<ds-def-index>
 <p><strong>2 definitions</strong> in this file:</p>
 <ul>
 <li><a href="#usecases"><ds-code inline>useCases</ds-code></a></li>

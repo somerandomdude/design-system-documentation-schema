@@ -109,7 +109,119 @@
     <div class="content__container">
         <div class="content__inner">
 
-          <ds-def-index>
+          <ds-json-view label="metadata/doc-origin.schema.json">
+  <ds-code language="json" wrap>{
+  &quot;$schema&quot;: &quot;https://json-schema.org/draft/2020-12/schema&quot;,
+  &quot;$id&quot;: &quot;https://designsystemdocspec.org/v0.15.2/metadata/doc-origin.schema.json&quot;,
+  &quot;title&quot;: &quot;DSDS Doc Origin Metadata Field&quot;,
+  &quot;description&quot;: &quot;How this entity's documentation came to exist, tracked on two separate scales: `origin` (how the doc relates to the code — written first, generated from it, extracted from it, or reconstructed from memory) and `authorship` (who wrote the words — a person, an AI, a script, or some mix). Two documents can read identically but mean very different things: one extracted from shipped code by its maintainer, the other written from memory by an AI months later. Recording both lets tools and agents judge how much to trust the doc. A bare string sets the overall origin; the object form adds authorship, a note, and per-block overrides for documents with mixed origins.&quot;,
+  &quot;$defs&quot;: {
+    &quot;authorshipValue&quot;: {
+      &quot;type&quot;: &quot;string&quot;,
+      &quot;description&quot;: &quot;Who or what wrote the words. Separate from `origin`: origin is what the doc came from, authorship is who wrote it. 'human': a person wrote it, no AI or scripts involved. 'ai-assisted': human-led, with an AI drafting or editing parts under human direction. 'ai-generated': mostly written by an AI with little to no human review — it MAY contain plausible-sounding mistakes and SHOULD be checked before an agent trusts it as fact. 'machine-assisted': human-led, with scripts or generators producing parts like tables. 'machine-generated': produced entirely by scripts, with no human or AI writing — as trustworthy as its source and pipeline. AI and machine output differ in one key way: machine output is deterministic (same input, same output); AI output isn't. If both an AI and a script contributed, record the AI value — that's what matters most to know.&quot;,
+      &quot;enum&quot;: [
+        &quot;human&quot;,
+        &quot;ai-assisted&quot;,
+        &quot;ai-generated&quot;,
+        &quot;machine-assisted&quot;,
+        &quot;machine-generated&quot;
+      ]
+    },
+    &quot;docOriginValue&quot;: {
+      &quot;type&quot;: &quot;string&quot;,
+      &quot;description&quot;: &quot;How the doc relates to the code it describes. 'authored': written before or alongside the code, as its spec — the code follows the doc. Best for intent, but MAY be behind the shipped API. 'generated': produced automatically from source (type definitions, doc comments), no human writing involved. Matches the API closely but says nothing about intent. 'extracted': written by a person or agent reading the existing code, stories, or tests after the fact — describes what exists. 'reconstructed': written from memory or institutional knowledge, without checking the code — the least reliable for API facts, and SHOULD be verified before an agent relies on it. For API accuracy, agents SHOULD prefer 'generated' or 'extracted'; for design intent, prefer 'authored'.&quot;,
+      &quot;enum&quot;: [
+        &quot;authored&quot;,
+        &quot;generated&quot;,
+        &quot;extracted&quot;,
+        &quot;reconstructed&quot;
+      ]
+    },
+    &quot;docOrigin&quot;: {
+      &quot;description&quot;: &quot;How this entity's documentation came to exist. A bare string (e.g., 'extracted') covers the common case. Use the object form when origins are mixed — say, a prop table extracted from code inside otherwise hand-written guidance — or when it needs explaining. This describes how the doc was produced, not how good it is: it just tells consumers how much to trust which parts.&quot;,
+      &quot;oneOf&quot;: [
+        {
+          &quot;$ref&quot;: &quot;#/$defs/docOriginValue&quot;
+        },
+        {
+          &quot;type&quot;: &quot;object&quot;,
+          &quot;description&quot;: &quot;The full form: overall origin, authorship, an optional note, and per-block overrides. A document MAY be 'authored' overall while some blocks were 'extracted' or 'generated'.&quot;,
+          &quot;required&quot;: [
+            &quot;overall&quot;
+          ],
+          &quot;properties&quot;: {
+            &quot;overall&quot;: {
+              &quot;$ref&quot;: &quot;#/$defs/docOriginValue&quot;,
+              &quot;description&quot;: &quot;The main origin for the document as a whole. If blocks differ, pick the origin of its substantive content and list the exceptions in `blocks`.&quot;
+            },
+            &quot;authorship&quot;: {
+              &quot;$ref&quot;: &quot;#/$defs/authorshipValue&quot;,
+              &quot;description&quot;: &quot;Who wrote the document's words overall. If production was mixed, record the least-supervised method that contributed a real part (a mostly human doc with AI-drafted sections is 'ai-assisted'). Note: the schema enforces a pairing rule — when `origin` is 'generated', `authorship` must be 'machine-generated' or 'ai-generated'; no other pairing is accepted.&quot;
+            },
+            &quot;note&quot;: {
+              &quot;$ref&quot;: &quot;../common/dated-note.schema.json#/$defs/plainNote&quot;,
+              &quot;description&quot;: &quot;Plain-text note explaining the origin (e.g., 'Authored as the spec for the v3 rebuild; prop table regenerated from source on each release'). MUST NOT contain markup.&quot;
+            },
+            &quot;blocks&quot;: {
+              &quot;type&quot;: &quot;object&quot;,
+              &quot;description&quot;: &quot;Per-block overrides, for blocks whose origin or authorship differs from the document as a whole. Keys are block kinds (e.g., 'api', 'guidelines') matching a block already in this entity's `documentBlocks` or `agentDocumentBlocks`. Each value is a bare origin string, or an object with `origin` and/or `authorship` when both differ — e.g., an otherwise hand-written doc whose prop table is AI-generated. List only the exceptions. A key that doesn't match any block in the entity is a defect.&quot;,
+              &quot;minProperties&quot;: 1,
+              &quot;propertyNames&quot;: {
+                &quot;pattern&quot;: &quot;^[a-z][a-z0-9-]*$&quot;
+              },
+              &quot;additionalProperties&quot;: {
+                &quot;oneOf&quot;: [
+                  {
+                    &quot;$ref&quot;: &quot;#/$defs/docOriginValue&quot;
+                  },
+                  {
+                    &quot;type&quot;: &quot;object&quot;,
+                    &quot;description&quot;: &quot;The block's origin and/or authorship, whichever differs from the document-level value. At least one is required.&quot;,
+                    &quot;minProperties&quot;: 1,
+                    &quot;properties&quot;: {
+                      &quot;origin&quot;: {
+                        &quot;$ref&quot;: &quot;#/$defs/docOriginValue&quot;,
+                        &quot;description&quot;: &quot;This block's origin, when it differs from `overall`.&quot;
+                      },
+                      &quot;authorship&quot;: {
+                        &quot;$ref&quot;: &quot;#/$defs/authorshipValue&quot;,
+                        &quot;description&quot;: &quot;This block's authorship, when it differs from the document-level `authorship`.&quot;
+                      }
+                    },
+                    &quot;additionalProperties&quot;: false
+                  }
+                ]
+              }
+            }
+          },
+          &quot;if&quot;: {
+            &quot;properties&quot;: {
+              &quot;overall&quot;: {
+                &quot;const&quot;: &quot;generated&quot;
+              }
+            },
+            &quot;required&quot;: [
+              &quot;authorship&quot;
+            ]
+          },
+          &quot;then&quot;: {
+            &quot;properties&quot;: {
+              &quot;authorship&quot;: {
+                &quot;enum&quot;: [
+                  &quot;ai-generated&quot;,
+                  &quot;machine-generated&quot;
+                ]
+              }
+            }
+          },
+          &quot;additionalProperties&quot;: false
+        }
+      ]
+    }
+  }
+}</ds-code>
+</ds-json-view>
+<ds-def-index>
 <p><strong>3 definitions</strong> in this file:</p>
 <ul>
 <li><a href="#docorigin"><ds-code inline>docOrigin</ds-code></a></li>

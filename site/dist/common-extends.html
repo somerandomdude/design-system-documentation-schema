@@ -109,7 +109,107 @@
     <div class="content__container">
         <div class="content__inner">
 
-          <ds-def-index>
+          <ds-json-view label="common/extends.schema.json">
+  <ds-code language="json" wrap>{
+  &quot;$schema&quot;: &quot;https://json-schema.org/draft/2020-12/schema&quot;,
+  &quot;$id&quot;: &quot;https://designsystemdocspec.org/v0.15.2/common/extends.schema.json&quot;,
+  &quot;title&quot;: &quot;DSDS Extends Definitions&quot;,
+  &quot;description&quot;: &quot;Declares inheritance between DSDS documents and between entities, for a system inheriting from a parent system.&quot;,
+  &quot;$defs&quot;: {
+    &quot;documentExtends&quot;: {
+      &quot;type&quot;: &quot;object&quot;,
+      &quot;description&quot;: &quot;Declares that this document inherits from another DSDS document. The parent document supplies core entities; this document adds to or extends them. The declaration sets up the relationship; consuming tools handle merge and resolution.&quot;,
+      &quot;required&quot;: [
+        &quot;system&quot;
+      ],
+      &quot;properties&quot;: {
+        &quot;system&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;description&quot;: &quot;Name or package identifier of the base system (ex: 'Acme Core Design System', '@acme/design-system'), not a URL. Tools use it to resolve the base system.&quot;
+        },
+        &quot;url&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;format&quot;: &quot;uri-reference&quot;,
+          &quot;description&quot;: &quot;URL or relative path to the base DSDS document (ex: './core.dsds.json'). Relative paths resolve against this document. Tools MAY fetch it for merge, validation, or docs.&quot;
+        },
+        &quot;version&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;description&quot;: &quot;The parent system version this document extends (ex: '2.0.0', '^3.1.0'), as semver. When omitted, tools SHOULD use the latest.&quot;
+        },
+        &quot;description&quot;: {
+          &quot;$ref&quot;: &quot;rich-text.schema.json#/$defs/richText&quot;,
+          &quot;description&quot;: &quot;What this extension adds, changes, or narrows relative to the parent.&quot;
+        }
+      },
+      &quot;additionalProperties&quot;: false
+    },
+    &quot;entityExtends&quot;: {
+      &quot;type&quot;: &quot;object&quot;,
+      &quot;description&quot;: &quot;Declares that this entity inherits from a parent entity in a parent system. The parent entity supplies the core definition (anatomy, API, variants, states, guidelines); this entity adds or overrides on top.&quot;,
+      &quot;required&quot;: [
+        &quot;identifier&quot;
+      ],
+      &quot;properties&quot;: {
+        &quot;identifier&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;description&quot;: &quot;Identifier of the parent entity (ex: 'button', 'color-text-primary'). MUST match the base entity's `identifier` in the parent system.&quot;
+        },
+        &quot;system&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;description&quot;: &quot;System that owns the parent entity. When omitted, resolves from the root document's `extends`; set it to extend a different system.&quot;
+        },
+        &quot;url&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;format&quot;: &quot;uri-reference&quot;,
+          &quot;description&quot;: &quot;URL or relative path to the parent entity's docs or definition, for cross-linking.&quot;
+        },
+        &quot;version&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;description&quot;: &quot;Version of the parent entity or system (ex: '2.0.0'). When omitted, inherits from the document-level `extends`.&quot;
+        },
+        &quot;description&quot;: {
+          &quot;$ref&quot;: &quot;rich-text.schema.json#/$defs/richText&quot;,
+          &quot;description&quot;: &quot;What this entity adds or changes relative to the parent: new variants, more props, overridden guidelines, etc.&quot;
+        },
+        &quot;modifications&quot;: {
+          &quot;type&quot;: &quot;array&quot;,
+          &quot;description&quot;: &quot;Summary of changes relative to the parent, one entry per change. Tools MAY use them for changelogs, diffs, or migration guides; when omitted, tools must diff the entities.&quot;,
+          &quot;items&quot;: {
+            &quot;type&quot;: &quot;object&quot;,
+            &quot;required&quot;: [
+              &quot;changeType&quot;,
+              &quot;description&quot;
+            ],
+            &quot;properties&quot;: {
+              &quot;changeType&quot;: {
+                &quot;type&quot;: &quot;string&quot;,
+                &quot;enum&quot;: [
+                  &quot;added&quot;,
+                  &quot;modified&quot;,
+                  &quot;removed&quot;,
+                  &quot;inherited&quot;
+                ],
+                &quot;description&quot;: &quot;The kind of change: 'added' (new here), 'modified' (changed from the base), 'removed' (dropped from the base), 'inherited' (carried over unchanged).&quot;
+              },
+              &quot;target&quot;: {
+                &quot;type&quot;: &quot;string&quot;,
+                &quot;description&quot;: &quot;What changed (ex: 'variant:enterprise', 'prop:theme', 'state:read-only').&quot;
+              },
+              &quot;description&quot;: {
+                &quot;$ref&quot;: &quot;rich-text.schema.json#/$defs/richText&quot;,
+                &quot;description&quot;: &quot;A short description of the change.&quot;
+              }
+            },
+            &quot;additionalProperties&quot;: false
+          }
+        }
+      },
+      &quot;additionalProperties&quot;: false
+    }
+  }
+}</ds-code>
+</ds-json-view>
+<ds-def-index>
 <p><strong>2 definitions</strong> in this file:</p>
 <ul>
 <li><a href="#documentextends"><ds-code inline>documentExtends</ds-code></a></li>
