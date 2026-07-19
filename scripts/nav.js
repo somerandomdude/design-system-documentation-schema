@@ -161,8 +161,9 @@ function readSpecVersion() {
 }
 
 /**
- * Return the complete <ds-nav-toggle> + <ds-spec-nav> block ready to drop
- * into a page <body>.
+ * Return the complete <ds-spec-nav> block ready to drop into a page <body>.
+ * The mobile menu toggle is built into <ds-spec-nav> itself, not a
+ * separate element.
  *
  * @param {string} activeSlug
  * @param {Array}  [pages]
@@ -178,7 +179,6 @@ function buildSpecNav(activeSlug, pages, version) {
     : "Design System Doc Spec";
 
   return (
-    `  <ds-nav-toggle target="ds-spec-nav"></ds-nav-toggle>\n` +
     `  <ds-spec-nav title="${esc(navTitle)}" title-href="index.html" active="${esc(activeSlug)}">\n` +
     children +
     `\n  </ds-spec-nav>`

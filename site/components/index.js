@@ -21,7 +21,6 @@ import { DsCrossRefs } from "./cross-refs.js";
 import { DsDefIndex } from "./def-index.js";
 import { DsDefExample } from "./def-example.js";
 import { DsPropTable, DsProp } from "./prop-table.js";
-import { DsNavToggle } from "./nav-toggle.js";
 import { DsSpecNav } from "./spec-nav.js";
 import { DsCallout } from "./callout.js";
 import { DsTag } from "./tag.js";
@@ -41,7 +40,6 @@ const registry = [
   ["ds-def-example", DsDefExample],
   ["ds-prop-table", DsPropTable],
   ["ds-prop", DsProp],
-  ["ds-nav-toggle", DsNavToggle],
   ["ds-spec-nav", DsSpecNav],
   ["ds-callout", DsCallout],
   ["ds-tag", DsTag],

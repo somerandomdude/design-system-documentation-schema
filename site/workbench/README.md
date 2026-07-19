@@ -84,7 +84,7 @@ renders in a scoped iframe that loads the real tokens + components:
 
 Extra demo fields: `height` (iframe px height, default 300) and `frameWidth`
 (constrain the iframe width — used to force the mobile breakpoint for
-`ds-nav-toggle`).
+`ds-spec-nav`'s built-in menu toggle).
 
 ## Porting a redesign back to production
 

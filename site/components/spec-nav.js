@@ -8,7 +8,7 @@
 //   title       — title text shown at the top (e.g. "DSDS 0.1")
 //   title-href  — link for the title (default: "index.html")
 //   active      — slug of the currently active page
-//   open        — boolean, reflects mobile open/closed state
+//   open        — boolean, whether the mobile links section is expanded
 //
 // Content model (light DOM):
 //   Top-level <a> elements become nav links.
@@ -19,9 +19,11 @@
 //   `active` attribute for highlighting.
 //
 // Mobile behavior:
-//   At ≤900px the nav is off-screen by default (translateX(-100%)).
-//   Setting the `open` attribute slides it into view.
-//   <ds-nav-toggle> controls the `open` attribute externally.
+//   The nav itself never hides — at ≤900px the links section (.nav__items)
+//   collapses to 0 height by default, and the logo in the title bar is
+//   replaced by a menu button in the same spot. Clicking it (or setting the
+//   `open` attribute) expands the links section back to its normal,
+//   desktop-style height.
 //
 // Usage:
 //   <ds-spec-nav title="DSDS 0.1" title-href="index.html" active="index">
@@ -35,6 +37,11 @@
 // ═══════════════════════════════════════════════════════════════════════════
 
 import { createShadow, esc, BASE_RESET, FONT } from "./_shared.js";
+
+const ICON_MENU =
+  '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>';
+const ICON_CLOSE =
+  '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="5" y1="5" x2="19" y2="19"/><line x1="19" y1="5" x2="5" y2="19"/></svg>';
 
 const SPEC_NAV_CSS = `
   ${BASE_RESET}
@@ -51,7 +58,6 @@ const SPEC_NAV_CSS = `
   .nav {
     position: absolute;
     inset: 1em;
-    background: var(--ds-color-bg-inverse);
     color: var(--ds-color-text);
     padding: 0;
     font-family: ${FONT.body};
@@ -62,6 +68,9 @@ const SPEC_NAV_CSS = `
 
   /* ── Title ──────────────────────────────────────────── */
   .nav__title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
     font-size: var(--ds-font-size-base);
     font-weight: var(--ds-font-weight-bold);
     letter-spacing: 0;
@@ -72,11 +81,44 @@ const SPEC_NAV_CSS = `
   }
 
   .nav__title a {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+    flex: 1;
     color: inherit;
     text-decoration: none;
-    display: flex;
-    gap: 8px;
     line-height: 1.2;
+  }
+
+  .nav__logo {
+    flex-shrink: 0;
+  }
+
+  /* Menu toggle — takes over the logo's spot at mobile widths. */
+  .nav__menu-btn {
+    display: none;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    padding: 0;
+    background: none;
+    border: none;
+    color: inherit;
+    font-size: 1.1rem;
+    line-height: 1;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .nav__menu-icon {
+    display: flex;
+  }
+
+  .nav__menu-icon svg {
+    display: block;
   }
 
   /* ── Items container ────────────────────────────────── */
@@ -84,6 +126,7 @@ const SPEC_NAV_CSS = `
     padding: var(--ds-space-4) 0;
     overflow-y: auto;
     max-height: 100%;
+    background: var(--ds-color-bg-inverse);
   }
 
   /* ── Top-level links ────────────────────────────────── */
@@ -148,14 +191,27 @@ const SPEC_NAV_CSS = `
     font-size: var(--ds-font-size-base);
   }
 
-  /* ── Mobile: slide off-screen by default ────────────── */
+  /* ── Mobile: nav stays put; only the links section collapses ───────── */
   @media (max-width: 900px) {
-    :host {
-      transform: translateX(-100%);
+    .nav__menu-btn {
+      display: flex;
     }
 
-    :host([open]) {
-      transform: translateX(0);
+    .nav__logo {
+      display: none;
+    }
+
+    .nav__items {
+      max-height: 0;
+      padding-top: 0;
+      padding-bottom: 0;
+      overflow: hidden;
+    }
+
+    :host([open]) .nav__items {
+      max-height: 100%;
+      padding: var(--ds-space-4) 0;
+      overflow-y: auto;
     }
   }
 
@@ -175,9 +231,12 @@ export class DsSpecNav extends HTMLElement {
   constructor() {
     super();
     this._shadow = createShadow(this, SPEC_NAV_CSS);
+    this._onKeydown = this._onKeydown.bind(this);
   }
 
   connectedCallback() {
+    document.addEventListener("keydown", this._onKeydown);
+
     // Light-DOM children (<a>, <ds-nav-group>) may not be parsed yet when
     // a blocking <script> in <head> registers the element — the parser
     // upgrades the element the instant it sees the opening tag, before it
@@ -196,11 +255,29 @@ export class DsSpecNav extends HTMLElement {
     }
   }
 
+  disconnectedCallback() {
+    document.removeEventListener("keydown", this._onKeydown);
+  }
+
   attributeChangedCallback(name) {
-    // The `open` attribute is handled purely by CSS (:host([open])).
-    if (name === "open") return;
+    if (name === "open") {
+      this._syncMenuButton();
+      return;
+    }
     // Only re-render after the initial render has happened.
     if (this._rendered && this.isConnected) this._render();
+  }
+
+  get open() {
+    return this.hasAttribute("open");
+  }
+
+  set open(val) {
+    if (val) {
+      this.setAttribute("open", "");
+    } else {
+      this.removeAttribute("open");
+    }
   }
 
   _render() {
@@ -208,9 +285,21 @@ export class DsSpecNav extends HTMLElement {
     const title = this.getAttribute("title") || "";
     const titleHref = this.getAttribute("title-href") || "index.html";
     const active = this.getAttribute("active") || "";
+    const isOpen = this.open;
 
     const titleHtml = title
-      ? `<div class="nav__title"><a href="${esc(titleHref)}"><ds-logo size="2rem" fill="#fff"></ds-logo><span>${esc(title)}</span></a></div>`
+      ? '<div class="nav__title">' +
+        '<button class="nav__menu-btn" part="menu-btn" type="button" aria-label="Toggle navigation" aria-expanded="' +
+        (isOpen ? "true" : "false") +
+        '"><span class="nav__menu-icon">' +
+        (isOpen ? ICON_CLOSE : ICON_MENU) +
+        "</span></button>" +
+        '<a href="' +
+        esc(titleHref) +
+        '"><ds-logo class="nav__logo" size="2rem" fill="#fff"></ds-logo><span>' +
+        esc(title) +
+        "</span></a>" +
+        "</div>"
       : "";
 
     const itemsHtml = this._buildFromChildren(active);
@@ -222,6 +311,29 @@ export class DsSpecNav extends HTMLElement {
       itemsHtml +
       "</div>" +
       "</nav>";
+
+    const btn = this._shadow.querySelector(".nav__menu-btn");
+    if (btn) {
+      btn.addEventListener("click", () => {
+        this.open = !this.open;
+      });
+    }
+  }
+
+  _syncMenuButton() {
+    const isOpen = this.open;
+    const btn = this._shadow.querySelector(".nav__menu-btn");
+    const icon = this._shadow.querySelector(".nav__menu-icon");
+    if (btn) btn.setAttribute("aria-expanded", isOpen ? "true" : "false");
+    if (icon) icon.innerHTML = isOpen ? ICON_CLOSE : ICON_MENU;
+  }
+
+  _onKeydown(e) {
+    if (e.key === "Escape" && this.open) {
+      this.open = false;
+      const btn = this._shadow.querySelector(".nav__menu-btn");
+      if (btn) btn.focus();
+    }
   }
 
   /**
