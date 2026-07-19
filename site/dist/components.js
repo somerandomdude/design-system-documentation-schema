@@ -149,10 +149,18 @@
     .wrapper .hl-n { color: var(--ds-syntax-light-number); }
     .wrapper .hl-b { color: var(--ds-syntax-light-bool); }
 
-    ds-badge[part="label"] {
+    /* Styled like <ds-callout>'s .callout__title — a solid, bold tab, not a
+       pill — instead of a <ds-badge>. */
+    .code__label {
       position: absolute;
-      top: var(--ds-space-2);
-      right: var(--ds-space-2);
+      top: 0;
+      right: 0;
+      font-family: ${FONT.body};
+      font-weight: var(--ds-font-weight-bold);
+      font-size: var(--ds-font-size-sm);
+      background: var(--ds-color-text);
+      color: var(--ds-color-text-inverse);
+      padding: var(--ds-space-2) var(--ds-space-4);
     }
 
     pre {
@@ -259,7 +267,7 @@
       }
 
       const labelHtml = label
-        ? `<ds-badge size="sm" part="label">${esc(label)}</ds-badge>`
+        ? `<span class="code__label" part="label">${esc(label)}</span>`
         : "";
 
       // tabindex lets keyboard users reach and scroll this block — `pre`
@@ -332,7 +340,7 @@
     }
 
     /* Used by <ds-def-section>'s type badge */
-    .badge--kind .badge__icon { background: var(--ds-color-info-text); }
+    .badge--kind .badge__icon { background: var(--ds-color-text); }
     /* Used by <ds-prop-table>'s "at least one" conditional marker */
     .badge--experimental .badge__icon { background: var(--ds-color-warning-text); }
     /* Default / neutral */
@@ -537,6 +545,7 @@
       text-decoration: none;
       font-size: 0.75em;
       vertical-align: baseline;
+      transition: opacity var(--ds-duration-fast) var(--ds-ease-standard);
     }
     .heading:hover .anchor-link { opacity: 0.6; }
     .anchor-link:hover { opacity: 1 !important; }
@@ -605,6 +614,7 @@
       font-size: var(--ds-font-size-base);
       color: var(--ds-color-text);
       text-decoration: none;
+      transition: color var(--ds-duration-fast) var(--ds-ease-standard);
     }
 
     a:hover {
@@ -1079,6 +1089,9 @@
     }
 
     /* Column 3: Required — narrow, a checkmark when required */
+    th:nth-child(3), td:nth-child(3) {
+      text-align: center;
+    }
     td:nth-child(3) {
       font-size: var(--ds-font-size-sm);
     }
@@ -1112,10 +1125,14 @@
       color: var(--ds-color-accent);
       text-decoration: none;
       border-bottom: 1px dashed var(--ds-color-accent);
+      transition: color var(--ds-duration-fast) var(--ds-ease-standard),
+        border-color var(--ds-duration-fast) var(--ds-ease-standard);
     }
 
     a.type-ref:hover {
-      color: var(--ds-color-accent-hover);
+      /* No separate "hover" token — mixed on the fly from the accent color. */
+      color: color-mix(in oklch, var(--ds-color-accent) 80%, black);
+      border-bottom-color: color-mix(in oklch, var(--ds-color-accent) 80%, black);
       border-bottom-style: solid;
     }
 
@@ -1187,8 +1204,7 @@
             statusCell =
               '<span class="req" title="Required" aria-label="Required">✓</span>';
           } else if (prop.hasAttribute("conditional")) {
-            statusCell =
-              '<ds-badge variant="experimental">at least one</ds-badge>';
+            statusCell = "at least 1";
           } else {
             statusCell = "";
           }
@@ -1368,6 +1384,8 @@
       font-weight: 500;
       line-height: var(--ds-line-height-normal);
       border-left: var(--ds-border-width) solid transparent;
+      transition: background-color var(--ds-duration-fast) var(--ds-ease-standard),
+        color var(--ds-duration-fast) var(--ds-ease-standard);
     }
 
     .nav__link:hover {
@@ -1688,7 +1706,8 @@
 
     .callout__title {
       font-weight: var(--ds-font-weight-bold);
-      background: var(--ds-color-accent);
+      /* Default ("info") variant. */
+      background: var(--ds-color-text);
       color: var(--ds-color-text-inverse);
       display: inline-block;
       padding: var(--ds-space-2) var(--ds-space-4);
@@ -1964,6 +1983,7 @@
       border: none;
       cursor: pointer;
       -webkit-tap-highlight-color: transparent;
+      transition: background-color var(--ds-duration-fast) var(--ds-ease-standard);
     }
 
     button:hover {

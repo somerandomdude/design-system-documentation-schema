@@ -74,6 +74,7 @@ body {
     max-width: var(--ds-width-content);
     margin: 0 auto;
     padding: var(--ds-space-8) var(--ds-space-8);
+
     /* Generous bottom padding so the page doesn't end abruptly right after
        the last line of content. */
     padding-bottom: calc(var(--ds-space-8) * 4);
@@ -99,6 +100,7 @@ body.page-standalone {
     max-width: var(--ds-width-content);
     margin: 0 auto;
     padding: 0 var(--ds-space-8);
+
     /* Generous bottom padding so the page doesn't end abruptly right after
        the last line of content. */
     padding-bottom: calc(var(--ds-space-8) * 4);
@@ -123,10 +125,12 @@ a {
     color: var(--ds-color-accent);
     text-decoration-thickness: 1px;
     text-underline-offset: 2px;
+    transition: color var(--ds-duration-fast) var(--ds-ease-standard);
 }
 
 a:hover {
-    color: var(--ds-color-accent-hover);
+    /* No separate "hover" token — mixed on the fly from the accent color. */
+    color: color-mix(in oklch, var(--ds-color-accent) 80%, black);
 }
 
 strong {
@@ -223,3 +227,19 @@ h3 { font-size: var(--ds-font-size-lg); font-weight: var(--ds-font-weight-bold);
 h4 { font-size: var(--ds-font-size-lg); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-4) 0 var(--ds-space-2); }
 h5 { font-size: var(--ds-font-size-base); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-4) 0 var(--ds-space-2); }
 h6 { font-size: var(--ds-font-size-base); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-2) 0 var(--ds-space-2); color: var(--ds-color-text); }
+
+/* ── Page transitions ─────────────────────────────────────────────────
+   Opts every same-origin navigation into the browser's native
+   cross-document view transition (a plain cross-fade unless overridden
+   below). Browsers without support just navigate normally — no fallback
+   needed. Durations come from the same tokens as the rest of the site's
+   motion, so prefers-reduced-motion (tokens.css) turns this off too. */
+@view-transition {
+    navigation: auto;
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+    animation-duration: var(--ds-duration-base);
+    animation-timing-function: var(--ds-ease-standard);
+}

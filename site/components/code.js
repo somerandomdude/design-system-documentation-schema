@@ -35,10 +35,18 @@ const CODE_CSS = `
   .wrapper .hl-n { color: var(--ds-syntax-light-number); }
   .wrapper .hl-b { color: var(--ds-syntax-light-bool); }
 
-  ds-badge[part="label"] {
+  /* Styled like <ds-callout>'s .callout__title — a solid, bold tab, not a
+     pill — instead of a <ds-badge>. */
+  .code__label {
     position: absolute;
-    top: var(--ds-space-2);
-    right: var(--ds-space-2);
+    top: 0;
+    right: 0;
+    font-family: ${FONT.body};
+    font-weight: var(--ds-font-weight-bold);
+    font-size: var(--ds-font-size-sm);
+    background: var(--ds-color-text);
+    color: var(--ds-color-text-inverse);
+    padding: var(--ds-space-2) var(--ds-space-4);
   }
 
   pre {
@@ -145,7 +153,7 @@ export class DsCode extends HTMLElement {
     }
 
     const labelHtml = label
-      ? `<ds-badge size="sm" part="label">${esc(label)}</ds-badge>`
+      ? `<span class="code__label" part="label">${esc(label)}</span>`
       : "";
 
     // tabindex lets keyboard users reach and scroll this block — `pre`

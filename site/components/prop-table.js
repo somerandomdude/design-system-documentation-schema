@@ -133,6 +133,9 @@ th:nth-child(3), td:nth-child(3) {  display: none;  }
   }
 
   /* Column 3: Required — narrow, a checkmark when required */
+  th:nth-child(3), td:nth-child(3) {
+    text-align: center;
+  }
   td:nth-child(3) {
     font-size: var(--ds-font-size-sm);
   }
@@ -166,10 +169,14 @@ th:nth-child(3), td:nth-child(3) {  display: none;  }
     color: var(--ds-color-accent);
     text-decoration: none;
     border-bottom: 1px dashed var(--ds-color-accent);
+    transition: color var(--ds-duration-fast) var(--ds-ease-standard),
+      border-color var(--ds-duration-fast) var(--ds-ease-standard);
   }
 
   a.type-ref:hover {
-    color: var(--ds-color-accent-hover);
+    /* No separate "hover" token — mixed on the fly from the accent color. */
+    color: color-mix(in oklch, var(--ds-color-accent) 80%, black);
+    border-bottom-color: color-mix(in oklch, var(--ds-color-accent) 80%, black);
     border-bottom-style: solid;
   }
 
@@ -241,8 +248,7 @@ export class DsPropTable extends HTMLElement {
           statusCell =
             '<span class="req" title="Required" aria-label="Required">✓</span>';
         } else if (prop.hasAttribute("conditional")) {
-          statusCell =
-            '<ds-badge variant="experimental">at least one</ds-badge>';
+          statusCell = "at least 1";
         } else {
           statusCell = "";
         }

@@ -50,8 +50,16 @@
     --ds-color-text-inverse: #fff;
 
     /* ── Color: Accent / Link ───────────────────────────────────────────── */
-    --ds-color-accent: #0055b3;
-    --ds-color-accent-hover: #003d82;
+
+    /* Derived from the accent seed (same one --ds-color-bg above uses), not
+       a disconnected, hand-picked blue — same progressive-enhancement
+       pattern: static fallback for browsers without relative-color-syntax
+       support, then an oklch(from ...) override for browsers that have it.
+       Hover/interaction states aren't separate tokens — see the
+       color-mix(in oklch, ...) calls at each :hover call site instead. */
+    --ds-color-accent: #642500;
+    /* stylelint-disable-next-line declaration-block-no-duplicate-custom-properties */
+    --ds-color-accent: oklch(from var(--ds-color-accent-seed) calc(l - 0.43) calc(c - 0.043) calc(h - 21.92));
     --ds-color-accent-subtle: #e8f0fe;
 
     /* ── Color: Border ──────────────────────────────────────────────────── */
@@ -61,14 +69,12 @@
     /* ── Color: Semantic — Status badges ────────────────────────────────── */
 
     /* success-bg/-text back the callout "tip" variant via the encouraged-*
-       alias below, not a badge variant directly — ds-badge only has a
-       "kind" (info) and "experimental" (warning) variant. */
+       alias below, not a badge variant directly — ds-badge's "kind" variant
+       uses --ds-color-text (see badge.js), not a semantic color. */
     --ds-color-success-bg: #c8e6c9;
     --ds-color-success-text: #1b5e20;
     --ds-color-warning-bg: #fff9c4;
     --ds-color-warning-text: #8c5800;
-    --ds-color-info-bg: #e3f2fd;
-    --ds-color-info-text: #1565c0;
 
     /* ── Color: Semantic — Note/Callout ─────────────────────────────────── */
 
@@ -101,8 +107,8 @@
     --ds-font-size-xl: 1.75rem; /* 28px — h1 */
 
     /* ── Font Weight ────────────────────────────────────────────────────── */
-    --ds-font-weight-normal: 400;
-    --ds-font-weight-bold: 700;
+    --ds-font-weight-normal: 450;
+    --ds-font-weight-bold: 600;
 
     /* ── Line Height ────────────────────────────────────────────────────── */
     --ds-line-height-tight: 1.2;
@@ -145,4 +151,27 @@
     /* ── Opacity ────────────────────────────────────────────────────────── */
     --ds-opacity-disabled: 0.45;
     --ds-opacity-overlay: 0.06;
+
+    /* ── Motion ─────────────────────────────────────────────────────────── */
+
+    /* Small on purpose — one pair of durations and one easing curve, used
+       only for the handful of obvious hover/toggle states that benefit
+       from it (links, nav items, icon buttons). Not a general-purpose
+       animation system. */
+    --ds-duration-fast: 200ms;
+    --ds-duration-base: 300ms;
+    --ds-ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Collapsing the duration tokens to 0 here — rather than adding
+   `@media (prefers-reduced-motion: reduce)` overrides at every call site —
+   is enough on its own: every transition/animation in this file and every
+   component's shadow DOM sets its duration from one of these two tokens
+   (custom properties inherit through shadow boundaries), so this one block
+   silences all of them at once. */
+@media (prefers-reduced-motion: reduce) {
+    :root {
+        --ds-duration-fast: 0s;
+        --ds-duration-base: 0s;
+    }
 }

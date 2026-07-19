@@ -37,6 +37,7 @@ const HEADING_CSS = `
     text-decoration: none;
     font-size: 0.75em;
     vertical-align: baseline;
+    transition: opacity var(--ds-duration-fast) var(--ds-ease-standard);
   }
   .heading:hover .anchor-link { opacity: 0.6; }
   .anchor-link:hover { opacity: 1 !important; }

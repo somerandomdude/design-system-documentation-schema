@@ -135,6 +135,8 @@ const SPEC_NAV_CSS = `
     font-weight: 500;
     line-height: var(--ds-line-height-normal);
     border-left: var(--ds-border-width) solid transparent;
+    transition: background-color var(--ds-duration-fast) var(--ds-ease-standard),
+      color var(--ds-duration-fast) var(--ds-ease-standard);
   }
 
   .nav__link:hover {

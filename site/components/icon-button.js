@@ -36,6 +36,7 @@ const ICON_BUTTON_CSS = `
     border: none;
     cursor: pointer;
     -webkit-tap-highlight-color: transparent;
+    transition: background-color var(--ds-duration-fast) var(--ds-ease-standard);
   }
 
   button:hover {

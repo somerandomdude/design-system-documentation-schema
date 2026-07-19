@@ -38,7 +38,8 @@ const CALLOUT_CSS = `
 
   .callout__title {
     font-weight: var(--ds-font-weight-bold);
-    background: var(--ds-color-accent);
+    /* Default ("info") variant. */
+    background: var(--ds-color-text);
     color: var(--ds-color-text-inverse);
     display: inline-block;
     padding: var(--ds-space-2) var(--ds-space-4);

@@ -11,6 +11,7 @@ const BACK_TO_TOP_CSS = `
     font-size: var(--ds-font-size-base);
     color: var(--ds-color-text);
     text-decoration: none;
+    transition: color var(--ds-duration-fast) var(--ds-ease-standard);
   }
 
   a:hover {

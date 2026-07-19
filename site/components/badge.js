@@ -56,7 +56,7 @@ const BADGE_CSS = `
   }
 
   /* Used by <ds-def-section>'s type badge */
-  .badge--kind .badge__icon { background: var(--ds-color-info-text); }
+  .badge--kind .badge__icon { background: var(--ds-color-text); }
   /* Used by <ds-prop-table>'s "at least one" conditional marker */
   .badge--experimental .badge__icon { background: var(--ds-color-warning-text); }
   /* Default / neutral */
