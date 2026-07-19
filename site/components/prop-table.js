@@ -179,11 +179,22 @@ export class DsPropTable extends HTMLElement {
   }
 
   connectedCallback() {
-    // Defer to let child <ds-prop> elements parse
+    // Defer to let child <ds-prop> elements parse. A single
+    // requestAnimationFrame tick isn't a reliable guarantee of that (see
+    // the equivalent note in spec-nav.js), so wait for DOMContentLoaded
+    // when the document is still loading.
     var self = this;
-    requestAnimationFrame(function () {
-      self._render();
-    });
+    if (document.readyState === "loading") {
+      document.addEventListener(
+        "DOMContentLoaded",
+        function () {
+          self._render();
+        },
+        { once: true },
+      );
+    } else {
+      this._render();
+    }
   }
 
   _render() {

@@ -9,7 +9,7 @@ const DEF_SECTION_CSS = `
   :host(:first-of-type) {
     margin-top: 0;
   }
-  h3 {
+  h2 {
     font-family: ${FONT.mono};
     font-size: var(--ds-font-size-lg);
     font-weight: var(--ds-font-weight-bold);
@@ -52,7 +52,7 @@ export class DsDefSection extends HTMLElement {
     var type = this.getAttribute("type") || "";
     // Set id on host for TOC linking
     if (anchor) this.id = anchor;
-    var html = '<h3 id="' + esc(anchor) + '">' + esc(name) + "</h3>";
+    var html = '<h2 id="' + esc(anchor) + '">' + esc(name) + "</h2>";
     if (type)
       html +=
         '<p class="type-line"><ds-badge variant="kind" size="sm">' +

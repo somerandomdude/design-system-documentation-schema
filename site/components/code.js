@@ -80,11 +80,22 @@ export class DsCode extends HTMLElement {
     // Defer render to ensure the browser has finished parsing the
     // element's inner text content. When the custom element is
     // defined synchronously, connectedCallback fires as soon as the
-    // opening tag is parsed — before child text nodes exist.
+    // opening tag is parsed — before child text nodes exist. A single
+    // requestAnimationFrame tick isn't a reliable guarantee of that (see
+    // the equivalent note in spec-nav.js), so wait for DOMContentLoaded
+    // when the document is still loading.
     var self = this;
-    requestAnimationFrame(function () {
-      self._render();
-    });
+    if (document.readyState === "loading") {
+      document.addEventListener(
+        "DOMContentLoaded",
+        function () {
+          self._render();
+        },
+        { once: true },
+      );
+    } else {
+      this._render();
+    }
   }
 
   attributeChangedCallback() {
@@ -129,10 +140,14 @@ export class DsCode extends HTMLElement {
       ? `<ds-badge size="sm" part="label">${esc(label)}</ds-badge>`
       : "";
 
+    // tabindex lets keyboard users reach and scroll this block — `pre`
+    // scrolls horizontally (overflow-x: auto) but sits outside the
+    // natural tab order otherwise. No role/aria-label here: that would
+    // make every instance an identically-named landmark region.
     this._shadow.innerHTML = `
       <div class="wrapper" part="wrapper">
         ${labelHtml}
-        <pre part="pre"><code part="code">${highlighted}</code></pre>
+        <pre part="pre" tabindex="0"><code part="code">${highlighted}</code></pre>
       </div>
     `;
   }

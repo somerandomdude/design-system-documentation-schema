@@ -250,12 +250,13 @@ function renderDefinition(defName, defSchema, exampleData) {
           `<li><strong>string</strong>${alt.description ? ` — ${esc(alt.description)}` : ""}</li>`,
         );
       } else if (alt.type === "object") {
+        // The property table must nest inside the <li>, not sit as a
+        // sibling of it — a <ul> may only directly contain <li> elements.
         items.push(
-          `<li><strong>object</strong>${alt.description ? ` — ${esc(alt.description)}` : ""}</li>`,
+          `<li><strong>object</strong>${alt.description ? ` — ${esc(alt.description)}` : ""}` +
+            (alt.properties ? renderPropertyTable(alt) : "") +
+            "</li>",
         );
-        if (alt.properties) {
-          items.push(renderPropertyTable(alt));
-        }
       } else {
         items.push(`<li>${describeType(alt)}</li>`);
       }

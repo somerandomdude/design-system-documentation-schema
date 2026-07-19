@@ -23,10 +23,23 @@ export class DsTypeRef extends HTMLElement {
     this._shadow = createShadow(this, TYPE_REF_CSS);
   }
   connectedCallback() {
+    // A single requestAnimationFrame tick isn't a reliable guarantee that
+    // this element's light-DOM children (read via textContent below) have
+    // finished parsing — see the equivalent note in spec-nav.js. Waiting
+    // for DOMContentLoaded when the document is still loading avoids an
+    // intermittent empty-link-text race.
     var self = this;
-    requestAnimationFrame(function () {
-      self._render();
-    });
+    if (document.readyState === "loading") {
+      document.addEventListener(
+        "DOMContentLoaded",
+        function () {
+          self._render();
+        },
+        { once: true },
+      );
+    } else {
+      this._render();
+    }
   }
   attributeChangedCallback() {
     if (this.isConnected) this._render();

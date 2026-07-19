@@ -166,9 +166,9 @@ const SPEC_NAV_CSS = `
     background: none;
     border: none;
     border-left: var(--ds-border-width) solid transparent;
-    color: var(--ds-color-nav-group);
+    color: var(--ds-color-text);
     font-family: ${FONT.body};
-    font-size: var(--ds-font-size-sm);
+    font-size: var(--ds-font-size-xs);
     font-weight: var(--ds-font-weight-bold);
     letter-spacing: 0;
     text-transform: none;
@@ -187,7 +187,6 @@ const SPEC_NAV_CSS = `
   }
 
   .nav__link--child {
-    padding-left: var(--ds-space-4);
     font-size: var(--ds-font-size-base);
   }
 

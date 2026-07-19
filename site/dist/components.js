@@ -149,11 +149,22 @@
       // Defer render to ensure the browser has finished parsing the
       // element's inner text content. When the custom element is
       // defined synchronously, connectedCallback fires as soon as the
-      // opening tag is parsed — before child text nodes exist.
+      // opening tag is parsed — before child text nodes exist. A single
+      // requestAnimationFrame tick isn't a reliable guarantee of that (see
+      // the equivalent note in spec-nav.js), so wait for DOMContentLoaded
+      // when the document is still loading.
       var self = this;
-      requestAnimationFrame(function () {
-        self._render();
-      });
+      if (document.readyState === "loading") {
+        document.addEventListener(
+          "DOMContentLoaded",
+          function () {
+            self._render();
+          },
+          { once: true },
+        );
+      } else {
+        this._render();
+      }
     }
 
     attributeChangedCallback() {
@@ -198,10 +209,14 @@
         ? `<ds-badge size="sm" part="label">${esc(label)}</ds-badge>`
         : "";
 
+      // tabindex lets keyboard users reach and scroll this block — `pre`
+      // scrolls horizontally (overflow-x: auto) but sits outside the
+      // natural tab order otherwise. No role/aria-label here: that would
+      // make every instance an identically-named landmark region.
       this._shadow.innerHTML = `
         <div class="wrapper" part="wrapper">
           ${labelHtml}
-          <pre part="pre"><code part="code">${highlighted}</code></pre>
+          <pre part="pre" tabindex="0"><code part="code">${highlighted}</code></pre>
         </div>
       `;
     }
@@ -649,7 +664,7 @@
     :host(:first-of-type) {
       margin-top: 0;
     }
-    h3 {
+    h2 {
       font-family: ${FONT.mono};
       font-size: var(--ds-font-size-lg);
       font-weight: var(--ds-font-weight-bold);
@@ -692,7 +707,7 @@
       var type = this.getAttribute("type") || "";
       // Set id on host for TOC linking
       if (anchor) this.id = anchor;
-      var html = '<h3 id="' + esc(anchor) + '">' + esc(name) + "</h3>";
+      var html = '<h2 id="' + esc(anchor) + '">' + esc(name) + "</h2>";
       if (type)
         html +=
           '<p class="type-line"><ds-badge variant="kind" size="sm">' +
@@ -731,10 +746,23 @@
       this._shadow = createShadow(this, TYPE_REF_CSS);
     }
     connectedCallback() {
+      // A single requestAnimationFrame tick isn't a reliable guarantee that
+      // this element's light-DOM children (read via textContent below) have
+      // finished parsing — see the equivalent note in spec-nav.js. Waiting
+      // for DOMContentLoaded when the document is still loading avoids an
+      // intermittent empty-link-text race.
       var self = this;
-      requestAnimationFrame(function () {
-        self._render();
-      });
+      if (document.readyState === "loading") {
+        document.addEventListener(
+          "DOMContentLoaded",
+          function () {
+            self._render();
+          },
+          { once: true },
+        );
+      } else {
+        this._render();
+      }
     }
     attributeChangedCallback() {
       if (this.isConnected) this._render();
@@ -1024,11 +1052,22 @@
     }
 
     connectedCallback() {
-      // Defer to let child <ds-prop> elements parse
+      // Defer to let child <ds-prop> elements parse. A single
+      // requestAnimationFrame tick isn't a reliable guarantee of that (see
+      // the equivalent note in spec-nav.js), so wait for DOMContentLoaded
+      // when the document is still loading.
       var self = this;
-      requestAnimationFrame(function () {
-        self._render();
-      });
+      if (document.readyState === "loading") {
+        document.addEventListener(
+          "DOMContentLoaded",
+          function () {
+            self._render();
+          },
+          { once: true },
+        );
+      } else {
+        this._render();
+      }
     }
 
     _render() {
@@ -1276,9 +1315,9 @@
       background: none;
       border: none;
       border-left: var(--ds-border-width) solid transparent;
-      color: var(--ds-color-nav-group);
+      color: var(--ds-color-text);
       font-family: ${FONT.body};
-      font-size: var(--ds-font-size-sm);
+      font-size: var(--ds-font-size-xs);
       font-weight: var(--ds-font-weight-bold);
       letter-spacing: 0;
       text-transform: none;
@@ -1297,7 +1336,6 @@
     }
 
     .nav__link--child {
-      padding-left: var(--ds-space-4);
       font-size: var(--ds-font-size-base);
     }
 
