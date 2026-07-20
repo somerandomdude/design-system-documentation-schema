@@ -277,6 +277,21 @@ export class DsSpecNav extends HTMLElement {
   attributeChangedCallback(name) {
     if (name === "open") {
       this._syncMenuButton();
+      // On mobile the items list is 0-height (clipped) while closed, so the
+      // initial _scrollActiveIntoView() call ran against a collapsed
+      // container and couldn't measure real positions. Recompute once the
+      // max-height transition finishes and it's actually measurable —
+      // measuring immediately would just read the pre-transition rect.
+      if (this.open) {
+        const container = this._shadow.querySelector(".nav__items");
+        if (container) {
+          container.addEventListener(
+            "transitionend",
+            () => this._scrollActiveIntoView(),
+            { once: true },
+          );
+        }
+      }
       return;
     }
     // Only re-render after the initial render has happened.
@@ -335,6 +350,35 @@ export class DsSpecNav extends HTMLElement {
     }
 
     this._updateMenuIcon(isOpen);
+    this._scrollActiveIntoView();
+  }
+
+  /**
+   * .nav__items is its own scroll container (independent of the page), so it
+   * always loads at scrollTop 0 — on a long nav, the active link (e.g. deep
+   * in "Metadata") can load scrolled out of view with nothing on screen
+   * indicating where the current page sits. Jump the container's internal
+   * scroll (not the page's) to center the active link, synchronously before
+   * first paint so there's no visible scroll animation on load.
+   */
+  _scrollActiveIntoView() {
+    const container = this._shadow.querySelector(".nav__items");
+    const activeEl = this._shadow.querySelector(".nav__link--active");
+    if (!container || !activeEl) return;
+
+    const containerRect = container.getBoundingClientRect();
+    const activeRect = activeEl.getBoundingClientRect();
+    // Already fully visible — leave the scroll position alone.
+    if (activeRect.top >= containerRect.top && activeRect.bottom <= containerRect.bottom) {
+      return;
+    }
+
+    const offset =
+      activeRect.top -
+      containerRect.top -
+      containerRect.height / 2 +
+      activeRect.height / 2;
+    container.scrollTop += offset;
   }
 
   _syncMenuButton() {
