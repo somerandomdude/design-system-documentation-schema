@@ -1,0 +1,579 @@
+# Pattern definitions
+
+A pattern is a repeated answer to a common UX problem — navigation, error messaging, form validation, empty states, loading, onboarding. A pattern document holds the identity of a multi-component solution, its metadata, and its docs.
+
+Source: `entities/pattern.schema.json`
+
+## pattern {#pattern}
+
+A repeated, multi-component answer to a common UX problem. A pattern sits above individual components and shows how they combine to meet a user need. Its identity is `identifier`, `name`, and `description`; its docs cover `interactions` (flow steps), `guidelines` (rules), `accessibility`, and more.
+
+| Property | Type | Required | Description |
+| --- | --- | --- | --- |
+| `kind` | `"pattern"` | ✓ | Identifies this entity as a pattern. |
+| `identifier` | string | ✓ | Machine-readable identifier for the pattern (ex: 'error-messaging', 'navigation', 'empty-state', 'form-validation'). MUST be unique within its entity group. (Pattern: `^[a-z][a-z0-9-]*$`) |
+| `name` | string | ✓ | Display name shown in docs (ex: 'Error Messaging', 'Navigation', 'Empty State'). |
+| `description` | [richText](common-rich-text.md#richtext) |  | What this pattern is, the UX problem it solves, and how its components compose to meet a user need. CommonMark supported. |
+| `metadata` | [entityMetadata](metadata-metadata.md#entitymetadata) |  | Optional metadata: the shared entityMetadata fields (see metadata/metadata.schema.json). |
+| `relationships` | [relationships](common-relationship.md#relationships) |  | Links from this pattern to other entities — mainly 'composes' the components it's built from (mark `required` true for the essential ones), plus 'depends-on' and 'alternative-to'. Tools derive the reverse edges. Use `links` metadata for external resources instead. |
+| `documentBlocks` | [patternDocumentBlock](document-blocks-document-blocks.md#patterndocumentblock)[] |  | All structured docs for this pattern, in order. Accepts `interactions`, the shared structural kinds (anatomy, variants, states), and every general kind. Order matters — `interactions` uses it to show the flow over time, and tools SHOULD keep it. Declare the components a pattern uses as `composes` edges in `relationships` (with `role` describing what each does), not as a block. (Min items: 1) |
+| `agentDocumentBlocks` | [patternDocumentBlock](document-blocks-document-blocks.md#patterndocumentblock)[] |  | Docs for agents (AI/LLM) only, using the same block kinds as `documentBlocks`. Put anything a human needs in `documentBlocks` — that's the default. Use this only for things that would be noise to a person: hard must/must-not rules, notes that correct a mistake agents commonly make (like picking a similar but wrong entity), evidence-backed constraints, and machine-checkable criteria. A rule humans need too still belongs in `documentBlocks`. This adds to the human docs, it never replaces them. Tools MUST NOT show these blocks to humans. Agents SHOULD read both arrays, human docs first. (Min items: 1) |
+| `$extensions` | [extensions](common-extensions.md#extensions) |  |  |
+
+**References:** [richText](common-rich-text.md#richtext), [entityMetadata](metadata-metadata.md#entitymetadata), [relationships](common-relationship.md#relationships), [patternDocumentBlock](document-blocks-document-blocks.md#patterndocumentblock), [extensions](common-extensions.md#extensions)
+
+**Example:**
+
+```json
+{
+  "kind": "pattern",
+  "identifier": "error-messaging",
+  "name": "Error Messaging",
+  "description": "Defines how errors are surfaced across the system — from inline field validation on forms to page-level error summaries and transient toast notifications. The pattern covers the lifecycle of an error from detection through resolution, ensuring that errors are perceivable, understandable, and actionable for all users including those relying on assistive technology.",
+  "metadata": {
+    "status": {
+      "overall": "stable",
+      "platforms": {
+        "react": {
+          "status": "stable",
+          "since": "2.0.0"
+        },
+        "web-component": {
+          "status": "experimental",
+          "since": "3.0.0",
+          "note": "Partial implementation — inline validation works, error summary not yet available."
+        },
+        "figma": {
+          "status": "stable",
+          "since": "2.0.0"
+        }
+      }
+    },
+    "since": "2.0.0",
+    "category": "feedback",
+    "tags": [
+      "feedback",
+      "validation",
+      "forms",
+      "errors",
+      "accessibility",
+      "error",
+      "form",
+      "inline-error",
+      "error-summary",
+      "alert"
+    ],
+    "summary": "A pattern for communicating errors through inline validation, summary banners, and toast notifications.",
+    "links": [
+      {
+        "kind": "design",
+        "url": "https://design-tool.acme.com/file/abc123?node-id=3000:1",
+        "label": "Design file — error messaging pattern"
+      },
+      {
+        "kind": "storybook",
+        "url": "https://storybook.acme.com/?path=/docs/patterns-error-messaging--docs",
+        "label": "Storybook pattern docs"
+      },
+      {
+        "kind": "documentation",
+        "url": "https://design.acme.com/patterns/error-messaging",
+        "label": "Documentation site"
+      }
+    ]
+  },
+  "documentBlocks": [
+    {
+      "kind": "interactions",
+      "items": [
+        {
+          "trigger": "User submits the form by activating the submit button.",
+          "description": "Client-side validation runs on all required fields. If one or more fields are invalid, submission is prevented and the error state is activated.",
+          "components": [
+            {
+              "identifier": "button"
+            },
+            {
+              "identifier": "form-field"
+            }
+          ]
+        },
+        {
+          "trigger": "Client-side validation detects one or more invalid fields.",
+          "description": "Each invalid field displays an inline error message directly below the input. The message describes what is wrong and, where possible, how to fix it. The field's border changes to the error color and an error icon appears to the left of the message text.",
+          "components": [
+            {
+              "identifier": "form-field"
+            },
+            {
+              "identifier": "icon"
+            }
+          ],
+          "examples": [
+            {
+              "title": "Inline validation on a required email field",
+              "presentation": {
+                "kind": "image",
+                "url": "https://design.acme.com/assets/patterns/error-inline-email.png",
+                "alt": "An email input field with a red border. Below the field, a red error icon followed by the text 'Enter a valid email address' in the error text color."
+              }
+            },
+            {
+              "title": "JSX — form field with error state",
+              "presentation": {
+                "kind": "code",
+                "language": "jsx",
+                "code": "<FormField\n  label=\"Email address\"\n  error=\"Enter a valid email address.\"\n  required\n>\n  <Input type=\"email\" value={email} onChange={setEmail} />\n</FormField>"
+              }
+            }
+          ]
+        },
+        {
+          "trigger": "Two or more fields fail validation simultaneously.",
+          "description": "An error summary alert appears at the top of the form. The summary lists every current error as an anchor link. Each link, when activated, moves focus to the corresponding invalid field. Focus is programmatically moved to the error summary so screen reader users are immediately aware of it.",
+          "components": [
+            {
+              "identifier": "alert"
+            },
+            {
+              "identifier": "link"
+            },
+            {
+              "identifier": "form-field"
+            }
+          ],
+          "examples": [
+            {
+              "title": "Error summary banner with anchor links",
+              "presentation": {
+                "kind": "image",
+                "url": "https://design.acme.com/assets/patterns/error-summary-banner.png",
+                "alt": "A red-bordered alert at the top of a form titled 'There are 3 errors in this form'. Below the title are three bulleted links: 'Enter a valid email address', 'Password must be at least 8 characters', and 'Agree to the terms of service'. Each link text matches the inline error on the corresponding field."
+              }
+            }
+          ]
+        },
+        {
+          "trigger": "User corrects an invalid field and moves focus away (blur) or types a valid value.",
+          "description": "The inline error message for that field is removed. The field border returns to its default color. If an error summary is visible, the corresponding entry is removed from the summary. When all errors are resolved, the summary is removed entirely.",
+          "components": [
+            {
+              "identifier": "form-field"
+            },
+            {
+              "identifier": "alert"
+            }
+          ]
+        },
+        {
+          "trigger": "Form submission succeeds on the client but fails on the server (ex: 422, 500, network timeout).",
+          "description": "A toast notification appears communicating the server error. The toast uses the error variant and includes a brief description of the problem and, if actionable, a retry button. If the server returns field-level validation errors (422), those are mapped back to inline field errors using the same pattern as client-side validation.",
+          "components": [
+            {
+              "identifier": "toast"
+            },
+            {
+              "identifier": "form-field"
+            },
+            {
+              "identifier": "button"
+            }
+          ],
+          "examples": [
+            {
+              "title": "Toast for a network timeout",
+              "presentation": {
+                "kind": "image",
+                "url": "https://design.acme.com/assets/patterns/error-toast-timeout.png",
+                "alt": "A toast notification in the bottom-right corner of the screen with a red left border. The text reads 'Unable to save. Check your connection and try again.' A 'Retry' button appears to the right of the text."
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "use-cases",
+      "items": [
+        {
+          "description": "When a user submits a form and one or more fields fail validation — whether client-side or server-side.",
+          "stance": "recommended"
+        },
+        {
+          "description": "When an asynchronous operation fails and the user needs to be informed (ex: save failed, API error, network timeout).",
+          "stance": "recommended"
+        },
+        {
+          "description": "When the user needs to correct input before proceeding, such as during account creation, checkout, or settings changes.",
+          "stance": "recommended"
+        },
+        {
+          "description": "When the feedback is a successful outcome (ex: 'Changes saved', 'Account created').",
+          "stance": "discouraged",
+          "alternative": {
+            "identifier": "success-messaging",
+            "rationale": "Success feedback uses the success color and icon. Reusing the error pattern for positive outcomes confuses the visual language and dilutes the urgency of actual errors."
+          }
+        },
+        {
+          "description": "When the feedback is an informational or warning message that does not block the user from proceeding.",
+          "stance": "discouraged",
+          "alternative": {
+            "identifier": "notification-messaging",
+            "rationale": "Informational messages use a neutral or warning color. Treating them as errors creates false urgency and trains users to ignore error styling."
+          }
+        },
+        {
+          "description": "When the entire page or view fails to load (ex: 404, 503).",
+          "stance": "discouraged",
+          "alternative": {
+            "identifier": "empty-state",
+            "rationale": "Full-page failures are better handled by empty state patterns that replace the entire content area with an explanation and recovery action, rather than overlaying error messages on a non-functional page."
+          }
+        }
+      ]
+    },
+    {
+      "kind": "guidelines",
+      "items": [
+        {
+          "guidance": "Always display inline errors directly below the invalid field, not in a separate location or only in the summary.",
+          "rationale": "Users scan forms top-to-bottom. An error placed away from its field forces the user to map the message to the field mentally. Proximity eliminates that cognitive load.",
+          "level": "must",
+          "category": "visual-design"
+        },
+        {
+          "guidance": "Error messages must describe the problem and, when possible, suggest how to fix it.",
+          "rationale": "A message like 'Invalid input' forces the user to guess what went wrong. A message like 'Enter a date in MM/DD/YYYY format' removes ambiguity and speeds correction.",
+          "level": "must",
+          "category": "content"
+        },
+        {
+          "guidance": "When two or more fields have errors, display an error summary at the top of the form in addition to inline messages.",
+          "rationale": "Users on long forms may not see all inline errors, especially those below the fold. The summary provides a single scannable list of everything that needs attention.",
+          "level": "must",
+          "category": "visual-design"
+        },
+        {
+          "guidance": "Each entry in the error summary must link to the corresponding invalid field.",
+          "rationale": "Keyboard and screen reader users need a way to navigate directly from the summary to the problematic field without tabbing through the entire form.",
+          "level": "must",
+          "category": "interaction"
+        },
+        {
+          "guidance": "Move focus to the error summary when it appears.",
+          "rationale": "Screen reader users will not discover the summary unless focus is moved to it. Sighted keyboard users benefit from the same behavior — their next Tab press lands them in the summary's link list.",
+          "level": "must",
+          "category": "accessibility",
+          "references": [
+            {
+              "url": "https://www.w3.org/TR/WCAG22/#error-identification"
+            }
+          ]
+        },
+        {
+          "guidance": "Do not clear the form or reset field values when validation fails.",
+          "rationale": "Clearing the form destroys the user's work. They must re-enter all data, including fields that were valid. This is hostile to all users and catastrophic for users with motor impairments who rely on slow, deliberate input.",
+          "level": "must-not",
+          "category": "interaction"
+        },
+        {
+          "guidance": "Use real-time inline validation only for fields where the constraint is unambiguous and immediate feedback is helpful (ex: password strength, email format). Do not validate on every keystroke for fields that require the user to finish typing.",
+          "rationale": "Premature validation interrupts the user. Showing 'Invalid email' while the user is still typing 'j' is noise. Wait for a blur event or a pause in typing.",
+          "level": "should",
+          "category": "interaction"
+        },
+        {
+          "guidance": "Pair every inline error message with an error icon. Do not rely on color alone.",
+          "rationale": "Approximately 8% of men have some form of color vision deficiency. An icon provides a second, non-color signal that the field is in an error state. WCAG 1.4.1 requires that color is not the sole means of conveying information.",
+          "level": "must",
+          "category": "accessibility",
+          "references": [
+            {
+              "url": "https://www.w3.org/TR/WCAG22/#use-of-color"
+            }
+          ]
+        },
+        {
+          "guidance": "Each inline error message must be programmatically associated with its field using aria-describedby.",
+          "rationale": "Screen readers announce aria-describedby content when the field receives focus. Without it, the user hears the field label but not the error, and has no way to know the field is invalid.",
+          "level": "must",
+          "category": "accessibility",
+          "references": [
+            {
+              "url": "https://www.w3.org/TR/WCAG22/#error-identification"
+            },
+            {
+              "url": "https://www.w3.org/TR/WCAG22/#info-and-relationships"
+            }
+          ]
+        },
+        {
+          "guidance": "Invalid fields must be marked with aria-invalid=\"true\".",
+          "rationale": "The aria-invalid attribute allows screen readers to announce that a field's value is not accepted. It is the standard mechanism for communicating validation state in ARIA.",
+          "level": "must",
+          "category": "accessibility",
+          "references": [
+            {
+              "url": "https://www.w3.org/TR/WCAG22/#error-identification"
+            }
+          ]
+        },
+        {
+          "guidance": "The error summary must use role=\"alert\" or be injected into an aria-live=\"assertive\" region so that screen readers announce it immediately when it appears.",
+          "rationale": "Without a live region, screen readers will not announce dynamically injected content. The user will not know the summary exists unless they navigate to it manually.",
+          "level": "must",
+          "category": "accessibility",
+          "references": [
+            {
+              "url": "https://www.w3.org/TR/WCAG22/#status-messages"
+            }
+          ]
+        },
+        {
+          "guidance": "Error summary anchor links must move focus to the corresponding field, not just scroll to it.",
+          "rationale": "Keyboard users rely on focus position to interact. Scrolling without moving focus leaves the keyboard cursor at the summary, requiring the user to Tab through potentially many elements to reach the field.",
+          "level": "must",
+          "category": "accessibility",
+          "references": [
+            {
+              "url": "https://www.w3.org/TR/WCAG22/#focus-order"
+            }
+          ]
+        },
+        {
+          "guidance": "Toast notifications for errors must persist until the user dismisses them or the error is resolved. Do not auto-dismiss error toasts.",
+          "rationale": "Users with cognitive disabilities or screen reader users may need more time to read and understand the error. Auto-dismissing the toast removes the information before they can act on it.",
+          "level": "must",
+          "category": "accessibility",
+          "references": [
+            {
+              "url": "https://www.w3.org/TR/WCAG22/#timing-adjustable"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "accessibility",
+      "wcagLevel": "AA",
+      "keyboardInteractions": [
+        {
+          "key": "Tab",
+          "action": "Moves focus to the next focusable element. When the error summary is visible, focus moves into the summary's link list."
+        },
+        {
+          "key": "Enter",
+          "action": "Activates a link in the error summary, moving focus to the corresponding invalid field."
+        },
+        {
+          "key": "Escape",
+          "action": "Dismisses the toast notification, if one is visible."
+        }
+      ],
+      "announcements": [
+        {
+          "context": "validation failure",
+          "announcement": "The error summary is announced immediately via aria-live='assertive'."
+        },
+        {
+          "context": "summary link",
+          "announcement": "link, [error text]"
+        },
+        {
+          "context": "invalid field receives focus",
+          "announcement": "[label], edit text, invalid entry, [error message]"
+        }
+      ],
+      "focusBehaviors": [
+        {
+          "trigger": "validation failure",
+          "behavior": "Focus moves to the error summary."
+        },
+        {
+          "trigger": "summary link activated",
+          "behavior": "Focus moves to the corresponding field."
+        },
+        {
+          "trigger": "field error resolved",
+          "behavior": "Focus remains on the field."
+        },
+        {
+          "trigger": "all errors resolved, summary removed",
+          "behavior": "Focus is not moved — the user continues from their current position."
+        }
+      ]
+    },
+    {
+      "kind": "sections",
+      "items": [
+        {
+          "title": "Why centralize error messaging",
+          "anchor": "why-centralize",
+          "body": "Errors surface across forms, asynchronous actions, and failed page loads. Centralizing the rules keeps tone, placement, and recovery consistent, so users learn a single mental model for \"something went wrong\" instead of relearning it on every surface."
+        }
+      ]
+    }
+  ],
+  "$extensions": {
+    "com.designTool": {
+      "patternId": "pattern-error-messaging-001"
+    }
+  },
+  "agentDocumentBlocks": [
+    {
+      "kind": "use-cases",
+      "purpose": "Guide multi-component composition for surfacing, communicating, and resolving form validation errors.",
+      "items": [
+        {
+          "description": "Use error-messaging for validation and system errors; use empty-state for the absence of content.",
+          "stance": "discouraged",
+          "alternative": {
+            "identifier": "empty-state"
+          }
+        },
+        {
+          "description": "Use error-messaging for form validation flows; use alert for non-form system or status messages.",
+          "stance": "discouraged",
+          "alternative": {
+            "identifier": "alert"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "guidelines",
+      "items": [
+        {
+          "guidance": "Always include both an inline field error and a summary when multiple fields fail.",
+          "level": "must"
+        },
+        {
+          "guidance": "Do not use toast notifications as the sole error communication for form validation.",
+          "level": "must-not"
+        },
+        {
+          "guidance": "Showing errors only on submit without inline field feedback.",
+          "rationale": "Instead: Show inline errors on field blur and in a summary on submit.",
+          "level": "must-not"
+        }
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "relation": "composes",
+      "target": "form-field",
+      "role": "Container for individual inputs. Displays inline validation messages directly below the field when validation fails.",
+      "required": true
+    },
+    {
+      "relation": "composes",
+      "target": "alert",
+      "role": "Page-level error summary. Appears at the top of the form or page listing all current errors with anchor links to each invalid field.",
+      "required": true
+    },
+    {
+      "relation": "composes",
+      "target": "toast",
+      "role": "Transient notification for server-side or asynchronous errors that cannot be tied to a specific field (ex: network failure, timeout)"
+    },
+    {
+      "relation": "composes",
+      "target": "icon",
+      "role": "Visual error indicator displayed alongside inline validation text and inside the error summary. Provides a non-color signal that reinforces the error state.",
+      "required": true
+    },
+    {
+      "relation": "composes",
+      "target": "button",
+      "role": "Submit trigger for the form. Initiates client-side validation before submission.",
+      "required": true
+    },
+    {
+      "relation": "composes",
+      "target": "link",
+      "role": "Anchor links within the error summary that navigate the user to the corresponding invalid field.",
+      "required": true
+    },
+    {
+      "relation": "alternative-to",
+      "target": "success-messaging"
+    },
+    {
+      "relation": "alternative-to",
+      "target": "notification-messaging"
+    }
+  ]
+}
+```
+
+## Full schema JSON
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://designsystemdocspec.org/v0.15.2/entities/pattern.schema.json",
+  "title": "Pattern definitions",
+  "description": "A pattern is a repeated answer to a common UX problem — navigation, error messaging, form validation, empty states, loading, onboarding. A pattern document holds the identity of a multi-component solution, its metadata, and its docs.",
+  "$defs": {
+    "pattern": {
+      "type": "object",
+      "description": "A repeated, multi-component answer to a common UX problem. A pattern sits above individual components and shows how they combine to meet a user need. Its identity is `identifier`, `name`, and `description`; its docs cover `interactions` (flow steps), `guidelines` (rules), `accessibility`, and more.",
+      "required": [
+        "kind",
+        "identifier",
+        "name"
+      ],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "const": "pattern",
+          "description": "Identifies this entity as a pattern."
+        },
+        "identifier": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]*$",
+          "description": "Machine-readable identifier for the pattern (ex: 'error-messaging', 'navigation', 'empty-state', 'form-validation'). MUST be unique within its entity group."
+        },
+        "name": {
+          "type": "string",
+          "description": "Display name shown in docs (ex: 'Error Messaging', 'Navigation', 'Empty State')."
+        },
+        "description": {
+          "$ref": "../common/rich-text.schema.json#/$defs/richText",
+          "description": "What this pattern is, the UX problem it solves, and how its components compose to meet a user need. CommonMark supported."
+        },
+        "metadata": {
+          "$ref": "../metadata/metadata.schema.json#/$defs/entityMetadata",
+          "description": "Optional metadata: the shared entityMetadata fields (see metadata/metadata.schema.json)."
+        },
+        "relationships": {
+          "$ref": "../common/relationship.schema.json#/$defs/relationships",
+          "description": "Links from this pattern to other entities — mainly 'composes' the components it's built from (mark `required` true for the essential ones), plus 'depends-on' and 'alternative-to'. Tools derive the reverse edges. Use `links` metadata for external resources instead."
+        },
+        "documentBlocks": {
+          "type": "array",
+          "description": "All structured docs for this pattern, in order. Accepts `interactions`, the shared structural kinds (anatomy, variants, states), and every general kind. Order matters — `interactions` uses it to show the flow over time, and tools SHOULD keep it. Declare the components a pattern uses as `composes` edges in `relationships` (with `role` describing what each does), not as a block.",
+          "items": {
+            "$ref": "../document-blocks/document-blocks.schema.json#/$defs/patternDocumentBlock"
+          },
+          "minItems": 1
+        },
+        "agentDocumentBlocks": {
+          "type": "array",
+          "description": "Docs for agents (AI/LLM) only, using the same block kinds as `documentBlocks`. Put anything a human needs in `documentBlocks` — that's the default. Use this only for things that would be noise to a person: hard must/must-not rules, notes that correct a mistake agents commonly make (like picking a similar but wrong entity), evidence-backed constraints, and machine-checkable criteria. A rule humans need too still belongs in `documentBlocks`. This adds to the human docs, it never replaces them. Tools MUST NOT show these blocks to humans. Agents SHOULD read both arrays, human docs first.",
+          "items": {
+            "$ref": "../document-blocks/document-blocks.schema.json#/$defs/patternDocumentBlock"
+          },
+          "minItems": 1
+        },
+        "$extensions": {
+          "$ref": "../common/extensions.schema.json#/$defs/extensions"
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}
+```

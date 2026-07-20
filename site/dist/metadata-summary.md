@@ -1,0 +1,27 @@
+# Summary metadata field
+
+A one-line plain-text summary for compact display contexts.
+
+Source: `metadata/summary.schema.json`
+
+## summary {#summary}
+
+One-line plain-text summary for compact display contexts (ex: list views, search results, hover cards). MUST NOT contain markup.
+
+## Full schema JSON
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://designsystemdocspec.org/v0.15.2/metadata/summary.schema.json",
+  "title": "Summary metadata field",
+  "description": "A one-line plain-text summary for compact display contexts.",
+  "$defs": {
+    "summary": {
+      "type": "string",
+      "description": "One-line plain-text summary for compact display contexts (ex: list views, search results, hover cards). MUST NOT contain markup.",
+      "minLength": 1
+    }
+  }
+}
+```

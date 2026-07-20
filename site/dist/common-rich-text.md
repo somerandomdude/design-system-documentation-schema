@@ -1,0 +1,27 @@
+# Rich text definition
+
+A markdown text field for human-written documentation content, used across all DSDS schemas.
+
+Source: `common/rich-text.schema.json`
+
+## richText {#richtext}
+
+Human-written documentation content, read as CommonMark markdown (0.27 minimum). Plain text, markdown, and inline HTML are all valid. Tools MUST render the value as markdown.
+
+## Full schema JSON
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://designsystemdocspec.org/v0.15.2/common/rich-text.schema.json",
+  "title": "Rich text definition",
+  "description": "A markdown text field for human-written documentation content, used across all DSDS schemas.",
+  "$defs": {
+    "richText": {
+      "type": "string",
+      "description": "Human-written documentation content, read as CommonMark markdown (0.27 minimum). Plain text, markdown, and inline HTML are all valid. Tools MUST render the value as markdown.",
+      "minLength": 1
+    }
+  }
+}
+```
