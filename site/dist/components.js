@@ -1493,6 +1493,16 @@
 
     /* ── Mobile: nav stays put; only the links section collapses ───────── */
     @media (max-width: 900px) {
+
+      :host {
+        inset-block-end: 66px; /* THIS IS A HACK */
+        transition: inset-block-end var(--ds-duration-base) var(--ds-ease-standard);
+      }
+
+      :host([open]) {
+        inset-block-end: 0;
+      }
+
       .nav__menu-btn {
         display: flex;
       }
@@ -1506,6 +1516,7 @@
         padding-top: 0;
         padding-bottom: 0;
         overflow: hidden;
+        pointer-events: none;
       }
 
       :host([open]) .nav {
@@ -1516,6 +1527,7 @@
         max-height: 100%;
         padding: var(--ds-space-4) 0;
         overflow-y: auto;
+        pointer-events: auto;
       }
     }
 
