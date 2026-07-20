@@ -7,13 +7,17 @@ either the spec itself or a document written against it.
 
 ## Where to start
 
+- **[manifest.json](/manifest.json)** — the typed machine index. Every entity
+  kind, the block kinds it accepts, and links to its page, markdown mirror,
+  schema, and a standalone example document. Fetch this first if you're
+  building against DSDS programmatically.
 - **[llms.txt](/llms.txt)** — a curated index of every page on this site,
   each with a one-line description and a link to its plain-markdown mirror.
   Start here if you're exploring the site.
 - **Bundled schema** — every entity, document block, and shared definition
   in one JSON file, at `/v<version>/dsds.bundled.schema.json` (the exact,
-  current-version link is in llms.txt). Prefer this over parsing HTML when
-  you just need field names, types, and requiredness.
+  current-version link is in llms.txt and manifest.json). Prefer this over
+  parsing HTML when you just need field names, types, and requiredness.
 - **Every page has a `.md` mirror** at the same path (e.g. `/quickstart.md`,
   `/common-criterion.md`) — the full content as plain text, no HTML or JS
   required to read it.

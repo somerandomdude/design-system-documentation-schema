@@ -519,7 +519,7 @@ function renderSchemaPage(page) {
         }),
       );
     }
-    return { header, content: parts.join("\n") };
+    return { header, content: parts.join("\n"), defNames };
   }
 
   // Definition index (if more than one definition)
@@ -541,7 +541,7 @@ function renderSchemaPage(page) {
     parts.push(renderDefinition(defName, defs[defName], exampleData));
   }
 
-  return { header, content: parts.join("\n") };
+  return { header, content: parts.join("\n"), defNames };
 }
 
 // ---------------------------------------------------------------------------
@@ -781,7 +781,7 @@ function buildAlternateLinks(activeSlug, pageType, version) {
   return links.join("\n");
 }
 
-function buildJsonLd({ name, description, url, version, pageType }) {
+function buildJsonLd({ name, description, url, version, pageType, activeSlug, defNames }) {
   const data = {
     "@context": "https://schema.org",
     "@type": pageType === "schema" ? "APIReference" : "TechArticle",
@@ -794,7 +794,27 @@ function buildJsonLd({ name, description, url, version, pageType }) {
       name: "Design System Doc Spec",
       url: `${SITE_URL}/`,
     },
+    // The .md mirror is the same content in another format — schema.org's
+    // definition of sameAs ("a reference page that unambiguously indicates
+    // the item's identity") fits an exact-content alternate representation
+    // as well as it fits a cross-site equivalence.
+    sameAs: `${SITE_URL}/${activeSlug}.md`,
   };
+  // Schema pages are generated straight from one $defs entry (or more) in
+  // the bundled schema — subjectOf points at that source data.
+  if (pageType === "schema") {
+    data.subjectOf = `${SITE_URL}/v${version}/dsds.bundled.schema.json`;
+  }
+  // hasPart — the page's own definition sections, so a consumer that only
+  // reads JSON-LD still sees the page isn't a single flat document (mirrors
+  // the def-index the HTML/markdown both already show).
+  if (defNames && defNames.length) {
+    data.hasPart = defNames.map((defName) => ({
+      "@type": "DefinedTerm",
+      name: defName,
+      url: `${url}#${slug(defName)}`,
+    }));
+  }
   // Escape "<" so a description containing "</script>" can't break out of
   // the script tag early — the standard safe way to embed JSON in <script>.
   const json = JSON.stringify(data).replace(/</g, "\\u003c");
@@ -815,6 +835,7 @@ function pageHtml(
   version,
   description,
   pageType = "guide",
+  defNames,
 ) {
   const layoutCls = layout === "full" ? " content--full" : "";
   const contentCls = "content" + layoutCls;
@@ -856,6 +877,8 @@ function pageHtml(
       url: pageUrl,
       version: v,
       pageType,
+      activeSlug,
+      defNames,
     }),
   });
   const skipLink = renderSub("skip-link", {});
@@ -952,6 +975,9 @@ function buildLlmsTxt(entries, version) {
   lines.push("## Machine-readable schema");
   lines.push("");
   lines.push(
+    `- [manifest.json](${SITE_URL}/manifest.json): the typed machine index — every entity kind, the block kinds it accepts, and links to its page/markdown/schema/example. Start here.`,
+  );
+  lines.push(
     `- [Bundled schema, v${version}](${SITE_URL}/v${version}/dsds.bundled.schema.json): every definition in one JSON file`,
   );
   lines.push(
@@ -1011,6 +1037,84 @@ function buildLlmsFullTxt(guideDocs, bundledSchema, version) {
     "",
   );
   return lines.join("\n").replace(/\n{3,}/g, "\n\n").trimEnd() + "\n";
+}
+
+/**
+ * manifest.json — the typed machine index; the first file an agent should
+ * fetch. Every field is derived from data the build already has in memory
+ * (discoverPages()'s `pages`, the scoped-union $defs in
+ * document-blocks.schema.json, and the standalone example files already in
+ * spec/examples/minimal/) — nothing here is hand-authored, so it can't drift
+ * from the schema.
+ *
+ * `acceptsBlocks` is the flattened entity→block-kind relationship graph:
+ * each entity $def's `documentBlocks.items.$ref` points at one of
+ * document-blocks.schema.json's scoped unions (e.g. `componentDocumentBlock`),
+ * whose own `kind` property is a plain enum of every block kind that entity
+ * accepts — no allOf/if-then walking needed, just one property read.
+ */
+function buildManifest(pages, version) {
+  const docBlocksPage = pages.find(
+    (p) => p.group === "document-blocks" && p.filename === "document-blocks.schema.json",
+  );
+  const scopedUnions = (docBlocksPage && docBlocksPage.data.$defs) || {};
+  const blockKindsSet = new Set();
+  const entities = [];
+
+  for (const page of pages) {
+    if (page.group !== "entities") continue;
+    for (const [defName, defSchema] of Object.entries(page.data.$defs || {})) {
+      const kind =
+        defSchema.properties &&
+        defSchema.properties.kind &&
+        defSchema.properties.kind.const;
+      if (!kind) continue; // not every $def in an entities/ file is itself an entity (e.g. tokenGroup's nested shapes)
+
+      let acceptsBlocks = [];
+      const itemsRef =
+        defSchema.properties.documentBlocks &&
+        defSchema.properties.documentBlocks.items &&
+        defSchema.properties.documentBlocks.items.$ref;
+      if (itemsRef) {
+        const unionDefName = linkToRef(itemsRef);
+        const union = scopedUnions[unionDefName];
+        const kindEnum =
+          union && union.properties && union.properties.kind && union.properties.kind.enum;
+        if (kindEnum) acceptsBlocks = kindEnum;
+      }
+      acceptsBlocks.forEach((k) => blockKindsSet.add(k));
+
+      const examplePath = path.join(EXAMPLES_DIR, "minimal", `${kind}.json`);
+
+      entities.push({
+        kind,
+        page: `${SITE_URL}/${page.slug}`,
+        markdown: `${SITE_URL}/${page.slug}.md`,
+        schema: `${SITE_URL}/v${version}/dsds.bundled.schema.json`,
+        example: fs.existsSync(examplePath)
+          ? `${SITE_URL}/examples/${kind}.json`
+          : null,
+        acceptsBlocks,
+      });
+    }
+  }
+
+  entities.sort((a, b) => a.kind.localeCompare(b.kind));
+
+  const manifest = {
+    dsdsVersion: version,
+    bundledSchema: `${SITE_URL}/v${version}/dsds.bundled.schema.json`,
+    indexes: {
+      llms: `${SITE_URL}/llms.txt`,
+      llmsFull: `${SITE_URL}/llms-full.txt`,
+      agents: `${SITE_URL}/AGENTS.md`,
+      sitemap: `${SITE_URL}/sitemap.xml`,
+    },
+    blockKinds: [...blockKindsSet].sort(),
+    entities,
+  };
+
+  return JSON.stringify(manifest, null, 2) + "\n";
 }
 
 // ---------------------------------------------------------------------------
@@ -1090,6 +1194,15 @@ async function build() {
   fs.copyFileSync(
     path.join(SITE_DIR, "robots.txt"),
     path.join(DIST_DIR, "robots.txt"),
+  );
+
+  // Standalone, addressable entity examples — the same bare, complete
+  // documents validate.js already validates (BARE_ENTITY_DIRS), exposed at
+  // /examples/<kind>.json and referenced by manifest.json below.
+  fs.cpSync(
+    path.join(EXAMPLES_DIR, "minimal"),
+    path.join(DIST_DIR, "examples"),
+    { recursive: true },
   );
 
   // Bundle web components into a single IIFE for file:// compatibility.
@@ -1183,7 +1296,7 @@ async function build() {
 
   // ── Schema-driven pages ───────────────────────────────────────────────
   for (const page of pages) {
-    const { header, content } = renderSchemaPage(page);
+    const { header, content, defNames } = renderSchemaPage(page);
     const html = pageHtml(
       page.title,
       page.slug,
@@ -1194,6 +1307,7 @@ async function build() {
       undefined,
       page.data.description,
       "schema",
+      defNames,
     );
 
     const outPath = path.join(DIST_DIR, `${page.slug}.html`);
@@ -1283,9 +1397,15 @@ async function build() {
     path.join(DIST_DIR, "AGENTS.md"),
   );
 
+  fs.writeFileSync(
+    path.join(DIST_DIR, "manifest.json"),
+    buildManifest(pages, version),
+    "utf-8",
+  );
+
   console.log(
     `  ✓  site/dist/sitemap.xml, site/dist/llms.txt, site/dist/llms-full.txt, ` +
-      `site/dist/AGENTS.md  ← ${sitemapEntries.length} pages indexed\n`,
+      `site/dist/AGENTS.md, site/dist/manifest.json  ← ${sitemapEntries.length} pages indexed\n`,
   );
 
   console.log(

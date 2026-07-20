@@ -20,7 +20,7 @@ const HEADING_CSS = `
     color: var(--ds-color-text);
     font-family: var(--ds-font-mono);
     line-height: var(--ds-line-height-snug);
-    letter-spacing: -0.025em;
+    letter-spacing: -0.0125em;
   }
 
   .heading--1 { font-size: var(--ds-font-size-xl); font-weight: var(--ds-font-weight-bold); margin: 0 0 var(--ds-space-4); }
