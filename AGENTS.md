@@ -21,6 +21,48 @@ either the spec itself or a document written against it.
 - **Every page has a `.md` mirror** at the same path (e.g. `/quickstart.md`,
   `/common-criterion.md`) — the full content as plain text, no HTML or JS
   required to read it.
+- **[MCP server](https://github.com/somerandomdude/dsds-mcp)** — if your agent
+  can use tools instead of fetching URLs directly, this wraps the schema and
+  validation as MCP tools. Also linked from manifest.json's `mcp` field.
+
+## The entity envelope
+
+Every entity — component, token, token-group, theme, foundation, pattern,
+guide, chunk — shares one invariant shape:
+
+```
+kind, identifier, name, metadata, documentBlocks, agents, $extensions
+```
+
+Only the entity-specific fields beyond this envelope differ (a token's
+`tokenType`/`source`, a component's anatomy/API blocks, and so on — see each
+kind's entry in manifest.json for exactly which document-block kinds it
+accepts). Learn this envelope once and you can generalize across every
+entity kind without re-deriving its shape from scratch each time. This is
+the schema's `ENTITY_ENVELOPE` constant (`scripts/render-prop-table.js`) —
+one source of truth, not a convention you have to infer from examples.
+
+Each entity kind also has a canonical, standalone identifier at
+`/id/entity/<kind>` (e.g. `/id/entity/component`) — the same data as that
+kind's entry in manifest.json (page, markdown, schema, example,
+`acceptsBlocks`), fetchable on its own without pulling the whole manifest.
+`kind` is the identifier; there's no separate URN scheme to track.
+
+## JSON-LD
+
+Every HTML page emits a `<script type="application/ld+json">` block:
+`TechArticle` for guides, `APIReference` for schema reference pages, with
+`name`, `description`, `url`, `version`, `isPartOf` (this site), `sameAs`
+(the page's own `.md` mirror), `subjectOf` (the bundled schema, on schema
+pages), and `hasPart` (one `DefinedTerm` per `$defs` entry the page
+documents, linked to its anchor). It's schema.org-native — generic
+crawlers and structured-data tools already parse it — but it does not
+encode DSDS-specific relationships like "component accepts these block
+kinds"; there's no schema.org vocabulary for that, and inventing one would
+mean a private vocabulary no generic consumer understands. That
+relationship graph lives in manifest.json instead. Treat JSON-LD as a
+standard-format summary of a page's identity and its representations, and
+manifest.json as the place for DSDS's own domain model.
 
 ## What's normative
 

@@ -1039,6 +1039,11 @@ function buildLlmsFullTxt(guideDocs, bundledSchema, version) {
   return lines.join("\n").replace(/\n{3,}/g, "\n\n").trimEnd() + "\n";
 }
 
+/** "component" -> "Component", "token-group" -> "Token group". */
+function titleCaseKind(kind) {
+  return kind.charAt(0).toUpperCase() + kind.slice(1).replace(/-/g, " ");
+}
+
 /**
  * manifest.json — the typed machine index; the first file an agent should
  * fetch. Every field is derived from data the build already has in memory
@@ -1052,6 +1057,12 @@ function buildLlmsFullTxt(guideDocs, bundledSchema, version) {
  * document-blocks.schema.json's scoped unions (e.g. `componentDocumentBlock`),
  * whose own `kind` property is a plain enum of every block kind that entity
  * accepts — no allOf/if-then walking needed, just one property read.
+ *
+ * Returns `{ manifestJson, entityDescriptors }`: the manifest itself, plus
+ * one small standalone descriptor per entity kind — the same data as that
+ * entity's manifest entry, addressable at its own canonical `@id`
+ * (/id/entity/<kind>) instead of only reachable inside the array. Same
+ * source of truth, a second, independently-fetchable serialization of it.
  */
 function buildManifest(pages, version) {
   const docBlocksPage = pages.find(
@@ -1104,6 +1115,7 @@ function buildManifest(pages, version) {
   const manifest = {
     dsdsVersion: version,
     bundledSchema: `${SITE_URL}/v${version}/dsds.bundled.schema.json`,
+    mcp: "https://github.com/somerandomdude/dsds-mcp",
     indexes: {
       llms: `${SITE_URL}/llms.txt`,
       llmsFull: `${SITE_URL}/llms-full.txt`,
@@ -1114,7 +1126,28 @@ function buildManifest(pages, version) {
     entities,
   };
 
-  return JSON.stringify(manifest, null, 2) + "\n";
+  const entityDescriptors = entities.map((e) => ({
+    kind: e.kind,
+    json:
+      JSON.stringify(
+        {
+          "@context": "https://schema.org",
+          "@id": `${SITE_URL}/id/entity/${e.kind}`,
+          "@type": "APIReference",
+          identifier: e.kind,
+          name: titleCaseKind(e.kind),
+          page: e.page,
+          markdown: e.markdown,
+          schema: e.schema,
+          example: e.example,
+          acceptsBlocks: e.acceptsBlocks,
+        },
+        null,
+        2,
+      ) + "\n",
+  }));
+
+  return { manifestJson: JSON.stringify(manifest, null, 2) + "\n", entityDescriptors };
 }
 
 // ---------------------------------------------------------------------------
@@ -1397,15 +1430,21 @@ async function build() {
     path.join(DIST_DIR, "AGENTS.md"),
   );
 
-  fs.writeFileSync(
-    path.join(DIST_DIR, "manifest.json"),
-    buildManifest(pages, version),
-    "utf-8",
-  );
+  const { manifestJson, entityDescriptors } = buildManifest(pages, version);
+  fs.writeFileSync(path.join(DIST_DIR, "manifest.json"), manifestJson, "utf-8");
+
+  // Standalone canonical descriptors — /id/entity/<kind>.json — the same
+  // data as each entity's manifest.json entry, independently addressable by
+  // its own @id instead of only reachable inside the array.
+  const entityIdDir = path.join(DIST_DIR, "id", "entity");
+  fs.mkdirSync(entityIdDir, { recursive: true });
+  for (const { kind, json } of entityDescriptors) {
+    fs.writeFileSync(path.join(entityIdDir, `${kind}.json`), json, "utf-8");
+  }
 
   console.log(
     `  ✓  site/dist/sitemap.xml, site/dist/llms.txt, site/dist/llms-full.txt, ` +
-      `site/dist/AGENTS.md, site/dist/manifest.json  ← ${sitemapEntries.length} pages indexed\n`,
+      `site/dist/AGENTS.md, site/dist/manifest.json, site/dist/id/entity/*.json  ← ${sitemapEntries.length} pages indexed\n`,
   );
 
   console.log(
