@@ -28,6 +28,8 @@ const {
   linkToRef,
   describeType: describeTypeShared,
   renderPropertyTable: renderPropertyTableShared,
+  renderPropertyTableMarkdown: renderPropertyTableMarkdownShared,
+  typeToMarkdown,
 } = require("./render-prop-table");
 
 // MDX compiler (ESM) — loaded dynamically in build()
@@ -198,6 +200,11 @@ function describeType(prop) {
  */
 function renderPropertyTable(defSchema) {
   return renderPropertyTableShared(defSchema, DEF_INDEX);
+}
+
+/** Markdown counterpart of renderPropertyTable() — see buildSchemaMarkdown. */
+function renderPropertyTableMarkdown(defSchema) {
+  return renderPropertyTableMarkdownShared(defSchema, DEF_INDEX);
 }
 
 // ---------------------------------------------------------------------------
@@ -538,6 +545,263 @@ function renderSchemaPage(page) {
 }
 
 // ---------------------------------------------------------------------------
+// Markdown mirror for a single schema file
+//
+// A plain-text/GFM-markdown equivalent of renderSchemaPage()/renderDefinition()
+// for agents that fetch the page without executing JS: the HTML pages carry
+// their real content (title, field names/types, descriptions) as attributes
+// on <ds-header>/<ds-def-section>/<ds-prop> for the shadow-DOM components to
+// render, which a non-JS fetch never sees. Every fact here is pulled from the
+// exact same page/def/example data — and property tables from the exact same
+// propTableRows() — as the HTML path, so the two can't drift apart.
+// ---------------------------------------------------------------------------
+
+/**
+ * Markdown counterpart of renderDefinition() for one $defs entry.
+ */
+function renderDefinitionMarkdown(defName, defSchema, exampleData) {
+  const hid = slug(defName);
+  const lines = [`## ${defName} {#${hid}}`, ""];
+
+  if (defSchema.description) {
+    lines.push(defSchema.description, "");
+  }
+
+  // Bare string/enum def (e.g. a status vocabulary) — show the enum and stop,
+  // mirroring renderDefinition()'s early return for the same shape.
+  if (defSchema.type === "string" && !defSchema.properties) {
+    if (defSchema.enum) {
+      lines.push("Allowed values:", "");
+      for (const val of defSchema.enum) lines.push(`- \`${val}\``);
+      lines.push("");
+    }
+    return lines.join("\n");
+  }
+
+  // oneOf alternatives (e.g. richText's string | object forms)
+  if (defSchema.oneOf) {
+    lines.push("One of:", "");
+    for (const alt of defSchema.oneOf) {
+      if (alt.$ref) {
+        const refName = linkToRef(alt.$ref);
+        if (refName) {
+          const target = DEF_INDEX[refName];
+          lines.push(
+            target
+              ? `- [${refName}](${target.pageSlug}.md#${slug(refName)})`
+              : `- \`${refName}\``,
+          );
+        }
+      } else if (alt.type === "string") {
+        lines.push(`- **string**${alt.description ? ` — ${alt.description}` : ""}`);
+      } else if (alt.type === "object") {
+        lines.push(`- **object**${alt.description ? ` — ${alt.description}` : ""}`);
+        if (alt.properties) {
+          lines.push("", renderPropertyTableMarkdown(alt));
+        }
+      } else {
+        lines.push(`- ${typeToMarkdown(describeType(alt))}`);
+      }
+    }
+    lines.push("");
+  }
+
+  // Property table
+  if (defSchema.properties) {
+    const table = renderPropertyTableMarkdown(defSchema);
+    if (table) lines.push(table, "");
+  }
+
+  // additionalProperties (open maps like tokenApi)
+  if (
+    defSchema.type === "object" &&
+    defSchema.additionalProperties &&
+    typeof defSchema.additionalProperties === "object" &&
+    !defSchema.properties
+  ) {
+    lines.push(
+      `Open map — values are \`${defSchema.additionalProperties.type || "any"}\`.`,
+      "",
+    );
+  }
+
+  // anyOf constraints
+  if (defSchema.anyOf) {
+    const allSimpleRequired = defSchema.anyOf.every(
+      (alt) =>
+        alt.required &&
+        Array.isArray(alt.required) &&
+        Object.keys(alt).length === 1,
+    );
+    if (allSimpleRequired && defSchema.anyOf.length > 1) {
+      const propNames = defSchema.anyOf.map((alt) =>
+        alt.required.map((r) => `\`${r}\``).join(", "),
+      );
+      lines.push(
+        `**Constraint:** At least one of ${propNames.join(", ")} must be present.`,
+        "",
+      );
+    } else {
+      const items = defSchema.anyOf.filter((alt) => alt.required);
+      if (items.length) {
+        lines.push("**Constraints:**", "");
+        for (const alt of items) {
+          lines.push(
+            `- ${alt.required.map((r) => `\`${r}\``).join(", ")} must be present`,
+          );
+        }
+        lines.push("");
+      }
+    }
+  }
+
+  // if/then (conditional requirements like deprecation)
+  if (defSchema.if && defSchema.then) {
+    const ifProps = defSchema.if.properties || {};
+    const thenReq = defSchema.then.required || [];
+    const conditions = Object.entries(ifProps)
+      .map(([k, v]) => `\`${k}\` is \`"${v.const || ""}"\``)
+      .join(" and ");
+    const requirements = thenReq.map((r) => `\`${r}\``).join(", ");
+    if (conditions && requirements) {
+      lines.push(
+        `**Conditional:** When ${conditions}, then ${requirements} is required.`,
+        "",
+      );
+    }
+  }
+
+  // Cross-references
+  const refs = collectRefs(defSchema);
+  if (refs.length > 0) {
+    const refLinks = refs.map((refName) => {
+      const target = DEF_INDEX[refName];
+      return target
+        ? `[${refName}](${target.pageSlug}.md#${slug(refName)})`
+        : `\`${refName}\``;
+    });
+    lines.push(`**References:** ${refLinks.join(", ")}`, "");
+  }
+
+  // Example
+  if (exampleData !== undefined && exampleData !== null) {
+    lines.push(
+      "**Example:**",
+      "",
+      "```json",
+      JSON.stringify(exampleData, null, 2),
+      "```",
+      "",
+    );
+  }
+
+  return lines.join("\n");
+}
+
+/**
+ * Markdown counterpart of renderSchemaPage() for a whole schema file —
+ * title, description, root properties (if any), each $def in reference
+ * order, and a trailing fenced JSON block with the full source (parity with
+ * the inline <ds-json-view> the HTML page carries).
+ */
+function buildSchemaMarkdown(page) {
+  const defs = page.data.$defs || {};
+  const defNames = orderDefsByReference(defs);
+  const examples = page.examples || {};
+  const relSource = page.group
+    ? `${page.group}/${page.filename}`
+    : page.filename;
+
+  const lines = [`# ${page.title}`, ""];
+  if (page.data.description) lines.push(page.data.description, "");
+  lines.push(`Source: \`${relSource}\``, "");
+
+  if (page.data.properties) {
+    const table = renderPropertyTableMarkdown(page.data);
+    if (table) lines.push("## Properties", "", table, "");
+  }
+
+  if (defNames.length === 0) {
+    // Root-only schemas (no $defs) can still ship an example — same
+    // convention as renderSchemaPage(): the whole example file is one
+    // root-level example document.
+    if (page.examples !== null && page.examples !== undefined) {
+      lines.push(
+        "## Example",
+        "",
+        "```json",
+        JSON.stringify(page.examples, null, 2),
+        "```",
+        "",
+      );
+    }
+  } else {
+    if (defNames.length > 1) {
+      lines.push(
+        `**${defNames.length} definitions** in this file: ` +
+          defNames.map((n) => `\`${n}\``).join(", "),
+        "",
+      );
+    }
+    for (const defName of defNames) {
+      const exampleData =
+        examples[defName] !== undefined ? examples[defName] : null;
+      lines.push(renderDefinitionMarkdown(defName, defs[defName], exampleData));
+    }
+  }
+
+  lines.push(
+    "## Full schema JSON",
+    "",
+    "```json",
+    JSON.stringify(page.data, null, 2),
+    "```",
+    "",
+  );
+
+  return lines.join("\n").replace(/\n{3,}/g, "\n\n").trimEnd() + "\n";
+}
+
+// ---------------------------------------------------------------------------
+// <link rel="alternate"> + JSON-LD — standards-based affordances that let a
+// generic crawler/agent discover the machine-readable forms of a page (its
+// .md mirror, and for schema pages the bundled JSON) and get structured
+// name/description/version metadata without parsing the visible HTML at all.
+// ---------------------------------------------------------------------------
+
+function buildAlternateLinks(activeSlug, pageType, version) {
+  const links = [
+    `  <link rel="alternate" type="text/markdown" href="${esc(activeSlug)}.md">`,
+  ];
+  if (pageType === "schema") {
+    links.push(
+      `  <link rel="alternate" type="application/schema+json" href="${SITE_URL}/v${esc(version)}/dsds.bundled.schema.json">`,
+    );
+  }
+  return links.join("\n");
+}
+
+function buildJsonLd({ name, description, url, version, pageType }) {
+  const data = {
+    "@context": "https://schema.org",
+    "@type": pageType === "schema" ? "APIReference" : "TechArticle",
+    name,
+    description,
+    url,
+    version,
+    isPartOf: {
+      "@type": "WebSite",
+      name: "Design System Doc Spec",
+      url: `${SITE_URL}/`,
+    },
+  };
+  // Escape "<" so a description containing "</script>" can't break out of
+  // the script tag early — the standard safe way to embed JSON in <script>.
+  const json = JSON.stringify(data).replace(/</g, "\\u003c");
+  return `  <script type="application/ld+json">${json}</script>`;
+}
+
+// ---------------------------------------------------------------------------
 // Overview page — rendered from markdown
 // ---------------------------------------------------------------------------
 
@@ -550,6 +814,7 @@ function pageHtml(
   layout,
   version,
   description,
+  pageType = "guide",
 ) {
   const layoutCls = layout === "full" ? " content--full" : "";
   const contentCls = "content" + layoutCls;
@@ -584,6 +849,14 @@ function pageHtml(
     description: esc(desc),
     canonical: pageUrl,
     version: esc(v),
+    alternates: buildAlternateLinks(activeSlug, pageType, v),
+    jsonld: buildJsonLd({
+      name: fullTitle,
+      description: desc,
+      url: pageUrl,
+      version: v,
+      pageType,
+    }),
   });
   const skipLink = renderSub("skip-link", {});
   const main = renderSub("main", {
@@ -619,12 +892,35 @@ function urlForSlug(slug) {
 
 function buildSitemapXml(entries) {
   const urls = entries
-    .map((e) => `  <url><loc>${urlForSlug(e.slug)}</loc></url>`)
+    .map((e) => {
+      // <lastmod> from the source file's own mtime — the file that actually
+      // changed when this page's content last changed (the .mdx source, or
+      // the .schema.json), not the build output (which touches every file
+      // on every run and would make every entry "changed today").
+      let lastmod = "";
+      if (e.sourcePath && fs.existsSync(e.sourcePath)) {
+        lastmod = `<lastmod>${fs.statSync(e.sourcePath).mtime.toISOString().slice(0, 10)}</lastmod>`;
+      }
+      return `  <url><loc>${urlForSlug(e.slug)}</loc>${lastmod}</url>`;
+    })
     .join("\n");
   return (
     `<?xml version="1.0" encoding="UTF-8"?>\n` +
     `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls}\n</urlset>\n`
   );
+}
+
+/**
+ * Format one llms.txt bullet, appending a `([markdown](...))` link when the
+ * entry has a `.md` mirror (see `hasMarkdown` on sitemapEntries) — the single
+ * place both the guides and schema-group loops go through, so the two can't
+ * drift into different link formats.
+ */
+function formatLlmsEntry(entry) {
+  const mdLink = entry.hasMarkdown
+    ? ` ([markdown](${SITE_URL}/${entry.slug}.md))`
+    : "";
+  return `- [${entry.title}](${urlForSlug(entry.slug)}): ${entry.description}${mdLink}`;
 }
 
 function buildLlmsTxt(entries, version) {
@@ -644,10 +940,13 @@ function buildLlmsTxt(entries, version) {
   lines.push(`> ${DEFAULT_DESCRIPTION}`);
   lines.push("");
   lines.push(
-    "This site documents DSDS, a versioned JSON Schema. Every definition " +
-      "below has an HTML page (for people) and a `$defs` entry in the " +
-      "bundled schema below (for parsers/agents) — prefer the JSON when " +
-      "you just need field names, types, and requiredness.",
+    "This site documents DSDS, a versioned JSON Schema. Every page below " +
+      "has an HTML version (for people) and a plain-markdown mirror at the " +
+      "same path with a `.md` extension (e.g. `/quickstart.md`, " +
+      "`/common-criterion.md`) — the full content as text, no HTML/JS to " +
+      "parse. Schema pages' markdown includes every field name, type, and " +
+      "requiredness plus the full schema JSON; the bundled schema below is " +
+      "the single-file version of the same data.",
   );
   lines.push("");
   lines.push("## Machine-readable schema");
@@ -656,32 +955,62 @@ function buildLlmsTxt(entries, version) {
     `- [Bundled schema, v${version}](${SITE_URL}/v${version}/dsds.bundled.schema.json): every definition in one JSON file`,
   );
   lines.push(
+    `- [llms-full.txt](${SITE_URL}/llms-full.txt): every guide's full text plus the bundled schema, in one file for one-request ingestion`,
+  );
+  lines.push(
+    `- [AGENTS.md](${SITE_URL}/AGENTS.md): how to consume these docs as an agent — where to start, what's normative, how to self-check your work`,
+  );
+  lines.push(
     `- [sitemap.xml](${SITE_URL}/sitemap.xml): every page on this site`,
   );
   lines.push("");
   lines.push("## Guides");
   lines.push("");
-  lines.push(
-    "Each guide below also has a plain-markdown mirror at the same path " +
-      "with a `.md` extension (e.g. `/quickstart.md`) — the raw prose, no " +
-      "HTML/JS.",
-  );
-  lines.push("");
   for (const g of guides) {
-    lines.push(
-      `- [${g.title}](${urlForSlug(g.slug)}): ${g.description} ([markdown](${SITE_URL}/${g.slug}.md))`,
-    );
+    lines.push(formatLlmsEntry(g));
   }
   lines.push("");
   for (const group of schemaGroups) {
     lines.push(`## ${group.label}`);
     lines.push("");
     for (const item of group.items) {
-      lines.push(`- [${item.title}](${urlForSlug(item.slug)}): ${item.description}`);
+      lines.push(formatLlmsEntry(item));
     }
     lines.push("");
   }
   return lines.join("\n").trimEnd() + "\n";
+}
+
+/**
+ * A single file with everything: every guide's full text (byte-identical to
+ * its own .md mirror), then the complete bundled schema JSON — one request
+ * for an agent that wants the whole spec instead of following links.
+ * Deliberately does NOT repeat every schema page's markdown too: that would
+ * just re-express the same bundled JSON in per-page form, redundantly.
+ * llms.txt is still the place for direct per-definition links.
+ */
+function buildLlmsFullTxt(guideDocs, bundledSchema, version) {
+  const lines = [`# Design System Doc Spec (DSDS) — full text`, ""];
+  lines.push(`> ${DEFAULT_DESCRIPTION}`, "");
+  lines.push(
+    "Everything needed to understand DSDS in one file: every guide below " +
+      "in full, then the complete bundled JSON Schema (every entity, " +
+      "document block, and shared definition). For direct links to each " +
+      "definition's own page, see llms.txt instead.",
+    "",
+  );
+  for (const doc of guideDocs) {
+    lines.push(doc.markdown.trim(), "", "---", "");
+  }
+  lines.push(
+    `## Bundled schema (v${version})`,
+    "",
+    "```json",
+    JSON.stringify(bundledSchema, null, 2),
+    "```",
+    "",
+  );
+  return lines.join("\n").replace(/\n{3,}/g, "\n\n").trimEnd() + "\n";
 }
 
 // ---------------------------------------------------------------------------
@@ -770,6 +1099,9 @@ async function build() {
   // feeds sitemap.xml and llms.txt (see "Agent/crawler-facing indexes" above)
   // so those stay in lockstep with whatever pages actually got built.
   const sitemapEntries = [];
+  // Guide markdown, collected in the same loop — feeds llms-full.txt so its
+  // guide text is byte-identical to each guide's own .md mirror.
+  const guideMarkdownDocs = [];
 
   // ── MDX content pages ─────────────────────────────────────────────────
   const { compileAllMdx } = await loadMdxCompiler();
@@ -836,12 +1168,16 @@ async function build() {
       "utf-8",
     );
 
+    const sourcePath = path.join(CONTENT_DIR, mdxPage.file);
     sitemapEntries.push({
       slug,
       title,
       description: mdxPage.meta.description || DEFAULT_DESCRIPTION,
       group: "Guides",
+      hasMarkdown: true,
+      sourcePath,
     });
+    guideMarkdownDocs.push({ title, markdown: `# ${title}\n\n${mdBody}` });
   }
   console.log(`  ${mdxPages.length} MDX page(s) compiled.\n`);
 
@@ -857,10 +1193,18 @@ async function build() {
       null,
       undefined,
       page.data.description,
+      "schema",
     );
 
     const outPath = path.join(DIST_DIR, `${page.slug}.html`);
     fs.writeFileSync(outPath, html, "utf-8");
+
+    // Markdown mirror — see "Markdown mirror for a single schema file" above.
+    fs.writeFileSync(
+      path.join(DIST_DIR, `${page.slug}.md`),
+      buildSchemaMarkdown(page),
+      "utf-8",
+    );
 
     const relSource = page.group
       ? `${page.group}/${page.filename}`
@@ -872,6 +1216,8 @@ async function build() {
       title: page.title,
       description: page.data.description || DEFAULT_DESCRIPTION,
       group: page.groupLabel,
+      hasMarkdown: true,
+      sourcePath: page.filePath,
     });
   }
 
@@ -921,8 +1267,25 @@ async function build() {
     buildLlmsTxt(sitemapEntries, version),
     "utf-8",
   );
+
+  const bundledSchemaForFullTxt = fs.existsSync(bundledSchemaPath)
+    ? JSON.parse(fs.readFileSync(bundledSchemaPath, "utf-8"))
+    : {};
+  fs.writeFileSync(
+    path.join(DIST_DIR, "llms-full.txt"),
+    buildLlmsFullTxt(guideMarkdownDocs, bundledSchemaForFullTxt, version),
+    "utf-8",
+  );
+
+  // Static root agent entry doc — copied verbatim, like robots.txt.
+  fs.copyFileSync(
+    path.join(ROOT, "AGENTS.md"),
+    path.join(DIST_DIR, "AGENTS.md"),
+  );
+
   console.log(
-    `  ✓  site/dist/sitemap.xml, site/dist/llms.txt  ← ${sitemapEntries.length} pages indexed\n`,
+    `  ✓  site/dist/sitemap.xml, site/dist/llms.txt, site/dist/llms-full.txt, ` +
+      `site/dist/AGENTS.md  ← ${sitemapEntries.length} pages indexed\n`,
   );
 
   console.log(

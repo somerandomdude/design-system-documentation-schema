@@ -1,0 +1,1052 @@
+# Component definitions
+
+A component document: the identity of a reusable UI element, plus its metadata (see metadata/metadata.schema.json) and its docs. `documentBlocks` accepts the component-specific kinds (imports, anatomy, api, variants, states, design-specifications) plus every general kind (guidelines, use-cases, accessibility, content, sections, checklist).
+
+Source: `entities/component.schema.json`
+
+## component {#component}
+
+A single reusable UI component: its identity (`identifier`, `name`, `description`), its metadata, and its docs (imports, anatomy, api, variants, states, design-specifications, plus the general kinds).
+
+| Property | Type | Required | Description |
+| --- | --- | --- | --- |
+| `kind` | `"component"` | ✓ | Identifies this entity as a component. |
+| `identifier` | string | ✓ | Machine-readable identifier (ex: 'button', 'dialog', 'form-field', 'data-table'). MUST be unique within its entity group. (Pattern: `^[a-z][a-z0-9-]*$`) |
+| `name` | string | ✓ | Display name shown in docs (ex: 'Button', 'Dialog', 'Form Field', 'Data Table'). |
+| `description` | [richText](common-rich-text.md#richtext) |  | What this component is, what it does, and its role in the design system. CommonMark supported. |
+| `metadata` | [entityMetadata](metadata-metadata.md#entitymetadata) |  | Optional metadata: the shared entityMetadata fields (see metadata/metadata.schema.json). |
+| `relationships` | [relationships](common-relationship.md#relationships) |  | Links from this component to other entities — e.g. 'depends-on' a token, 'composes' another component, 'alternative-to' a sibling. Agents use this graph for impact analysis and alternatives; tools derive the reverse edges. Use the `links` metadata field for external resources instead. |
+| `documentBlocks` | [componentDocumentBlock](document-blocks-document-blocks.md#componentdocumentblock)[] |  | All structured docs for this component, in order. Accepts the component-specific kinds (imports, anatomy, api, variants, states, design-specifications) plus every general kind. Each entry's `kind` sets its shape. Tools SHOULD keep this order for display. (Min items: 1) |
+| `agentDocumentBlocks` | [componentDocumentBlock](document-blocks-document-blocks.md#componentdocumentblock)[] |  | Docs for agents (AI/LLM) only, using the same block kinds as `documentBlocks`. Put anything a human needs in `documentBlocks` — that's the default. Use this only for things that would be noise to a person: hard must/must-not rules, notes that correct a mistake agents commonly make (like picking a similar but wrong entity), evidence-backed constraints, and machine-checkable criteria. A rule humans need too still belongs in `documentBlocks`. This adds to the human docs, it never replaces them. Tools MUST NOT show these blocks to humans. Agents SHOULD read both arrays, human docs first. (Min items: 1) |
+| `$extensions` | [extensions](common-extensions.md#extensions) |  |  |
+
+**References:** [richText](common-rich-text.md#richtext), [entityMetadata](metadata-metadata.md#entitymetadata), [relationships](common-relationship.md#relationships), [componentDocumentBlock](document-blocks-document-blocks.md#componentdocumentblock), [extensions](common-extensions.md#extensions)
+
+**Example:**
+
+```json
+{
+  "kind": "component",
+  "identifier": "button",
+  "name": "Button",
+  "description": "An interactive element that triggers an action when activated. Buttons communicate what will happen when the user interacts with them and are the primary mechanism for initiating actions within a surface.",
+  "metadata": {
+    "status": {
+      "overall": "stable",
+      "platforms": {
+        "react": {
+          "status": "stable",
+          "since": "1.0.0"
+        },
+        "web-component": {
+          "status": "experimental",
+          "since": "3.2.0",
+          "note": "Available as a Web Component wrapper. Native shadow DOM implementation planned for v4."
+        },
+        "ios": {
+          "status": "stable",
+          "since": "2.1.0"
+        },
+        "android": {
+          "status": "draft",
+          "note": "Compose implementation in progress. Expected in v4.0."
+        },
+        "figma": {
+          "status": "stable",
+          "since": "1.0.0"
+        }
+      }
+    },
+    "since": "1.0.0",
+    "lastUpdated": {
+      "date": "2026-05-28",
+      "note": "Added focus-visible guidance and refreshed contrast requirements for inverse surfaces."
+    },
+    "category": "action",
+    "tags": [
+      "action",
+      "form",
+      "interactive",
+      "submit",
+      "click",
+      "CTA",
+      "trigger",
+      "call-to-action"
+    ],
+    "aliases": [
+      "btn",
+      "action-button",
+      "CTA"
+    ],
+    "summary": "An interactive element that triggers an action when activated.",
+    "links": [
+      {
+        "kind": "source",
+        "url": "https://code.acme.com/design-system/src/packages/components/src/button/button.tsx",
+        "label": "React component source"
+      },
+      {
+        "kind": "source",
+        "url": "https://code.acme.com/design-system/src/packages/components/src/button/button.test.tsx",
+        "label": "Unit tests"
+      },
+      {
+        "kind": "design",
+        "url": "https://design-tool.acme.com/file/abc123?node-id=1234:5678",
+        "label": "Design file — component"
+      },
+      {
+        "kind": "design",
+        "url": "https://design-tool.acme.com/file/abc123?node-id=1234:9999",
+        "label": "Design file — variants"
+      },
+      {
+        "kind": "storybook",
+        "url": "https://storybook.acme.com/?path=/docs/components-button--docs",
+        "label": "Storybook docs"
+      },
+      {
+        "kind": "package",
+        "url": "https://www.npmjs.com/package/@acme/components",
+        "label": "npm package"
+      },
+      {
+        "kind": "alternative",
+        "url": "https://design.acme.com/components/link",
+        "label": "link (component)"
+      },
+      {
+        "kind": "child",
+        "url": "https://design.acme.com/components/icon-button",
+        "label": "icon-button (component)"
+      },
+      {
+        "kind": "parent",
+        "url": "https://design.acme.com/components/button-group",
+        "label": "button-group (component)"
+      }
+    ]
+  },
+  "documentBlocks": [
+    {
+      "kind": "imports",
+      "items": [
+        {
+          "platform": "react",
+          "package": "@acme/design-system",
+          "code": "import { Button } from '@acme/design-system';",
+          "language": "tsx",
+          "since": "1.0.0"
+        },
+        {
+          "platform": "web-component",
+          "package": "@acme/design-system-wc",
+          "code": "import '@acme/design-system-wc/button';\n\n// Then use in HTML:\n// <acme-button variant=\"primary\">Click me</acme-button>",
+          "language": "js",
+          "description": "Web Component wrapper. Available since v3.2.0 — native shadow DOM implementation planned for v4.",
+          "since": "3.2.0"
+        },
+        {
+          "platform": "vue",
+          "package": "@acme/design-system-vue",
+          "code": "import { AcmeButton } from '@acme/design-system-vue';",
+          "language": "vue",
+          "since": "2.0.0"
+        }
+      ]
+    },
+    {
+      "kind": "anatomy",
+      "description": "The Button is composed of a container, a text label, and an optional leading or trailing icon.",
+      "parts": [
+        {
+          "identifier": "container",
+          "name": "Container",
+          "description": "The outer boundary of the button. Receives background color, border, border radius, and padding. Defines the clickable area.",
+          "required": true,
+          "tokens": {
+            "background": "button-background",
+            "border-color": "button-border-color",
+            "border-width": "button-border-width",
+            "border-radius": "button-border-radius",
+            "padding-horizontal": "button-padding-horizontal",
+            "padding-vertical": "button-padding-vertical"
+          }
+        },
+        {
+          "identifier": "label",
+          "name": "Label",
+          "description": "The text content of the button. Communicates the action that will occur on activation.",
+          "required": true,
+          "tokens": {
+            "font-family": "button-font-family",
+            "font-size": "button-font-size",
+            "font-weight": "button-font-weight",
+            "line-height": "button-line-height",
+            "text-color": "button-text-color"
+          }
+        },
+        {
+          "identifier": "icon",
+          "name": "Icon",
+          "description": "An optional icon displayed before (leading) or after (trailing) the label. Reinforces the label's meaning visually.",
+          "required": false,
+          "tokens": {
+            "size": "button-icon-size",
+            "color": "button-icon-color",
+            "gap": "button-icon-gap"
+          }
+        },
+        {
+          "identifier": "focus-ring",
+          "name": "Focus Ring",
+          "description": "A visible outline rendered when the button receives keyboard focus. Not displayed on mouse interaction.",
+          "required": true,
+          "tokens": {
+            "color": "button-focus-ring-color",
+            "width": "button-focus-ring-width",
+            "offset": "button-focus-ring-offset"
+          }
+        }
+      ],
+      "examples": [
+        {
+          "title": "Anatomy diagram",
+          "presentation": {
+            "kind": "image",
+            "url": "https://design.acme.com/assets/button-anatomy.png",
+            "alt": "An annotated diagram of a primary button with numbered callouts: 1. Container, 2. Label, 3. Icon (optional), 4. Focus ring (shown in dashed outline)."
+          }
+        }
+      ],
+      "$extensions": {
+        "com.figma": {
+          "nodeId": "1234:5678"
+        }
+      }
+    },
+    {
+      "kind": "api",
+      "properties": [
+        {
+          "identifier": "variant",
+          "type": "string",
+          "values": [
+            "primary",
+            "secondary",
+            "ghost",
+            "danger"
+          ],
+          "schema": {
+            "type": "string",
+            "enum": [
+              "primary",
+              "secondary",
+              "ghost",
+              "danger"
+            ],
+            "default": "primary"
+          },
+          "description": "The visual style of the button. Determines background color, text color, and border treatment.",
+          "required": false,
+          "defaultValue": "primary",
+          "since": "1.0.0"
+        },
+        {
+          "identifier": "size",
+          "type": "string",
+          "values": [
+            "small",
+            "medium",
+            "large"
+          ],
+          "schema": {
+            "type": "string",
+            "enum": [
+              "small",
+              "medium",
+              "large"
+            ],
+            "default": "medium"
+          },
+          "description": "The size of the button. Affects padding, font size, icon size, and minimum target area.",
+          "required": false,
+          "defaultValue": "medium",
+          "since": "1.0.0"
+        },
+        {
+          "identifier": "disabled",
+          "type": "boolean",
+          "schema": {
+            "type": "boolean",
+            "default": false
+          },
+          "description": "When true, the button is non-interactive. The cursor changes to not-allowed, and the button is visually dimmed to 40% opacity.",
+          "required": false,
+          "defaultValue": false,
+          "since": "1.0.0"
+        },
+        {
+          "identifier": "loading",
+          "type": "boolean",
+          "schema": {
+            "type": "boolean",
+            "default": false
+          },
+          "description": "When true, the label is replaced with a spinner and the button is non-interactive. The button retains its dimensions to prevent layout shift.",
+          "required": false,
+          "defaultValue": false,
+          "since": "2.1.0"
+        },
+        {
+          "identifier": "fullWidth",
+          "type": "boolean",
+          "schema": {
+            "type": "boolean",
+            "default": false
+          },
+          "description": "When true, the button expands to fill the width of its parent container.",
+          "required": false,
+          "defaultValue": false,
+          "since": "1.2.0"
+        },
+        {
+          "identifier": "iconStart",
+          "type": "IconComponent",
+          "description": "An icon component rendered before the label. When provided without a label, an aria-label is required.",
+          "required": false,
+          "since": "2.0.0"
+        },
+        {
+          "identifier": "iconEnd",
+          "type": "IconComponent",
+          "description": "An icon component rendered after the label.",
+          "required": false,
+          "since": "2.0.0"
+        },
+        {
+          "identifier": "type",
+          "type": "string",
+          "values": [
+            "button",
+            "submit",
+            "reset"
+          ],
+          "schema": {
+            "type": "string",
+            "enum": [
+              "button",
+              "submit",
+              "reset"
+            ],
+            "default": "button"
+          },
+          "description": "The HTML button type attribute. Controls form submission behavior.",
+          "required": false,
+          "defaultValue": "button",
+          "since": "1.0.0"
+        }
+      ],
+      "events": [
+        {
+          "identifier": "onClick",
+          "description": "Fires when the button is activated via mouse click, touch tap, Enter key, or Space key. Does not fire when the button is disabled or loading. Bubbles; not cancelable.",
+          "since": "1.0.0",
+          "payload": "(event: MouseEvent) => void"
+        },
+        {
+          "identifier": "onFocus",
+          "description": "Fires when the button receives focus via keyboard tab, programmatic focus, or mouse click. Use to show contextual help or tooltips. Does not bubble.",
+          "since": "1.0.0",
+          "payload": "(event: FocusEvent) => void"
+        },
+        {
+          "identifier": "onBlur",
+          "description": "Fires when the button loses focus. Use to dismiss contextual help or validate inline state. Does not bubble.",
+          "since": "1.0.0",
+          "payload": "(event: FocusEvent) => void"
+        }
+      ],
+      "slots": [
+        {
+          "identifier": "default",
+          "description": "The button's text label.",
+          "acceptedContent": "Plain text or a text node. Do not nest interactive elements, headings, or block-level elements."
+        }
+      ],
+      "cssCustomProperties": [
+        {
+          "identifier": "--button-background",
+          "description": "The background color of the button container.",
+          "type": "color",
+          "since": "1.0.0",
+          "defaultValue": "var(--color-action-primary)"
+        },
+        {
+          "identifier": "--button-text-color",
+          "description": "The color of the label text.",
+          "type": "color",
+          "since": "1.0.0",
+          "defaultValue": "var(--color-text-on-action)"
+        },
+        {
+          "identifier": "--button-border-radius",
+          "description": "The border radius of the button container.",
+          "type": "dimension",
+          "since": "1.0.0",
+          "defaultValue": "var(--radius-medium)"
+        }
+      ],
+      "dataAttributes": [
+        {
+          "identifier": "data-state",
+          "description": "Reflects the current interactive state of the button. Useful for styling with attribute selectors.",
+          "values": [
+            "default",
+            "hover",
+            "active",
+            "focus",
+            "disabled",
+            "loading"
+          ]
+        },
+        {
+          "identifier": "data-variant",
+          "description": "Reflects the current variant. Useful for parent-level conditional styling.",
+          "values": [
+            "primary",
+            "secondary",
+            "ghost",
+            "danger"
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "variants",
+      "items": [
+        {
+          "kind": "enum",
+          "identifier": "emphasis",
+          "name": "Emphasis",
+          "description": "Controls the visual weight of the button. Determines background fill, border treatment, and text color to establish a visual hierarchy among actions on a surface.",
+          "values": [
+            {
+              "identifier": "primary",
+              "name": "Primary",
+              "description": "High-emphasis — the main action on the surface. Uses a solid, filled background. Limit to one primary button per surface.",
+              "rationale": "- Use when: When the action is the most important on the surface — the one the user is most likely to take (ex: Save, Submit, Confirm).\n- Avoid when: When a surface already has a primary button. Adding a second dilutes visual hierarchy. Use `secondary` instead — Secondary emphasis maintains importance without competing with the existing primary action.",
+              "tokens": {
+                "background": "button-primary-bg",
+                "text-color": "button-primary-text",
+                "border-color": "transparent",
+                "border-width": "0px",
+                "icon-color": "button-primary-text"
+              }
+            },
+            {
+              "identifier": "secondary",
+              "name": "Secondary",
+              "description": "Medium-emphasis — important but not the primary action. Uses a visible border and transparent background.",
+              "rationale": "- Use when: When the action is important but secondary to a primary action on the same surface (ex: Cancel alongside Save).",
+              "tokens": {
+                "background": "transparent",
+                "text-color": "button-secondary-text",
+                "border-color": "button-secondary-border",
+                "border-width": "1px",
+                "icon-color": "button-secondary-text"
+              }
+            },
+            {
+              "identifier": "ghost",
+              "name": "Ghost",
+              "description": "Low-emphasis — tertiary actions, toolbar actions, or dense layouts. No background or border in the default state.",
+              "rationale": "- Use when: When the action is tertiary or supplementary — helpful but not essential to the user's primary task.\n- Avoid when: When the action is the only action on the surface and needs to be clearly discoverable. Use `secondary` instead — A ghost button on its own can be overlooked. Secondary emphasis provides enough visual presence to be discoverable.",
+              "tokens": {
+                "background": "transparent",
+                "text-color": "button-ghost-text",
+                "border-color": "transparent",
+                "border-width": "0px",
+                "icon-color": "button-ghost-text"
+              }
+            },
+            {
+              "identifier": "danger",
+              "name": "Danger",
+              "description": "High-emphasis destructive — signals an irreversible action. Uses the danger color. Pair with a confirmation dialog.",
+              "rationale": "- Use when: When the action is destructive or irreversible — deleting a record, revoking access, removing a team member.\n- Avoid when: When the action is not destructive, even if it feels important or urgent. Use `primary` instead — The danger color is a strong signal reserved for destruction. Using it for non-destructive actions dilutes its meaning.",
+              "tokens": {
+                "background": "button-danger-bg",
+                "text-color": "button-danger-text",
+                "border-color": "transparent",
+                "border-width": "0px",
+                "icon-color": "button-danger-text"
+              }
+            }
+          ]
+        },
+        {
+          "kind": "enum",
+          "identifier": "size",
+          "name": "Size",
+          "description": "Controls the physical dimensions of the button — padding, font size, icon size, and minimum touch target area.",
+          "values": [
+            {
+              "identifier": "sm",
+              "name": "Small",
+              "description": "Compact size for toolbars and dense layouts. 32px height."
+            },
+            {
+              "identifier": "md",
+              "name": "Medium",
+              "description": "Default size for most contexts. 40px height."
+            },
+            {
+              "identifier": "lg",
+              "name": "Large",
+              "description": "Touch-optimized size for mobile-first surfaces. 48px height."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "states",
+      "items": [
+        {
+          "identifier": "default",
+          "name": "Default",
+          "description": "The button's resting state when no interaction is occurring."
+        },
+        {
+          "identifier": "hover",
+          "name": "Hover",
+          "description": "Triggered when the user's pointer moves over the button. The background darkens by 8% to indicate interactivity. Not applicable on touch devices.",
+          "tokens": {
+            "button-background": "color-action-primary-hover"
+          }
+        },
+        {
+          "identifier": "active",
+          "name": "Active / Pressed",
+          "description": "Triggered while the button is being pressed (mousedown or touch start). The background darkens by 16% from the default to indicate activation.",
+          "tokens": {
+            "button-background": "color-action-primary-active"
+          }
+        },
+        {
+          "identifier": "focus",
+          "name": "Focus",
+          "description": "Triggered when the button receives keyboard focus. A 2px focus ring appears with a 2px offset from the container edge.",
+          "tokens": {
+            "button-focus-ring-color": "color-focus-ring",
+            "button-focus-ring-width": "border-width-focus",
+            "button-focus-ring-offset": "space-focus-offset"
+          }
+        },
+        {
+          "identifier": "disabled",
+          "name": "Disabled",
+          "description": "The button is non-interactive. Opacity is reduced to 0.4. Pointer events are disabled. The button remains in the tab order when using aria-disabled instead of the HTML disabled attribute."
+        },
+        {
+          "identifier": "loading",
+          "name": "Loading",
+          "description": "The button label is replaced by a spinner animation. The button is non-interactive. The button maintains its dimensions from the default state to prevent layout shift."
+        }
+      ]
+    },
+    {
+      "kind": "design-specifications",
+      "properties": {
+        "background": "button-bg",
+        "text-color": "button-text",
+        "border-color": "button-border",
+        "border-width": "1px",
+        "border-radius": "button-radius",
+        "padding-horizontal": "space-4",
+        "padding-vertical": "space-2",
+        "font-family": "font-family-body",
+        "font-size": "14px",
+        "font-weight": "500",
+        "line-height": "20px",
+        "icon-size": "16px",
+        "icon-color": "inherit",
+        "icon-gap": "8px",
+        "focus-ring-color": "color-focus",
+        "focus-ring-width": "2px",
+        "focus-ring-offset": "2px",
+        "min-height": "40px",
+        "min-width": "64px",
+        "opacity": "1"
+      },
+      "spacing": {
+        "internal": {
+          "container-horizontal": "space-4",
+          "container-vertical": "space-2",
+          "icon-to-label": "space-2"
+        },
+        "external": {
+          "button-to-button": "space-3",
+          "button-group-gap": "space-3"
+        }
+      },
+      "sizing": {
+        "minWidth": "64px",
+        "minHeight": "40px"
+      },
+      "typography": {
+        "label": {
+          "fontSize": "14px",
+          "fontWeight": "500",
+          "lineHeight": "20px",
+          "typeToken": "$body-compact-01"
+        }
+      },
+      "responsive": [
+        {
+          "breakpoint": "small",
+          "description": "In narrow containers (below 320px), buttons expand to full width automatically to maintain a usable tap target."
+        },
+        {
+          "breakpoint": "medium",
+          "description": "Buttons display at their intrinsic width. Button groups display inline."
+        }
+      ]
+    },
+    {
+      "kind": "use-cases",
+      "items": [
+        {
+          "description": "When the user needs to trigger an action such as submitting a form, saving data, opening a dialog, or confirming a decision.",
+          "stance": "recommended"
+        },
+        {
+          "description": "When a destructive or irreversible action needs to be initiated, such as deleting a record or revoking access. Pair with a confirmation dialog.",
+          "stance": "recommended"
+        },
+        {
+          "description": "When the action navigates the user to a different page or URL.",
+          "stance": "discouraged",
+          "alternative": {
+            "identifier": "link",
+            "rationale": "Links carry native navigation semantics. Screen readers announce them as links, and browsers support standard navigation behaviors such as open-in-new-tab."
+          }
+        },
+        {
+          "description": "When the user needs to select one option from a set of mutually exclusive choices.",
+          "stance": "discouraged",
+          "alternative": {
+            "identifier": "radio-group",
+            "rationale": "Radio groups communicate exclusivity through their semantic role. A set of buttons styled to look like a selector does not convey mutual exclusivity to assistive technology."
+          }
+        },
+        {
+          "description": "When the only content is an icon with no visible text label.",
+          "stance": "discouraged",
+          "alternative": {
+            "identifier": "icon-button",
+            "rationale": "Icon buttons enforce an aria-label requirement and apply size adjustments for icon-only touch targets. A standard button with its label removed may fail accessibility requirements silently."
+          }
+        }
+      ]
+    },
+    {
+      "kind": "guidelines",
+      "items": [
+        {
+          "guidance": "Limit each surface to one primary button.",
+          "rationale": "Multiple primary buttons dilute visual hierarchy. When everything is emphasized, nothing is. A single primary button directs the user to the most important action.",
+          "level": "must",
+          "category": "visual-design"
+        },
+        {
+          "guidance": "Place the primary button on the right side of a button group in left-to-right layouts.",
+          "rationale": "Users scan in the direction of the layout's reading order. Placing the primary action at the natural endpoint aligns with the completion point of reading.",
+          "level": "should",
+          "category": "visual-design"
+        },
+        {
+          "guidance": "Do not use a Button when the action navigates the user to a different page or URL. Use a Link component instead.",
+          "rationale": "Buttons and links have different semantic roles. Buttons trigger actions (submit, open, close). Links navigate. Screen reader users rely on element role to anticipate behavior.",
+          "level": "must-not",
+          "category": "visual-design"
+        },
+        {
+          "guidance": "Use the danger variant exclusively for destructive or irreversible actions. Pair danger buttons with a confirmation dialog.",
+          "rationale": "Red is a strong signal. If danger styling is used for non-destructive actions, it dilutes the warning signal and conditions users to ignore it.",
+          "level": "must",
+          "category": "visual-design"
+        },
+        {
+          "guidance": "Use the loading state instead of disabling the button during asynchronous operations.",
+          "rationale": "A disabled button gives no feedback that an action is in progress. The loading state communicates that the action was registered and the system is working.",
+          "level": "should",
+          "category": "interaction"
+        },
+        {
+          "guidance": "Do not wrap a button's label text across multiple lines.",
+          "rationale": "Multi-line button labels are harder to scan and create inconsistent button heights in groups. If the label is too long, rewrite it to be shorter.",
+          "level": "must-not",
+          "category": "visual-design"
+        },
+        {
+          "guidance": "Maintain a minimum tap target of 44x44 CSS pixels for all button sizes.",
+          "rationale": "The WCAG 2.5.8 target size criterion requires a minimum 24x24px target, with 44x44px recommended. Touch devices require larger targets to prevent mis-taps.",
+          "level": "must",
+          "category": "accessibility",
+          "references": [
+            {
+              "url": "https://www.w3.org/TR/WCAG22/#target-size-minimum"
+            }
+          ]
+        },
+        {
+          "guidance": "Use a verb or verb phrase that describes the action the button performs. Two words maximum.",
+          "rationale": "Action-oriented labels set clear expectations about what will happen on activation. Short labels prevent truncation on narrow viewports.",
+          "level": "must",
+          "category": "content",
+          "target": "label"
+        },
+        {
+          "guidance": "Use sentence case capitalization.",
+          "rationale": "Sentence case is easier to read than title case or all caps. It also localizes more predictably across languages where capitalization rules differ.",
+          "level": "must",
+          "category": "content",
+          "target": "label"
+        },
+        {
+          "guidance": "When using an icon-only button (no visible label), provide an aria-label that describes the action.",
+          "rationale": "Screen readers announce button content as the accessible name. Without visible text, there is no accessible name. The aria-label provides one.",
+          "level": "must",
+          "category": "accessibility",
+          "references": [
+            {
+              "url": "https://www.w3.org/TR/WCAG22/#name-role-value"
+            }
+          ]
+        },
+        {
+          "guidance": "Use the native <button> element. Do not recreate button behavior on a <div> or <span>.",
+          "rationale": "Native buttons provide built-in keyboard interaction (Enter, Space), focus management, and form submission behavior. Recreating this on a non-semantic element is error-prone.",
+          "level": "must",
+          "category": "accessibility",
+          "references": [
+            {
+              "url": "https://www.w3.org/TR/WCAG22/#name-role-value"
+            }
+          ]
+        },
+        {
+          "guidance": "Prefer aria-disabled=\"true\" over the HTML disabled attribute when the button should remain discoverable by screen reader users.",
+          "rationale": "The HTML disabled attribute removes the button from the tab order, making it invisible to keyboard users. aria-disabled keeps the button focusable and announceable.",
+          "level": "should",
+          "category": "accessibility",
+          "references": [
+            {
+              "url": "https://www.w3.org/TR/WCAG22/#keyboard"
+            }
+          ]
+        },
+        {
+          "guidance": "The focus ring must be visible in all color modes (light, dark, high contrast).",
+          "rationale": "Keyboard users depend on the focus indicator to track their position. If the focus ring is invisible against the background, navigation becomes impossible.",
+          "level": "must",
+          "category": "accessibility",
+          "references": [
+            {
+              "url": "https://www.w3.org/TR/WCAG22/#focus-visible"
+            }
+          ]
+        },
+        {
+          "guidance": "Button label text must meet a minimum 4.5:1 contrast ratio against the button background.",
+          "rationale": "Text contrast ensures readability for users with low vision.",
+          "level": "must",
+          "category": "accessibility",
+          "references": [
+            {
+              "url": "https://www.w3.org/TR/WCAG22/#contrast-minimum"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "accessibility",
+      "wcagLevel": "AA",
+      "keyboardInteractions": [
+        {
+          "key": "Enter",
+          "action": "Activates the button."
+        },
+        {
+          "key": "Space",
+          "action": "Activates the button."
+        },
+        {
+          "key": "Tab",
+          "action": "Moves focus to the next focusable element in the tab order."
+        },
+        {
+          "key": "Shift+Tab",
+          "action": "Moves focus to the previous focusable element in the tab order."
+        }
+      ],
+      "ariaAttributes": [
+        {
+          "attribute": "role",
+          "value": "button",
+          "description": "Applied automatically by the <button> element. Only set explicitly when using the 'as' prop to render a non-button element.",
+          "required": false
+        },
+        {
+          "attribute": "aria-disabled",
+          "value": "true | false",
+          "description": "Set to 'true' when the button is non-interactive. Preferred over the HTML disabled attribute when the button should remain focusable for screen reader discoverability.",
+          "required": false
+        },
+        {
+          "attribute": "aria-label",
+          "value": "string",
+          "description": "Provides an accessible name for icon-only buttons that lack visible text. Not needed when a visible label is present.",
+          "required": false
+        },
+        {
+          "attribute": "aria-busy",
+          "value": "true | false",
+          "description": "Set to 'true' when the button is in the loading state. Communicates to assistive technology that the button's action is in progress.",
+          "required": false
+        }
+      ],
+      "colorContrast": [
+        {
+          "foreground": "color-text-on-action",
+          "background": "color-action-primary",
+          "context": "Label text on primary button background in light mode."
+        },
+        {
+          "foreground": "color-action-primary",
+          "background": "color-background-default",
+          "context": "Secondary button border/text against the default page background in light mode."
+        },
+        {
+          "foreground": "color-text-on-action",
+          "background": "color-action-danger",
+          "context": "Label text on danger button background in light mode."
+        }
+      ],
+      "announcements": [
+        {
+          "context": "default",
+          "announcement": "[label], button"
+        },
+        {
+          "context": "disabled via aria-disabled",
+          "announcement": "[label], button, dimmed",
+          "screenReader": "VoiceOver"
+        },
+        {
+          "context": "disabled via aria-disabled",
+          "announcement": "[label], button, unavailable",
+          "screenReader": "NVDA"
+        },
+        {
+          "context": "disabled via aria-disabled",
+          "announcement": "[label], button, unavailable",
+          "screenReader": "JAWS"
+        },
+        {
+          "context": "loading",
+          "announcement": "[label], button, busy"
+        }
+      ],
+      "focusBehaviors": [
+        {
+          "trigger": "default",
+          "behavior": "Participates in the normal tab order; does not trap or redirect focus."
+        },
+        {
+          "trigger": "triggers a modal or popover",
+          "behavior": "Focus moves to the opened element — the modal or popover component owns that move."
+        }
+      ],
+      "reducedMotion": [
+        {
+          "animation": "Loading spinner rotation",
+          "behavior": "Replaced with a static ellipsis indicator."
+        }
+      ]
+    }
+  ],
+  "$extensions": {
+    "com.designTool": {
+      "componentId": "abc123def456"
+    }
+  },
+  "agentDocumentBlocks": [
+    {
+      "kind": "use-cases",
+      "purpose": "Trigger a user-initiated action within the current view without causing page navigation.",
+      "items": [
+        {
+          "description": "Use button for in-page actions; use link for navigation to a URL.",
+          "stance": "discouraged",
+          "alternative": {
+            "identifier": "link"
+          }
+        },
+        {
+          "description": "Use button when a visible text label is present; use icon-button for icon-only affordances.",
+          "stance": "discouraged",
+          "alternative": {
+            "identifier": "icon-button"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "guidelines",
+      "items": [
+        {
+          "guidance": "Do not use for navigating to a different page or URL.",
+          "level": "must-not",
+          "evidence": "Navigation-via-button flagged in 8/10 accessibility audits across design systems."
+        },
+        {
+          "guidance": "Limit each surface to one primary-emphasis button.",
+          "level": "must",
+          "examples": [
+            {
+              "description": "Two primary buttons on the same surface dilute visual hierarchy.",
+              "presentation": {
+                "kind": "code",
+                "code": "<!-- Wrong: two primary buttons -->\n<Button variant=\"primary\">Save</Button>\n<Button variant=\"primary\">Cancel</Button>\n\n<!-- Correct: one primary, one secondary -->\n<Button variant=\"primary\">Save</Button>\n<Button variant=\"secondary\">Cancel</Button>",
+                "language": "html"
+              }
+            }
+          ]
+        },
+        {
+          "guidance": "Always provide an accessible label via visible text or aria-label.",
+          "level": "must"
+        },
+        {
+          "guidance": "Using a button to navigate to another page.",
+          "rationale": "Instead: Use a link element with href.",
+          "level": "must-not",
+          "evidence": "Most common agent error in UI generation benchmarks."
+        },
+        {
+          "guidance": "Placing multiple primary buttons on the same surface.",
+          "rationale": "Instead: Use one primary and one or more secondary or tertiary buttons.",
+          "level": "must-not"
+        }
+      ]
+    },
+    {
+      "kind": "checklist",
+      "title": "Button integration review",
+      "items": [
+        {
+          "label": "Use a single primary-emphasis button per surface.",
+          "level": "must",
+          "category": "visual-design"
+        },
+        {
+          "label": "Give every icon-only button an accessible name via aria-label.",
+          "description": "The label should describe the action, not the icon (ex: 'Close dialog').",
+          "level": "must",
+          "category": "accessibility"
+        },
+        {
+          "label": "Use a link, not a button, for navigation to a different page or URL.",
+          "level": "must-not",
+          "category": "interaction"
+        },
+        {
+          "label": "Confirm the touch target is at least 44×44 px on coarse-pointer devices.",
+          "level": "should",
+          "category": "accessibility"
+        },
+        {
+          "label": "Provide a loading state for buttons that trigger async actions.",
+          "level": "should",
+          "category": "interaction",
+          "optional": true
+        }
+      ]
+    }
+  ]
+}
+```
+
+## Full schema JSON
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://designsystemdocspec.org/v0.15.2/entities/component.schema.json",
+  "title": "Component definitions",
+  "description": "A component document: the identity of a reusable UI element, plus its metadata (see metadata/metadata.schema.json) and its docs. `documentBlocks` accepts the component-specific kinds (imports, anatomy, api, variants, states, design-specifications) plus every general kind (guidelines, use-cases, accessibility, content, sections, checklist).",
+  "$defs": {
+    "component": {
+      "type": "object",
+      "description": "A single reusable UI component: its identity (`identifier`, `name`, `description`), its metadata, and its docs (imports, anatomy, api, variants, states, design-specifications, plus the general kinds).",
+      "required": [
+        "kind",
+        "identifier",
+        "name"
+      ],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "const": "component",
+          "description": "Identifies this entity as a component."
+        },
+        "identifier": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]*$",
+          "description": "Machine-readable identifier (ex: 'button', 'dialog', 'form-field', 'data-table'). MUST be unique within its entity group."
+        },
+        "name": {
+          "type": "string",
+          "description": "Display name shown in docs (ex: 'Button', 'Dialog', 'Form Field', 'Data Table')."
+        },
+        "description": {
+          "$ref": "../common/rich-text.schema.json#/$defs/richText",
+          "description": "What this component is, what it does, and its role in the design system. CommonMark supported."
+        },
+        "metadata": {
+          "$ref": "../metadata/metadata.schema.json#/$defs/entityMetadata",
+          "description": "Optional metadata: the shared entityMetadata fields (see metadata/metadata.schema.json)."
+        },
+        "relationships": {
+          "$ref": "../common/relationship.schema.json#/$defs/relationships",
+          "description": "Links from this component to other entities — e.g. 'depends-on' a token, 'composes' another component, 'alternative-to' a sibling. Agents use this graph for impact analysis and alternatives; tools derive the reverse edges. Use the `links` metadata field for external resources instead."
+        },
+        "documentBlocks": {
+          "type": "array",
+          "description": "All structured docs for this component, in order. Accepts the component-specific kinds (imports, anatomy, api, variants, states, design-specifications) plus every general kind. Each entry's `kind` sets its shape. Tools SHOULD keep this order for display.",
+          "items": {
+            "$ref": "../document-blocks/document-blocks.schema.json#/$defs/componentDocumentBlock"
+          },
+          "minItems": 1
+        },
+        "agentDocumentBlocks": {
+          "type": "array",
+          "description": "Docs for agents (AI/LLM) only, using the same block kinds as `documentBlocks`. Put anything a human needs in `documentBlocks` — that's the default. Use this only for things that would be noise to a person: hard must/must-not rules, notes that correct a mistake agents commonly make (like picking a similar but wrong entity), evidence-backed constraints, and machine-checkable criteria. A rule humans need too still belongs in `documentBlocks`. This adds to the human docs, it never replaces them. Tools MUST NOT show these blocks to humans. Agents SHOULD read both arrays, human docs first.",
+          "items": {
+            "$ref": "../document-blocks/document-blocks.schema.json#/$defs/componentDocumentBlock"
+          },
+          "minItems": 1
+        },
+        "$extensions": {
+          "$ref": "../common/extensions.schema.json#/$defs/extensions"
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}
+```

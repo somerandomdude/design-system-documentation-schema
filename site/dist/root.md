@@ -1,0 +1,325 @@
+# Design system doc spec (DSDS) v0.15.2
+
+DSDS is a machine-readable format for design system documentation. A DSDS document is either one entity (a component, token, pattern, and so on) or a group of entities. Each entity's `kind` says what it is: component, token, token-group, theme, foundation, pattern, guide, or chunk. Entity schemas live in entities/, document block schemas in document-blocks/, and shared schemas in common/.
+
+Source: `documentation/dsds.schema.json`
+
+## Properties
+
+| Property | Type | Required | Description |
+| --- | --- | --- | --- |
+| `dsdsVersion` | `"0.15.2"` | ✓ | The DSDS spec version this document follows. |
+| `$schema` | string |  | URI reference to the DSDS JSON Schema for validation. |
+| `systemInfo` | [systemInfo](common-system-info.md#systeminfo) |  |  |
+| `extends` | [documentExtends](common-extends.md#documentextends) |  | Declares that this DSDS document inherits from another DSDS document. Typically used for a core/extension setup: the base document provides the core entities, and this document adds to or extends them. |
+| `documentBlocks` | [generalDocumentBlock](document-blocks-document-blocks.md#generaldocumentblock)[] |  | Structured docs for the design system as a whole — its purpose, system-wide guidelines, overviews. Accepts the general block kinds: `use-cases`, `guidelines`, `sections`, `accessibility`, `content`, or `checklist`. (Min items: 1) |
+| `entityGroups` | [entityGroup](root.md#entitygroup) \| [fileRef](root.md#fileref)[] |  | One or more entity groups. Each group has a name and an `entities` array holding any mix of entities — components, tokens, token groups, themes, foundations, patterns, guides, chunks — in display order. Multiple groups let one file organize entities into sections (ex: one for foundations, one for components). A group can be inline or a `$ref` to another DSDS file. (Min items: 1) |
+| `entity` | [anyEntity](root.md#anyentity) |  | A single entity — component, token, token group, theme, foundation, pattern, guide, or chunk. Use this instead of `entityGroups` when each entity lives in its own file. The `kind` field says which type it is. |
+| `$extensions` | [extensions](common-extensions.md#extensions) |  |  |
+
+**3 definitions** in this file: `entityGroup`, `anyEntity`, `fileRef`
+
+## entityGroup {#entitygroup}
+
+A named collection of entities. They all live in one `entities` array, in display order, and can mix any type — each entity's `kind` says what it is, so there's no need for separate arrays per type. A group MUST hold at least one entity.
+
+| Property | Type | Required | Description |
+| --- | --- | --- | --- |
+| `name` | string | ✓ | Human-readable name of the collection (ex: 'Acme Design System', 'Color Tokens', 'Button Documentation'). Used only as a display label. |
+| `entities` | [anyEntity](root.md#anyentity) \| [fileRef](root.md#fileref)[] | ✓ | The group's entities, in display order — any mix of kinds. Each item can be inline or a `$ref` to another DSDS file. Order matters; tools SHOULD keep it. (Min items: 1) |
+| `description` | [richText](common-rich-text.md#richtext) |  |  |
+| `$extensions` | [extensions](common-extensions.md#extensions) |  |  |
+
+**References:** [richText](common-rich-text.md#richtext), [anyEntity](root.md#anyentity), [fileRef](root.md#fileref), [extensions](common-extensions.md#extensions)
+
+## anyEntity {#anyentity}
+
+Every entity has a `kind`. It says which type the entity is, and the `if`/`then` branches below pick the matching schema for it.
+
+| Property | Type | Required | Description |
+| --- | --- | --- | --- |
+| `kind` | `"component"` \| `"pattern"` \| `"foundation"` \| `"theme"` \| `"token"` \| `"token-group"` \| `"guide"` \| `"chunk"` | ✓ |  |
+
+**References:** [component](entities-component.md#component), [pattern](entities-pattern.md#pattern), [foundation](entities-foundation.md#foundation), [theme](entities-theme.md#theme), [token](entities-token.md#token), [tokenGroup](entities-token.md#tokengroup), [guide](entities-guide.md#guide), [chunk](entities-chunk.md#chunk)
+
+## fileRef {#fileref}
+
+A link to a DSDS entity or entity group in another file. A tool like `json-schema-ref-parser` resolves it before validation and bundling. Point at a specific value with a JSON Pointer fragment (ex: './button.dsds.json#/entity', './groups/tokens.dsds.json#/entityGroups/0').
+
+| Property | Type | Required | Description |
+| --- | --- | --- | --- |
+| `$ref` | string | ✓ | A relative path to another DSDS file, optionally with a JSON Pointer fragment for one value in it (ex: './button.dsds.json#/entity'). MUST be relative — no absolute paths, protocol-relative paths, or scheme URIs (http:, file:, …). To reference another system, use `extends.url` instead. Resolvers MUST catch cycles, MUST treat a broken file, pointer, or shape mismatch as a fatal error, and MUST only fetch remote files from an allow-list (see the spec's security rules). (Pattern: `^(?![a-zA-Z][a-zA-Z0-9+.\-]*:)(?!//)(?!/)`) |
+
+## Full schema JSON
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://designsystemdocspec.org/v0.15.2/dsds.schema.json",
+  "title": "Design system doc spec (DSDS) v0.15.2",
+  "description": "DSDS is a machine-readable format for design system documentation. A DSDS document is either one entity (a component, token, pattern, and so on) or a group of entities. Each entity's `kind` says what it is: component, token, token-group, theme, foundation, pattern, guide, or chunk. Entity schemas live in entities/, document block schemas in document-blocks/, and shared schemas in common/.",
+  "type": "object",
+  "required": [
+    "dsdsVersion"
+  ],
+  "oneOf": [
+    {
+      "required": [
+        "entityGroups"
+      ]
+    },
+    {
+      "required": [
+        "entity"
+      ]
+    }
+  ],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "URI reference to the DSDS JSON Schema for validation."
+    },
+    "dsdsVersion": {
+      "type": "string",
+      "const": "0.15.2",
+      "description": "The DSDS spec version this document follows."
+    },
+    "systemInfo": {
+      "$ref": "common/system-info.schema.json#/$defs/systemInfo"
+    },
+    "extends": {
+      "$ref": "common/extends.schema.json#/$defs/documentExtends",
+      "description": "Declares that this DSDS document inherits from another DSDS document. Typically used for a core/extension setup: the base document provides the core entities, and this document adds to or extends them."
+    },
+    "documentBlocks": {
+      "type": "array",
+      "description": "Structured docs for the design system as a whole — its purpose, system-wide guidelines, overviews. Accepts the general block kinds: `use-cases`, `guidelines`, `sections`, `accessibility`, `content`, or `checklist`.",
+      "items": {
+        "$ref": "document-blocks/document-blocks.schema.json#/$defs/generalDocumentBlock"
+      },
+      "minItems": 1
+    },
+    "entityGroups": {
+      "type": "array",
+      "description": "One or more entity groups. Each group has a name and an `entities` array holding any mix of entities — components, tokens, token groups, themes, foundations, patterns, guides, chunks — in display order. Multiple groups let one file organize entities into sections (ex: one for foundations, one for components). A group can be inline or a `$ref` to another DSDS file.",
+      "items": {
+        "oneOf": [
+          {
+            "$ref": "#/$defs/entityGroup"
+          },
+          {
+            "$ref": "#/$defs/fileRef"
+          }
+        ]
+      },
+      "minItems": 1
+    },
+    "entity": {
+      "$ref": "#/$defs/anyEntity",
+      "description": "A single entity — component, token, token group, theme, foundation, pattern, guide, or chunk. Use this instead of `entityGroups` when each entity lives in its own file. The `kind` field says which type it is."
+    },
+    "$extensions": {
+      "$ref": "common/extensions.schema.json#/$defs/extensions"
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "anyEntity": {
+      "type": "object",
+      "description": "Every entity has a `kind`. It says which type the entity is, and the `if`/`then` branches below pick the matching schema for it.",
+      "required": [
+        "kind"
+      ],
+      "properties": {
+        "kind": {
+          "enum": [
+            "component",
+            "pattern",
+            "foundation",
+            "theme",
+            "token",
+            "token-group",
+            "guide",
+            "chunk"
+          ]
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "required": [
+              "kind"
+            ],
+            "properties": {
+              "kind": {
+                "const": "component"
+              }
+            }
+          },
+          "then": {
+            "$ref": "entities/component.schema.json#/$defs/component"
+          }
+        },
+        {
+          "if": {
+            "required": [
+              "kind"
+            ],
+            "properties": {
+              "kind": {
+                "const": "pattern"
+              }
+            }
+          },
+          "then": {
+            "$ref": "entities/pattern.schema.json#/$defs/pattern"
+          }
+        },
+        {
+          "if": {
+            "required": [
+              "kind"
+            ],
+            "properties": {
+              "kind": {
+                "const": "foundation"
+              }
+            }
+          },
+          "then": {
+            "$ref": "entities/foundation.schema.json#/$defs/foundation"
+          }
+        },
+        {
+          "if": {
+            "required": [
+              "kind"
+            ],
+            "properties": {
+              "kind": {
+                "const": "theme"
+              }
+            }
+          },
+          "then": {
+            "$ref": "entities/theme.schema.json#/$defs/theme"
+          }
+        },
+        {
+          "if": {
+            "required": [
+              "kind"
+            ],
+            "properties": {
+              "kind": {
+                "const": "token"
+              }
+            }
+          },
+          "then": {
+            "$ref": "entities/token.schema.json#/$defs/token"
+          }
+        },
+        {
+          "if": {
+            "required": [
+              "kind"
+            ],
+            "properties": {
+              "kind": {
+                "const": "token-group"
+              }
+            }
+          },
+          "then": {
+            "$ref": "entities/token.schema.json#/$defs/tokenGroup"
+          }
+        },
+        {
+          "if": {
+            "required": [
+              "kind"
+            ],
+            "properties": {
+              "kind": {
+                "const": "guide"
+              }
+            }
+          },
+          "then": {
+            "$ref": "entities/guide.schema.json#/$defs/guide"
+          }
+        },
+        {
+          "if": {
+            "required": [
+              "kind"
+            ],
+            "properties": {
+              "kind": {
+                "const": "chunk"
+              }
+            }
+          },
+          "then": {
+            "$ref": "entities/chunk.schema.json#/$defs/chunk"
+          }
+        }
+      ]
+    },
+    "fileRef": {
+      "type": "object",
+      "description": "A link to a DSDS entity or entity group in another file. A tool like `json-schema-ref-parser` resolves it before validation and bundling. Point at a specific value with a JSON Pointer fragment (ex: './button.dsds.json#/entity', './groups/tokens.dsds.json#/entityGroups/0').",
+      "required": [
+        "$ref"
+      ],
+      "properties": {
+        "$ref": {
+          "type": "string",
+          "pattern": "^(?![a-zA-Z][a-zA-Z0-9+.\\-]*:)(?!//)(?!/)",
+          "description": "A relative path to another DSDS file, optionally with a JSON Pointer fragment for one value in it (ex: './button.dsds.json#/entity'). MUST be relative — no absolute paths, protocol-relative paths, or scheme URIs (http:, file:, …). To reference another system, use `extends.url` instead. Resolvers MUST catch cycles, MUST treat a broken file, pointer, or shape mismatch as a fatal error, and MUST only fetch remote files from an allow-list (see the spec's security rules).",
+          "minLength": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "entityGroup": {
+      "type": "object",
+      "description": "A named collection of entities. They all live in one `entities` array, in display order, and can mix any type — each entity's `kind` says what it is, so there's no need for separate arrays per type. A group MUST hold at least one entity.",
+      "required": [
+        "name",
+        "entities"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Human-readable name of the collection (ex: 'Acme Design System', 'Color Tokens', 'Button Documentation'). Used only as a display label.",
+          "minLength": 1
+        },
+        "description": {
+          "$ref": "common/rich-text.schema.json#/$defs/richText"
+        },
+        "entities": {
+          "type": "array",
+          "description": "The group's entities, in display order — any mix of kinds. Each item can be inline or a `$ref` to another DSDS file. Order matters; tools SHOULD keep it.",
+          "items": {
+            "oneOf": [
+              {
+                "$ref": "#/$defs/anyEntity"
+              },
+              {
+                "$ref": "#/$defs/fileRef"
+              }
+            ]
+          },
+          "minItems": 1
+        },
+        "$extensions": {
+          "$ref": "common/extensions.schema.json#/$defs/extensions"
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}
+```

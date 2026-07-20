@@ -271,19 +271,28 @@ function describeType(prop, defIndex = {}) {
 // ---------------------------------------------------------------------------
 
 /**
- * Render a property table for a definition's `properties` map.
+ * Walk a definition's `properties` map and produce one plain-data row per
+ * field — the single source of truth both `renderPropertyTable()` (HTML) and
+ * `renderPropertyTableMarkdown()` (the agent-facing .md mirror) render from,
+ * so the two outputs can never drift out of sync with each other or with the
+ * schema.
  *
  * @param {object} defSchema  A schema fragment with a `properties` map.
  *                            Optional `required` (string[]) and `anyOf`
- *                            (with `required` arrays) shape the badges.
+ *                            (with `required` arrays) shape `status`.
  * @param {object} [defIndex] Optional cross-reference index for $ref links.
- * @returns {string}          HTML fragment (`<ds-prop-table>...</ds-prop-table>`)
- *                            or the empty string when there are no properties.
+ * @returns {Array<{name, type, status, description, notes}>}
+ *   `type` is an HTML fragment (may embed <ds-type-ref>/<ds-code> tags — see
+ *   describeType). `status` is "required" | "conditional" | "optional".
+ *   `description` is the raw (un-escaped) schema description text. `notes`
+ *   is a list of `{ kind, value }` supplementary facts (pattern, default,
+ *   enum values, etc.) in the same order the HTML table has always shown
+ *   them.
  */
-function renderPropertyTable(defSchema, defIndex = {}, opts = {}) {
-  if (!defSchema || typeof defSchema !== "object") return "";
+function propTableRows(defSchema, defIndex = {}, opts = {}) {
+  if (!defSchema || typeof defSchema !== "object") return [];
   const properties = defSchema.properties;
-  if (!properties || Object.keys(properties).length === 0) return "";
+  if (!properties || Object.keys(properties).length === 0) return [];
 
   const omit = new Set(opts.omit || []);
   const required = new Set(defSchema.required || []);
@@ -304,73 +313,209 @@ function renderPropertyTable(defSchema, defIndex = {}, opts = {}) {
     }
   }
 
-  const propElements = [];
+  const rows = [];
   for (const [propName, propSchema] of Object.entries(properties)) {
     if (omit.has(propName)) continue;
     const isRequired = required.has(propName);
     const isAnyOf = anyOfProps.has(propName);
-    const typeStr = describeType(propSchema, defIndex);
-    const desc = propSchema.description || "";
+    const type = describeType(propSchema, defIndex);
 
-    let descHtml = escWithCode(desc);
-
+    const notes = [];
     if (propSchema.enum && propSchema.enum.length > 8) {
-      descHtml += `<br><small>Values: ${propSchema.enum.map((v) => `<ds-code inline>${esc(String(v))}</ds-code>`).join(", ")}</small>`;
+      notes.push({ kind: "values", value: propSchema.enum.map(String) });
     }
     if (propSchema.pattern) {
-      descHtml += `<br><small>Pattern: <ds-code inline>${esc(propSchema.pattern)}</ds-code></small>`;
+      notes.push({ kind: "pattern", value: propSchema.pattern });
     }
     if (propSchema.minItems) {
-      descHtml += `<br><small>Min items: ${propSchema.minItems}</small>`;
+      notes.push({ kind: "minItems", value: propSchema.minItems });
     }
     if (propSchema.default !== undefined) {
-      const defaultVal =
-        typeof propSchema.default === "string"
-          ? `"${esc(propSchema.default)}"`
-          : String(propSchema.default);
-      descHtml += `<br><small>Default: <ds-code inline>${defaultVal}</ds-code></small>`;
+      notes.push({
+        kind: "default",
+        value: propSchema.default,
+        isString: typeof propSchema.default === "string",
+      });
     }
     if (
       propSchema.type === "array" &&
       propSchema.items &&
       propSchema.items.format
     ) {
-      descHtml += `<br><small>Format: ${esc(propSchema.items.format)}</small>`;
+      notes.push({ kind: "format", value: propSchema.items.format });
     }
 
+    let status;
     let sortOrder;
-    let statusAttr = "";
     if (isRequired) {
-      statusAttr = " required";
+      status = "required";
       sortOrder = 0;
     } else if (isAnyOf) {
-      statusAttr = " conditional";
+      status = "conditional";
       sortOrder = 1;
     } else {
+      status = "optional";
       sortOrder = 2;
     }
 
-    propElements.push({
+    rows.push({
       sortOrder,
-      html:
-        `<ds-prop name="${esc(propName)}" type="${esc(typeStr)}"${statusAttr}>` +
-        descHtml +
-        `</ds-prop>`,
+      name: propName,
+      type,
+      status,
+      description: propSchema.description || "",
+      notes,
     });
   }
 
-  // Nothing left after filtering (ex: a delta table for an entity with no
-  // properties beyond the common envelope) — render nothing.
-  if (propElements.length === 0) return "";
-
   // Stable sort: required → conditional → optional, preserving original order
-  propElements.sort((a, b) => a.sortOrder - b.sortOrder);
+  rows.sort((a, b) => a.sortOrder - b.sortOrder);
+  return rows;
+}
+
+/**
+ * Render one row's notes array as the `<br><small>...</small>` HTML suffix
+ * that's always followed the description text in the HTML table.
+ */
+function notesToHtml(notes) {
+  return notes
+    .map((note) => {
+      switch (note.kind) {
+        case "values":
+          return `<br><small>Values: ${note.value.map((v) => `<ds-code inline>${esc(v)}</ds-code>`).join(", ")}</small>`;
+        case "pattern":
+          return `<br><small>Pattern: <ds-code inline>${esc(note.value)}</ds-code></small>`;
+        case "minItems":
+          return `<br><small>Min items: ${note.value}</small>`;
+        case "default": {
+          const v = note.isString ? `"${esc(note.value)}"` : String(note.value);
+          return `<br><small>Default: <ds-code inline>${v}</ds-code></small>`;
+        }
+        case "format":
+          return `<br><small>Format: ${esc(note.value)}</small>`;
+        default:
+          return "";
+      }
+    })
+    .join("");
+}
+
+/**
+ * Render one row's notes array as a plain-text suffix for the markdown
+ * table — no HTML, since the whole point of the .md mirror is to be
+ * readable without a browser.
+ */
+function notesToMarkdown(notes) {
+  return notes
+    .map((note) => {
+      switch (note.kind) {
+        case "values":
+          return `Values: ${note.value.map((v) => `\`${v}\``).join(", ")}`;
+        case "pattern":
+          return `Pattern: \`${note.value}\``;
+        case "minItems":
+          return `Min items: ${note.value}`;
+        case "default": {
+          const v = note.isString ? `"${note.value}"` : String(note.value);
+          return `Default: \`${v}\``;
+        }
+        case "format":
+          return `Format: ${note.value}`;
+        default:
+          return "";
+      }
+    })
+    .join("; ");
+}
+
+/**
+ * Convert a describeType() HTML fragment into markdown. describeType only
+ * ever emits a small, fixed set of tags (<ds-type-ref>, <ds-code inline>)
+ * joined with " | ", "[]", etc., so a targeted regex pass is simpler and
+ * safer than a parallel markdown-emitting describeType — there's no schema
+ * shape this can silently get wrong that describeType itself didn't already
+ * fix in one place.
+ */
+function typeToMarkdown(typeHtml) {
+  return typeHtml
+    .replace(
+      /<ds-type-ref href="([^"]+)\.html#([^"]+)">([^<]*)<\/ds-type-ref>/g,
+      (m, pageSlug, anchor, label) => `[${label}](${pageSlug}.md#${anchor})`,
+    )
+    .replace(/<ds-code inline>([^<]*)<\/ds-code>/g, (m, code) => `\`${code}\``)
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&amp;/g, "&");
+}
+
+/**
+ * Escape a value for embedding in a GFM table cell: pipes would otherwise
+ * split the row, and a literal newline would break it entirely.
+ */
+function escTableCell(text) {
+  return String(text).replace(/\|/g, "\\|").replace(/\r?\n/g, " ");
+}
+
+/**
+ * Render a property table for a definition's `properties` map.
+ *
+ * @param {object} defSchema  A schema fragment with a `properties` map.
+ *                            Optional `required` (string[]) and `anyOf`
+ *                            (with `required` arrays) shape the badges.
+ * @param {object} [defIndex] Optional cross-reference index for $ref links.
+ * @returns {string}          HTML fragment (`<ds-prop-table>...</ds-prop-table>`)
+ *                            or the empty string when there are no properties.
+ */
+function renderPropertyTable(defSchema, defIndex = {}, opts = {}) {
+  const rows = propTableRows(defSchema, defIndex, opts);
+  if (rows.length === 0) return "";
+
+  const statusAttr = { required: " required", conditional: " conditional", optional: "" };
 
   return (
     `<ds-prop-table>\n` +
-    propElements.map((p) => `  ${p.html}`).join("\n") +
+    rows
+      .map((row) => {
+        const descHtml = escWithCode(row.description) + notesToHtml(row.notes);
+        return (
+          `  <ds-prop name="${esc(row.name)}" type="${esc(row.type)}"${statusAttr[row.status]}>` +
+          descHtml +
+          `</ds-prop>`
+        );
+      })
+      .join("\n") +
     `\n</ds-prop-table>`
   );
+}
+
+/**
+ * Render a property table for a definition's `properties` map as a GFM
+ * markdown table — the .md mirror's equivalent of renderPropertyTable(),
+ * built from the same propTableRows() so field names/types/requiredness can
+ * never differ between the two.
+ *
+ * @returns {string} A markdown table, or "" when there are no properties.
+ */
+function renderPropertyTableMarkdown(defSchema, defIndex = {}, opts = {}) {
+  const rows = propTableRows(defSchema, defIndex, opts);
+  if (rows.length === 0) return "";
+
+  const requiredLabel = { required: "✓", conditional: "at least 1", optional: "" };
+
+  const lines = [
+    "| Property | Type | Required | Description |",
+    "| --- | --- | --- | --- |",
+  ];
+  for (const row of rows) {
+    const notes = notesToMarkdown(row.notes);
+    const description =
+      escTableCell(row.description) + (notes ? ` (${escTableCell(notes)})` : "");
+    lines.push(
+      `| \`${escTableCell(row.name)}\` | ${escTableCell(typeToMarkdown(row.type))} | ${requiredLabel[row.status]} | ${description} |`,
+    );
+  }
+  return lines.join("\n");
 }
 
 // ---------------------------------------------------------------------------
@@ -451,7 +596,10 @@ module.exports = {
   slug,
   linkToRef,
   describeType,
+  propTableRows,
+  typeToMarkdown,
   renderPropertyTable,
+  renderPropertyTableMarkdown,
   renderPropertyTableForRef,
   buildDefIndex,
   ENTITY_ENVELOPE,

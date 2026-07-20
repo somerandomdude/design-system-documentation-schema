@@ -1,0 +1,139 @@
+# Relationship definitions
+
+How one entity relates to another (source → target). Relationships include: source depends on the target, souce is built from the target, source replaces the target, etc. Each relationship has a `relation` type and a target entity. You declare it on one entity, and tools work out the reverse direction. A relationship's target MUST be a documented entity. Use `link`, to point to external resources.
+
+Source: `common/relationship.schema.json`
+
+**3 definitions** in this file: `relationships`, `relationship`, `relationType`
+
+## relationships {#relationships}
+
+The links this entity points at other entities. You list each one here, on this entity; the order doesn't matter, and you don't repeat it on the other entity (tools show the reverse side for you).
+
+**References:** [relationship](common-relationship.md#relationship)
+
+**Example:**
+
+```json
+[
+  [
+    {
+      "relation": "composes",
+      "target": "button",
+      "role": "Renders the confirm and cancel actions",
+      "required": true
+    },
+    {
+      "relation": "depends-on",
+      "target": "color-critical",
+      "role": "Tones the destructive confirm action"
+    },
+    {
+      "relation": "alternative-to",
+      "target": "link"
+    }
+  ]
+]
+```
+
+## relationship {#relationship}
+
+Defines what entity the source relates to (`target`: the other entity's `identifier`) and how it relates (`relation`). Optional `role`, `required`, and `versionConstraint` add detail.
+
+| Property | Type | Required | Description |
+| --- | --- | --- | --- |
+| `relation` | [relationType](common-relationship.md#relationtype) | ✓ |  |
+| `target` | [entityIdentifier](common-entity-ref.md#entityidentifier) | ✓ | Identifier of the target entity. MUST match a documented entity. |
+| `role` | [entityRole](common-entity-ref.md#entityrole) |  | What the target does here (ex: 'Provides semantic text color'). When omitted, the edge is a general association. |
+| `required` | boolean |  | Whether the target is required for the source to function. Meaningful for 'depends-on' and 'composes'; ignored for symmetric relations. Defaults to false. (Default: `false`) |
+| `versionConstraint` | string |  | A semver range the target must satisfy (ex: '>=2.0.0', '^3'). Advisory metadata, not a hard validation rule. |
+
+**References:** [relationType](common-relationship.md#relationtype), [entityIdentifier](common-entity-ref.md#entityidentifier), [entityRole](common-entity-ref.md#entityrole)
+
+**Example:**
+
+```json
+{
+  "relation": "depends-on",
+  "target": "color-action-primary",
+  "role": "Provides the resting background color",
+  "required": true,
+  "versionConstraint": ">=2.0.0"
+}
+```
+
+## relationType {#relationtype}
+
+The relation type, in canonical direction (source → target): 'depends-on' (source needs the target), 'composes' (source is built from the target), 'part-of' (source is a member of the target), 'alternative-to' (interchangeable; symmetric), 'replaces' (source supersedes a deprecated target), 'extends' (source inherits from the target). Tools work out the reverse relationship direction direction (target → source) and MUST NOT require them to be manually authored. Custom relations MUST be vendor-namespaced (e.g. 'acme.themes').
+
+## Full schema JSON
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://designsystemdocspec.org/v0.15.2/common/relationship.schema.json",
+  "title": "Relationship definitions",
+  "description": "How one entity relates to another (source → target). Relationships include: source depends on the target, souce is built from the target, source replaces the target, etc. Each relationship has a `relation` type and a target entity. You declare it on one entity, and tools work out the reverse direction. A relationship's target MUST be a documented entity. Use `link`, to point to external resources.",
+  "$defs": {
+    "relationType": {
+      "description": "The relation type, in canonical direction (source → target): 'depends-on' (source needs the target), 'composes' (source is built from the target), 'part-of' (source is a member of the target), 'alternative-to' (interchangeable; symmetric), 'replaces' (source supersedes a deprecated target), 'extends' (source inherits from the target). Tools work out the reverse relationship direction direction (target → source) and MUST NOT require them to be manually authored. Custom relations MUST be vendor-namespaced (e.g. 'acme.themes').",
+      "anyOf": [
+        {
+          "type": "string",
+          "enum": [
+            "depends-on",
+            "composes",
+            "part-of",
+            "alternative-to",
+            "replaces",
+            "extends"
+          ]
+        },
+        {
+          "type": "string",
+          "pattern": "^[a-z0-9-]+(\\.[a-z0-9-]+)+$"
+        }
+      ]
+    },
+    "relationship": {
+      "type": "object",
+      "description": "Defines what entity the source relates to (`target`: the other entity's `identifier`) and how it relates (`relation`). Optional `role`, `required`, and `versionConstraint` add detail.",
+      "required": [
+        "relation",
+        "target"
+      ],
+      "properties": {
+        "relation": {
+          "$ref": "#/$defs/relationType"
+        },
+        "target": {
+          "$ref": "entity-ref.schema.json#/$defs/entityIdentifier",
+          "description": "Identifier of the target entity. MUST match a documented entity."
+        },
+        "role": {
+          "$ref": "entity-ref.schema.json#/$defs/entityRole",
+          "description": "What the target does here (ex: 'Provides semantic text color'). When omitted, the edge is a general association."
+        },
+        "required": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether the target is required for the source to function. Meaningful for 'depends-on' and 'composes'; ignored for symmetric relations. Defaults to false."
+        },
+        "versionConstraint": {
+          "type": "string",
+          "description": "A semver range the target must satisfy (ex: '>=2.0.0', '^3'). Advisory metadata, not a hard validation rule."
+        }
+      },
+      "additionalProperties": false
+    },
+    "relationships": {
+      "type": "array",
+      "description": "The links this entity points at other entities. You list each one here, on this entity; the order doesn't matter, and you don't repeat it on the other entity (tools show the reverse side for you).",
+      "items": {
+        "$ref": "#/$defs/relationship"
+      },
+      "minItems": 1
+    }
+  }
+}
+```

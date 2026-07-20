@@ -1,0 +1,39 @@
+# Dated note leaf definitions
+
+Two shared building blocks for date-and-note metadata: `isoDate` (a date) and `plainNote` (a plain-text note). Reused by `lastUpdated`, `lastReviewed`, the status `note` (on the entity and per platform), and `docOrigin.note`.
+
+Source: `common/dated-note.schema.json`
+
+**2 definitions** in this file: `isoDate`, `plainNote`
+
+## isoDate {#isodate}
+
+An ISO 8601 date (YYYY-MM-DD).
+
+## plainNote {#plainnote}
+
+A plain-text note. MUST NOT contain markup and MUST NOT be empty.
+
+## Full schema JSON
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://designsystemdocspec.org/v0.15.2/common/dated-note.schema.json",
+  "title": "Dated note leaf definitions",
+  "description": "Two shared building blocks for date-and-note metadata: `isoDate` (a date) and `plainNote` (a plain-text note). Reused by `lastUpdated`, `lastReviewed`, the status `note` (on the entity and per platform), and `docOrigin.note`.",
+  "$defs": {
+    "isoDate": {
+      "type": "string",
+      "format": "date",
+      "description": "An ISO 8601 date (YYYY-MM-DD).",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+    },
+    "plainNote": {
+      "type": "string",
+      "minLength": 1,
+      "description": "A plain-text note. MUST NOT contain markup and MUST NOT be empty."
+    }
+  }
+}
+```
