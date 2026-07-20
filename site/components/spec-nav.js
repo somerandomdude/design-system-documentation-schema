@@ -64,6 +64,7 @@ const SPEC_NAV_CSS = `
     max-height: calc(100vh - 2em);
     overflow: hidden;
     transition: outline var(--ds-duration-base) var(--ds-ease-standard), max-height var(--ds-duration-base) var(--ds-ease-standard);
+    padding-top: 64px;
   }
 
   /* ── Title ──────────────────────────────────────────── */
@@ -78,8 +79,9 @@ const SPEC_NAV_CSS = `
     background: var(--ds-color-text);
     color: var(--ds-color-bg-inverse);
     padding: var(--ds-space-4);
-    position: sticky;
-    top: 0;
+    position: fixed;
+    width: 224px;
+    top: 1rem;
   }
 
   .nav__title a {
