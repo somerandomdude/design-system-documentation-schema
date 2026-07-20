@@ -43,23 +43,27 @@ const SPEC_NAV_CSS = `
   :host {
     display: block;
     position: fixed;
+    /*
     inset-block-start: 0;
     inset-inline-start: 0;
     inset-block-end: 0;
-    width: var(--ds-width-nav, 240px);
+    */
     z-index: var(--ds-z-nav, 100);
   }
 
   .nav {
-    position: absolute;
+    position: relative;
     inset: 1em;
     color: var(--ds-color-text);
     padding: 0;
-    font-family: ${FONT.body};
+    font-family: var(--ds-font-body);
     display: flex;
+    width: 224px;
     flex-direction: column;
     outline: 4px solid transparent;
-    transition: outline var(--ds-duration-base) var(--ds-ease-standard);
+    max-height: calc(100vh - 2em);
+    overflow: hidden;
+    transition: outline var(--ds-duration-base) var(--ds-ease-standard), max-height var(--ds-duration-base) var(--ds-ease-standard);
   }
 
   /* ── Title ──────────────────────────────────────────── */
@@ -74,6 +78,8 @@ const SPEC_NAV_CSS = `
     background: var(--ds-color-text);
     color: var(--ds-color-bg-inverse);
     padding: var(--ds-space-4);
+    position: sticky;
+    top: 0;
   }
 
   .nav__title a {
@@ -139,6 +145,9 @@ const SPEC_NAV_CSS = `
     border-inline-start: var(--ds-border-width) solid transparent;
     transition: background-color var(--ds-duration-base) var(--ds-ease-standard),
       color var(--ds-duration-base) var(--ds-ease-standard);
+    /* Breathing room for scrollIntoView() (see _scrollActiveIntoView) —
+       the browser adds this margin when deciding a link is "in view". */
+    scroll-margin-block: var(--ds-space-4);
   }
 
   .nav__link:hover {
@@ -192,16 +201,6 @@ const SPEC_NAV_CSS = `
   /* ── Mobile: nav stays put; only the links section collapses ───────── */
   @media (max-width: 900px) {
 
-    :host {
-      inset-block-end: 66px; /* THIS IS A HACK */
-      transition: inset-block-end var(--ds-duration-base) var(--ds-ease-standard);
-    }
-
-    :host([open]) {
-      inset-block-end: 0;
-    }
-
-
     .nav__menu-btn {
       display: flex;
     }
@@ -210,22 +209,17 @@ const SPEC_NAV_CSS = `
       display: none;
     }
 
-    .nav__items {
-      max-height: 0;
-      padding-top: 0;
-      padding-bottom: 0;
-      overflow: hidden;
-      pointer-events: none;
+    .nav {
+      max-height: 64px;
     }
 
     :host([open]) .nav {
       outline: 4px solid color-mix(#1a1a1a 30%, transparent);
+      max-height: calc(80vh);
     }
 
     :host([open]) .nav__items {
-      max-height: 100%;
       padding: var(--ds-space-4) 0;
-      overflow-y: auto;
       pointer-events: auto;
     }
   }
@@ -357,28 +351,16 @@ export class DsSpecNav extends HTMLElement {
    * .nav__items is its own scroll container (independent of the page), so it
    * always loads at scrollTop 0 — on a long nav, the active link (e.g. deep
    * in "Metadata") can load scrolled out of view with nothing on screen
-   * indicating where the current page sits. Jump the container's internal
-   * scroll (not the page's) to center the active link, synchronously before
-   * first paint so there's no visible scroll animation on load.
+   * indicating where the current page sits. scrollIntoView({ block: "nearest" })
+   * only scrolls .nav__items (the nearest scrollable ancestor) — it's a
+   * no-op if the link is already visible, and the --ds-space-4
+   * scroll-margin-block set on .nav__link gives it breathing room from the
+   * edge otherwise. Runs synchronously before first paint, so there's no
+   * visible scroll animation on load.
    */
   _scrollActiveIntoView() {
-    const container = this._shadow.querySelector(".nav__items");
     const activeEl = this._shadow.querySelector(".nav__link--active");
-    if (!container || !activeEl) return;
-
-    const containerRect = container.getBoundingClientRect();
-    const activeRect = activeEl.getBoundingClientRect();
-    // Already fully visible — leave the scroll position alone.
-    if (activeRect.top >= containerRect.top && activeRect.bottom <= containerRect.bottom) {
-      return;
-    }
-
-    const offset =
-      activeRect.top -
-      containerRect.top -
-      containerRect.height / 2 +
-      activeRect.height / 2;
-    container.scrollTop += offset;
+    if (activeEl) activeEl.scrollIntoView({ block: "nearest" });
   }
 
   _syncMenuButton() {
