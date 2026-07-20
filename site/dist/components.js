@@ -696,13 +696,15 @@
       word-spacing: -0.25em;
       margin: 0 0 var(--ds-space-4);
       color: var(--ds-color-text);
+      word-break: break-word;
     }
     .header-container {
       max-width: var(--ds-width-content);
       margin: 0 auto;
       padding: var(--ds-space-8) var(--ds-space-8);
       width: 100%;
-      padding-bottom: 64px;
+      padding-block-end: 64px;
+      padding-block-start: 128px;
     }
 
     .desc {
