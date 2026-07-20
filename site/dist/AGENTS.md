@@ -21,9 +21,10 @@ either the spec itself or a document written against it.
 - **Every page has a `.md` mirror** at the same path (e.g. `/quickstart.md`,
   `/common-criterion.md`) — the full content as plain text, no HTML or JS
   required to read it.
-- **[MCP server](https://github.com/somerandomdude/dsds-mcp)** — if your agent
-  can use tools instead of fetching URLs directly, this wraps the schema and
-  validation as MCP tools. Also linked from manifest.json's `mcp` field.
+- **[MCP server](https://www.npmjs.com/package/dsds-mcp)**
+  (`npm install dsds-mcp`) — if your agent can use tools instead of fetching
+  URLs directly, this wraps the schema and validation as MCP tools. Also
+  linked from manifest.json's `mcp` field.
 
 ## The entity envelope
 

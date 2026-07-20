@@ -1115,7 +1115,7 @@ function buildManifest(pages, version) {
   const manifest = {
     dsdsVersion: version,
     bundledSchema: `${SITE_URL}/v${version}/dsds.bundled.schema.json`,
-    mcp: "https://github.com/somerandomdude/dsds-mcp",
+    mcp: "https://www.npmjs.com/package/dsds-mcp",
     indexes: {
       llms: `${SITE_URL}/llms.txt`,
       llmsFull: `${SITE_URL}/llms-full.txt`,
