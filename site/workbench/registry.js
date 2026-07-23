@@ -228,6 +228,83 @@ export const COMPONENTS = [
     ],
   },
   {
+    tag: "ds-select",
+    title: "Select",
+    category: "content",
+    notes: "Native select form control. Options remain native children. Slots: label, description, error. Attrs: name, value, required, disabled, multiple, size, error.",
+    demos: [
+      {
+        label: "Default options",
+        html: `<ds-select name="format">
+  <span slot="label">Export format</span>
+  <option value="json">JSON</option>
+  <option value="yaml">YAML</option>
+</ds-select>`,
+      },
+      {
+        label: "Grouped and described",
+        html: `<ds-select value="button">
+  <span slot="label">Component</span>
+  <span slot="description">Choose a component to inspect.</span>
+  <optgroup label="Primitives">
+    <option value="button">Button</option>
+    <option value="link">Link</option>
+  </optgroup>
+  <optgroup label="Forms">
+    <option value="checkbox">Checkbox</option>
+    <option value="text-input">Text input</option>
+  </optgroup>
+</ds-select>`,
+      },
+      {
+        label: "Required error and disabled",
+        html: `<ds-select required error>
+  <span slot="label">Framework</span>
+  <span slot="error">Choose a framework.</span>
+  <option value="">Select one</option>
+  <option>Web Components</option>
+</ds-select>
+<ds-select disabled>
+  <span slot="label">Unavailable</span>
+  <option>Coming soon</option>
+</ds-select>`,
+      },
+    ],
+  },
+  {
+    tag: "ds-radio-group",
+    title: "Radio group",
+    category: "content",
+    notes: "Fieldset wrapper for native radio inputs. Slots: label, description, error. Attrs: name, required, disabled, error.",
+    demos: [
+      {
+        label: "Default selection",
+        html: `<ds-radio-group name="density">
+  <span slot="label">Density</span>
+  <label><input type="radio" value="comfortable" checked> Comfortable</label>
+  <label><input type="radio" value="compact"> Compact</label>
+</ds-radio-group>`,
+      },
+      {
+        label: "Required with error",
+        html: `<ds-radio-group name="license" required error>
+  <span slot="label">License</span>
+  <span slot="error">Select a license to continue.</span>
+  <label><input type="radio" value="mit"> MIT</label>
+  <label><input type="radio" value="apache"> Apache 2.0</label>
+</ds-radio-group>`,
+      },
+      {
+        label: "Disabled group",
+        html: `<ds-radio-group name="future" disabled>
+  <span slot="label">Future option</span>
+  <label><input type="radio" value="yes"> Yes</label>
+  <label><input type="radio" value="no"> No</label>
+</ds-radio-group>`,
+      },
+    ],
+  },
+  {
     tag: "ds-heading",
     title: "Heading",
     category: "content",

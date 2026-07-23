@@ -30,6 +30,8 @@ import { DsButton } from "./button.js";
 import { DsLink } from "./link.js";
 import { DsTextInput } from "./text-input.js";
 import { DsCheckbox } from "./checkbox.js";
+import { DsSelect } from "./select.js";
+import { DsRadioGroup } from "./radio-group.js";
 import { DsJsonView } from "./json-view.js";
 
 const registry = [
@@ -55,6 +57,8 @@ const registry = [
   ["ds-link", DsLink],
   ["ds-text-input", DsTextInput],
   ["ds-checkbox", DsCheckbox],
+  ["ds-select", DsSelect],
+  ["ds-radio-group", DsRadioGroup],
   ["ds-json-view", DsJsonView],
 ];
 

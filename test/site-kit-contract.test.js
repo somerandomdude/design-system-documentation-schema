@@ -23,12 +23,16 @@ const expectedTags = [
   "ds-link",
   "ds-text-input",
   "ds-checkbox",
+  "ds-select",
+  "ds-radio-group",
 ];
 const expectedPlatformStatuses = new Map([
   ["ds-button", "experimental"],
   ["ds-link", "experimental"],
   ["ds-text-input", "experimental"],
   ["ds-checkbox", "experimental"],
+  ["ds-select", "experimental"],
+  ["ds-radio-group", "experimental"],
 ]);
 
 function readJson(filePath) {
@@ -163,4 +167,23 @@ test("ds-checkbox keeps its native checkbox contract", () => {
   assert.match(source, /input\.checked = this\.hasAttribute\("checked"\)/);
   assert.match(source, /input\.indeterminate = this\.hasAttribute\("indeterminate"\)/);
   assert.match(source, /input\.required = this\.hasAttribute\("required"\)/);
+});
+
+test("ds-select keeps its native select contract", () => {
+  const source = fs.readFileSync(path.join(root, "site/components/select.js"), "utf8");
+  assert.match(source, /<select part="select"[^>]*><slot><\/slot><\/select>/);
+  assert.match(source, /slot name="label"/);
+  assert.match(source, /slot name="description"/);
+  assert.match(source, /slot name="error"/);
+  assert.match(source, /select\.required = this\.hasAttribute\("required"\)/);
+  assert.match(source, /select\.disabled = this\.hasAttribute\("disabled"\)/);
+});
+
+test("ds-radio-group keeps native radio inputs", () => {
+  const source = fs.readFileSync(path.join(root, "site/components/radio-group.js"), "utf8");
+  assert.match(source, /<fieldset part="group"/);
+  assert.match(source, /slot name="label"/);
+  assert.match(source, /input\[type="radio"\]/);
+  assert.match(source, /radio\.required = this\.hasAttribute\("required"\)/);
+  assert.match(source, /radio\.disabled = this\.hasAttribute\("disabled"\)/);
 });
