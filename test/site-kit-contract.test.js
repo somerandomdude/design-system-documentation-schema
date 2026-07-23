@@ -131,10 +131,11 @@ test("ds-button keeps its native control contract", () => {
 test("ds-link keeps its native navigation contract", () => {
   const source = fs.readFileSync(path.join(root, "site/components/link.js"), "utf8");
 
-  assert.match(source, /<a part="link"><slot><\/slot><\/a>/);
+  assert.match(source, /<a part="link"><slot><\/slot><slot name="icon"><\/slot><\/a>/);
   assert.match(source, /observedAttributes\(\).*href/s);
   assert.match(source, /target.*_blank/);
   assert.match(source, /noopener noreferrer/);
+  assert.match(source, /slot="icon"/);
   assert.doesNotMatch(source, /text-transform: uppercase/);
 });
 

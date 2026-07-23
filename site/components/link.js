@@ -11,9 +11,13 @@
 //
 // Slots:
 //   (default) — visible link label
+//   icon      — optional trailing icon, such as an arrow
 //
 // Usage:
 //   <ds-link href="/quickstart">Read the quick start</ds-link>
+//   <ds-link href="/components">
+//     Browse components <span slot="icon" aria-hidden="true">→</span>
+//   </ds-link>
 //   <ds-link href="https://example.com" external>Visit the project site</ds-link>
 // ═══════════════════════════════════════════════════════════════════════════
 
@@ -24,6 +28,9 @@ const LINK_CSS = `
   :host { display: inline; }
 
   a {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--ds-space-1);
     color: var(--ds-color-accent);
     font-family: ${FONT.body};
     font-size: inherit;
@@ -32,6 +39,12 @@ const LINK_CSS = `
     text-decoration-thickness: 1px;
     text-underline-offset: 2px;
     transition: color var(--ds-duration-fast) var(--ds-ease-standard);
+  }
+
+  ::slotted([slot="icon"]) {
+    display: inline-block;
+    flex: none;
+    line-height: 1;
   }
 
   a:hover {
@@ -52,7 +65,7 @@ export class DsLink extends HTMLElement {
   constructor() {
     super();
     this._shadow = createShadow(this, LINK_CSS);
-    this._shadow.innerHTML = '<a part="link"><slot></slot></a>';
+    this._shadow.innerHTML = '<a part="link"><slot></slot><slot name="icon"></slot></a>';
   }
 
   connectedCallback() {

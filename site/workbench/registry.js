@@ -154,6 +154,12 @@ export const COMPONENTS = [
         label: "External destination",
         html: `<ds-link href="https://designsystemdocspec.org" external>Visit the DSDS site</ds-link>`,
       },
+      {
+        label: "Trailing arrow icon",
+        html: `<ds-link href="#components">
+  Browse components <span slot="icon" aria-hidden="true">→</span>
+</ds-link>`,
+      },
     ],
   },
   {

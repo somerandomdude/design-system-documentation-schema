@@ -20,6 +20,7 @@ Create a framework-neutral `<ds-link>` with:
 - an optional boolean `external` attribute that opens a new tab and adds
   `rel="noopener noreferrer"`;
 - a default slot for a visible sentence-case link label;
+- a named `icon` slot for a trailing decorative arrow or inline icon;
 - tokenized accent color, underline, hover, and focus styles;
 - no uppercase transformation and no custom event.
 
