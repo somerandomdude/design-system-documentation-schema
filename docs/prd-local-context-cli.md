@@ -14,9 +14,9 @@ Designers prototyping in code and frontend developers building product experienc
 
 ### Proposed Solution
 
-Build an open-source, local-first CLI that reads DSDS documents, retrieves the entities and document blocks relevant to a product task, uses a small model through Ollama to synthesize the evidence, and exports a structured context package for a coding agent. Gum will provide an optional interactive terminal experience, while a stable non-interactive command and JSON output will support automation.
+Build an open-source, local-first CLI that reads DSDS documents, retrieves the entities and document blocks relevant to a product task, uses a small model through Ollama to synthesize the evidence, and exports a structured context package for a coding agent. The existing DSDS documentation site's Web Components will be documented as the first reference implementation, allowing the package to point at real custom elements and runnable HTML examples. Gum will provide an optional interactive terminal experience, while a stable non-interactive command and JSON output will support automation.
 
-The MVP supplies guidance and implementation constraints; it does not require or generate a component library.
+The MVP supplies guidance and implementation constraints; it does not create a component library or generate production UI itself. A downstream coding agent consumes the package and performs the implementation.
 
 ### Success Criteria
 
@@ -24,7 +24,7 @@ The MVP supplies guidance and implementation constraints; it does not require or
 - For every benchmark question the DSDS corpus cannot support, the CLI returns an explicit insufficient-evidence result rather than inventing an entity, token, component, or rule.
 - Every substantive recommendation contains at least one valid DSDS entity identifier and supporting document-block reference; citation validity must be 100% in the benchmark.
 - The complete indexing, retrieval, inference, and export flow runs offline after installation and model download, with no design-system content transmitted to a remote service.
-- A new user can produce their first context package within 10 minutes after satisfying the documented prerequisites.
+- A new user can produce a DSDS Site Kit context package for a runnable documentation page or local context viewer within 10 minutes after satisfying the documented prerequisites.
 
 ## 2. User Experience & Functionality
 
@@ -47,7 +47,7 @@ A maintainer who wants to verify that DSDS documentation is useful to downstream
 1. The user points the CLI at a local DSDS file or directory.
 2. The CLI validates the documents and builds or refreshes a local lexical index.
 3. The user describes the task interactively through Gum or passes it directly as a command argument.
-4. Deterministic retrieval selects relevant entities, document blocks, metadata, and relationships.
+4. Deterministic retrieval selects relevant entities, document blocks, metadata, relationships, and documented implementation targets.
 5. The local model synthesizes only the retrieved evidence into the context-package schema.
 6. The CLI validates every cited identifier against the source corpus.
 7. The user previews the package and writes it as Markdown or JSON for the next coding agent.
@@ -64,6 +64,7 @@ As a designer prototyping in code, I want to describe a product task and receive
 - A command equivalent to `dsds-local context "Build a destructive account-deletion flow"` accepts a natural-language task.
 - The output contains a task summary, recommendations, constraints, relevant entities, evidence references, uncertainties, and explicit missing guidance.
 - The package can be written as Markdown for human/agent prompting or JSON for programmatic use.
+- When the corpus documents a runnable implementation, the package includes the platform, custom-element tag names, source references, and usage examples needed by the downstream agent.
 - The package does not claim that implementation components exist unless the DSDS source explicitly documents them.
 - Re-running the same command against unchanged inputs uses the same deterministic retrieval settings and produces materially consistent evidence.
 
@@ -111,11 +112,27 @@ As a design-system maintainer, I want invalid DSDS documents reported before the
 - Editorial lint findings may be shown as warnings but do not block context generation.
 - The generated context package records the DSDS version and source files used.
 
+#### Story 6: Use the DSDS Site Kit as a runnable reference implementation
+
+As a designer prototyping in code, I want the context package to reference documented DSDS Web Components so that my coding agent can build a documentation page or local context viewer with real, framework-neutral elements.
+
+**Acceptance criteria**
+
+- A focused seed corpus documents at least these existing elements: `ds-callout`, `ds-code`, `ds-badge`, `ds-prop-table`, `ds-spec-nav`, `ds-cross-refs`, `ds-json-view`, and `ds-header`.
+- The corpus also documents `ds-prop`, the required child contract used by `ds-prop-table`.
+- Each documented element identifies its custom-element tag, source module, supported attributes, slots, CSS parts or custom properties when present, accessibility guidance, and at least one plain-HTML example.
+- The seed corpus validates against the current DSDS bundled schema and produces no unresolved entity references.
+- A version-controlled Web Components authoring skill codifies the Site Kit's API, token, accessibility, lifecycle, registration, testing, and DSDS synchronization conventions.
+- Generated context packages identify Web Components as the MVP implementation target without implying that DSDS itself is framework-specific.
+- The MVP creates no React, Vue, or Astro wrappers; those remain optional downstream adapters.
+
 ### Non-Goals
 
 The MVP will not:
 
 - Generate production-ready UI code or create a new component library.
+- Require new Site Kit components to complete the seed corpus. Additional primitives may be scoped separately and authored offline with the version-controlled skill.
+- Make DSDS framework-specific; Web Components are the first reference target, not a schema requirement.
 - Modify DSDS documents, automatically repair documentation, or apply patches.
 - Fine-tune or train a model.
 - Require embeddings, a vector database, an MCP server, or multiple inference providers.
@@ -132,7 +149,7 @@ The MVP will not:
 - **Schema validator:** Validate source documents against the DSDS bundled JSON Schema using AJV or the existing DSDS validation path.
 - **Lexical retrieval:** Rank entities and blocks using deterministic keyword/BM25-style search, with filters for entity kind and platform.
 - **Relationship expansion:** Add directly related entities within a fixed, configurable traversal depth.
-- **Ollama adapter:** Send retrieved evidence and a constrained task prompt to a local Llama 3.2 3B Instruct baseline.
+- **Ollama adapter:** Send retrieved evidence and a constrained task prompt to a local Llama 3.1 8B Instruct baseline, with Llama 3.2 3B as a lower-memory fallback.
 - **Structured-output validator:** Require a JSON response matching the context-package schema.
 - **Evidence validator:** Confirm every citation, entity identifier, and block reference exists in the retrieved DSDS source.
 - **Exporter:** Render validated output to machine-readable JSON and concise Markdown.
@@ -150,6 +167,7 @@ Create a version-controlled benchmark with at least 50 tasks divided across:
 - Platform availability or status.
 - Relationship and dependency questions.
 - Deliberately unsupported requests.
+- DSDS Site Kit tasks that require selecting documented Web Components and producing plain-HTML implementation context.
 
 Each benchmark record must include the task, expected answerability, acceptable entity identifiers, required evidence blocks, prohibited claims, and a reviewer-approved reference answer or abstention rationale.
 
@@ -183,11 +201,11 @@ flowchart LR
 
 **Proposed implementation stack**
 
-- Node.js and TypeScript, subject to confirmation during the integration spike, because the DSDS project already uses Node-based validation, linting, and build scripts.
+- Node.js CommonJS modules for the MVP, matching the repository's current scripts and avoiding a separate TypeScript build step.
 - AJV for JSON Schema validation.
 - A lightweight in-process lexical index for the MVP; SQLite FTS may replace it only if corpus size or persistence requires it.
 - Ollama as the only initial inference provider.
-- Llama 3.2 3B Instruct as the baseline model; the model identifier remains configurable.
+- Llama 3.1 8B Instruct, quantized through Ollama, as the primary baseline on the reference 16 GB M1 Pro; Llama 3.2 3B remains a configurable fallback.
 - Gum as an optional executable dependency for interactive presentation.
 
 **Context-package contract**
@@ -202,6 +220,13 @@ The JSON output must include at minimum:
   "summary": "Short interpretation of the task",
   "recommendations": [],
   "constraints": [],
+  "implementationTargets": [
+    {
+      "platform": "web-components",
+      "elements": ["ds-callout", "ds-code"],
+      "entrypoint": "site/components/index.js"
+    }
+  ],
   "evidence": [
     {
       "entityIdentifier": "example-identifier",
@@ -221,6 +246,9 @@ The schema should remain deliberately smaller than the full DSDS schema and shou
 
 - **DSDS documents:** Input source of truth. DSDS currently defines structured documentation for components, tokens, token groups, themes, foundations, patterns, guides, and chunks, along with typed document blocks and relationships.
 - **DSDS validation and lint:** Reuse the bundled schema and compatible validation behavior. Editorial lint is informative and remains non-blocking.
+- **DSDS Site Kit:** Use the existing custom elements registered by `site/components/index.js` as the first runnable implementation target.
+- **Web Components authoring skill:** Keep the Site Kit's source contract and DSDS entity synchronized, and provide a bounded workflow for future primitive work.
+- **Custom Elements Manifest:** Preserve DSDS's implementation-agnostic boundary by treating component API facts as compatible with CEM; automatic CEM generation or conversion is deferred unless the seed-corpus spike shows it is cheaper than manual documentation.
 - **Ollama local API:** Local structured inference over retrieved evidence.
 - **Filesystem:** Read DSDS sources and write user-approved Markdown or JSON packages. The MVP does not modify source documents.
 - **Shell:** Invoke Gum for interactive presentation when installed.
@@ -255,13 +283,14 @@ Successful JSON output goes to stdout when `--output` is omitted; diagnostics go
 **Capacity:** Approximately 18 human hours total, supplemented by Codex implementation and testing.
 
 - Implement DSDS file discovery, validation, entity extraction, and lexical retrieval.
+- Document the focused DSDS Site Kit Web Component seed corpus, codify its authoring conventions as a project skill, and use both for the end-to-end demonstration.
 - Define the versioned context-package JSON Schema.
-- Integrate Ollama and Llama 3.2 3B with constrained output.
+- Integrate Ollama and Llama 3.1 8B with constrained output, retaining Llama 3.2 3B as a fallback.
 - Validate evidence and identifiers after generation.
 - Implement `context`, `validate`, and a minimal `benchmark` command.
 - Add the Gum-guided flow as a presentation layer.
 - Create the first 20 benchmark cases, expanding to 50 during v1.1.
-- Demonstrate Markdown and JSON packages using validated DSDS examples; a real component package is not required.
+- Demonstrate Markdown and JSON packages that hand a downstream agent enough grounded context to build a DSDS documentation page or local context viewer from the existing Site Kit elements.
 
 #### v1.1 — Reliability and open-source readiness
 
@@ -269,7 +298,7 @@ Successful JSON output goes to stdout when `--output` is omitted; diagnostics go
 - Add relationship expansion, caching, clearer diagnostics, and documented exit codes.
 - Test on macOS and Linux with representative hardware.
 - Add installation documentation, offline verification, contribution guidance, and an example agent handoff.
-- Compare Llama 3.2 3B with a larger untuned local baseline if hardware permits.
+- Compare Llama 3.1 8B with the Llama 3.2 3B fallback using the same benchmark and reference hardware.
 
 #### v2.0 — Evidence-driven expansion
 
@@ -284,11 +313,11 @@ Only pursue features supported by MVP usage and evaluation data:
 ### Technical Risks
 
 - **Insufficient real corpus:** DSDS examples may not represent the ambiguity of a production design system. Mitigation: design the benchmark so a real DSDS corpus can be added later without changing the output contract.
-- **Small-model reasoning quality:** A 3B model may choose superficially related guidance. Mitigation: deterministic retrieval, small evidence windows, schema-constrained output, citation validation, and explicit abstention.
+- **Local-model reasoning quality:** An 8B model may still choose superficially related guidance, while the 3B fallback will be less capable. Mitigation: deterministic retrieval, small evidence windows, schema-constrained output, citation validation, explicit abstention, and identical benchmark coverage across models.
+- **Reference implementation drift:** The Site Kit source may change without its DSDS seed corpus being updated. Mitigation: link every entity to its source module, keep the corpus focused, validate it in the existing suite, add contract checks for registered tag names, and require the project authoring skill for public component-contract changes.
 - **False confidence despite valid JSON:** Structural validity does not guarantee factual support. Mitigation: validate every cited identifier and require benchmark review of the claim-to-evidence relationship.
 - **Evolving DSDS specification:** DSDS is pre-1.0 and may introduce breaking changes. Mitigation: record the DSDS version, fail clearly on unsupported versions, and isolate parsing behind a compatibility layer.
 - **Local hardware variance:** Latency and model availability will differ across machines. Mitigation: define reference hardware, expose the model identifier, measure latency separately from correctness, and document minimum memory requirements after testing.
 - **Gum packaging dependency:** Requiring a separate executable can complicate onboarding and automation. Mitigation: keep Gum optional and ensure every workflow has a non-interactive equivalent.
 - **Side-project capacity:** A six-hour weekly cap makes broad feature expansion the largest schedule risk. Mitigation: freeze MVP non-goals, reserve human time for product decisions and expert review, and let Codex handle implementation, test scaffolding, and documentation drafts.
 - **Context package ignored by agents:** Correct guidance may not affect generated code. Mitigation: evaluate package usefulness with small agent handoff trials in v1.1 and revise the package structure before adding integrations.
-

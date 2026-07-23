@@ -1,0 +1,1157 @@
+{
+  "$schema": "https://designsystemdocspec.org/v0.15.2/dsds.bundled.schema.json",
+  "dsdsVersion": "0.15.2",
+  "entityGroups": [
+    {
+      "name": "DSDS Site Kit",
+      "description": "A reference set of Web Components used by the DSDS documentation site. These entities document the existing implementation so local tools and coding agents can produce grounded documentation pages and context viewers without making DSDS framework-specific.",
+      "entities": [
+        {
+          "kind": "component",
+          "identifier": "ds-callout",
+          "name": "DSDS Callout",
+          "description": "A contextual message block with an optional title and info, tip, or warning treatment. It is used to distinguish supporting notes and cautions from the main documentation flow.",
+          "metadata": {
+            "status": {
+              "overall": "stable",
+              "platforms": {
+                "web-component": {
+                  "status": "stable"
+                }
+              }
+            },
+            "category": "documentation",
+            "tags": [
+              "callout",
+              "notice",
+              "warning",
+              "guidance",
+              "web-component"
+            ],
+            "summary": "Contextual documentation note with info, tip, and warning variants.",
+            "links": [
+              {
+                "kind": "source",
+                "url": "https://github.com/somerandomdude/design-system-documentation-schema/blob/main/site/components/callout.js",
+                "label": "Web Component source"
+              }
+            ]
+          },
+          "documentBlocks": [
+            {
+              "kind": "imports",
+              "items": [
+                {
+                  "platform": "web-component",
+                  "code": "<script type=\"module\" src=\"./site/components/index.js\"></script>\n\n<ds-callout variant=\"warning\" title=\"Check the schema:\">\n  Validate the generated document before using it.\n</ds-callout>",
+                  "language": "html",
+                  "description": "Load the Site Kit barrel once, then use the custom element in plain HTML."
+                }
+              ]
+            },
+            {
+              "kind": "api",
+              "platform": "web-component",
+              "properties": [
+                {
+                  "identifier": "variant",
+                  "type": "string",
+                  "values": [
+                    "info",
+                    "tip",
+                    "warning"
+                  ],
+                  "description": "Selects the semantic visual treatment.",
+                  "required": false,
+                  "defaultValue": "info"
+                },
+                {
+                  "identifier": "title",
+                  "type": "string",
+                  "description": "Optional lead-in text displayed above the callout content.",
+                  "required": false,
+                  "defaultValue": ""
+                }
+              ],
+              "slots": [
+                {
+                  "identifier": "default",
+                  "description": "The callout body.",
+                  "acceptedContent": "Documentation prose, links, and lists."
+                }
+              ],
+              "cssParts": [
+                {
+                  "identifier": "callout",
+                  "description": "The outer callout container."
+                },
+                {
+                  "identifier": "title",
+                  "description": "The optional title tab."
+                },
+                {
+                  "identifier": "content",
+                  "description": "The body-content container."
+                }
+              ]
+            },
+            {
+              "kind": "use-cases",
+              "purpose": "Callouts separate supporting notes and cautions from the primary documentation narrative.",
+              "items": [
+                {
+                  "description": "A documentation page needs to highlight a prerequisite, useful tip, or warning without interrupting the surrounding structure.",
+                  "stance": "recommended"
+                },
+                {
+                  "description": "The message is the page's primary content or a required interactive error.",
+                  "stance": "discouraged"
+                }
+              ]
+            },
+            {
+              "kind": "guidelines",
+              "items": [
+                {
+                  "guidance": "Use a title that states why the callout deserves attention.",
+                  "rationale": "A specific lead-in lets readers understand the message before reading its details.",
+                  "level": "should",
+                  "category": "content"
+                },
+                {
+                  "guidance": "Do not rely on the variant color alone to communicate the message.",
+                  "rationale": "The visible title and body must preserve meaning for readers who do not perceive the color treatment.",
+                  "level": "must-not",
+                  "category": "accessibility"
+                }
+              ]
+            }
+          ],
+          "$extensions": {
+            "org.designsystemdocspec.site-kit": {
+              "platform": "web-component",
+              "tagName": "ds-callout",
+              "entrypoint": "site/components/index.js",
+              "module": "site/components/callout.js"
+            }
+          }
+        },
+        {
+          "kind": "component",
+          "identifier": "ds-code",
+          "name": "DSDS Code",
+          "description": "A code renderer for block and inline examples. Block mode supports JSON syntax highlighting, optional labels, wrapping, and keyboard-accessible horizontal scrolling.",
+          "metadata": {
+            "status": {
+              "overall": "stable",
+              "platforms": {
+                "web-component": {
+                  "status": "stable"
+                }
+              }
+            },
+            "category": "documentation",
+            "tags": [
+              "code",
+              "json",
+              "example",
+              "syntax",
+              "web-component"
+            ],
+            "summary": "Inline and block code renderer with JSON highlighting.",
+            "links": [
+              {
+                "kind": "source",
+                "url": "https://github.com/somerandomdude/design-system-documentation-schema/blob/main/site/components/code.js",
+                "label": "Web Component source"
+              }
+            ]
+          },
+          "documentBlocks": [
+            {
+              "kind": "imports",
+              "items": [
+                {
+                  "platform": "web-component",
+                  "code": "<script type=\"module\" src=\"./site/components/index.js\"></script>\n\n<ds-code language=\"json\" label=\"DSDS\">{\"dsdsVersion\":\"0.15.2\"}</ds-code>",
+                  "language": "html",
+                  "description": "Place raw code text inside the element. Set language to json to enable JSON highlighting."
+                }
+              ]
+            },
+            {
+              "kind": "api",
+              "platform": "web-component",
+              "properties": [
+                {
+                  "identifier": "language",
+                  "type": "string",
+                  "description": "Language label for the code block. The value json enables syntax highlighting.",
+                  "required": false,
+                  "defaultValue": ""
+                },
+                {
+                  "identifier": "label",
+                  "type": "string",
+                  "description": "Optional label displayed in the block's top-right corner.",
+                  "required": false,
+                  "defaultValue": ""
+                },
+                {
+                  "identifier": "inline",
+                  "type": "boolean",
+                  "description": "Renders the content as inline code when present.",
+                  "required": false,
+                  "defaultValue": false
+                },
+                {
+                  "identifier": "wrap",
+                  "type": "boolean",
+                  "description": "Wraps long block lines instead of using horizontal scrolling when present.",
+                  "required": false,
+                  "defaultValue": false
+                }
+              ],
+              "slots": [
+                {
+                  "identifier": "default",
+                  "description": "The raw code content.",
+                  "acceptedContent": "Text content. HTML-sensitive characters are escaped by the component."
+                }
+              ],
+              "cssParts": [
+                {
+                  "identifier": "code",
+                  "description": "The rendered code element in inline or block mode."
+                },
+                {
+                  "identifier": "wrapper",
+                  "description": "The outer block-mode wrapper."
+                },
+                {
+                  "identifier": "label",
+                  "description": "The optional block label."
+                },
+                {
+                  "identifier": "pre",
+                  "description": "The keyboard-focusable preformatted block."
+                }
+              ]
+            },
+            {
+              "kind": "use-cases",
+              "purpose": "Code examples make schemas, commands, and generated context inspectable in documentation.",
+              "items": [
+                {
+                  "description": "A page needs to show JSON, a CLI command, or a short inline identifier.",
+                  "stance": "recommended"
+                },
+                {
+                  "description": "The content is ordinary prose rather than literal code or data.",
+                  "stance": "discouraged"
+                }
+              ]
+            },
+            {
+              "kind": "guidelines",
+              "items": [
+                {
+                  "guidance": "Set language to json for DSDS document examples.",
+                  "rationale": "The component applies JSON-specific token highlighting only when the language is declared.",
+                  "level": "should",
+                  "category": "development"
+                },
+                {
+                  "guidance": "Use wrap only when preserving one source line per visual line is less important than avoiding horizontal scrolling.",
+                  "rationale": "Wrapping improves narrow-layout readability but makes line-oriented code harder to scan.",
+                  "level": "should",
+                  "category": "accessibility"
+                }
+              ]
+            }
+          ],
+          "$extensions": {
+            "org.designsystemdocspec.site-kit": {
+              "platform": "web-component",
+              "tagName": "ds-code",
+              "entrypoint": "site/components/index.js",
+              "module": "site/components/code.js"
+            }
+          }
+        },
+        {
+          "kind": "component",
+          "identifier": "ds-badge",
+          "name": "DSDS Badge",
+          "description": "A compact label with a decorative icon block for entity kind, experimental status, or neutral metadata.",
+          "metadata": {
+            "status": {
+              "overall": "stable",
+              "platforms": {
+                "web-component": {
+                  "status": "stable"
+                }
+              }
+            },
+            "category": "documentation",
+            "tags": [
+              "badge",
+              "status",
+              "metadata",
+              "label",
+              "web-component"
+            ],
+            "summary": "Compact status and metadata label.",
+            "links": [
+              {
+                "kind": "source",
+                "url": "https://github.com/somerandomdude/design-system-documentation-schema/blob/main/site/components/badge.js",
+                "label": "Web Component source"
+              }
+            ]
+          },
+          "documentBlocks": [
+            {
+              "kind": "imports",
+              "items": [
+                {
+                  "platform": "web-component",
+                  "code": "<script type=\"module\" src=\"./site/components/index.js\"></script>\n\n<ds-badge variant=\"experimental\">Experimental</ds-badge>",
+                  "language": "html",
+                  "description": "Use visible text that communicates the same meaning as the decorative icon."
+                }
+              ]
+            },
+            {
+              "kind": "api",
+              "platform": "web-component",
+              "properties": [
+                {
+                  "identifier": "variant",
+                  "type": "string",
+                  "values": [
+                    "neutral",
+                    "kind",
+                    "experimental"
+                  ],
+                  "description": "Selects the icon and color treatment.",
+                  "required": false,
+                  "defaultValue": "neutral"
+                }
+              ],
+              "slots": [
+                {
+                  "identifier": "default",
+                  "description": "The visible badge label.",
+                  "acceptedContent": "Short plain text."
+                }
+              ],
+              "cssParts": [
+                {
+                  "identifier": "badge",
+                  "description": "The badge container."
+                },
+                {
+                  "identifier": "icon",
+                  "description": "The decorative icon container."
+                },
+                {
+                  "identifier": "label",
+                  "description": "The visible text-label container."
+                }
+              ]
+            },
+            {
+              "kind": "use-cases",
+              "purpose": "Badges expose short entity and lifecycle metadata near a heading or label.",
+              "items": [
+                {
+                  "description": "A page needs a compact visible label for an entity kind or experimental status.",
+                  "stance": "recommended"
+                },
+                {
+                  "description": "The text is a sentence, instruction, or interactive action.",
+                  "stance": "discouraged"
+                }
+              ]
+            },
+            {
+              "kind": "guidelines",
+              "items": [
+                {
+                  "guidance": "Keep badge content short enough to remain a label.",
+                  "rationale": "Long prose breaks the component's compact metadata role and becomes harder to scan.",
+                  "level": "should",
+                  "category": "content"
+                },
+                {
+                  "guidance": "Include visible label text that communicates the badge meaning.",
+                  "rationale": "The icon is hidden from assistive technology and cannot carry meaning by itself.",
+                  "level": "must",
+                  "category": "accessibility"
+                }
+              ]
+            }
+          ],
+          "$extensions": {
+            "org.designsystemdocspec.site-kit": {
+              "platform": "web-component",
+              "tagName": "ds-badge",
+              "entrypoint": "site/components/index.js",
+              "module": "site/components/badge.js"
+            }
+          }
+        },
+        {
+          "kind": "component",
+          "identifier": "ds-prop-table",
+          "name": "DSDS Property Table",
+          "description": "A schema-property table that converts declarative ds-prop children into property, type, requiredness, and description columns.",
+          "metadata": {
+            "status": {
+              "overall": "stable",
+              "platforms": {
+                "web-component": {
+                  "status": "stable"
+                }
+              }
+            },
+            "category": "documentation",
+            "tags": [
+              "schema",
+              "property",
+              "table",
+              "reference",
+              "web-component"
+            ],
+            "summary": "Responsive schema property table built from ds-prop children.",
+            "links": [
+              {
+                "kind": "source",
+                "url": "https://github.com/somerandomdude/design-system-documentation-schema/blob/main/site/components/prop-table.js",
+                "label": "Web Component source"
+              }
+            ]
+          },
+          "relationships": [
+            {
+              "relation": "composes",
+              "target": "ds-prop",
+              "role": "Declarative property row consumed by the table.",
+              "required": true
+            }
+          ],
+          "documentBlocks": [
+            {
+              "kind": "imports",
+              "items": [
+                {
+                  "platform": "web-component",
+                  "code": "<script type=\"module\" src=\"./site/components/index.js\"></script>\n\n<ds-prop-table>\n  <ds-prop name=\"kind\" type=\"string\" required>Entity discriminator.</ds-prop>\n  <ds-prop name=\"description\" type=\"string\">Human-readable purpose.</ds-prop>\n</ds-prop-table>",
+                  "language": "html",
+                  "description": "Provide one ds-prop light-DOM child per property row."
+                }
+              ]
+            },
+            {
+              "kind": "api",
+              "platform": "web-component",
+              "slots": [
+                {
+                  "identifier": "default",
+                  "description": "Declarative property rows read and rendered by the table.",
+                  "acceptedContent": "One or more ds-prop elements."
+                }
+              ],
+              "cssParts": [
+                {
+                  "identifier": "wrapper",
+                  "description": "The responsive table-scroll wrapper."
+                },
+                {
+                  "identifier": "table",
+                  "description": "The rendered HTML table."
+                }
+              ]
+            },
+            {
+              "kind": "use-cases",
+              "purpose": "Property tables present machine-readable schema fields in a human-readable reference.",
+              "items": [
+                {
+                  "description": "A schema-reference page needs consistent columns for names, types, requiredness, and descriptions.",
+                  "stance": "recommended"
+                },
+                {
+                  "description": "The data is not property-oriented or requires arbitrary interactive table behavior.",
+                  "stance": "discouraged"
+                }
+              ]
+            },
+            {
+              "kind": "guidelines",
+              "items": [
+                {
+                  "guidance": "Use one ds-prop child for each documented property.",
+                  "rationale": "The table reads only ds-prop descendants and renders an empty table when none are present.",
+                  "level": "must",
+                  "category": "development"
+                },
+                {
+                  "guidance": "Do not encode requiredness only in the row description.",
+                  "rationale": "The required and conditional attributes populate a dedicated status column that can be read consistently.",
+                  "level": "must-not",
+                  "category": "accessibility"
+                }
+              ]
+            }
+          ],
+          "$extensions": {
+            "org.designsystemdocspec.site-kit": {
+              "platform": "web-component",
+              "tagName": "ds-prop-table",
+              "entrypoint": "site/components/index.js",
+              "module": "site/components/prop-table.js"
+            }
+          }
+        },
+        {
+          "kind": "component",
+          "identifier": "ds-prop",
+          "name": "DSDS Property Row",
+          "description": "A declarative light-DOM record consumed by ds-prop-table. Its attributes provide the property name, type, and requiredness while its content supplies the description.",
+          "metadata": {
+            "status": {
+              "overall": "stable",
+              "platforms": {
+                "web-component": {
+                  "status": "stable"
+                }
+              }
+            },
+            "category": "documentation",
+            "tags": [
+              "schema",
+              "property",
+              "row",
+              "table",
+              "web-component"
+            ],
+            "summary": "Declarative property record for ds-prop-table.",
+            "links": [
+              {
+                "kind": "source",
+                "url": "https://github.com/somerandomdude/design-system-documentation-schema/blob/main/site/components/prop-table.js",
+                "label": "Web Component source"
+              }
+            ]
+          },
+          "relationships": [
+            {
+              "relation": "part-of",
+              "target": "ds-prop-table",
+              "role": "Property row consumed and rendered by the table."
+            }
+          ],
+          "documentBlocks": [
+            {
+              "kind": "imports",
+              "items": [
+                {
+                  "platform": "web-component",
+                  "code": "<ds-prop name=\"identifier\" type=\"string\" required>Machine-readable entity identifier.</ds-prop>",
+                  "language": "html",
+                  "description": "Use only as a child of ds-prop-table after loading the Site Kit barrel."
+                }
+              ]
+            },
+            {
+              "kind": "api",
+              "platform": "web-component",
+              "properties": [
+                {
+                  "identifier": "name",
+                  "type": "string",
+                  "description": "Property name rendered in the first column.",
+                  "required": false,
+                  "defaultValue": ""
+                },
+                {
+                  "identifier": "type",
+                  "type": "string",
+                  "description": "Display type rendered in the second column.",
+                  "required": false,
+                  "defaultValue": ""
+                },
+                {
+                  "identifier": "required",
+                  "type": "boolean",
+                  "description": "Marks the property as required and sorts it before other rows.",
+                  "required": false,
+                  "defaultValue": false
+                },
+                {
+                  "identifier": "conditional",
+                  "type": "boolean",
+                  "description": "Marks the property as conditionally required and sorts it after required rows.",
+                  "required": false,
+                  "defaultValue": false
+                }
+              ],
+              "slots": [
+                {
+                  "identifier": "default",
+                  "description": "Property description copied into the rendered table cell.",
+                  "acceptedContent": "Text or trusted rich HTML generated by the DSDS site build."
+                }
+              ]
+            },
+            {
+              "kind": "use-cases",
+              "purpose": "Property rows provide declarative source data for ds-prop-table.",
+              "items": [
+                {
+                  "description": "A ds-prop-table needs one source record for a schema property.",
+                  "stance": "recommended"
+                },
+                {
+                  "description": "The element is used outside a ds-prop-table where no parent will render it.",
+                  "stance": "discouraged",
+                  "alternative": {
+                    "identifier": "ds-prop-table",
+                    "rationale": "The parent table is responsible for reading and rendering property rows."
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "guidelines",
+              "items": [
+                {
+                  "guidance": "Use required and conditional as mutually exclusive boolean attributes.",
+                  "rationale": "The parent table gives required precedence when both are present, which would conceal conflicting source data.",
+                  "level": "must",
+                  "category": "development"
+                },
+                {
+                  "guidance": "Write a description that remains meaningful in a table cell without surrounding prose.",
+                  "rationale": "The parent moves the light-DOM content into the Description column.",
+                  "level": "should",
+                  "category": "accessibility"
+                }
+              ]
+            }
+          ],
+          "$extensions": {
+            "org.designsystemdocspec.site-kit": {
+              "platform": "web-component",
+              "tagName": "ds-prop",
+              "entrypoint": "site/components/index.js",
+              "module": "site/components/prop-table.js"
+            }
+          }
+        },
+        {
+          "kind": "component",
+          "identifier": "ds-spec-nav",
+          "name": "DSDS Specification Navigation",
+          "description": "The responsive sidebar navigation used by the DSDS specification site. It reads links and ds-nav-group structures from light DOM and manages active-page and mobile-open state.",
+          "metadata": {
+            "status": {
+              "overall": "stable",
+              "platforms": {
+                "web-component": {
+                  "status": "stable"
+                }
+              }
+            },
+            "category": "navigation",
+            "tags": [
+              "navigation",
+              "sidebar",
+              "responsive",
+              "documentation",
+              "web-component"
+            ],
+            "summary": "Responsive specification sidebar with active-link state.",
+            "links": [
+              {
+                "kind": "source",
+                "url": "https://github.com/somerandomdude/design-system-documentation-schema/blob/main/site/components/spec-nav.js",
+                "label": "Web Component source"
+              }
+            ]
+          },
+          "documentBlocks": [
+            {
+              "kind": "imports",
+              "items": [
+                {
+                  "platform": "web-component",
+                  "code": "<script type=\"module\" src=\"./site/components/index.js\"></script>\n\n<ds-spec-nav title=\"DSDS 0.15.2\" active=\"overview\">\n  <a href=\"index.html\" slug=\"overview\">Overview</a>\n  <ds-nav-group label=\"Entities\">\n    <a href=\"entities-component.html\" slug=\"component\">Component</a>\n  </ds-nav-group>\n</ds-spec-nav>",
+                  "language": "html",
+                  "description": "Declare top-level links and optional ds-nav-group children in light DOM."
+                }
+              ]
+            },
+            {
+              "kind": "api",
+              "platform": "web-component",
+              "properties": [
+                {
+                  "identifier": "title",
+                  "type": "string",
+                  "description": "Navigation title shown above the links.",
+                  "required": false,
+                  "defaultValue": ""
+                },
+                {
+                  "identifier": "title-href",
+                  "type": "string",
+                  "description": "Destination for the navigation title link.",
+                  "required": false,
+                  "defaultValue": "index.html"
+                },
+                {
+                  "identifier": "active",
+                  "type": "string",
+                  "description": "Slug of the current page, used to mark its matching link active.",
+                  "required": false,
+                  "defaultValue": ""
+                },
+                {
+                  "identifier": "open",
+                  "type": "boolean",
+                  "description": "Controls whether the link section is expanded on narrow layouts.",
+                  "required": false,
+                  "defaultValue": false
+                }
+              ],
+              "slots": [
+                {
+                  "identifier": "default",
+                  "description": "Declarative navigation structure read by the component.",
+                  "acceptedContent": "Top-level anchor elements and ds-nav-group elements containing anchors. Each anchor may use slug for active matching."
+                }
+              ],
+              "cssParts": [
+                {
+                  "identifier": "nav",
+                  "description": "The navigation landmark container."
+                },
+                {
+                  "identifier": "menu-btn",
+                  "description": "The narrow-layout menu toggle button."
+                },
+                {
+                  "identifier": "items",
+                  "description": "The links and groups container."
+                }
+              ]
+            },
+            {
+              "kind": "use-cases",
+              "purpose": "Specification navigation provides a stable hierarchy and current-page location across DSDS documentation.",
+              "items": [
+                {
+                  "description": "A multi-page specification or schema explorer needs persistent grouped navigation.",
+                  "stance": "recommended"
+                },
+                {
+                  "description": "A product interface needs application navigation unrelated to the DSDS documentation structure.",
+                  "stance": "discouraged"
+                }
+              ]
+            },
+            {
+              "kind": "guidelines",
+              "items": [
+                {
+                  "guidance": "Give every navigation link a slug that can match the active attribute.",
+                  "rationale": "The component uses slug equality to identify and scroll the current page into view.",
+                  "level": "should",
+                  "category": "development"
+                },
+                {
+                  "guidance": "Preserve the built-in Escape behavior when the mobile navigation is open.",
+                  "rationale": "Escape closes the expanded navigation and returns focus to its toggle button.",
+                  "level": "must",
+                  "category": "accessibility"
+                }
+              ]
+            }
+          ],
+          "$extensions": {
+            "org.designsystemdocspec.site-kit": {
+              "platform": "web-component",
+              "tagName": "ds-spec-nav",
+              "entrypoint": "site/components/index.js",
+              "module": "site/components/spec-nav.js"
+            }
+          }
+        },
+        {
+          "kind": "component",
+          "identifier": "ds-cross-refs",
+          "name": "DSDS Cross References",
+          "description": "A lightweight container that gives related-definition links consistent typography and spacing.",
+          "metadata": {
+            "status": {
+              "overall": "stable",
+              "platforms": {
+                "web-component": {
+                  "status": "stable"
+                }
+              }
+            },
+            "category": "documentation",
+            "tags": [
+              "links",
+              "references",
+              "relationships",
+              "documentation",
+              "web-component"
+            ],
+            "summary": "Styled container for related-definition links.",
+            "links": [
+              {
+                "kind": "source",
+                "url": "https://github.com/somerandomdude/design-system-documentation-schema/blob/main/site/components/cross-refs.js",
+                "label": "Web Component source"
+              }
+            ]
+          },
+          "documentBlocks": [
+            {
+              "kind": "imports",
+              "items": [
+                {
+                  "platform": "web-component",
+                  "code": "<script type=\"module\" src=\"./site/components/index.js\"></script>\n\n<ds-cross-refs>\n  <a href=\"entities-component.html\">component</a>\n  <a href=\"document-blocks-api.html\">api</a>\n</ds-cross-refs>",
+                  "language": "html",
+                  "description": "Place related reference links in the default slot."
+                }
+              ]
+            },
+            {
+              "kind": "api",
+              "platform": "web-component",
+              "slots": [
+                {
+                  "identifier": "default",
+                  "description": "Related reference links.",
+                  "acceptedContent": "Anchor elements with meaningful link text."
+                }
+              ],
+              "cssParts": [
+                {
+                  "identifier": "refs",
+                  "description": "The cross-reference link container."
+                }
+              ]
+            },
+            {
+              "kind": "use-cases",
+              "purpose": "Cross references connect related schema definitions and concepts.",
+              "items": [
+                {
+                  "description": "A definition page needs a compact list of related schema or concept links.",
+                  "stance": "recommended"
+                },
+                {
+                  "description": "The links form the page's primary navigation structure.",
+                  "stance": "discouraged",
+                  "alternative": {
+                    "identifier": "ds-spec-nav",
+                    "rationale": "Primary specification navigation needs active-page and responsive behavior."
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "guidelines",
+              "items": [
+                {
+                  "guidance": "Use link text that names the target definition or concept.",
+                  "rationale": "Descriptive labels remain understandable outside the surrounding sentence and improve navigation for assistive technology.",
+                  "level": "must",
+                  "category": "accessibility"
+                }
+              ]
+            }
+          ],
+          "$extensions": {
+            "org.designsystemdocspec.site-kit": {
+              "platform": "web-component",
+              "tagName": "ds-cross-refs",
+              "entrypoint": "site/components/index.js",
+              "module": "site/components/cross-refs.js"
+            }
+          }
+        },
+        {
+          "kind": "component",
+          "identifier": "ds-json-view",
+          "name": "DSDS JSON View",
+          "description": "A floating control that opens raw schema JSON in a full-viewport dialog-style overlay and closes it with the control or Escape key.",
+          "metadata": {
+            "status": {
+              "overall": "stable",
+              "platforms": {
+                "web-component": {
+                  "status": "stable"
+                }
+              }
+            },
+            "category": "documentation",
+            "tags": [
+              "json",
+              "schema",
+              "overlay",
+              "source",
+              "web-component"
+            ],
+            "summary": "Toggle for viewing raw schema JSON in an overlay.",
+            "links": [
+              {
+                "kind": "source",
+                "url": "https://github.com/somerandomdude/design-system-documentation-schema/blob/main/site/components/json-view.js",
+                "label": "Web Component source"
+              }
+            ]
+          },
+          "relationships": [
+            {
+              "relation": "composes",
+              "target": "ds-code",
+              "role": "Recommended renderer for slotted raw JSON.",
+              "required": false
+            }
+          ],
+          "documentBlocks": [
+            {
+              "kind": "imports",
+              "items": [
+                {
+                  "platform": "web-component",
+                  "code": "<script type=\"module\" src=\"./site/components/index.js\"></script>\n\n<ds-json-view label=\"entities/component.schema.json\">\n  <ds-code language=\"json\">{\"kind\":\"component\"}</ds-code>\n</ds-json-view>",
+                  "language": "html",
+                  "description": "Use ds-code in the default slot to render raw JSON."
+                }
+              ]
+            },
+            {
+              "kind": "api",
+              "platform": "web-component",
+              "properties": [
+                {
+                  "identifier": "label",
+                  "type": "string",
+                  "description": "Source-file label included in the overlay's accessible name.",
+                  "required": false,
+                  "defaultValue": ""
+                }
+              ],
+              "slots": [
+                {
+                  "identifier": "default",
+                  "description": "Raw JSON display content.",
+                  "acceptedContent": "Typically one ds-code element with language set to json."
+                }
+              ],
+              "cssParts": [
+                {
+                  "identifier": "button",
+                  "description": "The floating open or close control."
+                },
+                {
+                  "identifier": "icon",
+                  "description": "The control's decorative icon container."
+                },
+                {
+                  "identifier": "overlay",
+                  "description": "The full-viewport dialog overlay."
+                },
+                {
+                  "identifier": "body",
+                  "description": "The slotted JSON-content container."
+                }
+              ]
+            },
+            {
+              "kind": "use-cases",
+              "purpose": "JSON view lets readers compare human-readable reference content with its raw machine-readable schema.",
+              "items": [
+                {
+                  "description": "A schema-reference page needs an optional full-screen view of the raw JSON source.",
+                  "stance": "recommended"
+                },
+                {
+                  "description": "The overlay contains an unrelated workflow or arbitrary application modal.",
+                  "stance": "discouraged"
+                }
+              ]
+            },
+            {
+              "kind": "guidelines",
+              "items": [
+                {
+                  "guidance": "Set label to the source path represented by the JSON content.",
+                  "rationale": "The component uses the label to give the dialog a specific accessible name.",
+                  "level": "must",
+                  "category": "accessibility"
+                },
+                {
+                  "guidance": "Use ds-code with language set to json for the slotted content.",
+                  "rationale": "The Site Kit's code renderer safely escapes content and provides JSON highlighting.",
+                  "level": "should",
+                  "category": "development"
+                }
+              ]
+            }
+          ],
+          "$extensions": {
+            "org.designsystemdocspec.site-kit": {
+              "platform": "web-component",
+              "tagName": "ds-json-view",
+              "entrypoint": "site/components/index.js",
+              "module": "site/components/json-view.js"
+            }
+          }
+        },
+        {
+          "kind": "component",
+          "identifier": "ds-header",
+          "name": "DSDS Page Header",
+          "description": "The large page header used at the top of DSDS documentation pages. It renders a title, optional description, optional source path, and slotted metadata next to the heading.",
+          "metadata": {
+            "status": {
+              "overall": "stable",
+              "platforms": {
+                "web-component": {
+                  "status": "stable"
+                }
+              }
+            },
+            "category": "documentation",
+            "tags": [
+              "header",
+              "title",
+              "metadata",
+              "documentation",
+              "web-component"
+            ],
+            "summary": "Page title, description, source path, and metadata header.",
+            "links": [
+              {
+                "kind": "source",
+                "url": "https://github.com/somerandomdude/design-system-documentation-schema/blob/main/site/components/header.js",
+                "label": "Web Component source"
+              }
+            ]
+          },
+          "relationships": [
+            {
+              "relation": "composes",
+              "target": "ds-code",
+              "role": "Inline renderer for a supplied source path.",
+              "required": false
+            },
+            {
+              "relation": "composes",
+              "target": "ds-badge",
+              "role": "Optional slotted page metadata.",
+              "required": false
+            }
+          ],
+          "documentBlocks": [
+            {
+              "kind": "imports",
+              "items": [
+                {
+                  "platform": "web-component",
+                  "code": "<script type=\"module\" src=\"./site/components/index.js\"></script>\n\n<ds-header title=\"Component\" description=\"A reusable UI element.\" source=\"entities/component.schema.json\">\n  <ds-badge variant=\"kind\">Entity</ds-badge>\n</ds-header>",
+                  "language": "html",
+                  "description": "Supply page metadata as attributes and optional short slotted content."
+                }
+              ]
+            },
+            {
+              "kind": "api",
+              "platform": "web-component",
+              "properties": [
+                {
+                  "identifier": "title",
+                  "type": "string",
+                  "description": "Page title rendered as the level-one heading.",
+                  "required": false,
+                  "defaultValue": ""
+                },
+                {
+                  "identifier": "description",
+                  "type": "string",
+                  "description": "Optional lead paragraph. Backtick-delimited spans render as inline code.",
+                  "required": false,
+                  "defaultValue": ""
+                },
+                {
+                  "identifier": "source",
+                  "type": "string",
+                  "description": "Optional schema source path rendered with inline code styling.",
+                  "required": false,
+                  "defaultValue": ""
+                }
+              ],
+              "slots": [
+                {
+                  "identifier": "default",
+                  "description": "Short metadata displayed beside the title.",
+                  "acceptedContent": "Compact inline content such as ds-badge."
+                }
+              ]
+            },
+            {
+              "kind": "use-cases",
+              "purpose": "Page headers establish the title, summary, and source identity of a DSDS documentation page.",
+              "items": [
+                {
+                  "description": "A DSDS narrative or schema-reference page needs a consistent introductory region.",
+                  "stance": "recommended"
+                },
+                {
+                  "description": "A subsection needs a heading below the page's primary title.",
+                  "stance": "discouraged"
+                }
+              ]
+            },
+            {
+              "kind": "guidelines",
+              "items": [
+                {
+                  "guidance": "Provide a title that uniquely identifies the page.",
+                  "rationale": "The title becomes the page's level-one heading and primary accessible name.",
+                  "level": "must",
+                  "category": "accessibility"
+                },
+                {
+                  "guidance": "Keep slotted metadata compact and directly related to the title.",
+                  "rationale": "The slot is rendered inside the heading and is not intended for long prose or interactive workflows.",
+                  "level": "should",
+                  "category": "content"
+                }
+              ]
+            }
+          ],
+          "$extensions": {
+            "org.designsystemdocspec.site-kit": {
+              "platform": "web-component",
+              "tagName": "ds-header",
+              "entrypoint": "site/components/index.js",
+              "module": "site/components/header.js"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
