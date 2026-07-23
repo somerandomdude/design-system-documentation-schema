@@ -35,6 +35,7 @@ const BUTTON_CSS = `
     font-weight: var(--ds-font-weight-bold);
     line-height: var(--ds-line-height-normal);
     letter-spacing: var(--ds-tracking-wide);
+    text-transform: uppercase;
     color: var(--ds-color-text);
     background: var(--ds-color-bg-accent);
     cursor: pointer;

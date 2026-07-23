@@ -119,4 +119,5 @@ test("ds-button keeps its native control contract", () => {
   assert.match(source, /button\.disabled = this\.disabled/);
   assert.match(source, /background: var\(--ds-color-bg-accent\)/);
   assert.match(source, /background: var\(--ds-color-text\)/);
+  assert.match(source, /text-transform: uppercase/);
 });
