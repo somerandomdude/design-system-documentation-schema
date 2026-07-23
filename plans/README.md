@@ -20,6 +20,7 @@ STOP conditions, and update its row when finished.
 | 006 | 4 | Prove offline operation and flight readiness | P1 | M | Davy + Codex; benchmark-data subtask is a local-model candidate | 004, 005 | TODO |
 | 007 | — | Add the exploratory `ds-button` primitive | Exploratory | S | Davy + Codex | 002 | IN PROGRESS |
 | 008 | — | Add the exploratory `ds-link` primitive | Exploratory | S | Davy + Codex | 002, 007 | IN PROGRESS |
+| 009 | — | Add the exploratory `ds-text-input` primitive | Exploratory | S | Davy + Codex | 002, 007, 008 | IN PROGRESS |
 
 Status values: `TODO`, `IN PROGRESS`, `DONE`, `BLOCKED: <reason>`, or
 `REJECTED: <reason>`.

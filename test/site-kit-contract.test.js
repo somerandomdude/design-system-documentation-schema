@@ -21,10 +21,12 @@ const expectedTags = [
   "ds-header",
   "ds-button",
   "ds-link",
+  "ds-text-input",
 ];
 const expectedPlatformStatuses = new Map([
   ["ds-button", "experimental"],
   ["ds-link", "experimental"],
+  ["ds-text-input", "experimental"],
 ]);
 
 function readJson(filePath) {
@@ -134,4 +136,16 @@ test("ds-link keeps its native navigation contract", () => {
   assert.match(source, /target.*_blank/);
   assert.match(source, /noopener noreferrer/);
   assert.doesNotMatch(source, /text-transform: uppercase/);
+});
+
+test("ds-text-input keeps its native form-control contract", () => {
+  const source = fs.readFileSync(path.join(root, "site/components/text-input.js"), "utf8");
+
+  assert.match(source, /<input part="input"/);
+  assert.match(source, /slot name="label"/);
+  assert.match(source, /slot name="description"/);
+  assert.match(source, /slot name="error"/);
+  assert.match(source, /input\.required = this\.hasAttribute\("required"\)/);
+  assert.match(source, /input\.disabled = this\.hasAttribute\("disabled"\)/);
+  assert.match(source, /aria-invalid/);
 });

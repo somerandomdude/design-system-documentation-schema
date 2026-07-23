@@ -157,6 +157,37 @@ export const COMPONENTS = [
     ],
   },
   {
+    tag: "ds-text-input",
+    title: "Text input",
+    category: "content",
+    notes: "Native single-line form field. Slots: label, description, error. Attrs: type, name, value, placeholder, required, disabled, readonly, error.",
+    demos: [
+      {
+        label: "Default with description",
+        html: `<ds-text-input name="email">
+  <span slot="label">Email address</span>
+  <span slot="description">We will send a confirmation link.</span>
+</ds-text-input>`,
+      },
+      {
+        label: "Required and error",
+        html: `<ds-text-input type="email" required error>
+  <span slot="label">Work email</span>
+  <span slot="error">Enter a valid email address.</span>
+</ds-text-input>`,
+      },
+      {
+        label: "Disabled and read-only",
+        html: `<ds-text-input value="Locked value" disabled>
+  <span slot="label">Disabled</span>
+</ds-text-input>
+<ds-text-input value="Existing value" readonly>
+  <span slot="label">Read-only</span>
+</ds-text-input>`,
+      },
+    ],
+  },
+  {
     tag: "ds-heading",
     title: "Heading",
     category: "content",
