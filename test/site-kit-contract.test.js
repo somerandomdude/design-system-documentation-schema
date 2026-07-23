@@ -19,7 +19,9 @@ const expectedTags = [
   "ds-cross-refs",
   "ds-json-view",
   "ds-header",
+  "ds-button",
 ];
+const expectedPlatformStatuses = new Map([["ds-button", "experimental"]]);
 
 function readJson(filePath) {
   return JSON.parse(fs.readFileSync(filePath, "utf8"));
@@ -90,8 +92,8 @@ test("every documented Site Kit component matches the source registry", () => {
     const platformStatus = entity.metadata?.status?.platforms?.["web-component"];
     assert.equal(
       platformStatus?.status,
-      "stable",
-      `${entity.identifier} must declare a stable web-component platform status`,
+      expectedPlatformStatuses.get(entity.identifier) || "stable",
+      `${entity.identifier} must declare its expected web-component platform status`,
     );
 
     const examples = entity.documentBlocks
@@ -106,4 +108,15 @@ test("every documented Site Kit component matches the source registry", () => {
       `${entity.identifier} must include a plain-HTML usage example`,
     );
   }
+});
+
+test("ds-button keeps its native control contract", () => {
+  const source = fs.readFileSync(path.join(root, "site/components/button.js"), "utf8");
+
+  assert.match(source, /<button part="button"><slot><\/slot><\/button>/);
+  assert.match(source, /observedAttributes\(\).*variant/s);
+  assert.match(source, /const VARIANTS = new Set\(\["primary", "secondary"\]\)/);
+  assert.match(source, /button\.disabled = this\.disabled/);
+  assert.match(source, /background: var\(--ds-color-bg-accent\)/);
+  assert.match(source, /background: var\(--ds-color-text\)/);
 });

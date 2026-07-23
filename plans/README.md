@@ -18,6 +18,7 @@ STOP conditions, and update its row when finished.
 | 004 | 3 | Add grounded Ollama synthesis and honest abstention | P1 | L | Davy + Codex | 003 | TODO |
 | 005 | 2 | Add the optional Gum-guided workflow | P2 | M | Davy + Codex | 003, 004 | TODO |
 | 006 | 4 | Prove offline operation and flight readiness | P1 | M | Davy + Codex; benchmark-data subtask is a local-model candidate | 004, 005 | TODO |
+| 007 | — | Add the exploratory `ds-button` primitive | Exploratory | S | Davy + Codex | 002 | IN PROGRESS |
 
 Status values: `TODO`, `IN PROGRESS`, `DONE`, `BLOCKED: <reason>`, or
 `REJECTED: <reason>`.
