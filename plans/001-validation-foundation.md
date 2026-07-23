@@ -12,6 +12,9 @@
 
 ## Status
 
+- **Current progress**: IN PROGRESS — 001A (CLI shell, discovery, and AJV
+  validation) is complete; full repository post-validation remains dependent on
+  the checkout's missing documentation build dependencies.
 - **Priority**: P1
 - **Effort**: M (one focused day or two side-project sessions)
 - **Risk**: MED — establishes public CLI and error contracts

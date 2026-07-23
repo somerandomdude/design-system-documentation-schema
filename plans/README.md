@@ -12,7 +12,7 @@ STOP conditions, and update its row when finished.
 
 | Plan | PRD story | Title | Priority | Effort | Preferred executor | Depends on | Status |
 |---|---:|---|---|---|---|---|---|
-| 001 | 5 | Establish the CLI and DSDS validation foundation | P1 | M | Davy + Codex | — | TODO |
+| 001 | 5 | Establish the CLI and DSDS validation foundation | P1 | M | Davy + Codex | — | IN PROGRESS |
 | 002 | 6 | Document the DSDS Site Kit and codify its authoring contract | P1 | M | Davy + Codex | — | DONE |
 | 003 | 1 | Generate deterministic agent context packages | P1 | L | Davy + Codex | 001, 002 | TODO |
 | 004 | 3 | Add grounded Ollama synthesis and honest abstention | P1 | L | Davy + Codex | 003 | TODO |
