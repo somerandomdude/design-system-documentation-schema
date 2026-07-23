@@ -20,8 +20,12 @@ const expectedTags = [
   "ds-json-view",
   "ds-header",
   "ds-button",
+  "ds-link",
 ];
-const expectedPlatformStatuses = new Map([["ds-button", "experimental"]]);
+const expectedPlatformStatuses = new Map([
+  ["ds-button", "experimental"],
+  ["ds-link", "experimental"],
+]);
 
 function readJson(filePath) {
   return JSON.parse(fs.readFileSync(filePath, "utf8"));
@@ -120,4 +124,14 @@ test("ds-button keeps its native control contract", () => {
   assert.match(source, /background: var\(--ds-color-bg-accent\)/);
   assert.match(source, /background: var\(--ds-color-text\)/);
   assert.match(source, /text-transform: uppercase/);
+});
+
+test("ds-link keeps its native navigation contract", () => {
+  const source = fs.readFileSync(path.join(root, "site/components/link.js"), "utf8");
+
+  assert.match(source, /<a part="link"><slot><\/slot><\/a>/);
+  assert.match(source, /observedAttributes\(\).*href/s);
+  assert.match(source, /target.*_blank/);
+  assert.match(source, /noopener noreferrer/);
+  assert.doesNotMatch(source, /text-transform: uppercase/);
 });

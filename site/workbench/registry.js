@@ -140,6 +140,23 @@ export const COMPONENTS = [
     ],
   },
   {
+    tag: "ds-link",
+    title: "Link",
+    category: "content",
+    notes: "Text navigation control. Labels stay in sentence case. Attrs: href, external.",
+    demos: [
+      {
+        label: "Same-page navigation",
+        html: `<ds-link href="#quickstart">Read the quick start</ds-link>
+<ds-link href="#components">Browse components</ds-link>`,
+      },
+      {
+        label: "External destination",
+        html: `<ds-link href="https://designsystemdocspec.org" external>Visit the DSDS site</ds-link>`,
+      },
+    ],
+  },
+  {
     tag: "ds-heading",
     title: "Heading",
     category: "content",

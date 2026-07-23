@@ -27,6 +27,7 @@ import { DsTag } from "./tag.js";
 import { DsLogo } from "./logo.js";
 import { DsIconButton } from "./icon-button.js";
 import { DsButton } from "./button.js";
+import { DsLink } from "./link.js";
 import { DsJsonView } from "./json-view.js";
 
 const registry = [
@@ -49,6 +50,7 @@ const registry = [
   ["ds-logo", DsLogo],
   ["ds-icon-button", DsIconButton],
   ["ds-button", DsButton],
+  ["ds-link", DsLink],
   ["ds-json-view", DsJsonView],
 ];
 
