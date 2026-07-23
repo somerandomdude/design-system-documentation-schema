@@ -194,6 +194,40 @@ export const COMPONENTS = [
     ],
   },
   {
+    tag: "ds-checkbox",
+    title: "Checkbox",
+    category: "content",
+    notes: "Native boolean form control. Slots: label, description, error. Attrs: name, value, checked, indeterminate, required, disabled, error.",
+    demos: [
+      {
+        label: "Default and checked",
+        html: `<ds-checkbox>
+  <span slot="label">Subscribe to updates</span>
+</ds-checkbox>
+<ds-checkbox checked>
+  <span slot="label">Send me a receipt</span>
+</ds-checkbox>`,
+      },
+      {
+        label: "Indeterminate and error",
+        html: `<ds-checkbox indeterminate>
+  <span slot="label">Select all items</span>
+  <span slot="description">Some items are selected.</span>
+</ds-checkbox>
+<ds-checkbox required error>
+  <span slot="label">Accept terms</span>
+  <span slot="error">You must accept the terms to continue.</span>
+</ds-checkbox>`,
+      },
+      {
+        label: "Disabled",
+        html: `<ds-checkbox disabled>
+  <span slot="label">Unavailable option</span>
+</ds-checkbox>`,
+      },
+    ],
+  },
+  {
     tag: "ds-heading",
     title: "Heading",
     category: "content",

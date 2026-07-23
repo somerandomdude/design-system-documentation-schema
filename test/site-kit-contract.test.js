@@ -22,11 +22,13 @@ const expectedTags = [
   "ds-button",
   "ds-link",
   "ds-text-input",
+  "ds-checkbox",
 ];
 const expectedPlatformStatuses = new Map([
   ["ds-button", "experimental"],
   ["ds-link", "experimental"],
   ["ds-text-input", "experimental"],
+  ["ds-checkbox", "experimental"],
 ]);
 
 function readJson(filePath) {
@@ -149,4 +151,16 @@ test("ds-text-input keeps its native form-control contract", () => {
   assert.match(source, /input\.required = this\.hasAttribute\("required"\)/);
   assert.match(source, /input\.disabled = this\.hasAttribute\("disabled"\)/);
   assert.match(source, /aria-invalid/);
+});
+
+test("ds-checkbox keeps its native checkbox contract", () => {
+  const source = fs.readFileSync(path.join(root, "site/components/checkbox.js"), "utf8");
+
+  assert.match(source, /<input type="checkbox"/);
+  assert.match(source, /slot name="label"/);
+  assert.match(source, /slot name="description"/);
+  assert.match(source, /slot name="error"/);
+  assert.match(source, /input\.checked = this\.hasAttribute\("checked"\)/);
+  assert.match(source, /input\.indeterminate = this\.hasAttribute\("indeterminate"\)/);
+  assert.match(source, /input\.required = this\.hasAttribute\("required"\)/);
 });

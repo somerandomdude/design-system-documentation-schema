@@ -21,6 +21,7 @@ STOP conditions, and update its row when finished.
 | 007 | — | Add the exploratory `ds-button` primitive | Exploratory | S | Davy + Codex | 002 | IN PROGRESS |
 | 008 | — | Add the exploratory `ds-link` primitive | Exploratory | S | Davy + Codex | 002, 007 | IN PROGRESS |
 | 009 | — | Add the exploratory `ds-text-input` primitive | Exploratory | S | Davy + Codex | 002, 007, 008 | IN PROGRESS |
+| 010 | — | Add the exploratory `ds-checkbox` primitive | Exploratory | S | Davy + Codex | 002, 009 | IN PROGRESS |
 
 Status values: `TODO`, `IN PROGRESS`, `DONE`, `BLOCKED: <reason>`, or
 `REJECTED: <reason>`.
