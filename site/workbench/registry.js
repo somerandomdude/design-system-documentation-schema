@@ -117,6 +117,29 @@ export const COMPONENTS = [
     ],
   },
   {
+    tag: "ds-button",
+    title: "Button",
+    category: "content",
+    notes: "Text-labelled action control. Primary is orange; secondary is black; labels render uppercase. Attrs: variant, type, disabled.",
+    demos: [
+      {
+        label: "Primary and secondary",
+        html: `<ds-button>Save changes</ds-button>
+<ds-button variant="secondary">Cancel</ds-button>`,
+      },
+      {
+        label: "Disabled states",
+        html: `<ds-button disabled>Disabled primary</ds-button>
+<ds-button variant="secondary" disabled>Disabled secondary</ds-button>`,
+      },
+      {
+        label: "Native button types",
+        html: `<ds-button type="submit">Submit form</ds-button>
+<ds-button type="reset" variant="secondary">Reset form</ds-button>`,
+      },
+    ],
+  },
+  {
     tag: "ds-heading",
     title: "Heading",
     category: "content",
