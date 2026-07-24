@@ -11,8 +11,7 @@
 - **Effort**: M (one focused side-project week; approximately 3–5 human hours)
 - **Risk**: MED — an external tool becomes part of the local development and
   offline workflow
-- **Depends on**: Plan 002's Site Kit corpus; resolve Plan 001's remaining
-  repository-validation dependency before MVP release
+- **Depends on**: Plan 002's Site Kit corpus
 - **Category**: integration / DX / architecture
 - **Planned rewrite**: 2026-07-23
 - **PRD story**: Story 1, “Generate an agent context package”

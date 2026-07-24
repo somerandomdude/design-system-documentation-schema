@@ -12,7 +12,7 @@ STOP conditions, and update its row when finished.
 
 | Plan | PRD story | Title | Priority | Effort | Preferred executor | Depends on | Status |
 |---|---:|---|---|---|---|---|---|
-| 001 | 5 | Establish the CLI and DSDS validation foundation | P1 | M | Davy + Codex | — | IN PROGRESS |
+| 001 | 5 | Establish the CLI and DSDS validation foundation | P1 | M | Davy + Codex | — | ARCHIVED: experiment superseded by `dsds-tools` |
 | 002 | 6 | Document the DSDS Site Kit and codify its authoring contract | P1 | M | Davy + Codex | — | DONE |
 | 003 | 1 | Adopt `dsds-tools` as the grounded agent context layer | P1 | M | Davy + Codex | 002 | TODO |
 | 004 | 3 | Add grounded Ollama synthesis and honest abstention | P1 | L | Davy + Codex | 003 | TODO |
@@ -25,13 +25,14 @@ STOP conditions, and update its row when finished.
 | 011 | — | Add the exploratory `ds-select` primitive | Exploratory | S | Davy + Codex | 002, 010 | IN PROGRESS |
 | 012 | — | Add the exploratory `ds-radio-group` primitive | Exploratory | S | Davy + Codex | 002, 010, 011 | IN PROGRESS |
 
-Status values: `TODO`, `IN PROGRESS`, `DONE`, `BLOCKED: <reason>`, or
-`REJECTED: <reason>`.
+Status values: `TODO`, `IN PROGRESS`, `DONE`, `ARCHIVED: <reason>`,
+`BLOCKED: <reason>`, or `REJECTED: <reason>`.
 
 ## Dependency notes
 
-- Plan 001 establishes the command, loader, validation API, and test harness
-  used by every later plan.
+- Plan 001 is an archived validation-CLI experiment. Its tests remain useful
+  historical reference, but `dsds-tools` now supplies the MVP's CLI/MCP
+  workflow.
 - Plan 002 creates the first real implementation-aware DSDS corpus and the
   project-owned Web Components authoring skill. Retrieval and benchmark
   assertions in later plans depend on its stable identifiers.

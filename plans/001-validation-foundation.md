@@ -10,11 +10,21 @@
 > If `package.json`, `scripts/validate.js`, or the bundled schema changed,
 > compare the facts below with the live files before proceeding.
 
+## Archive record
+
+**Archived on:** 2026-07-23
+**Reason:** The experiment established useful local validation contracts and
+tests, but its discovery/validation CLI is superseded for the MVP by the
+existing `dsds-tools` CLI and MCP server. Do not add features to
+`tools/dsds-local/` as part of the product roadmap. Retain this plan and its
+implementation as historical reference until the replacement workflow is
+verified in Plan 003.
+
 ## Status
 
-- **Current progress**: IN PROGRESS — 001A (CLI shell, discovery, and AJV
-  validation) is complete; full repository post-validation remains dependent on
-  the checkout's missing documentation build dependencies.
+- **Current progress**: ARCHIVED EXPERIMENT — 001A (CLI shell, discovery, and
+  AJV validation) is complete. The remaining repository post-validation issue
+  is not a reason to extend this experimental CLI.
 - **Priority**: P1
 - **Effort**: M (one focused day or two side-project sessions)
 - **Risk**: MED — establishes public CLI and error contracts
