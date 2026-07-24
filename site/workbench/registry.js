@@ -117,6 +117,194 @@ export const COMPONENTS = [
     ],
   },
   {
+    tag: "ds-button",
+    title: "Button",
+    category: "content",
+    notes: "Text-labelled action control. Primary is orange; secondary is black; labels render uppercase. Attrs: variant, type, disabled.",
+    demos: [
+      {
+        label: "Primary and secondary",
+        html: `<ds-button>Save changes</ds-button>
+<ds-button variant="secondary">Cancel</ds-button>`,
+      },
+      {
+        label: "Disabled states",
+        html: `<ds-button disabled>Disabled primary</ds-button>
+<ds-button variant="secondary" disabled>Disabled secondary</ds-button>`,
+      },
+      {
+        label: "Native button types",
+        html: `<ds-button type="submit">Submit form</ds-button>
+<ds-button type="reset" variant="secondary">Reset form</ds-button>`,
+      },
+    ],
+  },
+  {
+    tag: "ds-link",
+    title: "Link",
+    category: "content",
+    notes: "Text navigation control. Labels stay in sentence case. Attrs: href, external.",
+    demos: [
+      {
+        label: "Same-page navigation",
+        html: `<ds-link href="#quickstart">Read the quick start</ds-link>
+<ds-link href="#components">Browse components</ds-link>`,
+      },
+      {
+        label: "External destination",
+        html: `<ds-link href="https://designsystemdocspec.org" external>Visit the DSDS site</ds-link>`,
+      },
+      {
+        label: "Trailing arrow icon",
+        html: `<ds-link href="#components">
+  Browse components <span slot="icon" aria-hidden="true">→</span>
+</ds-link>`,
+      },
+    ],
+  },
+  {
+    tag: "ds-text-input",
+    title: "Text input",
+    category: "content",
+    notes: "Native single-line form field. Slots: label, description, error. Attrs: type, name, value, placeholder, required, disabled, readonly, error.",
+    demos: [
+      {
+        label: "Default with description",
+        html: `<ds-text-input name="email">
+  <span slot="label">Email address</span>
+  <span slot="description">We will send a confirmation link.</span>
+</ds-text-input>`,
+      },
+      {
+        label: "Required and error",
+        html: `<ds-text-input type="email" required error>
+  <span slot="label">Work email</span>
+  <span slot="error">Enter a valid email address.</span>
+</ds-text-input>`,
+      },
+      {
+        label: "Disabled and read-only",
+        html: `<ds-text-input value="Locked value" disabled>
+  <span slot="label">Disabled</span>
+</ds-text-input>
+<ds-text-input value="Existing value" readonly>
+  <span slot="label">Read-only</span>
+</ds-text-input>`,
+      },
+    ],
+  },
+  {
+    tag: "ds-checkbox",
+    title: "Checkbox",
+    category: "content",
+    notes: "Native boolean form control. Slots: label, description, error. Attrs: name, value, checked, indeterminate, required, disabled, error.",
+    demos: [
+      {
+        label: "Default and checked",
+        html: `<ds-checkbox>
+  <span slot="label">Subscribe to updates</span>
+</ds-checkbox>
+<ds-checkbox checked>
+  <span slot="label">Send me a receipt</span>
+</ds-checkbox>`,
+      },
+      {
+        label: "Indeterminate and error",
+        html: `<ds-checkbox indeterminate>
+  <span slot="label">Select all items</span>
+  <span slot="description">Some items are selected.</span>
+</ds-checkbox>
+<ds-checkbox required error>
+  <span slot="label">Accept terms</span>
+  <span slot="error">You must accept the terms to continue.</span>
+</ds-checkbox>`,
+      },
+      {
+        label: "Disabled",
+        html: `<ds-checkbox disabled>
+  <span slot="label">Unavailable option</span>
+</ds-checkbox>`,
+      },
+    ],
+  },
+  {
+    tag: "ds-select",
+    title: "Select",
+    category: "content",
+    notes: "Native select form control. Options remain native children. Slots: label, description, error. Attrs: name, value, required, disabled, multiple, size, error.",
+    demos: [
+      {
+        label: "Default options",
+        html: `<ds-select name="format">
+  <span slot="label">Export format</span>
+  <option value="json">JSON</option>
+  <option value="yaml">YAML</option>
+</ds-select>`,
+      },
+      {
+        label: "Grouped and described",
+        html: `<ds-select value="button">
+  <span slot="label">Component</span>
+  <span slot="description">Choose a component to inspect.</span>
+  <optgroup label="Primitives">
+    <option value="button">Button</option>
+    <option value="link">Link</option>
+  </optgroup>
+  <optgroup label="Forms">
+    <option value="checkbox">Checkbox</option>
+    <option value="text-input">Text input</option>
+  </optgroup>
+</ds-select>`,
+      },
+      {
+        label: "Required error and disabled",
+        html: `<ds-select required error>
+  <span slot="label">Framework</span>
+  <span slot="error">Choose a framework.</span>
+  <option value="">Select one</option>
+  <option>Web Components</option>
+</ds-select>
+<ds-select disabled>
+  <span slot="label">Unavailable</span>
+  <option>Coming soon</option>
+</ds-select>`,
+      },
+    ],
+  },
+  {
+    tag: "ds-radio-group",
+    title: "Radio group",
+    category: "content",
+    notes: "Fieldset wrapper for native radio inputs. Slots: label, description, error. Attrs: name, required, disabled, error.",
+    demos: [
+      {
+        label: "Default selection",
+        html: `<ds-radio-group name="density">
+  <span slot="label">Density</span>
+  <label><input type="radio" value="comfortable" checked> Comfortable</label>
+  <label><input type="radio" value="compact"> Compact</label>
+</ds-radio-group>`,
+      },
+      {
+        label: "Required with error",
+        html: `<ds-radio-group name="license" required error>
+  <span slot="label">License</span>
+  <span slot="error">Select a license to continue.</span>
+  <label><input type="radio" value="mit"> MIT</label>
+  <label><input type="radio" value="apache"> Apache 2.0</label>
+</ds-radio-group>`,
+      },
+      {
+        label: "Disabled group",
+        html: `<ds-radio-group name="future" disabled>
+  <span slot="label">Future option</span>
+  <label><input type="radio" value="yes"> Yes</label>
+  <label><input type="radio" value="no"> No</label>
+</ds-radio-group>`,
+      },
+    ],
+  },
+  {
     tag: "ds-heading",
     title: "Heading",
     category: "content",

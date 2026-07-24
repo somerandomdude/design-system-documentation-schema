@@ -26,6 +26,12 @@ import { DsCallout } from "./callout.js";
 import { DsTag } from "./tag.js";
 import { DsLogo } from "./logo.js";
 import { DsIconButton } from "./icon-button.js";
+import { DsButton } from "./button.js";
+import { DsLink } from "./link.js";
+import { DsTextInput } from "./text-input.js";
+import { DsCheckbox } from "./checkbox.js";
+import { DsSelect } from "./select.js";
+import { DsRadioGroup } from "./radio-group.js";
 import { DsJsonView } from "./json-view.js";
 
 const registry = [
@@ -47,6 +53,12 @@ const registry = [
   ["ds-tag", DsTag],
   ["ds-logo", DsLogo],
   ["ds-icon-button", DsIconButton],
+  ["ds-button", DsButton],
+  ["ds-link", DsLink],
+  ["ds-text-input", DsTextInput],
+  ["ds-checkbox", DsCheckbox],
+  ["ds-select", DsSelect],
+  ["ds-radio-group", DsRadioGroup],
   ["ds-json-view", DsJsonView],
 ];
 
