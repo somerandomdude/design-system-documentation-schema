@@ -14,7 +14,7 @@ STOP conditions, and update its row when finished.
 |---|---:|---|---|---|---|---|---|
 | 001 | 5 | Establish the CLI and DSDS validation foundation | P1 | M | Davy + Codex | — | IN PROGRESS |
 | 002 | 6 | Document the DSDS Site Kit and codify its authoring contract | P1 | M | Davy + Codex | — | DONE |
-| 003 | 1 | Generate deterministic agent context packages | P1 | L | Davy + Codex | 001, 002 | TODO |
+| 003 | 1 | Adopt `dsds-tools` as the grounded agent context layer | P1 | M | Davy + Codex | 002 | TODO |
 | 004 | 3 | Add grounded Ollama synthesis and honest abstention | P1 | L | Davy + Codex | 003 | TODO |
 | 005 | 2 | Add the optional Gum-guided workflow | P2 | M | Davy + Codex | 003, 004 | TODO |
 | 006 | 4 | Prove offline operation and flight readiness | P1 | M | Davy + Codex; benchmark-data subtask is a local-model candidate | 004, 005 | TODO |
@@ -35,13 +35,15 @@ Status values: `TODO`, `IN PROGRESS`, `DONE`, `BLOCKED: <reason>`, or
 - Plan 002 creates the first real implementation-aware DSDS corpus and the
   project-owned Web Components authoring skill. Retrieval and benchmark
   assertions in later plans depend on its stable identifiers.
-- Plan 003 deliberately ships a retrieval-only baseline before model
-  integration, so model value can be measured instead of assumed.
-- Plan 004 adds Ollama behind the same context-package contract and makes
-  unsupported claims mechanically rejectable.
-- Plan 005 remains a presentation layer over the tested non-interactive CLI.
-- Plan 006 is the release gate: it packages the benchmark, local prerequisites,
-  and a repeatable no-cloud verification procedure.
+- Plan 003 adopts and verifies the established `dsds-tools` MCP and CLI
+  surfaces before any model integration, so the project does not duplicate its
+  retrieval or context contracts.
+- Plan 004 must be rewritten as an optional local-model consumption and
+  evaluation layer over `dsds-tools`; it must not recreate retrieval.
+- Plan 005 is a removal candidate because `dsds-cli` already provides the
+  shell workflow. Retain it only if a later user study demonstrates value.
+- Plan 006 remains the release gate, rewritten around pinned installs, cached
+  dependencies, and a repeatable no-cloud verification procedure.
 
 ## Ownership and offline-executor strategy
 

@@ -1,184 +1,224 @@
-# Plan 003: Generate deterministic agent context packages
+# Plan 003: Adopt `dsds-tools` as the grounded agent context layer
 
-> **Executor instructions**: Implement the retrieval-only baseline in this
-> plan. Do not add an LLM call. Run every verification gate and update Plan 003
-> in `plans/README.md` when done.
->
-> **Drift check (run first)**:
-> `git diff --stat 1964319..HEAD -- docs/prd-local-context-cli.md tools/dsds-local spec/examples/site-kit.dsds.json`
-> If Plans 001 or 002 are not complete, stop.
+> **Executor instructions**: Integrate and verify the existing `dsds-tools`
+> MCP and CLI surfaces. Do not recreate document loading, validation, lexical
+> retrieval, context rendering, a context-package schema, or a second CLI.
+> Record the exact reviewed upstream revision before configuring the tool.
 
 ## Status
 
 - **Priority**: P1
-- **Effort**: L
-- **Risk**: MED — defines the primary output contract and ranking behavior
-- **Depends on**: Plans 001 and 002
-- **Category**: direction / architecture
-- **Planned at**: commit `1964319`, 2026-07-22
+- **Effort**: M (one focused side-project week; approximately 3–5 human hours)
+- **Risk**: MED — an external tool becomes part of the local development and
+  offline workflow
+- **Depends on**: Plan 002's Site Kit corpus; resolve Plan 001's remaining
+  repository-validation dependency before MVP release
+- **Category**: integration / DX / architecture
+- **Planned rewrite**: 2026-07-23
 - **PRD story**: Story 1, “Generate an agent context package”
 
-## Why this matters
+## Why this plan changed
 
-The model should improve synthesis, not own factual discovery. A deterministic
-context-package baseline makes source selection, citations, implementation
-targets, and missing guidance testable before Ollama is introduced.
+The original plan proposed a custom normalizer, lexical retrieval engine,
+context-package schema, exporters, and `dsds-local context` command.
+`somerandomdude/dsds-tools` already provides those grounding capabilities as
+one shared core with two transports:
 
-## Current state
+- `dsds-mcp` exposes structured agent tools including entity search, complete
+  entity retrieval, agent-optimized context, relationship queries, validation,
+  and component-building guidance.
+- `dsds-cli` exposes the same catalog for shell-only agents, people, and CI,
+  with stable JSON envelopes, separate diagnostics, and useful exit codes.
 
-- `docs/prd-local-context-cli.md:58-69` defines Story 1 acceptance criteria.
-- `docs/prd-local-context-cli.md:215-240` defines the minimum package contract,
-  including `implementationTargets` and evidence.
-- Plan 001 supplies validated documents and deterministic source ordering.
-- Plan 002 supplies `spec/examples/site-kit.dsds.json` and its implementation
-  extension.
-- DSDS entities expose `documentBlocks`, `agentDocumentBlocks`, metadata tags,
-  and relationships; `site/content/humans-and-agents.mdx` states agents read
-  both block arrays.
+The project should prove that its DSDS Site Kit works through those established
+surfaces, then only add project-specific constraints where the upstream tool
+cannot express them.
 
-## Commands you will need
+## Desired outcome
 
-| Purpose | Command | Expected on success |
-|---|---|---|
-| Existing validation | `npm run validate` | exit 0 |
-| Local tests | `npm run test:local` | exit 0 |
-| JSON smoke test | `npm run dsds-local -- context "Build a schema reference page with a warning" --source spec/examples/site-kit.dsds.json --format json` | valid package on stdout |
-| Markdown smoke test | same command with `--format markdown` | headings for recommendations, evidence, uncertainties, and missing guidance |
+With the Site Kit corpus configured, a coding agent can:
+
+1. Discover the documented components.
+2. Search for an appropriate component for a task.
+3. Retrieve agent-oriented rules and exact documented implementation targets.
+4. Validate the corpus and diagnose configuration failures.
+5. Run the same workflow through MCP or a local CLI without network access
+   after the dependencies are prepared.
 
 ## Scope
 
 **In scope**
 
-- `tools/dsds-local/schema/context-package.schema.json`
-- `tools/dsds-local/src/entities.js`
-- `tools/dsds-local/src/tokenize.js`
-- `tools/dsds-local/src/retrieve.js`
-- `tools/dsds-local/src/context-package.js`
-- `tools/dsds-local/src/export-json.js`
-- `tools/dsds-local/src/export-markdown.js`
-- `tools/dsds-local/src/cli-context.js`
-- `tools/dsds-local/bin/dsds-local.js`
-- `tools/dsds-local/test/context-package.test.js`
-- `tools/dsds-local/test/retrieve.test.js`
-- `tools/dsds-local/test/export.test.js`
-- `tools/dsds-local/test/cli-context.test.js`
+- A version-controlled integration record with the upstream repository URL,
+  reviewed commit SHA, supported package versions, and local setup steps.
+- A project-local `dsds.config.*` configuration pointing at
+  `spec/examples/site-kit.dsds.json`.
+- A shareable MCP configuration example for `dsds-mcp` that reads the same
+  project-local configuration.
+- A reproducible local-checkout workflow for the unpublished `dsds-cli`.
+- Smoke tests or documented verification commands covering `list`, `search`,
+  `get`, `context`, `doctor`, and schema validation against the Site Kit.
+- An integration assertion that `dsds context ds-button` and the MCP
+  `dsds_get_agent_context` response expose documented properties, slots,
+  guidelines, and source-module links without inventing components.
+- A concise agent-facing usage note: MCP for interactive agent lookup; CLI for
+  terminal, CI, and local-model workflows.
 
 **Out of scope**
 
-- Ollama, prompts, retries, Gum, embeddings, SQLite, repository-wide code review
-- Applying generated code or editing DSDS input
-- More than one relationship hop
+- A new document loader, entity normalizer, lexical scorer, context-package
+  JSON Schema, Markdown exporter, or `dsds-local context` command.
+- A new MCP server, a duplicate tool registry, or a Gum wrapper.
+- Ollama prompts, model synthesis, embeddings, SQLite, and evaluation policy.
+- Publishing, forking, or modifying `dsds-tools`.
 
-## Git workflow
+## Upstream contract to verify
 
-- Suggested branch: `local-context/003-context-package`
-- Commit by logical unit: schema/extraction, retrieval, exporters/CLI.
-- Do not push unless instructed.
+The reviewed upstream revision must provide:
+
+- MCP: `dsds_context_brief`, `dsds_search_entities`, `dsds_get_entity`,
+  `dsds_get_document_block`, and `dsds_get_agent_context`.
+- CLI: `dsds list`, `dsds search`, `dsds get`, `dsds context`, `dsds validate`,
+  and `dsds doctor`.
+- Project-local configuration discovery through `dsds.config.mjs`,
+  `dsds.config.js`, or `dsds.config.json`, with `paths` as the document list.
+- A stable machine-readable CLI mode with payload on stdout, diagnostics on
+  stderr, and nonzero exit codes for invalid configuration or documents.
+
+If an upstream revision changes this contract, update this plan and the
+integration record before adopting it.
 
 ## Steps
 
-### Step 1: Define and validate context-package schema version 1
+### Step 1: Review and pin the upstream toolchain
 
-Require:
+1. Review the `dsds-tools` release notes, license, package metadata, and the
+   MCP/CLI commands above.
+2. Record the canonical repository URL and an immutable commit SHA in a
+   project-owned integration record. Do not pin a moving branch name alone.
+3. Record whether `dsds-mcp` is installed from npm or a local checkout. The
+   CLI is not yet published to npm, so its offline path must use a prepared,
+   pinned local checkout with dependencies installed before travel.
 
-- `schemaVersion: "1"`
-- status enum: `supported`, `partially_supported`, `insufficient_evidence`
-- task, summary, recommendations, constraints
-- implementation targets with platform, elements, entrypoint, and source
-- evidence with source, entity identifier/kind, block array, block index/kind
-- uncertainties and missing guidance
+**Verify**: the integration record names one exact upstream commit and gives a
+working command for both the MCP server and CLI checkout.
 
-Disallow unknown top-level properties. Export a validator returning structured
-errors. Empty recommendation/evidence arrays are valid only for
-`insufficient_evidence`.
+### Step 2: Configure the Site Kit as a real tool input
 
-**Verify**: `npm run test:local -- --test-name-pattern=context-package` → valid
-fixtures pass; missing/unknown fields and inconsistent statuses fail.
+1. Add project-local `dsds.config.mjs` with
+   `paths: ["./spec/examples/site-kit.dsds.json"]`.
+2. Add a documented MCP configuration example that starts `dsds-mcp` with this
+   repository as its working directory, so MCP and CLI resolve the same config.
+3. Keep any machine-local checkout paths, package-manager caches, and model
+   locations out of committed configuration.
 
-### Step 2: Normalize entities and searchable evidence
+**Verify**: from the repository root, the CLI can list the Site Kit entities
+without setting `DSDS_PATHS` manually.
 
-Flatten single entities, entity groups, and nested token-group entities into a
-stable array. Preserve source path and JSON pointers. Index both
-`documentBlocks` and `agentDocumentBlocks`; never merge away which array a block
-came from. Extract the Site Kit extension into normalized implementation
-targets.
+### Step 3: Prove the query and grounding workflow
 
-**Verify**: `npm run test:local -- --test-name-pattern=entities` → stable order,
-unique identifiers, pointers, both block arrays, and Site Kit targets.
-
-### Step 3: Implement explainable lexical retrieval
-
-Lowercase and tokenize words plus kebab-case segments. Remove a small,
-hard-coded stop-word set. Score exact identifier `+8`, name `+6`, metadata tag
-`+5`, description `+3`, block text `+2`, and implementation tag `+8`. Return
-the top five entities with a score breakdown. Expand direct relationships one
-hop after ranking; expanded entities retain reason `relationship` and never
-displace a direct top result.
-
-Store scoring constants in one exported object. Do not add dependencies.
-
-**Verify**: `npm run test:local -- --test-name-pattern=retrieve` → the warning
-page task ranks `ds-callout`, code tasks rank `ds-code`, property-table tasks
-rank `ds-prop-table`, unsupported tasks return no result above threshold, and
-score breakdowns are stable.
-
-### Step 4: Build the deterministic package
-
-Create a concise package from ranked evidence. Set:
-
-- `supported` when at least one direct result exceeds the documented threshold
-  and required implementation guidance is present
-- `partially_supported` when evidence exists but one requested capability is
-  absent
-- `insufficient_evidence` when no result exceeds the threshold
-
-Recommendations must quote or closely summarize evidence and cite its exact
-block pointer. Implementation targets come only from documented extensions.
-
-**Verify**: package unit tests cover all three statuses and reject invented
-elements.
-
-### Step 5: Add JSON and Markdown CLI output
-
-Implement:
+Run and capture stable, reviewable examples using the pinned CLI checkout:
 
 ```text
-dsds-local context "<task>" --source <path> --format json|markdown [--output <path>]
+dsds list --kind component --json
+dsds search "warning" --json
+dsds get ds-callout --block api --json
+dsds context ds-button --json
+dsds validate spec/examples/site-kit.dsds.json --json
+dsds doctor --json
 ```
 
-Default format is Markdown for a terminal and JSON when stdout is not a TTY.
-If `--output` exists, refuse overwrite unless `--force`. Keep diagnostics on
-stderr. JSON is byte-stable for unchanged input.
+Verify equivalent MCP calls in an MCP-capable client:
 
-**Verify**: `npm run test:local` and both smoke commands pass.
+```text
+dsds_context_brief(useCase="build")
+dsds_search_entities(query="warning")
+dsds_get_agent_context(identifier="ds-button")
+```
+
+Assertions:
+
+- Searching `warning` finds the documented callout rather than an invented
+  component.
+- Button context includes its documented primary/secondary variants, native
+  button contract, and source-module link.
+- The tool can retrieve Site Kit form components, including the exploratory
+  components, only because they exist in the corpus.
+- Validation and doctor fail with an actionable diagnostic if the configured
+  document is invalid or missing.
+
+**Verify**: add a small automated integration test where the upstream CLI is
+available; otherwise provide a versioned manual acceptance script and mark the
+automation gap explicitly.
+
+### Step 4: Document the agent and shell workflows
+
+Document two intentional paths:
+
+- **MCP-capable coding agent:** start with `dsds_context_brief`, search the
+  corpus, then retrieve agent context for the selected component.
+- **Shell-only or local-model workflow:** run `dsds search` and `dsds context`
+  with `--json`, then pass the returned, cited information to the model or
+  human. The model must not be asked to discover components independently.
+
+Include the command for the project's existing validation CLI only where it
+still adds value; do not present it as a competing context system.
+
+**Verify**: a new contributor can follow either path from the documentation
+without needing to inspect source code first.
+
+### Step 5: Rehearse the offline prerequisite
+
+Before travel, while online:
+
+1. Clone or update the pinned `dsds-tools` checkout.
+2. Install its declared dependencies and confirm Node can run both surfaces.
+3. Install or cache `dsds-mcp` if using the published MCP package.
+4. Run the Step 3 CLI workflow with the network disabled or unavailable.
+5. Record the exact preparation command and a short failure-recovery checklist.
+
+**Verify**: the CLI `list`, `search`, `context`, `validate`, and `doctor`
+commands work against the local Site Kit corpus without a network request.
 
 ## Test plan
 
-Use the Site Kit corpus plus compact inline fixtures. Cover query ranking,
-relationship expansion, agent-only blocks, status decisions, citation
-pointers, target extraction, no-result behavior, output stability, overwrite
-protection, stdout/stderr, and exit codes.
+- Configuration discovery uses `dsds.config.*` from the repository root.
+- CLI stdout is parseable JSON and stderr contains only diagnostics.
+- `dsds search "warning"` finds `ds-callout`; `dsds context ds-button` returns
+  documented constraints and source references.
+- Missing configuration and invalid source documents return nonzero exit codes.
+- MCP and CLI see the same entities from the same Site Kit file.
+- The offline rehearsal exercises the prepared local CLI, not a first-time
+  `npx` download.
 
 ## Done criteria
 
-- [ ] `npm run validate` and `npm run test:local` exit 0.
-- [ ] The CLI emits schema-valid JSON and readable Markdown.
-- [ ] Every recommendation resolves to an indexed evidence pointer.
-- [ ] Implementation targets come only from documented source data.
-- [ ] Unsupported tasks produce `insufficient_evidence`.
-- [ ] No model/runtime dependency exists yet.
+- [ ] The upstream toolchain is pinned to a reviewed immutable revision.
+- [ ] The Site Kit is discoverable through both CLI and MCP configuration.
+- [ ] Grounded component context is demonstrated for at least `ds-callout`,
+  `ds-button`, and one form component.
+- [ ] Configuration and schema failures have tested actionable diagnostics.
+- [ ] The shell-only workflow has no dependency on live network access after
+  preparation.
+- [ ] No duplicate retrieval, context-package, MCP, CLI, or Gum implementation
+  was added to this repository.
 - [ ] Plan 003 is marked `DONE`.
+
+## Follow-on plan consequences
+
+- **Plan 004:** rewrite as an optional local-model consumption and evaluation
+  plan. It may call the prepared CLI, but must not recreate retrieval.
+- **Plan 005:** remove from the MVP unless a later user study proves a Gum UI
+  adds value beyond `dsds-cli`.
+- **Plan 006:** retain as the release gate, rewritten around pinned installs,
+  cached dependencies, and an offline rehearsal.
 
 ## STOP conditions
 
-- Plans 001 or 002 are incomplete.
-- DSDS permits duplicate identifiers in a scope the normalizer cannot
-  disambiguate with source and pointer.
-- A useful implementation target requires parsing arbitrary code.
-- A ranking requirement cannot be expressed with deterministic fixtures.
-
-## Maintenance notes
-
-Treat schema version 1 and scoring constants as reviewable public contracts.
-Plan 004 must consume this baseline rather than reimplement retrieval. Keep the
-retrieval-only path permanently available for evaluation and debugging.
+- The upstream MCP or CLI no longer provides the documented query/context
+  contract at the reviewed revision.
+- A required workflow needs parsing arbitrary source code rather than consuming
+  documented DSDS entities and extensions.
+- MCP and CLI resolve different Site Kit inputs from the same repository config.
+- Offline operation requires a first-time registry download or a network-only
+  service.
