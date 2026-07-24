@@ -1,6 +1,6 @@
 ---
 name: dsds-web-components-authoring
-description: Author, update, or review accessible standards-based Web Components for the DSDS Site Kit. Use for custom-element implementation, public API design, attributes and properties, events, slots, CSS parts and custom properties, tokenized styling, lifecycle cleanup, component registration, accessibility checks, tests, and mapping a component contract into a DSDS entity.
+description: Author, update, or review accessible standards-based Web Components for the DSDS Site Kit. Use for custom-element implementation, public API design, attributes and properties, events, slots, CSS parts and custom properties, tokenized styling, lifecycle cleanup, component registration, accessibility checks, tests, and mapping a component contract into a DSDS entity. Retrieve documented DSDS context through dsds-tools before changing a public component contract.
 ---
 
 # DSDS Web Components Authoring
@@ -11,14 +11,23 @@ documentation remain one reviewable contract.
 ## Establish the contract
 
 1. Read repository instructions and the task before editing.
-2. Inspect `site/components/_shared.js`, `site/components/index.js`,
+2. Retrieve grounded DSDS context before interpreting or changing a public
+   contract:
+   - In an MCP-capable agent, call `dsds_context_brief`, then
+     `dsds_search_entities` and `dsds_get_agent_context` for the relevant
+     component.
+   - In a shell-only workflow, run `dsds search <task-or-component> --json`
+     and `dsds context <component-id> --json`.
+   - If `dsds-tools` is not configured, report that gap and inspect the checked-
+     in corpus directly; do not invent a replacement retrieval system.
+3. Inspect `site/components/_shared.js`, `site/components/index.js`,
    `site/tokens.css`, and the nearest comparable component.
-3. Inspect the component's DSDS entity in
+4. Cross-check the component's DSDS entity in
    `spec/examples/site-kit.dsds.json`, if it exists.
-4. Read [component-contract.md](references/component-contract.md).
-5. Read [dsds-mapping.md](references/dsds-mapping.md) when creating or changing
+5. Read [component-contract.md](references/component-contract.md).
+6. Read [dsds-mapping.md](references/dsds-mapping.md) when creating or changing
    public API, documentation, or provenance.
-6. State whether the work creates a component, changes an existing contract,
+7. State whether the work creates a component, changes an existing contract,
    or only changes internals. Treat any attribute, property, event, slot, CSS
    part, or CSS custom property change as a public contract change.
 
@@ -83,17 +92,20 @@ contract changes:
 - preserve the Site Kit extension containing `tagName`, `entrypoint`, and
   `module`.
 
-DSDS owns intent, guidance, and provenance. A future Custom Elements Manifest
-may own generated API facts, but do not add or assume that automation unless
-the task explicitly includes it.
+DSDS owns intent, guidance, and provenance. `dsds-tools` is the project's
+grounded discovery and verification surface; this skill owns only the
+project-specific authoring workflow. A future Custom Elements Manifest may own
+generated API facts, but do not add or assume that automation unless the task
+explicitly includes it.
 
 ## Verify the change
 
 Run the narrowest relevant checks first, then the repository gates:
 
 ```sh
+dsds validate spec/examples/site-kit.dsds.json --json
+dsds doctor --json
 node --test test/site-kit-contract.test.js
-node scripts/validate.js
 node scripts/lint-docs.js spec/examples/site-kit.dsds.json
 npm run lint:css
 npm run build
@@ -101,8 +113,8 @@ npm run test:a11y
 ```
 
 Treat editorial warnings about the changed entity as failures even when a
-command exits successfully. If a command is unavailable, report the exact gap
-and run the remaining checks.
+command exits successfully. If `dsds` is unavailable, report the configuration
+gap, run the remaining project checks, and do not add a competing CLI command.
 
 ## Guardrails
 
