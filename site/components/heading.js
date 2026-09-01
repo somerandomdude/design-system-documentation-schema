@@ -40,8 +40,12 @@ const HEADING_CSS = `
     vertical-align: baseline;
     transition: opacity var(--ds-duration-fast) var(--ds-ease-standard);
   }
-  .heading:hover .anchor-link { opacity: 0.6; }
-  .anchor-link:hover { opacity: 1 !important; }
+  /* :where() zeroes out .heading:hover's contribution to this selector's
+     specificity, so .anchor-link:hover (a real, higher-specificity
+     selector on its own) naturally outranks it on direct hover - no
+     !important needed to break the tie. */
+  :where(.heading:hover) .anchor-link { opacity: 0.6; }
+  .anchor-link:hover { opacity: 1; }
 `;
 
 export class DsHeading extends HTMLElement {

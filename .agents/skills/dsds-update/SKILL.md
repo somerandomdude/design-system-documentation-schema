@@ -44,7 +44,7 @@ When adding new sections or fields, verify the exact shape:
 - **Bundled schema** (in-repo): `packages/specs/schema/dsds.bundled.schema.json`
 - **Section reference**: `https://designsystemdocspec.org/sections-{kind}`
 - **Entry reference**: `https://designsystemdocspec.org/entries-{kind}`
-- **Full architecture**: https://designsystemdocspec.org/index.html#how-the-schema-is-organized
+- **Full architecture**: https://designsystemdocspec.org/schema.html#how-the-schema-is-organized
 
 ## Gotchas
 

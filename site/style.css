@@ -17,7 +17,7 @@ html {
     -webkit-text-size-adjust: 100%; /* still required by Safari; no unprefixed fallback there */
     text-size-adjust: 100%;
     scroll-behavior: smooth;
-    background: #1a1a1a;
+    background: var(--ds-color-bg-accent);
 }
 
 body {
@@ -28,6 +28,13 @@ body {
     line-height: 1.6;
     display: flex;
     min-height: 100vh;
+
+    /* 100dvh accounts for mobile browser chrome (address bar) shrinking
+       the real viewport - 100vh alone is the classic mobile-Safari bug
+       where a full-height element runs taller than what's actually
+       visible. Cascading fallback: an unsupported browser just never
+       sees this second declaration and keeps the 100vh above. */
+    min-height: 100dvh;
     text-rendering: geometricprecision;
     -webkit-font-smoothing: antialiased;
     padding: 0;
@@ -68,6 +75,15 @@ body {
 
 .content__container {
     padding-block-start: var(--ds-height-nav, 64px);
+}
+
+/* content--full pages (Quick start, Schema) open with <ds-header>'s own
+   full-viewport hero (min-height: 100dvh, see header.js) instead of
+   flowing straight from the fixed nav bar - the hero already clears the
+   nav on its own, so this container's nav-clearance padding is redundant
+   weight stacked on top of it, not a second gap that needs clearing. */
+.content--full .content__container {
+    padding-block-start: 0;
 }
 
 .content__inner {

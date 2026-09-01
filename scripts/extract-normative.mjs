@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * extract-normative.mjs — Generate the normative-statements index for the
- * Conformance page.
+ * README's Conformance section.
  *
  * DSDS keeps its normative language (RFC 2119 MUST/SHOULD/MAY sentences)
  * inside schema `description` strings, right next to the structures that
@@ -11,12 +11,15 @@
  *
  * This script derives that place instead of duplicating it: it walks every
  * split schema, extracts each sentence carrying an RFC 2119 keyword, assigns
- * it a stable location-based ID, and writes the index into
- * site/content/overview.mdx (in its Conformance section) between marker
- * comments — the same
- * generate-into-markers pattern sync-examples.js uses. The schemas stay the
- * single source of truth; the index cannot drift because it is regenerated
- * on every build and guarded by --check in postvalidate.
+ * it a stable location-based ID, and writes the index into README.md (in
+ * its "Index of every rule" section, under Conformance) between marker
+ * comments — the same generate-into-markers pattern sync-examples.js uses.
+ * Plain HTML comments here, not the `{/* ... *\/}` JSX-comment syntax an
+ * earlier version of this script used - README.md is read by GitHub's own
+ * markdown renderer, not compiled through this repo's MDX pipeline, and a
+ * plain HTML comment is invisible in both raw and rendered GFM. The schemas
+ * stay the single source of truth; the index cannot drift because it is
+ * regenerated on every build and guarded by --check in postvalidate.
  *
  * Statement IDs are location-based (`<dir>/<file>§<jsonPath>.<n>`), so they
  * are stable as long as the schema path is stable — moving or renaming a
@@ -39,10 +42,28 @@ const yaml = require("js-yaml");
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "..");
 const SCHEMA_DIR = path.join(ROOT, "schema");
-const PAGE = path.join(ROOT, "site", "content", "overview.mdx");
+const PAGE = path.join(ROOT, "README.md");
 
-const BEGIN = "{/* dsds:normative-index */}";
-const END = "{/* /dsds:normative-index */}";
+const BEGIN = "<!-- dsds:normative-index -->";
+const END = "<!-- /dsds:normative-index -->";
+
+// The DSDS version lives in schema/dsds.bundled.yaml's own `$id` (ex:
+// "https://.../v0.20.0/dsds.bundled.yaml") — see nav.js's/compile-mdx.mjs's
+// own readSpecVersion() for the same extraction. Content pages under
+// site/content/ reference it through the {{VERSION}} token, substituted at
+// MDX-compile time - but README.md is never compiled through that
+// pipeline (plain GFM, read directly by GitHub/npm), so this script reads
+// the real version and inlines it directly instead of leaving the token
+// for a substitution step that will never run.
+function readSpecVersion() {
+  try {
+    const raw = fs.readFileSync(path.join(SCHEMA_DIR, "dsds.bundled.yaml"), "utf-8");
+    const match = /\/v([^/\s"']+)\/dsds\.bundled\.yaml/.exec(raw);
+    return match ? match[1] : "";
+  } catch {
+    return "";
+  }
+}
 
 // Strongest keyword present classifies the statement. Order matters:
 // longest match first so "MUST NOT" is not classified as "MUST".
@@ -156,7 +177,7 @@ function renderIndex({ groups, counts }) {
   lines.push(BEGIN);
   lines.push("");
   lines.push(
-    `*Generated from the v{{VERSION}} schemas by \`scripts/extract-normative.mjs\` — do not edit by hand. ` +
+    `*Generated from the v${readSpecVersion()} schemas by \`scripts/extract-normative.mjs\` — do not edit by hand. ` +
       `${total} statements: ${counts["MUST"]} MUST, ${counts["MUST NOT"]} MUST NOT, ` +
       `${counts["SHOULD"]} SHOULD, ${counts["SHOULD NOT"]} SHOULD NOT, ${counts["MAY"]} MAY.*`,
   );

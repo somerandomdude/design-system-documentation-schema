@@ -420,12 +420,62 @@
       line-height: var(--ds-line-height-loose);
       overflow-x: auto;
       white-space: pre;
+      container-type: scroll-state;
+    }
+    /* Docked-state styling: Chrome/Edge only (no @supports fallback, same
+       stance as the CSS Custom Highlight API above) - a border only appears
+       once pre has actually stuck, so it reads as "now floating over
+       content" rather than a permanent line under every code block. On
+       ::after, not pre itself: a scroll-state container query can restyle
+       a *descendant* of its container, but not the container element
+       itself (confirmed empirically - self-targeting is valid syntax that
+       silently never matches). Also keeps pre's own text content a single,
+       untouched node - no wrapping span that CSS.highlights' Range offsets
+       would need to account for. Absolutely positioned so the 1px line
+       doesn't add to pre's own scrollable content. */
+    pre::after {
+      content: "";
+      position: absolute;
+      inset-inline: 0;
+      inset-block-end: 0;
+      height: 1px;
+      background: transparent;
+      transition: background-color var(--ds-duration-fast) var(--ds-ease-standard);
+    }
+    @container scroll-state(stuck: top) {
+      pre::after {
+        background: var(--ds-color-border);
+      }
     }
 
     :host([wrap]) pre {
       white-space: pre-wrap;
       overflow-wrap: break-word;
       overflow-x: visible;
+    }
+
+    /* For a fixed-width block (ASCII art, a diagram) where every line is the
+       same length by construction - text-align centers each line
+       individually, but since they're all equal width that lands on the
+       same offset every time, so the block centers as a whole without
+       distorting it. Opt-in: centering arbitrary code/prose whose lines
+       vary in length would just look ragged. line-height: 1 and a heavier
+       weight read better for art built from repeated characters (box-
+       drawing, "#") than the site's normal loose reading line-height and
+       regular weight, which were tuned for actual code. */
+    :host([center]) pre {
+      text-align: center;
+      line-height: 1;
+      font-weight: 700;
+    }
+    /* Vertically centers the block within .wrapper's own box - relevant
+       specifically when a stretched container (the schema-page intro's
+       .end column, matched to a tall .start) gives .wrapper more height
+       than the art itself needs; in an unstretched container .wrapper is
+       already exactly as tall as its content, so this is a no-op there. */
+    :host([center]) .wrapper {
+      display: grid;
+      place-items: center;
     }
 
     code {
@@ -761,8 +811,8 @@
       "ds-table a { color: var(--ds-color-accent); }",
       "ds-table td:first-child { white-space: nowrap; }",
       "ds-table td:first-child ds-code[inline] { white-space: nowrap; }",
-      "th:first-child, td:first-child { padding-inline-start: var(--ds-space-4) !important; }",
-      "th:last-child, td:last-child { padding-inline-end: var(--ds-space-4) !important; }"
+      "th:first-child, td:first-child { padding-inline-start: var(--ds-space-4); }",
+      "th:last-child, td:last-child { padding-inline-end: var(--ds-space-4); }"
     ].join("\n");
     document.head.appendChild(style);
   }
@@ -821,8 +871,12 @@
       vertical-align: baseline;
       transition: opacity var(--ds-duration-fast) var(--ds-ease-standard);
     }
-    .heading:hover .anchor-link { opacity: 0.6; }
-    .anchor-link:hover { opacity: 1 !important; }
+    /* :where() zeroes out .heading:hover's contribution to this selector's
+       specificity, so .anchor-link:hover (a real, higher-specificity
+       selector on its own) naturally outranks it on direct hover - no
+       !important needed to break the tie. */
+    :where(.heading:hover) .anchor-link { opacity: 0.6; }
+    .anchor-link:hover { opacity: 1; }
   `;
 
   class DsHeading extends HTMLElement {
@@ -937,7 +991,10 @@
 
   const HEADER_CSS = `
     ${BASE_RESET}
-    :host { display: flex; flex-direction: column; margin-bottom: var(--ds-space-8); min-height: 100vh; background: var(--ds-color-bg-accent); justify-content: end; padding-block-start: var(--ds-height-nav, 64px); }
+    /* min-height set twice on purpose - 100dvh (mobile-chrome-aware) as a
+       cascading enhancement over 100vh, not a replacement; see style.css's
+       body rule for the same pattern and why. */
+    :host { display: flex; flex-direction: column; min-height: 100vh; min-height: 100dvh; background: var(--ds-color-bg-accent); justify-content: end; padding-block-start: var(--ds-height-nav, 64px); }
 
     h1 {
       font-size: clamp(2em, 4vw, 4em);
@@ -1019,7 +1076,7 @@
        non-split sections, which have no such inner wrapper of their own). */
     :host {
       display: block;
-      padding-block: 96px;
+      padding-block: 128px;
     }
     :host(:first-of-type) {
       padding-block-start: 0;
@@ -1027,35 +1084,85 @@
     /* Sticks to the top of the viewport (just under the fixed nav bar)
        while you scroll through this section's own content - property
        tables can run long, so the title stays in view instead of
-       scrolling away with the first few lines. Works the same whether
-       this is a layout="split" section or not: the containing block is
-       always this section's own :host, so the title releases once this
-       section's content has fully scrolled past, same as any sticky
-       header. A solid background keeps scrolled-past text from showing
-       through while it's stuck; z-index just needs to clear ordinary
-       content, not the nav bar itself (--ds-z-nav, higher). Sized and
-       weighted large/light on purpose - one definition per screenful of
-       scrolling reads better as a real heading than a small subhead
-       repeated 36 times down one page. */
-    h2 {
+       scrolling away with the first few lines. The eyebrow (the directory
+       a definition's schema file lives in, e.g. "common/") sticks as part
+       of the same block, not separately - it's the title's own kicker, so
+       it docks and releases together with it rather than scrolling away
+       on its own the moment the title starts floating. Works the same
+       whether this is a layout="split" section or not: the containing
+       block is always this section's own :host, so the block releases
+       once this section's content has fully scrolled past, same as any
+       sticky header. A solid background keeps scrolled-past text from
+       showing through while it's stuck; z-index just needs to clear
+       ordinary content, not the nav bar itself (--ds-z-nav, higher). The
+       title is sized and weighted large/light on purpose - one definition
+       per screenful of scrolling reads better as a real heading than a
+       small subhead repeated 36 times down one page. */
+    .heading-block {
       position: sticky;
       top: var(--ds-height-nav, 64px);
       z-index: 1;
       background: var(--ds-color-bg);
-      font-family: ${FONT.mono};
-      font-size: 3em;
-      font-weight: 300;
-      color: var(--ds-color-text);
-      margin: 0 0 var(--ds-space-2);
       padding-block: var(--ds-space-2);
+      margin: 0 0 var(--ds-space-2);
+      container-type: scroll-state;
+    }
+    .eyebrow {
+      font-family: ${FONT.mono};
+      font-size: var(--ds-font-size-sm);
+      font-weight: 550;
+      color: var(--ds-color-text);
+      margin: 0;
+    }
+    h2 {
+      font-family: ${FONT.mono};
+      font-size: 2em;
+      font-weight: 400;
+      color: var(--ds-color-text);
+      line-height: 1.2;
+      margin: 0;
+    }
+    /* Docked-state styling: Chrome/Edge only (no @supports fallback, same
+       stance as the CSS Custom Highlight API in code.js) - a border only
+       appears once the block has actually stuck to the nav bar, not for
+       the whole time it's merely sticky-capable, so it reads as "now
+       floating over content" rather than a permanent underline. The
+       border lives on ::after, not .heading-block itself: a scroll-state
+       container query can restyle a *descendant* of its container, but
+       not the container element itself (confirmed empirically -
+       self-targeting silently never matches, despite being valid,
+       parseable syntax) - a pseudo-element still counts as a descendant,
+       so it's the smallest fix that doesn't need an extra wrapper div.
+       Absolutely positioned so the 1px line doesn't add to the block's
+       own flow height when it's not stuck. */
+    .heading-block::after {
+      content: "";
+      position: absolute;
+      inset-inline: 0;
+      inset-block-end: 0;
+      height: 1px;
+      background: transparent;
+      transition: background-color var(--ds-duration-fast) var(--ds-ease-standard);
+    }
+    @container scroll-state(stuck: top) {
+      .heading-block::after {
+        background: var(--ds-color-border);
+      }
+    }
+    /* type-line and desc share one wrapper so the reading-width cap and
+       the gap before whatever comes next (a prop table, the slotted
+       content) are each stated once, on .meta, instead of repeated on
+       both children. */
+    .meta {
+      margin: 0 0 48px;
+      max-width: 65ch;
     }
     .desc {
       color: var(--ds-color-text);
       font-family: ${FONT.body};
-      font-size: var(--ds-font-size-base);
+      font-size: var(--ds-font-size-md);
       line-height: var(--ds-line-height-loose);
-      margin: 0 0 var(--ds-space-4);
-      max-width: 65ch;
+      margin: 0;
     }
     /* Plain text, not a badge/pill - "type" and "source" are facts about
        this definition, not a tag someone would filter or click on, so
@@ -1153,7 +1260,7 @@
 
   class DsDefSection extends HTMLElement {
     static get observedAttributes() {
-      return ["name", "anchor", "description", "type", "source", "layout"];
+      return ["name", "anchor", "description", "type", "source", "layout", "eyebrow"];
     }
     constructor() {
       super();
@@ -1177,24 +1284,32 @@
       var type = this.getAttribute("type") || "";
       var source = this.getAttribute("source") || "";
       var layout = this.getAttribute("layout") || "";
+      var eyebrow = this.getAttribute("eyebrow") || "";
       // Set id on host for TOC linking
       if (anchor) this.id = anchor;
 
-      var start = '<h2 id="' + esc(anchor) + '">' + esc(name) + "</h2>";
+      // Eyebrow and title dock together as one sticky block - see
+      // .heading-block's own CSS comment.
+      var headingBlock = eyebrow ? '<p class="eyebrow">' + esc(eyebrow) + "</p>" : "";
+      headingBlock += '<h2 id="' + esc(anchor) + '">' + esc(name) + "</h2>";
+      var start = '<div class="heading-block">' + headingBlock + "</div>";
       // type and source share one line, separated by a middle dot, instead of
       // type living here and source living in a separate "References:"-labeled
-      // line further down.
+      // line further down. type-line and desc then share one wrapping div -
+      // see .meta's own CSS comment.
+      var metaHtml = "";
       if (type || source) {
-        start += '<p class="type-line">';
-        if (type) start += '<span class="type">' + esc(type) + "</span>";
-        if (type && source) start += " · ";
-        if (source) start += "<ds-code inline>" + esc(source) + "</ds-code>";
-        start += "</p>";
+        metaHtml += '<p class="type-line">';
+        if (type) metaHtml += '<span class="type">' + esc(type) + "</span>";
+        if (type && source) metaHtml += " · ";
+        if (source) metaHtml += "<ds-code inline>" + esc(source) + "</ds-code>";
+        metaHtml += "</p>";
       }
       // Use escWithCode so CommonMark-style `inline code` spans in the
       // description render as <ds-code inline> rather than literal
       // backtick characters.
-      if (desc) start += '<p class="desc">' + escWithCode(desc) + "</p>";
+      if (desc) metaHtml += '<p class="desc">' + escWithCode(desc) + "</p>";
+      if (metaHtml) start += '<div class="meta">' + metaHtml + "</div>";
       start += "<slot></slot>";
 
       // .cols/.start wrap every section, not just layout="split" ones - see
@@ -1211,6 +1326,140 @@
           : "") +
         "</div>";
       this._shadow.innerHTML = html;
+    }
+  }
+
+  // ── guide-section.js ──
+  // ═══════════════════════════════════════════════════════════════════════════
+  // <ds-guide-section>
+  //
+  // A two-column split wrapper for narrative guide pages (Quick start): help
+  // text on the left, its code example on the right - the same visual
+  // language as the Schema page's own <ds-def-section layout="split">, minus
+  // everything there that's specific to documenting a schema definition
+  // (a title it renders itself, an eyebrow, a type/source line). This
+  // component renders nothing of its own; both columns are plain slots, so
+  // the caller's own markdown-compiled heading levels, paragraphs, lists,
+  // and callouts pass through unchanged.
+  //
+  // Slots:
+  //   (default) — left column: heading, prose, whatever the step needs
+  //   example   — right column: the step's <ds-code>, if it has one
+  //
+  // .end (the right column) only renders when something is actually slotted
+  // into "example" - checked once, at connect time, since a step with no
+  // code has nothing to put there. Rendering it anyway, empty, would still
+  // look right at desktop widths (content__inner's own continuous background
+  // - see style.css's .content--full rule - paints white behind it either
+  // way, the same reasoning def-section.js's non-split defs rely on for the
+  // Schema page), but at the mobile breakpoint .cols collapses to a single
+  // column and .end stacks below .start in normal flow - there, an empty
+  // .end is not invisible, it's a blank padded white box with nothing in
+  // it. Omitting the element itself avoids that regardless of viewport,
+  // rather than trying to hide it with a mobile-only media query rule.
+  //
+  // Usage:
+  //   <ds-guide-section>
+  //     <h3>Adding more entries</h3>
+  //     <p>Any entry can sit alongside the system entry...</p>
+  //     <ds-code slot="example" language="yaml">...</ds-code>
+  //   </ds-guide-section>
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  const GUIDE_SECTION_CSS = `
+    ${BASE_RESET}
+    /* No :host-level margin/padding by default - .start/.end below carry
+       their own vertical padding instead, so consecutive sections' .end
+       panels touch with zero gap between them (same mechanism, same
+       reasoning, as def-section.js's own .end: that's what makes the
+       right-hand column read as one continuous panel instead of a stack of
+       separate boxes). */
+    :host {
+      display: block;
+    }
+
+    /* grid-template-columns still reserves both tracks even when .end
+       doesn't exist for a given section - .start stays confined to the
+       left half either way, which is what keeps text width consistent
+       across every section regardless of whether that one has an example. */
+    .cols {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--ds-space-8);
+      align-items: start;
+    }
+    .cols .start,
+    .cols .end {
+      min-width: 0;
+      height: 100%;
+    }
+
+    .start {
+      padding-block: var(--ds-space-16);
+    }
+
+    .end {
+      background: var(--ds-color-bg-inverse);
+      padding: var(--ds-space-16) var(--ds-space-4);
+    }
+
+    /* Stretches the slotted <ds-code> to match .end's own height, which is
+       what gives its inner <pre> (position: sticky, see code.js) room to
+       actually stick within instead of just sitting at its own natural,
+       short height with nowhere to move. Only the last one: a step can slot
+       more than one <ds-code> (stacked examples), and stretching every one
+       of them to 100% would stack N full-height copies instead of N natural-
+       height blocks plus one that fills the leftover space - doubling (or
+       worse) .end's real height and bleeding into the next section. */
+    ::slotted(ds-code[slot="example"]) {
+      display: block;
+    }
+    ::slotted(ds-code[slot="example"]:last-of-type) {
+      height: 100%;
+    }
+
+    @media (max-width: 900px) {
+      .cols {
+        grid-template-columns: 1fr;
+      }
+      :host {
+        padding-block: 96px;
+      }
+      .end {
+        margin-top: var(--ds-space-4);
+      }
+    }
+  `;
+
+  class DsGuideSection extends HTMLElement {
+    constructor() {
+      super();
+      this._shadow = createShadow(this, GUIDE_SECTION_CSS);
+    }
+
+    connectedCallback() {
+      // Mirrors code.js/prop-list.js/spec-nav.js's own note: a blocking
+      // <script> in <head> upgrades this element the instant the parser
+      // sees its opening tag, before any of its children (in particular,
+      // whatever might carry slot="example") have been parsed yet. Waiting
+      // for DOMContentLoaded guarantees they're all there before this
+      // checks for one.
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", () => this._render(), {
+          once: true,
+        });
+      } else {
+        this._render();
+      }
+    }
+
+    _render() {
+      const hasExample = this.querySelector('[slot="example"]') !== null;
+      this._shadow.innerHTML =
+        '<div class="cols">' +
+        '<div class="start"><slot></slot></div>' +
+        (hasExample ? '<div class="end"><slot name="example"></slot></div>' : "") +
+        "</div>";
     }
   }
 
@@ -1290,120 +1539,6 @@
     }
   }
 
-  // ── def-index.js ──
-  const DEF_INDEX_CSS = `
-    ${BASE_RESET}
-    :host {
-      display: block;
-      margin-bottom: var(--ds-space-8);
-    }
-    nav {
-      /*background: var(--ds-color-bg-subtle);
-      padding: var(--ds-space-4) var(--ds-space-4);
-      */
-    }
-    /*
-    ::slotted(p) {
-      margin-bottom: var(--ds-space-2);
-      font-size: var(--ds-font-size-base);
-    }
-    */
-    .defindex__title {
-      font-size: var(--ds-font-size-base);
-      font-weight: var(--ds-font-weight-bold);
-      /* Default ("info") variant. */
-      background: var(--ds-color-text);
-      color: var(--ds-color-text-inverse);
-      display: inline-block;
-      padding: var(--ds-space-2) var(--ds-space-4);
-      padding-inline-end: calc(var(--ds-space-4) + var(--ds-space-2));
-    }
-
-    .defindex__title:empty {
-      display: none;
-    }
-
-    .defindex__content {
-      background: var(--ds-color-bg-inverse);
-      padding: var(--ds-space-4);
-    }
-
-    ::slotted(ul) {
-      list-style: none;
-      list-style-type: none;
-      padding: 0;
-      margin: 0;
-      column-count: 3;
-      column-gap: var(--ds-space-8);
-    }
-
-    @media (max-width: 600px) {
-      ::slotted(ul) {
-        column-count: 1;
-      }
-    }
-  `;
-
-  /* Light-DOM styles for list items and links inside <ds-def-index>,
-     because ::slotted only reaches direct children, not nested <li>/<a>. */
-  const DEF_INDEX_LIGHT_ID = "ds-def-index-light-styles";
-  function ensureDefIndexLightStyles() {
-    if (document.getElementById(DEF_INDEX_LIGHT_ID)) return;
-    var s = document.createElement("style");
-    s.id = DEF_INDEX_LIGHT_ID;
-    s.textContent = [
-      "ds-def-index ul { padding-inline-start: 0 !important; margin-inline-start: 0 !important; margin-block-end: 0 !important; list-style: none !important; }",
-      "ds-def-index li { margin-bottom: var(--ds-space-1); font-size: var(--ds-font-size-base); break-inside: avoid; padding-inline-start: 0; }",
-      "ds-def-index li a { font-family: var(--ds-font-mono); }",
-    ].join("\n");
-    document.head.appendChild(s);
-  }
-
-  class DsDefIndex extends HTMLElement {
-    static get observedAttributes() {
-      return ["title"];
-    }
-
-    constructor() {
-      super();
-      this._shadow = createShadow(this, DEF_INDEX_CSS);
-      this._shadow.innerHTML = '<nav part="nav"><span class="defindex__title" part="title"></span><div class="defindex__content" part="content"><slot></slot></div></nav>';
-    }
-
-    connectedCallback() {
-      ensureDefIndexLightStyles();
-      this._render();
-    }
-
-    attributeChangedCallback() {
-      this._render();
-    }
-
-    _render() {
-      const title = this.getAttribute("title") || "";
-      const titleEl = this._shadow.querySelector(".defindex__title");
-      if (titleEl) titleEl.textContent = title;
-    }
-  }
-
-  // ── def-example.js ──
-  const DEF_EXAMPLE_CSS = `
-    ${BASE_RESET}
-    :host {
-      display: block;
-      margin-top: var(--ds-space-4);
-      margin-bottom: var(--ds-space-4);
-    }
-  `;
-
-  class DsDefExample extends HTMLElement {
-    constructor() {
-      super();
-      this._shadow = createShadow(this, DEF_EXAMPLE_CSS);
-      this._shadow.innerHTML = "<slot></slot>";
-    }
-  }
-
   // ── prop-list.js ──
   const PROP_TABLE_CSS = `
     ${BASE_RESET}
@@ -1416,11 +1551,10 @@
 
     .prop {
       padding: var(--ds-space-4) 0;
-      border-bottom: 1px solid var(--ds-color-border-light);
     }
 
     .prop:first-child { padding-top: 0; }
-    .prop:last-child { padding-bottom: 0; border-bottom: none; }
+    .prop:last-child { padding-bottom: 0; }
 
     .prop-head {
       display: flex;
@@ -1470,19 +1604,25 @@
       color: var(--ds-color-text);
     }
 
-    /* Deep-link, revealed on row hover — mirrors <ds-heading>'s anchor-link. */
+    /* Deep-link, revealed on row hover — mirrors <ds-heading>'s anchor-link
+       (after the text, not before - order: 1 moves it past prop-name/
+       prop-type/prop-status, all still default order: 0, regardless of
+       which of them wrap onto their own line). */
     .prop-anchor {
-      order: -1;
+      order: 1;
       display: inline;
       opacity: 0;
-      margin-inline-end: var(--ds-space-1);
+      margin-inline-start: var(--ds-space-1);
       color: var(--ds-color-text);
       text-decoration: none;
       font-size: 0.85em;
       transition: opacity var(--ds-duration-fast) var(--ds-ease-standard);
     }
-    .prop:hover .prop-anchor { opacity: 0.5; }
-    .prop-anchor:hover { opacity: 1 !important; }
+    /* :where() zeroes out .prop:hover's contribution to specificity here,
+       so .prop-anchor:hover naturally outranks it on direct hover - same
+       fix as <ds-heading>'s own anchor-link, no !important needed. */
+    :where(.prop:hover) .prop-anchor { opacity: 0.5; }
+    .prop-anchor:hover { opacity: 1; }
 
     .prop-desc {
       font-family: ${FONT.body};
@@ -1694,10 +1834,15 @@
   //
   // Mobile behavior:
   //   The bar itself never hides — at ≤900px the links row (.nav__items)
-  //   collapses to 0 height by default, and the logo in the title area is
-  //   replaced by a menu button in the same spot. Clicking it (or setting the
-  //   `open` attribute) drops the links down as a full-width panel below the
-  //   title row.
+  //   becomes a native popover instead of an always-visible flex row, and the
+  //   logo in the title area is replaced by a menu button that opens it
+  //   (popovertarget, not a click handler). Escape, clicking outside, and
+  //   opening a second popover elsewhere on the page all close it for free —
+  //   the browser's own popover="auto" behavior, not code this component has
+  //   to implement or maintain. Above 900px the popover machinery is present
+  //   but inert: author CSS forces the row visible and back into normal flow
+  //   regardless of open state, since author styles always win over the
+  //   user-agent's own popover defaults.
   //
   // Usage:
   //   <ds-spec-nav title="DSDS 0.1" title-href="index.html" active="index">
@@ -1722,11 +1867,10 @@
       align-items: center;
       justify-content: space-between;
       color: var(--ds-color-text);
-      background: var(--ds-color-bg-inverse);
+      background: color-mix(in oklch, var(--ds-color-bg-accent) 90%, transparent);
       font-family: var(--ds-font-body);
-      width: 100%;
       min-height: var(--ds-height-nav, 64px);
-      padding-inline: var(--ds-space-4);
+      padding-inline: calc(var(--ds-space-4) * 2);
     }
 
     /* ── Title ──────────────────────────────────────────── */
@@ -1781,12 +1925,28 @@
       display: block;
     }
 
-    /* ── Links row ──────────────────────────────────────── */
+    /* ── Links row ──────────────────────────────────────────────────────
+       popover="auto" on this element always (see .nav__items:popover-open
+       below and the @media block) - the popover machinery only actually
+       does anything below 900px. Above that, this block resets every
+       user-agent popover default (position, inset, margin, border,
+       background, display) back to an ordinary in-flow flex row - author
+       styles always win over UA styles, regardless of :popover-open state,
+       so this is enough to make popover-ness a no-op at desktop widths
+       without a media-query-driven attribute toggle in JS. */
     .nav__items {
+      position: static;
+      inset: auto;
+      margin: 0;
+      border: none;
+      padding: 0;
+      background: none;
+      color: inherit;
       display: flex;
       flex-direction: row;
       align-items: center;
       gap: 4px;
+      overflow: visible;
     }
 
     .nav__link {
@@ -1814,7 +1974,7 @@
       border-block-end-color: var(--ds-color-accent);
     }
 
-    /* ── Mobile: bar stays put; only the links row collapses ────────────── */
+    /* ── Mobile: bar stays put; the links row becomes a real popover ────── */
     @media (max-width: 900px) {
 
       .nav__menu-btn {
@@ -1829,20 +1989,54 @@
         min-height: 64px;
       }
 
+      /* Positioned to sit directly under the (inset, floating) bar itself -
+         matches its own margin/height rather than the old in-flow "second
+         row of the same flex box" approach, since a popover is promoted out
+         of normal flow into the top layer regardless of what position we
+         give it otherwise. */
       .nav__items {
+        position: fixed;
+        top: calc(var(--ds-height-nav, 64px) + 1em);
+        left: 1em;
+        right: 1em;
+        margin: 0;
+        padding: var(--ds-space-4) 0;
+        background: color-mix(in oklch, var(--ds-color-bg-accent) 90%, transparent);
         flex-direction: column;
         align-items: stretch;
-        width: 100%;
-        max-height: 0;
-        overflow: hidden;
-        padding: 0;
-        transition: max-height var(--ds-duration-base) var(--ds-ease-standard);
-      }
-
-      :host([open]) .nav__items {
         max-height: 60vh;
         overflow-y: auto;
-        padding: var(--ds-space-4) 0;
+        /* display: none is the popover-closed UA default; only overridden
+           by :popover-open below. Opacity/transform are this component's
+           own open/close animation - display and overlay need
+           transition-behavior: allow-discrete since neither is normally
+           interpolable, and both need to outlast the opacity/transform
+           transition on the way out (that's what the overlay property is
+           for) or the panel would vanish instantly instead of fading. */
+        display: none;
+        opacity: 0;
+        transform: translateY(-8px);
+        transition: opacity var(--ds-duration-base) var(--ds-ease-standard),
+          transform var(--ds-duration-base) var(--ds-ease-standard),
+          display var(--ds-duration-base) allow-discrete,
+          overlay var(--ds-duration-base) allow-discrete;
+      }
+
+      .nav__items:popover-open {
+        display: flex;
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      /* The state a newly-opened popover transitions *from* - without this,
+         display/opacity/transform would already be at their :popover-open
+         values the instant it enters the top layer, and there'd be nothing
+         for the transition to animate from. */
+      @starting-style {
+        .nav__items:popover-open {
+          opacity: 0;
+          transform: translateY(-8px);
+        }
       }
 
       .nav__link {
@@ -1872,12 +2066,9 @@
     constructor() {
       super();
       this._shadow = createShadow(this, SPEC_NAV_CSS);
-      this._onKeydown = this._onKeydown.bind(this);
     }
 
     connectedCallback() {
-      document.addEventListener("keydown", this._onKeydown);
-
       // Light-DOM children (<a>) may not be parsed yet when a blocking
       // <script> in <head> registers the element — the parser upgrades the
       // element the instant it sees the opening tag, before it has parsed any
@@ -1896,13 +2087,9 @@
       }
     }
 
-    disconnectedCallback() {
-      document.removeEventListener("keydown", this._onKeydown);
-    }
-
     attributeChangedCallback(name) {
       if (name === "open") {
-        this._syncMenuButton();
+        this._syncPopoverToAttribute();
         return;
       }
       // Only re-render after the initial render has happened.
@@ -1921,20 +2108,37 @@
       }
     }
 
+    // Keeps the public `open` attribute/property in sync with the popover's
+    // real state, in whichever direction changed first: setting `.open` (or
+    // the attribute directly) calls show/hidePopover() here; the popover's
+    // own native `toggle` event (wired in _render() - fires for every
+    // dismissal path, the button, Escape, or clicking outside) sets the
+    // attribute to match from the other direction. The equality check stops
+    // the two from calling each other in a loop.
+    _syncPopoverToAttribute() {
+      const items = this._shadow.querySelector(".nav__items");
+      if (!items) return;
+      const isOpen = this.open;
+      if (items.matches(":popover-open") === isOpen) return;
+      if (isOpen) {
+        items.showPopover();
+      } else {
+        items.hidePopover();
+      }
+    }
+
     _render() {
       this._rendered = true;
       const title = this.getAttribute("title") || "";
       const titleHref = this.getAttribute("title-href") || "index.html";
       const active = this.getAttribute("active") || "";
-      const isOpen = this.open;
 
       const titleHtml = title
         ? '<div class="nav__title">' +
-          '<button class="nav__menu-btn" part="menu-btn" type="button" aria-label="Toggle navigation" aria-expanded="' +
-          (isOpen ? "true" : "false") +
+          '<button class="nav__menu-btn" part="menu-btn" type="button" popovertarget="nav-items" popovertargetaction="toggle" aria-label="Toggle navigation" aria-expanded="false">' +
           // The button's aria-label already names the control; its icon is
           // decorative and filled in async once loadIcon() resolves below.
-          '"><span class="nav__menu-icon" aria-hidden="true"></span></button>' +
+          '<span class="nav__menu-icon" aria-hidden="true"></span></button>' +
           '<a href="' +
           esc(titleHref) +
           '"><ds-logo class="nav__logo" size="2rem" fill="#000" aria-hidden="true"></ds-logo><span>' +
@@ -1948,26 +2152,36 @@
       this._shadow.innerHTML =
         '<nav class="nav" role="navigation" aria-label="Specification navigation" part="nav">' +
         titleHtml +
-        '<div class="nav__items" part="items">' +
+        '<div class="nav__items" part="items" id="nav-items" popover="auto">' +
         itemsHtml +
         "</div>" +
         "</nav>";
 
-      const btn = this._shadow.querySelector(".nav__menu-btn");
-      if (btn) {
-        btn.addEventListener("click", () => {
-          this.open = !this.open;
+      const itemsEl = this._shadow.querySelector(".nav__items");
+      if (itemsEl) {
+        // ToggleEvent, not click - this fires for every way the popover can
+        // open or close (the button, Escape, light-dismiss), so it's the one
+        // place aria-expanded, the icon, and the public `open` attribute all
+        // need to react, instead of duplicating that logic per dismissal path.
+        itemsEl.addEventListener("toggle", (e) => {
+          const isOpen = e.newState === "open";
+          const btn = this._shadow.querySelector(".nav__menu-btn");
+          if (btn) btn.setAttribute("aria-expanded", isOpen ? "true" : "false");
+          this._updateMenuIcon(isOpen);
+          if (isOpen) {
+            this.setAttribute("open", "");
+          } else {
+            this.removeAttribute("open");
+          }
         });
+        // A re-render (title/active changed) rebuilds .nav__items from
+        // scratch, which would otherwise silently drop an already-open
+        // state - restore it from the host's own `open` attribute, the
+        // single source of truth that survives the rebuild.
+        if (this.open) itemsEl.showPopover();
       }
 
-      this._updateMenuIcon(isOpen);
-    }
-
-    _syncMenuButton() {
-      const isOpen = this.open;
-      const btn = this._shadow.querySelector(".nav__menu-btn");
-      if (btn) btn.setAttribute("aria-expanded", isOpen ? "true" : "false");
-      this._updateMenuIcon(isOpen);
+      this._updateMenuIcon(this.open);
     }
 
     _updateMenuIcon(isOpen) {
@@ -1975,14 +2189,6 @@
       loadIcon(isOpen ? "close" : "menu").then((svg) => {
         if (icon) icon.innerHTML = svg;
       });
-    }
-
-    _onKeydown(e) {
-      if (e.key === "Escape" && this.open) {
-        this.open = false;
-        const btn = this._shadow.querySelector(".nav__menu-btn");
-        if (btn) btn.focus();
-      }
     }
 
     /**
@@ -2378,10 +2584,9 @@
     ["ds-back-to-top", DsBackToTop],
     ["ds-header", DsHeader],
     ["ds-def-section", DsDefSection],
+    ["ds-guide-section", DsGuideSection],
     ["ds-type-ref", DsTypeRef],
     ["ds-cross-refs", DsCrossRefs],
-    ["ds-def-index", DsDefIndex],
-    ["ds-def-example", DsDefExample],
     ["ds-prop-table", DsPropTable],
     ["ds-prop", DsProp],
     ["ds-spec-nav", DsSpecNav],

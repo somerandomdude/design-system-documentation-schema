@@ -460,9 +460,10 @@ source: ./tokens.dtcg.json`,
  * def-section.js's named "example" slot with layout="split"; when absent,
  * the section renders as a single column, same as before this existed.
  */
-function renderDefinition(defName, defSchema, { anchor, source, exampleYaml }) {
+function renderDefinition(defName, defSchema, { anchor, source, exampleYaml, eyebrow }) {
   const sourceAttr = source ? ` source="${esc(source)}"` : "";
   const layoutAttr = exampleYaml ? ` layout="split"` : "";
+  const eyebrowAttr = eyebrow ? ` eyebrow="${esc(eyebrow)}"` : "";
   const example = exampleYaml
     ? `<ds-code language="yaml" label="" slot="example" wrap>${esc(exampleYaml)}</ds-code>`
     : "";
@@ -495,6 +496,7 @@ function renderDefinition(defName, defSchema, { anchor, source, exampleYaml }) {
       type_attr: defSchema.type ? ` type="${esc(defSchema.type)}"` : "",
       source_attr: sourceAttr,
       layout_attr: layoutAttr,
+      eyebrow_attr: eyebrowAttr,
       content: content.join("\n"),
       example,
     });
@@ -631,6 +633,7 @@ function renderDefinition(defName, defSchema, { anchor, source, exampleYaml }) {
     type_attr: defSchema.type ? ` type="${esc(defSchema.type)}"` : "",
     source_attr: sourceAttr,
     layout_attr: layoutAttr,
+    eyebrow_attr: eyebrowAttr,
     content: content.join("\n"),
     example,
   });
@@ -721,11 +724,11 @@ function orderDefsByReference(defs) {
   return ordered;
 }
 
-// Returns the schema page's own content blocks separately (defIndex,
-// definitions, defNames, baseSlug) instead of one flattened string — the
-// caller (build()'s schema-page assembly) drops each into the combined
-// Schema page, grouped by file, with its own group heading between files
-// from a different schema/ subdirectory.
+// Returns the schema page's own content blocks separately (definitions,
+// defNames, baseSlug) instead of one flattened string — the caller
+// (build()'s schema-page assembly) drops each into the combined Schema
+// page, grouped by file, with its own group heading between files from a
+// different schema/ subdirectory.
 function renderSchemaPage(page) {
   const defs = page.data.$defs || {};
   const defNames = orderDefsByReference(defs);
@@ -738,25 +741,19 @@ function renderSchemaPage(page) {
   // anchor.
   const baseName = page.filename.replace(/\.schema\.yaml$/, "");
   const baseSlug = page.group === "root" ? baseName : `${page.group}-${baseName}`;
+  // The page-level "Base"/"Common"/"Metadata"/"Entries"/"Sections" group
+  // headings are gone (see build()'s schema-page assembly) - this is
+  // their replacement, one directory label per definition instead of one
+  // heading per group. `root` (base.schema.yaml) has no real subdirectory
+  // of its own, so it gets no eyebrow rather than a made-up "base/".
+  const eyebrow = page.group && page.group !== "root" ? `${page.group}/` : "";
 
   if (defNames.length === 0) {
     // Root-only schemas (no $defs). Every file currently has at least one
     // $defs entry - its own resolved root schema, added in discoverPages()
     // - so this branch doesn't fire today. Kept for a schema file that
     // genuinely has none.
-    return { defIndex: "", definitions: "", defNames, baseSlug };
-  }
-
-  // Definition index (if more than one definition)
-  let defIndex = "";
-  if (defNames.length > 1) {
-    const items = defNames
-      .map((defName) => {
-        const anchor = defName === page.title ? baseSlug : `${baseSlug}-${slug(defName)}`;
-        return `<li><a href="#${anchor}"><ds-code inline>${esc(defName)}</ds-code></a></li>`;
-      })
-      .join("\n");
-    defIndex = renderSub("def-index", { count: defNames.length, items });
+    return { definitions: "", defNames, baseSlug };
   }
 
   // Render each definition with its curated example (if one exists)
@@ -773,11 +770,12 @@ function renderSchemaPage(page) {
         anchor,
         source: relPath,
         exampleYaml: curated ? curated.yaml : undefined,
+        eyebrow,
       });
     })
     .join("\n");
 
-  return { defIndex, definitions, defNames, baseSlug };
+  return { definitions, defNames, baseSlug };
 }
 
 // ---------------------------------------------------------------------------
@@ -1479,7 +1477,7 @@ async function build() {
   const guideMarkdownDocs = [];
 
   // ── MDX content pages ─────────────────────────────────────────────────
-  const { compileAllMdx } = await loadMdxCompiler();
+  const { compileAllMdx, compileMdxFile } = await loadMdxCompiler();
   console.log("  Compiling MDX content…");
   const mdxPages = await compileAllMdx();
   for (const mdxPage of mdxPages) {
@@ -1558,25 +1556,43 @@ async function build() {
   // ── Schema page — one page, every definition ────────────────────────────
   //
   // Used to be one HTML/markdown page per schema file (23 of them). Now
-  // every file's def-section(s) render onto one combined "schema" page,
-  // grouped in the same order the old nav's groups used (Base, Common,
-  // Metadata, Entries, Sections) — `pages` is already in that order (see
-  // discoverPages()), so a group boundary is just "this page's group
-  // differs from the last one," not a re-sort.
+  // every file's def-section(s) render onto one combined "schema" page, in
+  // the same order the old nav's groups used (Base, Common, Metadata,
+  // Entries, Sections) — `pages` is already in that order (see
+  // discoverPages()). The HTML page no longer marks a group boundary with
+  // its own heading (36 definitions under 5 headings, vs. one small
+  // directory eyebrow per definition - see renderSchemaPage()'s own
+  // `eyebrow` and def-section.js) - the markdown mirror keeps its `##`
+  // group headings, though, since flat text has no per-definition eyebrow
+  // equivalent to fall back on.
   const GROUP_LABELS = { root: "Base", common: "Common", metadata: "Metadata", entries: "Entries", sections: "Sections" };
   let schemaDefinitions = [];
   let schemaMarkdownParts = [];
   let schemaDefEntries = []; // {name, anchor} - anchor already matches buildDefIndex()'s scheme
   let lastGroup = null;
 
+  // Intro, before every definition - hand-authored MDX (site/content/
+  // fragments/), not schema-driven, so it's compiled through the same
+  // pipeline as the narrative guide pages above. Lives in fragments/
+  // specifically so compileAllMdx()'s directory scan skips it - this isn't
+  // a standalone page with its own nav entry, sitemap row, or URL, just a
+  // block of content spliced onto the top of the Schema page. Pushed
+  // before the per-page loop below so it lands first in both
+  // schemaDefinitions and schemaMarkdownParts.
+  const introFragmentPath = path.join(
+    CONTENT_DIR,
+    "fragments",
+    "schema-intro.mdx",
+  );
+  const introFragment = await compileMdxFile(introFragmentPath);
+  schemaDefinitions.push(introFragment.html);
+  schemaMarkdownParts.push(fs.readFileSync(introFragmentPath, "utf-8").trim());
+
   for (const page of pages) {
-    const { defIndex, definitions, defNames, baseSlug } = renderSchemaPage(page);
+    const { definitions, defNames, baseSlug } = renderSchemaPage(page);
     if (page.group !== lastGroup) {
       lastGroup = page.group;
       const label = GROUP_LABELS[page.group] || page.group;
-      schemaDefinitions.push(
-        `<ds-heading level="2" anchor="schema-group-${esc(page.group)}">${esc(label)}</ds-heading>`,
-      );
       schemaMarkdownParts.push(`## ${label}`, "");
     }
     schemaDefinitions.push(definitions);

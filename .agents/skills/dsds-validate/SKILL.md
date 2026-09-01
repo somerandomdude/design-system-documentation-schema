@@ -57,7 +57,8 @@ The validation schema comes from the [DSDS project](https://github.com/somerando
 
 If validation fails on a field you're unsure about, consult the relevant docs page:
 
-- https://designsystemdocspec.org/index.html#conformance (full field reference, rule catalog, and how the schema is organized)
+- https://designsystemdocspec.org/schema.html#how-the-schema-is-organized (how the schema is organized)
+- https://github.com/somerandomdude/design-system-documentation-schema#conformance (full rule catalog and conformance classes)
 - `https://designsystemdocspec.org/sections-{kind}` (per-section constraints)
 - `https://designsystemdocspec.org/entries-{kind}` (per-entry constraints)
 

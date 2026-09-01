@@ -17,7 +17,10 @@ import { createShadow, esc, escWithCode, BASE_RESET, FONT } from "./_shared.js";
 
 const HEADER_CSS = `
   ${BASE_RESET}
-  :host { display: flex; flex-direction: column; margin-bottom: var(--ds-space-8); min-height: 100vh; background: var(--ds-color-bg-accent); justify-content: end; padding-block-start: var(--ds-height-nav, 64px); }
+  /* min-height set twice on purpose - 100dvh (mobile-chrome-aware) as a
+     cascading enhancement over 100vh, not a replacement; see style.css's
+     body rule for the same pattern and why. */
+  :host { display: flex; flex-direction: column; min-height: 100vh; min-height: 100dvh; background: var(--ds-color-bg-accent); justify-content: end; padding-block-start: var(--ds-height-nav, 64px); }
 
   h1 {
     font-size: clamp(2em, 4vw, 4em);

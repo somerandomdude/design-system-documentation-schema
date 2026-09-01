@@ -11,11 +11,10 @@ const PROP_TABLE_CSS = `
 
   .prop {
     padding: var(--ds-space-4) 0;
-    border-bottom: 1px solid var(--ds-color-border-light);
   }
 
   .prop:first-child { padding-top: 0; }
-  .prop:last-child { padding-bottom: 0; border-bottom: none; }
+  .prop:last-child { padding-bottom: 0; }
 
   .prop-head {
     display: flex;
@@ -65,19 +64,25 @@ const PROP_TABLE_CSS = `
     color: var(--ds-color-text);
   }
 
-  /* Deep-link, revealed on row hover — mirrors <ds-heading>'s anchor-link. */
+  /* Deep-link, revealed on row hover — mirrors <ds-heading>'s anchor-link
+     (after the text, not before - order: 1 moves it past prop-name/
+     prop-type/prop-status, all still default order: 0, regardless of
+     which of them wrap onto their own line). */
   .prop-anchor {
-    order: -1;
+    order: 1;
     display: inline;
     opacity: 0;
-    margin-inline-end: var(--ds-space-1);
+    margin-inline-start: var(--ds-space-1);
     color: var(--ds-color-text);
     text-decoration: none;
     font-size: 0.85em;
     transition: opacity var(--ds-duration-fast) var(--ds-ease-standard);
   }
-  .prop:hover .prop-anchor { opacity: 0.5; }
-  .prop-anchor:hover { opacity: 1 !important; }
+  /* :where() zeroes out .prop:hover's contribution to specificity here,
+     so .prop-anchor:hover naturally outranks it on direct hover - same
+     fix as <ds-heading>'s own anchor-link, no !important needed. */
+  :where(.prop:hover) .prop-anchor { opacity: 0.5; }
+  .prop-anchor:hover { opacity: 1; }
 
   .prop-desc {
     font-family: ${FONT.body};

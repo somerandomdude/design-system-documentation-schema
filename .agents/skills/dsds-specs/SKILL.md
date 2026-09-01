@@ -16,7 +16,7 @@ DSDS documents a graph of **entries** (a system, a component, a token, a theme, 
 When you need precise field-level details beyond this skill, consult these in order:
 
 1. **Bundled schema** (in-repo): `packages/specs/schema/dsds.bundled.schema.json`
-2. **Conformance / schema architecture reference**: https://designsystemdocspec.org/index.html#how-the-schema-is-organized
+2. **Schema architecture reference**: https://designsystemdocspec.org/schema.html#how-the-schema-is-organized (and [Conformance](https://github.com/somerandomdude/design-system-documentation-schema#conformance) in the README for conformance classes and the rule catalog)
 3. **Quick start with examples**: https://designsystemdocspec.org/quickstart.html
 4. **GitHub source** (split schema + examples): https://github.com/somerandomdude/design-system-documentation-schema/tree/main/schema
 

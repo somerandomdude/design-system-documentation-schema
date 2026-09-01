@@ -10,7 +10,7 @@ const DEF_SECTION_CSS = `
      non-split sections, which have no such inner wrapper of their own). */
   :host {
     display: block;
-    padding-block: 96px;
+    padding-block: 128px;
   }
   :host(:first-of-type) {
     padding-block-start: 0;
@@ -18,35 +18,85 @@ const DEF_SECTION_CSS = `
   /* Sticks to the top of the viewport (just under the fixed nav bar)
      while you scroll through this section's own content - property
      tables can run long, so the title stays in view instead of
-     scrolling away with the first few lines. Works the same whether
-     this is a layout="split" section or not: the containing block is
-     always this section's own :host, so the title releases once this
-     section's content has fully scrolled past, same as any sticky
-     header. A solid background keeps scrolled-past text from showing
-     through while it's stuck; z-index just needs to clear ordinary
-     content, not the nav bar itself (--ds-z-nav, higher). Sized and
-     weighted large/light on purpose - one definition per screenful of
-     scrolling reads better as a real heading than a small subhead
-     repeated 36 times down one page. */
-  h2 {
+     scrolling away with the first few lines. The eyebrow (the directory
+     a definition's schema file lives in, e.g. "common/") sticks as part
+     of the same block, not separately - it's the title's own kicker, so
+     it docks and releases together with it rather than scrolling away
+     on its own the moment the title starts floating. Works the same
+     whether this is a layout="split" section or not: the containing
+     block is always this section's own :host, so the block releases
+     once this section's content has fully scrolled past, same as any
+     sticky header. A solid background keeps scrolled-past text from
+     showing through while it's stuck; z-index just needs to clear
+     ordinary content, not the nav bar itself (--ds-z-nav, higher). The
+     title is sized and weighted large/light on purpose - one definition
+     per screenful of scrolling reads better as a real heading than a
+     small subhead repeated 36 times down one page. */
+  .heading-block {
     position: sticky;
     top: var(--ds-height-nav, 64px);
     z-index: 1;
     background: var(--ds-color-bg);
-    font-family: ${FONT.mono};
-    font-size: 3em;
-    font-weight: 300;
-    color: var(--ds-color-text);
-    margin: 0 0 var(--ds-space-2);
     padding-block: var(--ds-space-2);
+    margin: 0 0 var(--ds-space-2);
+    container-type: scroll-state;
+  }
+  .eyebrow {
+    font-family: ${FONT.mono};
+    font-size: var(--ds-font-size-sm);
+    font-weight: 550;
+    color: var(--ds-color-text);
+    margin: 0;
+  }
+  h2 {
+    font-family: ${FONT.mono};
+    font-size: 2em;
+    font-weight: 400;
+    color: var(--ds-color-text);
+    line-height: 1.2;
+    margin: 0;
+  }
+  /* Docked-state styling: Chrome/Edge only (no @supports fallback, same
+     stance as the CSS Custom Highlight API in code.js) - a border only
+     appears once the block has actually stuck to the nav bar, not for
+     the whole time it's merely sticky-capable, so it reads as "now
+     floating over content" rather than a permanent underline. The
+     border lives on ::after, not .heading-block itself: a scroll-state
+     container query can restyle a *descendant* of its container, but
+     not the container element itself (confirmed empirically -
+     self-targeting silently never matches, despite being valid,
+     parseable syntax) - a pseudo-element still counts as a descendant,
+     so it's the smallest fix that doesn't need an extra wrapper div.
+     Absolutely positioned so the 1px line doesn't add to the block's
+     own flow height when it's not stuck. */
+  .heading-block::after {
+    content: "";
+    position: absolute;
+    inset-inline: 0;
+    inset-block-end: 0;
+    height: 1px;
+    background: transparent;
+    transition: background-color var(--ds-duration-fast) var(--ds-ease-standard);
+  }
+  @container scroll-state(stuck: top) {
+    .heading-block::after {
+      background: var(--ds-color-border);
+    }
+  }
+  /* type-line and desc share one wrapper so the reading-width cap and
+     the gap before whatever comes next (a prop table, the slotted
+     content) are each stated once, on .meta, instead of repeated on
+     both children. */
+  .meta {
+    margin: 0 0 48px;
+    max-width: 65ch;
   }
   .desc {
     color: var(--ds-color-text);
     font-family: ${FONT.body};
-    font-size: var(--ds-font-size-base);
+    font-size: var(--ds-font-size-md);
     line-height: var(--ds-line-height-loose);
-    margin: 0 0 var(--ds-space-4);
-    max-width: 65ch;
+    margin: 0;
   }
   /* Plain text, not a badge/pill - "type" and "source" are facts about
      this definition, not a tag someone would filter or click on, so
@@ -144,7 +194,7 @@ const DEF_SECTION_CSS = `
 
 export class DsDefSection extends HTMLElement {
   static get observedAttributes() {
-    return ["name", "anchor", "description", "type", "source", "layout"];
+    return ["name", "anchor", "description", "type", "source", "layout", "eyebrow"];
   }
   constructor() {
     super();
@@ -168,24 +218,32 @@ export class DsDefSection extends HTMLElement {
     var type = this.getAttribute("type") || "";
     var source = this.getAttribute("source") || "";
     var layout = this.getAttribute("layout") || "";
+    var eyebrow = this.getAttribute("eyebrow") || "";
     // Set id on host for TOC linking
     if (anchor) this.id = anchor;
 
-    var start = '<h2 id="' + esc(anchor) + '">' + esc(name) + "</h2>";
+    // Eyebrow and title dock together as one sticky block - see
+    // .heading-block's own CSS comment.
+    var headingBlock = eyebrow ? '<p class="eyebrow">' + esc(eyebrow) + "</p>" : "";
+    headingBlock += '<h2 id="' + esc(anchor) + '">' + esc(name) + "</h2>";
+    var start = '<div class="heading-block">' + headingBlock + "</div>";
     // type and source share one line, separated by a middle dot, instead of
     // type living here and source living in a separate "References:"-labeled
-    // line further down.
+    // line further down. type-line and desc then share one wrapping div -
+    // see .meta's own CSS comment.
+    var metaHtml = "";
     if (type || source) {
-      start += '<p class="type-line">';
-      if (type) start += '<span class="type">' + esc(type) + "</span>";
-      if (type && source) start += " · ";
-      if (source) start += "<ds-code inline>" + esc(source) + "</ds-code>";
-      start += "</p>";
+      metaHtml += '<p class="type-line">';
+      if (type) metaHtml += '<span class="type">' + esc(type) + "</span>";
+      if (type && source) metaHtml += " · ";
+      if (source) metaHtml += "<ds-code inline>" + esc(source) + "</ds-code>";
+      metaHtml += "</p>";
     }
     // Use escWithCode so CommonMark-style `inline code` spans in the
     // description render as <ds-code inline> rather than literal
     // backtick characters.
-    if (desc) start += '<p class="desc">' + escWithCode(desc) + "</p>";
+    if (desc) metaHtml += '<p class="desc">' + escWithCode(desc) + "</p>";
+    if (metaHtml) start += '<div class="meta">' + metaHtml + "</div>";
     start += "<slot></slot>";
 
     // .cols/.start wrap every section, not just layout="split" ones - see

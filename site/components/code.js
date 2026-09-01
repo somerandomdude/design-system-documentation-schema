@@ -306,12 +306,62 @@ const CODE_CSS = `
     line-height: var(--ds-line-height-loose);
     overflow-x: auto;
     white-space: pre;
+    container-type: scroll-state;
+  }
+  /* Docked-state styling: Chrome/Edge only (no @supports fallback, same
+     stance as the CSS Custom Highlight API above) - a border only appears
+     once pre has actually stuck, so it reads as "now floating over
+     content" rather than a permanent line under every code block. On
+     ::after, not pre itself: a scroll-state container query can restyle
+     a *descendant* of its container, but not the container element
+     itself (confirmed empirically - self-targeting is valid syntax that
+     silently never matches). Also keeps pre's own text content a single,
+     untouched node - no wrapping span that CSS.highlights' Range offsets
+     would need to account for. Absolutely positioned so the 1px line
+     doesn't add to pre's own scrollable content. */
+  pre::after {
+    content: "";
+    position: absolute;
+    inset-inline: 0;
+    inset-block-end: 0;
+    height: 1px;
+    background: transparent;
+    transition: background-color var(--ds-duration-fast) var(--ds-ease-standard);
+  }
+  @container scroll-state(stuck: top) {
+    pre::after {
+      background: var(--ds-color-border);
+    }
   }
 
   :host([wrap]) pre {
     white-space: pre-wrap;
     overflow-wrap: break-word;
     overflow-x: visible;
+  }
+
+  /* For a fixed-width block (ASCII art, a diagram) where every line is the
+     same length by construction - text-align centers each line
+     individually, but since they're all equal width that lands on the
+     same offset every time, so the block centers as a whole without
+     distorting it. Opt-in: centering arbitrary code/prose whose lines
+     vary in length would just look ragged. line-height: 1 and a heavier
+     weight read better for art built from repeated characters (box-
+     drawing, "#") than the site's normal loose reading line-height and
+     regular weight, which were tuned for actual code. */
+  :host([center]) pre {
+    text-align: center;
+    line-height: 1;
+    font-weight: 700;
+  }
+  /* Vertically centers the block within .wrapper's own box - relevant
+     specifically when a stretched container (the schema-page intro's
+     .end column, matched to a tall .start) gives .wrapper more height
+     than the art itself needs; in an unstretched container .wrapper is
+     already exactly as tall as its content, so this is a no-op there. */
+  :host([center]) .wrapper {
+    display: grid;
+    place-items: center;
   }
 
   code {

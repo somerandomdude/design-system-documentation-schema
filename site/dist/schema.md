@@ -1,5 +1,48 @@
 # Schema
 
+<ds-guide-section>
+
+## How the schema is organized
+
+This spec is built from a small, fixed set of shapes, reused rather than reinvented per file.
+
+**Entries.** [`entry.schema.yaml`](@entries-entry) defines the fields every entry shares: `id`, `kind`, `name`, `description` (required), plus `purpose`, `metadata`, `refs`, `sections`, and `$extensions` (optional). Four kinds add fields of their own — `system`, `component`, `token`, `theme` — each with its own `entries/<kind>.schema.yaml` file. The generic `entry` kind needs nothing extra. An `entry`, or a custom kind like `acme.icon-library`, is checked against `entry.schema.yaml` directly.
+
+**Sections.** [`sections/section.schema.yaml`](@sections-section) supplies the shared fields — `kind`, `for`, `title`, `description`, `items`, `metadata`, `$extensions` — and each kind (`definitions`, `guidelines`, `steps`, or the generic `section`) shapes its own `items`. Content always lives in `items`, never in a field named after the kind.
+
+**One shared base per kind.** A kind-specific file links back to its shared base with `allOf` and adds only what's new, then closes the combined shape (`unevaluatedProperties: false`) so nothing stray sneaks in. Every `entries/*` and `sections/*` file follows this pattern.
+
+**Lists that mix different shapes.** A list sometimes holds genuinely different kinds of item — a component's `traits` can be `kind: boolean` or `kind: enum`. The schema tells them apart with a `kind` tag (`anyOf`). When items only differ in which *optional* fields happen to be filled in, one flexible shape with no tag is enough — `steps` and `guidelines` both work this way.
+
+**One way to point at things.** `common/ref.schema.yaml` is the only way anything in DSDS points at anything else: `to` points inside the document, `href` points outside it, and `rel` names the relationship (`depends-on`, `composes`, `same-as`, `extends`, `source`, `external-link`, and more — see the schema file for the full list).
+
+See the [schema files on GitHub](https://github.com/somerandomdude/design-system-documentation-schema/blob/main/schema/) for the full source, with comments explaining the reasoning behind each one. For every enforced rule, conformance class, and stability guarantee, see [Conformance in the README](https://github.com/somerandomdude/design-system-documentation-schema@conformance).
+
+<ds-code slot="example" center>
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@@                                   @@
+@@                                   @@
+@@    @@@@@@@@@@@     @@@@@@@@@@     @@
+@@    @@        @@   @@        @@    @@
+@@    @@        @@   @@              @@
+@@    @@        @@    @@@@@@@@@@     @@
+@@    @@        @@             @@    @@
+@@    @@        @@   @@        @@    @@
+@@    @@@@@@@@@@@     @@@@@@@@@@     @@
+@@                                   @@
+@@    @@@@@@@@@@@     @@@@@@@@@@     @@
+@@    @@        @@   @@        @@    @@
+@@    @@        @@   @@              @@
+@@    @@        @@    @@@@@@@@@@     @@
+@@    @@        @@             @@    @@
+@@    @@        @@   @@        @@    @@
+@@    @@@@@@@@@@@     @@@@@@@@@@     @@
+@@                                   @@
+@@                                   @@
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+</ds-code>
+
+</ds-guide-section>
 ## Base
 
 # Base

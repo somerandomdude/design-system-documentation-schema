@@ -22,10 +22,15 @@
 //
 // Mobile behavior:
 //   The bar itself never hides — at ≤900px the links row (.nav__items)
-//   collapses to 0 height by default, and the logo in the title area is
-//   replaced by a menu button in the same spot. Clicking it (or setting the
-//   `open` attribute) drops the links down as a full-width panel below the
-//   title row.
+//   becomes a native popover instead of an always-visible flex row, and the
+//   logo in the title area is replaced by a menu button that opens it
+//   (popovertarget, not a click handler). Escape, clicking outside, and
+//   opening a second popover elsewhere on the page all close it for free —
+//   the browser's own popover="auto" behavior, not code this component has
+//   to implement or maintain. Above 900px the popover machinery is present
+//   but inert: author CSS forces the row visible and back into normal flow
+//   regardless of open state, since author styles always win over the
+//   user-agent's own popover defaults.
 //
 // Usage:
 //   <ds-spec-nav title="DSDS 0.1" title-href="index.html" active="index">
@@ -52,11 +57,10 @@ const SPEC_NAV_CSS = `
     align-items: center;
     justify-content: space-between;
     color: var(--ds-color-text);
-    background: var(--ds-color-bg-inverse);
+    background: color-mix(in oklch, var(--ds-color-bg-accent) 90%, transparent);
     font-family: var(--ds-font-body);
-    width: 100%;
     min-height: var(--ds-height-nav, 64px);
-    padding-inline: var(--ds-space-4);
+    padding-inline: calc(var(--ds-space-4) * 2);
   }
 
   /* ── Title ──────────────────────────────────────────── */
@@ -111,12 +115,28 @@ const SPEC_NAV_CSS = `
     display: block;
   }
 
-  /* ── Links row ──────────────────────────────────────── */
+  /* ── Links row ──────────────────────────────────────────────────────
+     popover="auto" on this element always (see .nav__items:popover-open
+     below and the @media block) - the popover machinery only actually
+     does anything below 900px. Above that, this block resets every
+     user-agent popover default (position, inset, margin, border,
+     background, display) back to an ordinary in-flow flex row - author
+     styles always win over UA styles, regardless of :popover-open state,
+     so this is enough to make popover-ness a no-op at desktop widths
+     without a media-query-driven attribute toggle in JS. */
   .nav__items {
+    position: static;
+    inset: auto;
+    margin: 0;
+    border: none;
+    padding: 0;
+    background: none;
+    color: inherit;
     display: flex;
     flex-direction: row;
     align-items: center;
     gap: 4px;
+    overflow: visible;
   }
 
   .nav__link {
@@ -144,7 +164,7 @@ const SPEC_NAV_CSS = `
     border-block-end-color: var(--ds-color-accent);
   }
 
-  /* ── Mobile: bar stays put; only the links row collapses ────────────── */
+  /* ── Mobile: bar stays put; the links row becomes a real popover ────── */
   @media (max-width: 900px) {
 
     .nav__menu-btn {
@@ -159,20 +179,54 @@ const SPEC_NAV_CSS = `
       min-height: 64px;
     }
 
+    /* Positioned to sit directly under the (inset, floating) bar itself -
+       matches its own margin/height rather than the old in-flow "second
+       row of the same flex box" approach, since a popover is promoted out
+       of normal flow into the top layer regardless of what position we
+       give it otherwise. */
     .nav__items {
+      position: fixed;
+      top: calc(var(--ds-height-nav, 64px) + 1em);
+      left: 1em;
+      right: 1em;
+      margin: 0;
+      padding: var(--ds-space-4) 0;
+      background: color-mix(in oklch, var(--ds-color-bg-accent) 90%, transparent);
       flex-direction: column;
       align-items: stretch;
-      width: 100%;
-      max-height: 0;
-      overflow: hidden;
-      padding: 0;
-      transition: max-height var(--ds-duration-base) var(--ds-ease-standard);
-    }
-
-    :host([open]) .nav__items {
       max-height: 60vh;
       overflow-y: auto;
-      padding: var(--ds-space-4) 0;
+      /* display: none is the popover-closed UA default; only overridden
+         by :popover-open below. Opacity/transform are this component's
+         own open/close animation - display and overlay need
+         transition-behavior: allow-discrete since neither is normally
+         interpolable, and both need to outlast the opacity/transform
+         transition on the way out (that's what the overlay property is
+         for) or the panel would vanish instantly instead of fading. */
+      display: none;
+      opacity: 0;
+      transform: translateY(-8px);
+      transition: opacity var(--ds-duration-base) var(--ds-ease-standard),
+        transform var(--ds-duration-base) var(--ds-ease-standard),
+        display var(--ds-duration-base) allow-discrete,
+        overlay var(--ds-duration-base) allow-discrete;
+    }
+
+    .nav__items:popover-open {
+      display: flex;
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* The state a newly-opened popover transitions *from* - without this,
+       display/opacity/transform would already be at their :popover-open
+       values the instant it enters the top layer, and there'd be nothing
+       for the transition to animate from. */
+    @starting-style {
+      .nav__items:popover-open {
+        opacity: 0;
+        transform: translateY(-8px);
+      }
     }
 
     .nav__link {
@@ -202,12 +256,9 @@ export class DsSpecNav extends HTMLElement {
   constructor() {
     super();
     this._shadow = createShadow(this, SPEC_NAV_CSS);
-    this._onKeydown = this._onKeydown.bind(this);
   }
 
   connectedCallback() {
-    document.addEventListener("keydown", this._onKeydown);
-
     // Light-DOM children (<a>) may not be parsed yet when a blocking
     // <script> in <head> registers the element — the parser upgrades the
     // element the instant it sees the opening tag, before it has parsed any
@@ -226,13 +277,9 @@ export class DsSpecNav extends HTMLElement {
     }
   }
 
-  disconnectedCallback() {
-    document.removeEventListener("keydown", this._onKeydown);
-  }
-
   attributeChangedCallback(name) {
     if (name === "open") {
-      this._syncMenuButton();
+      this._syncPopoverToAttribute();
       return;
     }
     // Only re-render after the initial render has happened.
@@ -251,20 +298,37 @@ export class DsSpecNav extends HTMLElement {
     }
   }
 
+  // Keeps the public `open` attribute/property in sync with the popover's
+  // real state, in whichever direction changed first: setting `.open` (or
+  // the attribute directly) calls show/hidePopover() here; the popover's
+  // own native `toggle` event (wired in _render() - fires for every
+  // dismissal path, the button, Escape, or clicking outside) sets the
+  // attribute to match from the other direction. The equality check stops
+  // the two from calling each other in a loop.
+  _syncPopoverToAttribute() {
+    const items = this._shadow.querySelector(".nav__items");
+    if (!items) return;
+    const isOpen = this.open;
+    if (items.matches(":popover-open") === isOpen) return;
+    if (isOpen) {
+      items.showPopover();
+    } else {
+      items.hidePopover();
+    }
+  }
+
   _render() {
     this._rendered = true;
     const title = this.getAttribute("title") || "";
     const titleHref = this.getAttribute("title-href") || "index.html";
     const active = this.getAttribute("active") || "";
-    const isOpen = this.open;
 
     const titleHtml = title
       ? '<div class="nav__title">' +
-        '<button class="nav__menu-btn" part="menu-btn" type="button" aria-label="Toggle navigation" aria-expanded="' +
-        (isOpen ? "true" : "false") +
+        '<button class="nav__menu-btn" part="menu-btn" type="button" popovertarget="nav-items" popovertargetaction="toggle" aria-label="Toggle navigation" aria-expanded="false">' +
         // The button's aria-label already names the control; its icon is
         // decorative and filled in async once loadIcon() resolves below.
-        '"><span class="nav__menu-icon" aria-hidden="true"></span></button>' +
+        '<span class="nav__menu-icon" aria-hidden="true"></span></button>' +
         '<a href="' +
         esc(titleHref) +
         '"><ds-logo class="nav__logo" size="2rem" fill="#000" aria-hidden="true"></ds-logo><span>' +
@@ -278,26 +342,36 @@ export class DsSpecNav extends HTMLElement {
     this._shadow.innerHTML =
       '<nav class="nav" role="navigation" aria-label="Specification navigation" part="nav">' +
       titleHtml +
-      '<div class="nav__items" part="items">' +
+      '<div class="nav__items" part="items" id="nav-items" popover="auto">' +
       itemsHtml +
       "</div>" +
       "</nav>";
 
-    const btn = this._shadow.querySelector(".nav__menu-btn");
-    if (btn) {
-      btn.addEventListener("click", () => {
-        this.open = !this.open;
+    const itemsEl = this._shadow.querySelector(".nav__items");
+    if (itemsEl) {
+      // ToggleEvent, not click - this fires for every way the popover can
+      // open or close (the button, Escape, light-dismiss), so it's the one
+      // place aria-expanded, the icon, and the public `open` attribute all
+      // need to react, instead of duplicating that logic per dismissal path.
+      itemsEl.addEventListener("toggle", (e) => {
+        const isOpen = e.newState === "open";
+        const btn = this._shadow.querySelector(".nav__menu-btn");
+        if (btn) btn.setAttribute("aria-expanded", isOpen ? "true" : "false");
+        this._updateMenuIcon(isOpen);
+        if (isOpen) {
+          this.setAttribute("open", "");
+        } else {
+          this.removeAttribute("open");
+        }
       });
+      // A re-render (title/active changed) rebuilds .nav__items from
+      // scratch, which would otherwise silently drop an already-open
+      // state - restore it from the host's own `open` attribute, the
+      // single source of truth that survives the rebuild.
+      if (this.open) itemsEl.showPopover();
     }
 
-    this._updateMenuIcon(isOpen);
-  }
-
-  _syncMenuButton() {
-    const isOpen = this.open;
-    const btn = this._shadow.querySelector(".nav__menu-btn");
-    if (btn) btn.setAttribute("aria-expanded", isOpen ? "true" : "false");
-    this._updateMenuIcon(isOpen);
+    this._updateMenuIcon(this.open);
   }
 
   _updateMenuIcon(isOpen) {
@@ -305,14 +379,6 @@ export class DsSpecNav extends HTMLElement {
     loadIcon(isOpen ? "close" : "menu").then((svg) => {
       if (icon) icon.innerHTML = svg;
     });
-  }
-
-  _onKeydown(e) {
-    if (e.key === "Escape" && this.open) {
-      this.open = false;
-      const btn = this._shadow.querySelector(".nav__menu-btn");
-      if (btn) btn.focus();
-    }
   }
 
   /**
