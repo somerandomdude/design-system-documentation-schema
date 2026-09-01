@@ -1,0 +1,59 @@
+$schema: https://json-schema.org/draft/2020-12/schema
+$id: https://designsystemdocspec.org/v0.20.0/base.schema.yaml
+title: Base
+description: >-
+  A DSDS document. Acts as the container for all content. Can be optionally extended or split across other DSDS documents.
+$comment: >-
+  Base only has one document structure. Unlike an entry or a section,
+  nothing here varies by kind.
+type: object
+required: [schemaVersion, name, entries]
+properties:
+  schemaVersion:
+    type: string
+    description: The version of this spec the document follows.
+    $comment: The one authoritative version marker. Distinct from `metadata.version`, which is the design system's own release version.
+    example: "0.20.0"
+  $schema:
+    type: string
+    format: uri-reference
+    description: An optional hint for editor tools, like autocomplete or validate-on-save.
+    $comment: "Usually a URL to the exact versioned schema file. Not authoritative: `schemaVersion` is the real source of truth for which version this document targets. The published bundle is YAML - most YAML-aware editors (ex: VS Code's YAML extension) resolve a YAML `$schema` target the same way they'd resolve a JSON one; a tool that only ever reads JSON schemas won't."
+    example: https://designsystemdocspec.org/v0.20.0/dsds.bundled.yaml
+  name:
+    type: string
+    description: The name of the design system this document describes.
+    example: Acme Design System
+  entries:
+    type: array
+    minItems: 1
+    description: Every entry this document owns, listed directly.
+    $comment: >-
+      A single-entry file just has one item here. System-wide facts
+      (version, organization, url, license, platforms) live on this
+      list's own `kind: system` entry. Reusable content that is not
+      a standalong artifact belongs in `shared`.
+    items:
+      $ref: https://designsystemdocspec.org/v0.20.0/entry.schema.yaml#/$defs/dispatch
+  shared:
+    type: array
+    minItems: 1
+    description: Reusable content that is not itself a design system artifact, for example an accessibility rule or a guideline that applies broadly.
+    $comment: >-
+      Enables multiple artifacts to reference share content from one source. The content is agnostic to entry `kind`. A shared entry is never meant to be
+      its own page.
+    items:
+      $ref: https://designsystemdocspec.org/v0.20.0/shared.schema.yaml
+  refs:
+    $ref: https://designsystemdocspec.org/v0.20.0/common/ref.schema.yaml#/$defs/list
+    description: The same pointer type entries use.
+    $comment: "Enables pointing at a parent document (rel: extends) and splitting a system across several files (rel: file, pointing at a sibling document that owns other entries in this same system)."
+    example:
+      - href: ./starter-kit.dsds.yaml
+        rel: file
+        role: core
+  $extensions:
+    $ref: https://designsystemdocspec.org/v0.20.0/common/extensions.schema.yaml
+    description: Escape hatch for tool-specific document-level data, keyed by namespace.
+    $comment: Same structure as an entry's own $extensions.
+additionalProperties: false

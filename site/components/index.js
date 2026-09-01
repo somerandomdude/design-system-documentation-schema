@@ -16,17 +16,15 @@ import { DsHeading } from "./heading.js";
 import { DsBackToTop } from "./back-to-top.js";
 import { DsHeader } from "./header.js";
 import { DsDefSection } from "./def-section.js";
+import { DsGuideSection } from "./guide-section.js";
 import { DsTypeRef } from "./type-ref.js";
 import { DsCrossRefs } from "./cross-refs.js";
-import { DsDefIndex } from "./def-index.js";
-import { DsDefExample } from "./def-example.js";
-import { DsPropTable, DsProp } from "./prop-table.js";
+import { DsPropTable, DsProp } from "./prop-list.js";
 import { DsSpecNav } from "./spec-nav.js";
 import { DsCallout } from "./callout.js";
 import { DsTag } from "./tag.js";
 import { DsLogo } from "./logo.js";
 import { DsIconButton } from "./icon-button.js";
-import { DsJsonView } from "./json-view.js";
 
 const registry = [
   ["ds-code", DsCode],
@@ -36,10 +34,9 @@ const registry = [
   ["ds-back-to-top", DsBackToTop],
   ["ds-header", DsHeader],
   ["ds-def-section", DsDefSection],
+  ["ds-guide-section", DsGuideSection],
   ["ds-type-ref", DsTypeRef],
   ["ds-cross-refs", DsCrossRefs],
-  ["ds-def-index", DsDefIndex],
-  ["ds-def-example", DsDefExample],
   ["ds-prop-table", DsPropTable],
   ["ds-prop", DsProp],
   ["ds-spec-nav", DsSpecNav],
@@ -47,7 +44,6 @@ const registry = [
   ["ds-tag", DsTag],
   ["ds-logo", DsLogo],
   ["ds-icon-button", DsIconButton],
-  ["ds-json-view", DsJsonView],
 ];
 
 for (const [name, ctor] of registry) {

@@ -1,0 +1,62 @@
+$schema: https://json-schema.org/draft/2020-12/schema
+$id: https://designsystemdocspec.org/v0.20.0/sections/definitions.schema.yaml
+title: DefinitionsSection
+description: Term definitions. Can describe content labels within components or patterns, define naming conventions, act as a glossary, or be a simple way to outline component props/APIs.
+$comment: >-
+  A `definitions` section on an entry defines that entry's own terms.
+  Distinct from `metadata.tags` or any other classification label.
+
+  `definitions` does several genuinely different jobs - a component's
+  anatomy, a glossary, a prop list stand-in, keyboard interactions,
+  event names - told apart only by `title` until `context` existed.
+  `context` (inherited from section.schema.yaml - see its own
+  $comment) makes the job machine-readable: a renderer can find "the
+  anatomy table" by checking `context: anatomy` instead of matching on
+  a human-written heading string, which drifts and gets localized.
+  `title` still carries the human-facing heading; `context` is what a
+  tool reads.
+allOf:
+  - $ref: https://designsystemdocspec.org/v0.20.0/section.schema.yaml
+  - type: object
+    properties:
+      kind:
+        const: definitions
+        description: Marks this section as term-definition documentation.
+      items:
+        type: array
+        minItems: 1
+        description: One entry per term.
+        items:
+          type: object
+          required: [term, definition]
+          properties:
+            id:
+              $ref: https://designsystemdocspec.org/v0.20.0/common/id.schema.yaml
+              description: An optional stable id, so a ref or a same-as pointer can address this term directly.
+              $comment: You can leave this out - a tool MUST derive one from this item's own text (see common/id.schema.yaml's own $comment for the rule).
+            term:
+              type: string
+              description: The subject of the definition.
+              example: OK
+            definition:
+              $ref: https://designsystemdocspec.org/v0.20.0/common/markdown.schema.yaml
+              description: What the term means.
+              example: To confirm an action.
+            usage:
+              $ref: https://designsystemdocspec.org/v0.20.0/common/markdown.schema.yaml
+              description: When and how to use it, with formatting notes.
+              example: Use as the confirming action's label in a destructive-action dialog.
+            aliases:
+              type: array
+              minItems: 1
+              uniqueItems: true
+              items:
+                type: string
+                description: Related terms often confused with this one.
+                example: Confirm
+            $extensions:
+              $ref: https://designsystemdocspec.org/v0.20.0/common/extensions.schema.yaml
+              description: Escape hatch for tool data scoped to just this one term, keyed by namespace.
+          additionalProperties: false
+
+unevaluatedProperties: false

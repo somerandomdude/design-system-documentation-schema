@@ -1,0 +1,160 @@
+id: button
+kind: component
+name: Button
+description: An interactive element that triggers an action when activated.
+metadata:
+  status: {status: stable}
+  since: 1.4.0
+  updated: {date: 2026-06-02}
+  tags: [actions, button, cta, form-control]
+  aliases: [btn]
+
+refs:
+  - to: button-group
+    rel: part-of
+  - to: icon-button
+    rel: alternative-to
+  - to: link
+    rel: alternative-to
+  - to: color.action.primary
+    rel: depends-on
+  - href: https://github.com/org/ds/react/button
+    rel: source
+  - href: https://storybook.org/ds/button
+    rel: storybook
+    role: hosted docs
+  - href: ./stories/button.stories.tsx
+    rel: storybook
+    role: CSF story source
+    note: Component Story Format (CSF3) - the source the hosted docs above are built from.
+  - href: npm:@org/ds-react
+    rel: package
+
+# One field for every way the button varies: configuration the consumer
+# chooses (boolean, enum) and conditions that happen at runtime (also
+# boolean - `description` says which).
+traits:
+  - kind: boolean
+    id: loading
+    description: Shows a spinner in place of the label and blocks interaction while active.
+    purpose: Prevents duplicate submissions while an action is in flight.
+    setBy: consumer
+  - kind: enum
+    id: size
+    description: Controls the button's overall scale.
+    setBy: consumer
+    values:
+      - id: small
+        description: Compact size for dense layouts (e.g. toolbars).
+      - id: medium
+        description: The default size for most surfaces.
+      - id: large
+        description: Larger touch target for primary calls-to-action.
+  - kind: enum
+    id: variant
+    description: Which visual style to render.
+    setBy: consumer
+    values:
+      - id: primary
+        description: The default, high-emphasis style for the main action on a surface.
+      - id: secondary
+        description: Lower-emphasis alternative for secondary actions alongside a primary button.
+      - id: danger
+        description: Destructive actions only (delete, revoke access, etc.).
+  # hover is setBy: component, not consumer - unlike loading/disabled below,
+  # it isn't a prop the consumer passes in; it happens on its own whenever
+  # the pointer is over the button.
+  - kind: boolean
+    id: hover
+    description: Background darkens slightly when the pointer is over the button.
+    setBy: component
+  - kind: boolean
+    id: disabled
+    description: Dimmed and non-interactive; triggered by the `disabled` prop.
+    setBy: consumer
+combos:
+  - subject: loading
+    level: must-not
+    items: [disabled]
+    note: A control can't be simultaneously loading and disabled - loading already blocks interaction, and layering both muddles what the button will do when the work finishes.
+  - subject: size.small
+    level: must-not
+    items: [variant.danger]
+    note: Destructive actions need the full-size touch target; a small danger button invites mis-taps on the most costly action.
+
+# A tool extracts the full interface (variant/size/disabled/loading/
+# onClick/fullWidth) straight from this file - JSDoc/TSDoc in the code
+# itself, not hand-typed here.
+sourceFiles:
+  - platform: react
+    file: ./src/Button.tsx
+
+specs:
+  - rel: contract
+    href: ./contracts/button.contract.json
+    role: DS Contracts
+
+sections:
+  - kind: definitions
+    for: all
+    context: terms
+    items:
+      - term: OK
+        definition: To confirm an action.
+      - term: Cancel
+        definition: To cancel an action.
+
+  - kind: steps
+    for: agent
+    ordered: false
+    title: Pre-release checklist
+    items:
+      - title: Focus ring is visible in both light and dark themes.
+      - title: Loading state announces to screen readers.
+      - title: Works with a custom icon in the leading-icon slot.
+        optional: true
+
+  - kind: guidelines
+    for: human
+    items:
+      - statement: Limit each surface to one primary button.
+        level: should
+        example:
+          title: One primary action per surface
+          showcase:
+            kind: image
+            url: https://cdn.acme.example/ds/showcase/button-primary-surface.png
+            alt: A toolbar with one filled primary button and two lower-emphasis secondary buttons.
+        # A guideline item's own shape is closed - not extensible the way
+        # an entry or a section is - so $extensions is the one way to
+        # attach org-specific data (here, a rationale and a failure mode)
+        # to a single rule without forking the guidelines kind itself.
+        $extensions:
+          com.acme:
+            rationale: Multiple primary buttons compete for attention and force the user to guess which action is actually the recommended one.
+            failureMode: A dialog ships with two primary-styled buttons (e.g. "Save" and "Save as draft"), and usability testing shows users default to the wrong one.
+      - statement: Use buttons only for in-page actions, never navigation.
+        level: must
+      # No statement here - this requirement is owned and tracked in the
+      # team's own requirements system, not restated in this document. See
+      # guidelines.schema.yaml's own $comment for why external-link
+      # exempts statement the same way same-as does.
+      - level: must
+        refs:
+          - href: https://example.atlassian.net/browse/DS-482
+            rel: external-link
+
+  - kind: guidelines
+    for: agent
+    framing: when-to-use
+    items:
+      - statement: Do not use button when the action navigates to a new URL; use the link entry instead.
+        level: must-not
+        alternatives:
+          - to: link
+            rel: alternative-to
+
+$extensions:
+  com.figma:
+    displayName: "Button/Primary"
+    nodeId: "12:4045"

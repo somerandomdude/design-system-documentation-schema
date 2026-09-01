@@ -2,72 +2,64 @@
 /**
  * bump-version.js — Cut a new versioned DSDS spec build.
  *
- * The DSDS spec version lives in `spec/schema/dsds.schema.json` at
- * `properties.dsdsVersion.const`, but it ALSO appears in the `$id` URL on
- * every split schema file (52 of them), in the root schema's title, in
- * the `$schema` URLs of example documents, and in code snippets in the
- * README. This script rewrites all of those places in one pass.
+ * There's no single version field. Every `schema/**\/*.schema.yaml` file's
+ * own `$id` (and every `$ref` inside it) independently encodes the version
+ * as a `designsystemdocspec.org/v<version>/` URL segment. This script finds
+ * every one of those and every other place the version is duplicated, and
+ * rewrites them all in one pass:
+ *
+ *   - Every schema/**\/*.schema.yaml file's own $id/$ref URLs
+ *   - scripts/bundle.js's two hardcoded literals ($id, title) — the
+ *     bundled schema's version comes from these, not from reading the
+ *     split files, since bundle.js writes it fresh on every run
+ *   - Every example/test .dsds.yaml base document's `schemaVersion` value
+ *   - README.md's one hardcoded $schema URL suggestion
+ *   - package.json#version
  *
  * The MDX content pages (site/content/) are NOT rewritten here: they use
  * the {{VERSION}} token, substituted at build time by compile-mdx.mjs from
- * dsds.schema.json#/properties/dsdsVersion/const. Bumping the const is all
- * the site pages need.
+ * the same source this script reads the current version from
+ * (schema/dsds.bundled.yaml's own $id). A bump therefore propagates
+ * to every site page on the next `npm run build`, with no MDX rewriting.
+ *
+ * After a successful bump the script runs `npm run bundle` (regenerate the
+ * bundled schema with the new version baked in) and
+ * `npm run sync-skill-versions` (keep .agents/skills/dsds-*'s version
+ * references in lockstep). Run `npm run build` separately to publish the
+ * versioned dist directory, and `npm run check` to confirm everything
+ * still validates.
  *
  * Usage:
- *   node scripts/bump-version.js <new-version>          # bump and rebundle
+ *   node scripts/bump-version.js <new-version>          # bump, bundle, sync skills
  *   node scripts/bump-version.js <new-version> --dry-run # preview only
  *   node scripts/bump-version.js <new-version> --schemas-only
- *                                                       # only touch schemas
+ *                                                       # only touch schema/ + bundle.js
  *   node scripts/bump-version.js --help
  *
- * <new-version> is a bare version string (ex: 0.2, 0.1.1, 1.0.0).
+ * <new-version> is a bare version string (ex: 0.20.1, 0.21.0, 1.0.0).
  * The leading "v" is not included — every URL in this repo is
  * constructed as `/v<version>/`.
- *
- * After a successful bump the script runs `npm run bundle` to regenerate
- * spec/schema/dsds.bundled.schema.json with the new version baked in.
- * Run `npm run build` separately to publish the versioned dist directory.
  *
  * Exits non-zero on:
  *   - Missing or malformed new version argument
  *   - New version equal to current version
- *   - No occurrences of the current version found anywhere (suggests a
- *     bug or a prior partial bump — abort rather than silently no-op)
+ *   - Current version can't be read (run `npm run bundle` first)
  */
 
 const fs = require("fs");
 const path = require("path");
 const { execFileSync } = require("child_process");
+const { readSpecVersion } = require("./nav");
 
 const ROOT = path.resolve(__dirname, "..");
-const SCHEMA_DIR = path.join(ROOT, "spec", "schema");
-const ROOT_SCHEMA = path.join(SCHEMA_DIR, "dsds.schema.json");
-const BUNDLED_SCHEMA = path.join(SCHEMA_DIR, "dsds.bundled.schema.json");
+const SCHEMA_DIR = path.join(ROOT, "schema");
+const BUNDLE_SCRIPT = path.join(ROOT, "scripts", "bundle.js");
+const README = path.join(ROOT, "README.md");
+const PKG = path.join(ROOT, "package.json");
 
-// Where to search for stale version references beyond the schemas
-// themselves. These paths are scanned for the literal `/v<old>/` URL
-// pattern; we don't touch any other string.
-const EXAMPLE_ROOTS = [
-  path.join(ROOT, "spec", "examples"),
-  path.join(ROOT, "test"),
-];
-
-// NOTE: the MDX content pages under site/content/ are intentionally NOT
-// listed here. They never hardcode a version — they use the {{VERSION}}
-// token, which scripts/compile-mdx.mjs substitutes from
-// dsds.schema.json#/properties/dsdsVersion/const at build time. A bump of
-// the const therefore propagates to every page on the next `npm run build`,
-// with no string rewriting needed. README.md is a static GitHub file (not
-// built through compile-mdx), so it still gets rewritten here.
-const DOC_FILES = [
-  path.join(ROOT, "README.md"),
-];
-
-// The one MDX file the bump does touch: the overview page carries the
-// spec's publication date ("Draft Specification — 9 June 2026:"), which
-// moves with every cut of the spec rather than with every site build.
-const OVERVIEW_MDX = path.join(ROOT, "site", "content", "overview.mdx");
-const PUBLICATION_DATE_REGEX = /(\*\*Draft Specification — )[^:*]+(:\*\*)/;
+// Base documents outside schema/ that carry their own `schemaVersion:
+// "<version>"` value — every .dsds.yaml fixture/example in the repo.
+const DSDS_DOC_ROOTS = [path.join(ROOT, "examples"), path.join(ROOT, "test")];
 
 // ---------------------------------------------------------------------------
 // CLI
@@ -81,17 +73,19 @@ Usage:
   node scripts/bump-version.js <new-version> [options]
 
 Arguments:
-  <new-version>     Bare version string (ex: 0.2, 0.1.1, 1.0.0).
+  <new-version>     Bare version string (ex: 0.20.1, 0.21.0, 1.0.0).
 
 Options:
-  --dry-run         Print planned changes without modifying anything.
-  --schemas-only    Only touch files under spec/schema/. Skip examples and docs.
-  --no-bundle       Skip the post-bump 'npm run bundle' step.
-  --help, -h        Show this help.
+  --dry-run          Print planned changes without modifying anything.
+  --schemas-only      Only touch schema/**/*.schema.yaml and bundle.js.
+                      Skip examples, test fixtures, README, package.json.
+  --no-bundle         Skip the post-bump 'npm run bundle' step.
+  --no-sync-skills    Skip the post-bump 'npm run sync-skill-versions' step.
+  --help, -h          Show this help.
 
 Examples:
-  node scripts/bump-version.js 0.2
-  node scripts/bump-version.js 0.2 --dry-run
+  node scripts/bump-version.js 0.20.1
+  node scripts/bump-version.js 0.20.1 --dry-run
   node scripts/bump-version.js 1.0.0 --schemas-only --no-bundle
 `);
 }
@@ -115,12 +109,13 @@ const NEW_VERSION = positional[0];
 const DRY_RUN = flags.has("--dry-run");
 const SCHEMAS_ONLY = flags.has("--schemas-only");
 const SKIP_BUNDLE = flags.has("--no-bundle");
+const SKIP_SYNC_SKILLS = flags.has("--no-sync-skills");
 
 // A version is "loose semver" — one or more dot-separated identifiers.
-// We're permissive on purpose so 0.1, 0.1.1, 1.0.0-beta.1, etc. all work.
+// We're permissive on purpose so 0.20.1, 1.0.0-beta.1, etc. all work.
 if (!/^[A-Za-z0-9]+(\.[A-Za-z0-9-]+)*$/.test(NEW_VERSION)) {
   console.error(`✗ Invalid version string: "${NEW_VERSION}"`);
-  console.error("  Expected something like 0.2, 0.1.1, or 1.0.0-beta.1.");
+  console.error("  Expected something like 0.20.1, 0.21.0, or 1.0.0-beta.1.");
   process.exit(1);
 }
 
@@ -128,28 +123,22 @@ if (!/^[A-Za-z0-9]+(\.[A-Za-z0-9-]+)*$/.test(NEW_VERSION)) {
 // Read current version
 // ---------------------------------------------------------------------------
 
-if (!fs.existsSync(ROOT_SCHEMA)) {
-  console.error(`✗ Root schema not found: ${path.relative(ROOT, ROOT_SCHEMA)}`);
-  process.exit(1);
-}
-
-const rootJson = JSON.parse(fs.readFileSync(ROOT_SCHEMA, "utf-8"));
-const CURRENT_VERSION =
-  rootJson &&
-  rootJson.properties &&
-  rootJson.properties.dsdsVersion &&
-  rootJson.properties.dsdsVersion.const;
+const CURRENT_VERSION = readSpecVersion();
 
 if (!CURRENT_VERSION) {
   console.error(
-    "✗ Could not read current version from " +
-      `${path.relative(ROOT, ROOT_SCHEMA)}#/properties/dsdsVersion/const`,
+    "✗ Could not read the current version from schema/dsds.bundled.yaml's " +
+      "own $id. Run `npm run bundle` first.",
   );
   process.exit(1);
 }
 
-console.log(`Bumping DSDS version to v${NEW_VERSION}`);
-console.log(`  dsdsVersion.const currently: ${CURRENT_VERSION}`);
+if (CURRENT_VERSION === NEW_VERSION) {
+  console.error(`✗ New version "${NEW_VERSION}" is the same as the current version.`);
+  process.exit(1);
+}
+
+console.log(`Bumping DSDS version v${CURRENT_VERSION} → v${NEW_VERSION}`);
 if (DRY_RUN) console.log("(dry run — no files will be written)");
 console.log();
 
@@ -167,64 +156,30 @@ function walkDir(dir, predicate, out = []) {
   return out;
 }
 
-const schemaFiles = walkDir(
-  SCHEMA_DIR,
-  (p) => p.endsWith(".schema.json") && path.basename(p) !== "dsds.bundled.schema.json",
-);
+const schemaFiles = walkDir(SCHEMA_DIR, (p) => p.endsWith(".schema.yaml"));
 
-const exampleFiles = SCHEMAS_ONLY
+const dsdsDocFiles = SCHEMAS_ONLY
   ? []
-  : EXAMPLE_ROOTS.flatMap((dir) =>
-      walkDir(dir, (p) => p.endsWith(".json")),
-    );
-
-const docFiles = SCHEMAS_ONLY
-  ? []
-  : DOC_FILES.filter((p) => fs.existsSync(p));
+  : DSDS_DOC_ROOTS.flatMap((dir) => walkDir(dir, (p) => p.endsWith(".yaml")));
 
 // ---------------------------------------------------------------------------
 // Substitutions
 // ---------------------------------------------------------------------------
 
-// We rewrite any `designsystemdocspec.org/v<X>/` URL whose version is not
+// Rewrite any `designsystemdocspec.org/v<X>/` URL whose version isn't
 // already the target. Anchoring on the host avoids touching unrelated
-// `/v<X>/`-shaped strings, and matching any prior version (not just the
-// one in `dsdsVersion.const`) makes the bump idempotent and recovers
-// from drift — e.g., when the const was hand-edited ahead of the URLs.
+// `/v<X>/`-shaped strings, and matching any prior version (not just
+// CURRENT_VERSION) makes the bump idempotent and recovers from drift.
 const URL_REGEX = /designsystemdocspec\.org\/v([A-Za-z0-9.\-]+)\//g;
 const NEW_URL_FRAGMENT = `designsystemdocspec.org/v${NEW_VERSION}/`;
 
-// In the root schema we also rewrite the title and the dsdsVersion.const
-// literal. Both follow the same drift-tolerant approach: match any prior
-// version, rewrite to the target.
-const ROOT_TITLE_REGEX = /(Design System Doc Spec \(DSDS\) v)[A-Za-z0-9.\-]+/g;
-const DSDS_VERSION_CONST_REGEX = /("dsdsVersion"\s*:\s*\{[\s\S]*?"const"\s*:\s*")([^"]+)(")/;
-
-// In docs and example content, two more string patterns reference the spec
-// version and must move in lockstep with the const:
-//
-//   1. `"dsdsVersion": "<X>"` literals inside example JSON snippets (whether
-//      in `.json` files or fenced code blocks inside MDX/markdown). These
-//      represent example DSDS documents that conform to the current spec.
-//
-//   2. Free-form mentions of "Design System Doc Spec <X>" or
-//      "DSDS <X>" in narrative prose (page titles, headings). We require a
-//      digit immediately after to avoid matching unrelated text like
-//      "DSDS sections".
-const DSDS_VERSION_LITERAL_REGEX = /("dsdsVersion"\s*:\s*")([A-Za-z0-9.\-]+)(")/g;
-const SPEC_DISPLAY_NAME_REGEX = /(Design System Doc Spec )(\d[A-Za-z0-9.\-]*)/g;
-const DSDS_DISPLAY_NAME_REGEX = /(\bDSDS )(\d[A-Za-z0-9.\-]*)/g;
-
-// Track per-file metrics so we can report what changed and warn on drift.
-const urlVersionsSeen = new Map(); // version -> count across all files
+// examples/**/*.yaml and test/**/*.yaml base documents: the literal
+// `schemaVersion: "<version>"` value.
+const SCHEMA_VERSION_VALUE_REGEX = /(schemaVersion:\s*")([^"]+)(")/;
 
 function rewriteUrlsInText(text) {
   let count = 0;
   const updated = text.replace(URL_REGEX, (match, foundVersion) => {
-    urlVersionsSeen.set(
-      foundVersion,
-      (urlVersionsSeen.get(foundVersion) || 0) + 1,
-    );
     if (foundVersion === NEW_VERSION) return match;
     count++;
     return NEW_URL_FRAGMENT;
@@ -232,79 +187,13 @@ function rewriteUrlsInText(text) {
   return { updated, count };
 }
 
-// For each of the three secondary patterns: only rewrite when the captured
-// version differs from the target (so the bump is idempotent and tolerates
-// drift across the file set).
-function rewriteDsdsVersionLiterals(text) {
+function rewriteSchemaVersionValue(text) {
   let count = 0;
-  const updated = text.replace(DSDS_VERSION_LITERAL_REGEX, (match, before, oldVer, after) => {
+  const updated = text.replace(SCHEMA_VERSION_VALUE_REGEX, (match, before, oldVer, after) => {
     if (oldVer === NEW_VERSION) return match;
     count++;
     return before + NEW_VERSION + after;
   });
-  return { updated, count };
-}
-
-function rewriteSpecDisplayNames(text) {
-  let count = 0;
-  let s = text.replace(SPEC_DISPLAY_NAME_REGEX, (match, prefix, oldVer) => {
-    if (oldVer === NEW_VERSION) return match;
-    count++;
-    return prefix + NEW_VERSION;
-  });
-  s = s.replace(DSDS_DISPLAY_NAME_REGEX, (match, prefix, oldVer) => {
-    if (oldVer === NEW_VERSION) return match;
-    count++;
-    return prefix + NEW_VERSION;
-  });
-  return { updated: s, count };
-}
-
-function rewriteRootSchemaText(text) {
-  // 1. URL fragments (drift-tolerant).
-  let { updated: out, count: urls } = rewriteUrlsInText(text);
-
-  // 2. Title: replace any "DSDS v<X>" with "DSDS v<NEW>".
-  let titleChanged = false;
-  out = out.replace(ROOT_TITLE_REGEX, (match, prefix) => {
-    if (match === prefix + NEW_VERSION) return match;
-    titleChanged = true;
-    return prefix + NEW_VERSION;
-  });
-
-  // 3. dsdsVersion.const: rewrite via focused regex so JSON formatting
-  //    is preserved (key order, indent, trailing newline).
-  let constChanged = false;
-  out = out.replace(DSDS_VERSION_CONST_REGEX, (_m, before, oldConst, after) => {
-    if (oldConst === NEW_VERSION) return before + oldConst + after;
-    constChanged = true;
-    return before + NEW_VERSION + after;
-  });
-
-  return { updated: out, count: urls, titleChanged, constChanged };
-}
-
-function rewriteGenericFile(text, opts = {}) {
-  let { updated, count } = rewriteUrlsInText(text);
-
-  // For example .json files: also rewrite `"dsdsVersion": "<old>"` literals
-  // so example documents stay valid against the bumped spec.
-  if (opts.rewriteDsdsLiteral !== false) {
-    const r = rewriteDsdsVersionLiterals(updated);
-    updated = r.updated;
-    count += r.count;
-  }
-
-  // For docs (.md, .mdx): also rewrite display-name strings and embedded
-  // example `dsdsVersion` literals. We use the same pass on both kinds of
-  // files; the regexes are narrow enough that JSON files won't get false
-  // positives on prose patterns (which never appear there).
-  if (opts.rewriteDisplayNames) {
-    const r = rewriteSpecDisplayNames(updated);
-    updated = r.updated;
-    count += r.count;
-  }
-
   return { updated, count };
 }
 
@@ -315,99 +204,67 @@ function rewriteGenericFile(text, opts = {}) {
 let totalFiles = 0;
 let totalReplacements = 0;
 const changedFiles = [];
-let rootTitleChanged = false;
-let rootConstChanged = false;
 
-function processFile(absPath, isRoot, opts) {
+function processFile(absPath, rewriters) {
   const text = fs.readFileSync(absPath, "utf-8");
-  let result;
-  if (isRoot) {
-    result = rewriteRootSchemaText(text);
-    if (result.titleChanged) rootTitleChanged = true;
-    if (result.constChanged) rootConstChanged = true;
-  } else {
-    result = rewriteGenericFile(text, opts);
+  let updated = text;
+  let count = 0;
+  for (const rewrite of rewriters) {
+    const r = rewrite(updated);
+    updated = r.updated;
+    count += r.count;
   }
-  if (result.updated === text) return false;
-
-  totalReplacements += result.count;
-  const rel = path.relative(ROOT, absPath);
-  changedFiles.push(rel);
-  if (!DRY_RUN) fs.writeFileSync(absPath, result.updated, "utf-8");
+  if (updated === text) return false;
+  totalReplacements += count;
+  changedFiles.push(path.relative(ROOT, absPath));
+  if (!DRY_RUN) fs.writeFileSync(absPath, updated, "utf-8");
+  totalFiles++;
   return true;
 }
 
-// Root schema first (special handling for title + const).
-if (processFile(ROOT_SCHEMA, true)) totalFiles++;
-else if (rootTitleChanged || rootConstChanged) {
-  // Edge case: title/const are already correct, but URL rewrite happened.
-  // This branch shouldn't usually fire — processFile already returns true
-  // when any of the three change. Defensive only.
-}
-
-// All other schemas. Schemas don't carry example `dsdsVersion` literals,
-// but the regex is narrow enough that re-applying it is harmless; we
-// disable it explicitly to keep the diff minimal.
+// 1. Every schema/**/*.schema.yaml file's own $id/$ref URLs.
 for (const file of schemaFiles) {
-  if (file === ROOT_SCHEMA) continue;
-  if (processFile(file, false, { rewriteDsdsLiteral: false })) totalFiles++;
+  processFile(file, [rewriteUrlsInText]);
 }
 
-// Examples: each example .json carries a `$schema` URL (handled by the
-// URL rewrite) and many also carry `"dsdsVersion": "<v>"` literals on the
-// root document. Both move in lockstep with the spec version.
-for (const file of exampleFiles) {
-  if (processFile(file, false)) totalFiles++;
+// 2. bundle.js's two hardcoded literals ($id, title) — plain URL rewrite
+//    covers the $id line; the title line ("...DSDS) v0.20.0 —...") needs
+//    its own pattern since it isn't a URL.
+const BUNDLE_TITLE_REGEX = /(Design System Doc Spec \(DSDS\) v)[A-Za-z0-9.\-]+/;
+processFile(BUNDLE_SCRIPT, [
+  rewriteUrlsInText,
+  (text) => {
+    let count = 0;
+    const updated = text.replace(BUNDLE_TITLE_REGEX, (match, prefix) => {
+      if (match === prefix + NEW_VERSION) return match;
+      count++;
+      return prefix + NEW_VERSION;
+    });
+    return { updated, count };
+  },
+]);
+
+// 3. Every examples/**/*.yaml and test/**/*.yaml base document's
+//    schemaVersion value, plus any $schema URL hint they carry.
+for (const file of dsdsDocFiles) {
+  processFile(file, [rewriteSchemaVersionValue, rewriteUrlsInText]);
 }
 
-// Docs (README, MDX content pages): rewrite URL fragments, example
-// `dsdsVersion` literals inside fenced code blocks, and free-form
-// `Design System Doc Spec <v>` / `DSDS <v>` display strings.
-for (const file of docFiles) {
-  if (processFile(file, false, { rewriteDisplayNames: true })) totalFiles++;
+// 4. README.md's hardcoded $schema URL suggestion (and any other stray
+//    version URL that creeps in).
+if (!SCHEMAS_ONLY && fs.existsSync(README)) {
+  processFile(README, [rewriteUrlsInText]);
 }
 
-// package.json: the repo's own version tracks the spec version (claude.md:
-// "Make sure package.json version is aligned with CHANGELOG").
+// 5. package.json#version.
 if (!SCHEMAS_ONLY) {
-  const pkgPath = path.join(ROOT, "package.json");
-  const pkg = JSON.parse(fs.readFileSync(pkgPath, "utf-8"));
+  const pkg = JSON.parse(fs.readFileSync(PKG, "utf-8"));
   if (pkg.version !== NEW_VERSION) {
     pkg.version = NEW_VERSION;
     totalFiles++;
     totalReplacements++;
     changedFiles.push(`package.json (version → ${NEW_VERSION})`);
-    if (!DRY_RUN) {
-      fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + "\n", "utf-8");
-    }
-  }
-}
-
-// Publication date: stamp the overview page's "Draft Specification — <date>:"
-// line with today's date. Cutting a version is the spec's publication
-// moment, so the date moves here rather than at build time (a rebuild
-// without content changes shouldn't re-date the spec).
-if (!SCHEMAS_ONLY && fs.existsSync(OVERVIEW_MDX)) {
-  const text = fs.readFileSync(OVERVIEW_MDX, "utf-8");
-  const today = new Date().toLocaleDateString("en-GB", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  });
-  const updated = text.replace(PUBLICATION_DATE_REGEX, `$1${today}$2`);
-  if (updated !== text) {
-    totalFiles++;
-    totalReplacements++;
-    changedFiles.push(
-      path.relative(ROOT, OVERVIEW_MDX) + ` (publication date → ${today})`,
-    );
-    if (!DRY_RUN) fs.writeFileSync(OVERVIEW_MDX, updated, "utf-8");
-  } else if (!PUBLICATION_DATE_REGEX.test(text)) {
-    console.log(
-      "  ⚠  Could not find the \"**Draft Specification — <date>:**\" line in " +
-        path.relative(ROOT, OVERVIEW_MDX) +
-        " — publication date not updated.",
-    );
+    if (!DRY_RUN) fs.writeFileSync(PKG, JSON.stringify(pkg, null, 2) + "\n", "utf-8");
   }
 }
 
@@ -415,50 +272,16 @@ if (!SCHEMAS_ONLY && fs.existsSync(OVERVIEW_MDX)) {
 // Report
 // ---------------------------------------------------------------------------
 
-// Surface drift between the const and the URLs as a separate, prominent
-// note so the user understands what was reconciled.
-const priorUrlVersions = Array.from(urlVersionsSeen.keys()).filter(
-  (v) => v !== NEW_VERSION,
-);
-if (priorUrlVersions.length > 0) {
-  console.log(
-    `Detected URL versions before bump: ${priorUrlVersions
-      .map((v) => `v${v} (${urlVersionsSeen.get(v)} occurrence(s))`)
-      .join(", ")}`,
-  );
-  if (
-    priorUrlVersions.length > 1 ||
-    (priorUrlVersions[0] !== CURRENT_VERSION && CURRENT_VERSION !== NEW_VERSION)
-  ) {
-    console.log(
-      `  ⚠  Drift: dsdsVersion.const was "${CURRENT_VERSION}" but URLs say ` +
-        priorUrlVersions.map((v) => `v${v}`).join(", ") +
-        `. All have been migrated to v${NEW_VERSION}.`,
-    );
-  }
-  console.log();
-}
-
 const action = DRY_RUN ? "Would update" : "Updated";
-console.log(
-  `${action} ${totalFiles} file(s) (${totalReplacements} replacements):`,
-);
+console.log(`${action} ${totalFiles} file(s) (${totalReplacements} replacements):`);
 console.log();
 for (const f of changedFiles) console.log(`  ${f}`);
-if (rootTitleChanged) console.log(`  (root schema title → v${NEW_VERSION})`);
-if (rootConstChanged) console.log(`  (dsdsVersion.const → "${NEW_VERSION}")`);
 console.log();
 
 if (totalFiles === 0) {
-  console.log(
-    `Nothing to do. The project is already fully at v${NEW_VERSION}.`,
-  );
+  console.log(`Nothing to do. The project is already fully at v${NEW_VERSION}.`);
   process.exit(0);
 }
-
-// ---------------------------------------------------------------------------
-// Bundle (so the versioned dist build picks up the new version on `npm run build`)
-// ---------------------------------------------------------------------------
 
 if (DRY_RUN) {
   console.log("Dry run complete. Rerun without --dry-run to apply changes.");
@@ -466,26 +289,32 @@ if (DRY_RUN) {
   process.exit(0);
 }
 
-if (SKIP_BUNDLE) {
-  console.log("Skipping bundle (--no-bundle).");
-  console.log("Next steps:");
-  console.log("  1. Run `npm run bundle` to regenerate the bundled schema.");
-  console.log("  2. Run `npm run build` to publish the versioned dist tree.");
-  process.exit(0);
+// ---------------------------------------------------------------------------
+// Bundle + sync skill versions
+// ---------------------------------------------------------------------------
+
+function runStep(label, npmScript) {
+  console.log(`${label}…\n`);
+  try {
+    execFileSync("npm", ["run", npmScript], { cwd: ROOT, stdio: "inherit" });
+  } catch (err) {
+    console.error(`\n✗ '${npmScript}' failed. Source files were updated, but this`);
+    console.error(`  step didn't complete. Resolve the error and rerun \`npm run ${npmScript}\` manually.`);
+    process.exit(err.status || 1);
+  }
 }
 
-console.log("Regenerating bundled schema…\n");
-try {
-  execFileSync("npm", ["run", "bundle"], {
-    cwd: ROOT,
-    stdio: "inherit",
-  });
-} catch (err) {
-  console.error("\n✗ Bundle step failed. Source files were updated, but the");
-  console.error("  bundled schema is out of sync. Resolve the error and rerun");
-  console.error("  `npm run bundle` manually.");
-  process.exit(err.status || 1);
+if (SKIP_BUNDLE) {
+  console.log("Skipping bundle (--no-bundle).");
+} else {
+  runStep("Regenerating bundled schema", "bundle");
+}
+
+if (SKIP_SYNC_SKILLS) {
+  console.log("Skipping skill version sync (--no-sync-skills).");
+} else if (!SCHEMAS_ONLY) {
+  runStep("Syncing agent skill versions", "sync-skill-versions");
 }
 
 console.log("\n✓ Version bump complete.");
-console.log(`  Next: run \`npm run build\` to publish site/dist/v${NEW_VERSION}/.`);
+console.log(`  Next: run \`npm run build\` to publish site/dist/v${NEW_VERSION}/, then \`npm run check\`.`);

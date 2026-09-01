@@ -3,7 +3,7 @@
  * sync-skill-versions.js — Update agent skill files to match the spec version.
  *
  * Rewrites `.agents/skills/dsds-*` SKILL.md files so their YAML frontmatter
- * `metadata.version`, URL fragments, `dsdsVersion` literals, and any other
+ * `metadata.version`, URL fragments, `schemaVersion` literals, and any other
  * remaining version strings all point at the current (or specified) spec
  * version.
  *
@@ -14,16 +14,25 @@
  *   node scripts/sync-skill-versions.js --help
  *
  * When run without a version argument, reads the target from
- * spec/schema/dsds.schema.json#/properties/dsdsVersion/const — so running
- * this after bump-version.js picks up the freshly bumped value automatically.
+ * schema/dsds.bundled.yaml's own `$id` (ex:
+ * "https://.../v0.20.0/dsds.bundled.yaml") — the same source
+ * nav.js's readSpecVersion() uses — so running this after `npm run bundle`
+ * picks up a freshly bumped version automatically.
  */
 
 const fs = require("fs");
 const path = require("path");
 
 const ROOT = path.resolve(__dirname, "..");
-const ROOT_SCHEMA = path.join(ROOT, "spec", "schema", "dsds.schema.json");
+const BUNDLED_SCHEMA = path.join(ROOT, "schema", "dsds.bundled.yaml");
 const SKILLS_DIR = path.join(ROOT, ".agents", "skills");
+
+function readBundledVersion() {
+  if (!fs.existsSync(BUNDLED_SCHEMA)) return null;
+  const raw = fs.readFileSync(BUNDLED_SCHEMA, "utf-8");
+  const match = /\/v([^/\s"']+)\/dsds\.bundled\.yaml/.exec(raw);
+  return match ? match[1] : null;
+}
 
 function printHelp() {
   console.log(`
@@ -33,8 +42,8 @@ Usage:
   node scripts/sync-skill-versions.js [<version>] [--dry-run]
 
 Arguments:
-  <version>    Target version string (ex: 0.15.2). If omitted, reads from
-               spec/schema/dsds.schema.json#/properties/dsdsVersion/const.
+  <version>    Target version string (ex: 0.20.1). If omitted, reads from
+               schema/dsds.bundled.yaml's own $id.
 
 Options:
   --dry-run    Print planned changes without writing files.
@@ -61,20 +70,11 @@ if (positional.length > 1) {
 if (positional.length === 1) {
   TARGET_VERSION = positional[0];
 } else {
-  if (!fs.existsSync(ROOT_SCHEMA)) {
-    console.error(`✗ Root schema not found: ${path.relative(ROOT, ROOT_SCHEMA)}`);
-    process.exit(1);
-  }
-  const rootJson = JSON.parse(fs.readFileSync(ROOT_SCHEMA, "utf-8"));
-  TARGET_VERSION =
-    rootJson &&
-    rootJson.properties &&
-    rootJson.properties.dsdsVersion &&
-    rootJson.properties.dsdsVersion.const;
+  TARGET_VERSION = readBundledVersion();
   if (!TARGET_VERSION) {
     console.error(
-      "✗ Could not read version from " +
-        `${path.relative(ROOT, ROOT_SCHEMA)}#/properties/dsdsVersion/const`,
+      `✗ Could not read version from ${path.relative(ROOT, BUNDLED_SCHEMA)}'s own $id. ` +
+        "Run `npm run bundle` first, or pass an explicit <version>.",
     );
     process.exit(1);
   }
@@ -87,7 +87,7 @@ if (!/^[A-Za-z0-9]+(\.[A-Za-z0-9-]+)*$/.test(TARGET_VERSION)) {
 
 const URL_REGEX = /designsystemdocspec\.org\/v([A-Za-z0-9.\-]+)\//g;
 const NEW_URL_FRAGMENT = `designsystemdocspec.org/v${TARGET_VERSION}/`;
-const DSDS_VERSION_LITERAL_REGEX = /("dsdsVersion"\s*:\s*")([A-Za-z0-9.\-]+)(")/g;
+const SCHEMA_VERSION_LITERAL_REGEX = /(schemaVersion:\s*"?)([A-Za-z0-9.\-]+)("?)/g;
 const FRONTMATTER_VERSION_REGEX = /(metadata:\s*\n\s*version:\s*)\S+/;
 
 function rewriteUrlsInText(text) {
@@ -100,9 +100,9 @@ function rewriteUrlsInText(text) {
   return { updated, count };
 }
 
-function rewriteDsdsVersionLiterals(text) {
+function rewriteSchemaVersionLiterals(text) {
   let count = 0;
-  const updated = text.replace(DSDS_VERSION_LITERAL_REGEX, (match, before, oldVer, after) => {
+  const updated = text.replace(SCHEMA_VERSION_LITERAL_REGEX, (match, before, oldVer, after) => {
     if (oldVer === TARGET_VERSION) return match;
     count++;
     return before + TARGET_VERSION + after;
@@ -125,9 +125,7 @@ if (skillFiles.length === 0) {
   process.exit(0);
 }
 
-const schemaJson = JSON.parse(fs.readFileSync(ROOT_SCHEMA, "utf-8"));
-const CURRENT_SCHEMA_VERSION =
-  schemaJson.properties.dsdsVersion.const;
+const CURRENT_SCHEMA_VERSION = readBundledVersion();
 
 console.log(`Syncing agent skill versions to v${TARGET_VERSION}`);
 if (DRY_RUN) console.log("(dry run — no files will be written)");
@@ -149,15 +147,15 @@ for (const file of skillFiles) {
     return prefix + TARGET_VERSION;
   });
 
-  // Body: rewrite URLs and dsdsVersion literals
+  // Body: rewrite URLs and schemaVersion literals
   let r = rewriteUrlsInText(text);
   text = r.updated; count += r.count;
 
-  r = rewriteDsdsVersionLiterals(text);
+  r = rewriteSchemaVersionLiterals(text);
   text = r.updated; count += r.count;
 
   // Catch-all: remaining literal version strings the regexes don't cover.
-  if (CURRENT_SCHEMA_VERSION !== TARGET_VERSION) {
+  if (CURRENT_SCHEMA_VERSION && CURRENT_SCHEMA_VERSION !== TARGET_VERSION) {
     const before = text;
     text = text.replaceAll(CURRENT_SCHEMA_VERSION, TARGET_VERSION);
     if (text !== before) {

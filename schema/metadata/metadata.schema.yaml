@@ -1,0 +1,102 @@
+$schema: https://json-schema.org/draft/2020-12/schema
+$id: https://designsystemdocspec.org/v0.20.0/metadata.schema.yaml
+title: Metadata
+type: object
+description: Optional information about an element.
+$comment: >-
+  The shared foundation every entry's metadata builds on. Fields only meaningful
+  for one kind live in a per-kind extension instead - entry-metadata.schema.yaml
+  (every entry) or system-metadata.schema.yaml (a `kind: system` entry only).
+$defs:
+  isoDate:
+    type: string
+    format: date
+    pattern: '^\d{4}-\d{2}-\d{2}$'
+    description: An ISO 8601 date (YYYY-MM-DD).
+    example: "2026-06-02"
+  note:
+    type: string
+    description: A plain-text note. MUST NOT contain markup.
+    example: Reviewed against the latest Figma file; no changes needed.
+properties:
+  tags:
+    type: array
+    description: Keywords for grouping, search, and filtering. By convention, the first tag, if any, is the main category.
+    $comment: >-
+      The first tag can be used as a category.
+    items:
+      type: string
+    minItems: 1
+    uniqueItems: true
+    example: [actions, button, cta, form-control]
+  owner:
+      type: string
+      description: The owning team, role, or group.
+      $comment: Follows mailbox standard (RFC 5322).
+      example: ds@pizzapartysupertime.com
+  reviewed:
+    type: array
+    minItems: 1
+    description: Independent reviews confirming this item's documentation, each recording who confirmed it and when.
+    $comment: A list of review events so human sign-offs and automated checks can both be recorded independently.
+    items:
+      type: object
+      properties:
+        date:
+          $ref: "#/$defs/isoDate"
+          description: The date of the review.
+        by:
+          type: string
+          description: Who or what performed the review.
+          $comment: >-
+            Follows the actor convention: `human:<id>` for a person,
+            `<producer>/<version>` for an agent or tool, `process:<id>`
+            for an automated process. Adapted from the Open Knowledge
+            Format (OKF) spec.
+          example: human:ahormati
+        note:
+          type: string
+          description: A plain-text note on the review outcome.
+          example: Copy and contrast ratios re-checked; no changes needed.
+  context:
+    type: string
+    description: Why this entry was created, and how and why to use it.
+    example: Introduced to give provide agents extra information for how to ingest/use an entry.
+  updated:
+    type: object
+    description: When this item's documentation last changed.
+    $comment: A bare date, or a date with a change note.
+    properties:
+      date:
+        $ref: "#/$defs/isoDate"
+        description: The date of the change.
+      note:
+        type: string
+        description: A plain-text note on what changed.
+        example: Added the loading trait and its guideline.
+  origin:
+    type: object
+    description: How this entry's documentation came to exist, and who or what wrote it.
+    $comment: >-
+      `method` and `author` both default to the common case
+      (authored, by a human). A one-off exception, like
+      "the accessibility section was reviewed by a
+      person, unlike the rest," belongs as a `note`.
+    properties:
+      method:
+        type: string
+        enum: [authored, generated, extracted, reconstructed]
+        default: authored
+        description: How this documentation as a whole came to exist.
+      author:
+        type: string
+        enum: [human, ai-assisted, ai-generated, machine-assisted, machine-generated]
+        default: human
+        description: Who or what actually wrote the content.
+      note:
+        type: string
+        description: Free-text context about the origin, including any exceptions to `method` or `author`.
+        example: The accessibility section was reviewed by a person, unlike the rest.
+  $extensions:
+    $ref: https://designsystemdocspec.org/v0.20.0/common/extensions.schema.yaml
+    description: Escape hatch for tool data scoped to just this entry's metadata, keyed by namespace.

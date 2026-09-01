@@ -1,0 +1,133 @@
+$schema: https://json-schema.org/draft/2020-12/schema
+$id: https://designsystemdocspec.org/v0.20.0/common/ref.schema.yaml
+title: Ref
+description: The one pointer type. "A points to B, and this is what kind of pointer it is."
+$comment: >-
+  The schema's pointer: "A points to B". `rel` says what
+  kind of pointer it is. Dependencies, composition, extension,
+  citations, and every other connection use this pointer with a
+  different `rel`.
+
+  Exactly one of `to` or `href` described B. `to` points inside this
+  document (an entry id, or `entryId#itemId` for one item inside it).
+  `href` points outside it (a file, URL, or package). This is
+  independent of `rel`.
+
+  Only add a new `rel` value if no existing one covers the idea.
+  Otherwise extend that value's description instead.
+
+  A bare string is shorthand for `{href: <string>}`. Bare strings can't
+  be safely read as an internal id. Use the full object when the target
+  is internal or an external link needs more description.
+oneOf:
+  - type: string
+    format: uri-reference
+    description: "Shorthand for an external link that doesn't need added definition. Equivalent to `{href: <string>}`."
+    example: https://storybook.org/ds/button
+  - type: object
+    required: [rel]
+    oneOf:
+      - required: [to]
+      - required: [href]
+    properties:
+      rel:
+        oneOf:
+          - type: string
+            enum: [depends-on, composes, part-of, alternative-to, replaces, extends, implements, relates-to, same-as, refines, lint-rule, test, file, source, design, storybook, package, external-link, contract, pairs-with, excludes, see-also]
+          - $ref: https://designsystemdocspec.org/v0.20.0/common/id.schema.yaml#/$defs/namespaced
+        description: What kind of pointer this is, or a namespaced custom value.
+        $comment: >-
+          Grouped by purpose: `depends-on`, `composes`, `part-of`,
+          `alternative-to`, `replaces`, `extends`, `implements`, and
+          `relates-to` describe how things connect. `same-as` and `refines`
+          describe how content is written. `lint-rule` and `test` describe
+          how a rule is checked. `file`, `source`, `design`, `storybook`,
+          `package`, `external-link`, and `contract` point outside this
+          spec. `pairs-with` and `excludes` are a light note about two
+          things combining. `see-also` is a generic "worth reading too"
+          for when nothing more specific fits.
+
+          `implements` is a real, working version of something more
+          general. Such as a component implementing a pattern, or a
+          platform build implementing a cross-platform one. Different from
+          `composes` ("built from these parts"), and from
+          `design`/`storybook` (which say what kind of thing this is, not
+          why it's linked).
+
+          `same-as` means this item repeats content declared once
+          elsewhere, instead of restating it. Point `to` at
+          "<shared-id>#<item-id>" and skip the item's own `statement`.
+          Different from `refines` (a genuine restatement for a different
+          reader) and `alternative-to` (one thing standing in for another,
+          not the same thing).
+
+          `refines` is an agent-only rule that sharpens a human-facing
+          one; `to` names that rule's id. `lint-rule` and `test` point a
+          rule at whatever actually checks it, usually a test file via
+          `href`. For a stricter combination rule than
+          `pairs-with`/`excludes` gives you, use a combo instead. `file`
+          is also how a theme entry points at its real source file,
+          instead of listing every token it changes.
+
+          Use `refs` with `rel: source` for an entry's primary source
+          file (see button.yaml's GitHub link) - every tool reading
+          `common/ref` already understands it, unlike a custom field or
+          `$extensions`. Exception: a component uses its own
+          `sourceFiles` instead, since it's structured (one entry per
+          platform) and what tooling already extracts an API from.
+          `metadata.preview` and `examples[].ref` are for a sample, not
+          the real source.
+
+          `contract` points at an already-generated, machine-readable
+          API contract document (props, slots, events, etc. in some
+          standard, tool-readable shape) - not the source `sourceFiles`
+          extracts from, and not any one specific format: DSDS doesn't
+          parse or validate the target's contents, only points at it.
+          A component uses its own `specs` for this rather than `refs`,
+          the same way it uses `sourceFiles` instead of `rel: source`.
+
+          Namespaced custom values (ex: "acme.supersedes") are allowed
+          too.
+        example: depends-on
+      to:
+        type: string
+        pattern: '^[a-z0-9]+(-[a-z0-9]+)*([./][a-z0-9]+(-[a-z0-9]+)*)*(#[a-z0-9]+(-[a-z0-9]+)*(\.[a-z0-9]+(-[a-z0-9]+)*)*)?$'
+        description: What this points at, inside this document's own graph.
+        $comment: >-
+          A bare id points at a whole entry. Add `#itemId` (ex:
+          `shared-a11y#focus-visible`) to point at one item inside it. The
+          entry half accepts a token id's looser slash-separated form too
+          (see common/id.schema.yaml's tokenId), since `to` can target a
+          token entry.
+
+          This pattern only checks the target is *shaped* like an id (or
+          id#itemId) - not that it actually exists. A capitalized display
+          name (`to: Button`) or a value with a space in it can never be a
+          real id, whatever else is in the document, so this catches that
+          class of mistake with no other file needed. Whether the target
+          actually resolves is a separate, resolution-level check (see
+          DSDS-05 for the #itemId form).
+        example: "shared-a11y#focus-visible"
+      href:
+        type: string
+        format: uri-reference
+        description: What this points at, outside this document. Such as a file, URL, or package.
+        $comment: A URI. Can be a relative path (`./tests/button.a11y.test.ts`) or a pseudo-scheme like `npm:@org/ds-react`.
+        example: ./tests/button.a11y.test.ts
+      role:
+        type: string
+        description: What the thing being pointed at does in this context.
+        example: hosted docs
+      note:
+        type: string
+        description: Additional info related to the connection of the two items.
+        example: Component Story Format (CSF3) - the source the hosted docs above are built from.
+    additionalProperties: false
+$defs:
+  list:
+    type: array
+    minItems: 1
+    description: One or more pointers, in order.
+    $comment: Every consumer expects an array of refs. Pulled out here so call sites don't have to redefine it.
+    items:
+      $ref: https://designsystemdocspec.org/v0.20.0/common/ref.schema.yaml

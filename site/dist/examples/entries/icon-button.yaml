@@ -1,0 +1,36 @@
+# Two hard cases in one small file:
+#   - No sourceFiles. This component is designed but not yet built - the
+#     spec has no position on documentation-before-implementation, and
+#     this is what that looks like: nothing here restates an API that
+#     doesn't exist yet, and a tool extracting props from sourceFiles
+#     has nothing to point at until there's a real file.
+#   - checkedBy: automated wired to a real, resolvable test, not just
+#     the shape of one (examples/invalid/DSDS-03-checked-by-needs-ref.yaml
+#     shows the failure case; this is the same rule done right).
+id: icon-button
+kind: component
+name: Icon Button
+description: A button variant that renders a single icon with no visible label.
+metadata:
+  status: {status: planned}
+  tags: [actions, button]
+
+sections:
+  - kind: guidelines
+    for: all
+    items:
+      - statement: Icon button MUST carry an aria-label, since it has no visible text label.
+        level: must
+        checkedBy: automated
+        checks:
+          - href: ./tests/icon-button.a11y.test.ts
+            rel: test
+      # Borrowed from the same shared rule button.yaml points at - shows
+      # more than one entry citing the same shared item instead of
+      # restating it, and resolves across files (this file and
+      # starter-kit.dsds.yaml, which owns shared-a11y) the same way the
+      # default `npm run check` sweep validates them together.
+      - level: must
+        refs:
+          - to: shared-a11y#touch-target
+            rel: same-as

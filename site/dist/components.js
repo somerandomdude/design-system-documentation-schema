@@ -118,7 +118,7 @@
   // <ds-code>
   //
   // Attributes:
-  //   language — optional language label (e.g. "json", "bash")
+  //   language — optional language label (e.g. "json", "yaml", "bash")
   //   label   — optional label shown in top-right corner
   //   inline  — boolean, renders as inline <code> instead of block
   //   wrap    — boolean, wraps long lines (white-space: pre-wrap) instead of
@@ -126,39 +126,227 @@
   //
   // Content:
   //   Text content inside the element is rendered as code.
-  //   For JSON content, set language="json" for syntax highlighting.
+  //   For JSON or YAML content, set language="json"/"yaml" for syntax
+  //   highlighting.
+  //
+  // Syntax highlighting uses the CSS Custom Highlight API
+  // (https://www.bram.us/2024/02/18/custom-highlight-api-for-syntax-highlighting/)
+  // instead of wrapping tokens in <span>s: the code text stays a single,
+  // untouched Text node (set via textContent, never innerHTML), and
+  // highlighted ranges are registered separately via CSS.highlights and
+  // painted with ::highlight() in CODE_CSS below. This sidesteps a whole
+  // class of escape-order bug the previous span-wrapping approach was prone
+  // to (there's no HTML to mis-escape at all — textContent handles safety
+  // for every token, not just the ones this file's regex anticipates).
+  // Requires a browser with the API (Chrome 105+, Safari 17.2+, Firefox
+  // 140+ as of this writing) - no fallback path for older browsers; this is
+  // this site's only syntax-highlighting mechanism, deliberately, not one of
+  // two to keep in sync.
   // ═══════════════════════════════════════════════════════════════════════════
 
-  // Syntax-highlight a JSON string. Runs on the RAW (un-escaped) source, then
-  // HTML-escapes per token — NOT the other way around. In valid JSON the only
-  // characters that need HTML escaping (`<`, `>`, `&`, `"`) live inside string
-  // literals, which this regex matches as whole tokens; the gaps between tokens
-  // are structural (`{ } [ ] : ,` and whitespace) and always HTML-safe, so they
-  // pass through untouched. Escaping first and matching second (the previous
-  // approach) desynced on any string containing `&`, `<`, or `>`: those became
-  // `&amp;`/`&lt;`/`&gt;`, and the string matcher's content class excluded `&`,
-  // so it couldn't cross them — mispairing every following quote and cascading
-  // wrong colors down the rest of the block (the JSON spec view is full of such
-  // characters, so it broke entirely).
-  function highlightJson(raw) {
-    return raw.replace(
-      /("(?:\\.|[^"\\])*")(\s*:)?|\b(?:true|false|null)\b|-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?/g,
-      function (m, str, colon) {
-        // A quoted token followed by `:` is a key; otherwise a string value.
-        if (str !== undefined) {
-          const cls = colon ? "hl-k" : "hl-s";
-          return (
-            '<span class="' + cls + '">' + esc(str) + "</span>" +
-            (colon || "")
-          );
-        }
-        // Numbers, booleans, and null contain no HTML-special characters.
-        const cls =
-          m === "true" || m === "false" || m === "null" ? "hl-b" : "hl-n";
-        return '<span class="' + cls + '">' + m + "</span>";
-      },
-    );
+  const JSON_TOKEN_RE =
+    /("(?:\\.|[^"\\])*")(\s*:)?|\b(?:true|false|null)\b|-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?/g;
+
+  // Tokenizes a JSON string into {start, end, cls} character-offset ranges,
+  // for the Custom Highlight API to paint — no HTML, no escaping, since the
+  // source text itself is never touched. A quoted token followed by `:` is a
+  // key; otherwise a string value. The colon itself is never part of a
+  // token's range, matching how the old span-based version left it unstyled.
+  function tokenizeJson(raw) {
+    const tokens = [];
+    JSON_TOKEN_RE.lastIndex = 0;
+    let match;
+    while ((match = JSON_TOKEN_RE.exec(raw))) {
+      const [full, str, colon] = match;
+      if (str !== undefined) {
+        const start = match.index;
+        tokens.push({ start, end: start + str.length, cls: colon ? "hl-k" : "hl-s" });
+      } else {
+        const cls = full === "true" || full === "false" || full === "null" ? "hl-b" : "hl-n";
+        tokens.push({ start: match.index, end: match.index + full.length, cls });
+      }
+    }
+    return tokens;
   }
+
+  // ── YAML tokenizer ──────────────────────────────────────────────────────
+  // Line-based, not a real YAML parser - this only ever needs to highlight
+  // this site's own example files, not arbitrary YAML. Tracks one piece of
+  // state across lines (whether we're inside a block scalar opened by `>-`
+  // or `|`), since everything more-indented than the key that opened one is
+  // that scalar's literal text, not new structure to tokenize.
+
+  // A plain (unquoted) scalar counts as a boolean/null only when the ENTIRE
+  // value is exactly one of these words - "Turn the toggle on" never
+  // qualifies just because it contains "on".
+  const YAML_BOOL_RE = /^(?:true|false|null)$/;
+  // Likewise a number only when the entire value is numeric - "48px" and
+  // "2.5.5" stay strings, matching how YAML itself resolves scalar types
+  // (a value that's only partly numeric was never a number to begin with).
+  const YAML_NUMBER_RE = /^-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?$/;
+  // Where a YAML key ends: identifier characters immediately followed by `:`
+  // and then whitespace or end of line. Doesn't match a quoted key
+  // ("my key": ...) - none of this site's own examples use one.
+  const YAML_KEY_RE = /^([A-Za-z0-9_.$-]+):(?=\s|$)/;
+  const YAML_BLOCK_SCALAR_RE = /^[|>][+-]?\d*$/;
+
+  // The first '#' that starts a real comment: preceded by whitespace or the
+  // start of the line, and not inside an open quote. -1 if there isn't one.
+  function findYamlCommentIndex(line) {
+    let quote = null;
+    for (let i = 0; i < line.length; i++) {
+      const ch = line[i];
+      if (quote) {
+        if (ch === quote) quote = null;
+      } else if (ch === '"' || ch === "'") {
+        quote = ch;
+      } else if (ch === "#" && (i === 0 || /\s/.test(line[i - 1]))) {
+        return i;
+      }
+    }
+    return -1;
+  }
+
+  // Splits a flow collection's inner text ("a, {b: c}, [d]") on its
+  // top-level commas only - a comma nested inside another [...]/{...} or a
+  // quoted string doesn't split. Offsets are relative to `text`.
+  function splitFlowSegments(text) {
+    const segments = [];
+    let depth = 0;
+    let quote = null;
+    let segStart = 0;
+    for (let i = 0; i <= text.length; i++) {
+      const ch = text[i];
+      if (quote) {
+        if (ch === quote) quote = null;
+        continue;
+      }
+      if (i === text.length || (ch === "," && depth === 0)) {
+        segments.push({ text: text.slice(segStart, i), start: segStart });
+        segStart = i + 1;
+        continue;
+      }
+      if (ch === '"' || ch === "'") quote = ch;
+      else if (ch === "[" || ch === "{") depth++;
+      else if (ch === "]" || ch === "}") depth--;
+    }
+    return segments;
+  }
+
+  // Tokenizes one YAML "value" position - the text after a key's `:`, a bare
+  // list item, or one segment of a flow collection - and pushes any tokens
+  // found onto `tokens`. Handles a quoted string, a flow sequence/mapping
+  // (recursing into its own segments), or a bare scalar.
+  function tokenizeYamlValue(text, offset, tokens) {
+    const leading = text.match(/^\s*/)[0].length;
+    const trailing = text.match(/\s*$/)[0].length;
+    const value = text.slice(leading, text.length - trailing);
+    if (!value) return;
+    const valueOffset = offset + leading;
+
+    if (value[0] === '"' || value[0] === "'") {
+      const closeAt = value.lastIndexOf(value[0]);
+      const end = closeAt > 0 ? closeAt + 1 : value.length;
+      tokens.push({ start: valueOffset, end: valueOffset + end, cls: "hl-s" });
+      return;
+    }
+
+    if (
+      (value[0] === "[" && value[value.length - 1] === "]") ||
+      (value[0] === "{" && value[value.length - 1] === "}")
+    ) {
+      const inner = value.slice(1, -1);
+      const innerOffset = valueOffset + 1;
+      for (const seg of splitFlowSegments(inner)) {
+        tokenizeYamlSegment(seg.text, innerOffset + seg.start, tokens);
+      }
+      return;
+    }
+
+    const cls = YAML_BOOL_RE.test(value) ? "hl-b" : YAML_NUMBER_RE.test(value) ? "hl-n" : "hl-s";
+    tokens.push({ start: valueOffset, end: valueOffset + value.length, cls });
+  }
+
+  // One segment inside a flow collection - either a bare value ([a, b]'s
+  // "a") or its own key: value pair ({status: stable}'s "status: stable").
+  function tokenizeYamlSegment(text, offset, tokens) {
+    const leading = text.match(/^\s*/)[0].length;
+    const rest = text.slice(leading);
+    const keyMatch = rest.match(YAML_KEY_RE);
+    if (keyMatch) {
+      const keyStart = offset + leading;
+      tokens.push({ start: keyStart, end: keyStart + keyMatch[1].length, cls: "hl-k" });
+      tokenizeYamlValue(rest.slice(keyMatch[0].length), keyStart + keyMatch[0].length, tokens);
+    } else {
+      tokenizeYamlValue(text, offset, tokens);
+    }
+  }
+
+  function tokenizeYaml(raw) {
+    const tokens = [];
+    let offset = 0;
+    let blockScalarIndent = null;
+
+    for (const line of raw.split("\n")) {
+      const lineStart = offset;
+      offset += line.length + 1;
+      if (!line.trim()) continue;
+
+      if (blockScalarIndent !== null) {
+        const indent = line.match(/^\s*/)[0].length;
+        if (indent > blockScalarIndent) continue; // still inside the scalar's own text
+        blockScalarIndent = null; // dedented back out - parse this line normally below
+      }
+
+      const commentIndex = findYamlCommentIndex(line);
+      const content = commentIndex === -1 ? line : line.slice(0, commentIndex);
+      if (!content.trim()) continue;
+
+      // Leading indentation plus any "- " list markers (more than one for a
+      // list nested directly under another list, on one line).
+      const prefixLen = content.match(/^(\s*(?:-\s+)*)/)[0].length;
+      const rest = content.slice(prefixLen);
+      if (!rest) continue;
+
+      const keyMatch = rest.match(YAML_KEY_RE);
+      if (!keyMatch) {
+        tokenizeYamlValue(rest, lineStart + prefixLen, tokens);
+        continue;
+      }
+
+      const keyStart = lineStart + prefixLen;
+      tokens.push({ start: keyStart, end: keyStart + keyMatch[1].length, cls: "hl-k" });
+      const valueText = rest.slice(keyMatch[0].length);
+      if (YAML_BLOCK_SCALAR_RE.test(valueText.trim())) {
+        blockScalarIndent = prefixLen; // opens a block scalar at this key's own indent
+      } else {
+        tokenizeYamlValue(valueText, keyStart + keyMatch[0].length, tokens);
+      }
+    }
+    return tokens;
+  }
+
+  const TOKENIZERS = { json: tokenizeJson, yaml: tokenizeYaml, yml: tokenizeYaml };
+
+  const HIGHLIGHT_NAMES = ["hl-k", "hl-s", "hl-n", "hl-b"];
+
+  // One shared Highlight per token class, reused by every <ds-code> instance
+  // on the page. CSS.highlights is a single global registry, not scoped per
+  // shadow root, so a second instance calling CSS.highlights.set('hl-k', ...)
+  // would silently replace the first instance's highlight instead of adding
+  // to it. Each instance instead adds its own Ranges into these shared
+  // objects, and removes exactly those Ranges again on re-render or
+  // disconnect (see DsCode._clearRanges below). ::highlight() matching is
+  // itself scoped per shadow tree, so this sharing is safe: a rule defined in
+  // one <ds-code>'s shadow root only paints Ranges whose nodes live inside
+  // that same tree, even though the Highlight object backing it is shared.
+  const sharedHighlights = Object.fromEntries(
+    HIGHLIGHT_NAMES.map((name) => {
+      const highlight = new Highlight();
+      CSS.highlights.set(name, highlight);
+      return [name, highlight];
+    }),
+  );
 
   const CODE_CSS = `
     ${BASE_RESET}
@@ -166,19 +354,38 @@
     :host([inline]) { display: inline; }
 
     /* ── Block mode ──────────────────────────────────────── */
+    /* No overflow: hidden - it used to pair with a border-radius this no
+       longer has (nothing left to clip), and left in place it's actively
+       harmful: an ancestor with any overflow other than visible becomes
+       position: sticky's positioning reference for descendants (pre,
+       below), so a sticky pre inside an overflow: hidden .wrapper sticks
+       relative to .wrapper's own (always-static) box instead of the
+       viewport - it just scrolls away with the page, never visibly
+       pinning. */
     .wrapper {
       position: relative;
-      overflow: hidden;
       background: var(--ds-color-bg-raised);
       inset: calc(var(--ds-space-4) * -1);
       top: 0;
       width: calc(100% + (var(--ds-space-4) * 2));
+      height: calc(100% + (var(--ds-space-4) * 2));
     }
     .wrapper pre { color: var(--ds-color-text); }
-    .wrapper .hl-k { color: var(--ds-syntax-light-key); }
-    .wrapper .hl-s { color: var(--ds-syntax-light-string); }
-    .wrapper .hl-n { color: var(--ds-syntax-light-number); }
-    .wrapper .hl-b { color: var(--ds-syntax-light-bool); }
+
+    /* JSON/YAML syntax highlighting, painted via the CSS Custom Highlight API
+       (registered in CSS.highlights by tokenizeJson()/tokenizeYaml()/_render()
+       below). ::highlight() can't be nested under .wrapper the way the old
+       span-based .wrapper .hl-k selectors were - it's a tree-scoped
+       pseudo-element, not a descendant combinator target - but scoping still
+       holds: only Ranges whose nodes live inside this shadow root paint here,
+       even though the underlying Highlight objects are shared across every
+       ds-code instance on the page. Note: no backticks in this comment - it
+       lives inside CODE_CSS's own template literal, and a literal backtick
+       here would terminate that string early. */
+    ::highlight(hl-k) { color: var(--ds-syntax-light-key); }
+    ::highlight(hl-s) { color: var(--ds-syntax-light-string); }
+    ::highlight(hl-n) { color: var(--ds-syntax-light-number); }
+    ::highlight(hl-b) { color: var(--ds-syntax-light-bool); }
 
     /* Styled like <ds-callout>'s .callout__title — a solid, bold tab, not a
        pill — instead of a <ds-badge>. */
@@ -194,7 +401,18 @@
       padding: var(--ds-space-2) var(--ds-space-4);
     }
 
+    /* Sticky, not just .wrapper - when a code block sits in a stretched
+       container taller than its own content (the schema page's split-layout
+       .end column, stretched to match its row's .start column - see
+       def-section.js), pre is the thing that visually pins near the top of
+       the viewport as you scroll, same top offset as this site's other
+       sticky elements (the def-section <h2> title, the nav bar itself). In
+       any normal (unstretched) container this is a no-op: pre's containing
+       block is exactly as tall as pre already is, so there's no room to
+       stick within and nothing visibly changes. */
     pre {
+      position: sticky;
+      top: var(--ds-height-nav, 64px);
       margin: 0;
       padding: var(--ds-space-4) var(--ds-space-4);
       font-family: ${FONT.mono};
@@ -202,12 +420,62 @@
       line-height: var(--ds-line-height-loose);
       overflow-x: auto;
       white-space: pre;
+      container-type: scroll-state;
+    }
+    /* Docked-state styling: Chrome/Edge only (no @supports fallback, same
+       stance as the CSS Custom Highlight API above) - a border only appears
+       once pre has actually stuck, so it reads as "now floating over
+       content" rather than a permanent line under every code block. On
+       ::after, not pre itself: a scroll-state container query can restyle
+       a *descendant* of its container, but not the container element
+       itself (confirmed empirically - self-targeting is valid syntax that
+       silently never matches). Also keeps pre's own text content a single,
+       untouched node - no wrapping span that CSS.highlights' Range offsets
+       would need to account for. Absolutely positioned so the 1px line
+       doesn't add to pre's own scrollable content. */
+    pre::after {
+      content: "";
+      position: absolute;
+      inset-inline: 0;
+      inset-block-end: 0;
+      height: 1px;
+      background: transparent;
+      transition: background-color var(--ds-duration-fast) var(--ds-ease-standard);
+    }
+    @container scroll-state(stuck: top) {
+      pre::after {
+        background: var(--ds-color-border);
+      }
     }
 
     :host([wrap]) pre {
       white-space: pre-wrap;
       overflow-wrap: break-word;
       overflow-x: visible;
+    }
+
+    /* For a fixed-width block (ASCII art, a diagram) where every line is the
+       same length by construction - text-align centers each line
+       individually, but since they're all equal width that lands on the
+       same offset every time, so the block centers as a whole without
+       distorting it. Opt-in: centering arbitrary code/prose whose lines
+       vary in length would just look ragged. line-height: 1 and a heavier
+       weight read better for art built from repeated characters (box-
+       drawing, "#") than the site's normal loose reading line-height and
+       regular weight, which were tuned for actual code. */
+    :host([center]) pre {
+      text-align: center;
+      line-height: 1;
+      font-weight: 700;
+    }
+    /* Vertically centers the block within .wrapper's own box - relevant
+       specifically when a stretched container (the schema-page intro's
+       .end column, matched to a tall .start) gives .wrapper more height
+       than the art itself needs; in an unstretched container .wrapper is
+       already exactly as tall as its content, so this is a no-op there. */
+    :host([center]) .wrapper {
+      display: grid;
+      place-items: center;
     }
 
     code {
@@ -235,6 +503,7 @@
     constructor() {
       super();
       this._shadow = createShadow(this, CODE_CSS);
+      this._ranges = [];
     }
 
     connectedCallback() {
@@ -259,11 +528,31 @@
       }
     }
 
+    disconnectedCallback() {
+      // Ranges hold live references to this instance's own text node. Once
+      // this element is gone, leaving them in the shared Highlight objects
+      // would both leak memory and paint stale, detached-node ranges if a
+      // future document position ever coincided with their old offsets.
+      this._clearRanges();
+    }
+
     attributeChangedCallback() {
       if (this.isConnected) this._render();
     }
 
+    // Removes exactly the Ranges this instance previously added, from
+    // whichever shared Highlight objects they belong to — never touches
+    // another instance's ranges.
+    _clearRanges() {
+      for (const { cls, range } of this._ranges) {
+        sharedHighlights[cls].delete(range);
+      }
+      this._ranges = [];
+    }
+
     _render() {
+      this._clearRanges();
+
       // ── Inline mode: render as a styled <code> span ──────────
       if (this.hasAttribute("inline")) {
         var raw = this.textContent || "";
@@ -273,13 +562,14 @@
       }
 
       // ── Block mode: render as <pre><code> with syntax highlighting ──
-      const label =
-        this.getAttribute("label") || this.getAttribute("language") || "";
+      // label defaults to the language name (e.g. language="yaml" alone
+      // shows a "yaml" tab) - but an explicit label="" opts out of that
+      // default rather than being treated as "no label given".
+      const label = this.hasAttribute("label")
+        ? this.getAttribute("label")
+        : this.getAttribute("language") || "";
       const lang = this.getAttribute("language") || "";
       const rawBlock = (this.textContent || "").trim();
-
-      const highlighted =
-        lang === "json" ? highlightJson(rawBlock) : esc(rawBlock);
 
       const labelHtml = label
         ? `<span class="code__label" part="label">${esc(label)}</span>`
@@ -292,9 +582,27 @@
       this._shadow.innerHTML = `
         <div class="wrapper" part="wrapper">
           ${labelHtml}
-          <pre part="pre" tabindex="0"><code part="code">${highlighted}</code></pre>
+          <pre part="pre" tabindex="0"><code part="code"></code></pre>
         </div>
       `;
+
+      // Plain text, not innerHTML — the code stays one untouched Text node,
+      // so Range offsets below line up exactly with `rawBlock`'s own indices,
+      // and unhighlighted content needs no escaping at all (textContent is
+      // always HTML-safe).
+      const codeEl = this._shadow.querySelector("code");
+      codeEl.textContent = rawBlock;
+
+      const tokenize = TOKENIZERS[lang];
+      if (tokenize && codeEl.firstChild) {
+        for (const { start, end, cls } of tokenize(rawBlock)) {
+          const range = new Range();
+          range.setStart(codeEl.firstChild, start);
+          range.setEnd(codeEl.firstChild, end);
+          sharedHighlights[cls].add(range);
+          this._ranges.push({ cls, range });
+        }
+      }
     }
   }
 
@@ -503,8 +811,8 @@
       "ds-table a { color: var(--ds-color-accent); }",
       "ds-table td:first-child { white-space: nowrap; }",
       "ds-table td:first-child ds-code[inline] { white-space: nowrap; }",
-      "th:first-child, td:first-child { padding-inline-start: var(--ds-space-4) !important; }",
-      "th:last-child, td:last-child { padding-inline-end: var(--ds-space-4) !important; }"
+      "th:first-child, td:first-child { padding-inline-start: var(--ds-space-4); }",
+      "th:last-child, td:last-child { padding-inline-end: var(--ds-space-4); }"
     ].join("\n");
     document.head.appendChild(style);
   }
@@ -546,12 +854,12 @@
       letter-spacing: -0.0125em;
     }
 
-    .heading--1 { font-size: var(--ds-font-size-xl); font-weight: var(--ds-font-weight-bold); margin: 0 0 var(--ds-space-4); }
-    .heading--2 { font-size: var(--ds-font-size-lg); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-8) 0 var(--ds-space-2); }
+    .heading--1 { font-size: var(--ds-font-size-2xl); font-weight: var(--ds-font-weight-bold); margin: 0 0 var(--ds-space-4); }
+    .heading--2 { font-size: var(--ds-font-size-xl); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-8) 0 var(--ds-space-2); }
     .heading--3 { font-size: var(--ds-font-size-lg); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-8) 0 var(--ds-space-2); }
-    .heading--4 { font-size: var(--ds-font-size-lg); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-4) 0 var(--ds-space-2); }
+    .heading--4 { font-size: var(--ds-font-size-md); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-4) 0 var(--ds-space-2); }
     .heading--5 { font-size: var(--ds-font-size-base); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-4) 0 var(--ds-space-2); }
-    .heading--6 { font-size: var(--ds-font-size-base); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-2) 0 var(--ds-space-2); color: var(--ds-color-text); }
+    .heading--6 { font-size: var(--ds-font-size-sm); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-2) 0 var(--ds-space-2); }
 
     .anchor-link {
       display: inline;
@@ -563,8 +871,12 @@
       vertical-align: baseline;
       transition: opacity var(--ds-duration-fast) var(--ds-ease-standard);
     }
-    .heading:hover .anchor-link { opacity: 0.6; }
-    .anchor-link:hover { opacity: 1 !important; }
+    /* :where() zeroes out .heading:hover's contribution to this selector's
+       specificity, so .anchor-link:hover (a real, higher-specificity
+       selector on its own) naturally outranks it on direct hover - no
+       !important needed to break the tie. */
+    :where(.heading:hover) .anchor-link { opacity: 0.6; }
+    .anchor-link:hover { opacity: 1; }
   `;
 
   class DsHeading extends HTMLElement {
@@ -679,13 +991,10 @@
 
   const HEADER_CSS = `
     ${BASE_RESET}
-    :host { display: flex; flex-direction: column; margin-bottom: var(--ds-space-8); min-height: 100vh; background: var(--ds-color-bg-accent); justify-content: end; padding-inline-start: var(--ds-width-nav); }
-
-    @media (max-width: 900px) {
-      :host {
-        padding-inline-start: 0;
-      }
-    }
+    /* min-height set twice on purpose - 100dvh (mobile-chrome-aware) as a
+       cascading enhancement over 100vh, not a replacement; see style.css's
+       body rule for the same pattern and why. */
+    :host { display: flex; flex-direction: column; min-height: 100vh; min-height: 100dvh; background: var(--ds-color-bg-accent); justify-content: end; padding-block-start: var(--ds-height-nav, 64px); }
 
     h1 {
       font-size: clamp(2em, 4vw, 4em);
@@ -759,33 +1068,199 @@
   // ── def-section.js ──
   const DEF_SECTION_CSS = `
     ${BASE_RESET}
+    /* Padding, not margin - an outer margin would open a gap back to the
+       page background between one section and the next, breaking the
+       right-hand column's continuous white panel (layout="split" sections
+       zero this out entirely below, since .start/.end carry their own
+       padding instead - this rule only actually spaces out plain,
+       non-split sections, which have no such inner wrapper of their own). */
     :host {
       display: block;
-      margin: 64px 0 64px;
+      padding-block: 128px;
     }
     :host(:first-of-type) {
-      margin-top: 0;
+      padding-block-start: 0;
+    }
+    /* Sticks to the top of the viewport (just under the fixed nav bar)
+       while you scroll through this section's own content - property
+       tables can run long, so the title stays in view instead of
+       scrolling away with the first few lines. The eyebrow (the directory
+       a definition's schema file lives in, e.g. "common/") sticks as part
+       of the same block, not separately - it's the title's own kicker, so
+       it docks and releases together with it rather than scrolling away
+       on its own the moment the title starts floating. Works the same
+       whether this is a layout="split" section or not: the containing
+       block is always this section's own :host, so the block releases
+       once this section's content has fully scrolled past, same as any
+       sticky header. A solid background keeps scrolled-past text from
+       showing through while it's stuck; z-index just needs to clear
+       ordinary content, not the nav bar itself (--ds-z-nav, higher). The
+       title is sized and weighted large/light on purpose - one definition
+       per screenful of scrolling reads better as a real heading than a
+       small subhead repeated 36 times down one page. */
+    .heading-block {
+      position: sticky;
+      top: var(--ds-height-nav, 64px);
+      z-index: 1;
+      background: var(--ds-color-bg);
+      padding-block: var(--ds-space-2);
+      margin: 0 0 var(--ds-space-2);
+      container-type: scroll-state;
+    }
+    .eyebrow {
+      font-family: ${FONT.mono};
+      font-size: var(--ds-font-size-sm);
+      font-weight: 550;
+      color: var(--ds-color-text);
+      margin: 0;
     }
     h2 {
       font-family: ${FONT.mono};
-      font-size: var(--ds-font-size-lg);
-      font-weight: var(--ds-font-weight-bold);
+      font-size: 2em;
+      font-weight: 400;
       color: var(--ds-color-text);
-      margin: 0 0 var(--ds-space-2);
+      line-height: 1.2;
+      margin: 0;
+    }
+    /* Docked-state styling: Chrome/Edge only (no @supports fallback, same
+       stance as the CSS Custom Highlight API in code.js) - a border only
+       appears once the block has actually stuck to the nav bar, not for
+       the whole time it's merely sticky-capable, so it reads as "now
+       floating over content" rather than a permanent underline. The
+       border lives on ::after, not .heading-block itself: a scroll-state
+       container query can restyle a *descendant* of its container, but
+       not the container element itself (confirmed empirically -
+       self-targeting silently never matches, despite being valid,
+       parseable syntax) - a pseudo-element still counts as a descendant,
+       so it's the smallest fix that doesn't need an extra wrapper div.
+       Absolutely positioned so the 1px line doesn't add to the block's
+       own flow height when it's not stuck. */
+    .heading-block::after {
+      content: "";
+      position: absolute;
+      inset-inline: 0;
+      inset-block-end: 0;
+      height: 1px;
+      background: transparent;
+      transition: background-color var(--ds-duration-fast) var(--ds-ease-standard);
+    }
+    @container scroll-state(stuck: top) {
+      .heading-block::after {
+        background: var(--ds-color-border);
+      }
+    }
+    /* type-line and desc share one wrapper so the reading-width cap and
+       the gap before whatever comes next (a prop table, the slotted
+       content) are each stated once, on .meta, instead of repeated on
+       both children. */
+    .meta {
+      margin: 0 0 48px;
+      max-width: 65ch;
     }
     .desc {
       color: var(--ds-color-text);
       font-family: ${FONT.body};
-      font-size: var(--ds-font-size-base);
+      font-size: var(--ds-font-size-md);
       line-height: var(--ds-line-height-loose);
+      margin: 0;
+    }
+    /* Plain text, not a badge/pill - "type" and "source" are facts about
+       this definition, not a tag someone would filter or click on, so
+       they don't get tag-shaped treatment. */
+    .type-line {
+      font-size: var(--ds-font-size-sm);
       margin: 0 0 var(--ds-space-4);
     }
-    .type-line { margin: 0 0 var(--ds-space-4); }
+    .type-line .type {
+      font-family: ${FONT.body};
+    }
+
+    /* .cols/.start apply to every section, split or not - not just the
+       ones with a worked example. A def with no example still needs its
+       content (and in particular its own sticky <h2>, below) confined to
+       the left half: without this, a plain section's <h2> spans the
+       section's full width, and while it's stuck under the nav bar its own
+       opaque background (needed so scrolled-past text doesn't show through
+       it) paints straight across the right-hand column too, breaking the
+       white panel every time a no-example definition's title comes to
+       rest. Reserving the right-hand grid track here - even when nothing
+       ever renders into it - is what keeps that track clear for
+       content__inner's own background (see style.css) to show through. */
+    .cols {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--ds-space-8);
+      align-items: start;
+    }
+    .cols .start,
+    .cols .end {
+      min-width: 0;
+    }
+
+    /* ── layout="split": def content and its worked example side by side ──
+       Only the Schema page uses this (one page, every definition, each with
+       a real example next to it - see build-site.js's renderDefinition()).
+       .end (the example) is the one that stays sticky, not .start (the
+       name/description/props) - .start is usually the taller, more-you-
+       scroll-the-more-there-is column (a long property table), so pinning
+       the shorter example lets it stay in view while you read past it,
+       instead of the other way around. align-self: start (not the grid's
+       default stretch) keeps .end sized to its own content - height: auto,
+       not stretched to match .start's height, which is what sticky
+       positioning needs room to stick within in the first place. */
+    /* No :host-level padding for split sections - .start/.end below carry
+       their own vertical padding instead, so consecutive definitions'
+       .end panels touch with zero gap between them (see .end's own
+       comment for why that's what makes the right side read as one
+       continuous panel instead of a stack of separate boxes). */
+    :host([layout="split"]) {
+      padding-block: 0;
+    }
+    :host([layout="split"]) .cols .start,
+    :host([layout="split"]) .cols .end {
+      height: 100%;
+    }
+    :host([layout="split"]) .start {
+      padding-block: var(--ds-space-16);
+    }
+    /* Adjacent .end panels sit flush against each other (:host's own
+       margin is zeroed above) - each one's background paints all the way
+       through its own padding, so the seam between one definition's
+       example and the next is just padding, not an actual gap back to the
+       page background. That's what makes the whole right-hand column read
+       as one continuous panel while still being one <ds-def-section> per
+       definition, not a single page-wide element. .end itself doesn't need
+       position: sticky - it's already stretched to match .start's height
+       (height: 100%, above), leaving no room within its own box to stick
+       within. The sticky pin now happens one level deeper, on the <pre>
+       inside the slotted <ds-code> (see code.js) - which is why the slot
+       below is stretched too: <pre>'s sticky "room to move" comes from its
+       containing block being as tall as .end, not from .end itself. */
+    :host([layout="split"]) .end {
+      background: var(--ds-color-bg-inverse);
+      padding: var(--ds-space-16) var(--ds-space-4);
+    }
+    :host([layout="split"]) ::slotted(ds-code[slot="example"]) {
+      display: block;
+      height: 100%;
+    }
+
+    @media (max-width: 900px) {
+      .cols {
+        grid-template-columns: 1fr;
+      }
+      :host([layout="split"]) {
+        padding-block: 96px;
+      }
+      :host([layout="split"]) .end {
+        margin-top: var(--ds-space-4);
+      }
+    }
   `;
 
   class DsDefSection extends HTMLElement {
     static get observedAttributes() {
-      return ["name", "anchor", "description", "type"];
+      return ["name", "anchor", "description", "type", "source", "layout", "eyebrow"];
     }
     constructor() {
       super();
@@ -807,20 +1282,188 @@
           .replace(/^-|-$/g, "");
       var desc = this.getAttribute("description") || "";
       var type = this.getAttribute("type") || "";
+      var source = this.getAttribute("source") || "";
+      var layout = this.getAttribute("layout") || "";
+      var eyebrow = this.getAttribute("eyebrow") || "";
       // Set id on host for TOC linking
       if (anchor) this.id = anchor;
-      var html = '<h2 id="' + esc(anchor) + '">' + esc(name) + "</h2>";
-      if (type)
-        html +=
-          '<p class="type-line"><ds-badge variant="kind" size="sm">' +
-          esc(type) +
-          "</ds-badge></p>";
+
+      // Eyebrow and title dock together as one sticky block - see
+      // .heading-block's own CSS comment.
+      var headingBlock = eyebrow ? '<p class="eyebrow">' + esc(eyebrow) + "</p>" : "";
+      headingBlock += '<h2 id="' + esc(anchor) + '">' + esc(name) + "</h2>";
+      var start = '<div class="heading-block">' + headingBlock + "</div>";
+      // type and source share one line, separated by a middle dot, instead of
+      // type living here and source living in a separate "References:"-labeled
+      // line further down. type-line and desc then share one wrapping div -
+      // see .meta's own CSS comment.
+      var metaHtml = "";
+      if (type || source) {
+        metaHtml += '<p class="type-line">';
+        if (type) metaHtml += '<span class="type">' + esc(type) + "</span>";
+        if (type && source) metaHtml += " · ";
+        if (source) metaHtml += "<ds-code inline>" + esc(source) + "</ds-code>";
+        metaHtml += "</p>";
+      }
       // Use escWithCode so CommonMark-style `inline code` spans in the
       // description render as <ds-code inline> rather than literal
       // backtick characters.
-      if (desc) html += '<p class="desc">' + escWithCode(desc) + "</p>";
-      html += "<slot></slot>";
+      if (desc) metaHtml += '<p class="desc">' + escWithCode(desc) + "</p>";
+      if (metaHtml) start += '<div class="meta">' + metaHtml + "</div>";
+      start += "<slot></slot>";
+
+      // .cols/.start wrap every section, not just layout="split" ones - see
+      // .cols's own CSS comment for why a def with no example still needs
+      // its content (in particular its sticky <h2>) confined to the left
+      // half instead of spanning the full width.
+      var html =
+        '<div class="cols">' +
+        '<div class="start">' +
+        start +
+        "</div>" +
+        (layout === "split"
+          ? '<div class="end"><slot name="example"></slot></div>'
+          : "") +
+        "</div>";
       this._shadow.innerHTML = html;
+    }
+  }
+
+  // ── guide-section.js ──
+  // ═══════════════════════════════════════════════════════════════════════════
+  // <ds-guide-section>
+  //
+  // A two-column split wrapper for narrative guide pages (Quick start): help
+  // text on the left, its code example on the right - the same visual
+  // language as the Schema page's own <ds-def-section layout="split">, minus
+  // everything there that's specific to documenting a schema definition
+  // (a title it renders itself, an eyebrow, a type/source line). This
+  // component renders nothing of its own; both columns are plain slots, so
+  // the caller's own markdown-compiled heading levels, paragraphs, lists,
+  // and callouts pass through unchanged.
+  //
+  // Slots:
+  //   (default) — left column: heading, prose, whatever the step needs
+  //   example   — right column: the step's <ds-code>, if it has one
+  //
+  // .end (the right column) only renders when something is actually slotted
+  // into "example" - checked once, at connect time, since a step with no
+  // code has nothing to put there. Rendering it anyway, empty, would still
+  // look right at desktop widths (content__inner's own continuous background
+  // - see style.css's .content--full rule - paints white behind it either
+  // way, the same reasoning def-section.js's non-split defs rely on for the
+  // Schema page), but at the mobile breakpoint .cols collapses to a single
+  // column and .end stacks below .start in normal flow - there, an empty
+  // .end is not invisible, it's a blank padded white box with nothing in
+  // it. Omitting the element itself avoids that regardless of viewport,
+  // rather than trying to hide it with a mobile-only media query rule.
+  //
+  // Usage:
+  //   <ds-guide-section>
+  //     <h3>Adding more entries</h3>
+  //     <p>Any entry can sit alongside the system entry...</p>
+  //     <ds-code slot="example" language="yaml">...</ds-code>
+  //   </ds-guide-section>
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  const GUIDE_SECTION_CSS = `
+    ${BASE_RESET}
+    /* No :host-level margin/padding by default - .start/.end below carry
+       their own vertical padding instead, so consecutive sections' .end
+       panels touch with zero gap between them (same mechanism, same
+       reasoning, as def-section.js's own .end: that's what makes the
+       right-hand column read as one continuous panel instead of a stack of
+       separate boxes). */
+    :host {
+      display: block;
+    }
+
+    /* grid-template-columns still reserves both tracks even when .end
+       doesn't exist for a given section - .start stays confined to the
+       left half either way, which is what keeps text width consistent
+       across every section regardless of whether that one has an example. */
+    .cols {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--ds-space-8);
+      align-items: start;
+    }
+    .cols .start,
+    .cols .end {
+      min-width: 0;
+      height: 100%;
+    }
+
+    .start {
+      padding-block: 128px;
+    }
+
+    .start  {
+      max-width: 65ch;
+    }
+
+    .end {
+      background: var(--ds-color-bg-inverse);
+      padding: 128px var(--ds-space-4);
+    }
+
+    /* Stretches the slotted <ds-code> to match .end's own height, which is
+       what gives its inner <pre> (position: sticky, see code.js) room to
+       actually stick within instead of just sitting at its own natural,
+       short height with nowhere to move. Only the last one: a step can slot
+       more than one <ds-code> (stacked examples), and stretching every one
+       of them to 100% would stack N full-height copies instead of N natural-
+       height blocks plus one that fills the leftover space - doubling (or
+       worse) .end's real height and bleeding into the next section. */
+    ::slotted(ds-code[slot="example"]) {
+      display: block;
+    }
+    ::slotted(ds-code[slot="example"]:last-of-type) {
+      height: 100%;
+    }
+
+    @media (max-width: 900px) {
+      .cols {
+        grid-template-columns: 1fr;
+      }
+      :host {
+        padding-block: 96px;
+      }
+      .end {
+        margin-top: var(--ds-space-4);
+      }
+    }
+  `;
+
+  class DsGuideSection extends HTMLElement {
+    constructor() {
+      super();
+      this._shadow = createShadow(this, GUIDE_SECTION_CSS);
+    }
+
+    connectedCallback() {
+      // Mirrors code.js/prop-list.js/spec-nav.js's own note: a blocking
+      // <script> in <head> upgrades this element the instant the parser
+      // sees its opening tag, before any of its children (in particular,
+      // whatever might carry slot="example") have been parsed yet. Waiting
+      // for DOMContentLoaded guarantees they're all there before this
+      // checks for one.
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", () => this._render(), {
+          once: true,
+        });
+      } else {
+        this._render();
+      }
+    }
+
+    _render() {
+      const hasExample = this.querySelector('[slot="example"]') !== null;
+      this._shadow.innerHTML =
+        '<div class="cols">' +
+        '<div class="start"><slot></slot></div>' +
+        (hasExample ? '<div class="end"><slot name="example"></slot></div>' : "") +
+        "</div>";
     }
   }
 
@@ -885,6 +1528,7 @@
       font-size: var(--ds-font-size-base);
       color: var(--ds-color-text);
       margin-top: var(--ds-space-4);
+      max-width: 65ch;
     }
     ::slotted(a) {
       font-family: ${FONT.mono};
@@ -900,306 +1544,127 @@
     }
   }
 
-  // ── def-index.js ──
-  const DEF_INDEX_CSS = `
-    ${BASE_RESET}
-    :host {
-      display: block;
-      margin-bottom: var(--ds-space-8);
-    }
-    nav {
-      /*background: var(--ds-color-bg-subtle);
-      padding: var(--ds-space-4) var(--ds-space-4);
-      */
-    }
-    /*
-    ::slotted(p) {
-      margin-bottom: var(--ds-space-2);
-      font-size: var(--ds-font-size-base);
-    }
-    */
-    .defindex__title {
-      font-size: var(--ds-font-size-base);
-      font-weight: var(--ds-font-weight-bold);
-      /* Default ("info") variant. */
-      background: var(--ds-color-text);
-      color: var(--ds-color-text-inverse);
-      display: inline-block;
-      padding: var(--ds-space-2) var(--ds-space-4);
-      padding-inline-end: calc(var(--ds-space-4) + var(--ds-space-2));
-    }
-
-    .defindex__title:empty {
-      display: none;
-    }
-
-    .defindex__content {
-      background: var(--ds-color-bg-inverse);
-      padding: var(--ds-space-4);
-    }
-
-    ::slotted(ul) {
-      list-style: none;
-      list-style-type: none;
-      padding: 0;
-      margin: 0;
-      column-count: 3;
-      column-gap: var(--ds-space-8);
-    }
-
-    @media (max-width: 600px) {
-      ::slotted(ul) {
-        column-count: 1;
-      }
-    }
-  `;
-
-  /* Light-DOM styles for list items and links inside <ds-def-index>,
-     because ::slotted only reaches direct children, not nested <li>/<a>. */
-  const DEF_INDEX_LIGHT_ID = "ds-def-index-light-styles";
-  function ensureDefIndexLightStyles() {
-    if (document.getElementById(DEF_INDEX_LIGHT_ID)) return;
-    var s = document.createElement("style");
-    s.id = DEF_INDEX_LIGHT_ID;
-    s.textContent = [
-      "ds-def-index ul { padding-inline-start: 0 !important; margin-inline-start: 0 !important; margin-block-end: 0 !important; list-style: none !important; }",
-      "ds-def-index li { margin-bottom: var(--ds-space-1); font-size: var(--ds-font-size-base); break-inside: avoid; padding-inline-start: 0; }",
-      "ds-def-index li a { font-family: var(--ds-font-mono); }",
-    ].join("\n");
-    document.head.appendChild(s);
-  }
-
-  class DsDefIndex extends HTMLElement {
-    static get observedAttributes() {
-      return ["title"];
-    }
-
-    constructor() {
-      super();
-      this._shadow = createShadow(this, DEF_INDEX_CSS);
-      this._shadow.innerHTML = '<nav part="nav"><span class="defindex__title" part="title"></span><div class="defindex__content" part="content"><slot></slot></div></nav>';
-    }
-
-    connectedCallback() {
-      ensureDefIndexLightStyles();
-      this._render();
-    }
-
-    attributeChangedCallback() {
-      this._render();
-    }
-
-    _render() {
-      const title = this.getAttribute("title") || "";
-      const titleEl = this._shadow.querySelector(".defindex__title");
-      if (titleEl) titleEl.textContent = title;
-    }
-  }
-
-  // ── def-example.js ──
-  const DEF_EXAMPLE_CSS = `
-    ${BASE_RESET}
-    :host {
-      display: block;
-      margin-top: var(--ds-space-4);
-      margin-bottom: var(--ds-space-4);
-    }
-  `;
-
-  class DsDefExample extends HTMLElement {
-    constructor() {
-      super();
-      this._shadow = createShadow(this, DEF_EXAMPLE_CSS);
-      this._shadow.innerHTML = "<slot></slot>";
-    }
-  }
-
-  // ── prop-table.js ──
+  // ── prop-list.js ──
   const PROP_TABLE_CSS = `
     ${BASE_RESET}
-    :host { display: block; margin: var(--ds-space-4) 0; max-width: 100%; }
+    :host { display: block; margin: var(--ds-space-4) 0 var(--ds-space-8); }
 
-    /* Horizontal-scroll wrapper. The property/type/required columns are
-       shrink-to-fit with nowrap content, so the table has a hard minimum
-       width (~500px). On narrow viewports that minimum exceeds the host,
-       and without a scroller the rightmost column (Description) is clipped
-       off-screen with no way to reach it. overflow-x: auto lets the table
-       scroll instead of losing its Description column. Mirrors <ds-table>.
-
-       No overflow is set by default (only below 900px, see the media query
-       near the bottom): leaving both axes visible means this wrapper isn't a
-       scroll container, so the sticky header below sticks relative to the
-       PAGE as it scrolls. A wrapper that scrolls horizontally unavoidably
-       captures the vertical axis too (browsers force overflow-y to "auto" the
-       moment overflow-x isn't "visible"), which re-scopes position:sticky to
-       the wrapper's own scrolling instead of the page's — the two can't both
-       apply to the same table at once. Page-scroll stickiness is the more
-       useful default; the horizontal-scroll fallback only kicks in on narrow
-       viewports, where a wide table would otherwise clip content. */
-    .table-scroll {
-      position: relative;
-      inset: calc(var(--ds-space-4) * -1);
-      width: calc(100% + (var(--ds-space-4) * 2));
-      max-width: calc(100% + (var(--ds-space-4) * 2));
-      top: 0;
-      bottom: 0;
+    .prop-list {
+      display: flex;
+      flex-direction: column;
     }
 
-    table {
-      width: 100%;
-      max-width: 100%;
-      /* separate + zero spacing (not collapse) so the sticky header's cells
-         keep their background/position correctly in Safari, which has long-
-         standing bugs with position:sticky inside a border-collapsed table. */
-      border-collapse: separate;
-      border-spacing: 0;
-      margin-bottom: var(--ds-space-8);
-      font-family: ${FONT.body};
-      font-size: var(--ds-font-size-base);
-      position: relative;
+    .prop {
+      padding: var(--ds-space-4) 0;
     }
 
-    th {
-      text-align: start;
+    .prop:first-child { padding-top: 0; }
+    .prop:last-child { padding-bottom: 0; }
+
+    .prop-head {
+      display: flex;
+      align-items: baseline;
+      flex-wrap: wrap;
+      column-gap: var(--ds-space-2);
+      row-gap: var(--ds-space-1);
+      margin: 0 0 var(--ds-space-1);
       font-weight: var(--ds-font-weight-bold);
-      font-size: var(--ds-font-size-sm);
-      text-transform: none;
-      letter-spacing: var(--ds-tracking-wide);
-      color: var(--ds-color-text);
-      padding: var(--ds-space-2) var(--ds-space-2);
-      background: var(--ds-color-bg-raised);
-      white-space: nowrap;
-      position: sticky;
-      top: 0;
-      z-index: var(--ds-z-base, 1);
     }
 
-    @media (max-width: 900px) {
-      .table-scroll {
-        overflow-x: auto;
-      }
+    /* Reset the <h3> this renders into — it must look like the rest of the
+       row, not an independent page heading. It's a real heading element (not
+       a styled div) so each property shows up in the accessibility tree's
+       heading outline and is reachable by AT heading navigation, matching
+       <ds-heading>'s anchor pattern below. h3, not h4: every <ds-prop-table>
+       on the schema pages this renders on sits directly inside a
+       <ds-def-section>'s own <h2>, with nothing at h3 in between — jumping to
+       h4 would skip a level. */
+    h3.prop-head {
+      font-size: var(--ds-font-size-base);
+      line-height: var(--ds-line-height-snug);
     }
 
-    @media (max-width: 640px) {
-      th:nth-child(2), td:nth-child(2) { display: none; }
-      th:nth-child(3), td:nth-child(3) { display: none; }
-    }
-
-    td {
-      padding: var(--ds-space-4) var(--ds-space-2);
-      vertical-align: top;
-      line-height: 1.5;
-    }
-
-    tr:first-child td {
-      padding-top: var(--ds-space-2);
-    }
-
-    tr:last-child td {
-      border-bottom: none;
-    }
-
-    /* Column sizing: cols 1, 3 shrink to fit; col 2 (Type) shrinks to fit but is allowed
-       to wrap when its content is a long union (ex: the kind enum on guidelineEntry).
-       Col 4 (Description) gets the remaining space.
-
-       Property names (col 1) MUST never truncate — 'white-space: nowrap' plus the
-       'width: 1%' shrink-to-fit trick lets the column grow to fit the longest
-       property name without clipping. Required (col 3) is also nowrap since its
-       content is always a single short word.
-
-       Type (col 2) is intentionally NOT nowrap. Some kind-enum types render as a
-       long pipe-separated list of inline code values (ex: "required" |
-       "encouraged" | "informational" | "discouraged" | "prohibited"). Forcing
-       nowrap on that pushed Description down to ~0 width and made each row very
-       tall. Allowing the type to wrap at its natural space-pipe-space boundaries
-       keeps the Description column wide enough to read. Short types like
-       'boolean' and 'string' still render on one line because the column shrinks
-       to fit. */
-    th:nth-child(1), td:nth-child(1) { width: 1%; white-space: nowrap; }
-    th:nth-child(2), td:nth-child(2) { width: 1%; }
-    th:nth-child(3), td:nth-child(3) { width: 1%; white-space: nowrap; }
-    th:nth-child(4), td:nth-child(4) { width: auto; overflow-wrap: break-word; word-break: break-word; }
-
-    /* The 'th' selector earlier sets 'white-space: nowrap' on every header cell.
-       For column 2 specifically, override that so the "Type" header still reads
-       naturally (it's one word, but be explicit about the policy). */
-    th:nth-child(2) { white-space: normal; }
-
-    /* Column 1: Property name — monospace, bold */
-    td:nth-child(1) code {
+    .prop-name {
       font-family: ${FONT.mono};
       font-weight: var(--ds-font-weight-bold);
       color: var(--ds-color-text);
-      white-space: nowrap;
       font-size: var(--ds-font-size-base);
       background: none;
       padding: 0;
     }
 
-    /* Column 2: Type — monospace, muted */
-    td:nth-child(2) {
+    .prop-type {
       font-family: ${FONT.mono};
+      font-weight: var(--ds-font-weight-regular);
       font-size: var(--ds-font-size-sm);
+      color: var(--ds-color-text);
+      white-space: normal;
+      overflow-wrap: break-word;
     }
 
-    /* Column 3: Required — narrow, a checkmark when required */
-    th:nth-child(3), td:nth-child(3) {
-      text-align: center;
-    }
-    td:nth-child(3) {
+    .prop-status {
+      font-family: ${FONT.body};
+      font-weight: var(--ds-font-weight-regular);
       font-size: var(--ds-font-size-sm);
-    }
-    td:nth-child(3) .req {
-      font-weight: var(--ds-font-weight-bold);
+      color: var(--ds-color-text);
     }
 
-    /* Column 4: Description — gets all remaining space */
-    td:nth-child(4) {
+    /* Deep-link, revealed on row hover — mirrors <ds-heading>'s anchor-link
+       (after the text, not before - order: 1 moves it past prop-name/
+       prop-type/prop-status, all still default order: 0, regardless of
+       which of them wrap onto their own line). */
+    .prop-anchor {
+      order: 1;
+      display: inline;
+      opacity: 0;
+      margin-inline-start: var(--ds-space-1);
+      color: var(--ds-color-text);
+      text-decoration: none;
+      font-size: 0.85em;
+      transition: opacity var(--ds-duration-fast) var(--ds-ease-standard);
+    }
+    /* :where() zeroes out .prop:hover's contribution to specificity here,
+       so .prop-anchor:hover naturally outranks it on direct hover - same
+       fix as <ds-heading>'s own anchor-link, no !important needed. */
+    :where(.prop:hover) .prop-anchor { opacity: 0.5; }
+    .prop-anchor:hover { opacity: 1; }
+
+    .prop-desc {
+      font-family: ${FONT.body};
       font-size: var(--ds-font-size-base);
+      line-height: 1.5;
+      color: var(--ds-color-text);
+      max-width: 70ch;
     }
 
-    td:nth-child(4) small {
+    .prop-desc small {
       display: block;
       margin-top: var(--ds-space-1);
       color: var(--ds-color-text);
       font-size: var(--ds-font-size-sm);
     }
 
-    td:nth-child(4) code {
+    .prop-desc code {
       font-family: ${FONT.mono};
       font-size: var(--ds-font-size-base);
       background: var(--ds-color-bg-muted);
       padding: 1px 5px;
     }
-
-    /* Type reference links inside cells */
-    a.type-ref {
-      font-family: ${FONT.mono};
-      font-size: var(--ds-font-size-base);
-      color: var(--ds-color-accent);
-      text-decoration: none;
-      border-bottom: 1px dashed var(--ds-color-accent);
-      transition: color var(--ds-duration-fast) var(--ds-ease-standard),
-        border-color var(--ds-duration-fast) var(--ds-ease-standard);
-    }
-
-    a.type-ref:hover {
-      /* No separate "hover" token — mixed on the fly from the accent color. */
-      color: color-mix(in oklch, var(--ds-color-accent) 80%, black);
-      border-bottom-color: color-mix(in oklch, var(--ds-color-accent) 80%, black);
-      border-bottom-style: solid;
-    }
-
-    th:first-child, td:first-child {
-      padding-inline-start: var(--ds-space-4) !important;
-    }
-
-    th:last-child, td:last-child {
-      padding-inline-end: var(--ds-space-4) !important;
-    }
-
   `;
+
+  // Property names are unique within one <ds-prop-table> (they come from a
+  // schema's own `properties` map, whose keys can't repeat), so collisions
+  // can only happen across *different* tables on the same page — e.g. two
+  // $defs that both document a "name" field. Scoping each anchor under the
+  // id of the nearest ancestor that has one (a <ds-def-section>, in every
+  // page this renders on) keeps ids stable and predictable instead of
+  // falling back to an arbitrary "-2" suffix in the common case.
+  function slugify(text) {
+    return String(text)
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "");
+  }
 
   class DsPropTable extends HTMLElement {
     constructor() {
@@ -1248,49 +1713,95 @@
         return oa - ob;
       });
 
-      var trs = props
+      var scopeEl = this.closest("[id]");
+      var scope = scopeEl ? scopeEl.id : "";
+      var usedIds = {};
+
+      var blocks = props
         .map(function (prop) {
           var name = prop.getAttribute("name") || "";
           var type = prop.getAttribute("type") || "";
           var desc = prop.innerHTML.trim();
 
-          var statusCell;
+          var base = (scope ? scope + "-" : "") + slugify(name);
+          var anchor = base;
+          var n = 2;
+          while (usedIds[anchor] || document.getElementById(anchor)) {
+            anchor = base + "-" + n++;
+          }
+          usedIds[anchor] = true;
+
+          // Plain text, not a badge/pill - required-ness is a fact about
+          // the field, not a tag.
+          var status = "";
           if (prop.hasAttribute("required")) {
-            statusCell =
-              '<span class="req" title="Required" aria-label="Required">✓</span>';
+            status = '<span class="prop-status" part="status">required</span>';
           } else if (prop.hasAttribute("conditional")) {
-            statusCell = "at least 1";
-          } else {
-            statusCell = "";
+            status = '<span class="prop-status" part="status">at least 1 required</span>';
           }
 
           return (
-            "<tr>" +
-            "<td><code>" +
+            '<div class="prop" id="' +
+            esc(anchor) +
+            '" part="prop">' +
+            '<h3 class="prop-head" part="prop-head">' +
+            '<a class="prop-anchor" href="#' +
+            esc(anchor) +
+            '" part="anchor" aria-label="Link to ' +
             esc(name) +
-            "</code></td>" +
-            "<td>" +
+            '">#</a>' +
+            '<code class="prop-name" part="name">' +
+            esc(name) +
+            "</code>" +
+            '<span class="prop-type" part="type">' +
             type +
-            "</td>" +
-            "<td>" +
-            statusCell +
-            "</td>" +
-            "<td>" +
+            "</span>" +
+            status +
+            "</h3>" +
+            '<div class="prop-desc" part="desc">' +
             desc +
-            "</td>" +
-            "</tr>"
+            "</div>" +
+            "</div>"
           );
         })
         .join("\n");
 
       this._shadow.innerHTML =
-        '<div class="table-scroll" part="wrapper">' +
-        '<table part="table">' +
-        "<thead><tr><th>Property</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>" +
-        "<tbody>" +
-        trs +
-        "</tbody></table>" +
-        "</div>";
+        '<div class="prop-list" part="list">' + blocks + "</div>";
+
+      this._wireAnchors();
+    }
+
+    // Native #id URL-fragment navigation can't reach into shadow DOM — the
+    // browser's scroll-to-fragment lookup only ever checks the top-level
+    // document, and every anchor this renders lives inside this element's own
+    // shadow root. So deep links here need their own scroll handling: on
+    // click (intercepting the default same-page navigation), and once on
+    // render (in case the page loaded with a matching #hash already in the
+    // URL, before this table existed to be scrolled to).
+    _wireAnchors() {
+      var shadow = this._shadow;
+
+      shadow.querySelectorAll(".prop-anchor").forEach(function (link) {
+        link.addEventListener("click", function (e) {
+          e.preventDefault();
+          var id = link.getAttribute("href").slice(1);
+          var target = shadow.querySelector('[id="' + CSS.escape(id) + '"]');
+          if (!target) return;
+          history.pushState(null, "", "#" + id);
+          target.scrollIntoView({ block: "start" });
+        });
+      });
+
+      var currentHash = location.hash.slice(1);
+      if (!currentHash) return;
+      var target = shadow.querySelector('[id="' + CSS.escape(currentHash) + '"]');
+      if (!target) return;
+      // rAF, not a same-tick call: the shadow DOM was just written and needs
+      // a layout pass before scrollIntoView() has a box to scroll to.
+      requestAnimationFrame(function () {
+        target.scrollIntoView({ block: "start" });
+      });
     }
   }
 
@@ -1307,38 +1818,41 @@
   // ═══════════════════════════════════════════════════════════════════════════
   // <ds-spec-nav>
   //
-  // The specification site's left sidebar navigation. Reads its structure
-  // from declarative light-DOM children instead of a JSON attribute.
+  // The specification site's top bar navigation. Reads its structure from
+  // declarative light-DOM children instead of a JSON attribute.
+  //
+  // A flat top bar, not a sidebar: with every schema definition living on one
+  // Schema page instead of its own, there's nothing left to group into
+  // collapsible sections — just a handful of top-level pages, so a horizontal
+  // bar fits, and frees the sidebar's reserved column width for pages (like
+  // Schema) that want the full viewport width.
   //
   // Attributes:
-  //   title       — title text shown at the top (e.g. "DSDS 0.1")
+  //   title       — title text shown at the left of the bar (e.g. "DSDS 0.1")
   //   title-href  — link for the title (default: "index.html")
   //   active      — slug of the currently active page
-  //   open        — boolean, whether the mobile links section is expanded
+  //   open        — boolean, whether the mobile links dropdown is expanded
   //
   // Content model (light DOM):
-  //   Top-level <a> elements become nav links.
-  //   <ds-nav-group label="…"> elements become collapsible groups.
-  //   Inside a group, <a> elements become child links.
-  //
-  //   Every <a> may carry a `slug` attribute used to match against the
-  //   `active` attribute for highlighting.
+  //   <a> elements become nav links. Every <a> may carry a `slug` attribute
+  //   used to match against the `active` attribute for highlighting.
   //
   // Mobile behavior:
-  //   The nav itself never hides — at ≤900px the links section (.nav__items)
-  //   collapses to 0 height by default, and the logo in the title bar is
-  //   replaced by a menu button in the same spot. Clicking it (or setting the
-  //   `open` attribute) expands the links section back to its normal,
-  //   desktop-style height.
+  //   The bar itself never hides — at ≤900px the links row (.nav__items)
+  //   becomes a native popover instead of an always-visible flex row, and the
+  //   logo in the title area is replaced by a menu button that opens it
+  //   (popovertarget, not a click handler). Escape, clicking outside, and
+  //   opening a second popover elsewhere on the page all close it for free —
+  //   the browser's own popover="auto" behavior, not code this component has
+  //   to implement or maintain. Above 900px the popover machinery is present
+  //   but inert: author CSS forces the row visible and back into normal flow
+  //   regardless of open state, since author styles always win over the
+  //   user-agent's own popover defaults.
   //
   // Usage:
   //   <ds-spec-nav title="DSDS 0.1" title-href="index.html" active="index">
   //     <a href="index.html" slug="index">Overview</a>
-  //     <a href="quickstart.html" slug="quickstart">Quick Start</a>
-  //     <ds-nav-group label="Entities">
-  //       <a href="entities-component.html" slug="entities-component">component</a>
-  //       <a href="entities-pattern.html" slug="entities-pattern">pattern</a>
-  //     </ds-nav-group>
+  //     <a href="quickstart.html" slug="quickstart">Quick start</a>
   //   </ds-spec-nav>
   // ═══════════════════════════════════════════════════════════════════════════
 
@@ -1347,28 +1861,21 @@
     :host {
       display: block;
       position: fixed;
-      /*
       inset-block-start: 0;
-      inset-inline-start: 0;
-      inset-block-end: 0;
-      */
+      inset-inline: 0;
       z-index: var(--ds-z-nav, 100);
     }
 
     .nav {
-      position: relative;
-      inset: 1em;
-      color: var(--ds-color-text);
-      padding: 0;
-      font-family: var(--ds-font-body);
       display: flex;
-      width: 224px;
-      flex-direction: column;
-      outline: 4px solid transparent;
-      max-height: calc(100vh - 2em);
-      overflow: hidden;
-      transition: outline var(--ds-duration-base) var(--ds-ease-standard), max-height var(--ds-duration-base) var(--ds-ease-standard);
-      padding-top: 64px;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      color: var(--ds-color-text);
+      background: color-mix(in oklch, var(--ds-color-bg-accent) 90%, transparent);
+      font-family: var(--ds-font-body);
+      min-height: var(--ds-height-nav, 64px);
+      padding-inline: calc(var(--ds-space-4) * 2);
     }
 
     /* ── Title ──────────────────────────────────────────── */
@@ -1380,12 +1887,7 @@
       font-weight: var(--ds-font-weight-bold);
       letter-spacing: 0;
       text-transform: none;
-      background: var(--ds-color-text);
-      color: var(--ds-color-bg-inverse);
-      padding: var(--ds-space-4);
-      position: fixed;
-      width: 224px;
-      top: 1rem;
+      flex-shrink: 0;
     }
 
     .nav__title a {
@@ -1393,7 +1895,6 @@
       align-items: center;
       gap: 12px;
       min-width: 0;
-      flex: 1;
       color: inherit;
       text-decoration: none;
       line-height: 1.2;
@@ -1429,31 +1930,42 @@
       display: block;
     }
 
-    /* ── Items container ────────────────────────────────── */
+    /* ── Links row ──────────────────────────────────────────────────────
+       popover="auto" on this element always (see .nav__items:popover-open
+       below and the @media block) - the popover machinery only actually
+       does anything below 900px. Above that, this block resets every
+       user-agent popover default (position, inset, margin, border,
+       background, display) back to an ordinary in-flow flex row - author
+       styles always win over UA styles, regardless of :popover-open state,
+       so this is enough to make popover-ness a no-op at desktop widths
+       without a media-query-driven attribute toggle in JS. */
     .nav__items {
-      padding: var(--ds-space-4) 0;
-      overflow-y: auto;
-      max-height: 100%;
-      background: var(--ds-color-bg-inverse);
-      transition: max-height var(--ds-duration-base) var(--ds-ease-standard);
+      position: static;
+      inset: auto;
+      margin: 0;
+      border: none;
+      padding: 0;
+      background: none;
+      color: inherit;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 4px;
+      overflow: visible;
     }
 
-    /* ── Top-level links ────────────────────────────────── */
     .nav__link {
       display: block;
-      margin: 0 4px;
       padding: 6px calc(var(--ds-space-4) - 4px);
       color: var(--ds-color-text);
       text-decoration: none;
       font-size: var(--ds-font-size-base);
       font-weight: 500;
       line-height: var(--ds-line-height-normal);
-      border-inline-start: var(--ds-border-width) solid transparent;
+      border-block-end: var(--ds-border-width) solid transparent;
       transition: background-color var(--ds-duration-base) var(--ds-ease-standard),
-        color var(--ds-duration-base) var(--ds-ease-standard);
-      /* Breathing room for scrollIntoView() (see _scrollActiveIntoView) —
-         the browser adds this margin when deciding a link is "in view". */
-      scroll-margin-block: var(--ds-space-4);
+        color var(--ds-duration-base) var(--ds-ease-standard),
+        border-color var(--ds-duration-base) var(--ds-ease-standard);
     }
 
     .nav__link:hover {
@@ -1464,47 +1976,10 @@
     .nav__link--active {
       background: #1a1a1a;
       color: #fff;
+      border-block-end-color: var(--ds-color-accent);
     }
 
-    /* ── Group toggle ───────────────────────────────────── */
-    .nav__group {
-      margin-top: var(--ds-space-4);
-    }
-
-    .nav__group-toggle {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      width: 100%;
-      padding: 6px var(--ds-space-4);
-      background: none;
-      border: none;
-      border-inline-start: var(--ds-border-width) solid transparent;
-      color: var(--ds-color-text);
-      font-family: ${FONT.body};
-      font-size: var(--ds-font-size-xs);
-      font-weight: var(--ds-font-weight-bold);
-      letter-spacing: 0;
-      text-transform: none;
-      cursor: default;
-      text-align: start;
-    }
-
-    .nav__group-arrow {
-      display: none;
-    }
-
-    /* ── Group children — always visible ────────────────── */
-    .nav__group-children {
-      display: block;
-      padding-bottom: var(--ds-space-1);
-    }
-
-    .nav__link--child {
-      font-size: var(--ds-font-size-base);
-    }
-
-    /* ── Mobile: nav stays put; only the links section collapses ───────── */
+    /* ── Mobile: bar stays put; the links row becomes a real popover ────── */
     @media (max-width: 900px) {
 
       .nav__menu-btn {
@@ -1516,17 +1991,72 @@
       }
 
       .nav {
-        max-height: 64px;
+        min-height: 64px;
+        /* Matches .content__inner's own mobile padding-inline (see
+           style.css's max-width: 900px block) - both var(--ds-space-4), so
+           the bar's edges line up with the content's instead of the wider
+           desktop inset (calc(var(--ds-space-4) * 2)) above. */
+        padding-inline: var(--ds-space-4);
       }
 
-      :host([open]) .nav {
-        outline: 4px solid color-mix(#1a1a1a 30%, transparent);
-        max-height: calc(80vh);
-      }
-
-      :host([open]) .nav__items {
+      /* Positioned to sit directly under the (inset, floating) bar itself -
+         matches its own margin/height rather than the old in-flow "second
+         row of the same flex box" approach, since a popover is promoted out
+         of normal flow into the top layer regardless of what position we
+         give it otherwise. */
+      .nav__items {
+        position: fixed;
+        top: calc(var(--ds-height-nav, 64px) + 1em);
+        left: 1em;
+        right: 1em;
+        margin: 0;
         padding: var(--ds-space-4) 0;
-        pointer-events: auto;
+        background: color-mix(in oklch, var(--ds-color-bg-accent) 90%, transparent);
+        flex-direction: column;
+        align-items: stretch;
+        max-height: 60vh;
+        overflow-y: auto;
+        /* display: none is the popover-closed UA default; only overridden
+           by :popover-open below. Opacity/transform are this component's
+           own open/close animation - display and overlay need
+           transition-behavior: allow-discrete since neither is normally
+           interpolable, and both need to outlast the opacity/transform
+           transition on the way out (that's what the overlay property is
+           for) or the panel would vanish instantly instead of fading. */
+        display: none;
+        opacity: 0;
+        transform: translateY(-8px);
+        transition: opacity var(--ds-duration-base) var(--ds-ease-standard),
+          transform var(--ds-duration-base) var(--ds-ease-standard),
+          display var(--ds-duration-base) allow-discrete,
+          overlay var(--ds-duration-base) allow-discrete;
+      }
+
+      .nav__items:popover-open {
+        display: flex;
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      /* The state a newly-opened popover transitions *from* - without this,
+         display/opacity/transform would already be at their :popover-open
+         values the instant it enters the top layer, and there'd be nothing
+         for the transition to animate from. */
+      @starting-style {
+        .nav__items:popover-open {
+          opacity: 0;
+          transform: translateY(-8px);
+        }
+      }
+
+      .nav__link {
+        border-block-end: none;
+        border-inline-start: var(--ds-border-width) solid transparent;
+      }
+
+      .nav__link--active {
+        border-block-end-color: transparent;
+        border-inline-start-color: var(--ds-color-accent);
       }
     }
 
@@ -1546,19 +2076,16 @@
     constructor() {
       super();
       this._shadow = createShadow(this, SPEC_NAV_CSS);
-      this._onKeydown = this._onKeydown.bind(this);
     }
 
     connectedCallback() {
-      document.addEventListener("keydown", this._onKeydown);
-
-      // Light-DOM children (<a>, <ds-nav-group>) may not be parsed yet when
-      // a blocking <script> in <head> registers the element — the parser
-      // upgrades the element the instant it sees the opening tag, before it
-      // has parsed any children.
+      // Light-DOM children (<a>) may not be parsed yet when a blocking
+      // <script> in <head> registers the element — the parser upgrades the
+      // element the instant it sees the opening tag, before it has parsed any
+      // children.
       //
       // We must wait for DOMContentLoaded to guarantee ALL children have
-      // been parsed.  A MutationObserver fires too early (after the first
+      // been parsed. A MutationObserver fires too early (after the first
       // child, before the rest are added).
       if (document.readyState === "loading") {
         document.addEventListener("DOMContentLoaded", () => this._render(), {
@@ -1570,28 +2097,9 @@
       }
     }
 
-    disconnectedCallback() {
-      document.removeEventListener("keydown", this._onKeydown);
-    }
-
     attributeChangedCallback(name) {
       if (name === "open") {
-        this._syncMenuButton();
-        // On mobile the items list is 0-height (clipped) while closed, so the
-        // initial _scrollActiveIntoView() call ran against a collapsed
-        // container and couldn't measure real positions. Recompute once the
-        // max-height transition finishes and it's actually measurable —
-        // measuring immediately would just read the pre-transition rect.
-        if (this.open) {
-          const container = this._shadow.querySelector(".nav__items");
-          if (container) {
-            container.addEventListener(
-              "transitionend",
-              () => this._scrollActiveIntoView(),
-              { once: true },
-            );
-          }
-        }
+        this._syncPopoverToAttribute();
         return;
       }
       // Only re-render after the initial render has happened.
@@ -1610,23 +2118,40 @@
       }
     }
 
+    // Keeps the public `open` attribute/property in sync with the popover's
+    // real state, in whichever direction changed first: setting `.open` (or
+    // the attribute directly) calls show/hidePopover() here; the popover's
+    // own native `toggle` event (wired in _render() - fires for every
+    // dismissal path, the button, Escape, or clicking outside) sets the
+    // attribute to match from the other direction. The equality check stops
+    // the two from calling each other in a loop.
+    _syncPopoverToAttribute() {
+      const items = this._shadow.querySelector(".nav__items");
+      if (!items) return;
+      const isOpen = this.open;
+      if (items.matches(":popover-open") === isOpen) return;
+      if (isOpen) {
+        items.showPopover();
+      } else {
+        items.hidePopover();
+      }
+    }
+
     _render() {
       this._rendered = true;
       const title = this.getAttribute("title") || "";
       const titleHref = this.getAttribute("title-href") || "index.html";
       const active = this.getAttribute("active") || "";
-      const isOpen = this.open;
 
       const titleHtml = title
         ? '<div class="nav__title">' +
-          '<button class="nav__menu-btn" part="menu-btn" type="button" aria-label="Toggle navigation" aria-expanded="' +
-          (isOpen ? "true" : "false") +
+          '<button class="nav__menu-btn" part="menu-btn" type="button" popovertarget="nav-items" popovertargetaction="toggle" aria-label="Toggle navigation" aria-expanded="false">' +
           // The button's aria-label already names the control; its icon is
           // decorative and filled in async once loadIcon() resolves below.
-          '"><span class="nav__menu-icon" aria-hidden="true"></span></button>' +
+          '<span class="nav__menu-icon" aria-hidden="true"></span></button>' +
           '<a href="' +
           esc(titleHref) +
-          '"><ds-logo class="nav__logo" size="2rem" fill="#fff" aria-hidden="true"></ds-logo><span>' +
+          '"><ds-logo class="nav__logo" size="2rem" fill="#000" aria-hidden="true"></ds-logo><span>' +
           esc(title) +
           "</span></a>" +
           "</div>"
@@ -1637,43 +2162,36 @@
       this._shadow.innerHTML =
         '<nav class="nav" role="navigation" aria-label="Specification navigation" part="nav">' +
         titleHtml +
-        '<div class="nav__items" part="items">' +
+        '<div class="nav__items" part="items" id="nav-items" popover="auto">' +
         itemsHtml +
         "</div>" +
         "</nav>";
 
-      const btn = this._shadow.querySelector(".nav__menu-btn");
-      if (btn) {
-        btn.addEventListener("click", () => {
-          this.open = !this.open;
+      const itemsEl = this._shadow.querySelector(".nav__items");
+      if (itemsEl) {
+        // ToggleEvent, not click - this fires for every way the popover can
+        // open or close (the button, Escape, light-dismiss), so it's the one
+        // place aria-expanded, the icon, and the public `open` attribute all
+        // need to react, instead of duplicating that logic per dismissal path.
+        itemsEl.addEventListener("toggle", (e) => {
+          const isOpen = e.newState === "open";
+          const btn = this._shadow.querySelector(".nav__menu-btn");
+          if (btn) btn.setAttribute("aria-expanded", isOpen ? "true" : "false");
+          this._updateMenuIcon(isOpen);
+          if (isOpen) {
+            this.setAttribute("open", "");
+          } else {
+            this.removeAttribute("open");
+          }
         });
+        // A re-render (title/active changed) rebuilds .nav__items from
+        // scratch, which would otherwise silently drop an already-open
+        // state - restore it from the host's own `open` attribute, the
+        // single source of truth that survives the rebuild.
+        if (this.open) itemsEl.showPopover();
       }
 
-      this._updateMenuIcon(isOpen);
-      this._scrollActiveIntoView();
-    }
-
-    /**
-     * .nav__items is its own scroll container (independent of the page), so it
-     * always loads at scrollTop 0 — on a long nav, the active link (e.g. deep
-     * in "Metadata") can load scrolled out of view with nothing on screen
-     * indicating where the current page sits. scrollIntoView({ block: "nearest" })
-     * only scrolls .nav__items (the nearest scrollable ancestor) — it's a
-     * no-op if the link is already visible, and the --ds-space-4
-     * scroll-margin-block set on .nav__link gives it breathing room from the
-     * edge otherwise. Runs synchronously before first paint, so there's no
-     * visible scroll animation on load.
-     */
-    _scrollActiveIntoView() {
-      const activeEl = this._shadow.querySelector(".nav__link--active");
-      if (activeEl) activeEl.scrollIntoView({ block: "nearest" });
-    }
-
-    _syncMenuButton() {
-      const isOpen = this.open;
-      const btn = this._shadow.querySelector(".nav__menu-btn");
-      if (btn) btn.setAttribute("aria-expanded", isOpen ? "true" : "false");
-      this._updateMenuIcon(isOpen);
+      this._updateMenuIcon(this.open);
     }
 
     _updateMenuIcon(isOpen) {
@@ -1683,89 +2201,33 @@
       });
     }
 
-    _onKeydown(e) {
-      if (e.key === "Escape" && this.open) {
-        this.open = false;
-        const btn = this._shadow.querySelector(".nav__menu-btn");
-        if (btn) btn.focus();
-      }
-    }
-
     /**
      * Walk the light-DOM children and build shadow-DOM navigation HTML.
      *
      * Recognised children:
-     *   <a href="…" slug="…">Label</a>           → top-level link
-     *   <ds-nav-group label="…">                  → collapsible group
-     *     <a href="…" slug="…">Label</a>          → child link
-     *   </ds-nav-group>
+     *   <a href="…" slug="…">Label</a> → a nav link
      */
     _buildFromChildren(active) {
       const parts = [];
 
       for (const child of this.children) {
-        const tag = child.tagName.toLowerCase();
-
-        if (tag === "a") {
-          const slug = child.getAttribute("slug") || "";
-          const href = child.getAttribute("href") || "#";
-          const label = child.textContent.trim();
-          const activeCls = slug && slug === active ? " nav__link--active" : "";
-          parts.push(
-            '<a class="nav__link' +
-              activeCls +
-              '" href="' +
-              esc(href) +
-              '">' +
-              esc(label) +
-              "</a>",
-          );
-        } else if (tag === "ds-nav-group") {
-          parts.push(this._buildGroup(child, active));
-        }
-        // Silently skip unrecognised elements
-      }
-
-      return parts.join("\n");
-    }
-
-    /**
-     * Build shadow HTML for a single <ds-nav-group>.
-     */
-    _buildGroup(groupEl, active) {
-      const label = groupEl.getAttribute("label") || "";
-      const childLinks = groupEl.querySelectorAll(":scope > a");
-
-      const childHtml = Array.from(childLinks)
-        .map(function (a) {
-          const slug = a.getAttribute("slug") || "";
-          const href = a.getAttribute("href") || "#";
-          const text = a.textContent.trim();
-          const activeCls = slug && slug === active ? " nav__link--active" : "";
-          return (
-            '<a class="nav__link nav__link--child' +
+        if (child.tagName.toLowerCase() !== "a") continue; // silently skip unrecognised elements
+        const slug = child.getAttribute("slug") || "";
+        const href = child.getAttribute("href") || "#";
+        const label = child.textContent.trim();
+        const activeCls = slug && slug === active ? " nav__link--active" : "";
+        parts.push(
+          '<a class="nav__link' +
             activeCls +
             '" href="' +
             esc(href) +
             '">' +
-            esc(text) +
-            "</a>"
-          );
-        })
-        .join("\n");
+            esc(label) +
+            "</a>",
+        );
+      }
 
-      return (
-        '<div class="nav__group">' +
-        '<div class="nav__group-toggle">' +
-        "<span>" +
-        esc(label) +
-        "</span>" +
-        "</div>" +
-        '<div class="nav__group-children">' +
-        childHtml +
-        "</div>" +
-        "</div>"
-      );
+      return parts.join("\n");
     }
   }
 
@@ -1796,7 +2258,7 @@
 
   const CALLOUT_CSS = `
     ${BASE_RESET}
-    :host { display: block; }
+    :host { display: block; max-width: 65ch; }
 
     .callout {
       margin: var(--ds-space-2) 0 var(--ds-space-8);
@@ -2123,145 +2585,6 @@
     }
   }
 
-  // ── json-view.js ──
-  // ═══════════════════════════════════════════════════════════════════════════
-  // <ds-json-view>
-  //
-  // A "View as JSON" toggle for spec definition pages: a fixed floating
-  // button in the bottom-right corner. Closed, it shows a curly-braces icon;
-  // clicking it opens a full-viewport overlay (above the nav and content)
-  // showing the page's raw schema JSON in a <ds-code> block, and the same
-  // button swaps to a close icon to return to the documentation view.
-  //
-  // Attributes:
-  //   label — the source file path, used only for the overlay's accessible
-  //           name (e.g. "Raw JSON: common/criterion.schema.json")
-  //
-  // Slots:
-  //   (default) — the JSON content, typically a single <ds-code language="json">
-  //
-  // Usage:
-  //   <ds-json-view label="common/criterion.schema.json">
-  //     <ds-code language="json">{ ... }</ds-code>
-  //   </ds-json-view>
-  // ═══════════════════════════════════════════════════════════════════════════
-
-  const JSON_VIEW_CSS = `
-    ${BASE_RESET}
-    :host {
-      display: block;
-      position: fixed;
-      inset-inline-end: var(--ds-space-4);
-      bottom: var(--ds-space-4);
-      z-index: calc(var(--ds-z-overlay, 200) + 1);
-    }
-
-    /* Positioned + given a higher z-index than the overlay below — without
-       this, the button is a plain static-flow box, and a fixed+z-indexed
-       sibling (the overlay) paints above static content regardless of DOM
-       order, so the button would vanish behind the overlay once it's open. */
-    .json-view__btn {
-      position: relative;
-      z-index: calc(var(--ds-z-overlay, 200) + 1);
-    }
-
-    .json-view__icon svg {
-      display: block;
-    }
-
-    /* Sits above everything else on the page — including the fixed nav —
-       while open. Hidden entirely (not just visually) when closed so its
-       content isn't reachable by keyboard/AT. */
-    .json-view__overlay {
-      /*display: none;*/
-      height: 0;
-      position: fixed;
-      inset: 0;
-      z-index: var(--ds-z-overlay, 200);
-      background: var(--ds-color-bg-inverse);
-      overflow-y: auto;
-      padding: 0 var(--ds-space-4) 0;
-      transition: .3s var(--ds-ease-standard);
-      margin-top: 100vh;
-    }
-
-    .json-view__overlay--open {
-      /*display: block;*/
-      height: 100vh;
-      padding: var(--ds-space-8) var(--ds-space-4) var(--ds-space-4);
-      margin: 0;
-    }
-
-    ::slotted(ds-code) {
-      display: block;
-    }
-  `;
-
-  class DsJsonView extends HTMLElement {
-    static get observedAttributes() {
-      return ["label"];
-    }
-
-    constructor() {
-      super();
-      this._shadow = createShadow(this, JSON_VIEW_CSS);
-      this._open = false;
-      this._onKeydown = this._onKeydown.bind(this);
-    }
-
-    connectedCallback() {
-      document.addEventListener("keydown", this._onKeydown);
-      this._render();
-    }
-
-    disconnectedCallback() {
-      document.removeEventListener("keydown", this._onKeydown);
-    }
-
-    _render() {
-      const label = this.getAttribute("label") || "";
-      const dialogLabel = label ? `Raw JSON: ${label}` : "Raw JSON";
-
-      this._shadow.innerHTML =
-        '<ds-icon-button class="json-view__btn" part="button" label="View as JSON">' +
-        '<span class="json-view__icon" part="icon"></span>' +
-        "</ds-icon-button>" +
-        '<div class="json-view__overlay" part="overlay" role="dialog" aria-modal="true" tabindex="-1" aria-label="' +
-        esc(dialogLabel) +
-        '">' +
-        '<div class="json-view__body" part="body"><slot></slot></div>' +
-        "</div>";
-
-      const btn = this._shadow.querySelector(".json-view__btn");
-      if (btn) btn.addEventListener("click", () => this._setOpen(!this._open));
-
-      this._updateIcon();
-    }
-
-    _setOpen(open) {
-      this._open = open;
-      const overlay = this._shadow.querySelector(".json-view__overlay");
-      if (overlay) {
-        overlay.classList.toggle("json-view__overlay--open", open);
-        if (open) overlay.focus();
-      }
-      this._updateIcon();
-    }
-
-    _updateIcon() {
-      const btn = this._shadow.querySelector(".json-view__btn");
-      const icon = this._shadow.querySelector(".json-view__icon");
-      if (btn) btn.setAttribute("label", this._open ? "Close JSON view" : "View as JSON");
-      loadIcon(this._open ? "close" : "brackets").then((svg) => {
-        if (icon) icon.innerHTML = svg;
-      });
-    }
-
-    _onKeydown(e) {
-      if (e.key === "Escape" && this._open) this._setOpen(false);
-    }
-  }
-
   // ── Registration ──
   const registry = [
     ["ds-code", DsCode],
@@ -2271,10 +2594,9 @@
     ["ds-back-to-top", DsBackToTop],
     ["ds-header", DsHeader],
     ["ds-def-section", DsDefSection],
+    ["ds-guide-section", DsGuideSection],
     ["ds-type-ref", DsTypeRef],
     ["ds-cross-refs", DsCrossRefs],
-    ["ds-def-index", DsDefIndex],
-    ["ds-def-example", DsDefExample],
     ["ds-prop-table", DsPropTable],
     ["ds-prop", DsProp],
     ["ds-spec-nav", DsSpecNav],
@@ -2282,7 +2604,6 @@
     ["ds-tag", DsTag],
     ["ds-logo", DsLogo],
     ["ds-icon-button", DsIconButton],
-    ["ds-json-view", DsJsonView],
   ];
 
   for (const [name, ctor] of registry) {

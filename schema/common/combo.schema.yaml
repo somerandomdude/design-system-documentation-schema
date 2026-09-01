@@ -1,0 +1,46 @@
+$schema: https://json-schema.org/draft/2020-12/schema
+$id: https://designsystemdocspec.org/v0.20.0/common/combo.schema.yaml
+title: Combo
+type: object
+description: Defines what an element can or cannot be paired with. Relates to traits, tokens, and entries.
+$comment: >-
+  A combo is a pairing rule, It lives on the entry the rule is about
+  (`subject`), naming what else (`items`) can or cannot be used with
+  it, and how strict the rule is (`level`). `subject` and each of
+  `items` do not need to be the same type.
+required: [subject, items, level]
+properties:
+  subject:
+    $ref: "#/$defs/target"
+    description: "The subject of what elements can or cannot be paired with. Can be a trait, token, or entry id."
+    example: size.large
+  items:
+    type: array
+    minItems: 1
+    uniqueItems: true
+    items:
+      $ref: "#/$defs/target"
+    description: The elements paired with the subject.
+    $comment: What `level` says (permitted or forbidden) applies to every entry here.
+    example: ["{color.surface.default}", "{color.surface.raised}"]
+  level:
+    $ref: https://designsystemdocspec.org/v0.20.0/common/requirement-level.schema.yaml
+    description: Whether the elements in `items` can or cannot be paired with the subject—and how strict the rule is.
+    $comment: >-
+      `must`/`should` make `items` allowed. `should-not`/`must-not` make `items`
+      denied. `must`/`must-not` make the rule explicit. `should`/`should-not` make it a recommendation.
+  note:
+    type: string
+    description: Why this rule holds.
+    $comment: Provides rationale to the rule defined in `subject`/`items`/`level`.
+    example: Contrast is verified only against these surfaces; on any other background the label ratio is unproven.
+additionalProperties: false
+$defs:
+  target:
+    description: A bare id, or a token reference wrapped in braces.
+    anyOf:
+      - $ref: https://designsystemdocspec.org/v0.20.0/common/id.schema.yaml
+      - type: string
+        pattern: '^\{[a-z0-9]+(-[a-z0-9]+)*(\.[a-z0-9]+(-[a-z0-9]+)*)*\}$'
+        description: A token reference, wrapped in braces.
+    example: "{color.action.primary}"

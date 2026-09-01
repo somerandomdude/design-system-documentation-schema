@@ -25,11 +25,14 @@ const { renderTemplate } = require("./render-template");
 const {
   esc,
   slug,
-  linkToRef,
   describeType: describeTypeShared,
   renderPropertyTable: renderPropertyTableShared,
   renderPropertyTableMarkdown: renderPropertyTableMarkdownShared,
   typeToMarkdown,
+  buildDefIndex: buildDefIndexShared,
+  resolveSchema,
+  loadSchemaYaml,
+  ROOT_FILES,
 } = require("./render-prop-table");
 
 // MDX compiler (ESM) — loaded dynamically in build()
@@ -46,19 +49,18 @@ async function loadMdxCompiler() {
 // ---------------------------------------------------------------------------
 
 const ROOT = path.resolve(__dirname, "..");
-const SPEC_DIR = path.join(ROOT, "spec");
 
 // Canonical site origin and the fallback description used by pages that
 // don't declare their own (MDX frontmatter `description`, or a schema
 // file's top-level `description`).
 const SITE_URL = "https://designsystemdocspec.org";
 const DEFAULT_DESCRIPTION =
-  "A machine-readable format for design system documentation. DSDS structures components, tokens, themes, foundations, patterns, and guides as a single source of truth for humans, parsers, and agents.";
-const SCHEMA_DIR = path.join(SPEC_DIR, "schema");
+  "A machine-readable format for design system documentation. DSDS structures a design system as a graph of entries (systems, components, tokens, themes, and custom kinds) and sections (definitions, guidelines, steps, and freeform content) for humans, parsers, and agents.";
+const SCHEMA_DIR = path.join(ROOT, "schema");
 const SITE_DIR = path.join(ROOT, "site");
 const CONTENT_DIR = path.join(SITE_DIR, "content");
 const DIST_DIR = path.join(SITE_DIR, "dist");
-const EXAMPLES_DIR = path.join(SPEC_DIR, "examples");
+const EXAMPLES_DIR = path.join(ROOT, "examples");
 const TEMPLATES_DIR = path.join(SITE_DIR, "templates");
 const PAGE_TEMPLATE_PATH = path.join(TEMPLATES_DIR, "page.template.html");
 const SUBTEMPLATES_DIR = path.join(TEMPLATES_DIR, "subtemplates");
@@ -80,11 +82,56 @@ function renderSub(name, vars) {
 
 /**
  * Auto-discover schema files and build the full page registry.
+ *
+ * Unlike the old spec/schema/ (many named `$defs` bundled per file), each
+ * schema/*.schema.yaml file is one definition, usually built by extending a
+ * shared base via `allOf` (see render-prop-table.js's resolveSchema). Each
+ * page's `data.$defs` holds that one resolved, flattened definition (keyed
+ * by the file's own `title`) plus any of the file's own local `$defs` (ex:
+ * component's `traitValue`) — the same shape discoverPages() has always
+ * produced, so renderSchemaPage()/buildSchemaMarkdown() below don't need to
+ * know the difference between the two schema generations.
+ *
+ * There's no per-definition example file the way spec/examples/{group}/
+ * {baseName}.json worked (examples/ is organized by purpose — quickstart,
+ * base, invalid — not mirroring schema/'s own directories), so `examples`
+ * is always null here; a schema page just doesn't render one.
+ *
  * Returns an array of page descriptors:
- *   { slug, title, group, groupLabel, filename, filePath, data }
+ *   { slug, title, group, groupLabel, filename, filePath, data, examples }
  */
-function discoverPages() {
+function discoverPages(schemaById) {
   const pages = [];
+
+  function makePage(group, groupLabel, filename, filePath) {
+    const raw = loadSchemaYaml(filePath);
+    const baseName = filename.replace(/\.schema\.yaml$/, "");
+    const pageSlug = group === "root" ? baseName : `${group}-${baseName}`;
+    const title = raw.title || baseName;
+
+    const defs = { [title]: resolveSchema(raw, schemaById) };
+    for (const [defName, def] of Object.entries(raw.$defs || {})) {
+      defs[defName] = def;
+    }
+
+    return {
+      slug: pageSlug,
+      title,
+      group,
+      groupLabel,
+      filename,
+      filePath,
+      data: { title, description: raw.description, $id: raw.$id, $defs: defs },
+      raw,
+      examples: null,
+    };
+  }
+
+  for (const filename of ROOT_FILES) {
+    const filePath = path.join(SCHEMA_DIR, filename);
+    if (!fs.existsSync(filePath)) continue;
+    pages.push(makePage("root", "Base", filename, filePath));
+  }
 
   for (const group of DIR_GROUPS) {
     const dirPath = path.join(SCHEMA_DIR, group.dir);
@@ -92,60 +139,24 @@ function discoverPages() {
 
     const files = fs
       .readdirSync(dirPath)
-      .filter((f) => f.endsWith(".schema.json"))
+      .filter((f) => f.endsWith(".schema.yaml"))
       .sort();
 
-    for (const filename of files) {
-      const filePath = path.join(dirPath, filename);
-      const data = JSON.parse(fs.readFileSync(filePath, "utf-8"));
-      const baseName = filename.replace(".schema.json", "");
-      const pageSlug = `${group.dir}-${baseName}`;
-
-      // Look for a matching example file: spec/examples/{group}/{baseName}.json
-      const examplePath = path.join(
-        EXAMPLES_DIR,
-        group.dir,
-        `${baseName}.json`,
-      );
-      let examples = null;
-      if (fs.existsSync(examplePath)) {
-        try {
-          examples = JSON.parse(fs.readFileSync(examplePath, "utf-8"));
-        } catch (e) {
-          console.error(
-            `  ⚠  Failed to parse example ${examplePath}: ${e.message}`,
-          );
-        }
+    // Pin the group's own open-base file (ex: entry.schema.yaml in
+    // entries/) first, ahead of the rest, which stay alphabetical — the
+    // order the Schema page's def-sections appear in within this group.
+    if (group.primary) {
+      const primaryFile = `${group.primary}.schema.yaml`;
+      const idx = files.indexOf(primaryFile);
+      if (idx > 0) {
+        files.splice(idx, 1);
+        files.unshift(primaryFile);
       }
-
-      pages.push({
-        slug: pageSlug,
-        title: data.title || baseName,
-        group: group.dir,
-        groupLabel: group.label,
-        filename,
-        filePath,
-        data,
-        examples,
-      });
     }
-  }
 
-  // Also include the root schema
-  const rootPath = path.join(SCHEMA_DIR, "dsds.schema.json");
-  if (fs.existsSync(rootPath)) {
-    const rootData = JSON.parse(fs.readFileSync(rootPath, "utf-8"));
-    pages.unshift({
-      slug: "root",
-      title: rootData.title || "Root Schema",
-      group: "documentation",
-      groupLabel: "Documentation",
-      filename: "dsds.schema.json",
-      navLabel: "Root schema",
-      filePath: rootPath,
-      data: rootData,
-      examples: null,
-    });
+    for (const filename of files) {
+      pages.push(makePage(group.dir, group.label, filename, path.join(dirPath, filename)));
+    }
   }
 
   return pages;
@@ -155,29 +166,10 @@ function discoverPages() {
 // HTML helpers
 // ---------------------------------------------------------------------------
 
-/**
- * Build a definition index from the discovered pages.
- * Maps: defName -> { pageSlug, filename }
- *
- * Note: `esc`, `slug`, and `linkToRef` are imported from
- * ./render-prop-table so the MDX shortcode preprocessor and the
- * schema-page generator share one canonical implementation.
- */
-function buildDefIndex(pages) {
-  const index = {};
-  for (const page of pages) {
-    for (const [defName, def] of Object.entries(page.data.$defs || {})) {
-      index[defName] = {
-        pageSlug: page.slug,
-        filename: page.filename,
-        description: def.description || "",
-      };
-    }
-  }
-  return index;
-}
-
-// Global definition index for cross-references
+// Global definition index for cross-references: { [$ref]: { pageSlug,
+// anchor, title, description } }, built once in build() by
+// ./render-prop-table's buildDefIndex (shared with the MDX shortcode
+// preprocessor, so both stay 1:1 with the same schema files).
 let DEF_INDEX = {};
 
 // ---------------------------------------------------------------------------
@@ -212,19 +204,522 @@ function renderPropertyTableMarkdown(defSchema) {
 }
 
 // ---------------------------------------------------------------------------
+// Curated per-definition examples
+//
+// A short, illustrative snippet for every definition on the Schema page -
+// one entry per definition, root or nested $def alike - keyed by the exact
+// same anchor buildDefIndex() (render-prop-table.js) and renderSchemaPage()
+// below already compute for it (a root definition's is its file's own
+// baseSlug; a local $def's is `${baseSlug}-${slug(defName)}`). Each example
+// aims to touch every one of that definition's own top-level properties at
+// least once - condensed with flow-style YAML (`{...}`/`[...]`) or `...`
+// where spelling one out in full would just add length without adding
+// information, not left out. A definition with no entry here renders
+// without the split layout/example column.
+// ---------------------------------------------------------------------------
+
+const CURATED_EXAMPLES = {
+  base: {
+    file: "examples/base/starter-kit.dsds.yaml",
+    yaml: `schemaVersion: "0.20.0"
+name: Acme Design System
+$schema: https://designsystemdocspec.org/v0.20.0/dsds.bundled.yaml
+
+entries:
+  - id: acme-design-system
+    kind: system
+    ...
+
+shared:
+  - id: shared-a11y
+    ...
+
+refs:
+  - href: ./starter-kit-fragments/button.dsds.yaml
+    rel: file
+
+$extensions:
+  com.acme: {...}`,
+  },
+  shared: {
+    file: "examples/base/starter-kit.dsds.yaml",
+    yaml: `- id: shared-a11y
+  name: Shared Accessibility Rules
+  description: Cross-cutting accessibility rules, stated once and referenced from every entry they apply to.
+  metadata:
+    status: {status: stable}
+  refs:
+    - href: https://www.w3.org/WAI/WCAG21/quickref/
+      rel: external-link
+  sections:
+    - kind: guidelines
+      for: all
+      items:
+        - id: touch-target
+          statement: Minimum touch target 44x44px.
+          level: must
+  $extensions:
+    com.acme: {...}`,
+  },
+  "common-combo": {
+    file: "examples/entries/color-action-primary.yaml",
+    yaml: `combos:
+  - subject: "{color.action.primary}"
+    level: must
+    items: ["{color.surface.default}", "{color.surface.raised}"]
+    note: Contrast is verified only against these surfaces; on any other background the label ratio is unproven.`,
+  },
+  "common-combo-target": {
+    file: "examples/entries/color-action-primary.yaml",
+    yaml: `size.large               # a bare id
+"{color.action.primary}"  # or a token reference`,
+  },
+  "common-example": {
+    file: "examples/entries/button.yaml",
+    yaml: `example:
+  title: One primary action per surface
+  description: A toolbar with one filled primary button and two lower-emphasis secondary buttons.
+  showcase:
+    kind: image
+    url: https://cdn.acme.example/ds/showcase/button-primary-surface.png
+    alt: A toolbar with one filled primary button and two lower-emphasis secondary buttons.
+  ref:
+    href: https://storybook.acme.example/?path=/story/button--primary
+    rel: storybook`,
+  },
+  "common-example-list": {
+    file: "examples/entries/button.yaml",
+    yaml: `- title: One primary action per surface
+  showcase: {kind: image, url: https://cdn.acme.example/ds/showcase/button-primary-surface.png}
+- title: Loading state
+  ref: {href: ./stories/button.stories.tsx, rel: storybook}`,
+  },
+  "common-extensions": {
+    file: "examples/entries/button.yaml",
+    yaml: `$extensions:
+  com.acme:
+    rationale: Multiple primary buttons compete for attention and force the user to guess which action is actually the recommended one.
+    failureMode: A dialog ships with two primary-styled buttons (e.g. "Save" and "Save as draft"), and usability testing shows users default to the wrong one.`,
+  },
+  "common-id": {
+    file: "examples/entries/color-action-primary.yaml",
+    yaml: `id: color.action.primary`,
+  },
+  "common-id-tokenid": {
+    file: "examples/entries/space-4.yaml",
+    yaml: `color/action/primary`,
+  },
+  "common-id-namespaced": {
+    file: "examples/entries/button.yaml",
+    yaml: `acme.icon-library`,
+  },
+  "common-markdown": {
+    file: "examples/entries/button.yaml",
+    yaml: `statement: Do not use button when the action navigates to a new URL; use the link entry instead.`,
+  },
+  "common-ref": {
+    file: "examples/entries/button.yaml",
+    yaml: `- href: https://example.atlassian.net/browse/DS-482
+  rel: external-link
+  role: Tracks the two-primary-buttons issue
+  note: Filed after a usability test surfaced the ambiguity.
+# or, pointing inside this document instead of outside it:
+- to: shared-a11y#touch-target
+  rel: same-as`,
+  },
+  "common-ref-list": {
+    file: "examples/entries/button.yaml",
+    yaml: `- to: button
+  rel: depends-on
+- href: https://storybook.acme.example
+  rel: storybook`,
+  },
+  "common-requirement-level": {
+    file: "examples/entries/button.yaml",
+    yaml: `- statement: Limit each surface to one primary button.
+  level: should
+- statement: Use buttons only for in-page actions, never navigation.
+  level: must`,
+  },
+  "common-showcase": {
+    file: "examples/entries/button.yaml",
+    yaml: `showcase:
+  kind: image
+  url: https://cdn.acme.example/ds/showcase/button-primary-surface.png
+  alt: A toolbar with one filled primary button and two lower-emphasis secondary buttons.
+  note: Captured from the Storybook build, light theme.`,
+  },
+  "common-since": {
+    file: "examples/entries/space-4.yaml",
+    yaml: `since: 1.4.0`,
+  },
+  "metadata-metadata": {
+    file: "examples/interop/my-element.dsds.yaml",
+    yaml: `metadata:
+  tags: [actions, button, cta]
+  owner: ds@acme.example
+  reviewed:
+    - date: 2026-05-01
+      by: human:ahormati
+      note: Copy and contrast ratios re-checked; no changes needed.
+  context: Introduced to give agents extra information for how to use this entry.
+  updated:
+    date: 2026-06-02
+    note: Added the loading trait and its guideline.
+  origin:
+    method: generated
+    author: machine-generated
+    note: Generated from custom-elements.json (CEM schemaVersion 2.1.0) by cem-to-dsds.
+  $extensions:
+    com.acme: {...}`,
+  },
+  "metadata-metadata-note": {
+    file: "examples/entries/button.yaml",
+    yaml: `Reviewed against the latest Figma file; no changes needed.`,
+  },
+  "metadata-metadata-isodate": {
+    file: "examples/entries/button.yaml",
+    yaml: `2026-06-02`,
+  },
+  "metadata-entry-metadata": {
+    file: "examples/entries/button.yaml",
+    yaml: `metadata:
+  status: {status: stable}
+  since: 1.4.0
+  group: color.action
+  aliases: [btn]
+  tags: [actions, button, cta, form-control]
+  owner: ds@acme.example
+  reviewed:
+    - date: 2026-05-01
+      by: human:ahormati
+  context: Introduced to give agents extra information for how to use this entry.
+  updated: {date: 2026-06-02, note: Added the loading trait and its guideline.}
+  origin: {method: authored, author: human}
+  preview: {kind: image, url: https://cdn.acme.example/ds/showcase/button.png}
+  $extensions:
+    com.acme: {...}`,
+  },
+  "metadata-entry-metadata-statusvalue": {
+    file: "examples/entries/button.yaml",
+    yaml: `stable`,
+  },
+  "metadata-system-metadata": {
+    file: "examples/base/starter-kit.dsds.yaml",
+    yaml: `metadata:
+  version: 1.4.0
+  organization: Acme Corp
+  url: https://design.acme.example
+  license: MIT
+  platforms: [react, web-component]
+  tags: [design-system]
+  owner: ds@acme.example
+  reviewed:
+    - date: 2026-05-01
+      by: human:ahormati
+  context: Why this system exists, for an agent reading it.
+  updated: {date: 2026-06-02}
+  origin: {method: authored, author: human}
+  $extensions:
+    com.acme: {...}`,
+  },
+  "entries-entry": {
+    file: "examples/entries/empty-state.yaml",
+    yaml: `id: empty-state
+kind: entry
+name: Empty State
+description: Composition of components shown when a view has no content to display yet.
+purpose: Tells the user why an area is empty and what to do next.
+metadata:
+  status: {status: stable}
+related:
+  - to: error-state
+    rel: alternative-to
+extends:
+  - to: base-dialog
+    rel: extends
+refs:
+  - href: https://github.com/acme/ds/tree/main/patterns/empty-state
+    rel: source
+sections:
+  - kind: guidelines
+    for: all
+    items:
+      - statement: Use an empty state the first time a list or grid has no content.
+        level: should
+$extensions:
+  com.acme: {...}`,
+  },
+  "entries-entry-dispatch": {
+    file: "examples/entries/empty-state.yaml",
+    yaml: `- id: empty-state
+  kind: entry
+  name: Empty State
+  description: Composition of components shown when a view has no content yet.
+- id: button
+  kind: component
+  ...`,
+  },
+  "entries-component": {
+    file: "examples/entries/button.yaml",
+    yaml: `id: button
+kind: component
+name: Button
+description: Triggers an action.
+purpose: Gives users a single, consistent way to trigger an action.
+metadata: {status: {status: stable}}
+related: [{to: link, rel: alternative-to}]
+extends: [{to: base-dialog, rel: extends}]
+refs: [{href: https://github.com/acme/ds/react/button, rel: source}]
+sections:
+  - kind: guidelines
+    for: all
+    items: [{statement: Limit each surface to one primary button., level: should}]
+$extensions:
+  com.acme: {...}
+sourceFiles:
+  - platform: react
+    file: ./src/Button.tsx
+imports:
+  - platform: react
+    package: "@acme/ui"
+traits:
+  - kind: boolean
+    id: loading
+    description: Shows a spinner in place of the label and blocks interaction while active.
+    setBy: consumer
+combos:
+  - subject: loading
+    level: must-not
+    items: [disabled]
+    note: A control can't be simultaneously loading and disabled...
+specs:
+  - rel: contract
+    href: ./contracts/button.contract.json
+    role: DS Contracts`,
+  },
+  "entries-component-traitsetby": {
+    file: "examples/entries/button.yaml",
+    yaml: `consumer   # the caller passes this in, like size or variant
+component  # the component sets this on its own, like hover or loading`,
+  },
+  "entries-component-traitvalue": {
+    file: "examples/entries/button.yaml",
+    yaml: `id: loading
+name: Loading
+description: Shows a spinner in place of the label and blocks interaction while active.
+purpose: Prevents duplicate submissions while an action is in flight.
+examples:
+  - title: Default loading state
+    showcase: {kind: image, url: https://cdn.acme.example/ds/showcase/button-loading.png}
+since: 1.4.0`,
+  },
+  "entries-system": {
+    file: "examples/base/starter-kit.dsds.yaml",
+    yaml: `id: acme-design-system
+kind: system
+name: Acme Design System
+description: Acme's cross-platform design system.
+purpose: One source of truth for how Acme builds and documents interfaces.
+metadata:
+  version: 1.4.0
+  organization: Acme Corp
+  url: https://design.acme.example
+  license: MIT
+  platforms: [react, web-component]
+  status: {status: stable}
+related: [{to: acme-brand-system, rel: pairs-with}]
+extends: [{to: base-design-system, rel: extends}]
+refs: [{to: button, rel: composes}]
+sections:
+  - kind: section
+    for: all
+    title: Getting started
+    freeform: [{title: Install, body: Add the package and its peer dependencies.}]
+$extensions:
+  com.acme: {...}`,
+  },
+  "entries-theme": {
+    file: "examples/entries/dark.yaml",
+    yaml: `id: dark
+kind: theme
+name: Dark
+description: Inverted-luminance theme for low-light surfaces and user preference.
+purpose: Lets a product opt into a dark color scheme without redefining every token.
+metadata: {status: {status: stable}}
+related: [{to: light, rel: pairs-with}]
+extends:
+  - to: light
+    rel: extends
+refs:
+  - href: https://www.figma.com/file/acme-dark-theme
+    rel: design
+sections:
+  - kind: guidelines
+    for: all
+    items: [{statement: Test contrast against both themes before shipping., level: should}]
+$extensions:
+  com.acme: {...}
+source: tokens/dark.tokens.json
+colorScheme: dark`,
+  },
+  "entries-token": {
+    file: "examples/entries/space-4.yaml",
+    yaml: `id: space-4
+kind: token
+name: Space 4
+description: A single step on the base spacing scale - 4 times the 4px base unit.
+purpose: Keeps spacing consistent across components without hand-picked pixel values.
+metadata: {status: {status: stable}, group: space}
+related: [{to: space-8, rel: pairs-with}]
+extends: [{to: space-base, rel: extends}]
+refs: [{href: https://www.figma.com/file/acme-spacing-scale, rel: design}]
+sections:
+  - kind: guidelines
+    for: all
+    items: [{statement: Use for default padding/gap; use space-8 for section spacing., level: should}]
+$extensions:
+  com.acme: {...}
+tokenType: spacing
+source: ./tokens.dtcg.json
+combos:
+  - subject: "{color.action.primary}"
+    level: must
+    items: ["{color.surface.default}", "{color.surface.raised}"]`,
+  },
+  "sections-definitions": {
+    file: "examples/entries/button.yaml",
+    yaml: `- kind: definitions
+  for: all
+  title: Terms
+  description: Words used in this component's copy.
+  context: terms
+  metadata: {status: {status: stable}}
+  items:
+    - term: OK
+      definition: To confirm an action.
+    - term: Cancel
+      definition: To cancel an action.
+  freeform:
+    - title: About
+      body: These terms match the ones used in product copy guidelines.
+  $extensions:
+    com.acme: {...}`,
+  },
+  "sections-guidelines": {
+    file: "examples/entries/button.yaml",
+    yaml: `- kind: guidelines
+  for: agent
+  framing: when-to-use
+  title: When to use
+  description: Whether button is the right choice for this action.
+  context: acme.fit-check
+  metadata: {status: {status: stable}}
+  items:
+    - statement: Do not use button when the action navigates to a new URL; use the link entry instead.
+      level: must-not
+      alternatives:
+        - to: link
+          rel: alternative-to
+  freeform:
+    - title: Why this matters
+      body: A button that navigates breaks browser back/forward and "open in new tab."
+  $extensions:
+    com.acme: {...}`,
+  },
+  "sections-steps": {
+    file: "examples/entries/button.yaml",
+    yaml: `- kind: steps
+  for: agent
+  ordered: false
+  title: Pre-release checklist
+  description: Run through before shipping a change to this component.
+  context: acme.checklist
+  metadata: {status: {status: stable}}
+  items:
+    - title: Focus ring is visible in both light and dark themes.
+    - title: Loading state announces to screen readers.
+    - title: Works with a custom icon in the leading-icon slot.
+      optional: true
+  freeform:
+    - title: Why this matters
+      body: Skipping this checklist is how contrast regressions ship.
+  $extensions:
+    com.acme: {...}`,
+  },
+  "sections-section": {
+    file: "examples/entries/getting-started.yaml",
+    yaml: `- kind: section
+  for: all
+  title: Troubleshooting
+  description: Common problems and how to fix them.
+  context: acme.troubleshooting
+  metadata: {status: {status: stable}}
+  items:
+    - title: Note
+      body: Generic items have no fixed shape - use freeform for prose instead.
+  freeform:
+    - title: Styles don't apply
+      body: Confirm the base theme is imported before any component renders - a component's own CSS assumes the theme's custom properties already exist.
+  $extensions:
+    com.acme: {...}`,
+  },
+  "sections-section-dispatch": {
+    file: "examples/entries/button.yaml",
+    yaml: `- kind: guidelines
+  for: all
+  items:
+    - statement: Limit each surface to one primary button.
+      level: should
+- kind: steps
+  ...`,
+  },
+  "sections-section-freeformentry": {
+    file: "examples/entries/getting-started.yaml",
+    yaml: `title: Install
+id: install
+body: Add the package and its peer dependencies.
+examples:
+  - title: Install with the CLI
+    ref: {href: ./install.sh, rel: file}
+refs:
+  - to: getting-started
+    rel: see-also
+items:
+  - title: Peer dependencies
+    body: React 18+ and a theme provider higher in the tree.
+$extensions:
+  com.acme: {...}`,
+  },
+};
+
+// ---------------------------------------------------------------------------
 // Definition rendering
 // ---------------------------------------------------------------------------
 
 /**
  * Render a single $defs definition as an HTML section.
- * If `exampleData` is provided, it's rendered as a JSON code block after the definition.
+ *
+ * `anchor`/`source` come from the caller (renderSchemaPage()), which
+ * already knows the owning file's baseSlug and whether this defName is
+ * that file's own root definition or one of its local $defs - see
+ * render-prop-table.js's buildDefIndex() for the same anchor scheme.
+ * `exampleYaml`, when present (from CURATED_EXAMPLES above), renders into
+ * def-section.js's named "example" slot with layout="split"; when absent,
+ * the section renders as a single column, same as before this existed.
  */
-function renderDefinition(defName, defSchema, exampleData) {
-  const hid = slug(defName);
+function renderDefinition(defName, defSchema, { anchor, source, exampleYaml, eyebrow }) {
+  const sourceAttr = source ? ` source="${esc(source)}"` : "";
+  const layoutAttr = exampleYaml ? ` layout="split"` : "";
+  const eyebrowAttr = eyebrow ? ` eyebrow="${esc(eyebrow)}"` : "";
+  const example = exampleYaml
+    ? `<ds-code language="yaml" label="" slot="example" wrap>${esc(exampleYaml)}</ds-code>`
+    : "";
   const content = [];
 
-  // If it's a simple string (like status), show that and stop — a bare
-  // string def has no properties/oneOf/anyOf/example content to add.
+  // If it's a simple string (like requirement-level, or id's pattern), show
+  // that and stop — a bare string def has no properties/oneOf/anyOf/example
+  // content to add.
   if (defSchema.type === "string" && !defSchema.properties) {
     if (defSchema.enum) {
       const items = defSchema.enum
@@ -232,14 +727,26 @@ function renderDefinition(defName, defSchema, exampleData) {
         .join("\n");
       content.push(renderSub("enum-values", { items }));
     }
+    if (defSchema.pattern) {
+      content.push(
+        renderSub("callout-warning", {
+          label: "Pattern",
+          message: `Values must match <ds-code inline>${esc(defSchema.pattern)}</ds-code>.`,
+        }),
+      );
+    }
     return renderSub("def-section", {
       name: esc(defName),
-      anchor: hid,
+      anchor,
       description_attr: defSchema.description
         ? ` description="${esc(defSchema.description)}"`
         : "",
       type_attr: defSchema.type ? ` type="${esc(defSchema.type)}"` : "",
+      source_attr: sourceAttr,
+      layout_attr: layoutAttr,
+      eyebrow_attr: eyebrowAttr,
       content: content.join("\n"),
+      example,
     });
   }
 
@@ -248,15 +755,12 @@ function renderDefinition(defName, defSchema, exampleData) {
     const items = [];
     for (const alt of defSchema.oneOf) {
       if (alt.$ref) {
-        const refName = linkToRef(alt.$ref);
-        if (refName) {
-          const target = DEF_INDEX[refName];
-          items.push(
-            target
-              ? `<li><a href="${target.pageSlug}.html#${slug(refName)}">${esc(refName)}</a></li>`
-              : `<li><ds-code inline>${esc(refName)}</ds-code></li>`,
-          );
-        }
+        const target = DEF_INDEX[alt.$ref];
+        items.push(
+          target
+            ? `<li><a href="${target.pageSlug}.html#${target.anchor}">${esc(target.title)}</a></li>`
+            : `<li><ds-code inline>${esc(alt.$ref)}</ds-code></li>`,
+        );
       } else if (alt.type === "string") {
         items.push(
           `<li><strong>string</strong>${alt.description ? ` — ${esc(alt.description)}` : ""}</li>`,
@@ -358,36 +862,33 @@ function renderDefinition(defName, defSchema, exampleData) {
   // Cross-references: list all $ref targets in this definition
   const refs = collectRefs(defSchema);
   if (refs.length > 0) {
-    const refLinks = refs.map((refName) => {
-      const target = DEF_INDEX[refName];
+    const refLinks = refs.map((ref) => {
+      const target = DEF_INDEX[ref];
       if (target) {
-        return `<ds-type-ref href="${target.pageSlug}.html#${slug(refName)}">${esc(refName)}</ds-type-ref>`;
+        return `<ds-type-ref href="${target.pageSlug}.html#${target.anchor}">${esc(target.title)}</ds-type-ref>`;
       }
-      return `<ds-code inline>${esc(refName)}</ds-code>`;
+      return `<ds-code inline>${esc(ref)}</ds-code>`;
     });
     content.push(renderSub("cross-refs", { refs: refLinks.join(", ") }));
   }
 
-  // Example — render the matching example if one was provided
-  if (exampleData !== undefined && exampleData !== null) {
-    content.push(
-      renderSub("example", { json: esc(JSON.stringify(exampleData, null, 2)) }),
-    );
-  }
-
   return renderSub("def-section", {
     name: esc(defName),
-    anchor: hid,
+    anchor,
     description_attr: defSchema.description
       ? ` description="${esc(defSchema.description)}"`
       : "",
     type_attr: defSchema.type ? ` type="${esc(defSchema.type)}"` : "",
+    source_attr: sourceAttr,
+    layout_attr: layoutAttr,
+    eyebrow_attr: eyebrowAttr,
     content: content.join("\n"),
+    example,
   });
 }
 
 /**
- * Collect all unique $ref definition names from a schema object.
+ * Collect all unique $ref target strings from a schema object.
  */
 function collectRefs(obj, seen = new Set()) {
   if (Array.isArray(obj)) {
@@ -395,8 +896,7 @@ function collectRefs(obj, seen = new Set()) {
   } else if (obj !== null && typeof obj === "object") {
     for (const [key, value] of Object.entries(obj)) {
       if (key === "$ref" && typeof value === "string") {
-        const name = linkToRef(value);
-        if (name) seen.add(name);
+        seen.add(value);
       } else {
         collectRefs(value, seen);
       }
@@ -472,80 +972,57 @@ function orderDefsByReference(defs) {
   return ordered;
 }
 
-/**
- * Render a full page body for a single schema file.
- */
-/**
- * Render a schema page's header and content as separate strings — the page
- * shell (see pageHtml/main.template.html) keeps the header in its own slot
- * rather than folding it into the page's content.
- */
+// Returns the schema page's own content blocks separately (definitions,
+// defNames, baseSlug) instead of one flattened string — the caller
+// (build()'s schema-page assembly) drops each into the combined Schema
+// page, grouped by file, with its own group heading between files from a
+// different schema/ subdirectory.
 function renderSchemaPage(page) {
-  const parts = [];
   const defs = page.data.$defs || {};
   const defNames = orderDefsByReference(defs);
-  const examples = page.examples || {};
 
-  const relPath = page.group ? `${page.group}/${page.filename}` : page.filename;
-  const header = renderSub("header", {
-    title: esc(page.title),
-    description_attr: page.data.description
-      ? ` description="${esc(page.data.description)}"`
-      : "",
-    source_attr: ` source="${esc(relPath)}"`,
-    badge: "",
-  });
-
-  // The JSON view is a fixed-position toggle (see json-view.js), so its
-  // place in the content flow doesn't affect where it renders — pushed
-  // first just so it isn't lost if an early return below skips the rest.
-  parts.push(
-    renderSub("json-view", {
-      label: esc(relPath),
-      json: esc(JSON.stringify(page.data, null, 2)),
-    }),
-  );
-
-  // Always render top-level properties when they exist (ex: the root schema
-  // has both its own properties AND $defs like entityGroup)
-  if (page.data.properties) {
-    parts.push(renderSub("root-properties-heading", {}));
-    parts.push(renderPropertyTable(page.data));
-  }
+  const relPath = page.group && page.group !== "root" ? `${page.group}/${page.filename}` : page.filename;
+  // Matches render-prop-table.js's buildDefIndex() exactly - the root
+  // definition's own anchor is the file's baseSlug; a local $def's anchor
+  // is baseSlug-defNameSlug. Both need to agree, or a cross-reference
+  // built from DEF_INDEX would land somewhere this page didn't actually
+  // anchor.
+  const baseName = page.filename.replace(/\.schema\.yaml$/, "");
+  const baseSlug = page.group === "root" ? baseName : `${page.group}-${baseName}`;
+  // The page-level "Base"/"Common"/"Metadata"/"Entries"/"Sections" group
+  // headings are gone (see build()'s schema-page assembly) - this is
+  // their replacement, one directory label per definition instead of one
+  // heading per group. `root` (base.schema.yaml) has no real subdirectory
+  // of its own, so it gets no eyebrow rather than a made-up "base/".
+  const eyebrow = page.group && page.group !== "root" ? `${page.group}/` : "";
 
   if (defNames.length === 0) {
-    // Root-only schemas (no $defs) can still ship an example. By convention
-    // the entire example file is treated as one root-level example document.
-    if (page.examples !== null && page.examples !== undefined) {
-      parts.push(
-        renderSub("example", {
-          json: esc(JSON.stringify(page.examples, null, 2)),
-        }),
-      );
-    }
-    return { header, content: parts.join("\n"), defNames };
+    // Root-only schemas (no $defs). Every file currently has at least one
+    // $defs entry - its own resolved root schema, added in discoverPages()
+    // - so this branch doesn't fire today. Kept for a schema file that
+    // genuinely has none.
+    return { definitions: "", defNames, baseSlug };
   }
 
-  // Definition index (if more than one definition)
-  if (defNames.length > 1) {
-    const items = defNames
-      .map(
-        (defName) =>
-          `<li><a href="#${slug(defName)}"><ds-code inline>${esc(defName)}</ds-code></a></li>`,
-      )
-      .join("\n");
-    parts.push(renderSub("def-index", { count: defNames.length, items }));
-  }
+  // Render each definition with its curated example (if one exists)
+  const definitions = defNames
+    .map((defName) => {
+      const isRoot = defName === page.title;
+      const anchor = isRoot ? baseSlug : `${baseSlug}-${slug(defName)}`;
+      // CURATED_EXAMPLES is keyed by the exact same anchor every definition
+      // (root or a local $def) already renders under, so every def - not
+      // just a file's own root - can carry its own curated example.
+      const curated = CURATED_EXAMPLES[anchor];
+      return renderDefinition(defName, defs[defName], {
+        anchor,
+        source: relPath,
+        exampleYaml: curated ? curated.yaml : undefined,
+        eyebrow,
+      });
+    })
+    .join("\n");
 
-  // Render each definition with its matching example (if any)
-  for (const defName of defNames) {
-    // The example file can have the defName as a key with an example value
-    const exampleData =
-      examples[defName] !== undefined ? examples[defName] : null;
-    parts.push(renderDefinition(defName, defs[defName], exampleData));
-  }
-
-  return { header, content: parts.join("\n"), defNames };
+  return { definitions, defNames, baseSlug };
 }
 
 // ---------------------------------------------------------------------------
@@ -579,6 +1056,9 @@ function renderDefinitionMarkdown(defName, defSchema, exampleData) {
       for (const val of defSchema.enum) lines.push(`- \`${val}\``);
       lines.push("");
     }
+    if (defSchema.pattern) {
+      lines.push(`**Pattern:** \`${defSchema.pattern}\``, "");
+    }
     return lines.join("\n");
   }
 
@@ -587,15 +1067,12 @@ function renderDefinitionMarkdown(defName, defSchema, exampleData) {
     lines.push("One of:", "");
     for (const alt of defSchema.oneOf) {
       if (alt.$ref) {
-        const refName = linkToRef(alt.$ref);
-        if (refName) {
-          const target = DEF_INDEX[refName];
-          lines.push(
-            target
-              ? `- [${refName}](${target.pageSlug}.md#${slug(refName)})`
-              : `- \`${refName}\``,
-          );
-        }
+        const target = DEF_INDEX[alt.$ref];
+        lines.push(
+          target
+            ? `- [${target.title}](${target.pageSlug}.md#${target.anchor})`
+            : `- \`${alt.$ref}\``,
+        );
       } else if (alt.type === "string") {
         lines.push(`- **string**${alt.description ? ` — ${alt.description}` : ""}`);
       } else if (alt.type === "object") {
@@ -678,11 +1155,11 @@ function renderDefinitionMarkdown(defName, defSchema, exampleData) {
   // Cross-references
   const refs = collectRefs(defSchema);
   if (refs.length > 0) {
-    const refLinks = refs.map((refName) => {
-      const target = DEF_INDEX[refName];
+    const refLinks = refs.map((ref) => {
+      const target = DEF_INDEX[ref];
       return target
-        ? `[${refName}](${target.pageSlug}.md#${slug(refName)})`
-        : `\`${refName}\``;
+        ? `[${target.title}](${target.pageSlug}.md#${target.anchor})`
+        : `\`${ref}\``;
     });
     lines.push(`**References:** ${refLinks.join(", ")}`, "");
   }
@@ -705,25 +1182,18 @@ function renderDefinitionMarkdown(defName, defSchema, exampleData) {
 /**
  * Markdown counterpart of renderSchemaPage() for a whole schema file —
  * title, description, root properties (if any), each $def in reference
- * order, and a trailing fenced JSON block with the full source (parity with
- * the inline <ds-json-view> the HTML page carries).
+ * order, and a trailing fenced YAML block with the full source.
  */
 function buildSchemaMarkdown(page) {
   const defs = page.data.$defs || {};
   const defNames = orderDefsByReference(defs);
   const examples = page.examples || {};
-  const relSource = page.group
-    ? `${page.group}/${page.filename}`
-    : page.filename;
+  const relSource =
+    page.group && page.group !== "root" ? `${page.group}/${page.filename}` : page.filename;
 
   const lines = [`# ${page.title}`, ""];
   if (page.data.description) lines.push(page.data.description, "");
   lines.push(`Source: \`${relSource}\``, "");
-
-  if (page.data.properties) {
-    const table = renderPropertyTableMarkdown(page.data);
-    if (table) lines.push("## Properties", "", table, "");
-  }
 
   if (defNames.length === 0) {
     // Root-only schemas (no $defs) can still ship an example — same
@@ -755,10 +1225,10 @@ function buildSchemaMarkdown(page) {
   }
 
   lines.push(
-    "## Full schema JSON",
+    "## Full schema source",
     "",
-    "```json",
-    JSON.stringify(page.data, null, 2),
+    "```yaml",
+    fs.readFileSync(page.filePath, "utf-8").trimEnd(),
     "```",
     "",
   );
@@ -769,7 +1239,7 @@ function buildSchemaMarkdown(page) {
 // ---------------------------------------------------------------------------
 // <link rel="alternate"> + JSON-LD — standards-based affordances that let a
 // generic crawler/agent discover the machine-readable forms of a page (its
-// .md mirror, and for schema pages the bundled JSON) and get structured
+// .md mirror, and for schema pages the bundled schema) and get structured
 // name/description/version metadata without parsing the visible HTML at all.
 // ---------------------------------------------------------------------------
 
@@ -779,13 +1249,13 @@ function buildAlternateLinks(activeSlug, pageType, version) {
   ];
   if (pageType === "schema") {
     links.push(
-      `  <link rel="alternate" type="application/schema+json" href="${SITE_URL}/v${esc(version)}/dsds.bundled.schema.json">`,
+      `  <link rel="alternate" type="application/schema+yaml" href="${SITE_URL}/v${esc(version)}/dsds.bundled.yaml">`,
     );
   }
   return links.join("\n");
 }
 
-function buildJsonLd({ name, description, url, version, pageType, activeSlug, defNames }) {
+function buildJsonLd({ name, description, url, version, pageType, activeSlug, defEntries }) {
   const data = {
     "@context": "https://schema.org",
     "@type": pageType === "schema" ? "APIReference" : "TechArticle",
@@ -807,16 +1277,19 @@ function buildJsonLd({ name, description, url, version, pageType, activeSlug, de
   // Schema pages are generated straight from one $defs entry (or more) in
   // the bundled schema — subjectOf points at that source data.
   if (pageType === "schema") {
-    data.subjectOf = `${SITE_URL}/v${version}/dsds.bundled.schema.json`;
+    data.subjectOf = `${SITE_URL}/v${version}/dsds.bundled.yaml`;
   }
   // hasPart — the page's own definition sections, so a consumer that only
   // reads JSON-LD still sees the page isn't a single flat document (mirrors
-  // the def-index the HTML/markdown both already show).
-  if (defNames && defNames.length) {
-    data.hasPart = defNames.map((defName) => ({
+  // the def-index the HTML/markdown both already show). Anchors come from
+  // the caller (already matching buildDefIndex()'s scheme) rather than a
+  // bare slug(name) here - a nested $def's real anchor is baseSlug-prefixed,
+  // not just its own name, now that every definition lives on one page.
+  if (defEntries && defEntries.length) {
+    data.hasPart = defEntries.map((entry) => ({
       "@type": "DefinedTerm",
-      name: defName,
-      url: `${url}#${slug(defName)}`,
+      name: entry.name,
+      url: `${url}#${entry.anchor}`,
     }));
   }
   // Escape "<" so a description containing "</script>" can't break out of
@@ -832,18 +1305,13 @@ function buildJsonLd({ name, description, url, version, pageType, activeSlug, de
 function pageHtml(
   title,
   activeSlug,
-  headerHtml,
-  contentHtml,
+  mainHtml,
   pages,
-  layout,
   version,
   description,
   pageType = "guide",
-  defNames,
+  defEntries,
 ) {
-  const layoutCls = layout === "full" ? " content--full" : "";
-  const contentCls = "content" + layoutCls;
-
   // Derive the spec version from the schema if the caller didn't pass one
   // explicitly. This keeps every `DSDS <v>` string in the rendered HTML
   // tied to dsds.schema.json#/properties/dsdsVersion/const — the same
@@ -868,7 +1336,10 @@ function pageHtml(
   // Each top-level section of the page (<head>, skip link, main content
   // area) is its own subtemplate, so the page shell below is just the
   // order they're assembled in — reorder or restructure a section by
-  // editing its file, not by hunting through the whole page shell.
+  // editing its file, not by hunting through the whole page shell. The
+  // main content area itself is built by the caller (renderMainGuide()/
+  // renderMainSchema() below), since its own structure is type-specific -
+  // this shell doesn't need to know or care which type it's wrapping.
   const head = renderSub("head", {
     title: esc(fullTitle),
     description: esc(desc),
@@ -882,22 +1353,52 @@ function pageHtml(
       version: v,
       pageType,
       activeSlug,
-      defNames,
+      defEntries,
     }),
   });
   const skipLink = renderSub("skip-link", {});
-  const main = renderSub("main", {
-    content_class: contentCls,
-    header: headerHtml,
-    content: contentHtml,
-    back_to_top: renderSub("back-to-top", {}),
-  });
 
   return renderTemplate(PAGE_TEMPLATE_PATH, {
     head,
     skip_link: skipLink,
     nav: buildSpecNav(activeSlug, pages, v),
-    main,
+    main: mainHtml,
+  });
+}
+
+// content--full removes the reading-width cap some pages want (ex: a wide
+// property table). Shared by both page types below since either could
+// need it in principle, even though only guide pages use it today.
+function contentClassFor(layout) {
+  return "content" + (layout === "full" ? " content--full" : "");
+}
+
+// The "plain content" page type (site/templates/subtemplates/
+// main-guide.template.html) - a header plus one block of already-rendered
+// body content (compiled MDX), nothing else structural.
+function renderMainGuide({ header, content, layout }) {
+  return renderSub("main-guide", {
+    content_class: contentClassFor(layout),
+    header,
+    content,
+    back_to_top: renderSub("back-to-top", {}),
+  });
+}
+
+// The schema-docs page type (site/templates/subtemplates/
+// main-schema.template.html) - a header, then the definitions themselves
+// (each carrying its own source file attribution inline via def-section.js's
+// source attribute - a single page-level "view raw source" toggle stopped
+// making sense once every schema file's definitions moved onto one page
+// instead of their own).
+// Full-width (content--full), not the shared reading-width cap - the
+// side-by-side def/example columns need the room.
+function renderMainSchema({ header, definitions }) {
+  return renderSub("main-schema", {
+    content_class: contentClassFor("full"),
+    header,
+    definitions,
+    back_to_top: renderSub("back-to-top", {}),
   });
 }
 
@@ -951,15 +1452,14 @@ function formatLlmsEntry(entry) {
 }
 
 function buildLlmsTxt(entries, version) {
+  // Schema is just one more top-level page now (TOP_LINKS' last entry),
+  // grouped and ordered here the same as Overview/Quick start/Extending -
+  // no separate per-schema-group section anymore, since there's no
+  // per-file page left to group.
   const guideOrder = TOP_LINKS.map((l) => l.slug);
   const guides = entries
     .filter((e) => e.group === "Guides")
     .sort((a, b) => guideOrder.indexOf(a.slug) - guideOrder.indexOf(b.slug));
-
-  const schemaGroups = DIR_GROUPS.map((g) => ({
-    label: g.label,
-    items: entries.filter((e) => e.group === g.label),
-  })).filter((g) => g.items.length);
 
   const lines = [];
   lines.push(`# Design System Doc Spec (DSDS)`);
@@ -970,10 +1470,10 @@ function buildLlmsTxt(entries, version) {
     "This site documents DSDS, a versioned JSON Schema. Every page below " +
       "has an HTML version (for people) and a plain-markdown mirror at the " +
       "same path with a `.md` extension (e.g. `/quickstart.md`, " +
-      "`/common-criterion.md`) — the full content as text, no HTML/JS to " +
-      "parse. Schema pages' markdown includes every field name, type, and " +
-      "requiredness plus the full schema JSON; the bundled schema below is " +
-      "the single-file version of the same data.",
+      "`/schema.md`) — the full content as text, no HTML/JS to parse. The " +
+      "Schema page's markdown includes every definition's field names, " +
+      "types, and requiredness; the bundled schema below is the " +
+      "single-file version of the same data.",
   );
   lines.push("");
   lines.push("## Machine-readable schema");
@@ -982,7 +1482,7 @@ function buildLlmsTxt(entries, version) {
     `- [manifest.json](${SITE_URL}/manifest.json): the typed machine index — every entity kind, the block kinds it accepts, and links to its page/markdown/schema/example. Start here.`,
   );
   lines.push(
-    `- [Bundled schema, v${version}](${SITE_URL}/v${version}/dsds.bundled.schema.json): every definition in one JSON file`,
+    `- [Bundled schema, v${version}](${SITE_URL}/v${version}/dsds.bundled.yaml): every definition in one file`,
   );
   lines.push(
     `- [llms-full.txt](${SITE_URL}/llms-full.txt): every guide's full text plus the bundled schema, in one file for one-request ingestion`,
@@ -1000,14 +1500,6 @@ function buildLlmsTxt(entries, version) {
     lines.push(formatLlmsEntry(g));
   }
   lines.push("");
-  for (const group of schemaGroups) {
-    lines.push(`## ${group.label}`);
-    lines.push("");
-    for (const item of group.items) {
-      lines.push(formatLlmsEntry(item));
-    }
-    lines.push("");
-  }
   return lines.join("\n").trimEnd() + "\n";
 }
 
@@ -1051,74 +1543,51 @@ function titleCaseKind(kind) {
 /**
  * manifest.json — the typed machine index; the first file an agent should
  * fetch. Every field is derived from data the build already has in memory
- * (discoverPages()'s `pages`, the scoped-union $defs in
- * document-blocks.schema.json, and the standalone example files already in
- * spec/examples/minimal/) — nothing here is hand-authored, so it can't drift
- * from the schema.
+ * (discoverPages()'s `pages`) — nothing here is hand-authored, so it can't
+ * drift from the schema.
  *
- * `acceptsBlocks` is the flattened entity→block-kind relationship graph:
- * each entity $def's `documentBlocks.items.$ref` points at one of
- * document-blocks.schema.json's scoped unions (e.g. `componentDocumentBlock`),
- * whose own `kind` property is a plain enum of every block kind that entity
- * accepts — no allOf/if-then walking needed, just one property read.
+ * Unlike the old spec/schema/ (a fixed entity→block-kind acceptance graph,
+ * since each entity kind only accepted a scoped union of block kinds), the
+ * new schema has no placement gate: any entry kind may use any section
+ * kind (see docs-new-ported architecture notes on sections/section.schema.yaml).
+ * So this indexes the two open vocabularies directly instead — the 4
+ * well-known entry kinds (`entries/*.schema.yaml`, plus the generic `entry`
+ * kind, which has no dedicated file) and the 3 well-known section kinds
+ * (`sections/*.schema.yaml`, plus the generic `section` kind) — rather than
+ * which kind accepts which.
  *
- * Returns `{ manifestJson, entityDescriptors }`: the manifest itself, plus
- * one small standalone descriptor per entity kind — the same data as that
- * entity's manifest entry, addressable at its own canonical `@id`
- * (/id/entity/<kind>) instead of only reachable inside the array. Same
+ * Returns `{ manifestJson, entryDescriptors }`: the manifest itself, plus
+ * one small standalone descriptor per entry kind — the same data as that
+ * kind's manifest entry, addressable at its own canonical `@id`
+ * (/id/entry/<kind>) instead of only reachable inside the array. Same
  * source of truth, a second, independently-fetchable serialization of it.
  */
 function buildManifest(pages, version) {
-  const docBlocksPage = pages.find(
-    (p) => p.group === "document-blocks" && p.filename === "document-blocks.schema.json",
-  );
-  const scopedUnions = (docBlocksPage && docBlocksPage.data.$defs) || {};
-  const blockKindsSet = new Set();
-  const entities = [];
+  const entryPages = pages.filter((p) => p.group === "entries");
+  const sectionPages = pages.filter((p) => p.group === "sections");
 
-  for (const page of pages) {
-    if (page.group !== "entities") continue;
-    for (const [defName, defSchema] of Object.entries(page.data.$defs || {})) {
-      const kind =
-        defSchema.properties &&
-        defSchema.properties.kind &&
-        defSchema.properties.kind.const;
-      if (!kind) continue; // not every $def in an entities/ file is itself an entity (e.g. tokenGroup's nested shapes)
+  // Every entry kind's own definition now lives at an anchor on the one
+  // Schema page, not its own page - anchor = baseSlug, matching
+  // render-prop-table.js's buildDefIndex() (entries-component, etc.).
+  const entries = entryPages.map((page) => {
+    const kind = page.filename.replace(/\.schema\.yaml$/, "");
+    const anchor = `entries-${kind}`;
+    return {
+      kind,
+      page: `${SITE_URL}/schema#${anchor}`,
+      markdown: `${SITE_URL}/schema.md#${anchor}`,
+      schema: `${SITE_URL}/v${version}/dsds.bundled.yaml`,
+    };
+  });
+  entries.sort((a, b) => a.kind.localeCompare(b.kind));
 
-      let acceptsBlocks = [];
-      const itemsRef =
-        defSchema.properties.documentBlocks &&
-        defSchema.properties.documentBlocks.items &&
-        defSchema.properties.documentBlocks.items.$ref;
-      if (itemsRef) {
-        const unionDefName = linkToRef(itemsRef);
-        const union = scopedUnions[unionDefName];
-        const kindEnum =
-          union && union.properties && union.properties.kind && union.properties.kind.enum;
-        if (kindEnum) acceptsBlocks = kindEnum;
-      }
-      acceptsBlocks.forEach((k) => blockKindsSet.add(k));
-
-      const examplePath = path.join(EXAMPLES_DIR, "minimal", `${kind}.json`);
-
-      entities.push({
-        kind,
-        page: `${SITE_URL}/${page.slug}`,
-        markdown: `${SITE_URL}/${page.slug}.md`,
-        schema: `${SITE_URL}/v${version}/dsds.bundled.schema.json`,
-        example: fs.existsSync(examplePath)
-          ? `${SITE_URL}/examples/${kind}.json`
-          : null,
-        acceptsBlocks,
-      });
-    }
-  }
-
-  entities.sort((a, b) => a.kind.localeCompare(b.kind));
+  const sectionKinds = sectionPages
+    .map((page) => page.filename.replace(/\.schema\.yaml$/, ""))
+    .sort();
 
   const manifest = {
-    dsdsVersion: version,
-    bundledSchema: `${SITE_URL}/v${version}/dsds.bundled.schema.json`,
+    schemaVersion: version,
+    bundledSchema: `${SITE_URL}/v${version}/dsds.bundled.yaml`,
     mcp: "https://www.npmjs.com/package/dsds-mcp",
     indexes: {
       llms: `${SITE_URL}/llms.txt`,
@@ -1126,32 +1595,36 @@ function buildManifest(pages, version) {
       agents: `${SITE_URL}/AGENTS.md`,
       sitemap: `${SITE_URL}/sitemap.xml`,
     },
-    blockKinds: [...blockKindsSet].sort(),
-    entities,
+    // Both vocabularies are open — a namespaced custom kind (ex:
+    // "acme.icon-library") is always valid alongside these well-known ones.
+    // The generic "entry"/"section" fallback kinds are already included
+    // here: entries/entry.schema.yaml and sections/section.schema.yaml are
+    // real files in their own right, not just a conceptual fallback.
+    entryKinds: entries.map((e) => e.kind).sort(),
+    sectionKinds: [...sectionKinds].sort(),
+    entries,
   };
 
-  const entityDescriptors = entities.map((e) => ({
+  const entryDescriptors = entries.map((e) => ({
     kind: e.kind,
     json:
       JSON.stringify(
         {
           "@context": "https://schema.org",
-          "@id": `${SITE_URL}/id/entity/${e.kind}`,
+          "@id": `${SITE_URL}/id/entry/${e.kind}`,
           "@type": "APIReference",
           identifier: e.kind,
           name: titleCaseKind(e.kind),
           page: e.page,
           markdown: e.markdown,
           schema: e.schema,
-          example: e.example,
-          acceptsBlocks: e.acceptsBlocks,
         },
         null,
         2,
       ) + "\n",
   }));
 
-  return { manifestJson: JSON.stringify(manifest, null, 2) + "\n", entityDescriptors };
+  return { manifestJson: JSON.stringify(manifest, null, 2) + "\n", entryDescriptors };
 }
 
 // ---------------------------------------------------------------------------
@@ -1182,18 +1655,19 @@ async function build() {
     fs.mkdirSync(DIST_DIR, { recursive: true });
   }
 
-  // Discover all schema pages (with examples attached)
-  const pages = discoverPages();
-  const withExamples = pages.filter((p) => p.examples !== null).length;
-  console.log(
-    `  Discovered ${pages.length} schema files across ${DIR_GROUPS.length} directories.`,
-  );
-  console.log(`  Found ${withExamples} matching example files.\n`);
-
-  // Build the global definition index for cross-references
-  DEF_INDEX = buildDefIndex(pages);
+  // Build the global definition index for cross-references first — pages
+  // are resolved (allOf flattened) against schemaById, which the index
+  // build already loaded every schema/*.schema.yaml file into.
+  const { schemaById, index } = buildDefIndexShared({ schemaDir: SCHEMA_DIR });
+  DEF_INDEX = index;
   console.log(
     `  Indexed ${Object.keys(DEF_INDEX).length} definitions for cross-referencing.\n`,
+  );
+
+  // Discover all schema pages
+  const pages = discoverPages(schemaById);
+  console.log(
+    `  Discovered ${pages.length} schema files across ${DIR_GROUPS.length + 1} directories (including the schema root).\n`,
   );
 
   // Copy tokens
@@ -1233,14 +1707,10 @@ async function build() {
     path.join(DIST_DIR, "robots.txt"),
   );
 
-  // Standalone, addressable entity examples — the same bare, complete
-  // documents validate.js already validates (BARE_ENTITY_DIRS), exposed at
-  // /examples/<kind>.json and referenced by manifest.json below.
-  fs.cpSync(
-    path.join(EXAMPLES_DIR, "minimal"),
-    path.join(DIST_DIR, "examples"),
-    { recursive: true },
-  );
+  // The whole examples/ tree, exposed at /examples/ — the same documents
+  // scripts/validate.js validates on every build, so nothing served here
+  // can drift from the schema.
+  fs.cpSync(EXAMPLES_DIR, path.join(DIST_DIR, "examples"), { recursive: true });
 
   // Bundle web components into a single IIFE for file:// compatibility.
   bundleComponents(SITE_DIR, DIST_DIR);
@@ -1254,7 +1724,7 @@ async function build() {
   const guideMarkdownDocs = [];
 
   // ── MDX content pages ─────────────────────────────────────────────────
-  const { compileAllMdx } = await loadMdxCompiler();
+  const { compileAllMdx, compileMdxFile } = await loadMdxCompiler();
   console.log("  Compiling MDX content…");
   const mdxPages = await compileAllMdx();
   for (const mdxPage of mdxPages) {
@@ -1282,13 +1752,12 @@ async function build() {
       badge: badge ? `<ds-badge>${esc(badge)}</ds-badge>` : "",
     });
 
+    const mainHtml = renderMainGuide({ header, content: body, layout });
     const html = pageHtml(
       title,
       slug,
-      header,
-      body,
+      mainHtml,
       pages,
-      layout,
       undefined,
       mdxPage.meta.description,
     );
@@ -1331,52 +1800,107 @@ async function build() {
   }
   console.log(`  ${mdxPages.length} MDX page(s) compiled.\n`);
 
-  // ── Schema-driven pages ───────────────────────────────────────────────
+  // ── Schema page — one page, every definition ────────────────────────────
+  //
+  // Used to be one HTML/markdown page per schema file (23 of them). Now
+  // every file's def-section(s) render onto one combined "schema" page, in
+  // the same order the old nav's groups used (Base, Common, Metadata,
+  // Entries, Sections) — `pages` is already in that order (see
+  // discoverPages()). The HTML page no longer marks a group boundary with
+  // its own heading (36 definitions under 5 headings, vs. one small
+  // directory eyebrow per definition - see renderSchemaPage()'s own
+  // `eyebrow` and def-section.js) - the markdown mirror keeps its `##`
+  // group headings, though, since flat text has no per-definition eyebrow
+  // equivalent to fall back on.
+  const GROUP_LABELS = { root: "Base", common: "Common", metadata: "Metadata", entries: "Entries", sections: "Sections" };
+  let schemaDefinitions = [];
+  let schemaMarkdownParts = [];
+  let schemaDefEntries = []; // {name, anchor} - anchor already matches buildDefIndex()'s scheme
+  let lastGroup = null;
+
+  // Intro, before every definition - hand-authored MDX (site/content/
+  // fragments/), not schema-driven, so it's compiled through the same
+  // pipeline as the narrative guide pages above. Lives in fragments/
+  // specifically so compileAllMdx()'s directory scan skips it - this isn't
+  // a standalone page with its own nav entry, sitemap row, or URL, just a
+  // block of content spliced onto the top of the Schema page. Pushed
+  // before the per-page loop below so it lands first in both
+  // schemaDefinitions and schemaMarkdownParts.
+  const introFragmentPath = path.join(
+    CONTENT_DIR,
+    "fragments",
+    "schema-intro.mdx",
+  );
+  const introFragment = await compileMdxFile(introFragmentPath);
+  schemaDefinitions.push(introFragment.html);
+  schemaMarkdownParts.push(fs.readFileSync(introFragmentPath, "utf-8").trim());
+
   for (const page of pages) {
-    const { header, content, defNames } = renderSchemaPage(page);
-    const html = pageHtml(
-      page.title,
-      page.slug,
-      header,
-      content,
-      pages,
-      null,
-      undefined,
-      page.data.description,
-      "schema",
-      defNames,
-    );
-
-    const outPath = path.join(DIST_DIR, `${page.slug}.html`);
-    fs.writeFileSync(outPath, html, "utf-8");
-
-    // Markdown mirror — see "Markdown mirror for a single schema file" above.
-    fs.writeFileSync(
-      path.join(DIST_DIR, `${page.slug}.md`),
-      buildSchemaMarkdown(page),
-      "utf-8",
-    );
-
-    const relSource = page.group
-      ? `${page.group}/${page.filename}`
-      : page.filename;
-    console.log(`  ✓  site/dist/${page.slug}.html  ← ${relSource}`);
-
-    sitemapEntries.push({
-      slug: page.slug,
-      title: page.title,
-      description: page.data.description || DEFAULT_DESCRIPTION,
-      group: page.groupLabel,
-      hasMarkdown: true,
-      sourcePath: page.filePath,
-    });
+    const { definitions, defNames, baseSlug } = renderSchemaPage(page);
+    if (page.group !== lastGroup) {
+      lastGroup = page.group;
+      const label = GROUP_LABELS[page.group] || page.group;
+      schemaMarkdownParts.push(`## ${label}`, "");
+    }
+    schemaDefinitions.push(definitions);
+    schemaMarkdownParts.push(buildSchemaMarkdown(page));
+    // Used by buildJsonLd()'s hasPart - reuses the same anchor scheme
+    // renderSchemaPage() and buildDefIndex() (render-prop-table.js) already
+    // agree on.
+    for (const defName of defNames) {
+      const anchor = defName === page.title ? baseSlug : `${baseSlug}-${slug(defName)}`;
+      schemaDefEntries.push({ name: defName, anchor });
+    }
   }
+
+  const schemaHeader = renderSub("header", {
+    title: "Schema",
+    description_attr: ` description="${esc("Every DSDS schema definition, on one page: the base document, every entry kind, every section kind, and every shared common shape - each with a real, working example next to it.")}"`,
+    source_attr: "",
+    badge: "",
+  });
+  const schemaMainHtml = renderMainSchema({
+    header: schemaHeader,
+    definitions: schemaDefinitions.join("\n"),
+  });
+  const schemaHtml = pageHtml(
+    "Schema",
+    "schema",
+    schemaMainHtml,
+    pages,
+    undefined,
+    "Every DSDS schema definition, on one page, each with a real example next to it.",
+    "schema",
+    schemaDefEntries,
+  );
+  fs.writeFileSync(path.join(DIST_DIR, "schema.html"), schemaHtml, "utf-8");
+  fs.writeFileSync(
+    path.join(DIST_DIR, "schema.md"),
+    `# Schema\n\n${schemaMarkdownParts.join("\n")}`,
+    "utf-8",
+  );
+  console.log(`  ✓  site/dist/schema.html  ← ${pages.length} schema files (${schemaDefEntries.length} definitions)`);
+
+  sitemapEntries.push({
+    slug: "schema",
+    title: "Schema",
+    description: "Every DSDS schema definition, on one page, each with a real example next to it.",
+    group: "Guides",
+    hasMarkdown: true,
+    sourcePath: path.join(SCHEMA_DIR, "dsds.bundled.yaml"),
+  });
 
   // ── Versioned bundled schema ──────────────────────────────────────
   //
   // Versioned dist directories (site/dist/v<n>/) hold the bundled schema
   // at the URL it's published at — e.g., site/dist/v0.1/dsds.bundled.schema.json
   // is served at https://designsystemdocspec.org/v0.1/dsds.bundled.schema.json.
+  // Older versions published JSON and stay JSON, frozen, under their own
+  // v<n>/ directory forever - the bundle is YAML starting with this version
+  // (see scripts/bundle.js's own comment for why). This block doesn't
+  // hardcode either extension: it copies whatever file scripts/bundle.js
+  // actually wrote, under its own real name, so it never needs to change
+  // again the next time the bundle's format does.
   //
   // The versioned bundle is the working artifact for the CURRENT version.
   // The build ALWAYS refreshes it so a rebuild is atomic — the published
@@ -1386,14 +1910,14 @@ async function build() {
   // clean step preserves every v*/ directory. Immutability of a *released*
   // version is enforced at release/deploy time (git tag + atomic deploy),
   // not by skipping the write — skipping is what let the site go stale.
-  const bundledSchemaPath = path.join(SCHEMA_DIR, "dsds.bundled.schema.json");
+  const BUNDLE_FILENAME = "dsds.bundled.yaml";
+  const bundledSchemaPath = path.join(SCHEMA_DIR, BUNDLE_FILENAME);
   if (fs.existsSync(bundledSchemaPath)) {
-    const bundledSchema = JSON.parse(fs.readFileSync(bundledSchemaPath, "utf-8"));
-    const version = bundledSchema.properties?.dsdsVersion?.const;
+    const version = readSpecVersion();
     if (version) {
       const versionDir = path.join(DIST_DIR, `v${version}`);
-      const versionedBundle = path.join(versionDir, "dsds.bundled.schema.json");
-      const relTarget = `site/dist/v${version}/dsds.bundled.schema.json`;
+      const versionedBundle = path.join(versionDir, BUNDLE_FILENAME);
+      const relTarget = `site/dist/v${version}/${BUNDLE_FILENAME}`;
       const changed =
         !fs.existsSync(versionedBundle) ||
         fs.readFileSync(versionedBundle, "utf-8") !==
@@ -1401,23 +1925,23 @@ async function build() {
       fs.mkdirSync(versionDir, { recursive: true });
       fs.copyFileSync(bundledSchemaPath, versionedBundle);
       console.log(
-        `  ✓  ${relTarget}  ← spec/schema/dsds.bundled.schema.json${changed ? " (refreshed)" : ""}\n`,
+        `  ✓  ${relTarget}  ← schema/${BUNDLE_FILENAME}${changed ? " (refreshed)" : ""}\n`,
       );
 
       // ── Versioned split schema files ────────────────────────────────
       //
-      // Every split schema file's `$id` (ex: "https://.../v0.15.2/common/
-      // criterion.schema.json") is a promise that the file is servable at
-      // that exact URL. Mirror the whole spec/schema/ tree — root file and
-      // every group subdirectory — into site/dist/v<version>/ so each $id
+      // Every split schema file's `$id` (ex: "https://.../v0.20.0/common/
+      // ref.schema.yaml") is a promise that the file is servable at that
+      // exact URL. Mirror the whole schema/ tree — root files and every
+      // group subdirectory — into site/dist/v<version>/ so each $id
       // resolves instead of 404ing. The bundle above is copied separately
       // since it isn't part of this walk (it has no group subdirectory).
-      const splitSchemaFiles = [path.join(SCHEMA_DIR, "dsds.schema.json")];
+      const splitSchemaFiles = ROOT_FILES.map((f) => path.join(SCHEMA_DIR, f));
       for (const group of DIR_GROUPS) {
         const dirPath = path.join(SCHEMA_DIR, group.dir);
         if (!fs.existsSync(dirPath)) continue;
         for (const filename of fs.readdirSync(dirPath)) {
-          if (filename.endsWith(".schema.json")) {
+          if (filename.endsWith(".schema.yaml")) {
             splitSchemaFiles.push(path.join(dirPath, filename));
           }
         }
@@ -1429,7 +1953,7 @@ async function build() {
         fs.copyFileSync(srcPath, destPath);
       }
       console.log(
-        `  ✓  site/dist/v${version}/{${DIR_GROUPS.map((g) => g.dir).join(",")}}/*.schema.json  ← spec/schema/ (${splitSchemaFiles.length} files mirrored)\n`,
+        `  ✓  site/dist/v${version}/{${DIR_GROUPS.map((g) => g.dir).join(",")}}/*.schema.yaml  ← schema/ (${splitSchemaFiles.length} files mirrored)\n`,
       );
     }
   }
@@ -1448,7 +1972,7 @@ async function build() {
   );
 
   const bundledSchemaForFullTxt = fs.existsSync(bundledSchemaPath)
-    ? JSON.parse(fs.readFileSync(bundledSchemaPath, "utf-8"))
+    ? loadSchemaYaml(bundledSchemaPath)
     : {};
   fs.writeFileSync(
     path.join(DIST_DIR, "llms-full.txt"),
@@ -1462,21 +1986,21 @@ async function build() {
     path.join(DIST_DIR, "AGENTS.md"),
   );
 
-  const { manifestJson, entityDescriptors } = buildManifest(pages, version);
+  const { manifestJson, entryDescriptors } = buildManifest(pages, version);
   fs.writeFileSync(path.join(DIST_DIR, "manifest.json"), manifestJson, "utf-8");
 
-  // Standalone canonical descriptors — /id/entity/<kind>.json — the same
-  // data as each entity's manifest.json entry, independently addressable by
-  // its own @id instead of only reachable inside the array.
-  const entityIdDir = path.join(DIST_DIR, "id", "entity");
-  fs.mkdirSync(entityIdDir, { recursive: true });
-  for (const { kind, json } of entityDescriptors) {
-    fs.writeFileSync(path.join(entityIdDir, `${kind}.json`), json, "utf-8");
+  // Standalone canonical descriptors — /id/entry/<kind>.json — the same
+  // data as each entry kind's manifest.json entry, independently
+  // addressable by its own @id instead of only reachable inside the array.
+  const entryIdDir = path.join(DIST_DIR, "id", "entry");
+  fs.mkdirSync(entryIdDir, { recursive: true });
+  for (const { kind, json } of entryDescriptors) {
+    fs.writeFileSync(path.join(entryIdDir, `${kind}.json`), json, "utf-8");
   }
 
   console.log(
     `  ✓  site/dist/sitemap.xml, site/dist/llms.txt, site/dist/llms-full.txt, ` +
-      `site/dist/AGENTS.md, site/dist/manifest.json, site/dist/id/entity/*.json  ← ${sitemapEntries.length} pages indexed\n`,
+      `site/dist/AGENTS.md, site/dist/manifest.json, site/dist/id/entry/*.json  ← ${sitemapEntries.length} pages indexed\n`,
   );
 
   console.log(

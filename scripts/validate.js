@@ -1,1151 +1,1016 @@
 #!/usr/bin/env node
-/**
- * validate.js — Validate DSDS example files against the bundled schema.
- *
- * Validates:
- *   1. All .dsds.json files in spec/examples/ (recursively) against the bundled schema
- *   2. All per-definition example files in spec/examples/{common,document-blocks,entities}/
- *      against their matching $defs in the bundled schema
- *   3. Bare entity files (e.g. spec/examples/minimal/*.json) against their
- *      entity $def, detected via the top-level `kind` property
- *
- * Usage:
- *   node scripts/validate.js
- *
- * Requires:
- *   npm install ajv ajv-formats
- */
+// Validates entry and base document YAML file(s) against the proposed
+// structure:
+//   - JSON Schema shape: each entry is checked against its own
+//     entries/<kind>.schema.yaml, falling back to the generic
+//     entry.schema.yaml for a kind with no dedicated file (either a
+//     custom kind, or the well-known generic `entry` kind, which has
+//     no fields of its own). Each section is checked against its own
+//     sections/<kind>.schema.yaml, falling back to the generic
+//     section.schema.yaml for a custom kind or the well-known generic
+//     `section` kind. Any entry kind may use any section kind - there
+//     is no placement gate.
+//   - A ref's `to` (see common/ref.schema.yaml) resolves within the
+//     document: a bare id names a real entry or shared entry, and
+//     entryId#itemId also resolves the item half. Document-wide - only
+//     checked for base documents, since a standalone entry file can't see
+//     any entry but itself. Doesn't follow `rel: file` to a sibling
+//     document - a corpus split across files needs project scope, which
+//     this validator doesn't have yet.
+// A file with a `schemaVersion` key is a base document (base.schema.yaml);
+// its inline `entries` are checked the same way a standalone entry file's
+// are - one validator, no special-casing. System-wide facts and
+// documentation live on that list's own `kind: system` entry, not on the
+// base document directly.
+"use strict";
 
 const fs = require("fs");
 const path = require("path");
-const Ajv2020 = require("ajv/dist/2020");
+const Ajv = require("ajv/dist/2020");
 const addFormats = require("ajv-formats");
+const { rootDir, schemaDir, loadYaml, walkYamlFiles, defaultTargets, findRefs, entriesIn } = require("./lib");
 
-// ---------------------------------------------------------------------------
-// Paths
-// ---------------------------------------------------------------------------
+const ajv = new Ajv({ allErrors: true, strict: false });
+addFormats(ajv);
 
-const ROOT = path.resolve(__dirname, "..");
-const BUNDLED_SCHEMA_PATH = path.join(
-  ROOT,
-  "spec/schema/dsds.bundled.schema.json",
-);
-const EXAMPLES_DIR = path.join(ROOT, "spec/examples");
-const SCHEMA_DIR = path.join(ROOT, "spec/schema");
-
-// Directories containing keyed per-definition example files ({ defName: value })
-const KEYED_EXAMPLE_DIRS = ["common", "document-blocks", "entities", "metadata"];
-
-
-// Directories containing bare entity example files ({ type: "component", ... })
-const BARE_ENTITY_DIRS = ["minimal"];
-
-// ---------------------------------------------------------------------------
-// Setup Ajv
-// ---------------------------------------------------------------------------
-
-function createValidator() {
-  const ajv = new Ajv2020({
-    allErrors: true,
-    strict: false,
-    validateFormats: true,
-  });
-  addFormats(ajv);
-  return ajv;
-}
-
-// ---------------------------------------------------------------------------
-// Friendly errors — discriminator-aware reporting
+// Stable ids for every semantic (hand-written, not pure-schema) check this
+// validator enforces - so a bug report, a fixture, or an independent
+// validator reimplementation can cite exactly which rule failed instead of
+// matching on free-text message wording. Deliberately NOT applied to pure
+// JSON Schema errors (from ajv's own `.errors`) - those are already tied to
+// the schema itself via instancePath/schemaPath, which is its own stable
+// citation. See examples/invalid/ for one fixture per id, and
+// tools/conformance-test.js for the runner that checks each fixture
+// actually trips the id it claims to.
 //
-// A `oneOf` union over 16+ block kinds makes raw Ajv output useless: one
-// typo'd `kind` yields hundreds of errors, one per branch the object failed
-// to match. Instead of dumping those, walk each error up to the nearest
-// object carrying a `kind` discriminator and report against that:
-//   - unknown kind        → "unknown kind 'x' — did you mean 'y'?"
-//   - known kind          → validate against that kind's schema only
-//   - valid in isolation  → the problem is placement (kind not allowed here)
+// The catalog itself lives in schema/conformance-rules.yaml, not here -
+// that's the single source both this lookup and the Conformance page's
+// rule list are generated from, so the two can't drift apart.
+const RULES = Object.fromEntries(
+  loadYaml(path.join(rootDir, "schema/conformance-rules.yaml")).map((rule) => [rule.name, rule.id])
+);
+
+function err(id, message) {
+  return `[${id}] ${message}`;
+}
+
+// Register every schema file under schema/ by its $id, so $refs
+// between common/, sections/, entries/, and base all resolve. Also keep the
+// raw parsed schema objects around (schemaById), so discriminator-aware
+// validation below can reach into component's own `traits.items.anyOf`
+// list instead of only having compiled validate functions to work with.
+const schemaById = new Map();
+for (const file of walkYamlFiles(schemaDir)) {
+  const schema = loadYaml(file);
+  ajv.addSchema(schema, schema.$id);
+  schemaById.set(schema.$id, schema);
+}
+
+function schemaFor(id, fallbackId, profileId) {
+  if (profileId) {
+    const profileValidate = ajv.getSchema(profileId);
+    if (profileValidate) return profileValidate;
+  }
+  return ajv.getSchema(id) || ajv.getSchema(fallbackId);
+}
+
+// Optional local profiles: a project can drop a file at
+// profiles/entries/<kind>.schema.yaml or profiles/sections/<kind>.schema.yaml
+// that narrows an existing kind (built-in or custom) by $ref-ing its real
+// schema.yaml file via allOf and adding `required`/`if`-`then` on top -
+// never a new field. See site/content/extending.mdx for the one rule
+// (a profile may narrow, must not extend) and why that's what makes this
+// safe to build on.
+//
+// Read here, and only here - profiles/ is a sibling of schema/, not
+// nested inside it, so bundle.js's own walk of schema/ never sees it and
+// a private profile can never leak into the published schema.
+//
+// A profile MUST declare its own $id, distinct from the schema it's
+// profiling: adding two schemas under the same $id crashes Ajv outright
+// (`schema with key or id "..." already exists`), which is exactly the
+// failure mode that made profiling a built-in kind look impossible before
+// this dispatch-level fix - the schema files themselves already supported
+// $ref + allOf narrowing (see B1 in dsds-0.20.0-recommendations.md); only
+// wiring a profile in *alongside* the built-in schema instead of *as* it
+// was missing.
+const PROFILES_DIR = path.join(rootDir, "profiles");
+const profileEntryIdByKind = new Map(); // kind -> profile's own $id
+const profileSectionIdByKind = new Map();
+
+function loadProfiles(subdir, targetMap) {
+  const dir = path.join(PROFILES_DIR, subdir);
+  if (!fs.existsSync(dir)) return;
+  for (const file of walkYamlFiles(dir)) {
+    const schema = loadYaml(file);
+    if (!schema.$id) {
+      throw new Error(`Profile ${path.relative(rootDir, file)} has no $id of its own.`);
+    }
+    ajv.addSchema(schema, schema.$id);
+    const kind = path.basename(file).replace(/\.schema\.yaml$/, "");
+    targetMap.set(kind, schema.$id);
+  }
+}
+loadProfiles("entries", profileEntryIdByKind);
+loadProfiles("sections", profileSectionIdByKind);
+
 // ---------------------------------------------------------------------------
-
-/** Map of kind const → $defs name, built from the bundled schema. */
-function buildKindIndex(schema) {
-  const index = {};
-  for (const [name, def] of Object.entries(schema.$defs || {})) {
-    const kindConst =
-      def && def.properties && def.properties.kind && def.properties.kind.const;
-    if (typeof kindConst === "string") index[kindConst] = name;
-  }
-  return index;
+// Project discovery: following rel: file across sibling documents
+// ---------------------------------------------------------------------------
+//
+// A large system's documentation is meant to be split across files (see
+// base.schema.yaml's own $comment), each pointing at the others via an
+// ordinary `refs` entry (rel: file). A validator handed just one of those
+// files can't tell a genuinely broken `to:` from one that resolves in a
+// sibling it hasn't read - see C1 in notes/recommendations.md. This follows
+// that same rel: file link transitively, so resolution can run against the
+// whole project instead of just the one file it was handed.
+//
+// Bounded to the directory of the file actually being validated (and its
+// subdirectories) - an href resolving outside that is never read. This is
+// a real security boundary, not just tidiness: a hosted validator fed an
+// attacker-controlled document must not follow an href like
+// `../../../etc/passwd` onto the host's own filesystem.
+//
+// LIMITATION, by design, not oversight: this only reaches a sibling at or
+// below the entry file's own directory. A split where a target lives in a
+// *parent* or cousin directory (`../shared/badge.dsds.yaml`, one level up
+// from the file that references it) won't be found, and any `to:` it
+// can't resolve there reports as a warning, not a false "confirmed
+// broken." A boundary derived by walking upward to find a `.git` or
+// `package.json` was considered and rejected: in a monorepo, `.git`
+// commonly lives well above the actual docs project, which would widen
+// the boundary to "the whole monorepo" for exactly the case this exists
+// to protect (a CI job or hosted validator checking a document it
+// doesn't fully trust). A directory-of-the-target boundary is strictly
+// safer, and deterministic - the same file gets the same result
+// regardless of what else happens to exist on disk around it - at the
+// cost of that narrower reach. An explicit `--root` flag is the right
+// way to widen it for a layout that actually needs more; not implemented
+// yet because nothing has needed it.
+function resolveHref(href, fromAbsPath) {
+  return path.resolve(path.dirname(fromAbsPath), href);
 }
 
-function getAtPointer(doc, pointer) {
-  if (!pointer) return doc;
-  let node = doc;
-  for (const raw of pointer.split("/").slice(1)) {
-    const key = raw.replace(/~1/g, "/").replace(/~0/g, "~");
-    if (node == null) return undefined;
-    node = Array.isArray(node) ? node[Number(key)] : node[key];
-  }
-  return node;
+function isWithinRoot(absPath, root) {
+  const rel = path.relative(root, absPath);
+  return rel === "" || (!rel.startsWith("..") && !path.isAbsolute(rel));
 }
 
-function editDistance(a, b) {
-  const m = Array.from({ length: a.length + 1 }, (_, i) => [i]);
-  for (let j = 1; j <= b.length; j++) m[0][j] = j;
-  for (let i = 1; i <= a.length; i++) {
-    for (let j = 1; j <= b.length; j++) {
-      m[i][j] = Math.min(
-        m[i - 1][j] + 1,
-        m[i][j - 1] + 1,
-        m[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1),
-      );
+// Returns every entry/shared entity reachable from entryAbsPath by
+// following rel: file transitively, including entryAbsPath's own, plus
+// how many *other* files were actually read (siblingCount) - a sibling
+// that doesn't exist, fails to parse, or resolves outside the root is
+// silently skipped, so the caller needs to know whether "not found" means
+// "checked and it's not there" or "nothing else was reachable at all"
+// (see validateItemRefs's scopeNote). An unresolved target after this is
+// always a warning, never a hard error - this search is inherently best-
+// effort, per the limitation above.
+function loadProject(entryAbsPath) {
+  const root = path.dirname(entryAbsPath);
+  const visited = new Map(); // absPath -> doc
+  const queue = [entryAbsPath];
+
+  while (queue.length) {
+    const absPath = queue.shift();
+    if (visited.has(absPath)) continue;
+    if (!isWithinRoot(absPath, root) || !fs.existsSync(absPath)) continue;
+    let doc;
+    try {
+      doc = loadYaml(absPath);
+    } catch (e) {
+      continue;
     }
-  }
-  return m[a.length][b.length];
-}
-
-function closestKind(kind, knownKinds) {
-  let best = null;
-  let bestDist = Infinity;
-  for (const k of knownKinds) {
-    const d = editDistance(kind, k);
-    if (d < bestDist) {
-      bestDist = d;
-      best = k;
-    }
-  }
-  // Only suggest when plausibly a typo (small edit distance).
-  return bestDist <= Math.max(2, Math.floor(kind.length / 3)) ? best : null;
-}
-
-/**
- * Translate raw Ajv errors into a short, actionable list. Returns an array
- * of "path: message" strings; empty if no kind-bearing context was found
- * (caller should fall back to raw errors).
- */
-// Shape hints for known convention traps — positions where the intuitive
-// wrong guess produces an unhelpful raw error. Each hint claims its path so
-// the generic machinery doesn't pile on.
-function shapeHints(doc, rawErrors) {
-  const hints = new Map(); // path -> message
-  for (const err of rawErrors) {
-    const p = err.instancePath || "";
-    if (/\/metadata\/status$/.test(p) && !hints.has(p)) {
-      const node = getAtPointer(doc, p);
-      if (node && typeof node === "object" && !("overall" in node)) {
-        hints.set(
-          p,
-          `${p}: status is a bare string ("stable") or an object with \`overall\` — there is no other shape`,
-        );
+    visited.set(absPath, doc);
+    for (const fileRef of doc.refs || []) {
+      if (fileRef && fileRef.rel === "file" && typeof fileRef.href === "string") {
+        queue.push(resolveHref(fileRef.href, absPath));
       }
     }
-    if (/\/tokens$/.test(p) && err.message === "must be object" && !hints.has(p)) {
-      hints.set(
-        p,
-        `${p}: \`tokens\` is a purpose-keyed map, not an array — keys say what the token controls, values name the token, e.g. { "text-color": "color-button-fg" }`,
-      );
-    }
   }
-  return hints;
-}
 
-function friendlyErrors(doc, rawErrors, schema, ajv) {
-  const kindIndex = buildKindIndex(schema);
-  const knownKinds = Object.keys(kindIndex);
-  const defValidators = {};
-  const compileDef = (name) => {
-    if (!(name in defValidators)) {
-      try {
-        defValidators[name] = ajv.compile({
-          $schema: "https://json-schema.org/draft/2020-12/schema",
-          $defs: schema.$defs,
-          ...schema.$defs[name],
-        });
-      } catch {
-        defValidators[name] = null;
-      }
-    }
-    return defValidators[name];
+  return {
+    entities: [...visited.values()].flatMap((d) => entriesIn(d)),
+    siblingCount: Math.max(0, visited.size - 1),
   };
-
-  // Convention-trap hints claim their paths first.
-  const hints = shapeHints(doc, rawErrors);
-
-  // Group every raw error under the nearest ancestor that carries `kind`.
-  const contexts = new Map(); // pointer -> node
-  for (const err of rawErrors) {
-    let p = err.instancePath || "";
-    if (hints.has(p)) continue;
-    let found = null;
-    while (true) {
-      const node = getAtPointer(doc, p);
-      if (
-        node &&
-        typeof node === "object" &&
-        !Array.isArray(node) &&
-        typeof node.kind === "string"
-      ) {
-        found = p;
-        break;
-      }
-      if (!p) break;
-      p = p.slice(0, p.lastIndexOf("/"));
-    }
-    if (found !== null) contexts.set(found, getAtPointer(doc, found));
-  }
-  if (contexts.size === 0 && hints.size === 0) return [];
-
-  // Deepest contexts first: a parent context (e.g. the entity) re-validates
-  // its whole subtree, so any of its errors that fall inside a child context
-  // (e.g. a block) are noise already explained at the child. Track reported
-  // pointers and filter parent errors that land inside them.
-  const ordered = Array.from(contexts.keys()).sort(
-    (a, b) => b.split("/").length - a.split("/").length,
-  );
-  const reported = Array.from(hints.keys());
-  const inReported = (absPath) =>
-    reported.some((r) => absPath === r || absPath.startsWith(`${r}/`));
-
-  const messages = new Set();
-  for (const pointer of ordered) {
-    const node = contexts.get(pointer);
-    const where = pointer || "(root)";
-    if (!knownKinds.includes(node.kind)) {
-      const suggestion = closestKind(node.kind, knownKinds);
-      messages.add(
-        `${where}: unknown kind '${node.kind}'` +
-          (suggestion ? ` — did you mean '${suggestion}'?` : ""),
-      );
-      reported.push(pointer);
-      continue;
-    }
-    const validateDef = compileDef(kindIndex[node.kind]);
-    if (!validateDef) continue;
-    if (validateDef(node)) {
-      if (!inReported(pointer)) {
-        messages.add(
-          `${where}: '${node.kind}' is valid on its own but not allowed here — check which kinds this position accepts`,
-        );
-        reported.push(pointer);
-      }
-    } else {
-      let emitted = 0;
-      for (const e of validateDef.errors) {
-        const abs = `${pointer}${e.instancePath}`;
-        if (inReported(abs)) continue;
-        messages.add(`${abs || "(root)"}: ${e.message}`);
-        if (++emitted >= 5) break;
-      }
-      if (emitted > 0) reported.push(pointer);
-    }
-  }
-  return [...hints.values(), ...Array.from(messages)];
 }
 
-// ---------------------------------------------------------------------------
-// Part 1: Validate example .dsds.json files against the bundled schema
-// ---------------------------------------------------------------------------
-
-/**
- * Recursively find all files matching a suffix under a directory.
- */
-function findFilesRecursive(dir, suffix) {
-  const results = [];
-  if (!fs.existsSync(dir)) return results;
-  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
-    const fullPath = path.join(dir, entry.name);
-    if (entry.isDirectory()) {
-      results.push(...findFilesRecursive(fullPath, suffix));
-    } else if (entry.name.endsWith(suffix)) {
-      results.push(fullPath);
-    }
+// The current spec version, read back out of any loaded schema's own
+// $id (they all encode the same version) rather than hardcoded — so this
+// file never needs touching on a version bump. See scripts/bump-version.js,
+// which rewrites every schema file's own $id but has no reason to know
+// this file exists.
+const SPEC_VERSION = (() => {
+  for (const id of schemaById.keys()) {
+    const m = /\/v([^/]+)\//.exec(id);
+    if (m) return m[1];
   }
-  return results.sort();
+  throw new Error("Could not determine the spec version from any loaded schema's $id.");
+})();
+
+function specUrl(relPath) {
+  return `https://designsystemdocspec.org/v${SPEC_VERSION}/${relPath}`;
 }
 
-function validateExamples(ajv) {
-  console.log("━━━ Validating example files ━━━\n");
-
-  const schemaText = fs.readFileSync(BUNDLED_SCHEMA_PATH, "utf-8");
-  let schema;
-  try {
-    schema = JSON.parse(schemaText);
-  } catch (e) {
-    console.error(`  ✗ Failed to parse bundled schema: ${e.message}`);
-    return { passed: 0, failed: 1, errors: [] };
+// A branch is either a plain object schema, or one that extends a shared
+// base via allOf (a component's own trait branches do) - the discriminator
+// field can live on either shape: as a sibling of the branch's own `allOf`
+// (the current open-base + closing-leaf pattern - see
+// docs-new/content/architecture.mdx #3, unevaluatedProperties needs `properties` there
+// too), or inside one of the allOf's own array elements (older shape, kept
+// as a fallback so this doesn't silently break again if that ever comes
+// back). Returns the set of tag values this branch matches, or null if the
+// branch has no such field at all.
+function branchDiscriminatorValues(branch, prop) {
+  const candidates = [branch, ...(branch.allOf || [])];
+  for (const candidate of candidates) {
+    const propSchema = candidate.properties && candidate.properties[prop];
+    if (!propSchema) continue;
+    if (propSchema.const !== undefined) return [propSchema.const];
+    if (Array.isArray(propSchema.enum)) return propSchema.enum;
   }
-
-  const validate = ajv.compile(schema);
-
-  // Examples plus the real-world documents in test/ (test/invalid/ has its
-  // own must-fail pass in Part 4; Sanity UI fixtures are excluded from tests).
-  const files = findFilesRecursive(EXAMPLES_DIR, ".dsds.json").concat(
-    findFilesRecursive(path.join(ROOT, "test"), ".dsds.json").filter(
-      (f) =>
-        !f.includes(`${path.sep}invalid${path.sep}`) &&
-        !f.includes("sanity-ui"),
-    ),
-  );
-
-  let passed = 0;
-  let failed = 0;
-  const errors = [];
-
-  for (const filePath of files) {
-    const file = path.relative(EXAMPLES_DIR, filePath);
-    let data;
-    try {
-      data = JSON.parse(fs.readFileSync(filePath, "utf-8"));
-    } catch (e) {
-      console.error(`  ✗ ${file}: Invalid JSON — ${e.message}`);
-      failed++;
-      errors.push({ file, error: `Invalid JSON: ${e.message}` });
-      continue;
-    }
-
-    const valid = validate(data);
-    if (valid) {
-      console.log(`  ✓ ${file}`);
-      passed++;
-    } else {
-      console.error(`  ✗ ${file}`);
-      const friendly = friendlyErrors(data, validate.errors, schema, ajv);
-      if (friendly.length > 0) {
-        for (const msg of friendly) {
-          console.error(`      ${msg}`);
-          errors.push({ file, message: msg });
-        }
-      } else {
-        for (const err of validate.errors.slice(0, 8)) {
-          const loc = err.instancePath || "(root)";
-          const msg = err.message || JSON.stringify(err.params);
-          console.error(`      ${loc}: ${msg}`);
-          errors.push({ file, path: loc, message: msg });
-        }
-        if (validate.errors.length > 8) {
-          console.error(
-            `      … ${validate.errors.length - 8} more (raw validator output)`,
-          );
-        }
-      }
-      failed++;
-    }
-  }
-
-  console.log(`\n  ${passed} passed, ${failed} failed\n`);
-  return { passed, failed, errors };
+  return null;
 }
 
-// ---------------------------------------------------------------------------
-// Part 2: Validate per-definition example files against their schema defs
-// ---------------------------------------------------------------------------
-
-function validateDefinitionExamples(ajv) {
-  console.log("━━━ Validating per-definition example files ━━━\n");
-
-  const schema = JSON.parse(fs.readFileSync(BUNDLED_SCHEMA_PATH, "utf-8"));
-  const defs = schema.$defs || {};
-
-  // Pre-compile validators for each definition
-  const defValidators = {};
-  for (const [name, defSchema] of Object.entries(defs)) {
-    try {
-      const standalone = {
-        $schema: "https://json-schema.org/draft/2020-12/schema",
-        $defs: schema.$defs,
-        ...defSchema,
-      };
-      defValidators[name] = ajv.compile(standalone);
-    } catch (e) {
-      // Some defs may not compile standalone — skip
-    }
+const branchValidatorCache = new Map();
+function compileBranch(branch) {
+  let validate = branchValidatorCache.get(branch);
+  if (!validate) {
+    validate = ajv.compile(branch);
+    branchValidatorCache.set(branch, validate);
   }
+  return validate;
+}
 
-  let passed = 0;
-  let failed = 0;
-  let skipped = 0;
-  const errors = [];
+// Brute-forcing all of AJV's anyOf branches on a typo produces one error
+// per branch per required/additional-properties check - 20+ irrelevant
+// lines for a single missing field. Since every branch already declares
+// which tag value it's for (`const`/`enum` on this field), we can read the
+// tag first and validate only against the one matching branch instead.
+// Generic over where the discriminated array actually lives - a
+// component's own `traits` today, a section's `items` in the past - the
+// caller passes in the already-resolved branch list.
+function validateDiscriminatedItems(items, branches, prop, label, errors) {
+  const fallbackBranch = branches.find((b) => branchDiscriminatorValues(b, prop) === null);
+  const knownValues = [...new Set(branches.flatMap((b) => branchDiscriminatorValues(b, prop) || []))];
 
-  // --- Keyed example files: { defName: value | value[] } ---
+  for (const [i, item] of (items || []).entries()) {
+    const itemLabel = `${label}[${i}]`;
+    const value = item && item[prop];
 
-  for (const dir of KEYED_EXAMPLE_DIRS) {
-    const exampleDir = path.join(EXAMPLES_DIR, dir);
-    if (!fs.existsSync(exampleDir)) continue;
-
-    const files = fs
-      .readdirSync(exampleDir)
-      .filter((f) => f.endsWith(".json"))
-      .sort();
-
-    for (const file of files) {
-      const filePath = path.join(exampleDir, file);
-      let data;
-      try {
-        data = JSON.parse(fs.readFileSync(filePath, "utf-8"));
-      } catch (e) {
-        console.error(`  ✗ ${dir}/${file}: Invalid JSON — ${e.message}`);
-        failed++;
-        errors.push({
-          file: `${dir}/${file}`,
-          error: `Invalid JSON: ${e.message}`,
-        });
+    let branch;
+    if (value === undefined) {
+      branch = fallbackBranch;
+      if (!branch) {
+        errors.push(`${itemLabel} is missing "${prop}" (expected one of [${knownValues.join(", ")}])`);
         continue;
       }
+    } else {
+      branch = branches.find((b) => (branchDiscriminatorValues(b, prop) || []).includes(value));
+      if (!branch) {
+        errors.push(`${itemLabel} has "${prop}": ${JSON.stringify(value)}, which is not one of [${knownValues.join(", ")}]`);
+        continue;
+      }
+    }
 
-      const defNames = Object.keys(data);
-      let fileOk = true;
+    const validateBranch = compileBranch(branch);
+    if (!validateBranch(item)) {
+      const tag = value !== undefined ? value : "(untagged)";
+      for (const err of validateBranch.errors) {
+        errors.push(`${itemLabel} (${prop}: ${tag}) schema: ${err.instancePath || "/"} ${err.message}`);
+      }
+    }
+  }
+}
 
-      for (const defName of defNames) {
-        const exampleValue = data[defName];
-        const validator = defValidators[defName];
+function traitsBranches() {
+  const schema = schemaById.get(specUrl("entries/component.schema.yaml"));
+  return schema.allOf[1].properties.traits.items.anyOf;
+}
 
-        if (!validator) {
-          console.log(
-            `  ~ ${dir}/${file} → ${defName}: no standalone validator (skipped)`,
+// Ajv reports a failed `contains` (ex: guidelines.schema.yaml's "refs
+// must include a same-as or external-link entry") by testing every array
+// item against the contains sub-schema and surfacing each item's own
+// sub-errors right alongside the actual summary - "/refs/0/rel must be
+// equal to one of the allowed values" before "/refs must contain at
+// least 1 valid item(s)". Noise, not signal: nobody needs "here's why
+// item 0 specifically didn't match," only "here's what would have
+// matched." This collapses a `contains` failure and the per-item probe
+// errors Ajv generated finding it into one message built from whatever
+// `enum`/`required` sub-errors it found along the way.
+function collapseContainsFailures(ajvErrors) {
+  const containsErrors = ajvErrors.filter((e) => e.keyword === "contains");
+  if (!containsErrors.length) return ajvErrors;
+
+  const prefixes = containsErrors.map((e) => `${e.schemaPath}/`);
+
+  return ajvErrors
+    .map((e) => {
+      if (e.keyword !== "contains") return e;
+      const prefix = `${e.schemaPath}/`;
+      const needs = ajvErrors
+        .filter((n) => n !== e && n.schemaPath.startsWith(prefix))
+        .map((n) => {
+          if (n.keyword === "enum" && n.params && Array.isArray(n.params.allowedValues)) {
+            const parts = n.schemaPath.slice(prefix.length).split("/");
+            const field = parts[0] === "properties" ? parts[1] : parts[0];
+            return `\`${field}\` in [${n.params.allowedValues.join(", ")}]`;
+          }
+          if (n.keyword === "required" && n.params) return `\`${n.params.missingProperty}\``;
+          return null;
+        })
+        .filter(Boolean);
+      const need = needs.length ? [...new Set(needs)].join(" or ") : "a matching item";
+      return { ...e, message: `must contain at least one item with ${need}` };
+    })
+    .filter((e) => e.keyword === "contains" || !prefixes.some((p) => e.schemaPath.startsWith(p)));
+}
+
+function validateSections(sections, label, errors) {
+  for (const [i, section] of (sections || []).entries()) {
+    const sectionSchemaId = specUrl(`sections/${section.kind}.schema.yaml`);
+    const validateSection = schemaFor(sectionSchemaId, specUrl("section.schema.yaml"), profileSectionIdByKind.get(section.kind));
+    const sectionLabel = `${label} section[${i}] (${section.kind})`;
+
+    if (!validateSection(section)) {
+      for (const err of collapseContainsFailures(validateSection.errors)) {
+        errors.push(`${sectionLabel} schema: ${err.instancePath || "/"} ${err.message}`);
+      }
+    }
+  }
+}
+
+// `sections` now dispatches per kind too (entry.schema.yaml#/$defs/sections
+// -> section.schema.yaml#/$defs/dispatch), so the same-shape whole-entry
+// check below already reports a bad section - skip those here, since
+// validateSections() below reports the identical problem with a section
+// index and kind in the label instead of a bare instancePath.
+const NESTED_SECTION_ERROR = /^\/sections\/\d/;
+
+// opts.standalone marks an entry validated as its own file (not wrapped
+// in a base document's `entries`), the only case validateItemRefs() runs
+// here - an entry nested inside a base document is already covered by
+// that base document's own single validateItemRefs() pass, which sees
+// every sibling entry/shared entity at once; running it again per-entry
+// would just duplicate every finding.
+function validateEntry(entry, errors, warnings, opts = {}) {
+  const entrySchemaId = specUrl(`entries/${entry.kind}.schema.yaml`);
+  const validate = schemaFor(entrySchemaId, specUrl("entry.schema.yaml"), profileEntryIdByKind.get(entry.kind));
+  const isComponent = entry.kind === "component";
+
+  if (!validate(entry)) {
+    for (const err of validate.errors) {
+      // Per-trait shape errors are replaced below with discriminator-aware
+      // ones; everything else still gets reported straight from AJV.
+      if (isComponent && err.instancePath.startsWith("/traits")) continue;
+      if (NESTED_SECTION_ERROR.test(err.instancePath)) continue;
+      errors.push(`entry "${entry.id}" schema: ${err.instancePath || "/"} ${err.message}`);
+    }
+    if (isComponent && Array.isArray(entry.traits)) {
+      validateDiscriminatedItems(entry.traits, traitsBranches(), "kind", `entry "${entry.id}" traits`, errors);
+    }
+  }
+  validateSections(entry.sections, `entry "${entry.id}"`, errors);
+  if (opts.standalone) {
+    validateItemRefs(entry, errors, warnings, opts);
+    validateComboTargets(entry, errors, warnings, opts);
+    validateSameAsLevels(entry, errors, warnings, opts);
+  }
+  validateSemanticRules(entry, errors);
+}
+
+function validateShared(entry, errors) {
+  const validate = ajv.getSchema(specUrl("shared.schema.yaml"));
+  if (!validate(entry)) {
+    for (const err of validate.errors) {
+      if (NESTED_SECTION_ERROR.test(err.instancePath)) continue;
+      errors.push(`shared "${entry.id}" schema: ${err.instancePath || "/"} ${err.message}`);
+    }
+  }
+  validateSections(entry.sections, `shared "${entry.id}"`, errors);
+  validateSemanticRules(entry, errors);
+}
+
+// Checks that can't be expressed as a single item's shape - they need to
+// see across an entry's sections (or its own top-level fields) at once.
+function validateSemanticRules(entry, errors) {
+  const sections = entry.sections || [];
+
+  // A rule claiming checkedBy: automated needs somewhere to actually run -
+  // a refs (or the more specific checks) entry pointing at the real
+  // test/lint-rule that does it, so "automated" isn't just an unverifiable
+  // label. Doesn't require the ref to resolve to a real file
+  // (tools/validate.js has no filesystem access to every referenced
+  // test), just that a check-shaped pointer exists.
+  for (const section of sections) {
+    if (section.kind !== "guidelines") continue;
+    for (const [i, item] of (section.items || []).entries()) {
+      if (item.checkedBy !== "automated") continue;
+      const hasCheckRef = [...(item.refs || []), ...(item.checks || [])].some((r) => r.rel === "test" || r.rel === "lint-rule");
+      if (!hasCheckRef) {
+        errors.push(
+          err(RULES.CHECKED_BY_NEEDS_REF, `entry "${entry.id}" ${section.kind} item[${i}] declares checkedBy: automated but has no refs/checks entry (rel: test, lint-rule) pointing at what actually runs the check`)
+        );
+      }
+    }
+  }
+
+  // One sourceFiles entry per platform (including "no platform given",
+  // which all share the same bucket) - a component can't point a tool at
+  // two different source files for the same platform's interface.
+  const sourceFilesByPlatform = new Map();
+  for (const sourceFile of entry.sourceFiles || []) {
+    const key = sourceFile.platform || "(unspecified)";
+    sourceFilesByPlatform.set(key, (sourceFilesByPlatform.get(key) || 0) + 1);
+  }
+  for (const [platform, count] of sourceFilesByPlatform) {
+    if (count > 1) {
+      errors.push(err(RULES.ONE_API_PER_PLATFORM, `entry "${entry.id}" declares ${count} sourceFiles entries for platform "${platform}" - only one is allowed per platform`));
+    }
+  }
+}
+
+// base.schema.yaml's own `entries`/`shared` items now dispatch per kind
+// (see entry.schema.yaml#/$defs/dispatch), the same shape the loop below
+// checks in JS - needed so the bundled schema an editor's $schema points
+// at is exactly as strict as this CLI (see C2). That means a bad entry or
+// shared item shows up in `validate`'s own Ajv errors here too; skip those
+// - the per-entry/per-shared loop below reports the identical problem
+// with better context (an id, kind-aware messages, discriminated `traits`
+// errors). Keep everything else this Ajv pass catches (a bogus top-level
+// base document field, an empty `entries`/`shared` array).
+const NESTED_ENTRY_OR_SHARED_ERROR = /^\/(entries|shared)\/\d/;
+
+function validateBase(doc, errors, warnings, opts = {}) {
+  const validate = ajv.getSchema(specUrl("base.schema.yaml"));
+  if (!validate(doc)) {
+    for (const err of validate.errors) {
+      if (NESTED_ENTRY_OR_SHARED_ERROR.test(err.instancePath)) continue;
+      errors.push(`base schema: ${err.instancePath || "/"} ${err.message}`);
+    }
+  }
+  for (const entry of doc.entries || []) {
+    validateEntry(entry, errors, warnings, opts);
+  }
+  for (const entry of doc.shared || []) {
+    validateShared(entry, errors);
+  }
+
+  // entries and shared entries share one id/addressing space (an
+  // entryId#itemId ref can't tell which array its entryId half came from),
+  // so a collision between the two is exactly as broken as a collision
+  // within `entries` alone.
+  const seenIds = new Set();
+  for (const entity of entriesIn(doc)) {
+    if (seenIds.has(entity.id)) {
+      errors.push(err(RULES.UNIQUE_ENTRY_ID, `id "${entity.id}" is declared more than once in this document (entries and shared entries share one id space)`));
+    }
+    seenIds.add(entity.id);
+  }
+
+  // When a `kind: system` entry declares `metadata.platforms`, every
+  // `platform` value used anywhere in the document must be one of its
+  // entries - one declaration, checked everywhere, instead of free
+  // strings that can silently drift apart. Platforms aren't a bespoke
+  // base-level field; they live on a system entry's own metadata, the
+  // same shape every entry's metadata uses.
+  const declaredPlatforms = (doc.entries || [])
+    .filter((e) => e.kind === "system")
+    .flatMap((e) => (e.metadata && e.metadata.platforms) || []);
+  if (declaredPlatforms.length) {
+    const known = new Set(declaredPlatforms);
+    for (const entry of doc.entries || []) {
+      for (const [i, sourceFile] of (entry.sourceFiles || []).entries()) {
+        if (sourceFile.platform && !known.has(sourceFile.platform)) {
+          errors.push(
+            err(RULES.PLATFORM_VOCABULARY, `entry "${entry.id}" sourceFiles[${i}] declares platform "${sourceFile.platform}", which is not in the system entry's metadata.platforms [${[...known].join(", ")}]`)
           );
-          skipped++;
+        }
+      }
+      for (const [i, item] of (entry.imports || []).entries()) {
+        if (item.platform && !known.has(item.platform)) {
+          errors.push(
+            err(RULES.PLATFORM_VOCABULARY, `entry "${entry.id}" imports[${i}] declares platform "${item.platform}", which is not in the system entry's metadata.platforms [${[...known].join(", ")}]`)
+          );
+        }
+      }
+      const entryStatus = entry.metadata && entry.metadata.status;
+      if (entryStatus && entryStatus.platform && !known.has(entryStatus.platform)) {
+        errors.push(
+          err(RULES.PLATFORM_VOCABULARY, `entry "${entry.id}" metadata.status declares platform "${entryStatus.platform}", which is not in the system entry's metadata.platforms [${[...known].join(", ")}]`)
+        );
+      }
+    }
+  }
+
+  validateItemRefs(doc, errors, warnings, opts);
+  validateComboTargets(doc, errors, warnings, opts);
+  validateSameAsLevels(doc, errors, warnings, opts);
+  validateGraphCycles(doc, errors);
+}
+
+// DFS-based cycle detection over a directed adjacency list (Map<string,
+// Set<string>>). Standard 3-color (white/gray/black) walk: a gray node
+// reached again while still on the current path is the cycle. Returns the
+// cycle as an ordered array of ids, or null if the graph is acyclic.
+function findCycle(edges) {
+  const WHITE = 0, GRAY = 1, BLACK = 2;
+  const color = new Map();
+  const stack = [];
+  let cycle = null;
+
+  function visit(node) {
+    color.set(node, GRAY);
+    stack.push(node);
+    for (const next of edges.get(node) || []) {
+      if (cycle) return;
+      const state = color.get(next) || WHITE;
+      if (state === WHITE) {
+        visit(next);
+      } else if (state === GRAY) {
+        const start = stack.indexOf(next);
+        cycle = stack.slice(start).concat(next);
+      }
+      if (cycle) return;
+    }
+    stack.pop();
+    color.set(node, BLACK);
+  }
+
+  for (const node of edges.keys()) {
+    if (cycle) break;
+    if ((color.get(node) || WHITE) === WHITE) visit(node);
+  }
+  return cycle;
+}
+
+// DSDS-06/DSDS-07: a `composes` or `depends-on` ref chain must not lead
+// back to an entry already in the chain (see
+// notes/2026-08-17-graph-rigor-and-composition-prd.md, Design A). Built
+// from every {to, rel} pair anywhere in the document (findRefs already
+// walks an entity's full nested shape for DSDS-05's item-ref resolution) -
+// only the bare-entry form of `to` forms a graph edge here; an
+// `entryId#itemId` ref points at content inside an entry, not at another
+// node in the composition/dependency graph. Each rel is checked as its own
+// independent graph - a `composes` cycle and a `depends-on` cycle are two
+// different rules, not one merged graph, since mixing the two relations
+// would report a "cycle" that isn't really one chain of the same kind of
+// edge.
+function validateGraphCycles(doc, errors) {
+  const entities = entriesIn(doc);
+  const relsToCheck = [
+    { rel: "composes", ruleId: RULES.COMPOSES_CYCLE },
+    { rel: "depends-on", ruleId: RULES.DEPENDS_ON_CYCLE },
+  ];
+
+  for (const { rel, ruleId } of relsToCheck) {
+    const edges = new Map();
+    for (const entity of entities) {
+      const found = [];
+      findRefs(entity, "", found);
+      for (const { to, rel: foundRel } of found) {
+        if (foundRel !== rel || to.includes("#")) continue;
+        if (!edges.has(entity.id)) edges.set(entity.id, new Set());
+        edges.get(entity.id).add(to);
+      }
+    }
+    const cycle = findCycle(edges);
+    if (cycle) {
+      errors.push(err(ruleId, `"${rel}" ref chain forms a cycle: ${cycle.join(" -> ")}`));
+    }
+  }
+}
+
+// Every item id declared anywhere on an entry - the resolution target for
+// an entryId#itemId ref (see common/ref.schema.yaml's `to`). Walks into
+// any nested array of objects (a component's own trait `values`, a
+// freeform entry's own nested `items`), not just a section's top-level
+// `items` array, so an id is addressable no matter how deep it sits. Not
+// every item shape carries an `id`; this only indexes the ones that do, so
+// a ref at an entry that exists but an item that doesn't reports the same
+// "unknown item" error a typo would.
+// Same walk as collectItemIds, but keeps the actual item object per id
+// instead of just the id - needed wherever a check has to read a field
+// off the *target* item (see validateSameAsLevels's own level lookup),
+// not just confirm it exists.
+function collectItemsById(entry) {
+  const byId = new Map();
+  function walk(item) {
+    if (!item || typeof item !== "object") return;
+    if (typeof item.id === "string") byId.set(item.id, item);
+    for (const value of Object.values(item)) {
+      if (Array.isArray(value)) {
+        for (const child of value) walk(child);
+      }
+    }
+  }
+  for (const section of entry.sections || []) {
+    for (const item of section.items || []) walk(item);
+    for (const item of section.freeform || []) walk(item);
+  }
+  for (const trait of entry.traits || []) walk(trait);
+  return byId;
+}
+
+function collectItemIds(entry) {
+  const ids = new Set();
+  function walk(item) {
+    if (!item || typeof item !== "object") return;
+    if (typeof item.id === "string") ids.add(item.id);
+    for (const value of Object.values(item)) {
+      if (Array.isArray(value)) {
+        for (const child of value) walk(child);
+      }
+    }
+  }
+  for (const section of entry.sections || []) {
+    for (const item of section.items || []) walk(item);
+    for (const item of section.freeform || []) walk(item);
+  }
+  for (const trait of entry.traits || []) walk(trait);
+  return ids;
+}
+
+// Every trait-space target a combo on this entry could legally name: a
+// bare id for a boolean trait ("loading"), or "traitId.valueId" for each
+// value of an enum trait ("size.small"). Bare enum trait ids are
+// included too (permissive on purpose - "any value of this trait" is a
+// plausible reading nothing in the schema rules out).
+function collectTraitTargets(entry) {
+  const targets = new Set();
+  for (const trait of entry.traits || []) {
+    if (!trait || typeof trait.id !== "string") continue;
+    targets.add(trait.id);
+    if (trait.kind === "enum") {
+      for (const value of trait.values || []) {
+        if (value && typeof value.id === "string") targets.add(`${trait.id}.${value.id}`);
+      }
+    }
+  }
+  return targets;
+}
+
+// DSDS-09: resolves every combo's `subject` and `items[]` on each local
+// entity. Three target spaces:
+//   1. Token space - a `{braced}` target, against every token entity in
+//      the wider pool (see resolveWiderScope - the same local/project/
+//      CLI-sibling merge validateItemRefs uses). Checked first, since a
+//      braced target can never mean anything else.
+//   2. Trait space - a bare id or `traitId.valueId` against this same
+//      entity's own `traits`. Always fully visible (an entity's own
+//      traits can't live in another file) - but a bare id is also
+//      legal as an entry id (see space 3 below), so a trait-space miss
+//      alone doesn't fail anything by itself; it just falls through.
+//   3. Entry space - a bare id that didn't match a local trait, against
+//      every entity in the wider pool (common/combo.schema.yaml's own
+//      description: "Can be a trait, token, or entry id").
+// A bare id only ends up reported once it's failed *both* 2 and 3, and
+// that combined failure follows the same warning-vs-error split
+// validateItemRefs uses, for the same reason: a search that couldn't
+// see the whole project can't assert a target is broken with full
+// confidence.
+function validateComboTargets(doc, errors, warnings, opts = {}) {
+  const localEntities = entriesIn(doc);
+  const localIds = new Set(localEntities.map((e) => e.id));
+
+  const hasAnyCombos = localEntities.some((e) => Array.isArray(e.combos) && e.combos.length);
+  if (!hasAnyCombos) return;
+
+  const { hasWiderScope, widerEntities, treatAsError, scopeNote } = resolveWiderScope(doc, localIds, opts);
+  const widerIds = hasWiderScope ? new Set(widerEntities.map((e) => e.id)) : null;
+  const widerKindById = hasWiderScope ? new Map(widerEntities.map((e) => [e.id, e.kind])) : null;
+
+  for (const entity of localEntities) {
+    if (!Array.isArray(entity.combos)) continue;
+    const traitTargets = collectTraitTargets(entity);
+
+    for (const [i, combo] of entity.combos.entries()) {
+      if (!combo || typeof combo !== "object") continue;
+      const targets = [{ value: combo.subject, at: `combos[${i}].subject` }];
+      for (const [j, item] of (combo.items || []).entries()) {
+        targets.push({ value: item, at: `combos[${i}].items[${j}]` });
+      }
+
+      for (const { value, at } of targets) {
+        if (typeof value !== "string") continue;
+        const label = `"${entity.id}" ${at} "${value}"`;
+        const braced = /^\{(.+)\}$/.exec(value);
+
+        if (braced) {
+          const tokenId = braced[1];
+          const kind = widerIds && widerIds.has(tokenId) ? widerKindById.get(tokenId) : undefined;
+          if (kind === "token") continue;
+          const msg = kind
+            ? `${label} names "${tokenId}", which exists but is a ${kind}, not a token`
+            : `${label} targets unknown token "${tokenId}"`;
+          if (treatAsError) errors.push(err(RULES.COMBO_TARGET_RESOLVES, msg));
+          else warnings.push(err(RULES.COMBO_TARGET_RESOLVES, `${msg} ${scopeNote}`));
           continue;
         }
 
-        // The example value can be a single instance or an array of instances
-        const instances = Array.isArray(exampleValue)
-          ? exampleValue
-          : [exampleValue];
+        if (traitTargets.has(value)) continue;
 
-        for (let idx = 0; idx < instances.length; idx++) {
-          const instance = instances[idx];
-          const label = Array.isArray(exampleValue)
-            ? `${defName}[${idx}]`
-            : defName;
+        if (widerIds && widerIds.has(value)) continue;
+        if (treatAsError) {
+          errors.push(err(RULES.COMBO_TARGET_RESOLVES, `${label} matches no trait on "${entity.id}", and no known entry or shared entry`));
+        } else {
+          warnings.push(err(RULES.COMBO_TARGET_RESOLVES, `${label} matches no trait on "${entity.id}", and no known entry or shared entry ${scopeNote}`));
+        }
+      }
+    }
+  }
+}
 
-          const valid = validator(instance);
-          if (valid) {
-            passed++;
-          } else {
-            fileOk = false;
-            console.error(`  ✗ ${dir}/${file} → ${label}`);
-            for (const err of validator.errors.slice(0, 3)) {
-              const loc = err.instancePath || "(root)";
-              const msg = err.message || JSON.stringify(err.params);
-              console.error(`      ${loc}: ${msg}`);
-              errors.push({
-                file: `${dir}/${file}`,
-                def: label,
-                path: loc,
-                message: msg,
-              });
-            }
-            failed++;
+// Resolves a ref's `to` against the document's actual entries/shared
+// entries and their items - only meaningful for a base document, since a
+// standalone entry file has no other entries to point at. A `same-as` ref
+// most often targets a `base.shared` entry (that's the whole point of
+// `shared` - one canonical statement, pointed at from many entries), so
+// both arrays share this one id space via entriesIn(doc). Skips anything
+// that isn't a real internal pointer at all ("://" anywhere in `to` marks
+// an ordinary URL fragment, not an id or entryId#itemId).
+//
+// Two distinct checks:
+//   - Bare `to` (DSDS-08): does the named entry/shared entry exist.
+//   - `to: entryId#itemId` (DSDS-05): does the entry exist, and does the
+//     named item exist somewhere in its sections.
+//
+// A target found among this document's own entities is always checked -
+// that's a space this validator can fully see, whatever else is true.
+// When it isn't found here, this looks wider, from two sources:
+//   - This document's own `rel: file` project, if it declares one -
+//     loadProject() follows that link transitively, bounded to the
+//     target file's own directory (see the limitation documented above
+//     it).
+//   - Every entity in every file passed to this one CLI run
+//     (opts.cliEntities - see the call site in the CLI entry point
+//     below). A standalone entry file has no field of its own like a
+//     base document's `refs` to declare "these are my siblings," so
+//     without this it could never resolve a reference to a sibling
+//     component at all - exactly the test/site-components/ shape,
+//     where the index declares rel: file to every component but no
+//     component declares anything back.
+//
+// If neither source finds it either:
+//   - No wider source was even available (no rel: file, and this file
+//     was validated alone) - nowhere else the target could be.
+//     Unresolved here means genuinely broken - a hard error.
+//   - A wider source was available but still came up empty. That's
+//     reported, but only as a warning: a `rel: file` sibling that
+//     couldn't be read (missing, unparsable, outside the root), or a
+//     CLI run that only included some of a larger project's files,
+//     makes the search incomplete, and a validator that can't see the
+//     whole project MUST NOT assert a pointer is broken with the same
+//     confidence as one it fully resolved. `--strict` promotes these to
+//     failures once a project is clean.
+// Shared by validateItemRefs (DSDS-05/08) and validateComboTargets
+// (DSDS-09): builds the "wider than this one document" resolution pool
+// both draw on, and decides whether an unresolved target there is a hard
+// error or a warning. See validateItemRefs's own comment for the full
+// reasoning; this is just the part both checks need identically.
+function resolveWiderScope(doc, localIds, opts) {
+  const isSplitAcrossFiles = (doc.refs || []).some((r) => r && r.rel === "file");
+  const hasCliSiblings =
+    Array.isArray(opts.cliEntities) && opts.cliEntities.some((e) => !localIds.has(e.id));
+  const hasWiderScope = isSplitAcrossFiles || hasCliSiblings;
+
+  let widerEntities = [];
+  let foundSiblings = false;
+  if (hasWiderScope) {
+    if (hasCliSiblings) widerEntities = widerEntities.concat(opts.cliEntities);
+    if (isSplitAcrossFiles && opts.filePath) {
+      const { entities: projectEntities, siblingCount } = loadProject(path.resolve(opts.filePath));
+      widerEntities = widerEntities.concat(projectEntities);
+      foundSiblings = foundSiblings || siblingCount > 0;
+    }
+    foundSiblings = foundSiblings || hasCliSiblings;
+  }
+
+  // A base document's `entries`/`shared` arrays are an explicit, complete
+  // declaration of "this is everything" when it has no `rel: file` link
+  // out - so an unresolved target there really is broken (a hard error).
+  // A standalone entry file has no equivalent way to assert completeness
+  // - it's always potentially one piece of a larger indexed project (see
+  // test/site-components/, where the index alone declares the shape),
+  // so it can never earn that same confidence. An unresolved target on
+  // a standalone entry is always a warning, even with no wider scope to
+  // check at all - matching the report this validator's own bug was
+  // filed against: "a standalone file genuinely cannot resolve a target
+  // on its own, so an error would be wrong."
+  const treatAsError = !opts.standalone && !hasWiderScope;
+
+  // What actually got checked, honestly - claims a search only when one
+  // actually happened.
+  const scopeNote = foundSiblings
+    ? "(checked every file given to this run, and this document's own rel: file project)"
+    : "(no other file could be checked against)";
+
+  return { hasWiderScope, widerEntities, treatAsError, scopeNote };
+}
+
+// DSDS-10: a guidelines item can borrow another item's text via a
+// `rel: same-as` ref (see guidelines.schema.yaml's own $comment) while
+// still declaring its own `level` - `level` is required unconditionally,
+// same-as or not, so the borrowing site and the shared rule each carry
+// their own copy with nothing checking the two agree. Whenever the
+// same-as target actually resolves and it has its own `level`, this
+// checks they match. Doesn't touch whether the target resolves at all
+// (DSDS-05 already owns that) - only compares levels once resolution
+// already succeeded, so this is a hard error whenever it fires: a
+// mismatch found between two items the validator can both see is a
+// real, confirmed drift, not a "might exist elsewhere" scope question.
+function validateSameAsLevels(doc, errors, warnings, opts = {}) {
+  const localEntities = entriesIn(doc);
+  const localIds = new Set(localEntities.map((e) => e.id));
+  const localItemsByEntity = new Map(localEntities.map((e) => [e.id, collectItemsById(e)]));
+
+  const { hasWiderScope, widerEntities } = resolveWiderScope(doc, localIds, opts);
+  const widerItemsByEntity = hasWiderScope
+    ? new Map(widerEntities.map((e) => [e.id, collectItemsById(e)]))
+    : null;
+
+  function findItem(targetId, itemId) {
+    const local = localItemsByEntity.get(targetId);
+    if (local && local.has(itemId)) return local.get(itemId);
+    const wider = widerItemsByEntity && widerItemsByEntity.get(targetId);
+    return wider && wider.has(itemId) ? wider.get(itemId) : null;
+  }
+
+  for (const entity of localEntities) {
+    for (const section of entity.sections || []) {
+      if (section.kind !== "guidelines") continue;
+      for (const [i, item] of (section.items || []).entries()) {
+        if (!item || typeof item.level !== "string") continue;
+        for (const ref of item.refs || []) {
+          if (!ref || ref.rel !== "same-as" || typeof ref.to !== "string") continue;
+          const hashIdx = ref.to.indexOf("#");
+          if (hashIdx === -1) continue;
+          const targetItem = findItem(ref.to.slice(0, hashIdx), ref.to.slice(hashIdx + 1));
+          if (!targetItem || typeof targetItem.level !== "string") continue;
+          if (targetItem.level !== item.level) {
+            errors.push(
+              err(
+                RULES.SAME_AS_LEVEL_MATCHES,
+                `"${entity.id}" guidelines item[${i}] declares level "${item.level}" but its same-as target "${ref.to}" declares level "${targetItem.level}" - the two must agree`,
+              ),
+            );
           }
         }
       }
-
-      if (fileOk) {
-        console.log(
-          `  ✓ ${dir}/${file} (${defNames.length} definition${defNames.length === 1 ? "" : "s"})`,
-        );
-      }
     }
   }
+}
 
-  // --- Bare entity files: { type: "component", name: "...", ... } ---
-  // Detected by a top-level `type` property whose value matches a known $def.
+function validateItemRefs(doc, errors, warnings, opts = {}) {
+  const localEntities = entriesIn(doc);
+  const localIds = new Set(localEntities.map((e) => e.id));
+  const localItemIdsByEntity = new Map(localEntities.map((e) => [e.id, collectItemIds(e)]));
 
-  for (const dir of BARE_ENTITY_DIRS) {
-    const exampleDir = path.join(EXAMPLES_DIR, dir);
-    if (!fs.existsSync(exampleDir)) continue;
+  const { hasWiderScope, widerEntities, treatAsError, scopeNote } = resolveWiderScope(doc, localIds, opts);
+  const widerIds = hasWiderScope ? new Set(widerEntities.map((e) => e.id)) : null;
+  const widerItemIdsByEntity = hasWiderScope
+    ? new Map(widerEntities.map((e) => [e.id, collectItemIds(e)]))
+    : null;
 
-    const files = fs
-      .readdirSync(exampleDir)
-      .filter((f) => f.endsWith(".json") && !f.endsWith(".dsds.json"))
-      .sort();
+  for (const entity of localEntities) {
+    const found = [];
+    findRefs(entity, "", found);
+    for (const { to, rel, at } of found) {
+      if (to.includes("://")) continue;
+      const label = `"${entity.id}" ref${at ? ` (${at})` : ""} "${to}" (rel: ${rel})`;
+      const hashIdx = to.indexOf("#");
 
-    for (const file of files) {
-      const filePath = path.join(exampleDir, file);
-      let data;
-      try {
-        data = JSON.parse(fs.readFileSync(filePath, "utf-8"));
-      } catch (e) {
-        console.error(`  ✗ ${dir}/${file}: Invalid JSON — ${e.message}`);
-        failed++;
-        errors.push({
-          file: `${dir}/${file}`,
-          error: `Invalid JSON: ${e.message}`,
-        });
+      if (hashIdx === -1) {
+        if (!to || localIds.has(to)) continue;
+        if (treatAsError) {
+          errors.push(err(RULES.ENTRY_REF_RESOLVES, `${label} targets unknown entry/shared "${to}"`));
+        } else if (!widerIds || !widerIds.has(to)) {
+          warnings.push(err(RULES.ENTRY_REF_RESOLVES, `${label} targets unknown entry/shared "${to}" ${scopeNote}`));
+        }
         continue;
       }
 
-      // Determine the def name from the kind property
-      const typeName = data.kind;
-      const defName = typeName === "token-group" ? "tokenGroup" : typeName;
-      const validator = defValidators[defName];
+      const targetId = to.slice(0, hashIdx);
+      const itemId = to.slice(hashIdx + 1);
+      if (!targetId || !itemId) continue;
 
-      if (!validator) {
-        console.log(
-          `  ~ ${dir}/${file}: kind "${typeName}" has no standalone validator (skipped)`,
-        );
-        skipped++;
+      const localItemIds = localItemIdsByEntity.get(targetId);
+      if (localItemIds) {
+        if (!localItemIds.has(itemId)) {
+          errors.push(err(RULES.ITEM_REF_RESOLVES, `${label} targets unknown item "${itemId}" on "${targetId}"`));
+        }
         continue;
       }
 
-      const valid = validator(data);
-      if (valid) {
-        console.log(`  ✓ ${dir}/${file} (${defName})`);
-        passed++;
-      } else {
-        console.error(`  ✗ ${dir}/${file} → ${defName}`);
-        for (const err of validator.errors.slice(0, 3)) {
-          const loc = err.instancePath || "(root)";
-          const msg = err.message || JSON.stringify(err.params);
-          console.error(`      ${loc}: ${msg}`);
-          errors.push({
-            file: `${dir}/${file}`,
-            def: defName,
-            path: loc,
-            message: msg,
-          });
-        }
-        failed++;
+      if (treatAsError) {
+        errors.push(err(RULES.ITEM_REF_RESOLVES, `${label} targets unknown entry/shared "${targetId}"`));
+        continue;
+      }
+
+      const widerItemIds = widerItemIdsByEntity && widerItemIdsByEntity.get(targetId);
+      if (!widerItemIds) {
+        warnings.push(err(RULES.ITEM_REF_RESOLVES, `${label} targets unknown entry/shared "${targetId}" ${scopeNote}`));
+      } else if (!widerItemIds.has(itemId)) {
+        warnings.push(err(RULES.ITEM_REF_RESOLVES, `${label} targets unknown item "${itemId}" on "${targetId}" ${scopeNote}`));
       }
     }
   }
-
-  console.log(`\n  ${passed} passed, ${failed} failed, ${skipped} skipped\n`);
-  return { passed, failed, skipped, errors };
 }
 
-// ---------------------------------------------------------------------------
-// Part 3: Semantic checks — normative rules JSON Schema cannot express
-// ---------------------------------------------------------------------------
-
-// Extension keys MUST use vendor-specific namespaces (reverse domain name
-// notation recommended) — enforced as "contains at least one dot separator",
-// e.g. 'com.figma', 'acme.tooling'.
-const EXTENSION_KEY_REGEX = /^[A-Za-z0-9_-]+(\.[A-Za-z0-9_-]+)+$/;
-
-/**
- * Walk a parsed DSDS document and apply the semantic rules:
- *   1. Entity identifiers MUST be unique within their entity group (and
- *      token/token-group identifiers within their parent's `children`).
- *   2. `$extensions` keys MUST be vendor-namespaced.
- *   3. Criterion identifiers MUST be unique within their entity
- *      (rules/rules.yaml DSDS-002 — test runs report against them).
- *   4. Relationship edges MUST resolve, not self-reference, not duplicate,
- *      and stay acyclic across composes/depends-on.
- *   5. Token-override references (anatomy, states, variants) MUST resolve
- *      against the documented token layer when one is present.
- *   6. `docOrigin.blocks` keys MUST match a block kind on the entity.
- *   7. String token references (theme overrides, scale steps, motion entries)
- *      MUST resolve; token `tokenType` MUST be present or group-inherited;
- *      section anchors MUST be unique within their parent block.
- * Returns an array of { path, message } findings.
- */
-const ENTITY_KIND_SET = new Set([
-  "component",
-  "pattern",
-  "foundation",
-  "guide",
-  "theme",
-  "token",
-  "token-group",
-  "chunk",
-]);
-
-/** Collect every entity identifier in the document (including nested token children). */
-function collectEntityIdentifiers(doc) {
-  const ids = new Set();
-  function scan(node) {
-    if (Array.isArray(node)) return node.forEach(scan);
-    if (!node || typeof node !== "object") return;
-    if (ENTITY_KIND_SET.has(node.kind) && typeof node.identifier === "string") {
-      ids.add(node.identifier);
-    }
-    Object.values(node).forEach(scan);
-  }
-  scan(doc);
-  return ids;
-}
-
-/** Collect identifiers of token-layer entities (token, token-group). Used to
- * decide whether a document documents its token layer — anatomy token
- * references are only resolvable when it does. */
-const TOKEN_KINDS = new Set(["token", "token-group"]);
-function collectTokenIdentifiers(doc) {
-  const ids = new Set();
-  (function scan(node) {
-    if (Array.isArray(node)) return node.forEach(scan);
-    if (!node || typeof node !== "object") return;
-    if (TOKEN_KINDS.has(node.kind) && typeof node.identifier === "string") {
-      ids.add(node.identifier);
-    }
-    Object.values(node).forEach(scan);
-  })(doc);
-  return ids;
-}
-
-/** True when the document contains unresolved fileRefs ({$ref: …}). */
-function hasFileRefs(doc) {
-  let found = false;
-  function scan(node) {
-    if (found) return;
-    if (Array.isArray(node)) return node.forEach(scan);
-    if (!node || typeof node !== "object") return;
-    if (typeof node.$ref === "string") { found = true; return; }
-    Object.values(node).forEach(scan);
-  }
-  scan(doc);
-  return found;
-}
-
-function semanticFindings(doc) {
-  const findings = [];
-
-  // Entity-reference resolution: every entityRef in a pattern's interaction
-  // `components` must name an entity documented in this document. Skipped
-  // when the document carries unresolved $refs — the full catalog isn't
-  // visible until a resolver joins the files.
-  const refsResolvable = !hasFileRefs(doc);
-  const catalog = refsResolvable ? collectEntityIdentifiers(doc) : null;
-  // Token layer — present only when the document itself documents tokens.
-  // Anatomy token references resolve against it; when absent (tokens live in
-  // an external DTCG layer) anatomy token resolution is skipped.
-  const tokenLayer = refsResolvable ? collectTokenIdentifiers(doc) : null;
-
-  function checkComponentRefs(node, nodePath) {
-    if (!catalog || !Array.isArray(node.components)) return;
-    node.components.forEach((ref, i) => {
-      if (ref && typeof ref === "object" && typeof ref.identifier === "string") {
-        if (!catalog.has(ref.identifier)) {
-          findings.push({
-            path: `${nodePath}/components/${i}/identifier`,
-            message: `entity reference '${ref.identifier}' resolves to no entity documented in this file — a reference that resolves to nothing is a defect (entityRef resolution)`,
-          });
-        }
-      }
-    });
-  }
-
-  // DSDS-002 (static half): within one entity, no two criteria share an
-  // identifier. Nested token-group children are their own entity scopes.
-  function checkCriterionScope(entity, entityPath) {
-    const seen = new Map();
-    function scan(node, p) {
-      if (Array.isArray(node)) {
-        node.forEach((v, i) => scan(v, `${p}/${i}`));
-        return;
-      }
-      if (!node || typeof node !== "object") return;
-      if (node !== entity && ENTITY_KIND_SET.has(node.kind)) return; // child entity = own scope
-      if (Array.isArray(node.criteria)) {
-        node.criteria.forEach((c, i) => {
-          const id = c && c.identifier;
-          if (typeof id !== "string") return;
-          if (seen.has(id)) {
-            findings.push({
-              path: `${p}/criteria/${i}/identifier`,
-              message: `criterion identifier '${id}' is reused within the same entity (first used at ${seen.get(id)}) — test results report against this identifier (DSDS-002)`,
-            });
-          } else {
-            seen.set(id, `${p}/criteria/${i}`);
-          }
-        });
-      }
-      for (const [k, v] of Object.entries(node)) {
-        if (k === "criteria") continue;
-        scan(v, `${p}/${k}`);
-      }
-    }
-    scan(entity, entityPath);
-  }
-
-  function checkIdentifierScope(items, pathPrefix) {
-    const seen = new Map();
-    items.forEach((item, i) => {
-      if (!item || typeof item !== "object" || item.$ref) return;
-      const id = item.identifier;
-      if (typeof id !== "string") return;
-      if (seen.has(id)) {
-        findings.push({
-          path: `${pathPrefix}/${i}/identifier`,
-          message: `duplicate identifier '${id}' in the same scope (first used at ${pathPrefix}/${seen.get(id)})`,
-        });
-      } else {
-        seen.set(id, i);
-      }
-    });
-  }
-
-  // Relationship-graph integrity: every relationships[].target MUST resolve to
-  // a documented entity; an edge MUST NOT point at its own entity; and an
-  // entity MUST NOT declare the same (relation, target) edge twice. Resolution
-  // is skipped when unresolved $refs hide part of the catalog.
-  function checkRelationships(entity, entityPath) {
-    if (!Array.isArray(entity.relationships)) return;
-    const seen = new Set();
-    entity.relationships.forEach((edge, i) => {
-      if (!edge || typeof edge !== "object") return;
-      const { relation, target } = edge;
-      if (typeof target !== "string" || typeof relation !== "string") return;
-      const p = `${entityPath}/relationships/${i}`;
-      if (catalog && !catalog.has(target)) {
-        findings.push({
-          path: `${p}/target`,
-          message: `relationship target '${target}' resolves to no entity documented in this file — a reference that resolves to nothing is a defect (entityRef resolution)`,
-        });
-      }
-      if (target === entity.identifier) {
-        findings.push({
-          path: `${p}/target`,
-          message: `entity '${entity.identifier}' declares a '${relation}' relationship to itself — an edge must point at another entity`,
-        });
-      }
-      const key = `${relation} ${target}`;
-      if (seen.has(key)) {
-        findings.push({
-          path: p,
-          message: `duplicate relationship edge '${relation}' → '${target}' on entity '${entity.identifier}'`,
-        });
-      } else {
-        seen.add(key);
-      }
-    });
-  }
-
-  // Cycle detection for the acyclic relations ('composes', 'depends-on'). A
-  // cycle means an entity is, transitively, composed of or dependent on itself.
-  // Needs the full catalog to follow edges, so it is skipped under unresolved
-  // $refs. Only edges whose target resolves are followed.
-  function checkRelationshipCycles() {
-    if (!catalog) return;
-    const DAG_RELATIONS = new Set(["composes", "depends-on"]);
-    const adj = new Map();
-    (function collect(node) {
-      if (Array.isArray(node)) return node.forEach(collect);
-      if (!node || typeof node !== "object") return;
-      if (
-        ENTITY_KIND_SET.has(node.kind) &&
-        typeof node.identifier === "string" &&
-        Array.isArray(node.relationships)
-      ) {
-        const outs = node.relationships
-          .filter(
-            (e) =>
-              e &&
-              DAG_RELATIONS.has(e.relation) &&
-              typeof e.target === "string" &&
-              catalog.has(e.target),
-          )
-          .map((e) => e.target);
-        if (outs.length) {
-          adj.set(node.identifier, (adj.get(node.identifier) || []).concat(outs));
-        }
-      }
-      Object.values(node).forEach(collect);
-    })(doc);
-
-    const GRAY = 1;
-    const BLACK = 2;
-    const color = new Map();
-    const stack = [];
-    let reported = false;
-    function dfs(id) {
-      if (reported) return;
-      color.set(id, GRAY);
-      stack.push(id);
-      for (const next of adj.get(id) || []) {
-        const c = color.get(next) || 0;
-        if (c === GRAY) {
-          const cycle = stack.slice(stack.indexOf(next)).concat(next).join(" → ");
-          findings.push({
-            path: "",
-            message: `relationship cycle across 'composes'/'depends-on' edges: ${cycle} — these relations must form an acyclic graph`,
-          });
-          reported = true;
-          return;
-        }
-        if (c === 0) dfs(next);
-      }
-      stack.pop();
-      color.set(id, BLACK);
-    }
-    for (const id of adj.keys()) {
-      if (!reported && (color.get(id) || 0) === 0) dfs(id);
-    }
-  }
-
-  // Token-override references resolve against the documented token layer. The
-  // shared tokenOverrides map appears on anatomy parts, states, and variant
-  // values/flags — every position resolves under the same rule. When the
-  // document documents no tokens (external DTCG layer), this is skipped —
-  // matching the schema's "in a system that documents its token layer" rule.
-  function checkTokenOverrides(node, nodePath) {
-    if (!tokenLayer || tokenLayer.size === 0) return;
-    const tokens = node.tokens;
-    if (!tokens || typeof tokens !== "object" || Array.isArray(tokens)) return;
-    for (const [purpose, id] of Object.entries(tokens)) {
-      if (typeof id === "string" && !tokenLayer.has(id)) {
-        findings.push({
-          path: `${nodePath}/tokens/${purpose}`,
-          message: `token override '${id}' resolves to no documented token — with a token layer present, token-override references MUST name a documented token (entityRef resolution)`,
-        });
-      }
-    }
-  }
-
-  // Section anchors MUST be unique within their parent block — same rule as
-  // checkIdentifierScope, keyed on `anchor` (sections deep-link by anchor,
-  // not identifier).
-  function checkAnchorScope(items, pathPrefix) {
-    const seen = new Map();
-    items.forEach((item, i) => {
-      if (!item || typeof item !== "object") return;
-      const a = item.anchor;
-      if (typeof a !== "string") return;
-      if (seen.has(a)) {
-        findings.push({
-          path: `${pathPrefix}/${i}/anchor`,
-          message: `duplicate section anchor '${a}' in the same block (first used at ${pathPrefix}/${seen.get(a)}) — anchors MUST be unique within the parent block`,
-        });
-      } else {
-        seen.set(a, i);
-      }
-    });
-  }
-
-  // String token references — theme override entries, scale steps, and motion
-  // entries each carry a `token` property that MUST name a documented token.
-  // Same token-layer gate as the tokenOverrides maps.
-  function checkTokenRefString(node, nodePath) {
-    if (!tokenLayer || tokenLayer.size === 0) return;
-    if (typeof node.token !== "string") return;
-    if (ENTITY_KIND_SET.has(node.kind)) return; // entities never carry a token ref property
-    if (!tokenLayer.has(node.token)) {
-      findings.push({
-        path: `${nodePath}/token`,
-        message: `token reference '${node.token}' resolves to no documented token — with a token layer present, token references MUST name a documented token (entityRef resolution)`,
-      });
-    }
-  }
-
-  // Token tokenType inheritance: a token may omit `tokenType` only when an
-  // ancestor token group declares it (children inherit the group's value).
-  function checkTokenTypeInheritance() {
-    (function scan(node, inherited, p) {
-      if (Array.isArray(node)) return node.forEach((v, i) => scan(v, inherited, `${p}/${i}`));
-      if (!node || typeof node !== "object") return;
-      let next = inherited;
-      if (node.kind === "token-group") {
-        next = typeof node.tokenType === "string" ? node.tokenType : inherited;
-      } else if (node.kind === "token") {
-        if (typeof node.tokenType !== "string" && !next) {
-          findings.push({
-            path: `${p}/tokenType`,
-            message: `token '${node.identifier}' has no tokenType and no ancestor token group declares one — tokenType MUST be present or inherited`,
-          });
-        }
-      }
-      for (const [k, v] of Object.entries(node)) scan(v, next, `${p}/${k}`);
-    })(doc, null, "");
-  }
-
-  // docOrigin per-block overrides: every key in metadata.docOrigin.blocks MUST
-  // match the `kind` of a block in the entity's documentBlocks or
-  // agentDocumentBlocks — a key that matches no block is a defect.
-  function checkDocOriginBlocks(entity, entityPath) {
-    const docOrigin = entity.metadata && entity.metadata.docOrigin;
-    if (!docOrigin || typeof docOrigin !== "object") return;
-    const blocks = docOrigin.blocks;
-    if (!blocks || typeof blocks !== "object") return;
-    const kinds = new Set(
-      [].concat(entity.documentBlocks || [], entity.agentDocumentBlocks || [])
-        .map((b) => b && b.kind)
-        .filter(Boolean),
-    );
-    for (const key of Object.keys(blocks)) {
-      if (!kinds.has(key)) {
-        findings.push({
-          path: `${entityPath}/metadata/docOrigin/blocks/${key}`,
-          message: `docOrigin block key '${key}' matches no block kind in this entity's documentBlocks or agentDocumentBlocks — a key that matches no block is a defect`,
-        });
-      }
-    }
-  }
-
-  function walk(node, nodePath) {
-    if (!node || typeof node !== "object") return;
-    if (Array.isArray(node)) {
-      node.forEach((item, i) => walk(item, `${nodePath}/${i}`));
-      return;
-    }
-    if (ENTITY_KIND_SET.has(node.kind) && typeof node.identifier === "string") {
-      checkCriterionScope(node, nodePath);
-      checkRelationships(node, nodePath);
-      checkDocOriginBlocks(node, nodePath);
-    }
-    if (node.$extensions && typeof node.$extensions === "object") {
-      for (const key of Object.keys(node.$extensions)) {
-        if (!EXTENSION_KEY_REGEX.test(key)) {
-          findings.push({
-            path: `${nodePath}/$extensions`,
-            message: `extension key '${key}' is not vendor-namespaced (expected reverse-domain style, e.g. 'com.acme.tool')`,
-          });
-        }
-      }
-    }
-    checkComponentRefs(node, nodePath);
-    checkTokenOverrides(node, nodePath);
-    checkTokenRefString(node, nodePath);
-    if (node.kind === "sections" && Array.isArray(node.items)) {
-      checkAnchorScope(node.items, `${nodePath}/items`);
-    }
-    if (Array.isArray(node.sections)) {
-      checkAnchorScope(node.sections, `${nodePath}/sections`);
-    }
-    if (Array.isArray(node.entities)) {
-      checkIdentifierScope(node.entities, `${nodePath}/entities`);
-    }
-    if (Array.isArray(node.children)) {
-      checkIdentifierScope(node.children, `${nodePath}/children`);
-    }
-    for (const [key, value] of Object.entries(node)) {
-      if (key === "$extensions") continue;
-      walk(value, `${nodePath}/${key}`);
-    }
-  }
-
-  walk(doc, "");
-  checkRelationshipCycles();
-  checkTokenTypeInheritance();
-  return findings;
-}
-
-function validateSemantics() {
-  console.log("━━━ Semantic checks (uniqueness, extension namespaces) ━━━\n");
-
-  const files = findFilesRecursive(EXAMPLES_DIR, ".dsds.json").concat(
-    findFilesRecursive(path.join(ROOT, "test"), ".dsds.json").filter(
-      (f) =>
-        !f.includes(`${path.sep}invalid${path.sep}`) &&
-        !f.includes("sanity-ui"),
-    ),
-  );
-  let passed = 0;
-  let failed = 0;
+// The reusable core: given an already-parsed document, returns every
+// error (both pure-schema and RULES-tagged semantic ones) and every
+// warning (a project-scope finding this validator couldn't confirm with
+// full confidence - see validateItemRefs) as strings. No I/O beyond what
+// opts.filePath's project discovery does, no process exit -
+// tools/conformance-test.js reuses this exact function so a fixture is
+// checked against the same logic validate.js's own CLI runs, not a
+// second copy of it.
+//
+// opts.filePath is only needed to resolve a rel: file project - pass it
+// whenever the document being validated came from a real file on disk.
+function validateDoc(doc, opts = {}) {
   const errors = [];
-
-  for (const filePath of files) {
-    const file = path.relative(EXAMPLES_DIR, filePath);
-    let data;
-    try {
-      data = JSON.parse(fs.readFileSync(filePath, "utf-8"));
-    } catch {
-      continue; // Part 1 already reports JSON parse failures
-    }
-    const findings = semanticFindings(data);
-    if (findings.length === 0) {
-      console.log(`  ✓ ${file}`);
-      passed++;
-    } else {
-      console.error(`  ✗ ${file}`);
-      for (const f of findings) {
-        console.error(`      ${f.path || "(root)"}: ${f.message}`);
-        errors.push({ file, path: f.path, message: f.message });
-      }
-      failed++;
-    }
-  }
-
-  console.log(`\n  ${passed} passed, ${failed} failed\n`);
-  return { passed, failed, errors };
-}
-
-// ---------------------------------------------------------------------------
-// Part 4: Negative fixtures — documents that MUST fail validation
-// ---------------------------------------------------------------------------
-
-const INVALID_FIXTURES_DIR = path.join(ROOT, "test", "invalid");
-
-/**
- * Every .dsds.json file in test/invalid/ must be rejected — either by schema
- * validation or by the semantic checks. A fixture that validates cleanly is
- * a regression: the guard it pins has stopped working.
- *
- * expectations.json pins HOW each fixture fails (rejection layer, and for
- * schema rejections the instance path of the violation). Without it, a broken
- * guard can hide behind an unrelated failure in the same fixture.
- */
-function validateNegativeFixtures(ajv) {
-  console.log("━━━ Negative fixtures (must fail) ━━━\n");
-
-  const schema = JSON.parse(fs.readFileSync(BUNDLED_SCHEMA_PATH, "utf-8"));
-  const validate = ajv.compile(schema);
-
-  const files = findFilesRecursive(INVALID_FIXTURES_DIR, ".dsds.json");
-  let passed = 0;
-  let failed = 0;
-  const errors = [];
-
-  if (files.length === 0) {
-    // An empty fixture directory is a broken checkout, not a passing suite —
-    // a stale .gitignore once hid the entire suite behind exactly this branch.
-    console.error(
-      "  ✗ no negative fixtures found in test/invalid/ — the guards the suite pins are unverified",
-    );
-    return { passed, failed: 1, errors: [{ file: "test/invalid/", error: "no fixtures found" }] };
-  }
-
-  const EXPECTATIONS_PATH = path.join(INVALID_FIXTURES_DIR, "expectations.json");
-  let expectations;
-  try {
-    expectations = JSON.parse(fs.readFileSync(EXPECTATIONS_PATH, "utf-8"));
-  } catch (e) {
-    console.error(
-      `  ✗ test/invalid/expectations.json is missing or unreadable — every fixture must declare how it fails (${e.message})`,
-    );
-    return {
-      passed,
-      failed: 1,
-      errors: [{ file: "test/invalid/expectations.json", error: "missing or unreadable" }],
-    };
-  }
-
-  for (const filePath of files) {
-    const file = path.relative(INVALID_FIXTURES_DIR, filePath);
-    let data;
-    try {
-      data = JSON.parse(fs.readFileSync(filePath, "utf-8"));
-    } catch (e) {
-      console.error(`  ✗ ${file}: fixture is not valid JSON — ${e.message}`);
-      failed++;
-      errors.push({ file, error: `Invalid JSON: ${e.message}` });
-      continue;
-    }
-
-    const schemaValid = validate(data);
-    const ajvErrors = schemaValid ? [] : validate.errors || [];
-    const semantics = schemaValid ? semanticFindings(data) : [];
-    const rejected = !schemaValid || semantics.length > 0;
-
-    if (!rejected) {
-      console.error(
-        `  ✗ ${file}: validated cleanly — the guard this fixture pins is broken`,
-      );
-      failed++;
-      errors.push({ file, error: "fixture unexpectedly valid" });
-      continue;
-    }
-
-    const layer = !schemaValid ? "schema" : "semantic";
-    const via = layer === "schema" ? "schema" : "semantic check";
-    const expected = expectations[file];
-
-    if (!expected) {
-      console.error(
-        `  ✗ ${file}: no entry in test/invalid/expectations.json — declare how this fixture must fail`,
-      );
-      failed++;
-      errors.push({ file, error: "missing expectations entry" });
-      continue;
-    }
-    if (expected.rejectedBy !== layer) {
-      console.error(
-        `  ✗ ${file}: rejected by ${via}, but expectations.json pins '${expected.rejectedBy}' — the guard moved or broke`,
-      );
-      failed++;
-      errors.push({ file, error: `rejected by ${layer}, expected ${expected.rejectedBy}` });
-      continue;
-    }
-    if (layer === "schema" && typeof expected.errorAt === "string") {
-      const at = expected.errorAt;
-      const hit = ajvErrors.some(
-        (e) => e.instancePath === at || (at !== "" && e.instancePath.startsWith(at + "/")),
-      );
-      if (!hit) {
-        console.error(
-          `  ✗ ${file}: fails, but not at ${at || "(document root)"} — it is rejected for the wrong reason`,
-        );
-        failed++;
-        errors.push({ file, error: `no schema error at ${at || "(document root)"}` });
-        continue;
-      }
-    }
-
-    console.log(`  ✓ ${file} (rejected by ${via})`);
-    passed++;
-  }
-
-  // An expectations entry with no fixture is a guard nobody verifies.
-  for (const name of Object.keys(expectations)) {
-    if (!files.some((f) => path.relative(INVALID_FIXTURES_DIR, f) === name)) {
-      console.error(`  ✗ expectations.json entry '${name}' has no fixture file`);
-      failed++;
-      errors.push({ file: name, error: "orphan expectations entry" });
-    }
-  }
-
-  console.log(`\n  ${passed} correctly rejected, ${failed} failed\n`);
-  return { passed, failed, errors };
-}
-
-// ---------------------------------------------------------------------------
-// Main
-// ---------------------------------------------------------------------------
-
-function main() {
-  console.log("\nDSDS Schema Validation\n");
-  console.log(`Schema: ${path.relative(ROOT, BUNDLED_SCHEMA_PATH)}`);
-  console.log(`Examples: ${path.relative(ROOT, EXAMPLES_DIR)}/\n`);
-
-  const ajv = createValidator();
-
-  // Part 1: Validate full document example files
-  const exampleResults = validateExamples(ajv);
-
-  // Part 2: Validate per-definition example files
-  const defAjv = createValidator();
-  const defResults = validateDefinitionExamples(defAjv);
-
-  // Part 3: Semantic checks on example documents
-  const semanticResults = validateSemantics();
-
-  // Part 4: Negative fixtures must fail
-  const negativeAjv = createValidator();
-  const negativeResults = validateNegativeFixtures(negativeAjv);
-
-  // Summary
-  console.log("━━━ Summary ━━━\n");
-
-  const totalPassed =
-    exampleResults.passed +
-    defResults.passed +
-    semanticResults.passed +
-    negativeResults.passed;
-  const totalFailed =
-    exampleResults.failed +
-    defResults.failed +
-    semanticResults.failed +
-    negativeResults.failed;
-
-  console.log(
-    `  Documents: ${exampleResults.passed} passed, ${exampleResults.failed} failed`,
-  );
-  console.log(
-    `  Defs:      ${defResults.passed} passed, ${defResults.failed} failed, ${defResults.skipped} skipped`,
-  );
-  console.log(
-    `  Semantics: ${semanticResults.passed} passed, ${semanticResults.failed} failed`,
-  );
-  console.log(
-    `  Negative:  ${negativeResults.passed} correctly rejected, ${negativeResults.failed} failed`,
-  );
-  console.log(`  Total:     ${totalPassed} passed, ${totalFailed} failed\n`);
-
-  if (totalFailed > 0) {
-    console.error("Validation failed.\n");
-    process.exit(1);
+  const warnings = [];
+  const isBase = typeof doc.schemaVersion !== "undefined";
+  if (isBase) {
+    validateBase(doc, errors, warnings, opts);
   } else {
-    console.log("All validations passed.\n");
-    process.exit(0);
+    validateEntry(doc, errors, warnings, { ...opts, standalone: true });
   }
+  return { errors, warnings };
 }
 
-main();
+function validateFile(target, opts = {}) {
+  const doc = loadYaml(target);
+  const isBase = typeof doc.schemaVersion !== "undefined";
+  const { errors, warnings } = validateDoc(doc, { filePath: target, cliEntities: opts.cliEntities });
+
+  const rel = path.relative(rootDir, target);
+  if (errors.length) {
+    console.error(`✗ ${rel} failed validation:\n`);
+    for (const e of errors) console.error(`  - ${e}`);
+    if (warnings.length) {
+      console.error(`\n  ${warnings.length} warning(s):`);
+      for (const w of warnings) console.error(`  - ${w}`);
+    }
+    return false;
+  }
+
+  if (warnings.length && opts.strict) {
+    console.error(`✗ ${rel} failed validation in --strict mode:\n`);
+    for (const w of warnings) console.error(`  - ${w}`);
+    return false;
+  }
+
+  console.log(`✓ ${rel}`);
+  if (isBase) {
+    const sharedCount = (doc.shared || []).length;
+    console.log(`  base document  schemaVersion: ${doc.schemaVersion}  ${(doc.entries || []).length} entry(ies)${sharedCount ? `, ${sharedCount} shared` : ""}, ${(doc.refs || []).length} ref(s)`);
+  } else {
+    console.log(`  ${doc.kind} "${doc.id}"  status: ${JSON.stringify(doc.metadata && doc.metadata.status)}`);
+    console.log(`  ${(doc.sections || []).length} section(s), ${(doc.refs || []).length} ref(s)`);
+  }
+  if (warnings.length) {
+    console.log(`  ${warnings.length} warning(s):`);
+    for (const w of warnings) console.log(`  - ${w}`);
+  }
+  return true;
+}
+
+// Only run the CLI when invoked directly - tools/conformance-test.js
+// requires this file for validateDoc/RULES and must not trigger a second
+// full validate run (with its own process.exit) as a side effect.
+if (require.main === module) {
+  const args = process.argv.slice(2);
+  const strict = args.includes("--strict");
+  const targets = args.filter((a) => a !== "--strict");
+  const resolvedTargets = targets.length ? targets : defaultTargets();
+
+  // Every entry/shared entity across every file given to this one run,
+  // gathered up front. A standalone entry file has no way to declare
+  // "here are my siblings" the way a base document's own `refs` can (see
+  // validateItemRefs) - the real-world layout it needs that for is an
+  // index file listing many standalone entries via rel: file, with none
+  // of the entries themselves pointing back (test/site-components/ is
+  // exactly this shape). Treating every file handed to one CLI
+  // invocation as one project fills that gap for the common case: run
+  // together, as `npm run check` already does, they resolve against
+  // each other; run alone, a standalone file still only sees itself.
+  const cliEntities = [];
+  for (const target of resolvedTargets) {
+    try {
+      cliEntities.push(...entriesIn(loadYaml(target)));
+    } catch (e) {
+      // Let validateFile() below report the real parse/read error for
+      // this file; it just contributes nothing to the shared pool.
+    }
+  }
+
+  let ok = true;
+  for (const target of resolvedTargets) {
+    if (!validateFile(target, { strict, cliEntities })) ok = false;
+  }
+  process.exit(ok ? 0 : 1);
+}
+
+module.exports = { validateDoc, RULES };

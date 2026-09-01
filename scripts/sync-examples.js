@@ -379,11 +379,14 @@ function main() {
     }
   }
 
-  if (totalIncludes === 0) {
-    // An empty scan is a broken checkout (or a moved content dir), not a
-    // passing sync — the same failure mode validate.js guards against.
+  if (mdFiles.length === 0) {
+    // No .mdx files at all is a broken checkout (or a moved content dir),
+    // not a passing sync — the same failure mode validate.js guards
+    // against. Zero *includes* across real .mdx files, by contrast, is a
+    // legitimate state (no page currently embeds a dsds:include) and not
+    // itself an error.
     console.error(
-      "  ✗ No include directives found — site/content/ is missing or empty.",
+      "  ✗ No .mdx files found — site/content/ is missing or empty.",
     );
     process.exit(1);
   }

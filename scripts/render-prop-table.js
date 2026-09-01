@@ -3,54 +3,85 @@
  *
  * Both build-site.js (per-schema docs pages) and compile-mdx.mjs (MDX
  * <ds-prop-table schema="..." def="..." /> shortcode) emit property tables.
- * This module owns the conversion from a JSON Schema `$defs` entry to the
+ * This module owns the conversion from a schema/ file's shape to the
  * <ds-prop-table>/<ds-prop> HTML fragment that the docs site renders. By
  * sharing this logic, both call sites stay 1:1 with the schema — there is
  * no second source of truth for field types, descriptions, requiredness,
  * or supplementary notes (pattern, default, min items, etc.).
  *
- * `buildDefIndex()` walks the schema directory itself so MDX preprocessing
- * (which runs before the schema-page generator builds its own index) can
- * still resolve cross-reference `$ref` links into <ds-type-ref> tags.
+ * Unlike the old spec/schema/ (many named `$defs` bundled per file, `$ref`
+ * as a relative file path), each schema/*.schema.yaml file is its own
+ * single definition, self-identified by a real `$id` URL and (mostly)
+ * extending a shared base via `allOf` instead of repeating its fields.
+ * `resolveSchema()` flattens an `allOf` chain into one definition schema
+ * a property table can render directly; `buildDefIndex()` keys every
+ * definition — the whole-file one and any of its own local `$defs` — by
+ * the exact `$ref` string used to point at it, so cross-references are a
+ * direct lookup instead of a name match.
  *
  * Exports:
  *   esc                     — HTML escape (also used by callers for other tags)
  *   slug                    — text → URL-safe slug
- *   linkToRef               — extract a $defs name from a $ref string
  *   describeType            — schema fragment → human-readable type string
  *   renderPropertyTable     — defSchema → <ds-prop-table> HTML
- *   buildDefIndex           — walk schema dir → { defName: {pageSlug, filename, group} }
+ *   buildDefIndex           — walk schema dir → { $ref: {pageSlug, anchor, title, description} }
+ *   resolveSchema           — flatten an allOf chain into one renderable schema
  */
 
 const fs = require("fs");
 const path = require("path");
+const yaml = require("js-yaml");
 
 const ROOT = path.resolve(__dirname, "..");
-const SCHEMA_DIR = path.join(ROOT, "spec", "schema");
+const SCHEMA_DIR = path.join(ROOT, "schema");
+
+// schema/base.schema.yaml and schema/shared.schema.yaml sit at the schema
+// root rather than in one of DEFAULT_SCHEMA_GROUPS's subdirectories — same
+// role the old root dsds.schema.json played.
+const ROOT_FILES = ["base.schema.yaml", "shared.schema.yaml"];
 
 // Same set of group directories build-site.js scans, in the same order.
-// Kept in sync with nav.js / build-site.js conventions.
-const DEFAULT_SCHEMA_GROUPS = [
-  "common",
-  "metadata",
-  "document-blocks",
-  "entities",
-];
+// Kept in sync with nav.js's DIR_GROUPS.
+const DEFAULT_SCHEMA_GROUPS = ["common", "metadata", "entries", "sections"];
 
-// The common "envelope" every entity shares. A `delta` prop-table omits these
-// so a per-entity table can show only the properties unique to that entity
-// (ex: a token's `tokenType`/`source`) without re-listing the shared fields
-// already documented in the Common entity properties section. Defined once
-// here so the notion of "common" has a single source of truth.
-const ENTITY_ENVELOPE = [
+// The common "envelope" every entry shares (entries/entry.schema.yaml). A
+// `delta` prop-table omits these so a per-kind table (entries/component,
+// entries/token, ...) can show only the properties unique to that kind,
+// without re-listing fields already documented on the Entry page. Defined
+// once here so the notion of "common" has a single source of truth.
+const ENTRY_ENVELOPE = [
+  "id",
   "kind",
-  "identifier",
   "name",
+  "description",
+  "purpose",
   "metadata",
-  "documentBlocks",
-  "agents",
+  "related",
+  "extends",
+  "refs",
+  "sections",
   "$extensions",
 ];
+
+// The common envelope every section shares (sections/section.schema.yaml).
+// Same idea as ENTRY_ENVELOPE, one level down.
+const SECTION_ENVELOPE = [
+  "kind",
+  "for",
+  "title",
+  "description",
+  "metadata",
+  "items",
+  "freeform",
+  "$extensions",
+];
+
+// JSON_SCHEMA disables YAML's implicit !!timestamp type, which otherwise
+// parses a bare `2026-06-02` into a JS Date instead of a string — see
+// scripts/lib.js's loadYaml for the full explanation.
+function loadSchemaYaml(filePath) {
+  return yaml.load(fs.readFileSync(filePath, "utf-8"), { schema: yaml.JSON_SCHEMA });
+}
 
 // ---------------------------------------------------------------------------
 // HTML escaping & slug helpers
@@ -98,83 +129,148 @@ function slug(text) {
     .toLowerCase();
 }
 
-function linkToRef(ref) {
-  if (!ref) return null;
-  const match = ref.match(/\$defs\/(\w+)/);
-  return match ? match[1] : null;
+/**
+ * The last path segment of a $ref (or its #/$defs/name fragment, if
+ * present) — used only as a fallback label when a $ref doesn't resolve to
+ * a known page (an external/dangling ref), so the table still shows
+ * *something* readable instead of the full URL.
+ */
+function refFallbackLabel(ref) {
+  const hashIdx = ref.indexOf("#");
+  if (hashIdx !== -1) {
+    const frag = ref.slice(hashIdx + 1);
+    const m = frag.match(/\$defs\/(\w+)/);
+    if (m) return m[1];
+  }
+  const base = hashIdx !== -1 ? ref.slice(0, hashIdx) : ref;
+  const file = base.split("/").pop() || base;
+  return file.replace(/\.schema\.yaml$/, "");
+}
+
+// ---------------------------------------------------------------------------
+// allOf resolution
+//
+// Most schema/ files declare their shape as `allOf: [{$ref: <base>}, {type:
+// object, properties: {...}}]` (see docs-new-ported architecture notes: the
+// "open-base + closing-leaf" pattern) rather than repeating the base's own
+// fields. A property table needs the flattened result — every property the
+// definition actually accepts, base and its own alike — so this walks
+// `allOf`, resolving any `$ref` branch against the already-loaded schema
+// registry and merging every branch's `properties`/`required` into one
+// object. Non-allOf schemas pass through unchanged.
+// ---------------------------------------------------------------------------
+
+function resolveSchema(schema, schemaById) {
+  if (!schema || !schema.allOf) return schema;
+
+  const properties = {};
+  const required = new Set();
+
+  function mergeBranch(branch) {
+    if (!branch) return;
+    if (branch.$ref) {
+      const target = schemaById.get(stripFragment(branch.$ref));
+      if (target) mergeBranch(resolveSchema(target, schemaById));
+      return;
+    }
+    if (branch.allOf) {
+      for (const b of branch.allOf) mergeBranch(b);
+    }
+    Object.assign(properties, branch.properties || {});
+    for (const r of branch.required || []) required.add(r);
+  }
+
+  for (const branch of schema.allOf) mergeBranch(branch);
+
+  return {
+    ...schema,
+    type: schema.type || "object",
+    properties,
+    required: [...required],
+  };
+}
+
+function stripFragment(ref) {
+  const i = ref.indexOf("#");
+  return i === -1 ? ref : ref.slice(0, i);
 }
 
 // ---------------------------------------------------------------------------
 // Schema discovery → definition index
 // ---------------------------------------------------------------------------
 
+function listGroupFiles(dirPath) {
+  if (!fs.existsSync(dirPath)) return [];
+  return fs
+    .readdirSync(dirPath)
+    .filter((f) => f.endsWith(".schema.yaml"))
+    .sort();
+}
+
 /**
- * Walk the split schema directories and produce an index mapping each
- * `$defs` name to the page slug + filename that documents it. Optionally
- * include the root schema (`dsds.schema.json`) under the slug `root`.
- *
- * Output shape:
- *   {
- *     [defName]: { pageSlug, filename, group }
- *   }
+ * Walk schema/ (root files + DEFAULT_SCHEMA_GROUPS subdirectories) and
+ * return { schemaById, index }:
+ *   - schemaById: Map<$id, rawSchema> — every loaded file, keyed by its own
+ *     $id, for resolveSchema()'s $ref lookups.
+ *   - index: { [$ref]: { pageSlug, anchor, title, description } } — one
+ *     entry per whole-file $ref (the file's own $id) and one per local
+ *     `$defs` entry (`${$id}#/$defs/${name}`), so a describeType() $ref
+ *     lookup is a direct hit instead of a name match across files.
  */
-function buildDefIndex({
-  schemaDir = SCHEMA_DIR,
-  groups = DEFAULT_SCHEMA_GROUPS,
-  includeRoot = true,
-} = {}) {
+function buildDefIndex({ schemaDir = SCHEMA_DIR, groups = DEFAULT_SCHEMA_GROUPS } = {}) {
+  const schemaById = new Map();
   const index = {};
 
+  const files = [];
+  for (const filename of ROOT_FILES) {
+    files.push({ group: "root", groupLabel: "Base", filename, filePath: path.join(schemaDir, filename) });
+  }
   for (const group of groups) {
     const dirPath = path.join(schemaDir, group);
-    if (!fs.existsSync(dirPath)) continue;
-
-    const files = fs
-      .readdirSync(dirPath)
-      .filter((f) => f.endsWith(".schema.json"))
-      .sort();
-
-    for (const filename of files) {
-      const baseName = filename.replace(".schema.json", "");
-      const pageSlug = `${group}-${baseName}`;
-      const filePath = path.join(dirPath, filename);
-      let data;
-      try {
-        data = JSON.parse(fs.readFileSync(filePath, "utf-8"));
-      } catch (e) {
-        continue;
-      }
-      for (const [defName, def] of Object.entries(data.$defs || {})) {
-        index[defName] = {
-          pageSlug,
-          filename,
-          group,
-          description: def.description || "",
-        };
-      }
+    for (const filename of listGroupFiles(dirPath)) {
+      files.push({ group, groupLabel: group, filename, filePath: path.join(dirPath, filename) });
     }
   }
 
-  if (includeRoot) {
-    const rootPath = path.join(schemaDir, "dsds.schema.json");
-    if (fs.existsSync(rootPath)) {
-      try {
-        const rootData = JSON.parse(fs.readFileSync(rootPath, "utf-8"));
-        for (const [defName, def] of Object.entries(rootData.$defs || {})) {
-          index[defName] = {
-            pageSlug: "root",
-            filename: "dsds.schema.json",
-            group: "documentation",
-            description: def.description || "",
-          };
-        }
-      } catch (e) {
-        // ignore
-      }
+  for (const f of files) {
+    let data;
+    try {
+      data = loadSchemaYaml(f.filePath);
+    } catch (e) {
+      continue;
+    }
+    if (!data || !data.$id) continue;
+    schemaById.set(data.$id, data);
+
+    const baseName = f.filename.replace(/\.schema\.yaml$/, "");
+    const baseSlug = f.group === "root" ? baseName : `${f.group}-${baseName}`;
+    const title = data.title || baseName;
+
+    // pageSlug is the constant "schema" now - every definition lives on
+    // the one Schema page, not its own. Anchors have to do the work
+    // pageSlug used to: `anchor: slug(defName)` alone was only ever
+    // unique *within* one file's own page; on one combined page it needs
+    // the file's own baseSlug prefixed, or two files' identically-named
+    // local $defs (or a local $def that happens to share a name with
+    // another file's own root title) would collide.
+    index[data.$id] = {
+      pageSlug: "schema",
+      anchor: baseSlug,
+      title,
+      description: data.description || "",
+    };
+
+    for (const [defName, def] of Object.entries(data.$defs || {})) {
+      index[`${data.$id}#/$defs/${defName}`] = {
+        pageSlug: "schema",
+        anchor: `${baseSlug}-${slug(defName)}`,
+        title: defName,
+        description: def.description || "",
+      };
     }
   }
 
-  return index;
+  return { schemaById, index };
 }
 
 // ---------------------------------------------------------------------------
@@ -183,23 +279,20 @@ function buildDefIndex({
 
 /**
  * Produce a human-readable type string from a property schema fragment.
- * The optional `defIndex` enables cross-reference links via <ds-type-ref>.
- * When omitted, $refs render as plain inline code instead.
+ * The optional `defIndex` (the `index` half of buildDefIndex()'s return
+ * value) enables cross-reference links via <ds-type-ref>. When omitted,
+ * $refs render as plain inline code instead.
  */
 function describeType(prop, defIndex = {}) {
   if (!prop || typeof prop !== "object") return "any";
 
   // $ref
   if (prop.$ref) {
-    const defName = linkToRef(prop.$ref);
-    if (defName) {
-      const target = defIndex[defName];
-      if (target) {
-        return `<ds-type-ref href="${target.pageSlug}.html#${slug(defName)}">${esc(defName)}</ds-type-ref>`;
-      }
-      return `<ds-code inline>${esc(defName)}</ds-code>`;
+    const target = defIndex[prop.$ref];
+    if (target) {
+      return `<ds-type-ref href="${target.pageSlug}.html#${target.anchor}">${esc(target.title)}</ds-type-ref>`;
     }
-    return `<ds-code inline>$ref</ds-code>`;
+    return `<ds-code inline>${esc(refFallbackLabel(prop.$ref))}</ds-code>`;
   }
 
   // oneOf
@@ -214,6 +307,12 @@ function describeType(prop, defIndex = {}) {
     return parts.join(" | ");
   }
 
+  // allOf (an inline allOf on a property, not a whole definition) — resolve
+  // just enough to describe it as an object shape.
+  if (prop.allOf) {
+    return "object";
+  }
+
   // array
   if (prop.type === "array") {
     if (prop.items) {
@@ -223,7 +322,7 @@ function describeType(prop, defIndex = {}) {
     return "array";
   }
 
-  // object with additionalProperties
+  // object with additionalProperties (open maps like $extensions)
   if (prop.type === "object" && prop.additionalProperties) {
     if (typeof prop.additionalProperties === "object") {
       const valType = describeType(prop.additionalProperties, defIndex);
@@ -233,7 +332,7 @@ function describeType(prop, defIndex = {}) {
   }
 
   // object with properties (inline sub-object) — surface its field names so a
-  // reader sees the shape (ex: `object {file, path}`) rather than a bare
+  // reader sees the shape (ex: `object {platform, file}`) rather than a bare
   // "object". Falls back to "object" for wide objects.
   if (prop.type === "object" && prop.properties) {
     const keys = Object.keys(prop.properties);
@@ -264,7 +363,7 @@ function describeType(prop, defIndex = {}) {
     return esc(prop.type);
   }
 
-  // description-only (no type constraint, e.g., "value" that accepts any JSON)
+  // description-only (no type constraint, e.g., a bare `value` field)
   if (prop.description) {
     return "any";
   }
@@ -283,17 +382,10 @@ function describeType(prop, defIndex = {}) {
  * so the two outputs can never drift out of sync with each other or with the
  * schema.
  *
- * @param {object} defSchema  A schema fragment with a `properties` map.
- *                            Optional `required` (string[]) and `anyOf`
- *                            (with `required` arrays) shape `status`.
+ * @param {object} defSchema  A schema fragment with a `properties` map
+ *                            (already allOf-resolved, if it needed to be).
  * @param {object} [defIndex] Optional cross-reference index for $ref links.
  * @returns {Array<{name, type, status, description, notes}>}
- *   `type` is an HTML fragment (may embed <ds-type-ref>/<ds-code> tags — see
- *   describeType). `status` is "required" | "conditional" | "optional".
- *   `description` is the raw (un-escaped) schema description text. `notes`
- *   is a list of `{ kind, value }` supplementary facts (pattern, default,
- *   enum values, etc.) in the same order the HTML table has always shown
- *   them.
  */
 function propTableRows(defSchema, defIndex = {}, opts = {}) {
   if (!defSchema || typeof defSchema !== "object") return [];
@@ -369,8 +461,7 @@ function propTableRows(defSchema, defIndex = {}, opts = {}) {
     // just because the description lives on the $ref target instead.
     let description = propSchema.description || "";
     if (!description && propSchema.$ref) {
-      const refName = linkToRef(propSchema.$ref);
-      const refTarget = refName && defIndex[refName];
+      const refTarget = defIndex[propSchema.$ref];
       if (refTarget && refTarget.description) {
         description = refTarget.description;
       }
@@ -479,8 +570,6 @@ function escTableCell(text) {
  * Render a property table for a definition's `properties` map.
  *
  * @param {object} defSchema  A schema fragment with a `properties` map.
- *                            Optional `required` (string[]) and `anyOf`
- *                            (with `required` arrays) shape the badges.
  * @param {object} [defIndex] Optional cross-reference index for $ref links.
  * @returns {string}          HTML fragment (`<ds-prop-table>...</ds-prop-table>`)
  *                            or the empty string when there are no properties.
@@ -541,10 +630,11 @@ function renderPropertyTableMarkdown(defSchema, defIndex = {}, opts = {}) {
 // ---------------------------------------------------------------------------
 
 /**
- * Load a schema by relative path and produce the rendered property table
- * for one of its `$defs`. The schemaRef is the path under
- * `spec/schema/` without the `.schema.json` suffix (ex: `entities/component`
- * or `common/agents`). Pass `"root"` to load `dsds.schema.json`.
+ * Load a schema file by its path under schema/ (without the `.schema.yaml`
+ * suffix, ex: `entries/component` or `common/ref`) and produce the rendered
+ * property table for one of its definitions. Pass `"$root"` as `defName` for
+ * the file's own top-level (allOf-resolved) definition; pass a local
+ * `$defs` name (ex: `traitValue`) for one of those instead.
  *
  * @param {string} schemaRef
  * @param {string} defName
@@ -555,32 +645,32 @@ function renderPropertyTableMarkdown(defSchema, defIndex = {}, opts = {}) {
  */
 function renderPropertyTableForRef(schemaRef, defName, opts = {}) {
   const schemaDir = opts.schemaDir || SCHEMA_DIR;
-  const filePath =
-    schemaRef === "root"
-      ? path.join(schemaDir, "dsds.schema.json")
-      : path.join(schemaDir, `${schemaRef}.schema.json`);
+  const filePath = path.join(schemaDir, `${schemaRef}.schema.yaml`);
 
   if (!fs.existsSync(filePath)) {
-    return `<!-- ds-prop-table: schema not found "${schemaRef}" -->`;
+    return `{/* ds-prop-table: schema not found "${schemaRef}" */}`;
   }
 
   let data;
   try {
-    data = JSON.parse(fs.readFileSync(filePath, "utf-8"));
+    data = loadSchemaYaml(filePath);
   } catch (e) {
-    return `<!-- ds-prop-table: failed to parse "${schemaRef}": ${e.message} -->`;
+    return `{/* ds-prop-table: failed to parse "${schemaRef}": ${e.message} */}`;
   }
 
-  // `defName === "$root"` means the schema's top-level `properties` (no $defs).
+  const { schemaById, index: builtIndex } = opts.defIndex
+    ? { schemaById: opts.schemaById || new Map(), index: opts.defIndex }
+    : buildDefIndex({ schemaDir });
+
   let target;
   if (defName === "$root") {
-    target = data;
+    target = resolveSchema(data, schemaById);
   } else {
     target = (data.$defs || {})[defName];
   }
 
   if (!target) {
-    return `<!-- ds-prop-table: def "${defName}" not found in "${schemaRef}" -->`;
+    return `{/* ds-prop-table: def "${defName}" not found in "${schemaRef}" */}`;
   }
 
   // `path` navigates into a nested inline sub-schema (e.g.
@@ -597,22 +687,20 @@ function renderPropertyTableForRef(schemaRef, defName, opts = {}) {
       target = seg === "items" ? target.items : (target.properties || {})[seg];
     }
     if (!target) {
-      return `<!-- ds-prop-table: path "${opts.path}" not found in "${defName}" -->`;
+      return `{/* ds-prop-table: path "${opts.path}" not found in "${defName}" */}`;
     }
   }
 
-  const defIndex = opts.defIndex || buildDefIndex({ schemaDir });
-  // `delta: true` omits the common entity envelope; an explicit `omit` array
+  // `delta: true` omits the common entry envelope; an explicit `omit` array
   // takes precedence when provided.
-  const omit = opts.omit || (opts.delta ? ENTITY_ENVELOPE : []);
-  return renderPropertyTable(target, defIndex, { omit });
+  const omit = opts.omit || (opts.delta ? ENTRY_ENVELOPE : []);
+  return renderPropertyTable(target, builtIndex, { omit });
 }
 
 module.exports = {
   esc,
   escWithCode,
   slug,
-  linkToRef,
   describeType,
   propTableRows,
   typeToMarkdown,
@@ -620,5 +708,10 @@ module.exports = {
   renderPropertyTableMarkdown,
   renderPropertyTableForRef,
   buildDefIndex,
-  ENTITY_ENVELOPE,
+  resolveSchema,
+  loadSchemaYaml,
+  ROOT_FILES,
+  DEFAULT_SCHEMA_GROUPS,
+  ENTRY_ENVELOPE,
+  SECTION_ENVELOPE,
 };

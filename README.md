@@ -6,33 +6,23 @@ A standard, machine-readable format for design system documentation.
 
 ## What is DSDS?
 
-DSDS defines a JSON-based format for documenting the eight entity types of a design system:
+DSDS defines a YAML-based format for documenting a design system as a graph of **entries** and **sections**:
 
-- **Components** — Anatomy, API, variants, states, design specifications, best practices, accessibility, content
-- **Tokens** — Semantic meaning, platform mappings, contrast ratios, usage rules
-- **Token Groups** — Hierarchical organization of tokens into families and sub-families
-- **Themes** — Named sets of token value overrides for color modes, density, brand variants
-- **Foundations** — Broad design domains: color, typography, spacing, elevation, motion, shape, accessibility, and content — with principles, scales, motion definitions, and best practices
-- **Patterns** — Broad interaction patterns like navigation, error messaging, and empty states — with anatomy, variants, states, interactions, and content
-- **Guides** — Long-form, reading-oriented documentation like getting-started walkthroughs, contribution guides, tutorials, and migration guides — with narrative sections, step-by-step procedures, and best practices
-- **Chunks** — Pre-composed blocks of code that capture a pattern built from the system's components — copy-paste starting points like a search bar, settings form, or confirmation dialog — with guidelines, use cases, and the code itself
+- **System** — The design system as a whole: version, organization, url, license, platforms, plus system-wide documentation.
+- **Components** — Reusable UI elements, with their own `sourceFiles`/`imports` (pointing at real source instead of hand-typing an interface), `traits` (variants and states, boolean or enum), and `combos` (pairing rules).
+- **Tokens** — Documents the purpose, guidelines, and organization of a design token. Values and types live in the DTCG source file a token entry points at, not in DSDS.
+- **Themes** — A named set of token overrides, pointing at its own DTCG source file.
+- **Entry** — The generic, open kind for anything else: a foundation, a pattern, a guide, or a namespaced custom kind (e.g. `acme.icon-library`) for a document that wants its own recognizable name.
 
-All structured docs live in one **document block** system. Each entry is a typed container with a `kind` tag. The kinds cover guidelines, use cases, anatomy, API specs, variants, states, accessibility, design specifications, principles, scales, motion, content, imports, interactions, checklists, narrative sections, and step-by-step procedures.
+Every entry's structured documentation lives in one **sections** array. Each section is a typed object with a `kind` tag — `definitions`, `guidelines`, `steps`, or the generic `section` — plus `freeform`, headed nestable prose every section kind can carry alongside its own structured `items`. Any entry kind can use any section kind; there's no placement gate. A section also carries a `for` field (`human`, `agent`, or `all`) naming its audience, so a document serves both readers without a separate parallel structure.
 
-The goal is simple: make design system docs structured, portable, and easy for tools to read. The tool can be a docs site, a linter, a code assistant, or a person reading JSON.
+The goal is simple: make design system docs structured, portable, and easy for tools to read. The tool can be a docs site, a linter, a code assistant, or a person reading YAML.
 
 ## Why?
 
 Design system documentation today is trapped in tools. It lives in Notion, Storybook, Zeroheight, Confluence, or custom-built sites. Each one has its own structure and its own rules, and none of them work together.
 
-This creates real problems:
-
-- **Migration is expensive.** Switching docs tools means rebuilding everything from scratch.
-- **Consistency is accidental.** With no shared structure, every team invents its own format. Readers must relearn what to expect each time.
-- **Tooling can't help.** Tools can't reliably read docs from other tools, since there is no shared schema to build against.
-- **AI needs structure.** LLMs and code assistants work far better with structured, predictable docs than with loose prose.
-
-DSDS addresses these problems by defining a standard format that is:
+DSDS addresses that with a format that is:
 
 | Quality | What it means |
 |---|---|
@@ -42,414 +32,231 @@ DSDS addresses these problems by defining a standard format that is:
 | **Extensible** | Vendor metadata can be added without breaking interoperability. |
 | **Complementary** | Works alongside the [W3C Design Tokens Format](https://www.w3.org/community/reports/design-tokens/CG-FINAL-format-20251028/), not against it. |
 
-## Relationship to W3C Design Tokens
-
-The W3C Design Tokens Community Group defines a format for trading token **values** between tools. DSDS defines a format for the **documentation** around them — how to read and apply those tokens, plus the components, foundations, and patterns that use them.
-
-The two formats are built to work together. DSDS does not duplicate token values or platform identifiers. The W3C Design Tokens Format file is the source of truth for values. Use the `source` property on a token entity to link it back to its DTCG definition.
+The W3C Design Tokens Community Group defines a format for trading token **values** between tools. DSDS defines a format for the **documentation** around them. The two are built to work together — DSDS never duplicates a value or platform identifier; a token or theme entry's `source` field links back to its DTCG definition.
 
 > [!NOTE]
-> **Credit where due:** DSDS's conformance and rules design follows the trail blazed by the [Adobe Spectrum Design Data specification](https://opensource.adobe.com/spectrum-design-data/spec/). The layered model — structural rules enforced in the schema itself, quality rules in a catalog with stable IDs (`rules/rules.yaml`), and testable criteria with declared verification modes — is a Spectrum-style approach, and Spectrum's schema evolution docs informed how DSDS thinks about versioning. Prior art this good deserves a shoutout.
+> **Credit where due:** DSDS's conformance design follows the trail blazed by the [Adobe Spectrum Design Data specification](https://opensource.adobe.com/spectrum-design-data/spec/) — a layered model of structural schema rules plus a semantic-rule catalog with stable IDs. Prior art this good deserves a shoutout.
+
+## Conformance
+
+What it means for a document to follow the DSDS spec: every rule it enforces, and what might still change before version 1.0. For how the schema itself is organized — the shapes every entry, section, and reference is built from — see [How the schema is organized](https://designsystemdocspec.org/schema.html#how-the-schema-is-organized) at the top of the Schema page.
+
+The words **MUST**, **MUST NOT**, **SHOULD**, **SHOULD NOT**, and **MAY** have a specific meaning in this section and inside the DSDS schema files, as defined by [RFC 2119](https://www.rfc-editor.org/rfc/rfc2119) (updated by [RFC 8174](https://www.rfc-editor.org/rfc/rfc8174)). They only carry that meaning when written in capital letters.
+
+### Where the rules live
+
+DSDS keeps its rules inside the schema's own `description` text, next to the field they apply to — the schema *is* the spec, with no separate rulebook to keep in sync. The index at the bottom of this section regenerates from the schema on every build, so it can't drift out of date. Each rule has a location-based ID (for example, `common/ref§note.1`) — if that ID changes, the schema moved, and the rule should be double-checked wherever it's cited.
+
+### Conformance classes
+
+DSDS defines four ways something can "follow the spec" — a document, and the tools that create, read, and check it. State which one you mean.
+
+#### Conforming document
+
+A document that passes schema validation for the version named in its `schemaVersion`, **and** the extra rules below (`DSDS-01` through `DSDS-10`) that a schema file alone can't check. Passing schema validation on its own isn't enough.
+
+#### Conforming producer
+
+A tool or person that creates DSDS documents. A conforming producer:
+
+- MUST only create documents that follow the spec
+- MUST NOT use an outdated field or shape in new documents (old shapes are kept around only so existing documents keep working)
+- SHOULD record how a document was created, using `metadata.origin`
+
+#### Conforming consumer
+
+A tool, renderer, or AI agent that reads DSDS documents. A conforming consumer:
+
+- MUST NOT fail just because it sees an optional field it doesn't recognize
+- MUST keep `$extensions` data intact even if it doesn't understand it
+- MUST treat an unresolvable reference (an `entryId#itemId` pointing nowhere) as an error, not silently ignore it
+- MUST take MUST/SHOULD-style guidance as seriously as the spec says to — a `must-not` guideline is a hard stop for an agent writing code, not a suggestion
+- SHOULD build its own "what points to what" index when it loads a document, rather than expect the document to store that answer directly
+- MUST be able to address every section item, whether or not it was written with an `id` — when one is missing, derive it from the item's own text (lowercase, non-alphanumeric runs collapsed to a dash), the same way every other conforming tool does. See [common/id](https://designsystemdocspec.org/schema.html#common-id).
+
+#### Conforming validator
+
+A tool that checks documents. A conforming validator MUST enforce both the schema itself (with format checks on) and the extra rules below (`DSDS-01`–`DSDS-10`). `scripts/validate.js` is the reference implementation. Its `examples/invalid/` folder holds one broken example per rule, and `scripts/conformance-test.js` confirms each one fails for the exact reason it's supposed to.
+
+### Enforcement tiers
+
+Every rule is enforced one of two ways, or is explicitly advisory (a suggestion, not something checked automatically):
+
+| Tier | How it's checked | What happens if it fails |
+|---|---|---|
+| Structural | Directly by the schema file (required fields, patterns, and similar built-in checks) | Blocks — validation fails |
+| Semantic | By `scripts/validate.js`'s own code (`DSDS-01`–`DSDS-10`: do references resolve, are ids unique, and so on) | Blocks — validation fails |
+| Advisory | Nothing automatic — SHOULD/MAY guidance is a judgment call | Nothing — it's a suggestion |
+
+`DSDS-05`, `DSDS-08`, and `DSDS-09` are the one exception: an unresolved reference is reported as a warning, not a blocking error, unless the validator runs with `--strict`. Every other rule always blocks. See the [rule catalog](#rule-catalog) below.
+
+### Rule catalog
+
+The full list lives in `schema/conformance-rules.yaml`. This table is kept in sync with it by hand, but `scripts/conformance-test.js` (run on every `npm run check`) would catch it if the two ever drifted apart.
+
+| ID | Rule |
+|---|---|
+| `DSDS-01` | At most one `sourceFiles` entry per platform. |
+| `DSDS-02` | A system entry's `metadata.platforms` closes the platform vocabulary, once declared. |
+| `DSDS-03` | A `checkedBy: automated` rule needs somewhere to actually run. |
+| `DSDS-04` | Entry and shared ids are unique within a document. |
+| `DSDS-05` | An `entryId#itemId` ref must resolve. |
+| `DSDS-06` | A `composes` ref chain must not cycle. |
+| `DSDS-07` | A `depends-on` ref chain must not cycle. |
+| `DSDS-08` | A bare `to:` ref must resolve to a real entry or shared entry. |
+| `DSDS-09` | A `combo`'s `subject`/`items` must resolve to a real trait, token, or entry. |
+| `DSDS-10` | A `same-as` item's `level` must match its target's. |
+
+`DSDS-06` and `DSDS-07` restore a cycle check the pre-0.20.0 spec had — nothing should point back at itself through a chain of `composes` or `depends-on` links. The 0.20.0 rewrite dropped it by accident; it's enforced by the validator's own code now, not the schema shape.
+
+`DSDS-05`, `DSDS-08`, and `DSDS-09` check the whole **project**, not just the one document they're given. A `rel: file` link (the way the spec recommends splitting up a large system) joins the resolution pool, and so does every other file passed to the validator in the same run, even without a link between them — the way a standalone entry file, with no field of its own to declare "these are my siblings," still resolves a reference to a component listed alongside it.
+
+The search is bounded to the folder holding the file being validated, and its subfolders — never a parent folder, a sibling folder, or the wider repo. Deliberately narrow: widening it to the nearest `.git` or `package.json` would let a CI job checking one untrusted document read far more of a monorepo than it should. A future `--root` flag could widen it on request; nothing has needed one yet.
+
+An unresolved reference is a **warning**, not a failure, only in this cross-file case — a self-contained document's unresolved `to:` is still a hard error. A standalone entry file is the one exception even then, since it can never assert "this is definitely everything" the way a base document's `entries`/`shared` arrays can. Run with `--strict` to turn these warnings into failures.
+
+Whether a `to:` value even *looks like* a valid id is checked separately, directly by the schema: `common/ref.schema.yaml`'s `to` field only accepts id-shaped values, so a display name or a value with a space in it fails before `DSDS-05`, `DSDS-08`, or `DSDS-09` ever run. See [common/ref](https://designsystemdocspec.org/schema.html#common-ref).
+
+Two related checks remain deliberately unbuilt: whether a relative `href`, a `sourceFiles[].file`, or a `source` actually points at a file that exists on disk (out of scope for now — an explicit, opt-in `DSDS-11` would cover this, not yet implemented), and confirming the exact ids or paths inside another file the way DTCG-path resolution would need. Both would mean reading files the validator has no other reason to open.
+
+### Open conventions
+
+The schema deliberately leaves some questions unanswered — not oversights, but places where a fixed rule would fit some teams and not others.
+
+- **Where does a guideline item's pointer go — `refs`, or a named field?** `alternatives`, `evidence`, `related`, and `checks` each exist for one specific `rel`: `alternative-to`, an external standard, `refines`, and `test`/`lint-rule`. Any other `rel` — `extends`, `depends-on`, `composes`, `part-of`, `replaces`, `implements`, `relates-to`, `pairs-with`, `excludes`, `see-also` — goes in the general-purpose `refs` field instead, alongside `same-as` and `external-link`. See [sections/guidelines](https://designsystemdocspec.org/schema.html#sections-guidelines).
+- **Where does an entry's primary source file go?** `refs` with `rel: source` — see [common/ref](https://designsystemdocspec.org/schema.html#common-ref).
+- **What does `tags[0]` mean?** The first tag, by convention, is the entry's main category — see [metadata](https://designsystemdocspec.org/schema.html#metadata-metadata).
+- **How does a token's `source` point at one key inside a shared DTCG file, not just the whole file?** By convention, a token's own `id` doubles as its path in the DTCG token tree — `color.action.primary` names the same token in both places, which is why `entries/token.id` allows slash separators DSDS ids otherwise don't. When a project's DTCG paths don't line up with its DSDS ids, point `source`'s `href` at the file plus a JSON Pointer fragment instead (`./tokens.dtcg.json#/color/action/primary`) — ordinary URI syntax, no schema change.
+
+### Passing isn't the same as good
+
+A document with zero errors and zero warnings can still be bad documentation — the schema checks structure, not judgment. `examples/anti-patterns/` collects a few small documents that validate cleanly and are still worth avoiding: a definition that only restates its own term, a `checkedBy: manual` claim too vague to actually check, and guideline prose that names a concept (a "token-group" entry) the spec doesn't have. Each file's own leading comment says what's wrong with it and why the schema can't catch it. Deliberately excluded from the default `npm run check` sweep — not meant to be copied.
+
+### Stability and the road to 1.0
+
+DSDS is a **pre-1.0 draft**. Some parts of the schema can grow to cover new cases without a spec change; other parts are locked in.
+
+#### How schema changes get made
+
+Every schema file under `schema/` has comments explaining *why* it's shaped the way it is, and often what it replaced. Reading those comments alongside the schema is the best way to understand how the spec has changed — see the [`CHANGELOG`](CHANGELOG) for exactly how each old field maps to its new one.
+
+#### Designed to grow without a version bump
+
+A handful of fields accept any string matching a pattern, instead of a fixed list of allowed values — so adding a new value never needs a schema change. Safe to build tooling around, but don't treat today's set as complete:
+
+- **`entries/token.tokenType`** — a token's category (`color`, `spacing`, `typography`, ...), checked by pattern, not a fixed list.
+- **`common/ref.rel`** — a reference's relationship (`depends-on`, `same-as`, `implements`, ...), open-ended; new values just get documented in the schema's own comments.
+- **`metadata.status`'s status value** — `stable`, `experimental`, `deprecated`, and more, open for the same reason.
+- **`entry.id` and `common/id`** — a lowercase-dash-dot pattern, not a fixed list of parts, so ids fit whatever hierarchy your system uses.
+- **`$extensions`** — vendor or tool-specific data, grouped by namespace; a tool integration can add a field of its own any time, without waiting on a release.
+
+#### More likely to require a spec change
+
+A few fields are locked to a fixed list of values, because the number of possible cases is a fact about how the spec itself works, not an open-ended vocabulary. Be defensive about this list, not the one above:
+
+- **`entry.kind`** — five well-known values (`system`, `component`, `token`, `theme`, `entry`), four with their own `entries/<kind>.schema.yaml` file, plus a custom dot-separated kind name (e.g. `acme.icon-library`) for a document that wants its own recognizable name. Adding a well-known value changes what this spec can describe at all, so that bar stays high.
+- **`common/requirement-level`** — five values (`must`, `should`, `should-not`, `must-not`, `may`), taken directly from RFC 2119. This vocabulary belongs to that standard, not DSDS.
+- **`sections/*` (the four section kinds)** — `guidelines`, `definitions`, `steps`, `section`. Any entry kind can use any of these. `section` is the generic fallback, the same role `entry` plays for entries; `freeform` isn't a section kind at all, it's a field every section kind can carry. The part of the schema most likely to still change before 1.0.
+
+#### Criteria for declaring 1.0
+
+1.0 is declared when, at minimum:
+
+1. **The kind lists stop changing** — across at least one real pass of merging or splitting them, with no further changes needed.
+2. **A second independent tool exists** — at least one tool the spec authors don't maintain reads or writes DSDS documents for real.
+3. **The validator's extra rules stop changing** — `scripts/validate.js`'s `DSDS-01`–`DSDS-10` (see [Rule catalog](#rule-catalog)) stop being added or renamed release to release.
+
+Until then, the fixed lists above are the most stable part of the schema. Everything else can still change between minor versions, including the exact shape of any one `sections/*.schema.yaml` file.
+
+### Index of every rule
+
+<!-- dsds:normative-index -->
+
+*Generated from the v0.20.0 schemas by `scripts/extract-normative.mjs` — do not edit by hand. 1 statements: 0 MUST, 1 MUST NOT, 0 SHOULD, 0 SHOULD NOT, 0 MAY.*
+
+### metadata
+
+#### metadata/metadata
+
+- **MUST NOT** — MUST NOT contain markup. <small>`metadata/metadata§note.1`</small>
+
+<!-- /dsds:normative-index -->
 
 ## Documentation
 
-The authoritative reference for every schema, field, and document-block type is the **documentation site at [designsystemdocspec.org](https://designsystemdocspec.org/)**. Property tables there come straight from the schema JSON, so they cannot drift from the code.
+The authoritative reference for every schema and field is the **documentation site at [designsystemdocspec.org](https://designsystemdocspec.org/)**. Property tables there come straight from the schema files, so they cannot drift from the code.
 
-Start here:
+- **[Overview](https://designsystemdocspec.org/)** — What DSDS is, the entry/section model, design principles, humans & agents, and interoperability with DTCG/CEM/Storybook. For conformance classes, the `DSDS-01`–`DSDS-10` semantic rule catalog, and stability guarantees, see [Conformance](#conformance) below.
+- **[Quick Start](https://designsystemdocspec.org/quickstart.html)** — Document structure, entry kinds, the section system, and minimal examples for every entry kind.
+- **[Extending the schema](https://designsystemdocspec.org/extending.html)** — `$extensions`, custom kinds, and profiles: the three ways to go beyond what the spec ships with, and when to reach for each.
+- **[Schema](https://designsystemdocspec.org/schema.html)** — Opens with how the schema itself is organized, then every schema definition, each with a real example next to it.
 
-- **[Overview](https://designsystemdocspec.org/)** — What DSDS is, the entity model, and how the pieces fit together.
-- **[Quick Start](https://designsystemdocspec.org/quickstart.html)** — Document structure, entity kinds, the document-block system, and minimal examples for every entity type.
-- **[Humans & agents](https://designsystemdocspec.org/humans-and-agents.html)** — How a DSDS document serves both people and AI agents, and when to use `agentDocumentBlocks` alongside `documentBlocks`.
-- **[Schema Architecture](https://designsystemdocspec.org/schema-architecture.html)** — The full schema reference. Covers document structure, entity types, the `agents` property, status, the document-block system, links, extends, extensions, naming conventions, and conformance levels, all with live property tables sourced from the schema.
-- **[Conformance](https://designsystemdocspec.org/conformance.html)** — Conformance classes, enforcement tiers, and the generated index of every normative statement in the schemas.
-- **[Interoperability](https://designsystemdocspec.org/interoperability.html)** — How DSDS composes with the W3C Design Tokens format, Custom Elements Manifest, and Storybook: the documentation layer over existing sources of truth.
-- **[Stability & 1.0](https://designsystemdocspec.org/stability.html)** — The stability contract: version semantics, the deprecation policy, the enumerated breaking backlog, and the criteria for declaring 1.0.
-- **[Interactive Samples](https://designsystemdocspec.org/samples.html)** — Side-by-side JSON ↔ rendered docs for real-world entities (component, token, theme, foundation, pattern).
+You can also build the site locally with `npm run build` and open `site/dist/index.html`.
 
-Per-schema reference pages sit next to the narrative pages — e.g. [entities/component](https://designsystemdocspec.org/entities-component.html), [document-blocks/guidelines](https://designsystemdocspec.org/document-blocks-guidelines.html), [common/use-cases](https://designsystemdocspec.org/common-use-cases.html). Each page is built from its matching `spec/schema/**/*.schema.json` file.
+This README leaves out schema field listings and example payloads on purpose — those live on the documentation site as a single source of truth.
 
-You can also build the site locally to browse offline or while you work on the spec. Run `npm run build` and open `site/dist/index.html`.
+## Repository layout
 
-This README leaves out schema field listings, document-block catalogs, default values, enforcement levels, and example payloads on purpose. Those live on the documentation site as a single source of truth.
-
-## Project Structure
-
-```
-spec/
-├── schema/
-│   ├── dsds.schema.json                                # Root JSON Schema (anyEntity, entityGroup, fileRef)
-│   ├── dsds.bundled.schema.json                        # Auto-generated single-file bundle
-│   ├── common/                                         # Shared primitives
-│   │   ├── criterion.schema.json                       # criterion, conformanceLevel, verificationMode, criterionCheck, criterionTestCase, reference
-│   │   ├── dated-note.schema.json                      # isoDate, plainNote (shared date+note leaves)
-│   │   ├── entity-ref.schema.json                      # entityRef, entityIdentifier, entityRole (the one way to point at an entity)
-│   │   ├── example.schema.json                         # example
-│   │   ├── extends.schema.json                         # documentExtends, entityExtends
-│   │   ├── extensions.schema.json                      # $extensions
-│   │   ├── link.schema.json                            # link
-│   │   ├── presentation.schema.json                    # presentationImage, presentationVideo, presentationCode, presentationUrl
-│   │   ├── relationship.schema.json                    # relationship, relationType, relationships
-│   │   ├── rich-text.schema.json                       # richText (markdown string)
-│   │   ├── status.schema.json                          # statusValue, platformStatus
-│   │   ├── system-info.schema.json                     # systemInfo
-│   │   ├── token-overrides.schema.json                 # tokenOverrides (shared token-override map)
-│   │   └── use-cases.schema.json                       # useCases (block def; kind 'use-cases'), useCase
-│   ├── metadata/                                       # Entity metadata fields (one file per field)
-│   │   ├── metadata.schema.json                        # entityMetadata (the aggregating object)
-│   │   ├── aliases.schema.json                         # aliases
-│   │   ├── category.schema.json                        # category
-│   │   ├── doc-origin.schema.json                      # docOrigin, docOriginValue, authorshipValue
-│   │   ├── governance.schema.json                      # governance, owner, lastReviewed
-│   │   ├── last-updated.schema.json                    # lastUpdated
-│   │   ├── links.schema.json                           # links
-│   │   ├── preview.schema.json                         # preview
-│   │   ├── since.schema.json                           # since
-│   │   ├── status.schema.json                          # status
-│   │   ├── summary.schema.json                         # summary
-│   │   ├── tags.schema.json                            # tags
-│   │   └── thumbnail.schema.json                       # thumbnail
-│   ├── entities/                                       # Entity types
-│   │   ├── chunk.schema.json                           # chunk
-│   │   ├── component.schema.json                       # component
-│   │   ├── foundation.schema.json                      # foundation
-│   │   ├── guide.schema.json                           # guide
-│   │   ├── pattern.schema.json                         # pattern
-│   │   ├── theme.schema.json                           # theme, tokenOverride
-│   │   └── token.schema.json                           # token, tokenGroup
-│   └── document-blocks/                                # Document block types
-│       ├── document-blocks.schema.json                 # Scoped unions (componentDocumentBlock, generalDocumentBlock, etc.)
-│       ├── accessibility.schema.json                   # accessibility, keyboardInteraction, ariaAttribute, colorContrast
-│       ├── anatomy.schema.json                         # anatomy, anatomyEntry
-│       ├── api.schema.json                             # api, apiProperty, apiEvent, apiSlot, etc.
-│       ├── checklist.schema.json                       # checklist, checklistItem
-│       ├── content.schema.json                         # content, contentLabelEntry, localizationEntry
-│       ├── design-specifications.schema.json           # designSpecifications, spacingSpec, sizingSpec, typographySpec, etc.
-│       ├── guidelines.schema.json                      # guidelines, guidelineEntry
-│       ├── imports.schema.json                         # imports, importEntry
-│       ├── interactions.schema.json                    # interactions, interactionEntry
-│       ├── motion.schema.json                          # motion, motionEntry, motionDuration
-│       ├── principles.schema.json                      # principles, principleEntry
-│       ├── scale.schema.json                           # scale, scaleStep
-│       ├── sections.schema.json                        # sections, sectionEntry
-│       ├── states.schema.json                          # states, stateEntry
-│       ├── steps.schema.json                           # steps, stepEntry
-│       └── variants.schema.json                        # variants, flagVariant, enumVariant, variantValue
-└── examples/
-    ├── starter-kit.dsds.json                           # Complete document with components, tokens, foundations, patterns
-    ├── minimal/                                        # Lightweight examples showing the floor of documentation
-    ├── common/                                         # Per-definition examples for common primitives
-    ├── metadata/                                       # Per-field examples for entity metadata
-    ├── entities/                                       # Per-definition examples for entity types (incl. empty-state pattern)
-    └── document-blocks/                                # Per-definition examples for document block types (incl. motion, content)
-
-rules/
-└── rules.yaml                                          # Quality rules catalog (stable DSDS-NNN IDs; drives lint-docs.js)
-
-taxonomy/
-└── taxonomy.yaml                                       # Writing taxonomy & glossary — one term, one meaning, everywhere
-
-scripts/
-├── bundle.js                                           # Generates dsds.bundled.schema.json from split schemas
-├── validate.js                                         # Validates all example files against the bundled schema
-├── lint-docs.js                                        # Editorial doc lint (warning tier; rules from rules/rules.yaml)
-├── sync-examples.js                                    # Syncs markdown dsds:include directives with example JSON
-├── migrate-to-0.7.js                                   # Migrates v0.5.x / v0.6 documents to the v0.7 shape
-├── migrate-to-0.8.js                                   # Migrates v0.7.x documents to v0.8 (criterion fixture outcomes)
-├── migrate-to-0.10.js                                   # Migrates v0.8.x / v0.9.x documents to v0.10 (levels, entity refs, accessibility data)
-├── migrate-to-0.14.js                                   # Migrates v0.10–v0.13 documents to v0.14 (breaking renames; reports identifier-bearing links)
-├── migrate-relationship-links.js                        # Converts relationship-flavored links to typed `relationships` edges (run before migrate-to-0.14.js)
-├── build-site.js                                       # Generates the static specification site (orchestrator)
-├── build-samples.js                                    # Generates the interactive sample viewer from example JSON
-├── render-entity.js                                    # Server-side entity rendering used by build-samples.js
-├── render-prop-table.js                                # Shared schema-to-HTML property table renderer (used by build-site + MDX)
-├── compile-mdx.mjs                                     # MDX content compiler for narrative pages (overview, quickstart, schema-architecture)
-├── nav.js                                              # Shared navigation builder for spec pages
-└── visualize.js                                        # Generates schema architecture diagram (SVG + Mermaid)
-
-site/
-├── tokens.css                                          # Centralized design tokens (colors, fonts, spacing, radii, etc.)
-├── style.css                                           # Core site stylesheet (layout, nav, typography — imports tokens.css)
-├── pages.css                                           # Shared styles for standalone pages (samples, quickstart)
-├── components/                                         # Reusable HTML web components (ES modules)
-│   ├── index.js                                        # Barrel file — imports all components, registers custom elements
-│   ├── _shared.js                                      # Shared utilities (createShadow, esc, BASE_RESET, FONT)
-│   ├── badge.js                                        # <ds-badge> — status/category badges
-│   ├── back-to-top.js                                  # <ds-back-to-top> — scroll-to-top link
-│   ├── button.js                                       # <ds-button> — button with variants and sizes
-│   ├── card.js                                         # <ds-card> — bordered content card
-│   ├── code.js                                         # <ds-code> — syntax-highlighted code (block + inline)
-│   ├── cross-refs.js                                   # <ds-cross-refs> — cross-reference links
-│   ├── def-example.js                                  # <ds-def-example> — definition example block
-│   ├── def-index.js                                    # <ds-def-index> — page-level definition index
-│   ├── def-section.js                                  # <ds-def-section> — definition section container
-│   ├── footer.js                                       # <ds-footer> — page footer
-│   ├── heading.js                                      # <ds-heading> — section heading (h1–h6) with anchor
-│   ├── note.js                                         # <ds-note> — callout/warning box
-│   ├── prop-table.js                                   # <ds-prop-table> + <ds-prop> — schema property table
-│   ├── schema-header.js                                # <ds-schema-header> — schema page header
-│   ├── scrollspy.js                                    # <ds-scrollspy> — scroll position tracker
-│   ├── sidebar.js                                      # <ds-sidebar> — collapsible sidebar panel
-│   ├── sidenav.js                                      # <ds-sidenav> + <ds-nav-group> + <ds-nav-link>
-│   ├── table.js                                        # <ds-table> — styled table wrapper
-│   ├── tabs.js                                         # <ds-tabs> + <ds-tab> — tabbed content
-│   ├── toc.js                                          # <ds-toc> — auto-built table of contents
-│   ├── toolbar.js                                      # <ds-toolbar> — sticky top toolbar
-│   └── type-ref.js                                     # <ds-type-ref> — type reference link
-├── samples-template.html                               # Template for the interactive sample viewer
-└── dist/                                               # Generated HTML site (auto-generated)
-```
+- **`schema/`** — The split JSON Schema source (`common/`, `metadata/`, `entries/`, `sections/`), plus the auto-generated `dsds.bundled.yaml` and the `DSDS-01`–`DSDS-07` `conformance-rules.yaml` catalog.
+- **`examples/`** — Validated example documents: full base documents, standalone entries per kind, quickstart snippets, interop pairs, and one `invalid/` fixture per semantic rule.
+- **`test/site-components/`** — A regression corpus documenting this repo's own `site/components/` web components as DSDS entries (dogfooding), checked on every `npm run check`.
+- **`scripts/`** — Bundling, validation, composition, and the static site generator.
+- **`site/`** — The spec site source (`content/*.mdx`, `templates/`, `components/`) and its generated output in `site/dist/`, including immutable versioned `v<n>/` archives.
 
 ## Quick Start
 
-### 1. Read the docs site
-
-Visit [designsystemdocspec.org](https://designsystemdocspec.org/) for the canonical reference, or see the [Documentation](#documentation) section above for entry points. Property tables, type definitions, and cross-references are all rendered live from the schema.
-
-### 2. Look at the examples
-
-The [`spec/examples/`](spec/examples/) directory contains validated example files:
-
-- **[`starter-kit.dsds.json`](spec/examples/starter-kit.dsds.json)** — A complete document with components, tokens, a foundation, and a pattern, showing the full architecture.
-- **[`minimal/`](spec/examples/minimal/)** — Lightweight examples (8–30 lines each) showing the floor of documentation for each entity type.
-- **[`interop/`](spec/examples/interop/)** — Interoperability pairs: CEM's sample manifest beside the DSDS component document it converts to, and a DTCG token file beside the DSDS token document that references it. Embedded on the site's Interoperability page via drift-guarded includes.
-- **[`entities/component.json`](spec/examples/entities/component.json)** — A full Button component with anatomy, API, variants (flag and enum types), states, design specs, guidelines, purpose, and accessibility.
-- **[`entities/empty-state-pattern.json`](spec/examples/entities/empty-state-pattern.json)** — An Empty State pattern demonstrating anatomy, variants, states, interactions, content guidelines, and localization on a pattern entity.
-- **[`entities/foundation.json`](spec/examples/entities/foundation.json)** — A Spacing foundation with principles, scale, motion definitions, and guidelines.
-- **[`entities/token.json`](spec/examples/entities/token.json)** — A semantic color token with source reference, category, and guidelines.
-- **[`entities/token-group.json`](spec/examples/entities/token-group.json)** — A hierarchical color palette with nested hue families and grade scales.
-- **[`entities/theme.json`](spec/examples/entities/theme.json)** — A dark mode theme with token overrides, purpose, guidelines, and accessibility.
-- **[`entities/pattern.json`](spec/examples/entities/pattern.json)** — An error messaging pattern with interactions, component references, and accessibility.
-
-### 3. Validate your documents
-
-Install dependencies and run the validation suite:
-
 ```bash
 npm install
-npm run validate
+npm run check   # bundles the schema, validates every example/fixture/test corpus file
+npm run build   # generates the static site into site/dist/
 ```
 
-This runs three steps automatically: syncs example includes, bundles the schema, and validates all example files.
-
-To validate your own DSDS file:
+To validate just your own file:
 
 ```bash
-npx ajv validate --spec=draft2020 -c ajv-formats --strict=false -s spec/schema/dsds.bundled.schema.json -d my-system.dsds.json
+node scripts/validate.js my-system.dsds.yaml
 ```
 
-The `ajv` CLI ships with the project's dependencies (`ajv-cli`), so this works right after `npm install`. The flags matter: `--spec=draft2020` matches the schema's JSON Schema draft, and `-c ajv-formats` enables the `uri` and `date` format checks — without it those constraints are silently skipped.
+If your system is split across files via `rel: file`, cross-file `to:` refs are resolved automatically, bounded to the directory of the file you validate (and its subdirectories — not a parent or cousin directory). An otherwise-unresolved target reports as a warning, not a hard failure — add `--strict` (`npm run validate:strict`) to promote those to failures once your project is clean.
 
-Reference `https://designsystemdocspec.org/v0.15.2/dsds.bundled.schema.json` from your DSDS files via the `$schema` keyword to get editor autocompletion and inline validation. See the [Quick Start docs page](https://designsystemdocspec.org/quickstart.html) for the single-entity and multi-entity document shapes.
+Reference `https://designsystemdocspec.org/v0.20.0/dsds.bundled.yaml` from your DSDS files via the `$schema` keyword for editor autocompletion and inline validation.
 
-#### Editorial lint (warnings, never blocking)
-
-Schema validation answers "is this document allowed?" The doc lint answers "is this documentation good?" It flags quality gaps — guidelines without a rationale or evidence, components and patterns without use cases, entities without a description — and always exits 0:
-
-```bash
-npm run lint:docs                       # lints spec/examples/
-node scripts/lint-docs.js my-system.dsds.json   # lint your own files or directories
-```
-
-### 4. Build the spec site
-
-```bash
-npm run build
-# Open site/dist/index.html
-```
-
-The site is auto-generated from the schema JSON files. Property tables, type descriptions, and cross-references all come directly from the schemas. The prose modules add context and examples.
-
-### 5. Regenerate the bundled schema
-
-After changing any schema file, regenerate the bundled version:
-
-```bash
-npm run bundle
-```
-
-### 6. Visualize the schema architecture
-
-Generate a diagram showing how all schema files relate to each other:
-
-```bash
-npm run visualize
-```
-
-This produces:
-
-- `site/dist/schema-architecture.mmd` — Mermaid source (renders natively on GitHub)
-- `site/dist/schema-architecture.svg` — Clean SVG with no CSS, compatible with Figma
-
-Options:
-
-```bash
-node scripts/visualize.js --format=svg               # SVG only
-node scripts/visualize.js --format=mmd               # Mermaid source only
-node scripts/visualize.js --layout=root,entities,guidelines,common  # Custom column order
-node scripts/visualize.js --layout=root+common,entities,guidelines  # Stack groups with +
-node scripts/visualize.js --no-edges                  # Hide dependency edges
-```
-
-### 7. Build the interactive sample viewer
-
-Generate a side-by-side documentation page that shows how DSDS JSON maps to rendered output:
-
-```bash
-npm run build-samples
-```
-
-This reads example JSON files from `spec/examples/` and produces `site/dist/samples.html` — a self-contained page with:
-
-- **Tabs** for each entity type: Button Component, Color Token, Error Messaging Pattern, Spacing Foundation, Dark Theme
-- **Side-by-side layout**: raw JSON on the left, rendered documentation on the right
-- **Element-level highlighting**: hover over any rendered element to see its corresponding JSON, and vice versa
-- **Color-coded section bars** mapping JSON sections to their visual output
-- **Off-screen indicators** when highlighted code is scrolled out of view
-
-To add a new example tab, add an entry to the `SAMPLES` array in `scripts/build-samples.js`:
-
-```js
-{
-  file: "entities/component.json",  // path relative to spec/examples/
-  key: "component",                 // top-level key to extract
-  id: "component",                  // unique tab identifier
-  label: "Button Component",        // human-readable tab label
-}
-```
-
-### 8. Authoring narrative pages with schema-driven tables
-
-Narrative content (`site/content/*.mdx` — the Overview, Quick Start, and Schema Architecture pages) is compiled to HTML by `scripts/compile-mdx.mjs`. Authors write documentation content alongside two custom shortcodes:
-
-- `<ds-example file="..." label="..." />` — inlines a JSON example from `spec/examples/minimal/` as a fenced code block.
-- `<ds-prop-table schema="..." def="..." />` — renders the property table for any `$defs` entry directly from the schema. Per-schema docs pages and narrative pages share the same renderer (`scripts/render-prop-table.js`), so a description change in a schema flows to every page automatically.
-
-Example:
-
-```mdx
-### Anatomy entry
-
-A component or pattern's anatomy entry has the following shape:
-
-<ds-prop-table schema="document-blocks/anatomy" def="anatomyEntry" />
-```
-
-Special values:
-
-- `schema="root"` — loads `spec/schema/dsds.schema.json`.
-- `def="$root"` — renders the schema's top-level `properties` (used for schemas that don't use `$defs` at all).
-
-The Quick Start page (`site/content/quickstart.mdx`) is compiled the same way as every other narrative page. There is no longer a separate build command for it: run `npm run build` and the page is regenerated at `site/dist/quickstart.html`.
+For document structure, composing hand-split fragments (`scripts/compose.js`), and authoring narrative pages with schema-driven property tables, see the **[Quick Start docs page](https://designsystemdocspec.org/quickstart.html)** and [How the schema is organized](https://designsystemdocspec.org/schema.html#how-the-schema-is-organized).
 
 ## Cutting a release
 
-The spec version lives in three coordinated places:
+There's no single version field — every `schema/**/*.schema.yaml` file's own `$id` independently encodes the version (e.g. `.../v0.20.0/common/ref.schema.yaml`), and everything else (`nav.js`, `compile-mdx.mjs`'s `{{VERSION}}` substitution, the versioned `site/dist/v<n>/` directory) derives the current version by reading it back out of `schema/dsds.bundled.yaml`. MDX content must never hardcode a version — always use `{{VERSION}}`.
 
-1. **`spec/schema/dsds.schema.json#/properties/dsdsVersion/const`** — the single source of truth. The bundle script, the nav, every page title, and the versioned dist directory all derive from this value.
-2. **The `$id` URL on every schema file** — e.g., `https://designsystemdocspec.org/v0.15.2/metadata/last-updated.schema.json`. Every example document's `$schema` field and every `"dsdsVersion"` literal inside example JSON has to track the same version.
-3. **`package.json#version`** — the npm package version. Conventionally kept in lockstep with `dsdsVersion.const`.
-
-The `scripts/bump-version.js` script keeps the first two in sync across all 52 schema files, every example, and the README. `package.json` is handled separately because it's not a schema-consumer file.
-
-### Version templating in MDX content
-
-The MDX content pages (`site/content/*.mdx`) **never hardcode a version**. They reference it through the `{{VERSION}}` token, which `scripts/compile-mdx.mjs` substitutes at build time from `dsds.schema.json#/properties/dsdsVersion/const` — the single source of truth above. Use `{{VERSION}}` anywhere a page needs the spec version: page titles and headings, `$schema` URLs (`https://designsystemdocspec.org/v{{VERSION}}/…`), inline `"dsdsVersion": "{{VERSION}}"` examples, and documentation content.
-
-This means a version bump propagates to every site page on the next `npm run build` with no string rewriting — so `bump-version.js` deliberately does **not** touch the MDX files. **Do not hardcode a version in MDX**, or it will silently drift the next time the spec is bumped. (Real example documents under `spec/examples/` are the exception: they carry literal, validatable versions and are version-stamped by `bump-version.js`.)
-
-### Release types
-
-| Change | Spec version | New URL path? | Old URL path |
-|---|---|---|---|
-| Schema additions (new optional fields, new union members, new entity kinds) | Bump patch (e.g. `0.2` → `0.2.1`) | Yes — published at `/v0.2.1/` | `/v0.2/` stays untouched as a historical artifact |
-| Breaking changes (renamed/removed fields, new required fields, tightened constraints) | Bump minor or major (e.g. `0.2.1` → `0.3`) | Yes — published at `/v0.3/` | All older versions stay untouched |
-| Documentation-only edits (typos, prose clarifications, no schema or example changes) | No bump | No | No change |
-
-The versioned dist directories (`site/dist/v<n>/dsds.bundled.schema.json`) are **immutable public contracts**. `npm run build` refuses to overwrite an existing one. Every consumer that pins `$schema` to that URL relies on the file there never changing.
-
-### Step-by-step
-
-This is the exact sequence for cutting a release that includes schema changes. Skip steps 1–3 for a documentation-only release.
-
-1. **Make your schema changes** under `spec/schema/`. Add new files, edit existing ones, or update the unions in `metadata/metadata.schema.json` / `document-blocks/document-blocks.schema.json` as needed.
-
-2. **Add or update examples** under `spec/examples/`. Per-definition example files live in `spec/examples/{common,document-blocks,entities,metadata}/<schemaName>.json` and are picked up automatically by the docs site for each schema page. Update full-document examples (`starter-kit.dsds.json`, etc.) and entity examples (`entities/component.json`, etc.) to demonstrate the new feature in context.
-
-3. **Update the README project structure listing** under `## Project Structure` if you added or removed schema files. (The site nav auto-discovers schemas, so no MDX updates are needed for that.)
-
-4. **Bump `package.json#version`** to the target version (e.g. `0.2.0` → `0.2.1`).
-
-5. **Add a CHANGELOG entry** at the top of `CHANGELOG`, mirroring the format of the prior release. Include a one-line header noting where the bundled schema is now served (ex: "Schema files are now served at `https://designsystemdocspec.org/v0.15.2/...`") and an "Additions" or "Breaking changes" section describing every schema-visible change.
-
-6. **Run the version bump.** Preview the change first:
-
-   ```bash
-   node scripts/bump-version.js 0.2.1 --dry-run
-   ```
-
-   Apply it:
-
-   ```bash
-   node scripts/bump-version.js 0.2.1
-   ```
-
-   This rewrites `dsdsVersion.const`, the root schema title, every `$id` URL across the 52 split schemas, every example's `$schema` URL and `"dsdsVersion"` literal, and the README — then regenerates `spec/schema/dsds.bundled.schema.json` so the bundle reflects the new version. The MDX content pages need no rewriting; they pick up the new version from `{{VERSION}}` on the next `npm run build` (see [Version templating in MDX content](#version-templating-in-mdx-content)). The script is drift-tolerant: it migrates any stale `/v<X>/` URL it finds, not just the one currently in `dsdsVersion.const`.
-
-7. **Build the site.**
-
-   ```bash
-   npm run build
-   ```
-
-   This regenerates every page under `site/dist/` and publishes a new `site/dist/v<new-version>/dsds.bundled.schema.json`. If a versioned directory for the new version already exists with a differing bundle, the build will print a warning and skip the copy — delete the file manually and rerun the build to intentionally re-publish.
-
-8. **Validate.**
-
-   ```bash
-   npm run validate
-   ```
-
-   All example documents and per-definition examples must pass. A failure here usually means an example file uses an old field name or a newly required field is missing.
-
-9. **Spot-check the rendered site.** Confirm the version reads correctly in three places:
-
-   - Page `<title>` tags (ex: `DSDS Last Updated Metadata — DSDS 0.15.2`).
-   - The nav title (`Design System Doc Spec 0.15.2`).
-   - The footer (`Design System Doc Spec (DSDS) 0.14.0 — Draft Specification`).
-
-   The new schema page should exist at `site/dist/<group>-<name>.html` (ex: `site/dist/metadata-last-updated.html`), and the versioned bundle should exist at `site/dist/v<new-version>/dsds.bundled.schema.json`.
-
-10. **Commit.** Stage the schema changes, example updates, README, CHANGELOG, `package.json`, and the entire `site/dist/` tree (including the new versioned subdirectory) in one commit. The historical versioned subdirectories under `site/dist/v<older>/` must stay untouched.
-
-### Patch-release shortcut for documentation-only edits
-
-For a typo fix or prose clarification that doesn't touch any schema or example:
+`scripts/bump-version.js` automates the mechanical part — every schema file's `$id`, `bundle.js`'s hardcoded `$id`, every example/test fixture's `schemaVersion`, README's one hardcoded URL, and `package.json#version` — then regenerates the bundled schema and syncs `.agents/skills/dsds-*`'s version references:
 
 ```bash
-npm run build   # regenerates HTML only; no version bump, no new versioned bundle
+# 1. Make schema changes under schema/, add examples/ + examples/invalid/ fixtures as needed.
+# 2. Add a CHANGELOG entry.
+npm run bump-version 0.20.1     # rewrites every version reference, bundles, syncs skill versions
+npm run build                   # publishes a new site/dist/v<new-version>/
+npm run check                   # must pass before committing
 ```
 
-No changelog entry, no version bump, no new `/v<n>/` artifact. Commit the regenerated HTML.
+Use `npm run bump-version <version> -- --dry-run` to preview changes first, or `--help` for the rest of the flags.
 
-## Design Principles
+The versioned dist directories (`site/dist/v<n>/dsds.bundled.schema.{json,yaml}` — the extension depends on which version; see the "Bundle format" note below) are **immutable public contracts** — older `v<n>/` directories must stay untouched. Commit the schema changes, examples, README, CHANGELOG, `package.json`, and the full `site/dist/` tree together.
 
-1. **Structure enables quality.** A defined format sets a floor for quality and completeness.
-2. **Guidance without justification is incomplete.** Every best practice must answer "why?"
-3. **Documentation should be portable.** Teams change tools. Docs should survive the move.
-4. **Education is a responsibility.** Explain *what*, *why*, and *how*.
-5. **Specificity over subjectivity.** "Use sparingly" is not guidance. "Limit to one per surface" is.
-6. **Schema is the source of truth.** Property tables come from schema JSON, not hand-written copy. Prose gives context; schemas give structure.
+### Bundle format
+
+`dsds.bundled.yaml` (YAML, matching the hand-authored `schema/**/*.schema.yaml` source it's built from) starting with this version. Versions before this one published `dsds.bundled.schema.json` and keep doing so, frozen, under their own `site/dist/v<n>/` directory — only the *current* version's bundle format changed. "JSON Schema" names the spec both formats conform to (a constraint language for a data model), not a file-syntax requirement — see `scripts/bundle.js`'s own comment.
+
+For a documentation-only edit (no schema/example changes), just run `npm run build` and commit the regenerated HTML — no version bump, no new `/v<n>/` artifact.
 
 ## Contributing
 
-This is an early-stage specification (currently DSDS 0.15.2). Feedback is welcome:
+This is an early-stage specification (currently DSDS 0.20.0). Feedback is welcome:
 
 - **Open an issue** for questions, suggestions, or problems with the spec.
 - **Open a PR** for proposed changes to the spec, schema, or examples.
 
 ### Contributors
 
-- [Afyia Smith](https://afyiasmith.co/) — the `governance` and `docOrigin` metadata schemas (introduced in 0.12.1).
+- [Afyia Smith](https://afyiasmith.co/) — the `owner`/`reviewed` and `origin` metadata schemas.
 
 ## License
 

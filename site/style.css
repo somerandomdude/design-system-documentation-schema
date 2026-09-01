@@ -17,7 +17,7 @@ html {
     -webkit-text-size-adjust: 100%; /* still required by Safari; no unprefixed fallback there */
     text-size-adjust: 100%;
     scroll-behavior: smooth;
-    background: #1a1a1a;
+    background: var(--ds-color-bg-accent);
 }
 
 body {
@@ -28,6 +28,13 @@ body {
     line-height: 1.6;
     display: flex;
     min-height: 100vh;
+
+    /* 100dvh accounts for mobile browser chrome (address bar) shrinking
+       the real viewport - 100vh alone is the classic mobile-Safari bug
+       where a full-height element runs taller than what's actually
+       visible. Cascading fallback: an unsupported browser just never
+       sees this second declaration and keeps the 100vh above. */
+    min-height: 100dvh;
     text-rendering: geometricprecision;
     -webkit-font-smoothing: antialiased;
     padding: 0;
@@ -53,7 +60,8 @@ body {
 
 /* Main content area — the nav is fixed-position and sits on top of this
    (not pushing it via margin), so padding reserves the same visual inset
-   instead of shifting the box itself. */
+   instead of shifting the box itself. Block-start now (a top bar), not
+   inline-start (there's no more sidebar column to reserve). */
 .content {
     flex: 1;
     min-width: 0;
@@ -66,7 +74,16 @@ body {
 }
 
 .content__container {
-    padding-inline-start: var(--ds-width-nav);
+    padding-block-start: var(--ds-height-nav, 64px);
+}
+
+/* content--full pages (Quick start, Schema) open with <ds-header>'s own
+   full-viewport hero (min-height: 100dvh, see header.js) instead of
+   flowing straight from the fixed nav bar - the hero already clears the
+   nav on its own, so this container's nav-clearance padding is redundant
+   weight stacked on top of it, not a second gap that needs clearing. */
+.content--full .content__container {
+    padding-block-start: 0;
 }
 
 .content__inner {
@@ -77,6 +94,36 @@ body {
     /* Generous bottom padding so the page doesn't end abruptly right after
        the last line of content. */
     padding-bottom: calc(var(--ds-space-8) * 4);
+}
+
+/* The Schema page's own layout: full viewport width, not the shared
+   reading-width cap, so its side-by-side def/example columns have real
+   room. Set via renderMainSchema()'s content_class, not by page type name -
+   any page could ask for it in principle.
+
+   The right-hand column's white background is painted here, once, as
+   content__inner's own background - not per-<ds-def-section>, and not as
+   an absolutely-positioned pseudo-element behind everything either (tried
+   that first: a position:absolute, z-index:-1 ::before is still a
+   *descendant*, and its stacking position depends on content__inner
+   forming its own stacking context, which position:relative alone does
+   not guarantee - it silently painted behind other content in testing).
+   An element's own background always paints beneath all of its
+   descendants, full stop, with no stacking-context caveats - so a hard-
+   stop gradient here is the one paint layer every <ds-def-section>
+   (split or not, with or without an example) and every group heading
+   renders on top of, for the page's entire height, automatically. Split
+   at the same x position <ds-def-section>'s own .cols grid uses (50% +
+   half the column gap, since the container's own padding cancels out of
+   that math - see the DEF_SECTION_CSS comment on .end for the matching
+   per-section version). */
+.content--full .content__inner {
+    max-width: none;
+    background: linear-gradient(
+        to right,
+        transparent calc(50% + var(--ds-space-8) / 2),
+        var(--ds-color-bg-inverse) 0
+    );
 }
 
 /* Typography */
@@ -107,7 +154,7 @@ em {
 
 hr {
     border: none;
-    margin: var(--ds-space-8) 0;
+    margin: var(--ds-space-16) 0;
     height: 0;
 }
 
@@ -147,31 +194,41 @@ blockquote p:last-child {
 }
 
 @media (max-width: 900px) {
-    .content {
-        padding-inline-start: 0;
-    }
-
+    /* The bar's own reserved block-start space (.content__container's base
+       rule) still applies here - the top bar never disappears at mobile,
+       it just gains a collapsible dropdown, so content still needs to
+       clear its closed-state height. Only the side padding shrinks. */
     .content__inner {
-        padding: var(--ds-space-8) var(--ds-space-4);
-        padding-top: calc(var(--ds-space-8) + 48px);
+        padding-inline: var(--ds-space-4);
         padding-bottom: calc(var(--ds-space-8) * 4);
     }
 
-    .content__container {
-        padding: 0;
+    /* The desktop hard-stop gradient (see .content--full .content__inner
+       above) splits left/right at the midpoint of a two-column .cols row -
+       correct there, since .start and .end each really do occupy one
+       half. Below the 900px breakpoint .cols collapses to a single
+       column (guide-section.js/def-section.js), so .start stretches to
+       the full width and would sit on top of whichever half of the
+       gradient happens to fall behind it - a 50/50 tan/white split
+       behind stacked, full-width content, not a meaningful boundary
+       between two columns that no longer exist. Solid instead: .end's
+       own white background (painted directly on itself, not borrowed
+       from this gradient) still shows wherever an .end panel actually
+       renders below .start, same as always. */
+    .content--full .content__inner {
+        background: var(--ds-color-bg);
     }
 }
 
 /* Print */
 @media print {
     ds-spec-nav,
-    ds-nav-toggle,
     ds-back-to-top {
         display: none;
     }
 
-    .content {
-        padding-inline-start: 0;
+    .content__container {
+        padding-block-start: 0;
     }
 
     pre {
@@ -179,17 +236,6 @@ blockquote p:last-child {
         overflow-wrap: break-word;
     }
 }
-
-h1, h2, h3, h4, h5, h6 {
-    font-family: var(--ds-font-mono);
-}
-
-h1 { font-size: var(--ds-font-size-xl); font-weight: var(--ds-font-weight-bold); margin: 0 0 var(--ds-space-4); }
-h2 { font-size: var(--ds-font-size-lg); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-8) 0 var(--ds-space-2); }
-h3 { font-size: var(--ds-font-size-lg); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-8) 0 var(--ds-space-2); }
-h4 { font-size: var(--ds-font-size-lg); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-4) 0 var(--ds-space-2); }
-h5 { font-size: var(--ds-font-size-base); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-4) 0 var(--ds-space-2); }
-h6 { font-size: var(--ds-font-size-base); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-2) 0 var(--ds-space-2); color: var(--ds-color-text); }
 
 /* ── Page transitions ─────────────────────────────────────────────────
    Opts every same-origin navigation into the browser's native

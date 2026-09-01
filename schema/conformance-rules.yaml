@@ -1,0 +1,101 @@
+- id: DSDS-01
+  name: ONE_API_PER_PLATFORM
+  title: At most one `sourceFiles` entry per platform.
+  description: >-
+    A component cannot declare two `sourceFiles` entries for the same
+    `platform` (or two with no `platform` at all) - a tool needs exactly
+    one source file to extract each platform's interface from.
+
+- id: DSDS-02
+  name: PLATFORM_VOCABULARY
+  title: "A system entry's `metadata.platforms` closes the platform vocabulary, once declared."
+  description: >-
+    When a `kind: system` entry declares `metadata.platforms`, every
+    `platform` value used anywhere in the document must be one of them.
+    This includes a component's own `sourceFiles` and `imports` entries,
+    and a status entry.
+
+- id: DSDS-03
+  name: CHECKED_BY_NEEDS_REF
+  title: "A `checkedBy: automated` rule needs somewhere to actually run."
+  description: >-
+    A guideline item that claims `automated` verification must carry at
+    least one `refs` or `checks` entry with `rel: test` or `rel:
+    lint-rule`. Otherwise, "automated" is just an unverifiable label, not
+    a real connection to a check.
+
+- id: DSDS-04
+  name: UNIQUE_ENTRY_ID
+  title: Entry and shared ids are unique within a document.
+  description: >-
+    `entries` and `shared` share one id and addressing space. An
+    `entryId#itemId` ref cannot tell which array its entryId half came
+    from. So no two entries across both arrays can share an `id` — not
+    just within `entries` alone.
+
+- id: DSDS-05
+  name: ITEM_REF_RESOLVES
+  title: An `entryId#itemId` ref must resolve.
+  description: >-
+    When a `ref`'s `to` uses the `#itemId` form (see [Schema
+    architecture](schema-architecture.html#refs-1)), the named entry or
+    shared entry must exist in the document. The named item's `id` must
+    also exist somewhere in its sections. This is what makes `same-as`
+    transclusion off a `base.shared` entry a real, checked connection,
+    rather than a string that happens to look right.
+
+- id: DSDS-06
+  name: COMPOSES_CYCLE
+  title: A `composes` ref chain must not cycle.
+  description: >-
+    Following every `rel: composes` ref from entry to entry must never lead
+    back to an entry already in the chain. A composition graph with a cycle
+    has no well-defined "what is this built from" answer.
+
+- id: DSDS-07
+  name: DEPENDS_ON_CYCLE
+  title: A `depends-on` ref chain must not cycle.
+  description: >-
+    Following every `rel: depends-on` ref from entry to entry must never
+    lead back to an entry already in the chain, for the same reason a
+    `composes` cycle is invalid - a dependency graph with a cycle has no
+    valid resolution order.
+
+- id: DSDS-08
+  name: ENTRY_REF_RESOLVES
+  title: A bare `to:` ref must resolve to a real entry or shared entry.
+  description: >-
+    When a `ref`'s `to` is a bare id (no `#itemId`), the entry or shared
+    entry it names must exist - `entries` and `shared` share one id space
+    (see `DSDS-04`). Resolves against the whole project, not just the one
+    document handed to the validator: a `rel: file` link is followed
+    transitively, and every file passed to one CLI invocation is treated
+    as belonging to the same project. A target still not found this way
+    reports as a warning, not a hard error, unless nothing wider was
+    available to check against at all.
+
+- id: DSDS-09
+  name: COMBO_TARGET_RESOLVES
+  title: A `combo`'s `subject`/`items` must resolve.
+  description: >-
+    A `combo` target names one of three things: a trait on the same
+    entry (a bare id for a boolean trait, `traitId.valueId` for an enum
+    value), a token entry wrapped in braces (`{color.action.primary}`),
+    or a bare entry id. `subject: size.small` against a component with
+    no `size` trait, or a token reference to a token that doesn't exist,
+    now fails instead of passing silently. The trait form is always
+    checked against the owning entry's own `traits` - that space is
+    always fully visible, so it's a hard error unconditionally. The
+    token and entry forms follow the same project-scope search
+    `DSDS-05`/`DSDS-08` use, with the same warning-not-error treatment
+    when the search is incomplete.
+
+- id: DSDS-10
+  name: SAME_AS_LEVEL_MATCHES
+  title: A `same-as` item's `level` must match its target's.
+  description: >-
+    `level` is required on every guidelines item, even one that borrows
+    its `statement` from elsewhere via a `same-as` ref - so the
+    borrowing site and the shared rule each carry their own copy of
+    `level`, with nothing checking the two agree. Whenever the same-as
+    target resolves and has its own `level`, this checks they match.

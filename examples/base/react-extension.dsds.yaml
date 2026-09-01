@@ -1,0 +1,33 @@
+# Demonstrates multi-file composition: upstream let entityGroups.nodes[]
+# items be "inline or a $ref to another file" - a per-entry union type just
+# for this case. Here, this document is its own entry in the graph; it
+# points at the document that owns the entries it builds on via an
+# ordinary `refs` entry (rel: file), the same pointer type used
+# everywhere else.
+schemaVersion: "0.20.0"
+
+name: Acme Design System
+
+refs:
+  - href: ./starter-kit.dsds.yaml
+    rel: file
+    role: core
+
+entries:
+  - id: icon-button
+    kind: component
+    name: Icon Button
+    description: A button variant that renders a single icon with no visible label.
+    metadata:
+      status: {status: stable}
+    refs:
+      - to: button
+        rel: part-of
+      - to: color.action.primary
+        rel: depends-on
+    sections:
+      - kind: guidelines
+        for: all
+        items:
+          - statement: Icon button must carry an aria-label, since it has no visible text label.
+            level: must

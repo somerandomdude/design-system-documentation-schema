@@ -1,0 +1,49 @@
+$schema: https://json-schema.org/draft/2020-12/schema
+$id: https://designsystemdocspec.org/v0.20.0/entries/token.schema.yaml
+title: TokenEntry
+$comment: >-
+  Never stores the token's real value or type. `source` points to the DTCG JSON file which acts as the source of truth. This entry describes what the token is, why is exists, and how to use it.
+description: A single design token, from the Design Tokens Community Group (DTCG) format.
+allOf:
+  - $ref: https://designsystemdocspec.org/v0.20.0/entry.schema.yaml
+  - type: object
+    properties:
+      kind:
+        const: token
+        description: Marks this entry as a token.
+      metadata:
+        allOf:
+          - $ref: https://designsystemdocspec.org/v0.20.0/metadata/entry-metadata.schema.yaml
+        unevaluatedProperties: false
+      id:
+        $ref: https://designsystemdocspec.org/v0.20.0/common/id.schema.yaml#/$defs/tokenId
+        description: This token's unique id.
+        $comment: Looser than the standard id pattern. Allows slash separators too, to fit however a token layer or DTCG source already names things.
+        example: color.action.primary
+      source:
+        $ref: https://designsystemdocspec.org/v0.20.0/common/ref.schema.yaml
+        description: Path to the token's DTCG source file's token reference.
+        $comment: A bare string is a plain file path (shorthand for href). Use the full ref object when role or note matters.
+        example: ./tokens.dtcg.json
+      tokenType:
+        type: string
+        pattern: "^[a-z][a-zA-Z0-9]*$"
+        description: The token's type, from DTCG.
+        $comment: >-
+          Optional - a token can inherit its type from its
+          `metadata.group` instead of stating its own. Left open as a
+          pattern instead of a fixed list. Well-known values as of this
+          writing: color, dimension, fontFamily, fontWeight, duration,
+          cubicBezier, number, shadow.
+        example: color
+      combos:
+        type: array
+        minItems: 1
+        items:
+          $ref: https://designsystemdocspec.org/v0.20.0/common/combo.schema.yaml
+        description: Rules about which other tokens this one must or must never be paired with.
+        example:
+          - subject: "{color.action.primary}"
+            level: must
+            items: ["{color.surface.default}", "{color.surface.raised}"]
+unevaluatedProperties: false

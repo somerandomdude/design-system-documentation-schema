@@ -8,8 +8,7 @@
  *                          recommendations.md, the MDX content pages, and
  *                          any docs under .claude/.
  *   2. Schema descriptions: every `description` value in every
- *                          spec/schema/**\/*.schema.json file (excluding the
- *                          auto-generated bundle). For each schema we
+ *                          schema/**\/*.schema.yaml file. For each schema we
  *                          concatenate the descriptions into a single text
  *                          blob and score the blob as a unit so the metrics
  *                          aren't dominated by single-sentence cells.
@@ -30,6 +29,7 @@ import { execFileSync } from "node:child_process";
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { fileURLToPath } from "node:url";
+import { loadSchemaYaml } from "./render-prop-table.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "..");
@@ -45,7 +45,7 @@ const LONG_FORM_PATHS = [
   "recommendations.md",
   "site/content/overview.mdx",
   "site/content/quickstart.mdx",
-  "site/content/schema-architecture.mdx",
+  "site/content/extending.mdx",
   ".claude/skills/review-schema/reference.md",
 ].filter((p) => fs.existsSync(path.join(ROOT, p)));
 
@@ -56,17 +56,14 @@ function findSchemaFiles(dir) {
     const full = path.join(dir, entry.name);
     if (entry.isDirectory()) {
       out.push(...findSchemaFiles(full));
-    } else if (
-      entry.name.endsWith(".schema.json") &&
-      entry.name !== "dsds.bundled.schema.json"
-    ) {
+    } else if (entry.name.endsWith(".schema.yaml")) {
       out.push(full);
     }
   }
   return out;
 }
 
-const SCHEMA_FILES = findSchemaFiles(path.join(ROOT, "spec", "schema"));
+const SCHEMA_FILES = findSchemaFiles(path.join(ROOT, "schema"));
 
 // ---------------------------------------------------------------------------
 // Schema description extraction
@@ -246,7 +243,7 @@ for (const abs of SCHEMA_FILES) {
   const rel = path.relative(ROOT, abs);
   let data;
   try {
-    data = JSON.parse(fs.readFileSync(abs, "utf-8"));
+    data = loadSchemaYaml(abs);
   } catch (e) {
     row([rel, "—", "(parse error)", "—", "—", "—", "—"], COL_WIDTHS, COL_ALIGNS);
     continue;

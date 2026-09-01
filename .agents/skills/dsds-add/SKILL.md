@@ -2,79 +2,84 @@
 name: dsds-add
 description: Author a new Design System Doc Spec (DSDS) spec from component implementation, Figma design, or written requirements. Triggers on "add spec", "create spec", "new spec", "author spec", "spec from component", "spec from Figma".
 metadata:
-  version: 0.15.2
+  version: 0.20.0
 ---
 
 # Add a DSDS Spec
 
-Create a new `.dsds.json` entity file in `packages/specs/`.
+Create a new standalone `.dsds.yaml` entry file in `packages/specs/`.
 
 ## Procedure
 
-1. Determine entity kind: `component`, `token-group`, `theme`, `foundation`, `pattern`, or `guide`.
+1. Determine entry kind: `component`, `token`, `theme`, or the generic `entry` kind (for a foundation, pattern, guide, or anything else — use a namespaced custom kind like `acme.icon-library` instead if the document wants its own recognizable name).
 2. Gather inputs — read the source (component source code, Figma frame, requirements doc).
-3. Create `{directory}/{identifier}.dsds.json` using the template below.
-4. Add a `$ref` entry in `index.dsds.json` under the correct entity group.
+3. Create `{directory}/{id}.dsds.yaml` using the template below.
+4. Add a `refs` entry (`rel: file`) in `index.dsds.yaml` pointing at the new file.
 5. Run `npm run validate -w packages/specs` — fix errors until it passes.
-6. Run `npm run build -w packages/specs` to regenerate the index.
+6. Run `npm run build -w packages/specs` to regenerate the index, if applicable.
 
 ## File Placement
 
-| Kind                | Directory      |
-| ------------------- | -------------- |
-| component           | `components/`  |
-| token-group / token | `tokens/`      |
-| theme               | `themes/`      |
-| foundation          | `foundations/` |
-| pattern             | `patterns/`    |
-| guide               | `guides/`      |
+| Kind | Directory |
+| --- | --- |
+| `component` | `components/` |
+| `token` | `tokens/` |
+| `theme` | `themes/` |
+| `entry` (foundation) | `foundations/` |
+| `entry` (pattern) | `patterns/` |
+| `entry` (guide) | `guides/` |
 
 ## Template (Component)
 
-```json
-{
-  "$schema": "https://designsystemdocspec.org/v0.15.2/dsds.bundled.schema.json",
-  "dsdsVersion": "0.15.2",
-  "entity": {
-    "kind": "component",
-    "identifier": "<filename-without-extension>",
-    "name": "<PascalCase>",
-    "description": "<one-sentence summary>",
-    "metadata": {
-      "status": { "overall": "draft" },
-      "since": "<version>",
-      "category": "<action|feedback|form|disclosure|overlay|navigation|layout>",
-      "tags": [],
-      "summary": "<short phrase>"
-    },
-    "documentBlocks": []
-  }
-}
+```yaml
+id: <filename-without-extension>
+kind: component
+name: <PascalCase>
+description: <one-sentence summary>
+
+metadata:
+  status: {status: draft}
+  since: <version>
+  tags: [<action|feedback|form|disclosure|overlay|navigation|layout>]
+
+sourceFiles:
+  - platform: <react|web-component|...>
+    file: <path to the real source file>
+
+imports:
+  - platform: <react|web-component|...>
+    code: <import statement, written out>
+    package: <package name>
+
+sections:
+  - kind: guidelines
+    for: all
+    context: how-to-use
+    items: []
 ```
 
-## Required Document Blocks (Components)
+## Sections to Include (Components)
 
-Include at minimum: `imports`, `anatomy`, `api`, `accessibility`, `guidelines`.
-
-Add when applicable: `use-cases`, `variants`, `states`, `agentDocumentBlocks`.
+Include at minimum: a `guidelines` section (`context: how-to-use`) covering usage rules and accessibility requirements. Add `traits` (top-level, not a section) for variants/states, a `guidelines` section with `context: when-to-use` for fit judgments, and a `definitions` section for props/anatomy only when there's no real source file to point `sourceFiles` at instead. Add a `for: agent` section for firm rules an agent needs but a person wouldn't.
 
 ## Extraction Guidelines
 
-- **From code**: Map props → `api.properties`, CSS class anatomy → `anatomy.parts`, data attributes → `dataAttributes`.
-- **From Figma**: Map layers → `anatomy.parts`, component properties → `api.properties` or `variants`, variable bindings → token references.
-- **From requirements**: Map acceptance criteria → `guidelines`, interaction requirements → `accessibility.keyboardInteractions`.
+- **From code**: Point `sourceFiles` at the real file instead of hand-typing props — that's the whole point of the field. Map variant/state props → `traits` (`kind: enum` or `kind: boolean`). Map CSS parts or named sub-elements → a `definitions` section titled "Anatomy".
+- **From Figma**: Map component properties → `traits`, layer structure → a `definitions` section, variable bindings → token `refs`.
+- **From requirements**: Map acceptance criteria → `guidelines` items (`level` from RFC 2119: `must`/`should`/`should-not`/`must-not`/`may`), interaction requirements → a `definitions` section titled "Keyboard interactions" (term = key, definition = action).
 
 ## Schema References
 
 When unsure about field shapes or required properties, consult:
 
 - **Bundled schema** (in-repo): `packages/specs/schema/dsds.bundled.schema.json`
-- **Entity docs**: `https://designsystemdocspec.org/entities-{kind}` (e.g. `/entities-component`)
-- **Block docs**: `https://designsystemdocspec.org/document-blocks-{kind}` (e.g. `/document-blocks-api`)
-- **Quick start examples**: https://designsystemdocspec.org/quickstart#minimal-examples
+- **Entry docs**: `https://designsystemdocspec.org/entries-{kind}` (e.g. `/entries-component`)
+- **Section docs**: `https://designsystemdocspec.org/sections-{kind}` (e.g. `/sections-guidelines`)
+- **Quick start examples**: https://designsystemdocspec.org/quickstart.html
 
 ## Gotchas
 
-- `entity.identifier` must match the filename (e.g. `checkbox` → `checkbox.dsds.json`).
-- Always sort `documentBlocks` in this order: imports, use-cases, anatomy, api, variants, states, accessibility, guidelines.
-- Use RFC 2119 levels in guidelines: `must`, `should`, `should-not`, `must-not`.
+- `id` must match the filename (e.g. `checkbox` → `checkbox.dsds.yaml`).
+- A component's `sourceFiles`, `imports`, `traits`, and `combos` are top-level fields on the entry, never inside a section.
+- Use RFC 2119 levels in guidelines: `must`, `should`, `should-not`, `must-not`, `may`.
+- `metadata.status` is always an object (`{status: "draft"}`), never a bare string.

@@ -1,0 +1,54 @@
+id: empty-state
+kind: entry
+name: Empty State
+description: Composition of components shown when a view has no content to display yet.
+
+metadata:
+  status: {status: stable}
+  since: 1.3.0
+  tags: [feedback]
+
+refs:
+  - to: icon
+    rel: composes
+  - to: button
+    rel: composes
+  - to: spacing-scale
+    rel: depends-on
+
+sections:
+  # A "when to use" guidelines section - "recommended" is level: should,
+  # "discouraged" is should-not, and the better choice is an ordinary
+  # pointer (rel: alternative-to).
+  - kind: guidelines
+    for: all
+    framing: when-to-use
+    title: When to use
+    items:
+      - statement: A list or table has zero results after filtering.
+        level: should
+      - statement: A page fails to load due to a network error.
+        level: should-not
+        refs:
+          - to: error-state
+            rel: alternative-to
+            note: A load failure is a system error, not an empty result - it needs a retry action, not an empty-state message.
+
+  - kind: steps
+    for: all
+    title: Recovery flow
+    items:
+      - title: List loads with zero results
+        description: When a filter or search narrows the results to zero, the empty state renders in place of the list, with a heading, body text, and (if applicable) a primary action.
+        refs:
+          - to: button
+            rel: depends-on
+            role: Clears the filter or starts the relevant action.
+      - title: User resolves the empty state
+        description: When the user selects the primary action, the triggering condition is resolved and the list re-renders with content.
+
+  - kind: guidelines
+    for: human
+    items:
+      - statement: Always pair the message with a next action when one exists.
+        level: should

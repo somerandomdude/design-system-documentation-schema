@@ -1,0 +1,108 @@
+schemaVersion: "0.20.0"
+
+name: Acme Design System
+
+entries:
+  # System-wide facts (version, organization, url, license, platforms)
+  # and system-wide documentation live on this entry's own metadata and
+  # sections - the same shapes every other entry uses, instead of a
+  # bespoke base-level shape.
+  - id: acme-design-system
+    kind: system
+    name: Acme Design System
+    description: Acme's cross-platform design system.
+    metadata:
+      version: 1.4.0
+      organization: Acme Corp
+      url: https://design.acme.example
+      license: MIT
+      platforms: [react, web-component]
+      status: {status: stable}
+    sections:
+      - kind: guidelines
+        for: all
+        title: Versioning
+        items:
+          - statement: This design system follows semver; breaking token renames bump the major version.
+            level: must
+
+  - id: color.action.primary
+    kind: token
+    name: Action Primary
+    description: The fill color for high-emphasis interactive surfaces.
+    tokenType: color
+    metadata:
+      status: {status: stable}
+      tags: [color]
+
+  - id: light
+    kind: theme
+    name: Light
+    description: The default theme - standard luminance for well-lit surfaces.
+    colorScheme: light
+    metadata:
+      status: {status: stable}
+    refs:
+      - href: tokens/light.tokens.json
+        rel: file
+        note: DTCG source for this theme's own token values.
+
+  - id: dark
+    kind: theme
+    name: Dark
+    description: Inverted-luminance theme for low-light surfaces and user preference.
+    colorScheme: dark
+    metadata:
+      status: {status: stable}
+    refs:
+      - to: light
+        rel: extends
+      - href: tokens/dark.tokens.json
+        rel: file
+        note: DTCG source for this theme's token overrides - the specific tokens that differ from `light` are whichever this file redeclares.
+
+  - id: button
+    kind: component
+    name: Button
+    description: An interactive element that triggers an action when activated.
+    metadata:
+      status: {status: stable}
+    refs:
+      - to: color.action.primary
+        rel: depends-on
+    sections:
+      - kind: guidelines
+        for: human
+        items:
+          - statement: Limit each surface to one primary button.
+            level: should
+      - kind: guidelines
+        for: all
+        items:
+          # No `statement` here - this item IS the "touch-target" rule
+          # declared once on shared-a11y below, not a second copy of it.
+          # guidelines.schema.yaml only requires `statement` when there's
+          # no same-as ref to fall back on.
+          - level: must
+            refs:
+              - to: shared-a11y#touch-target
+                rel: same-as
+
+# Reusable content that isn't a design-system artifact - not an entry, so
+# it lives in this array instead of `entries` above (see entry.schema.yaml's
+# own $comment for why `kind: shared` moved here instead). It documents no
+# artifact of its own - nothing else in this file `depends-on`/`composes`
+# it - it only exists to be pointed at, via an entryId#itemId ref (see
+# common/ref.schema.yaml's `to`) and the `same-as` rel. A shared entry is
+# never its own navigable destination.
+shared:
+  - id: shared-a11y
+    name: Shared Accessibility Rules
+    description: Cross-cutting accessibility rules, stated once and referenced from every entry they apply to.
+    sections:
+      - kind: guidelines
+        for: all
+        items:
+          - id: touch-target
+            statement: Minimum touch target 44x44px.
+            level: must

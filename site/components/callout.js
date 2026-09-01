@@ -26,7 +26,7 @@ import { createShadow, BASE_RESET, FONT } from "./_shared.js";
 
 const CALLOUT_CSS = `
   ${BASE_RESET}
-  :host { display: block; }
+  :host { display: block; max-width: 65ch; }
 
   .callout {
     margin: var(--ds-space-2) 0 var(--ds-space-8);

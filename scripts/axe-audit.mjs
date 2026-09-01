@@ -5,7 +5,7 @@
  * Spins up a static server over site/dist/, loads each page in a real
  * Chromium instance via Playwright, and runs axe-core against it.
  * Prints a violation summary per page and exits non-zero if any page
- * has violations, so it can gate CI the same way lint:tokens/lint:docs do.
+ * has violations, so it can gate CI the same way lint:css does.
  *
  * Usage:
  *   npm run test:a11y
