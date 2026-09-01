@@ -1395,12 +1395,16 @@
     }
 
     .start {
-      padding-block: var(--ds-space-16);
+      padding-block: 128px;
+    }
+
+    .start  {
+      max-width: 65ch;
     }
 
     .end {
       background: var(--ds-color-bg-inverse);
-      padding: var(--ds-space-16) var(--ds-space-4);
+      padding: 128px var(--ds-space-4);
     }
 
     /* Stretches the slotted <ds-code> to match .end's own height, which is
@@ -1524,6 +1528,7 @@
       font-size: var(--ds-font-size-base);
       color: var(--ds-color-text);
       margin-top: var(--ds-space-4);
+      max-width: 65ch;
     }
     ::slotted(a) {
       font-family: ${FONT.mono};
@@ -1987,6 +1992,11 @@
 
       .nav {
         min-height: 64px;
+        /* Matches .content__inner's own mobile padding-inline (see
+           style.css's max-width: 900px block) - both var(--ds-space-4), so
+           the bar's edges line up with the content's instead of the wider
+           desktop inset (calc(var(--ds-space-4) * 2)) above. */
+        padding-inline: var(--ds-space-4);
       }
 
       /* Positioned to sit directly under the (inset, floating) bar itself -
@@ -2248,7 +2258,7 @@
 
   const CALLOUT_CSS = `
     ${BASE_RESET}
-    :host { display: block; }
+    :host { display: block; max-width: 65ch; }
 
     .callout {
       margin: var(--ds-space-2) 0 var(--ds-space-8);

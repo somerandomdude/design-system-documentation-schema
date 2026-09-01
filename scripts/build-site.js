@@ -206,51 +206,60 @@ function renderPropertyTableMarkdown(defSchema) {
 // ---------------------------------------------------------------------------
 // Curated per-definition examples
 //
-// A real, already-validated snippet from examples/ for each schema file's
-// own definition - not synthesized, not hand-invented for this page. Keyed
-// by the same baseSlug buildDefIndex() (render-prop-table.js) anchors
-// definitions under. Deliberately incomplete: a baseSlug with no entry
-// here just renders without the split layout/example column, until a real
-// example exists to add ("most examples should already exist in the
-// examples directory - use those, and add more if/when needed").
+// A short, illustrative snippet for every definition on the Schema page -
+// one entry per definition, root or nested $def alike - keyed by the exact
+// same anchor buildDefIndex() (render-prop-table.js) and renderSchemaPage()
+// below already compute for it (a root definition's is its file's own
+// baseSlug; a local $def's is `${baseSlug}-${slug(defName)}`). Each example
+// aims to touch every one of that definition's own top-level properties at
+// least once - condensed with flow-style YAML (`{...}`/`[...]`) or `...`
+// where spelling one out in full would just add length without adding
+// information, not left out. A definition with no entry here renders
+// without the split layout/example column.
 // ---------------------------------------------------------------------------
 
 const CURATED_EXAMPLES = {
   base: {
     file: "examples/base/starter-kit.dsds.yaml",
     yaml: `schemaVersion: "0.20.0"
-
 name: Acme Design System
+$schema: https://designsystemdocspec.org/v0.20.0/dsds.bundled.yaml
 
 entries:
   - id: acme-design-system
     kind: system
-    name: Acme Design System
-    description: Acme's cross-platform design system.
-    metadata:
-      version: 1.4.0
-      organization: Acme Corp
-      url: https://design.acme.example
-      license: MIT
-      platforms: [react, web-component]
-      status: {status: stable}
-  - id: color.action.primary
-    kind: token
-    ...`,
+    ...
+
+shared:
+  - id: shared-a11y
+    ...
+
+refs:
+  - href: ./starter-kit-fragments/button.dsds.yaml
+    rel: file
+
+$extensions:
+  com.acme: {...}`,
   },
   shared: {
     file: "examples/base/starter-kit.dsds.yaml",
-    yaml: `shared:
-  - id: shared-a11y
-    name: Shared Accessibility Rules
-    description: Cross-cutting accessibility rules, stated once and referenced from every entry they apply to.
-    sections:
-      - kind: guidelines
-        for: all
-        items:
-          - id: touch-target
-            statement: Minimum touch target 44x44px.
-            level: must`,
+    yaml: `- id: shared-a11y
+  name: Shared Accessibility Rules
+  description: Cross-cutting accessibility rules, stated once and referenced from every entry they apply to.
+  metadata:
+    status: {status: stable}
+  refs:
+    - href: https://www.w3.org/WAI/WCAG21/quickref/
+      rel: external-link
+  sections:
+    - kind: guidelines
+      for: all
+      items:
+        - id: touch-target
+          statement: Minimum touch target 44x44px.
+          level: must
+  $extensions:
+    com.acme: {...}`,
   },
   "common-combo": {
     file: "examples/entries/color-action-primary.yaml",
@@ -259,6 +268,31 @@ entries:
     level: must
     items: ["{color.surface.default}", "{color.surface.raised}"]
     note: Contrast is verified only against these surfaces; on any other background the label ratio is unproven.`,
+  },
+  "common-combo-target": {
+    file: "examples/entries/color-action-primary.yaml",
+    yaml: `size.large               # a bare id
+"{color.action.primary}"  # or a token reference`,
+  },
+  "common-example": {
+    file: "examples/entries/button.yaml",
+    yaml: `example:
+  title: One primary action per surface
+  description: A toolbar with one filled primary button and two lower-emphasis secondary buttons.
+  showcase:
+    kind: image
+    url: https://cdn.acme.example/ds/showcase/button-primary-surface.png
+    alt: A toolbar with one filled primary button and two lower-emphasis secondary buttons.
+  ref:
+    href: https://storybook.acme.example/?path=/story/button--primary
+    rel: storybook`,
+  },
+  "common-example-list": {
+    file: "examples/entries/button.yaml",
+    yaml: `- title: One primary action per surface
+  showcase: {kind: image, url: https://cdn.acme.example/ds/showcase/button-primary-surface.png}
+- title: Loading state
+  ref: {href: ./stories/button.stories.tsx, rel: storybook}`,
   },
   "common-extensions": {
     file: "examples/entries/button.yaml",
@@ -271,16 +305,34 @@ entries:
     file: "examples/entries/color-action-primary.yaml",
     yaml: `id: color.action.primary`,
   },
+  "common-id-tokenid": {
+    file: "examples/entries/space-4.yaml",
+    yaml: `color/action/primary`,
+  },
+  "common-id-namespaced": {
+    file: "examples/entries/button.yaml",
+    yaml: `acme.icon-library`,
+  },
   "common-markdown": {
     file: "examples/entries/button.yaml",
     yaml: `statement: Do not use button when the action navigates to a new URL; use the link entry instead.`,
   },
   "common-ref": {
     file: "examples/entries/button.yaml",
-    yaml: `- level: must
-  refs:
-    - href: https://example.atlassian.net/browse/DS-482
-      rel: external-link`,
+    yaml: `- href: https://example.atlassian.net/browse/DS-482
+  rel: external-link
+  role: Tracks the two-primary-buttons issue
+  note: Filed after a usability test surfaced the ambiguity.
+# or, pointing inside this document instead of outside it:
+- to: shared-a11y#touch-target
+  rel: same-as`,
+  },
+  "common-ref-list": {
+    file: "examples/entries/button.yaml",
+    yaml: `- to: button
+  rel: depends-on
+- href: https://storybook.acme.example
+  rel: storybook`,
   },
   "common-requirement-level": {
     file: "examples/entries/button.yaml",
@@ -289,44 +341,68 @@ entries:
 - statement: Use buttons only for in-page actions, never navigation.
   level: must`,
   },
-  "common-since": {
-    file: "examples/entries/space-4.yaml",
-    yaml: `metadata:
-  status: {status: stable}
-  since: 1.0.0`,
-  },
-  "common-example": {
-    file: "examples/entries/button.yaml",
-    yaml: `example:
-  title: One primary action per surface
-  showcase:
-    kind: image
-    url: https://cdn.acme.example/ds/showcase/button-primary-surface.png
-    alt: A toolbar with one filled primary button and two lower-emphasis secondary buttons.`,
-  },
   "common-showcase": {
     file: "examples/entries/button.yaml",
     yaml: `showcase:
   kind: image
   url: https://cdn.acme.example/ds/showcase/button-primary-surface.png
-  alt: A toolbar with one filled primary button and two lower-emphasis secondary buttons.`,
+  alt: A toolbar with one filled primary button and two lower-emphasis secondary buttons.
+  note: Captured from the Storybook build, light theme.`,
+  },
+  "common-since": {
+    file: "examples/entries/space-4.yaml",
+    yaml: `since: 1.4.0`,
   },
   "metadata-metadata": {
     file: "examples/interop/my-element.dsds.yaml",
     yaml: `metadata:
+  tags: [actions, button, cta]
+  owner: ds@acme.example
+  reviewed:
+    - date: 2026-05-01
+      by: human:ahormati
+      note: Copy and contrast ratios re-checked; no changes needed.
+  context: Introduced to give agents extra information for how to use this entry.
+  updated:
+    date: 2026-06-02
+    note: Added the loading trait and its guideline.
   origin:
     method: generated
     author: machine-generated
-    note: Generated from custom-elements.json (CEM schemaVersion 2.1.0) by cem-to-dsds. Usage guidance has not been authored yet.`,
+    note: Generated from custom-elements.json (CEM schemaVersion 2.1.0) by cem-to-dsds.
+  $extensions:
+    com.acme: {...}`,
+  },
+  "metadata-metadata-note": {
+    file: "examples/entries/button.yaml",
+    yaml: `Reviewed against the latest Figma file; no changes needed.`,
+  },
+  "metadata-metadata-isodate": {
+    file: "examples/entries/button.yaml",
+    yaml: `2026-06-02`,
   },
   "metadata-entry-metadata": {
     file: "examples/entries/button.yaml",
     yaml: `metadata:
   status: {status: stable}
   since: 1.4.0
-  updated: {date: 2026-06-02}
+  group: color.action
+  aliases: [btn]
   tags: [actions, button, cta, form-control]
-  aliases: [btn]`,
+  owner: ds@acme.example
+  reviewed:
+    - date: 2026-05-01
+      by: human:ahormati
+  context: Introduced to give agents extra information for how to use this entry.
+  updated: {date: 2026-06-02, note: Added the loading trait and its guideline.}
+  origin: {method: authored, author: human}
+  preview: {kind: image, url: https://cdn.acme.example/ds/showcase/button.png}
+  $extensions:
+    com.acme: {...}`,
+  },
+  "metadata-entry-metadata-statusvalue": {
+    file: "examples/entries/button.yaml",
+    yaml: `stable`,
   },
   "metadata-system-metadata": {
     file: "examples/base/starter-kit.dsds.yaml",
@@ -336,11 +412,78 @@ entries:
   url: https://design.acme.example
   license: MIT
   platforms: [react, web-component]
-  status: {status: stable}`,
+  tags: [design-system]
+  owner: ds@acme.example
+  reviewed:
+    - date: 2026-05-01
+      by: human:ahormati
+  context: Why this system exists, for an agent reading it.
+  updated: {date: 2026-06-02}
+  origin: {method: authored, author: human}
+  $extensions:
+    com.acme: {...}`,
+  },
+  "entries-entry": {
+    file: "examples/entries/empty-state.yaml",
+    yaml: `id: empty-state
+kind: entry
+name: Empty State
+description: Composition of components shown when a view has no content to display yet.
+purpose: Tells the user why an area is empty and what to do next.
+metadata:
+  status: {status: stable}
+related:
+  - to: error-state
+    rel: alternative-to
+extends:
+  - to: base-dialog
+    rel: extends
+refs:
+  - href: https://github.com/acme/ds/tree/main/patterns/empty-state
+    rel: source
+sections:
+  - kind: guidelines
+    for: all
+    items:
+      - statement: Use an empty state the first time a list or grid has no content.
+        level: should
+$extensions:
+  com.acme: {...}`,
+  },
+  "entries-entry-dispatch": {
+    file: "examples/entries/empty-state.yaml",
+    yaml: `- id: empty-state
+  kind: entry
+  name: Empty State
+  description: Composition of components shown when a view has no content yet.
+- id: button
+  kind: component
+  ...`,
   },
   "entries-component": {
     file: "examples/entries/button.yaml",
-    yaml: `traits:
+    yaml: `id: button
+kind: component
+name: Button
+description: Triggers an action.
+purpose: Gives users a single, consistent way to trigger an action.
+metadata: {status: {status: stable}}
+related: [{to: link, rel: alternative-to}]
+extends: [{to: base-dialog, rel: extends}]
+refs: [{href: https://github.com/acme/ds/react/button, rel: source}]
+sections:
+  - kind: guidelines
+    for: all
+    items: [{statement: Limit each surface to one primary button., level: should}]
+$extensions:
+  com.acme: {...}
+sourceFiles:
+  - platform: react
+    file: ./src/Button.tsx
+imports:
+  - platform: react
+    package: "@acme/ui"
+traits:
   - kind: boolean
     id: loading
     description: Shows a spinner in place of the label and blocks interaction while active.
@@ -350,20 +493,26 @@ combos:
     level: must-not
     items: [disabled]
     note: A control can't be simultaneously loading and disabled...
-sourceFiles:
-  - platform: react
-    file: ./src/Button.tsx
 specs:
   - rel: contract
     href: ./contracts/button.contract.json
     role: DS Contracts`,
   },
-  "entries-entry": {
-    file: "examples/entries/empty-state.yaml",
-    yaml: `id: empty-state
-kind: entry
-name: Empty State
-description: Composition of components shown when a view has no content to display yet.`,
+  "entries-component-traitsetby": {
+    file: "examples/entries/button.yaml",
+    yaml: `consumer   # the caller passes this in, like size or variant
+component  # the component sets this on its own, like hover or loading`,
+  },
+  "entries-component-traitvalue": {
+    file: "examples/entries/button.yaml",
+    yaml: `id: loading
+name: Loading
+description: Shows a spinner in place of the label and blocks interaction while active.
+purpose: Prevents duplicate submissions while an action is in flight.
+examples:
+  - title: Default loading state
+    showcase: {kind: image, url: https://cdn.acme.example/ds/showcase/button-loading.png}
+since: 1.4.0`,
   },
   "entries-system": {
     file: "examples/base/starter-kit.dsds.yaml",
@@ -371,13 +520,24 @@ description: Composition of components shown when a view has no content to displ
 kind: system
 name: Acme Design System
 description: Acme's cross-platform design system.
+purpose: One source of truth for how Acme builds and documents interfaces.
 metadata:
   version: 1.4.0
   organization: Acme Corp
   url: https://design.acme.example
   license: MIT
   platforms: [react, web-component]
-  status: {status: stable}`,
+  status: {status: stable}
+related: [{to: acme-brand-system, rel: pairs-with}]
+extends: [{to: base-design-system, rel: extends}]
+refs: [{to: button, rel: composes}]
+sections:
+  - kind: section
+    for: all
+    title: Getting started
+    freeform: [{title: Install, body: Add the package and its peer dependencies.}]
+$extensions:
+  com.acme: {...}`,
   },
   "entries-theme": {
     file: "examples/entries/dark.yaml",
@@ -385,10 +545,23 @@ metadata:
 kind: theme
 name: Dark
 description: Inverted-luminance theme for low-light surfaces and user preference.
-colorScheme: dark
-refs:
+purpose: Lets a product opt into a dark color scheme without redefining every token.
+metadata: {status: {status: stable}}
+related: [{to: light, rel: pairs-with}]
+extends:
   - to: light
-    rel: extends`,
+    rel: extends
+refs:
+  - href: https://www.figma.com/file/acme-dark-theme
+    rel: design
+sections:
+  - kind: guidelines
+    for: all
+    items: [{statement: Test contrast against both themes before shipping., level: should}]
+$extensions:
+  com.acme: {...}
+source: tokens/dark.tokens.json
+colorScheme: dark`,
   },
   "entries-token": {
     file: "examples/entries/space-4.yaml",
@@ -396,31 +569,63 @@ refs:
 kind: token
 name: Space 4
 description: A single step on the base spacing scale - 4 times the 4px base unit.
+purpose: Keeps spacing consistent across components without hand-picked pixel values.
+metadata: {status: {status: stable}, group: space}
+related: [{to: space-8, rel: pairs-with}]
+extends: [{to: space-base, rel: extends}]
+refs: [{href: https://www.figma.com/file/acme-spacing-scale, rel: design}]
+sections:
+  - kind: guidelines
+    for: all
+    items: [{statement: Use for default padding/gap; use space-8 for section spacing., level: should}]
+$extensions:
+  com.acme: {...}
 tokenType: spacing
-source: ./tokens.dtcg.json`,
+source: ./tokens.dtcg.json
+combos:
+  - subject: "{color.action.primary}"
+    level: must
+    items: ["{color.surface.default}", "{color.surface.raised}"]`,
   },
   "sections-definitions": {
     file: "examples/entries/button.yaml",
     yaml: `- kind: definitions
   for: all
+  title: Terms
+  description: Words used in this component's copy.
   context: terms
+  metadata: {status: {status: stable}}
   items:
     - term: OK
       definition: To confirm an action.
     - term: Cancel
-      definition: To cancel an action.`,
+      definition: To cancel an action.
+  freeform:
+    - title: About
+      body: These terms match the ones used in product copy guidelines.
+  $extensions:
+    com.acme: {...}`,
   },
   "sections-guidelines": {
     file: "examples/entries/button.yaml",
     yaml: `- kind: guidelines
   for: agent
   framing: when-to-use
+  title: When to use
+  description: Whether button is the right choice for this action.
+  context: acme.fit-check
+  metadata: {status: {status: stable}}
   items:
     - statement: Do not use button when the action navigates to a new URL; use the link entry instead.
       level: must-not
       alternatives:
         - to: link
-          rel: alternative-to`,
+          rel: alternative-to
+  freeform:
+    - title: Why this matters
+      body: A button that navigates breaks browser back/forward and "open in new tab."
+  $extensions:
+    com.acme: {...}`,
   },
   "sections-steps": {
     file: "examples/entries/button.yaml",
@@ -428,20 +633,63 @@ source: ./tokens.dtcg.json`,
   for: agent
   ordered: false
   title: Pre-release checklist
+  description: Run through before shipping a change to this component.
+  context: acme.checklist
+  metadata: {status: {status: stable}}
   items:
     - title: Focus ring is visible in both light and dark themes.
     - title: Loading state announces to screen readers.
     - title: Works with a custom icon in the leading-icon slot.
-      optional: true`,
+      optional: true
+  freeform:
+    - title: Why this matters
+      body: Skipping this checklist is how contrast regressions ship.
+  $extensions:
+    com.acme: {...}`,
   },
   "sections-section": {
     file: "examples/entries/getting-started.yaml",
     yaml: `- kind: section
   for: all
   title: Troubleshooting
+  description: Common problems and how to fix them.
+  context: acme.troubleshooting
+  metadata: {status: {status: stable}}
+  items:
+    - title: Note
+      body: Generic items have no fixed shape - use freeform for prose instead.
   freeform:
     - title: Styles don't apply
-      body: Confirm the base theme is imported before any component renders - a component's own CSS assumes the theme's custom properties already exist.`,
+      body: Confirm the base theme is imported before any component renders - a component's own CSS assumes the theme's custom properties already exist.
+  $extensions:
+    com.acme: {...}`,
+  },
+  "sections-section-dispatch": {
+    file: "examples/entries/button.yaml",
+    yaml: `- kind: guidelines
+  for: all
+  items:
+    - statement: Limit each surface to one primary button.
+      level: should
+- kind: steps
+  ...`,
+  },
+  "sections-section-freeformentry": {
+    file: "examples/entries/getting-started.yaml",
+    yaml: `title: Install
+id: install
+body: Add the package and its peer dependencies.
+examples:
+  - title: Install with the CLI
+    ref: {href: ./install.sh, rel: file}
+refs:
+  - to: getting-started
+    rel: see-also
+items:
+  - title: Peer dependencies
+    body: React 18+ and a theme provider higher in the tree.
+$extensions:
+  com.acme: {...}`,
   },
 };
 
@@ -761,11 +1009,10 @@ function renderSchemaPage(page) {
     .map((defName) => {
       const isRoot = defName === page.title;
       const anchor = isRoot ? baseSlug : `${baseSlug}-${slug(defName)}`;
-      // Only the file's own root definition gets the curated example -
-      // CURATED_EXAMPLES is keyed by baseSlug, one entry per file, not
-      // per nested $def (see its own comment for why: partial coverage
-      // by design, nested $defs can get one added later).
-      const curated = isRoot ? CURATED_EXAMPLES[baseSlug] : undefined;
+      // CURATED_EXAMPLES is keyed by the exact same anchor every definition
+      // (root or a local $def) already renders under, so every def - not
+      // just a file's own root - can carry its own curated example.
+      const curated = CURATED_EXAMPLES[anchor];
       return renderDefinition(defName, defs[defName], {
         anchor,
         source: relPath,

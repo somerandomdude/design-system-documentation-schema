@@ -65,12 +65,16 @@ const GUIDE_SECTION_CSS = `
   }
 
   .start {
-    padding-block: var(--ds-space-16);
+    padding-block: 128px;
+  }
+
+  .start  {
+    max-width: 65ch;
   }
 
   .end {
     background: var(--ds-color-bg-inverse);
-    padding: var(--ds-space-16) var(--ds-space-4);
+    padding: 128px var(--ds-space-4);
   }
 
   /* Stretches the slotted <ds-code> to match .end's own height, which is

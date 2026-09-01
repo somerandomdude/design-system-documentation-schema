@@ -8,6 +8,7 @@ const CROSS_REFS_CSS = `
     font-size: var(--ds-font-size-base);
     color: var(--ds-color-text);
     margin-top: var(--ds-space-4);
+    max-width: 65ch;
   }
   ::slotted(a) {
     font-family: ${FONT.mono};

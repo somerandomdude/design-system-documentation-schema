@@ -3,9 +3,14 @@ $id: https://designsystemdocspec.org/v0.20.0/section.schema.yaml
 title: Section
 type: object
 description: >-
-  A logical documentation section. Every section uses the same structure
-  (`items`), no matter its kind, and is tagged with who it is for (human,
-  agent, or all). Each sections/<kind>.schema.yaml file adds its own `kind` value and its own structure for `items`.
+  A logical documentation section. Supplies the fields every section kind
+  shares — `kind`, `for`, `title`, `description`, `items`, `metadata`,
+  `$extensions` — plus `freeform`, and is tagged with who it is for
+  (human, agent, or all). Content always lives in `items`, never in a
+  field named after the kind. Each sections/<kind>.schema.yaml file adds
+  its own `kind` value (`definitions`, `guidelines`, `steps`, or the
+  generic `section`) and its own structure for `items` on top of this
+  shared base.
 $comment: >-
   `freeform` lives here on the base so
   every kind can carry nested, headed content alongside its own
@@ -91,6 +96,10 @@ properties:
     $comment: A tool that only cares about one section, like an api section, can stash its data here instead of using the whole entry's escape hatch.
 $defs:
   dispatch:
+    description: >-
+      Routes a section to its own kind-specific schema by `kind`
+      (`definitions`, `guidelines`, `steps`), falling back to this open
+      base for the generic `section` kind or a namespaced custom kind.
     $comment: >-
       Routes a section to its own sections/<kind>.schema.yaml by `kind`,
       falling back to this file (the open base) for the generic `section`
@@ -127,6 +136,7 @@ $defs:
   freeformEntry:
     type: object
     required: [title]
+    description: One nestable, headed block of prose - a freeform section's own building block.
     properties:
       id:
         $ref: https://designsystemdocspec.org/v0.20.0/common/id.schema.yaml

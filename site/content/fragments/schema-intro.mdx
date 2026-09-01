@@ -2,19 +2,18 @@
 
 ## How the schema is organized
 
-This spec is built from a small, fixed set of shapes, reused rather than reinvented per file.
+This spec is built from a small, fixed set of shapes, reused rather than reinvented per file — each definition below documents its own fields directly. See [Conformance in the README](https://github.com/somerandomdude/design-system-documentation-schema#conformance) for how it's all enforced.
 
-**Entries.** [`entry.schema.yaml`](@entries-entry) defines the fields every entry shares: `id`, `kind`, `name`, `description` (required), plus `purpose`, `metadata`, `refs`, `sections`, and `$extensions` (optional). Four kinds add fields of their own — `system`, `component`, `token`, `theme` — each with its own `entries/<kind>.schema.yaml` file. The generic `entry` kind needs nothing extra. An `entry`, or a custom kind like `acme.icon-library`, is checked against `entry.schema.yaml` directly.
+Every entry has a `kind` field. There are 5 well-known values, plus an open option for anything else.
 
-**Sections.** [`sections/section.schema.yaml`](@sections-section) supplies the shared fields — `kind`, `for`, `title`, `description`, `items`, `metadata`, `$extensions` — and each kind (`definitions`, `guidelines`, `steps`, or the generic `section`) shapes its own `items`. Content always lives in `items`, never in a field named after the kind.
-
-**One shared base per kind.** A kind-specific file links back to its shared base with `allOf` and adds only what's new, then closes the combined shape (`unevaluatedProperties: false`) so nothing stray sneaks in. Every `entries/*` and `sections/*` file follows this pattern.
-
-**Lists that mix different shapes.** A list sometimes holds genuinely different kinds of item — a component's `traits` can be `kind: boolean` or `kind: enum`. The schema tells them apart with a `kind` tag (`anyOf`). When items only differ in which *optional* fields happen to be filled in, one flexible shape with no tag is enough — `steps` and `guidelines` both work this way.
-
-**One way to point at things.** `common/ref.schema.yaml` is the only way anything in DSDS points at anything else: `to` points inside the document, `href` points outside it, and `rel` names the relationship (`depends-on`, `composes`, `same-as`, `extends`, `source`, `external-link`, and more — see the schema file for the full list).
-
-See the [schema files on GitHub](https://github.com/somerandomdude/design-system-documentation-schema/blob/main/schema/) for the full source, with comments explaining the reasoning behind each one. For every enforced rule, conformance class, and stability guarantee, see [Conformance in the README](https://github.com/somerandomdude/design-system-documentation-schema@conformance).
+| Kind | Description |
+|------|-------------|
+| `system` | The design system as a whole — version, organization, url, license, platforms, plus system-wide documentation. |
+| `component` | A reusable UI element — buttons, inputs, modals. Carries its own `sourceFiles`, `imports`, `traits` (variants and states), and `combos`, on top of the fields every entry shares. |
+| `token` | A single design token. Carries `tokenType` and a `source` pointer to the real DTCG value — never the value itself. |
+| `theme` | A named set of token overrides — dark mode, high-contrast, a brand variant. Points at its own DTCG source file. |
+| `entry` | The generic, open kind for anything else — a foundation, a pattern, a guide. Has no fields beyond what every entry shares. |
+| *(custom)* | A custom kind like `acme.icon-library`, for a document that wants its own recognizable name instead of the generic `entry`. |
 
 <ds-code slot="example" center>
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -39,5 +38,8 @@ See the [schema files on GitHub](https://github.com/somerandomdude/design-system
 @@                                   @@
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 </ds-code>
+
+
+
 
 </ds-guide-section>

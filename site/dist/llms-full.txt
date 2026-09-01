@@ -149,7 +149,7 @@ You can combine them. A custom kind can carry its own `$extensions`. A profile c
 # Design system doc spec 0.20.0
 
 **Draft Specification:**
-This is a draft. It can still change. No standards body has endorsed it yet. We welcome feedback and contributions on GitHub.
+This is a draft. It can still change—and has done so in dramatic fashion. No standards body has endorsed it. We welcome feedback and contributions on GitHub.
 
 * **Latest version:** [GitHub repo](https://github.com/somerandomdude/design-system-documentation-schema)
 * **Feedback:** [GitHub Issues](https://github.com/somerandomdude/design-system-documentation-schema/issues)
@@ -248,6 +248,30 @@ DSDS documents the *how and why* of your design system — not the token values 
 - **Extensible** — add vendor metadata without breaking compatibility
 - **Validatable** — the schema catches errors before they reach consumers
 
+<ds-code slot="example" center>
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@@                                   @@
+@@                                   @@
+@@    @@@@@@@@@@@     @@@@@@@@@@     @@
+@@    @@        @@   @@        @@    @@
+@@    @@        @@   @@              @@
+@@    @@        @@    @@@@@@@@@@     @@
+@@    @@        @@             @@    @@
+@@    @@        @@   @@        @@    @@
+@@    @@@@@@@@@@@     @@@@@@@@@@     @@
+@@                                   @@
+@@    @@@@@@@@@@@     @@@@@@@@@@     @@
+@@    @@        @@   @@        @@    @@
+@@    @@        @@   @@              @@
+@@    @@        @@    @@@@@@@@@@     @@
+@@    @@        @@             @@    @@
+@@    @@        @@   @@        @@    @@
+@@    @@@@@@@@@@@     @@@@@@@@@@     @@
+@@                                   @@
+@@                                   @@
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+</ds-code>
+
 </ds-guide-section>
 
 <ds-guide-section>
@@ -335,14 +359,14 @@ See [How the schema is organized](schema.html#how-the-schema-is-organized) for h
 
 Status lives in `metadata.status`, always as an object — there's no bare-string shorthand. A component-wide status:
 
-<ds-code language="yaml" slot="example" wrap>
+<ds-code language="yaml" label="" slot="example" wrap>
 metadata:
   status: {status: stable}
 </ds-code>
 
 Scope a status to one platform when a component ships on more than one:
 
-<ds-code language="yaml" slot="example" wrap>
+<ds-code language="yaml" label="" slot="example" wrap>
 metadata:
   status:
     platform: react
@@ -382,7 +406,7 @@ A `guidelines` section also carries `framing`: `when-to-use` for a fit judgment 
 
 A `definitions` section pairs a `term` with its `definition` — use it for anatomy parts, naming conventions, or a component's own prop/event list when there's no real source file to extract from. `context` (a field every section kind can carry, not just `definitions` — see [sections/section](schema.html#sections-section)) names which of those jobs it's doing (`anatomy`, `terms`, `keyboard`, `events`, or a namespaced custom value) — optional, but it's what lets a tool find "the anatomy table" without matching on the human-facing `title`. Here's an anatomy definitions section:
 
-<ds-code language="yaml" slot="example" wrap>
+<ds-code language="yaml" label="" slot="example" wrap>
 sections:
   - kind: definitions
     for: all
@@ -403,7 +427,7 @@ sections:
 
 A `steps` section is an ordered procedure or an unordered checklist (`ordered: false`). Each item can point back at the guideline it verifies via `checks` (`rel: depends-on`). A self-check checklist:
 
-<ds-code language="yaml" slot="example" wrap>
+<ds-code language="yaml" label="" slot="example" wrap>
 sections:
   - kind: steps
     for: agent
@@ -424,7 +448,7 @@ sections:
 
 Every section kind — including the generic `section` — can also carry `freeform`: headed, nestable prose alongside its own structured `items`:
 
-<ds-code language="yaml" slot="example" wrap>
+<ds-code language="yaml" label="" slot="example" wrap>
 sections:
   - kind: section
     for: all
@@ -449,7 +473,7 @@ Unlike sections, a few facts about a component live directly on the entry, not i
 
 Here's `sourceFiles`, `traits`, and `combos` together:
 
-<ds-code language="yaml" slot="example" wrap>
+<ds-code language="yaml" label="" slot="example" wrap>
 sourceFiles:
   - platform: react
     file: ./src/Button.tsx
@@ -564,7 +588,7 @@ Content that isn't itself a design-system artifact — an accessibility rule tha
 
 Add `$schema` to get editor autocompletion and inline validation:
 
-<ds-code language="yaml" slot="example" wrap>
+<ds-code language="yaml" label="" slot="example" wrap>
 $schema: https://designsystemdocspec.org/v{{VERSION}}/dsds.bundled.yaml
 id: my-component
 kind: component
@@ -578,7 +602,7 @@ description: What this component is and does.
 
 ### Using the CLI
 
-<ds-code language="bash" slot="example" wrap>
+<ds-code language="bash" label="" slot="example" wrap>
 # Clone the repo
 git clone https://github.com/somerandomdude/design-system-documentation-schema.git
 cd design-system-documentation-schema
@@ -815,6 +839,7 @@ You've seen the basics. Here's where to go deeper.
         "list": {
           "type": "array",
           "minItems": 1,
+          "description": "One or more examples, in order.",
           "$comment": "Every consumer expects an array of examples. Pulled out here so call sites don't have to redefine it.",
           "items": {
             "$ref": "https://designsystemdocspec.org/v0.20.0/common/example.schema.yaml"
@@ -979,6 +1004,7 @@ You've seen the basics. Here's where to go deeper.
         "list": {
           "type": "array",
           "minItems": 1,
+          "description": "One or more pointers, in order.",
           "$comment": "Every consumer expects an array of refs. Pulled out here so call sites don't have to redefine it.",
           "items": {
             "$ref": "https://designsystemdocspec.org/v0.20.0/common/ref.schema.yaml"
@@ -1151,7 +1177,8 @@ You've seen the basics. Here's where to go deeper.
             },
             "traits": {
               "type": "array",
-              "description": "The component's variants and states.",
+              "description": "The component's variants and states. Each item is tagged `kind: boolean` or `kind: enum`, since the two carry genuinely different fields - an enum's own `values` list vs. a boolean's plain toggle.",
+              "$comment": "Tagged with `kind` (`anyOf`) because the two shapes genuinely differ, not just which optional fields happen to be filled in - compare `sections/steps.schema.yaml`'s and `sections/guidelines.schema.yaml`'s own items, which stay one flexible shape with no `kind` tag for exactly that reason.",
               "minItems": 1,
               "items": {
                 "anyOf": [
@@ -1291,6 +1318,7 @@ You've seen the basics. Here's where to go deeper.
             "id",
             "description"
           ],
+          "description": "The shared properties of a boolean trait or one enum value - what it is, and what it's for.",
           "$comment": "The shared properties of boolean and enum traits. Contains all the details to describe a trait's value, what it is, and what it's for.",
           "properties": {
             "id": {
@@ -1330,7 +1358,7 @@ You've seen the basics. Here's where to go deeper.
       "$id": "https://designsystemdocspec.org/v0.20.0/entry.schema.yaml",
       "title": "Entry",
       "type": "object",
-      "description": "The structure every entry kind shares. This schema doubles as a general-use entry that isn't explicitly defined in the schema (ex: pattern, foundation, guideline). See schema/entries/ for each kind's own closing file.",
+      "description": "The structure every entry kind shares: `id`, `kind`, `name`, `description` (required), plus `purpose`, `metadata`, `related`, `extends`, `refs`, `sections`, `$extensions` (optional). This schema doubles as a general-use entry that isn't explicitly defined in the schema (ex: pattern, foundation, guideline). See schema/entries/ for each kind's own closing file.",
       "$comment": "Shared fields for every entry kind. Kind-specific fields, like a token's `tokenType`, live in that kind's own entries/<kind>.schema.yaml file instead.\n`kind` is one of 5 well-known values (`system`, `component`, `token`, `theme`, `entry`) or a namespaced custom value like \"acme.icon-library\". Use `entry` for anything that doesn't need fields beyond this base. Only add a dedicated file once a kind needs a field none of the others do.\nReusable content that isn't a design-system artifact (like a shared accessibility rule) doesn't belong here as a kind. Use the base document's `shared` list instead.",
       "required": [
         "id",
@@ -1432,6 +1460,7 @@ You've seen the basics. Here's where to go deeper.
       },
       "$defs": {
         "dispatch": {
+          "description": "Routes an entry to its own kind-specific schema by `kind` (`system`, `component`, `token`, `theme`), falling back to this open base for the generic `entry` kind or a namespaced custom kind.",
           "$comment": "Routes an entry to its own entries/<kind>.schema.yaml by `kind`, falling back to this file (the open base) for the generic `entry` kind or a namespaced custom kind with no dedicated file. Used anywhere an entry is embedded (base.schema.yaml's own `entries`) instead of a bare $ref to this file, so the bundled schema enforces the same per-kind shape scripts/validate.js does in JS.",
           "if": {
             "required": [
@@ -2191,7 +2220,7 @@ You've seen the basics. Here's where to go deeper.
       "$id": "https://designsystemdocspec.org/v0.20.0/section.schema.yaml",
       "title": "Section",
       "type": "object",
-      "description": "A logical documentation section. Every section uses the same structure (`items`), no matter its kind, and is tagged with who it is for (human, agent, or all). Each sections/<kind>.schema.yaml file adds its own `kind` value and its own structure for `items`.",
+      "description": "A logical documentation section. Supplies the fields every section kind shares — `kind`, `for`, `title`, `description`, `items`, `metadata`, `$extensions` — plus `freeform`, and is tagged with who it is for (human, agent, or all). Content always lives in `items`, never in a field named after the kind. Each sections/<kind>.schema.yaml file adds its own `kind` value (`definitions`, `guidelines`, `steps`, or the generic `section`) and its own structure for `items` on top of this shared base.",
       "$comment": "`freeform` lives here on the base so every kind can carry nested, headed content alongside its own structured `items`. A `guidelines` section can pair its rules with background reading, a `steps` section can pair its checklist with extra context, and so on. A section should use either `items` or `freeform`.A section that's only `freeform` content (this used to be its own `kind: freeform`) picks whichever kind fits it best.  If nothing fits, use the generic `kind: section` instead.\nThis file doesn't close its own list of properties. Each sections/<kind>.schema.yaml file adds its own extra fields on top (steps' `ordered`, definitions' term/definition items), and closes the combined structure itself, at the item level.",
       "required": [
         "kind",
@@ -2306,6 +2335,7 @@ You've seen the basics. Here's where to go deeper.
       },
       "$defs": {
         "dispatch": {
+          "description": "Routes a section to its own kind-specific schema by `kind` (`definitions`, `guidelines`, `steps`), falling back to this open base for the generic `section` kind or a namespaced custom kind.",
           "$comment": "Routes a section to its own sections/<kind>.schema.yaml by `kind`, falling back to this file (the open base) for the generic `section` kind or a namespaced custom kind with no dedicated file. Used anywhere a section is embedded (an entry's or a shared item's own `sections`) instead of a bare $ref to this file, so the bundled schema enforces the same per-kind shape scripts/validate.js does in JS.",
           "if": {
             "required": [
@@ -2359,6 +2389,7 @@ You've seen the basics. Here's where to go deeper.
           "required": [
             "title"
           ],
+          "description": "One nestable, headed block of prose - a freeform section's own building block.",
           "properties": {
             "id": {
               "$ref": "https://designsystemdocspec.org/v0.20.0/common/id.schema.yaml",

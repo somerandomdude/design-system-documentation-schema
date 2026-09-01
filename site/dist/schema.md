@@ -4,19 +4,18 @@
 
 ## How the schema is organized
 
-This spec is built from a small, fixed set of shapes, reused rather than reinvented per file.
+This spec is built from a small, fixed set of shapes, reused rather than reinvented per file — each definition below documents its own fields directly. See [Conformance in the README](https://github.com/somerandomdude/design-system-documentation-schema#conformance) for how it's all enforced.
 
-**Entries.** [`entry.schema.yaml`](@entries-entry) defines the fields every entry shares: `id`, `kind`, `name`, `description` (required), plus `purpose`, `metadata`, `refs`, `sections`, and `$extensions` (optional). Four kinds add fields of their own — `system`, `component`, `token`, `theme` — each with its own `entries/<kind>.schema.yaml` file. The generic `entry` kind needs nothing extra. An `entry`, or a custom kind like `acme.icon-library`, is checked against `entry.schema.yaml` directly.
+Every entry has a `kind` field. There are 5 well-known values, plus an open option for anything else.
 
-**Sections.** [`sections/section.schema.yaml`](@sections-section) supplies the shared fields — `kind`, `for`, `title`, `description`, `items`, `metadata`, `$extensions` — and each kind (`definitions`, `guidelines`, `steps`, or the generic `section`) shapes its own `items`. Content always lives in `items`, never in a field named after the kind.
-
-**One shared base per kind.** A kind-specific file links back to its shared base with `allOf` and adds only what's new, then closes the combined shape (`unevaluatedProperties: false`) so nothing stray sneaks in. Every `entries/*` and `sections/*` file follows this pattern.
-
-**Lists that mix different shapes.** A list sometimes holds genuinely different kinds of item — a component's `traits` can be `kind: boolean` or `kind: enum`. The schema tells them apart with a `kind` tag (`anyOf`). When items only differ in which *optional* fields happen to be filled in, one flexible shape with no tag is enough — `steps` and `guidelines` both work this way.
-
-**One way to point at things.** `common/ref.schema.yaml` is the only way anything in DSDS points at anything else: `to` points inside the document, `href` points outside it, and `rel` names the relationship (`depends-on`, `composes`, `same-as`, `extends`, `source`, `external-link`, and more — see the schema file for the full list).
-
-See the [schema files on GitHub](https://github.com/somerandomdude/design-system-documentation-schema/blob/main/schema/) for the full source, with comments explaining the reasoning behind each one. For every enforced rule, conformance class, and stability guarantee, see [Conformance in the README](https://github.com/somerandomdude/design-system-documentation-schema@conformance).
+| Kind | Description |
+|------|-------------|
+| `system` | The design system as a whole — version, organization, url, license, platforms, plus system-wide documentation. |
+| `component` | A reusable UI element — buttons, inputs, modals. Carries its own `sourceFiles`, `imports`, `traits` (variants and states), and `combos`, on top of the fields every entry shares. |
+| `token` | A single design token. Carries `tokenType` and a `source` pointer to the real DTCG value — never the value itself. |
+| `theme` | A named set of token overrides — dark mode, high-contrast, a brand variant. Points at its own DTCG source file. |
+| `entry` | The generic, open kind for anything else — a foundation, a pattern, a guide. Has no fields beyond what every entry shares. |
+| *(custom)* | A custom kind like `acme.icon-library`, for a document that wants its own recognizable name instead of the generic `entry`. |
 
 <ds-code slot="example" center>
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -41,6 +40,9 @@ See the [schema files on GitHub](https://github.com/somerandomdude/design-system
 @@                                   @@
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 </ds-code>
+
+
+
 
 </ds-guide-section>
 ## Base
@@ -310,6 +312,8 @@ A single example, illustrating something in context.
 
 ## list {#list}
 
+One or more examples, in order.
+
 **References:** [Example](schema.md#common-example)
 
 ## Full schema source
@@ -348,6 +352,7 @@ $defs:
   list:
     type: array
     minItems: 1
+    description: One or more examples, in order.
     $comment: Every consumer expects an array of examples. Pulled out here so call sites don't have to redefine it.
     items:
       $ref: https://designsystemdocspec.org/v0.20.0/common/example.schema.yaml
@@ -504,6 +509,8 @@ One of:
 
 ## list {#list}
 
+One or more pointers, in order.
+
 **References:** [Ref](schema.md#common-ref)
 
 ## Full schema source
@@ -638,6 +645,7 @@ $defs:
   list:
     type: array
     minItems: 1
+    description: One or more pointers, in order.
     $comment: Every consumer expects an array of refs. Pulled out here so call sites don't have to redefine it.
     items:
       $ref: https://designsystemdocspec.org/v0.20.0/common/ref.schema.yaml
@@ -1079,7 +1087,7 @@ allOf:
 
 # Entry
 
-The structure every entry kind shares. This schema doubles as a general-use entry that isn't explicitly defined in the schema (ex: pattern, foundation, guideline). See schema/entries/ for each kind's own closing file.
+The structure every entry kind shares: `id`, `kind`, `name`, `description` (required), plus `purpose`, `metadata`, `related`, `extends`, `refs`, `sections`, `$extensions` (optional). This schema doubles as a general-use entry that isn't explicitly defined in the schema (ex: pattern, foundation, guideline). See schema/entries/ for each kind's own closing file.
 
 Source: `entries/entry.schema.yaml`
 
@@ -1087,7 +1095,7 @@ Source: `entries/entry.schema.yaml`
 
 ## Entry {#entry}
 
-The structure every entry kind shares. This schema doubles as a general-use entry that isn't explicitly defined in the schema (ex: pattern, foundation, guideline). See schema/entries/ for each kind's own closing file.
+The structure every entry kind shares: `id`, `kind`, `name`, `description` (required), plus `purpose`, `metadata`, `related`, `extends`, `refs`, `sections`, `$extensions` (optional). This schema doubles as a general-use entry that isn't explicitly defined in the schema (ex: pattern, foundation, guideline). See schema/entries/ for each kind's own closing file.
 
 | Property | Type | Required | Description |
 | --- | --- | --- | --- |
@@ -1107,6 +1115,8 @@ The structure every entry kind shares. This schema doubles as a general-use entr
 
 ## dispatch {#dispatch}
 
+Routes an entry to its own kind-specific schema by `kind` (`system`, `component`, `token`, `theme`), falling back to this open base for the generic `entry` kind or a namespaced custom kind.
+
 **References:** [ComponentEntry](schema.md#entries-component), [TokenEntry](schema.md#entries-token), [ThemeEntry](schema.md#entries-theme), [SystemEntry](schema.md#entries-system), [Entry](schema.md#entries-entry)
 
 ## Full schema source
@@ -1117,9 +1127,11 @@ $id: https://designsystemdocspec.org/v0.20.0/entry.schema.yaml
 title: Entry
 type: object
 description: >-
-  The structure every entry kind shares. This schema doubles as a
-  general-use entry that isn't explicitly defined in the schema
-  (ex: pattern, foundation, guideline). See schema/entries/ for each
+  The structure every entry kind shares: `id`, `kind`, `name`,
+  `description` (required), plus `purpose`, `metadata`, `related`,
+  `extends`, `refs`, `sections`, `$extensions` (optional). This schema
+  doubles as a general-use entry that isn't explicitly defined in the
+  schema (ex: pattern, foundation, guideline). See schema/entries/ for each
   kind's own closing file.
 $comment: >-
   Shared fields for every entry kind. Kind-specific fields, like a token's `tokenType`, live in that kind's own entries/<kind>.schema.yaml file instead.
@@ -1199,6 +1211,10 @@ properties:
     $ref: https://designsystemdocspec.org/v0.20.0/common/extensions.schema.yaml
 $defs:
   dispatch:
+    description: >-
+      Routes an entry to its own kind-specific schema by `kind`
+      (`system`, `component`, `token`, `theme`), falling back to this
+      open base for the generic `entry` kind or a namespaced custom kind.
     $comment: >-
       Routes an entry to its own entries/<kind>.schema.yaml by `kind`,
       falling back to this file (the open base) for the generic `entry`
@@ -1269,7 +1285,7 @@ A reusable UI element, like a button or a dialog.
 | `sourceFiles` | object {platform, file}[] |  | One entry per platform's source file. (Min items: 1) |
 | `specs` | [list](schema.md#common-ref-list) |  | Machine-readable API contract(s) for this component - props, slots, events, etc. in a standard, tool-readable shape. |
 | `imports` | object {platform, code, package}[] |  | One entry per platform. (Min items: 1) |
-| `traits` | object \| object[] |  | The component's variants and states. (Min items: 1) |
+| `traits` | object \| object[] |  | The component's variants and states. Each item is tagged `kind: boolean` or `kind: enum`, since the two carry genuinely different fields - an enum's own `values` list vs. a boolean's plain toggle. (Min items: 1) |
 | `combos` | [Combo](schema.md#common-combo)[] |  | Define which of this component's own boolean traits or enum values can or cannot be paired with each other. (Min items: 1) |
 
 **References:** [Entry](schema.md#entries-entry), [EntryMetadata](schema.md#metadata-entry-metadata), [Id](schema.md#common-id), [Ref](schema.md#common-ref), [list](schema.md#common-ref-list), [traitValue](schema.md#entries-component-traitvalue), [traitSetBy](schema.md#entries-component-traitsetby), [Combo](schema.md#common-combo), [Markdown](schema.md#common-markdown), [list](schema.md#common-example-list), [Since](schema.md#common-since), [dispatch](schema.md#sections-section-dispatch), [Extensions](schema.md#common-extensions)
@@ -1284,6 +1300,8 @@ Allowed values:
 - `component`
 
 ## traitValue {#traitvalue}
+
+The shared properties of a boolean trait or one enum value - what it is, and what it's for.
 
 | Property | Type | Required | Description |
 | --- | --- | --- | --- |
@@ -1390,7 +1408,17 @@ allOf:
               example: "@acme/ui"
       traits:
         type: array
-        description: The component's variants and states.
+        description: >-
+          The component's variants and states. Each item is tagged `kind:
+          boolean` or `kind: enum`, since the two carry genuinely
+          different fields - an enum's own `values` list vs. a boolean's
+          plain toggle.
+        $comment: >-
+          Tagged with `kind` (`anyOf`) because the two shapes genuinely
+          differ, not just which optional fields happen to be filled in -
+          compare `sections/steps.schema.yaml`'s and
+          `sections/guidelines.schema.yaml`'s own items, which stay one
+          flexible shape with no `kind` tag for exactly that reason.
         minItems: 1
         items:
           anyOf:
@@ -1477,6 +1505,7 @@ $defs:
   traitValue:
     type: object
     required: [id, description]
+    description: The shared properties of a boolean trait or one enum value - what it is, and what it's for.
     $comment: >-
       The shared properties of boolean and enum traits. Contains all the details to describe
       a trait's value, what it is, and what it's for.
@@ -1712,7 +1741,7 @@ unevaluatedProperties: false
 
 # Section
 
-A logical documentation section. Every section uses the same structure (`items`), no matter its kind, and is tagged with who it is for (human, agent, or all). Each sections/<kind>.schema.yaml file adds its own `kind` value and its own structure for `items`.
+A logical documentation section. Supplies the fields every section kind shares — `kind`, `for`, `title`, `description`, `items`, `metadata`, `$extensions` — plus `freeform`, and is tagged with who it is for (human, agent, or all). Content always lives in `items`, never in a field named after the kind. Each sections/<kind>.schema.yaml file adds its own `kind` value (`definitions`, `guidelines`, `steps`, or the generic `section`) and its own structure for `items` on top of this shared base.
 
 Source: `sections/section.schema.yaml`
 
@@ -1720,7 +1749,7 @@ Source: `sections/section.schema.yaml`
 
 ## Section {#section}
 
-A logical documentation section. Every section uses the same structure (`items`), no matter its kind, and is tagged with who it is for (human, agent, or all). Each sections/<kind>.schema.yaml file adds its own `kind` value and its own structure for `items`.
+A logical documentation section. Supplies the fields every section kind shares — `kind`, `for`, `title`, `description`, `items`, `metadata`, `$extensions` — plus `freeform`, and is tagged with who it is for (human, agent, or all). Content always lives in `items`, never in a field named after the kind. Each sections/<kind>.schema.yaml file adds its own `kind` value (`definitions`, `guidelines`, `steps`, or the generic `section`) and its own structure for `items` on top of this shared base.
 
 | Property | Type | Required | Description |
 | --- | --- | --- | --- |
@@ -1740,16 +1769,20 @@ A logical documentation section. Every section uses the same structure (`items`)
 
 ## dispatch {#dispatch}
 
+Routes a section to its own kind-specific schema by `kind` (`definitions`, `guidelines`, `steps`), falling back to this open base for the generic `section` kind or a namespaced custom kind.
+
 **References:** [DefinitionsSection](schema.md#sections-definitions), [GuidelinesSection](schema.md#sections-guidelines), [StepsSection](schema.md#sections-steps), [Section](schema.md#sections-section)
 
 ## freeformEntry {#freeformentry}
+
+One nestable, headed block of prose - a freeform section's own building block.
 
 | Property | Type | Required | Description |
 | --- | --- | --- | --- |
 | `title` | string | ✓ | The entry's heading, for example 'Installation'. |
 | `id` | [Id](schema.md#common-id) |  | A stable id for linking to this entry directly, unique within the section. |
 | `body` | [Markdown](schema.md#common-markdown) |  | The entry's content. |
-| `examples` | [list](schema.md#common-example-list) |  |  |
+| `examples` | [list](schema.md#common-example-list) |  | One or more examples, in order. |
 | `refs` | [list](schema.md#common-ref-list) |  | "See also" pointers for this entry. To point at another entry, use the entry's own top-level `refs` instead. |
 | `items` | `freeformEntry`[] |  | Sub-entries nested beneath this one, to any depth. (Min items: 1) |
 | `$extensions` | [Extensions](schema.md#common-extensions) |  | Escape hatch for tool data scoped to just this one freeform entry, keyed by namespace. |
@@ -1764,9 +1797,14 @@ $id: https://designsystemdocspec.org/v0.20.0/section.schema.yaml
 title: Section
 type: object
 description: >-
-  A logical documentation section. Every section uses the same structure
-  (`items`), no matter its kind, and is tagged with who it is for (human,
-  agent, or all). Each sections/<kind>.schema.yaml file adds its own `kind` value and its own structure for `items`.
+  A logical documentation section. Supplies the fields every section kind
+  shares — `kind`, `for`, `title`, `description`, `items`, `metadata`,
+  `$extensions` — plus `freeform`, and is tagged with who it is for
+  (human, agent, or all). Content always lives in `items`, never in a
+  field named after the kind. Each sections/<kind>.schema.yaml file adds
+  its own `kind` value (`definitions`, `guidelines`, `steps`, or the
+  generic `section`) and its own structure for `items` on top of this
+  shared base.
 $comment: >-
   `freeform` lives here on the base so
   every kind can carry nested, headed content alongside its own
@@ -1852,6 +1890,10 @@ properties:
     $comment: A tool that only cares about one section, like an api section, can stash its data here instead of using the whole entry's escape hatch.
 $defs:
   dispatch:
+    description: >-
+      Routes a section to its own kind-specific schema by `kind`
+      (`definitions`, `guidelines`, `steps`), falling back to this open
+      base for the generic `section` kind or a namespaced custom kind.
     $comment: >-
       Routes a section to its own sections/<kind>.schema.yaml by `kind`,
       falling back to this file (the open base) for the generic `section`
@@ -1888,6 +1930,7 @@ $defs:
   freeformEntry:
     type: object
     required: [title]
+    description: One nestable, headed block of prose - a freeform section's own building block.
     properties:
       id:
         $ref: https://designsystemdocspec.org/v0.20.0/common/id.schema.yaml

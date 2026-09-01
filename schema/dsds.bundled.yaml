@@ -141,6 +141,7 @@ $defs:
       list:
         type: array
         minItems: 1
+        description: One or more examples, in order.
         $comment: Every consumer expects an array of examples. Pulled out here so call sites don't have to redefine it.
         items:
           $ref: https://designsystemdocspec.org/v0.20.0/common/example.schema.yaml
@@ -283,6 +284,7 @@ $defs:
       list:
         type: array
         minItems: 1
+        description: One or more pointers, in order.
         $comment: Every consumer expects an array of refs. Pulled out here so call sites don't have to redefine it.
         items:
           $ref: https://designsystemdocspec.org/v0.20.0/common/ref.schema.yaml
@@ -415,7 +417,8 @@ $defs:
                   example: '@acme/ui'
           traits:
             type: array
-            description: The component's variants and states.
+            description: 'The component''s variants and states. Each item is tagged `kind: boolean` or `kind: enum`, since the two carry genuinely different fields - an enum''s own `values` list vs. a boolean''s plain toggle.'
+            $comment: Tagged with `kind` (`anyOf`) because the two shapes genuinely differ, not just which optional fields happen to be filled in - compare `sections/steps.schema.yaml`'s and `sections/guidelines.schema.yaml`'s own items, which stay one flexible shape with no `kind` tag for exactly that reason.
             minItems: 1
             items:
               anyOf:
@@ -501,6 +504,7 @@ $defs:
         required:
           - id
           - description
+        description: The shared properties of a boolean trait or one enum value - what it is, and what it's for.
         $comment: The shared properties of boolean and enum traits. Contains all the details to describe a trait's value, what it is, and what it's for.
         properties:
           id:
@@ -530,7 +534,7 @@ $defs:
     $id: https://designsystemdocspec.org/v0.20.0/entry.schema.yaml
     title: Entry
     type: object
-    description: 'The structure every entry kind shares. This schema doubles as a general-use entry that isn''t explicitly defined in the schema (ex: pattern, foundation, guideline). See schema/entries/ for each kind''s own closing file.'
+    description: 'The structure every entry kind shares: `id`, `kind`, `name`, `description` (required), plus `purpose`, `metadata`, `related`, `extends`, `refs`, `sections`, `$extensions` (optional). This schema doubles as a general-use entry that isn''t explicitly defined in the schema (ex: pattern, foundation, guideline). See schema/entries/ for each kind''s own closing file.'
     $comment: |-
       Shared fields for every entry kind. Kind-specific fields, like a token's `tokenType`, live in that kind's own entries/<kind>.schema.yaml file instead.
       `kind` is one of 5 well-known values (`system`, `component`, `token`, `theme`, `entry`) or a namespaced custom value like "acme.icon-library". Use `entry` for anything that doesn't need fields beyond this base. Only add a dedicated file once a kind needs a field none of the others do.
@@ -606,6 +610,7 @@ $defs:
         $ref: https://designsystemdocspec.org/v0.20.0/common/extensions.schema.yaml
     $defs:
       dispatch:
+        description: Routes an entry to its own kind-specific schema by `kind` (`system`, `component`, `token`, `theme`), falling back to this open base for the generic `entry` kind or a namespaced custom kind.
         $comment: Routes an entry to its own entries/<kind>.schema.yaml by `kind`, falling back to this file (the open base) for the generic `entry` kind or a namespaced custom kind with no dedicated file. Used anywhere an entry is embedded (base.schema.yaml's own `entries`) instead of a bare $ref to this file, so the bundled schema enforces the same per-kind shape scripts/validate.js does in JS.
         if:
           required:
@@ -1146,7 +1151,7 @@ $defs:
     $id: https://designsystemdocspec.org/v0.20.0/section.schema.yaml
     title: Section
     type: object
-    description: A logical documentation section. Every section uses the same structure (`items`), no matter its kind, and is tagged with who it is for (human, agent, or all). Each sections/<kind>.schema.yaml file adds its own `kind` value and its own structure for `items`.
+    description: A logical documentation section. Supplies the fields every section kind shares — `kind`, `for`, `title`, `description`, `items`, `metadata`, `$extensions` — plus `freeform`, and is tagged with who it is for (human, agent, or all). Content always lives in `items`, never in a field named after the kind. Each sections/<kind>.schema.yaml file adds its own `kind` value (`definitions`, `guidelines`, `steps`, or the generic `section`) and its own structure for `items` on top of this shared base.
     $comment: |-
       `freeform` lives here on the base so every kind can carry nested, headed content alongside its own structured `items`. A `guidelines` section can pair its rules with background reading, a `steps` section can pair its checklist with extra context, and so on. A section should use either `items` or `freeform`.A section that's only `freeform` content (this used to be its own `kind: freeform`) picks whichever kind fits it best.  If nothing fits, use the generic `kind: section` instead.
       This file doesn't close its own list of properties. Each sections/<kind>.schema.yaml file adds its own extra fields on top (steps' `ordered`, definitions' term/definition items), and closes the combined structure itself, at the item level.
@@ -1227,6 +1232,7 @@ $defs:
         $comment: A tool that only cares about one section, like an api section, can stash its data here instead of using the whole entry's escape hatch.
     $defs:
       dispatch:
+        description: Routes a section to its own kind-specific schema by `kind` (`definitions`, `guidelines`, `steps`), falling back to this open base for the generic `section` kind or a namespaced custom kind.
         $comment: Routes a section to its own sections/<kind>.schema.yaml by `kind`, falling back to this file (the open base) for the generic `section` kind or a namespaced custom kind with no dedicated file. Used anywhere a section is embedded (an entry's or a shared item's own `sections`) instead of a bare $ref to this file, so the bundled schema enforces the same per-kind shape scripts/validate.js does in JS.
         if:
           required:
@@ -1260,6 +1266,7 @@ $defs:
         type: object
         required:
           - title
+        description: One nestable, headed block of prose - a freeform section's own building block.
         properties:
           id:
             $ref: https://designsystemdocspec.org/v0.20.0/common/id.schema.yaml

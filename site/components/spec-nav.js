@@ -177,6 +177,11 @@ const SPEC_NAV_CSS = `
 
     .nav {
       min-height: 64px;
+      /* Matches .content__inner's own mobile padding-inline (see
+         style.css's max-width: 900px block) - both var(--ds-space-4), so
+         the bar's edges line up with the content's instead of the wider
+         desktop inset (calc(var(--ds-space-4) * 2)) above. */
+      padding-inline: var(--ds-space-4);
     }
 
     /* Positioned to sit directly under the (inset, floating) bar itself -

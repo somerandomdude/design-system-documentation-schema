@@ -89,7 +89,17 @@ allOf:
               example: "@acme/ui"
       traits:
         type: array
-        description: The component's variants and states.
+        description: >-
+          The component's variants and states. Each item is tagged `kind:
+          boolean` or `kind: enum`, since the two carry genuinely
+          different fields - an enum's own `values` list vs. a boolean's
+          plain toggle.
+        $comment: >-
+          Tagged with `kind` (`anyOf`) because the two shapes genuinely
+          differ, not just which optional fields happen to be filled in -
+          compare `sections/steps.schema.yaml`'s and
+          `sections/guidelines.schema.yaml`'s own items, which stay one
+          flexible shape with no `kind` tag for exactly that reason.
         minItems: 1
         items:
           anyOf:
@@ -176,6 +186,7 @@ $defs:
   traitValue:
     type: object
     required: [id, description]
+    description: The shared properties of a boolean trait or one enum value - what it is, and what it's for.
     $comment: >-
       The shared properties of boolean and enum traits. Contains all the details to describe
       a trait's value, what it is, and what it's for.

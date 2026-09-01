@@ -298,7 +298,10 @@ function preprocessExamples(source, slots) {
           return `{/* Failed to load example: ${file} */}`;
         }
       }
-      const labelAttr = label ? ` label="${esc(label)}"` : "";
+      // label="" (not omitted) opts <ds-code> out of its own default-to-
+      // language-name fallback - every <ds-example> caller today (Quick
+      // start) wants no label chip at all, not even a bare "yaml" tag.
+      const labelAttr = ` label="${esc(label || "")}"`;
       const slotAttr = slot ? ` slot="${esc(slot)}"` : "";
       // wrap unconditionally: an example's natural home is a column half
       // the page's width or narrower (Quick start's split layout, or a

@@ -1,7 +1,7 @@
 # Design system doc spec 0.20.0
 
 **Draft Specification:**
-This is a draft. It can still change. No standards body has endorsed it yet. We welcome feedback and contributions on GitHub.
+This is a draft. It can still change—and has done so in dramatic fashion. No standards body has endorsed it. We welcome feedback and contributions on GitHub.
 
 * **Latest version:** [GitHub repo](https://github.com/somerandomdude/design-system-documentation-schema)
 * **Feedback:** [GitHub Issues](https://github.com/somerandomdude/design-system-documentation-schema/issues)
