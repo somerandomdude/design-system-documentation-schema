@@ -6,7 +6,22 @@
 # matches the source that produced it. `npm run build` itself triggers
 # `prebuild` (sync-examples, bundle, og:generate) via npm's own lifecycle
 # hooks - nothing extra to chain here.
+#
+# `base` is explicit on purpose, even though "." is the default when no
+# base is configured at all: a stale "Base directory" saved in the Netlify
+# site's own dashboard settings (from before this [build] block existed)
+# otherwise still wins whenever netlify.toml doesn't declare one itself,
+# and `publish` below resolves relative to *that* - a leftover
+# dashboard value of "site/dist" plus this file's own "site/dist" was
+# exactly how a real deploy once resolved a publish path of
+# "site/dist/site/dist". Declaring `base` here isn't optional cleanup;
+# it's what makes this file's command/publish win outright, regardless of
+# whatever the dashboard still has saved. There's no real package.json or
+# build script under site/ to run from either way - the one at
+# site/package.json is an unrelated stub (`"type": "commonjs"`, for the
+# component files), not this project's build.
 [build]
+  base = "."
   command = "npm run build"
   publish = "site/dist"
 
