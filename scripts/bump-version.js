@@ -27,23 +27,38 @@
  * `npm run sync-skill-versions` (keep .agents/skills/dsds-*'s version
  * references in lockstep). Run `npm run build` separately to publish the
  * versioned dist directory, and `npm run check` to confirm everything
- * still validates.
+ * still validates — or pass `--tag` to have this script do both of those,
+ * plus the commit and the annotated git tag, in one run (see below).
  *
  * Usage:
  *   node scripts/bump-version.js <new-version>          # bump, bundle, sync skills
  *   node scripts/bump-version.js <new-version> --dry-run # preview only
  *   node scripts/bump-version.js <new-version> --schemas-only
  *                                                       # only touch schema/ + bundle.js
+ *   node scripts/bump-version.js <new-version> --tag    # also build, check, commit, tag
  *   node scripts/bump-version.js --help
  *
  * <new-version> is a bare version string (ex: 0.20.1, 0.21.0, 1.0.0).
  * The leading "v" is not included — every URL in this repo is
  * constructed as `/v<version>/`.
  *
+ * --tag runs the rest of README's "Cutting a release" sequence after the
+ * version-reference rewrite: `npm run build` (publish site/dist/v<new>/),
+ * then `npm run check` (must pass — a failing check aborts before anything
+ * is committed or tagged), then `git commit` every file this run touched
+ * plus the regenerated site/dist/ tree, then an annotated `git tag
+ * v<new-version>` on that commit. It does NOT push — review the commit and
+ * tag locally, then `git push && git push origin v<new-version>` yourself.
+ * Refuses to run with a dirty working tree unrelated to this bump (see
+ * below), so it can't fold in unrelated uncommitted changes.
+ *
  * Exits non-zero on:
  *   - Missing or malformed new version argument
  *   - New version equal to current version
  *   - Current version can't be read (run `npm run bundle` first)
+ *   - (--tag only) the working tree has uncommitted changes before the
+ *     bump starts, `npm run build`/`npm run check` fails, or a tag named
+ *     v<new-version> already exists
  */
 
 const fs = require("fs");
@@ -81,12 +96,18 @@ Options:
                       Skip examples, test fixtures, README, package.json.
   --no-bundle         Skip the post-bump 'npm run bundle' step.
   --no-sync-skills    Skip the post-bump 'npm run sync-skill-versions' step.
+  --tag               After bundling: run 'npm run build' and 'npm run
+                      check', then commit and create an annotated
+                      'v<new-version>' git tag. Aborts before touching
+                      anything if the working tree isn't clean, or if
+                      build/check fails. Does not push.
   --help, -h          Show this help.
 
 Examples:
   node scripts/bump-version.js 0.20.1
   node scripts/bump-version.js 0.20.1 --dry-run
   node scripts/bump-version.js 1.0.0 --schemas-only --no-bundle
+  node scripts/bump-version.js 0.20.1 --tag
 `);
 }
 
@@ -110,6 +131,38 @@ const DRY_RUN = flags.has("--dry-run");
 const SCHEMAS_ONLY = flags.has("--schemas-only");
 const SKIP_BUNDLE = flags.has("--no-bundle");
 const SKIP_SYNC_SKILLS = flags.has("--no-sync-skills");
+const TAG = flags.has("--tag");
+
+if (TAG && DRY_RUN) {
+  console.error("✗ --tag and --dry-run don't combine — --tag commits and tags for real.");
+  process.exit(1);
+}
+
+// --tag is going to `git commit` everything this run touches, plus the
+// rebuilt site/dist/ tree. Folding in unrelated, already-uncommitted work
+// would attribute it to "vX.Y.Z" without anyone deciding that on purpose —
+// refuse up front instead, before any file is rewritten.
+if (TAG) {
+  const status = execFileSync("git", ["status", "--porcelain"], {
+    cwd: ROOT,
+    encoding: "utf-8",
+  });
+  if (status.trim().length > 0) {
+    console.error(
+      "✗ --tag requires a clean working tree (it commits everything this run touches).",
+    );
+    console.error("  Commit or stash your current changes first, then rerun with --tag.");
+    process.exit(1);
+  }
+  const existingTags = execFileSync("git", ["tag", "--list", `v${NEW_VERSION}`], {
+    cwd: ROOT,
+    encoding: "utf-8",
+  }).trim();
+  if (existingTags) {
+    console.error(`✗ Tag v${NEW_VERSION} already exists.`);
+    process.exit(1);
+  }
+}
 
 // A version is "loose semver" — one or more dot-separated identifiers.
 // We're permissive on purpose so 0.20.1, 1.0.0-beta.1, etc. all work.
@@ -316,5 +369,35 @@ if (SKIP_SYNC_SKILLS) {
   runStep("Syncing agent skill versions", "sync-skill-versions");
 }
 
-console.log("\n✓ Version bump complete.");
-console.log(`  Next: run \`npm run build\` to publish site/dist/v${NEW_VERSION}/, then \`npm run check\`.`);
+if (!TAG) {
+  console.log("\n✓ Version bump complete.");
+  console.log(`  Next: run \`npm run build\` to publish site/dist/v${NEW_VERSION}/, then \`npm run check\`.`);
+  process.exit(0);
+}
+
+// ---------------------------------------------------------------------------
+// --tag: build, check, commit, tag (README's "Cutting a release" sequence,
+// automated). Each step must succeed before the next runs; nothing is
+// committed until `npm run check` has passed against the rebuilt site.
+// ---------------------------------------------------------------------------
+
+runStep("Publishing the versioned site", "build");
+runStep("Running the full check suite", "check");
+
+console.log(`Committing and tagging v${NEW_VERSION}…\n`);
+try {
+  execFileSync("git", ["add", "-A"], { cwd: ROOT, stdio: "inherit" });
+  execFileSync("git", ["commit", "-m", `v${NEW_VERSION}`], { cwd: ROOT, stdio: "inherit" });
+  execFileSync("git", ["tag", "-a", `v${NEW_VERSION}`, "-m", `v${NEW_VERSION}`], {
+    cwd: ROOT,
+    stdio: "inherit",
+  });
+} catch (err) {
+  console.error(`\n✗ Commit or tag step failed. The version bump, build, and check all`);
+  console.error(`  succeeded — resolve the git error and commit/tag manually:`);
+  console.error(`    git add -A && git commit -m "v${NEW_VERSION}" && git tag -a v${NEW_VERSION} -m "v${NEW_VERSION}"`);
+  process.exit(err.status || 1);
+}
+
+console.log(`\n✓ v${NEW_VERSION} committed and tagged.`);
+console.log(`  Next: review, then \`git push && git push origin v${NEW_VERSION}\`.`);

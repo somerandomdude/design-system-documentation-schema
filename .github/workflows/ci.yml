@@ -23,14 +23,20 @@ jobs:
       # dependency's own install-time script should be able to affect a
       # validation-only run.
       - run: npm ci --ignore-scripts
+      # examples/**/*.yaml must match the hand-split fragments they're
+      # composed from (scripts/compose.js) - this is the drift guard for
+      # that split.
+      #
+      # MUST run before `npm run check`: check's `prevalidate` hook runs
+      # `sync-examples`, which *writes* the composed files. Ordered the other
+      # way round (as it was), this guard only ever inspected output the
+      # previous step had just regenerated, so it could never fail - it
+      # reported success on a working tree it had no part in producing.
+      - run: npm run check-examples
       # Bundles the schema, validates every example/fixture/test corpus
       # file, runs the conformance fixture suite, and $id-matches-path
       # (see scripts/check-schema-ids.js).
       - run: npm run check
-      # examples/**/*.yaml must match the hand-split fragments they're
-      # composed from (scripts/compose.js) - this is the drift guard for
-      # that split.
-      - run: npm run check-examples
       # site/dist/schema.md (the no-JS markdown mirror) must actually
       # contain every schema def and field name currently in the schema -
       # checked against the committed site/dist/, same as a contributor
@@ -57,6 +63,18 @@ jobs:
       # catalog/implementation drift self-check, which does exit non-zero.
       # That's worth seeing, not worth blocking a schema change on.
       - run: npm run lint:docs
+        continue-on-error: true
+      # Same advisory tier, prose rather than structure
+      # (scripts/readability-audit.mjs): a readability score is a judgment
+      # metric, so it must never gate a build - no wording is "wrong" at 47
+      # and "right" at 56. It runs here for the same reason lint:docs does.
+      # Until now it was wired to nothing at all, and it had already gone
+      # stale exactly the way an unrun tool does: its file list was
+      # hardcoded, so four content pages were silently unaudited. That list
+      # now discovers site/content/ itself, and this step is what makes the
+      # output something a reviewer sees rather than something someone has
+      # to remember to run.
+      - run: npm run readability
         continue-on-error: true
 
   a11y:

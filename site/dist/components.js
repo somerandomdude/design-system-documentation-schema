@@ -887,6 +887,13 @@
        !important needed to break the tie. */
     :where(.heading:hover) .anchor-link { opacity: 0.6; }
     .anchor-link:hover { opacity: 1; }
+    /* Keyboard focus must reveal it too: the link is focusable, so with only
+       the :hover rules above it was a focus stop with no visible focus
+       indicator anywhere on screen (WCAG 2.4.7). Separate rules, not one
+       selector list, so a browser that doesn't parse :focus-visible still
+       applies the :focus rule instead of discarding both. */
+    .anchor-link:focus { opacity: 1; }
+    .anchor-link:focus-visible { opacity: 1; }
   `;
 
   class DsHeading extends HTMLElement {

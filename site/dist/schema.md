@@ -772,7 +772,7 @@ Optional information about an element.
 | `owner` | string |  | The owning team, role, or group. |
 | `reviewed` | object {date, by, note}[] |  | Independent reviews confirming this item's documentation, each recording who confirmed it and when. (Min items: 1) |
 | `context` | string |  | Why this entry was created, and how and why to use it. |
-| `updated` | object {date, note} |  | When this item's documentation last changed. Documentation can change without the design system's own version moving - a wording fix, a new example, a corrected guideline don't warrant a release. Tools SHOULD treat `updated.date` as the cache key for this item's documentation specifically, distinct from `metadata.version`/`since` (which track the design system's own release): pin to it, and re-fetch or re-index once it advances, rather than assuming unchanged content just because the design system's version hasn't moved. |
+| `updated` | object {date, note} |  | Tools SHOULD treat `updated.date` as the cache key for this item's documentation specifically. `updated.date` is distinct from `metadata.version`/`since` which tracks the design system's own release. Always use `updated.date` as the source of truth for when to re-fetch or re-index. |
 | `origin` | object {method, author, note} |  | How this entry's documentation came to exist, and who or what wrote it. |
 | `$extensions` | [Extensions](schema.md#common-extensions) |  | Escape hatch for tool data scoped to just this entry's metadata, keyed by namespace. |
 
@@ -858,15 +858,11 @@ properties:
   updated:
     type: object
     description: >-
-      When this item's documentation last changed. Documentation can change
-      without the design system's own version moving - a wording fix, a
-      new example, a corrected guideline don't warrant a release. Tools
-      SHOULD treat `updated.date` as the cache key for this item's
-      documentation specifically, distinct from `metadata.version`/`since`
-      (which track the design system's own release): pin to it, and
-      re-fetch or re-index once it advances, rather than assuming
-      unchanged content just because the design system's version hasn't
-      moved.
+      Tools SHOULD treat `updated.date` as the cache key for this item's
+      documentation specifically. `updated.date` is distinct from
+      `metadata.version`/`since` which tracks the design system's own release.
+      Always use `updated.date` as the source of truth for when to re-fetch or
+      re-index.
     $comment: A bare date, or a date with a change note.
     properties:
       date:
@@ -922,7 +918,7 @@ Information about a single entry, on top of the fields every metadata object sha
 | `owner` | string |  | The owning team, role, or group. |
 | `reviewed` | object {date, by, note}[] |  | Independent reviews confirming this item's documentation, each recording who confirmed it and when. (Min items: 1) |
 | `context` | string |  | Why this entry was created, and how and why to use it. |
-| `updated` | object {date, note} |  | When this item's documentation last changed. Documentation can change without the design system's own version moving - a wording fix, a new example, a corrected guideline don't warrant a release. Tools SHOULD treat `updated.date` as the cache key for this item's documentation specifically, distinct from `metadata.version`/`since` (which track the design system's own release): pin to it, and re-fetch or re-index once it advances, rather than assuming unchanged content just because the design system's version hasn't moved. |
+| `updated` | object {date, note} |  | Tools SHOULD treat `updated.date` as the cache key for this item's documentation specifically. `updated.date` is distinct from `metadata.version`/`since` which tracks the design system's own release. Always use `updated.date` as the source of truth for when to re-fetch or re-index. |
 | `origin` | object {method, author, note} |  | How this entry's documentation came to exist, and who or what wrote it. |
 | `$extensions` | [Extensions](schema.md#common-extensions) |  | Escape hatch for tool data scoped to just this entry's metadata, keyed by namespace. |
 | `status` | `statusEntry` \| `statusEntry`[] |  | A lifecycle status, optionally scoped to one platform - or a list of them, one per platform, when an entry has reached different maturity on each. |
@@ -1081,7 +1077,7 @@ Information about the design system as a whole, on top of the fields every metad
 | `owner` | string |  | The owning team, role, or group. |
 | `reviewed` | object {date, by, note}[] |  | Independent reviews confirming this item's documentation, each recording who confirmed it and when. (Min items: 1) |
 | `context` | string |  | Why this entry was created, and how and why to use it. |
-| `updated` | object {date, note} |  | When this item's documentation last changed. Documentation can change without the design system's own version moving - a wording fix, a new example, a corrected guideline don't warrant a release. Tools SHOULD treat `updated.date` as the cache key for this item's documentation specifically, distinct from `metadata.version`/`since` (which track the design system's own release): pin to it, and re-fetch or re-index once it advances, rather than assuming unchanged content just because the design system's version hasn't moved. |
+| `updated` | object {date, note} |  | Tools SHOULD treat `updated.date` as the cache key for this item's documentation specifically. `updated.date` is distinct from `metadata.version`/`since` which tracks the design system's own release. Always use `updated.date` as the source of truth for when to re-fetch or re-index. |
 | `origin` | object {method, author, note} |  | How this entry's documentation came to exist, and who or what wrote it. |
 | `$extensions` | [Extensions](schema.md#common-extensions) |  | Escape hatch for tool data scoped to just this entry's metadata, keyed by namespace. |
 | `version` | [Since](schema.md#common-since) |  | The current version of the design system. |

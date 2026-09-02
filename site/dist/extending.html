@@ -116,6 +116,8 @@
   }
   :where(.heading:hover) .anchor-link { opacity: 0.6; }
   .anchor-link:hover { opacity: 1; }
+  .anchor-link:focus { opacity: 1; }
+  .anchor-link:focus-visible { opacity: 1; }
 </style><h2 class="heading heading--2" part="heading"><slot></slot> <a class="anchor-link" href="#extensions" part="anchor">#</a></h2></template><ds-code inline>$extensions</ds-code></ds-heading>
 <p><ds-code inline>$extensions</ds-code> is a place to put vendor or tool-specific data, organized by namespace so different tools don't collide. It's available at the document, entry, and section level — and now on every section item too: a <ds-code inline>guidelines</ds-code>, <ds-code inline>definitions</ds-code>, or <ds-code inline>steps</ds-code> item, and a <ds-code inline>freeform</ds-code> entry.</p>
 <p>Every top-level key under <ds-code inline>$extensions</ds-code> MUST be a dotted namespace (<ds-code inline>com.figma</ds-code>, <ds-code inline>com.acme</ds-code>), matching the <a href="https://www.w3.org/community/reports/design-tokens/CG-FINAL-format-20251028/">Design Tokens Community Group's own <ds-code inline>$extensions</ds-code> convention</a>. That namespace is what lets a tool that doesn't recognize your data ignore it safely — it just skips any key it doesn't own.</p>
@@ -152,6 +154,8 @@
   }
   :where(.heading:hover) .anchor-link { opacity: 0.6; }
   .anchor-link:hover { opacity: 1; }
+  .anchor-link:focus { opacity: 1; }
+  .anchor-link:focus-visible { opacity: 1; }
 </style><h3 class="heading heading--3" part="heading"><slot></slot> <a class="anchor-link" href="#why-item-level-extensions-matters" part="anchor">#</a></h3></template>Why item-level <ds-code inline>$extensions</ds-code> matters</ds-heading>
 <p>A <ds-code inline>guidelines</ds-code> item only accepts a fixed set of fields — <ds-code inline>statement</ds-code>, <ds-code inline>level</ds-code>, <ds-code inline>refs</ds-code>, and a few others, nothing else. That's on purpose: any tool that understands the <ds-code inline>guidelines</ds-code> kind keeps understanding it, with no surprise fields to trip over. But until now, that also meant there was no way to attach a reason, or a documented failure case, to <em>one specific rule</em> — you'd either have to give up the well-known <ds-code inline>guidelines</ds-code> kind entirely (see <a href="#custom-kinds">custom kinds</a> below), or wait for the spec itself to add a field that everyone else would then be stuck with too, whether they wanted it or not.</p>
 <p><ds-code inline>$extensions</ds-code> on the item itself solves that without opening the shape up for everyone:</p>
@@ -167,7 +171,7 @@
             failureMode: A dialog ships with two primary-styled buttons (e.g. "Save" and "Save as draft"), and usability testing shows users default to the wrong one.
 </ds-code>
 <p>A tool that doesn't know about <ds-code inline>com.acme</ds-code> — the reference validator, another vendor's linter, a plain DSDS reader — skips it entirely. The document is still fully standard DSDS: remove the <ds-code inline>$extensions</ds-code> block and everything left over was already valid on its own.</p>
-<p>See it in the repo's own <a href="https://github.com/somerandomdude/design-system-documentation-schema/blob/main/examples/entries/button.yaml"><ds-code inline>button.yaml</ds-code></a> for a real, validated example.</p>
+<p>See it in the repo's own <a href="/examples/entries/button.yaml"><ds-code inline>button.yaml</ds-code></a> for a real, validated example.</p>
 <ds-heading level="2" anchor="custom-kinds" id="custom-kinds"><template shadowrootmode="open"><style>
   :host { display: inline-block; box-sizing: border-box; }
   :host([hidden]) { display: none !important; }
@@ -201,6 +205,8 @@
   }
   :where(.heading:hover) .anchor-link { opacity: 0.6; }
   .anchor-link:hover { opacity: 1; }
+  .anchor-link:focus { opacity: 1; }
+  .anchor-link:focus-visible { opacity: 1; }
 </style><h2 class="heading heading--2" part="heading"><slot></slot> <a class="anchor-link" href="#custom-kinds" part="anchor">#</a></h2></template>Custom kinds</ds-heading>
 <p>When the generic <ds-code inline>entry</ds-code> kind isn't specific enough — you want your own name for a whole category of document — use a custom kind instead of <ds-code inline>entry</ds-code>:</p>
 <ds-code language="yaml">id: acme-excerpt-onboarding
@@ -244,6 +250,8 @@ description: A short, reusable pull-quote of onboarding copy, shared across thre
   }
   :where(.heading:hover) .anchor-link { opacity: 0.6; }
   .anchor-link:hover { opacity: 1; }
+  .anchor-link:focus { opacity: 1; }
+  .anchor-link:focus-visible { opacity: 1; }
 </style><h2 class="heading heading--2" part="heading"><slot></slot> <a class="anchor-link" href="#profiles" part="anchor">#</a></h2></template>Profiles</ds-heading>
 <p>A profile is a small, local schema file that turns some of a kind's <em>optional</em> fields into required ones, just for your own project. It never adds a new field — it can only make an existing rule stricter.</p>
 <p>That one property is what makes a profile safe to build on: <strong>a profile may narrow. It must not extend.</strong> A document that passes your profile is still a fully valid DSDS document to any tool that's never heard of your profile — nothing is added, nothing is different, just a stricter bar for your own project to clear.</p>
@@ -282,6 +290,8 @@ description: A short, reusable pull-quote of onboarding copy, shared across thre
   }
   :where(.heading:hover) .anchor-link { opacity: 0.6; }
   .anchor-link:hover { opacity: 1; }
+  .anchor-link:focus { opacity: 1; }
+  .anchor-link:focus-visible { opacity: 1; }
 </style><h3 class="heading heading--3" part="heading"><slot></slot> <a class="anchor-link" href="#the-profiles-folder" part="anchor">#</a></h3></template>The <ds-code inline>profiles/</ds-code> folder</ds-heading>
 <p>Save a file at <ds-code inline>profiles/entries/<kind>.schema.yaml</ds-code> or <ds-code inline>profiles/sections/<kind>.schema.yaml</ds-code>, and <ds-code inline>scripts/validate.js</ds-code> picks it up automatically — no code change, nothing to register. <ds-code inline><kind></ds-code> can be a well-known kind (<ds-code inline>component</ds-code>, <ds-code inline>guidelines</ds-code>) or a custom one.</p>
 <p>A profile file needs its own <ds-code inline>$id</ds-code>, different from the schema it's narrowing — reusing the built-in schema's <ds-code inline>$id</ds-code> crashes the validator outright, since two schemas can't share the same id. It narrows the real schema by linking to it with <ds-code inline>$ref</ds-code>, inside <ds-code inline>allOf</ds-code>:</p>
@@ -341,6 +351,8 @@ allOf:
   }
   :where(.heading:hover) .anchor-link { opacity: 0.6; }
   .anchor-link:hover { opacity: 1; }
+  .anchor-link:focus { opacity: 1; }
+  .anchor-link:focus-visible { opacity: 1; }
 </style><h3 class="heading heading--3" part="heading"><slot></slot> <a class="anchor-link" href="#what-a-profile-cant-do" part="anchor">#</a></h3></template>What a profile can't do</ds-heading>
 <p>A profile can't add a field. If your organization needs a field the spec truly doesn't have anywhere — not "optional and currently empty," but genuinely missing — that's not a job for a profile. Use <ds-code inline>$extensions</ds-code> if it's your own tool's data, or raise it with the spec itself if it's something every DSDS user would benefit from.</p>
 <ds-heading level="2" anchor="things-people-often-want-to-add" id="things-people-often-want-to-add"><template shadowrootmode="open"><style>
@@ -376,6 +388,8 @@ allOf:
   }
   :where(.heading:hover) .anchor-link { opacity: 0.6; }
   .anchor-link:hover { opacity: 1; }
+  .anchor-link:focus { opacity: 1; }
+  .anchor-link:focus-visible { opacity: 1; }
 </style><h2 class="heading heading--2" part="heading"><slot></slot> <a class="anchor-link" href="#things-people-often-want-to-add" part="anchor">#</a></h2></template>Things people often want to add</ds-heading>
 <p>Before reaching for <ds-code inline>$extensions</ds-code>, a custom kind, or a profile, check this list — a few common requests already have a home, no extension needed:</p>
 <ul>
@@ -424,6 +438,8 @@ allOf:
   }
   :where(.heading:hover) .anchor-link { opacity: 0.6; }
   .anchor-link:hover { opacity: 1; }
+  .anchor-link:focus { opacity: 1; }
+  .anchor-link:focus-visible { opacity: 1; }
 </style><h2 class="heading heading--2" part="heading"><slot></slot> <a class="anchor-link" href="#choosing-between-the-three" part="anchor">#</a></h2></template>Choosing between the three</ds-heading>
 <ul>
 <li><strong>Attaching data a specific tool needs, to something the spec already models?</strong> <ds-code inline>$extensions</ds-code>.</li>
@@ -444,6 +460,8 @@ allOf:
         <h2 class="site-footer__heading">Specification</h2>
         <a href="conformance.html">Conformance</a>
         <a href="stability.html">Stability</a>
+        <a href="security.html">Security</a>
+        <a href="examples.html">Examples</a>
       </nav>
       <nav class="site-footer__group" aria-label="For machines">
         <h2 class="site-footer__heading">For machines</h2>

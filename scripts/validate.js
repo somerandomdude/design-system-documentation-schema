@@ -589,10 +589,22 @@ function validateBase(doc, errors, warnings, opts = {}) {
           );
         }
       }
+      // `status` has two schema-legal shapes (entry-metadata.schema.yaml): a
+      // single object, or a list with one entry per platform. Reading
+      // `.platform` off the raw value only ever saw the object form, so the
+      // list form — the shape that exists *specifically* to name platforms —
+      // escaped this rule entirely. Normalize to an array and check each.
       const entryStatus = entry.metadata && entry.metadata.status;
-      if (entryStatus && entryStatus.platform && !known.has(entryStatus.platform)) {
+      const statusEntries = Array.isArray(entryStatus)
+        ? entryStatus
+        : entryStatus
+          ? [entryStatus]
+          : [];
+      for (const [i, statusEntry] of statusEntries.entries()) {
+        if (!statusEntry || !statusEntry.platform || known.has(statusEntry.platform)) continue;
+        const where = Array.isArray(entryStatus) ? `metadata.status[${i}]` : "metadata.status";
         errors.push(
-          err(RULES.PLATFORM_VOCABULARY, `entry "${entry.id}" metadata.status declares platform "${entryStatus.platform}", which is not in the system entry's metadata.platforms [${[...known].join(", ")}]`)
+          err(RULES.PLATFORM_VOCABULARY, `entry "${entry.id}" ${where} declares platform "${statusEntry.platform}", which is not in the system entry's metadata.platforms [${[...known].join(", ")}]`)
         );
       }
     }

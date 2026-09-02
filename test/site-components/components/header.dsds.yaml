@@ -1,11 +1,46 @@
 id: header
 kind: component
 name: Header
-description: "The page header block used at the top of every page: a title, an optional description, and an optional source path."
+description: The page header block at the top of every page — a title, an optional lead description, and an optional source path for schema-reference pages.
 
 metadata:
   status: {status: stable}
+  tags: [layout, page-structure]
 
 sourceFiles:
   - platform: web-component
     file: ../../../site/components/header.js
+
+imports:
+  - platform: web-component
+    code: |
+      <ds-header
+        title="Component"
+        description="A reusable UI element, like a `button` or a `dialog`."
+        source="schema/entries/component.schema.yaml">
+        <ds-badge variant="kind">Entry kind</ds-badge>
+      </ds-header>
+
+refs:
+  - to: code
+    rel: composes
+    note: Renders the "Source:" line, and any backtick spans in description, as inline ds-code.
+
+sections:
+  - kind: guidelines
+    for: all
+    items:
+      - statement: Use the default slot only for short inline content next to the title (e.g. a status badge) — it renders inside the h1, so anything longer breaks the page's one-h1-per-page outline.
+        level: should
+        checkedBy: manual
+
+  - kind: guidelines
+    for: agent
+    framing: when-to-use
+    items:
+      - statement: Use exactly once, at the very top of a page, to render its h1. For any heading further down the page, use heading instead — a second header on the same page would mean two h1s.
+        level: should
+        alternatives:
+          - to: heading
+            rel: alternative-to
+        checkedBy: manual

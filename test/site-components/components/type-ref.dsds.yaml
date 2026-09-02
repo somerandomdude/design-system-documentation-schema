@@ -1,11 +1,40 @@
 id: type-ref
 kind: component
 name: TypeRef
-description: "An inline cross-reference link to another schema definition's type."
+description: An inline, monospace link to another schema definition — used inside a property's type text or description to cross-reference another definition on the Schema page.
 
 metadata:
   status: {status: stable}
+  tags: [schema-reference, navigation]
 
 sourceFiles:
   - platform: web-component
     file: ../../../site/components/type-ref.js
+
+imports:
+  - platform: web-component
+    code: <ds-type-ref href="#ref">Ref</ds-type-ref>
+
+refs:
+  - to: def-section
+    rel: part-of
+    note: Used inside a definition's property types and description text to link to another definition.
+
+sections:
+  - kind: guidelines
+    for: agent
+    items:
+      - statement: Rendering waits for DOMContentLoaded when the document is still loading, since the link text is read from this element's own light-DOM textContent — a single requestAnimationFrame tick is not a reliable guarantee that light-DOM children have finished parsing.
+        level: must
+        checkedBy: manual
+
+  - kind: guidelines
+    for: agent
+    framing: when-to-use
+    items:
+      - statement: Use inline, within a property's type text or a description, to cross-reference another schema definition. For a list of related definitions below a description, use cross-refs instead — it's built for a group of links, not one inline reference.
+        level: should
+        alternatives:
+          - to: cross-refs
+            rel: alternative-to
+        checkedBy: manual

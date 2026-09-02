@@ -85,6 +85,41 @@ if (!fs.existsSync(schemaHtmlPath)) {
   }
 }
 
+// ── 3. The 404 page's recovery list covers every linked page ────────────
+// check-internal-links.mjs verifies that the links 404.mdx *does* carry
+// resolve; nothing verified the set was complete. That gap already bit
+// once: Conformance/Stability/Security/Examples were added to FOOTER_LINKS
+// while the recovery list — the one thing a lost reader sees — kept
+// pointing at the original four. Additions are exactly the drift a
+// resolve-only check can't see, so assert the set here instead.
+const notFoundMdxPath = path.join(ROOT, "site", "content", "fragments", "404.mdx");
+if (!fs.existsSync(notFoundMdxPath)) {
+  console.error(`✗ ${path.relative(ROOT, notFoundMdxPath)} doesn't exist`);
+  ok = false;
+} else {
+  const notFoundSrc = fs.readFileSync(notFoundMdxPath, "utf-8");
+  const linked = new Set(
+    [...notFoundSrc.matchAll(/\]\((\/[a-z0-9-]*)\)/g)].map((m) => m[1]),
+  );
+  const missing = LINKED_PAGES.filter(({ slug }) => {
+    // Overview is served at "/", not "/index".
+    const target = slug === "index" ? "/" : `/${slug}`;
+    return !linked.has(target);
+  });
+  if (missing.length) {
+    for (const { label, slug, where } of missing) {
+      console.error(
+        `✗ site/content/fragments/404.mdx has no recovery link to "${label}" (${slug}), which ${where} lists - a lost reader can't reach it from the 404 page`,
+      );
+    }
+    ok = false;
+  } else {
+    console.log(
+      `✓ site/content/fragments/404.mdx links all ${LINKED_PAGES.length} nav + footer pages.`,
+    );
+  }
+}
+
 if (ok) {
   console.log(`✓ All ${LINKED_PAGES.length} nav + footer pages built with real content.`);
 }

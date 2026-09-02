@@ -92,7 +92,7 @@ For a larger system, keep each entry in its own file and point at it with `refs`
 
 <ds-callout variant="tip" title="Tip:">
 
-Use a multi-file split for large systems where a different team owns each component. Use one file with everything inlined for smaller systems. `scripts/compose.js` can concatenate many hand-authored fragment files into one document before validation — see the repo's own `examples/base/starter-kit-fragments/`.
+Use a multi-file split for large systems where a different team owns each component. Use one file with everything inlined for smaller systems. `scripts/compose.js` can concatenate many hand-authored fragment files into one document before validation — see the repo's own [`examples/base/`](examples.html#base).
 
 </ds-callout>
 
@@ -363,7 +363,7 @@ Content that isn't itself a design-system artifact — an accessibility rule tha
 Add `$schema` to get editor autocompletion and inline validation:
 
 <ds-code language="yaml" label="" slot="example" wrap>
-$schema: https://designsystemdocspec.org/v{{VERSION}}/dsds.bundled.yaml
+$schema: https://designsystemdocspec.org/v0.20.0/dsds.bundled.yaml
 id: my-component
 kind: component
 name: My Component

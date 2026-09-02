@@ -57,22 +57,10 @@ check` asserts it matches `scripts/validate.js` in both directions.
 The words **MUST**, **MUST NOT**, **SHOULD**, **SHOULD NOT**, and **MAY**
 carry their [RFC 2119](https://www.rfc-editor.org/rfc/rfc2119) meaning
 inside the DSDS schema files, and only when written in capital letters. The
-index below regenerates from those schemas on every build, so it can't
-drift.
-### Index of every rule
-
-<!-- dsds:normative-index -->
-
-*Generated from the v0.20.0 schemas by `scripts/extract-normative.mjs` — do not edit by hand. 2 statements: 0 MUST, 1 MUST NOT, 1 SHOULD, 0 SHOULD NOT, 0 MAY.*
-
-### metadata
-
-#### metadata/metadata
-
-- **MUST NOT** — MUST NOT contain markup. <small>`metadata/metadata§note.1`</small>
-- **SHOULD** — Tools SHOULD treat `updated.date` as the cache key for this item's documentation specifically, distinct from `metadata.version`/`since` (which track the design system's own release): pin to it, and re-fetch or re-index once it advances, rather than assuming unchanged content just because the design system's version hasn't moved. <small>`metadata/metadata§.updated.1`</small>
-
-<!-- /dsds:normative-index -->
+full index of every such statement in the schema — regenerated from those
+schemas on every build, so it can't drift — is on the site's
+[Conformance](https://designsystemdocspec.org/conformance#index-of-every-normative-statement)
+page, not duplicated here.
 
 ## Documentation
 
@@ -119,16 +107,25 @@ For document structure, composing hand-split fragments (`scripts/compose.js`), a
 
 There's no single version field — every `schema/**/*.schema.yaml` file's own `$id` independently encodes the version (e.g. `.../v0.20.0/common/ref.schema.yaml`), and everything else (`nav.js`, `compile-mdx.mjs`'s `{{VERSION}}` substitution, the versioned `site/dist/v<n>/` directory) derives the current version by reading it back out of `schema/dsds.bundled.yaml`. MDX content must never hardcode a version — always use `{{VERSION}}`.
 
-`scripts/bump-version.js` automates the mechanical part — every schema file's `$id`, `bundle.js`'s hardcoded `$id`, every example/test fixture's `schemaVersion`, README's one hardcoded URL, and `package.json#version` — then regenerates the bundled schema and syncs `.agents/skills/dsds-*`'s version references:
+`scripts/bump-version.js` automates the mechanical part — every schema file's `$id`, `bundle.js`'s hardcoded `$id`, every example/test fixture's `schemaVersion`, README's one hardcoded URL, and `package.json#version` — then regenerates the bundled schema and syncs `.agents/skills/dsds-*`'s version references. Pass `--tag` to have it run the rest of the sequence too — build, check, commit, and an annotated tag — in one go:
 
 ```bash
 # 1. Make schema changes under schema/, add examples/ + examples/invalid/ fixtures as needed.
 # 2. Add a CHANGELOG entry.
+# 3. Commit both — --tag below requires a clean working tree.
+npm run bump-version 0.20.1 -- --tag   # rewrite, bundle, sync skills, build, check, commit, tag
+git push && git push origin v0.20.1     # review first, then push
+```
+
+Without `--tag`, the same steps run one at a time, manually:
+
+```bash
 npm run bump-version 0.20.1     # rewrites every version reference, bundles, syncs skill versions
 npm run build                   # publishes a new site/dist/v<new-version>/
 npm run check                   # must pass before committing
-git tag v0.20.1                 # tag the release commit once it's merged — see below
-git push origin v0.20.1
+git add -A && git commit -m "v0.20.1"
+git tag -a v0.20.1 -m "v0.20.1"
+git push && git push origin v0.20.1
 ```
 
 The build launches no browser. `site/assets/og-image.png` is a committed
@@ -151,14 +148,17 @@ For a documentation-only edit (no schema/example changes), just run `npm run bui
 
 ## Contributing
 
-This is an early-stage specification (currently DSDS 0.20.0). Feedback is welcome:
-
-- **Open an issue** for questions, suggestions, or problems with the spec.
-- **Open a PR** for proposed changes to the spec, schema, or examples.
+This is an early-stage specification (currently DSDS 0.20.0). Feedback and
+contributions are welcome — see [CONTRIBUTING.md](CONTRIBUTING.md) for what
+a rule, example, or schema change needs to land, and
+[SECURITY.md](SECURITY.md) to report a vulnerability.
 
 ### Contributors
 
 - [Afyia Smith](https://afyiasmith.co/) — the `owner`/`reviewed` and `origin` metadata schemas.
+- [Suleiman Ali Shakir](https://iamsuleiman.com/) — README validate command and lockfile.
+- [mryechkin](https://github.com/mryechkin) — the agent skills (`.agents/skills/`).
+- [codysue](https://github.com/codysue) — the CEM and DTCG interop examples, and the token-description lint rule.
 
 ## License
 

@@ -403,6 +403,22 @@ function migrateEntity(old, report) {
   if (metaResult) {
     entry.metadata = metaResult.clean;
     if (Object.keys(entry.metadata).length === 0) delete entry.metadata;
+    // migrateMetadata() computes a `dropped` bucket for the metadata fields
+    // with no typed 0.20.0 home (summary/thumbnail/preview/extends) and its
+    // report line promises they were "kept in $extensions" — but nothing
+    // ever read the bucket, so they were silently lost. Stash them for real,
+    // under the same namespace every other unplaceable value in this script
+    // uses (see the header comment and the Stability page's own statement
+    // that nothing is dropped).
+    const carried = Object.fromEntries(
+      Object.entries(metaResult.dropped || {}).filter(([, v]) => v !== undefined),
+    );
+    if (Object.keys(carried).length) {
+      entry.$extensions = {
+        ...(entry.$extensions || {}),
+        "com.dsds.migration": { ...(entry.$extensions?.["com.dsds.migration"] || {}), ...carried },
+      };
+    }
   }
 
   const refs = migrateRefs(old, report, label);

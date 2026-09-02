@@ -6,7 +6,7 @@ The words **MUST**, **MUST NOT**, **SHOULD**, **SHOULD NOT**, and **MAY** have a
 
 ## Where the rules live
 
-DSDS keeps its rules inside the schema's own `description` text, next to the field they apply to — the schema *is* the spec, with no separate rulebook to keep in sync. The [index of every normative statement](https://github.com/somerandomdude/design-system-documentation-schema#index-of-every-rule) regenerates from the schema on every build, so it can't drift out of date. Each rule has a location-based ID (for example, `common/ref§note.1`) — if that ID changes, the schema moved, and the rule should be double-checked wherever it's cited.
+DSDS keeps its rules inside the schema's own `description` text, next to the field they apply to — the schema *is* the spec, with no separate rulebook to keep in sync. The [index of every normative statement](#index-of-every-normative-statement) below regenerates from the schema on every build, so it can't drift out of date. Each rule has a location-based ID (for example, `common/ref§note.1`) — if that ID changes, the schema moved, and the rule should be double-checked wherever it's cited.
 
 ## Conformance classes
 
@@ -31,13 +31,13 @@ A tool, renderer, or AI agent that reads DSDS documents. A conforming consumer:
 - MUST NOT fail just because it sees an optional field it doesn't recognize
 - MUST keep `$extensions` data intact even if it doesn't understand it
 - MUST treat an unresolvable reference (an `entryId#itemId` pointing nowhere) as an error, not silently ignore it
-- MUST take MUST/SHOULD-style guidance as seriously as the spec says to — a `must-not` guideline is a hard stop for an agent writing code, not a suggestion
+- MUST take MUST/SHOULD-style guidance as seriously as the spec says to, **for a document it has already decided to trust** — a `must-not` guideline is a hard stop for an agent writing code, not a suggestion. This does not extend that same standing to an unvetted or third-party document; see [Security considerations](security.html) for what that trust decision covers and doesn't
 - SHOULD build its own "what points to what" index when it loads a document, rather than expect the document to store that answer directly
 - MUST be able to address every section item, whether or not it was written with an `id` — when one is missing, derive it from the item's own text (lowercase, non-alphanumeric runs collapsed to a dash), the same way every other conforming tool does. See [common/id](schema.html#common-id).
 
 ### Conforming validator
 
-A tool that checks documents. A conforming validator MUST enforce both the schema itself (with format checks on) and the extra rules below (`DSDS-01`–`DSDS-11`). `scripts/validate.js` is the reference implementation. Its `examples/invalid/` folder holds one broken example per semantic rule (`DSDS-XX-*.yaml`) plus a set of schema-shape fixtures (`schema-*.yaml`, no rule id — a pure JSON Schema rejection) pinning constraints like enum casing, empty arrays, and `$extensions` namespacing. Every fixture declares its own contract in a leading comment — `# rejectedBy: schema|semantic`, plus `# expect: DSDS-XX` or `# errorAt: /json/pointer` as applicable — and `scripts/conformance-test.js` confirms each one fails for the exact reason and at the exact layer it claims to, not just that it fails at all.
+A tool that checks documents. A conforming validator MUST enforce both the schema itself (with format checks on) and the extra rules below (`DSDS-01`–`DSDS-11`). `scripts/validate.js` is the reference implementation. Its [`examples/invalid/`](examples.html#invalid) folder holds one broken example per semantic rule (`DSDS-XX-*.yaml`) plus a set of schema-shape fixtures (`schema-*.yaml`, no rule id — a pure JSON Schema rejection) pinning constraints like enum casing, empty arrays, and `$extensions` namespacing. Every fixture declares its own contract in a leading comment — `# rejectedBy: schema|semantic`, plus `# expect: DSDS-XX` or `# errorAt: /json/pointer` as applicable — and `scripts/conformance-test.js` confirms each one fails for the exact reason and at the exact layer it claims to, not just that it fails at all.
 
 ## Enforcement tiers
 
@@ -57,13 +57,25 @@ Every catalog entry declares its own tier explicitly, as `enforcement: structura
 
 ## Rule catalog
 
-The machine-readable list is [`schema/conformance-rules.yaml`](https://github.com/somerandomdude/design-system-documentation-schema/blob/main/schema/conformance-rules.yaml). This table is kept in sync with it by hand, but `scripts/conformance-test.js` and `scripts/check-rule-catalog.js` (both run on every `npm run check`) would catch it if the two ever drifted apart.
+The table below is generated directly from
+[`schema/conformance-rules.yaml`](https://github.com/somerandomdude/design-system-documentation-schema/blob/main/schema/conformance-rules.yaml)
+by `scripts/generate-rule-catalog.mjs` — not a hand-kept copy — so it cannot
+drift from the machine-readable catalog the validator actually reads.
+`scripts/conformance-test.js` and `scripts/check-rule-catalog.js` (both run
+on every `npm run check`) additionally confirm the catalog and
+`scripts/validate.js`'s own implementation agree. The catalog itself is also
+published as a versioned artifact at
+[`/v0.20.0/conformance-rules.yaml`](/v0.20.0/conformance-rules.yaml)
+alongside the schema bundle, for a tool that wants to read the rule
+descriptions programmatically instead of scraping this page.
 
 <ds-callout variant="warning" title="DSDS-01–DSDS-15 is a reset id space, not a continuation of pre-0.20.0's:">
 
 Versions through 0.15.2 used a three-digit catalog (`DSDS-001`–`DSDS-006` and similar, in `rules/rules.yaml`) covering a different rewrite of the model entirely. 0.20.0 restarted numbering at `DSDS-01` for a genuinely different rule set — `DSDS-02` here has nothing to do with whatever `DSDS-002` meant before. (0.15.2's own `DSDS-002` was, fittingly, the rule against reusing an identifier — a reminder this reset itself is worth naming explicitly rather than leaving implicit.) If you're citing a rule id from before 0.15.2, say which catalog it's from; a bare `DSDS-0N` is ambiguous across the two.
 
 </ds-callout>
+
+{/* dsds:rule-catalog */}
 
 | ID | Rule |
 |---|---|
@@ -75,13 +87,15 @@ Versions through 0.15.2 used a three-digit catalog (`DSDS-001`–`DSDS-006` and 
 | `DSDS-06` | A `composes` ref chain must not cycle. |
 | `DSDS-07` | A `depends-on` ref chain must not cycle. |
 | `DSDS-08` | A bare `to:` ref must resolve to a real entry or shared entry. |
-| `DSDS-09` | A `combo`'s `subject`/`items` must resolve to a real trait, token, or entry. |
+| `DSDS-09` | A `combo`'s `subject`/`items` must resolve. |
 | `DSDS-10` | A `same-as` item's `level` must match its target's. |
-| `DSDS-11` | A relative `sourceFiles[].file`/`source`/`rel: file` `href` actually exists on disk. |
-| `DSDS-12` | Advisory: capitalize RFC 2119 keywords (MUST/SHOULD) in a guideline's own statement. |
-| `DSDS-13` | Advisory: a token `description` shouldn't just restate its id/name or repeat a raw value. |
-| `DSDS-14` | Advisory: a hard-requirement guideline (must/must-not) with no `checkedBy` at all. |
-| `DSDS-15` | Advisory: a component entry with no `guidelines` section framed `when-to-use`. |
+| `DSDS-11` | A relative `sourceFiles[].file`, `source`, or `rel: file` `href` must exist on disk. |
+| `DSDS-12` | Capitalize RFC 2119 keywords (MUST/SHOULD) in a guideline's own statement. |
+| `DSDS-13` | A token `description`, when present, shouldn't just restate its id/name or repeat a raw value. |
+| `DSDS-14` | A hard-requirement guideline (must/must-not) with no `checkedBy` at all. |
+| `DSDS-15` | A component entry with no `guidelines` section framed `when-to-use`. |
+
+{/* /dsds:rule-catalog */}
 
 `DSDS-06` and `DSDS-07` restore a cycle check the pre-0.20.0 spec had — nothing should point back at itself through a chain of `composes` or `depends-on` links. The 0.20.0 rewrite dropped it by accident; it's enforced by the validator's own code now, not the schema shape.
 
@@ -96,6 +110,25 @@ An unresolved reference is a **warning**, not a failure, only in this cross-file
 Whether a `to:` value even *looks like* a valid id is checked separately, directly by the schema: `common/ref.schema.yaml`'s `to` field only accepts id-shaped values, so a display name or a value with a space in it fails before `DSDS-05`, `DSDS-08`, or `DSDS-09` ever run. See [common/ref](schema.html#common-ref).
 
 **`DSDS-11`** covers one of these: whether a relative `sourceFiles[].file`, `source`, or `rel: file` `href` actually points at a file that exists on disk, checked relative to the file being validated and bounded to the same directory-of-the-target boundary as `DSDS-05`/`DSDS-08`/`DSDS-09`. It applies to a base document's own top-level `refs` as well as to each entry's. Warning-only, promoted to a failure under `--strict`, same tier and same reason — it's opt-in because it's the one rule that reads the filesystem beyond the document being validated. A related check remains deliberately unbuilt: confirming the exact ids or paths *inside* another file the way DTCG-path resolution would need — that would mean actually reading and parsing the target's contents, not just confirming it exists.
+
+## Conformance suite
+
+`scripts/validate.js` is the reference implementation, but nothing about DSDS requires it to be the only one — a second, independent implementation is one of this spec's own [1.0 criteria](stability.html#criteria-for-declaring-10). The conformance suite is what that second implementation checks itself against, without reading this repo's JavaScript at all.
+
+Published as one versioned artifact per release, at
+[`/v0.20.0/conformance-suite/manifest.json`](/v0.20.0/conformance-suite/manifest.json),
+alongside a copy of every fixture it references (`/v0.20.0/conformance-suite/examples/invalid/`). Generated by `scripts/generate-conformance-suite.mjs` directly from each fixture's own leading-comment contract (the same `rejectedBy`/`expect`/`errorAt` fields [Conformance validator](#conforming-validator) describes above) — not hand-maintained, so it can't drift from the fixtures themselves.
+
+**The runner contract** — what implementing conformance against this artifact means, for a validator in any language:
+
+1. Fetch the manifest. For each entry in `fixtures`, fetch the file it names (relative to the manifest itself).
+2. Validate that file against the schema bundle for the manifest's own `schemaVersion`.
+3. Confirm the document is **rejected** — and rejected for the declared reason, not just rejected somehow:
+   - `rejectedBy: "schema"` — at least one resulting error must be a pure JSON Schema violation (no `DSDS-XX` rule id attached). If `errorAt` is set, one such error's instance path must equal it (`"/"` for the document root).
+   - `rejectedBy: "semantic"` — every id listed in `expect` must appear among the resulting errors *or* warnings tagged with that id (a semantic rule may report as either, depending on whether the validator runs in a `--strict`-equivalent mode).
+4. A fixture that validates cleanly, or fails for a different reason than it declares, is a **conformance failure for the validator under test** — passing "some validators reject it" isn't the bar; rejecting it for the right, stated reason is.
+
+This is exactly what `scripts/conformance-test.js` already does against `scripts/validate.js` on every `npm run check` — the manifest just makes the same check runnable by something that isn't that script.
 
 ## Open conventions
 
@@ -133,4 +166,21 @@ A producer SHOULD declare `metadata.platforms` on the system entry when a docume
 
 ## Passing isn't the same as good
 
-A document with zero errors and zero warnings can still be bad documentation — the schema checks structure, not judgment. `examples/anti-patterns/` collects a few small documents that validate cleanly and are still worth avoiding: a definition that only restates its own term, a `checkedBy: manual` claim too vague to actually check, and guideline prose that names a concept (a "token-group" entry) the spec doesn't have. Each file's own leading comment says what's wrong with it and why the schema can't catch it. Deliberately excluded from the default `npm run check` sweep — not meant to be copied.
+A document with zero errors and zero warnings can still be bad documentation — the schema checks structure, not judgment. [`examples/anti-patterns/`](examples.html#anti-patterns) collects a few small documents that validate cleanly and are still worth avoiding: a definition that only restates its own term, a `checkedBy: manual` claim too vague to actually check, and guideline prose that names a concept (a "token-group" entry) the spec doesn't have. Each file's own leading comment says what's wrong with it and why the schema can't catch it. Deliberately excluded from the default `npm run check` sweep — not meant to be copied.
+
+## Index of every normative statement
+
+Every RFC 2119 sentence (MUST, MUST NOT, SHOULD, SHOULD NOT, MAY) inside the schema's own `description` text, extracted and indexed by `scripts/extract-normative.mjs` directly from `schema/**/*.schema.yaml` — not hand-copied, and regenerated on every build (`npm run normative`, checked via `--check` in `postvalidate`). Each statement's id is location-based (`<dir>/<file>§<jsonPath>.<n>`), so citing one and having the schema move underneath it is a visible, checkable break rather than a silent one.
+
+{/* dsds:normative-index */}
+
+*Generated from the v0.20.0 schemas by `scripts/extract-normative.mjs` — do not edit by hand. 2 statements: 0 MUST, 1 MUST NOT, 1 SHOULD, 0 SHOULD NOT, 0 MAY.*
+
+### metadata
+
+#### metadata/metadata
+
+- **MUST NOT** — MUST NOT contain markup. <small>`metadata/metadata§note.1`</small>
+- **SHOULD** — Tools SHOULD treat `updated.date` as the cache key for this item's documentation specifically. <small>`metadata/metadata§.updated.1`</small>
+
+{/* /dsds:normative-index */}

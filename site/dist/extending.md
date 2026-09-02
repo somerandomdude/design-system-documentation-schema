@@ -35,7 +35,7 @@ sections:
 
 A tool that doesn't know about `com.acme` — the reference validator, another vendor's linter, a plain DSDS reader — skips it entirely. The document is still fully standard DSDS: remove the `$extensions` block and everything left over was already valid on its own.
 
-See it in the repo's own [`button.yaml`](https://github.com/somerandomdude/design-system-documentation-schema/blob/main/examples/entries/button.yaml) for a real, validated example.
+See it in the repo's own [`button.yaml`](/examples/entries/button.yaml) for a real, validated example.
 
 ## Custom kinds
 
@@ -85,7 +85,7 @@ $id: https://your-org.example/profiles/entries/component.schema.yaml
 title: Acme's stable-component profile
 description: Once a component's status is stable, it must have a purpose and at least one source file.
 allOf:
-  - $ref: https://designsystemdocspec.org/v{{VERSION}}/entries/component.schema.yaml
+  - $ref: https://designsystemdocspec.org/v0.20.0/entries/component.schema.yaml
   - if:
       required: [metadata]
       properties:

@@ -4,14 +4,14 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Stability — DSDS 0.20.0</title>
-  <meta name="description" content="What's safe to build tooling around, what can still change before 1.0, how to migrate a 0.15.2 document, and the criteria for declaring 1.0.">
+  <meta name="description" content="The DSDS compatibility policy: what counts as breaking, version semantics, the deprecation window, what's safe to build tooling around, and the criteria for declaring 1.0.">
   <link rel="canonical" href="https://designsystemdocspec.org/stability">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="alternate" type="text/markdown" href="stability.md">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Design System Doc Spec">
   <meta property="og:title" content="Stability — DSDS 0.20.0">
-  <meta property="og:description" content="What's safe to build tooling around, what can still change before 1.0, how to migrate a 0.15.2 document, and the criteria for declaring 1.0.">
+  <meta property="og:description" content="The DSDS compatibility policy: what counts as breaking, version semantics, the deprecation window, what's safe to build tooling around, and the criteria for declaring 1.0.">
   <meta property="og:url" content="https://designsystemdocspec.org/stability">
   <meta property="og:image" content="https://designsystemdocspec.org/assets/og-image.png">
   <meta property="og:image:width" content="1200">
@@ -19,7 +19,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:image" content="https://designsystemdocspec.org/assets/og-image.png">
   <meta name="dsds-version" content="0.20.0">
-  <script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","name":"Stability — DSDS 0.20.0","description":"What's safe to build tooling around, what can still change before 1.0, how to migrate a 0.15.2 document, and the criteria for declaring 1.0.","url":"https://designsystemdocspec.org/stability","version":"0.20.0","isPartOf":{"@type":"WebSite","name":"Design System Doc Spec","url":"https://designsystemdocspec.org/"},"sameAs":"https://designsystemdocspec.org/stability.md"}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","name":"Stability — DSDS 0.20.0","description":"The DSDS compatibility policy: what counts as breaking, version semantics, the deprecation window, what's safe to build tooling around, and the criteria for declaring 1.0.","url":"https://designsystemdocspec.org/stability","version":"0.20.0","isPartOf":{"@type":"WebSite","name":"Design System Doc Spec","url":"https://designsystemdocspec.org/"},"sameAs":"https://designsystemdocspec.org/stability.md"}</script>
 
   <link rel="stylesheet" href="tokens.css?v=0.20.0">
   <link rel="stylesheet" href="style.css?v=0.20.0">
@@ -37,7 +37,7 @@
   </ds-spec-nav>
   <div class="content">
     <main class="content__main" id="main-content" role="main">
-    <ds-header title="Stability — DSDS 0.20.0" description="What's safe to build tooling around, what can still change before 1.0, how to migrate a 0.15.2 document, and the criteria for declaring 1.0."><template shadowrootmode="open"><style>
+    <ds-header title="Stability — DSDS 0.20.0" description="The DSDS compatibility policy: what counts as breaking, version semantics, the deprecation window, what's safe to build tooling around, and the criteria for declaring 1.0."><template shadowrootmode="open"><style>
   :host { display: inline-block; box-sizing: border-box; }
   :host([hidden]) { display: none !important; }
   *, *::before, *::after { box-sizing: border-box; }
@@ -77,11 +77,176 @@
     margin: 0 0 var(--ds-space-8);
     display: none;
   }
-</style><div class="header-container"><h1>Stability — DSDS 0.20.0<slot></slot></h1><p class="desc">What's safe to build tooling around, what can still change before 1.0, how to migrate a 0.15.2 document, and the criteria for declaring 1.0.</p></div></template></ds-header>
+</style><div class="header-container"><h1>Stability — DSDS 0.20.0<slot></slot></h1><p class="desc">The DSDS compatibility policy: what counts as breaking, version semantics, the deprecation window, what's safe to build tooling around, and the criteria for declaring 1.0.</p></div></template></ds-header>
     <div class="content__container">
         <div class="content__inner">
 
-          <p>DSDS is a <strong>pre-1.0 draft</strong>. Some parts of the schema can grow to cover new cases without a spec change; other parts are locked in. This page says which is which, so you can tell what's safe to build tooling around. For the rules themselves and how each is enforced, see <a href="conformance.html">Conformance</a>.</p>
+          <p>DSDS is a <strong>pre-1.0 draft</strong>, maintained by one person, not a working group. Some parts of the schema can grow to cover new cases without a spec change; other parts are locked in. This page is the compatibility contract behind that status — what can change, how you'll be told, and what never changes regardless. For the rules themselves and how each is enforced, see <a href="conformance.html">Conformance</a>.</p>
+<ds-heading level="2" anchor="what-counts-as-a-breaking-change" id="what-counts-as-a-breaking-change"><template shadowrootmode="open"><style>
+  :host { display: inline-block; box-sizing: border-box; }
+  :host([hidden]) { display: none !important; }
+  *, *::before, *::after { box-sizing: border-box; }
+  :host { display: block; }
+
+  .heading {
+    display: block;
+    color: var(--ds-color-text);
+    font-family: var(--ds-font-mono);
+    line-height: var(--ds-line-height-snug);
+    letter-spacing: -0.0125em;
+  }
+
+  .heading--1 { font-size: var(--ds-font-size-2xl); font-weight: var(--ds-font-weight-bold); margin: 0 0 var(--ds-space-4); }
+  .heading--2 { font-size: var(--ds-font-size-xl); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-8) 0 var(--ds-space-2); }
+  .heading--3 { font-size: var(--ds-font-size-lg); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-8) 0 var(--ds-space-2); }
+  .heading--4 { font-size: var(--ds-font-size-md); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-4) 0 var(--ds-space-2); }
+  .heading--5 { font-size: var(--ds-font-size-base); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-4) 0 var(--ds-space-2); }
+  .heading--6 { font-size: var(--ds-font-size-sm); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-2) 0 var(--ds-space-2); }
+
+  .anchor-link {
+    display: inline;
+    opacity: 0;
+    margin-inline-start: var(--ds-space-2);
+    color: var(--ds-color-text);
+    text-decoration: none;
+    font-size: 0.75em;
+    vertical-align: baseline;
+    transition: opacity var(--ds-duration-fast) var(--ds-ease-standard);
+  }
+  :where(.heading:hover) .anchor-link { opacity: 0.6; }
+  .anchor-link:hover { opacity: 1; }
+  .anchor-link:focus { opacity: 1; }
+  .anchor-link:focus-visible { opacity: 1; }
+</style><h2 class="heading heading--2" part="heading"><slot></slot> <a class="anchor-link" href="#what-counts-as-a-breaking-change" part="anchor">#</a></h2></template>What counts as a breaking change</ds-heading>
+<p>A change is breaking if a document, tool, or workflow that worked before it ships stops working (or starts failing validation) after — not just a rename or removal. Concretely, all of the following count as breaking, even when they look like tightening rather than deleting:</p>
+<ul>
+<li>Renaming, removing, or restructuring a field.</li>
+<li>Adding a new required field to an existing shape.</li>
+<li>Narrowing an existing constraint — an enum losing a value, a pattern getting stricter, a type narrowing.</li>
+<li><strong>Adding a new validator rule to <ds-code inline>scripts/validate.js</ds-code>'s <ds-code inline>DSDS-01</ds-code>–<ds-code inline>DSDS-11</ds-code> catalog.</strong> A document that validated cleanly yesterday can fail today with no schema change at all, because the new rule now runs against it. This is easy to overlook precisely because no field moved — treat a new conformance rule with the same weight as a schema change, because it has the same effect on existing documents.</li>
+<li>Any change to what <ds-code inline>npm run check</ds-code> accepts that a previously-passing document, run today, would fail.</li>
+</ul>
+<p><strong>Not</strong> breaking: new optional fields, new union members, relaxed constraints, new advisory (<ds-code inline>lint-docs.js</ds-code>) rules — a warning never blocks a build — and documentation-only edits.</p>
+<ds-heading level="2" anchor="version-semantics" id="version-semantics"><template shadowrootmode="open"><style>
+  :host { display: inline-block; box-sizing: border-box; }
+  :host([hidden]) { display: none !important; }
+  *, *::before, *::after { box-sizing: border-box; }
+  :host { display: block; }
+
+  .heading {
+    display: block;
+    color: var(--ds-color-text);
+    font-family: var(--ds-font-mono);
+    line-height: var(--ds-line-height-snug);
+    letter-spacing: -0.0125em;
+  }
+
+  .heading--1 { font-size: var(--ds-font-size-2xl); font-weight: var(--ds-font-weight-bold); margin: 0 0 var(--ds-space-4); }
+  .heading--2 { font-size: var(--ds-font-size-xl); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-8) 0 var(--ds-space-2); }
+  .heading--3 { font-size: var(--ds-font-size-lg); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-8) 0 var(--ds-space-2); }
+  .heading--4 { font-size: var(--ds-font-size-md); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-4) 0 var(--ds-space-2); }
+  .heading--5 { font-size: var(--ds-font-size-base); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-4) 0 var(--ds-space-2); }
+  .heading--6 { font-size: var(--ds-font-size-sm); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-2) 0 var(--ds-space-2); }
+
+  .anchor-link {
+    display: inline;
+    opacity: 0;
+    margin-inline-start: var(--ds-space-2);
+    color: var(--ds-color-text);
+    text-decoration: none;
+    font-size: 0.75em;
+    vertical-align: baseline;
+    transition: opacity var(--ds-duration-fast) var(--ds-ease-standard);
+  }
+  :where(.heading:hover) .anchor-link { opacity: 0.6; }
+  .anchor-link:hover { opacity: 1; }
+  .anchor-link:focus { opacity: 1; }
+  .anchor-link:focus-visible { opacity: 1; }
+</style><h2 class="heading heading--2" part="heading"><slot></slot> <a class="anchor-link" href="#version-semantics" part="anchor">#</a></h2></template>Version semantics</ds-heading>
+<ds-table><table><thead><tr><th>Change</th><th>Version bump</th><th>Your documents</th></tr></thead><tbody><tr><td>Documentation-only edits</td><td>none</td><td>Unaffected</td></tr><tr><td>Additions and loosenings (new optional fields, new union members, relaxed constraints, new advisory lint rules)</td><td>patch</td><td>Remain valid unchanged</td></tr><tr><td>Tightenings and behavior changes (new constraints, new required fields, moved fields, <strong>a new validator rule</strong>)</td><td>minor</td><td>May need edits; the CHANGELOG lists every affected position</td></tr><tr><td>Renames and removals</td><td>batched minor, pre-1.0 (major, post-1.0)</td><td>Migration script provided (<ds-code inline>scripts/migrate-to-*.js</ds-code>)</td></tr></tbody></table></ds-table>
+<p>Pre-1.0, a minor release can carry a tightening or a breaking change with no deprecation window first — that is what "pre-1.0" commits to here, and it's why the table above says "minor" rather than "major" for a rename. Read the CHANGELOG before upgrading a minor version, not just a major one. Post-1.0, tightenings and removals wait for a major version and follow the deprecation window below; see "The post-1.0 contract."</p>
+<ds-heading level="2" anchor="deprecation-policy" id="deprecation-policy"><template shadowrootmode="open"><style>
+  :host { display: inline-block; box-sizing: border-box; }
+  :host([hidden]) { display: none !important; }
+  *, *::before, *::after { box-sizing: border-box; }
+  :host { display: block; }
+
+  .heading {
+    display: block;
+    color: var(--ds-color-text);
+    font-family: var(--ds-font-mono);
+    line-height: var(--ds-line-height-snug);
+    letter-spacing: -0.0125em;
+  }
+
+  .heading--1 { font-size: var(--ds-font-size-2xl); font-weight: var(--ds-font-weight-bold); margin: 0 0 var(--ds-space-4); }
+  .heading--2 { font-size: var(--ds-font-size-xl); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-8) 0 var(--ds-space-2); }
+  .heading--3 { font-size: var(--ds-font-size-lg); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-8) 0 var(--ds-space-2); }
+  .heading--4 { font-size: var(--ds-font-size-md); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-4) 0 var(--ds-space-2); }
+  .heading--5 { font-size: var(--ds-font-size-base); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-4) 0 var(--ds-space-2); }
+  .heading--6 { font-size: var(--ds-font-size-sm); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-2) 0 var(--ds-space-2); }
+
+  .anchor-link {
+    display: inline;
+    opacity: 0;
+    margin-inline-start: var(--ds-space-2);
+    color: var(--ds-color-text);
+    text-decoration: none;
+    font-size: 0.75em;
+    vertical-align: baseline;
+    transition: opacity var(--ds-duration-fast) var(--ds-ease-standard);
+  }
+  :where(.heading:hover) .anchor-link { opacity: 0.6; }
+  .anchor-link:hover { opacity: 1; }
+  .anchor-link:focus { opacity: 1; }
+  .anchor-link:focus-visible { opacity: 1; }
+</style><h2 class="heading heading--2" part="heading"><slot></slot> <a class="anchor-link" href="#deprecation-policy" part="anchor">#</a></h2></template>Deprecation policy</ds-heading>
+<p>From the point a form is scheduled for removal, DSDS commits to:</p>
+<ol>
+<li>Marking it deprecated in the schema — the standard JSON Schema <ds-code inline>deprecated: true</ds-code> annotation where the shape supports it, a <ds-code inline>$comment</ds-code> explaining the removal where it doesn't (e.g. a whole shape being replaced).</li>
+<li>Naming its replacement in the same schema description or <ds-code inline>$comment</ds-code> — never just "removed," always "removed, use X instead."</li>
+<li>Flagging it via <ds-code inline>lint-docs.js</ds-code> (a warning, never a build failure) so it shows up in CI before it disappears.</li>
+<li>Keeping it valid for at least one further minor release after the deprecation notice ships, before the removal that breaks it.</li>
+</ol>
+<p>This is a process commitment, not yet a schema-level machine-readable one — a consumer currently learns "deprecated, replaced by X" from the annotation and description text, not a dedicated <ds-code inline>replacedBy</ds-code>/<ds-code inline>removeIn</ds-code> field. That's a planned schema addition; until it ships, the schema text is the source of truth for a field's deprecation status.</p>
+<ds-heading level="2" anchor="breaking-change-windows" id="breaking-change-windows"><template shadowrootmode="open"><style>
+  :host { display: inline-block; box-sizing: border-box; }
+  :host([hidden]) { display: none !important; }
+  *, *::before, *::after { box-sizing: border-box; }
+  :host { display: block; }
+
+  .heading {
+    display: block;
+    color: var(--ds-color-text);
+    font-family: var(--ds-font-mono);
+    line-height: var(--ds-line-height-snug);
+    letter-spacing: -0.0125em;
+  }
+
+  .heading--1 { font-size: var(--ds-font-size-2xl); font-weight: var(--ds-font-weight-bold); margin: 0 0 var(--ds-space-4); }
+  .heading--2 { font-size: var(--ds-font-size-xl); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-8) 0 var(--ds-space-2); }
+  .heading--3 { font-size: var(--ds-font-size-lg); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-8) 0 var(--ds-space-2); }
+  .heading--4 { font-size: var(--ds-font-size-md); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-4) 0 var(--ds-space-2); }
+  .heading--5 { font-size: var(--ds-font-size-base); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-4) 0 var(--ds-space-2); }
+  .heading--6 { font-size: var(--ds-font-size-sm); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-2) 0 var(--ds-space-2); }
+
+  .anchor-link {
+    display: inline;
+    opacity: 0;
+    margin-inline-start: var(--ds-space-2);
+    color: var(--ds-color-text);
+    text-decoration: none;
+    font-size: 0.75em;
+    vertical-align: baseline;
+    transition: opacity var(--ds-duration-fast) var(--ds-ease-standard);
+  }
+  :where(.heading:hover) .anchor-link { opacity: 0.6; }
+  .anchor-link:hover { opacity: 1; }
+  .anchor-link:focus { opacity: 1; }
+  .anchor-link:focus-visible { opacity: 1; }
+</style><h2 class="heading heading--2" part="heading"><slot></slot> <a class="anchor-link" href="#breaking-change-windows" part="anchor">#</a></h2></template>Breaking-change windows</ds-heading>
+<p>Pre-1.0 breaking changes land batched into a named release, not trickled one field at a time across several minors — a single CHANGELOG entry and migration script to read, not several. When a breaking window is being prepared, it's announced on this page (what's changing, and the release it lands in) before that release ships, the same practice earlier 0.15.x releases followed. Each window ships with its own migration script, following <ds-code inline>scripts/migrate-to-0.20.js</ds-code>'s shape: convert what can be converted automatically, preserve anything else under <ds-code inline>$extensions["com.dsds.migration"]</ds-code>, and print a warning for every case that needed a manual call.</p>
+<p><strong>No breaking window is currently open.</strong> 0.20.0 was itself the last one — the entity/<ds-code inline>documentBlocks</ds-code> model's replacement — and the plan from here is additive releases (new optional fields, new fixtures, restored tooling) until the 1.0 criteria below are met.</p>
 <ds-heading level="2" anchor="how-schema-changes-get-made" id="how-schema-changes-get-made"><template shadowrootmode="open"><style>
   :host { display: inline-block; box-sizing: border-box; }
   :host([hidden]) { display: none !important; }
@@ -115,6 +280,8 @@
   }
   :where(.heading:hover) .anchor-link { opacity: 0.6; }
   .anchor-link:hover { opacity: 1; }
+  .anchor-link:focus { opacity: 1; }
+  .anchor-link:focus-visible { opacity: 1; }
 </style><h2 class="heading heading--2" part="heading"><slot></slot> <a class="anchor-link" href="#how-schema-changes-get-made" part="anchor">#</a></h2></template>How schema changes get made</ds-heading>
 <p>Every schema file under <ds-code inline>schema/</ds-code> has comments explaining <em>why</em> it's shaped the way it is, and often what it replaced. Reading those comments alongside the schema is the best way to understand how the spec has changed — see the <a href="https://github.com/somerandomdude/design-system-documentation-schema/blob/main/CHANGELOG">CHANGELOG</a> for exactly how each old field maps to its new one.</p>
 <ds-heading level="2" anchor="migrating-a-0152-document" id="migrating-a-0152-document"><template shadowrootmode="open"><style>
@@ -150,6 +317,8 @@
   }
   :where(.heading:hover) .anchor-link { opacity: 0.6; }
   .anchor-link:hover { opacity: 1; }
+  .anchor-link:focus { opacity: 1; }
+  .anchor-link:focus-visible { opacity: 1; }
 </style><h2 class="heading heading--2" part="heading"><slot></slot> <a class="anchor-link" href="#migrating-a-0152-document" part="anchor">#</a></h2></template>Migrating a 0.15.2 document</ds-heading>
 <p><ds-code inline>scripts/migrate-to-0.20.js <files-or-dirs…> [--dry-run]</ds-code> converts a 0.15.2 <ds-code inline>.dsds.json</ds-code> document (the entity/<ds-code inline>documentBlocks</ds-code> model) to a 0.20.0 <ds-code inline>.dsds.yaml</ds-code> one, following the CHANGELOG's own field-by-field mapping. It writes a new sibling file rather than overwriting the input, and it's best-effort, not a guarantee: a few 0.15.2 shapes (most notably the <ds-code inline>api</ds-code> block's inline property/event documentation) have no 0.20.0 equivalent to convert <em>to</em> — 0.20.0 points <ds-code inline>sourceFiles</ds-code> at real source instead of inlining an extracted API.</p>
 <p>Anything the script can't place in a typed field is preserved under the migrated item's own <ds-code inline>$extensions["com.dsds.migration"]</ds-code> rather than dropped, and every such case — plus every genuinely manual decision, like an <ds-code inline>alternatives</ds-code> pointer that wasn't really id-shaped in the source, or a ref that pointed at a token-group's own id before its children flattened to top-level entries — prints as a <ds-code inline>⚠</ds-code> line in the script's own output. Run <ds-code inline>npm run validate</ds-code> on the result afterward.</p>
@@ -186,6 +355,8 @@
   }
   :where(.heading:hover) .anchor-link { opacity: 0.6; }
   .anchor-link:hover { opacity: 1; }
+  .anchor-link:focus { opacity: 1; }
+  .anchor-link:focus-visible { opacity: 1; }
 </style><h2 class="heading heading--2" part="heading"><slot></slot> <a class="anchor-link" href="#designed-to-grow-without-a-version-bump" part="anchor">#</a></h2></template>Designed to grow without a version bump</ds-heading>
 <p>A handful of fields accept any string matching a pattern, instead of a fixed list of allowed values — so adding a new value never needs a schema change. Safe to build tooling around, but don't treat today's set as complete:</p>
 <ul>
@@ -228,6 +399,8 @@
   }
   :where(.heading:hover) .anchor-link { opacity: 0.6; }
   .anchor-link:hover { opacity: 1; }
+  .anchor-link:focus { opacity: 1; }
+  .anchor-link:focus-visible { opacity: 1; }
 </style><h2 class="heading heading--2" part="heading"><slot></slot> <a class="anchor-link" href="#more-likely-to-require-a-spec-change" part="anchor">#</a></h2></template>More likely to require a spec change</ds-heading>
 <p>A few fields are locked to a fixed list of values, because the number of possible cases is a fact about how the spec itself works, not an open-ended vocabulary. Be defensive about this list, not the one above:</p>
 <ul>
@@ -268,6 +441,8 @@
   }
   :where(.heading:hover) .anchor-link { opacity: 0.6; }
   .anchor-link:hover { opacity: 1; }
+  .anchor-link:focus { opacity: 1; }
+  .anchor-link:focus-visible { opacity: 1; }
 </style><h2 class="heading heading--2" part="heading"><slot></slot> <a class="anchor-link" href="#criteria-for-declaring-10" part="anchor">#</a></h2></template>Criteria for declaring 1.0</ds-heading>
 <p>1.0 is declared when, at minimum:</p>
 <ol>
@@ -309,6 +484,8 @@
   }
   :where(.heading:hover) .anchor-link { opacity: 0.6; }
   .anchor-link:hover { opacity: 1; }
+  .anchor-link:focus { opacity: 1; }
+  .anchor-link:focus-visible { opacity: 1; }
 </style><h2 class="heading heading--2" part="heading"><slot></slot> <a class="anchor-link" href="#versioned-artifacts-never-change" part="anchor">#</a></h2></template>Versioned artifacts never change</ds-heading>
 <p>Whatever else moves, a published version directory doesn't. Every version DSDS has ever shipped stays served at its own immutable URL — <ds-code inline>/v0.20.0/dsds.bundled.yaml</ds-code> and <ds-code inline>/v0.20.0/dsds.bundled.schema.json</ds-code> today, and every earlier version at its own path, frozen at the bytes it shipped with. A document that pins <ds-code inline>schemaVersion</ds-code> and a <ds-code inline>$schema</ds-code> URL keeps validating against exactly what it was written against, indefinitely.</p>
 
@@ -324,6 +501,8 @@
         <h2 class="site-footer__heading">Specification</h2>
         <a href="conformance.html">Conformance</a>
         <a href="stability.html">Stability</a>
+        <a href="security.html">Security</a>
+        <a href="examples.html">Examples</a>
       </nav>
       <nav class="site-footer__group" aria-label="For machines">
         <h2 class="site-footer__heading">For machines</h2>

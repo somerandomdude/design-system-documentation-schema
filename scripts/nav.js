@@ -59,6 +59,8 @@ const TOP_LINKS = [
 const FOOTER_LINKS = [
   { label: "Conformance", href: "conformance.html", slug: "conformance" },
   { label: "Stability", href: "stability.html", slug: "stability" },
+  { label: "Security", href: "security.html", slug: "security" },
+  { label: "Examples", href: "examples.html", slug: "examples" },
 ];
 
 // Machine-readable entry points, and the repo. Not pages this site builds,

@@ -1,12 +1,52 @@
 ---
 title: "Stability — DSDS {{VERSION}}"
 slug: stability
-description: "What's safe to build tooling around, what can still change before 1.0, how to migrate a 0.15.2 document, and the criteria for declaring 1.0."
+description: "The DSDS compatibility policy: what counts as breaking, version semantics, the deprecation window, what's safe to build tooling around, and the criteria for declaring 1.0."
 ---
 
 # Stability and the road to 1.0
 
-DSDS is a **pre-1.0 draft**. Some parts of the schema can grow to cover new cases without a spec change; other parts are locked in. This page says which is which, so you can tell what's safe to build tooling around. For the rules themselves and how each is enforced, see [Conformance](conformance.html).
+DSDS is a **pre-1.0 draft**, maintained by one person, not a working group. Some parts of the schema can grow to cover new cases without a spec change; other parts are locked in. This page is the compatibility contract behind that status — what can change, how you'll be told, and what never changes regardless. For the rules themselves and how each is enforced, see [Conformance](conformance.html).
+
+## What counts as a breaking change
+
+A change is breaking if a document, tool, or workflow that worked before it ships stops working (or starts failing validation) after — not just a rename or removal. Concretely, all of the following count as breaking, even when they look like tightening rather than deleting:
+
+- Renaming, removing, or restructuring a field.
+- Adding a new required field to an existing shape.
+- Narrowing an existing constraint — an enum losing a value, a pattern getting stricter, a type narrowing.
+- **Adding a new validator rule to `scripts/validate.js`'s `DSDS-01`–`DSDS-11` catalog.** A document that validated cleanly yesterday can fail today with no schema change at all, because the new rule now runs against it. This is easy to overlook precisely because no field moved — treat a new conformance rule with the same weight as a schema change, because it has the same effect on existing documents.
+- Any change to what `npm run check` accepts that a previously-passing document, run today, would fail.
+
+**Not** breaking: new optional fields, new union members, relaxed constraints, new advisory (`lint-docs.js`) rules — a warning never blocks a build — and documentation-only edits.
+
+## Version semantics
+
+| Change | Version bump | Your documents |
+|---|---|---|
+| Documentation-only edits | none | Unaffected |
+| Additions and loosenings (new optional fields, new union members, relaxed constraints, new advisory lint rules) | patch | Remain valid unchanged |
+| Tightenings and behavior changes (new constraints, new required fields, moved fields, **a new validator rule**) | minor | May need edits; the CHANGELOG lists every affected position |
+| Renames and removals | batched minor, pre-1.0 (major, post-1.0) | Migration script provided (`scripts/migrate-to-*.js`) |
+
+Pre-1.0, a minor release can carry a tightening or a breaking change with no deprecation window first — that is what "pre-1.0" commits to here, and it's why the table above says "minor" rather than "major" for a rename. Read the CHANGELOG before upgrading a minor version, not just a major one. Post-1.0, tightenings and removals wait for a major version and follow the deprecation window below; see "The post-1.0 contract."
+
+## Deprecation policy
+
+From the point a form is scheduled for removal, DSDS commits to:
+
+1. Marking it deprecated in the schema — the standard JSON Schema `deprecated: true` annotation where the shape supports it, a `$comment` explaining the removal where it doesn't (e.g. a whole shape being replaced).
+2. Naming its replacement in the same schema description or `$comment` — never just "removed," always "removed, use X instead."
+3. Flagging it via `lint-docs.js` (a warning, never a build failure) so it shows up in CI before it disappears.
+4. Keeping it valid for at least one further minor release after the deprecation notice ships, before the removal that breaks it.
+
+This is a process commitment, not yet a schema-level machine-readable one — a consumer currently learns "deprecated, replaced by X" from the annotation and description text, not a dedicated `replacedBy`/`removeIn` field. That's a planned schema addition; until it ships, the schema text is the source of truth for a field's deprecation status.
+
+## Breaking-change windows
+
+Pre-1.0 breaking changes land batched into a named release, not trickled one field at a time across several minors — a single CHANGELOG entry and migration script to read, not several. When a breaking window is being prepared, it's announced on this page (what's changing, and the release it lands in) before that release ships, the same practice earlier 0.15.x releases followed. Each window ships with its own migration script, following `scripts/migrate-to-0.20.js`'s shape: convert what can be converted automatically, preserve anything else under `$extensions["com.dsds.migration"]`, and print a warning for every case that needed a manual call.
+
+**No breaking window is currently open.** 0.20.0 was itself the last one — the entity/`documentBlocks` model's replacement — and the plan from here is additive releases (new optional fields, new fixtures, restored tooling) until the 1.0 criteria below are met.
 
 ## How schema changes get made
 

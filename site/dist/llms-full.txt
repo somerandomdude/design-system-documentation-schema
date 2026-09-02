@@ -12,7 +12,7 @@ The words **MUST**, **MUST NOT**, **SHOULD**, **SHOULD NOT**, and **MAY** have a
 
 ## Where the rules live
 
-DSDS keeps its rules inside the schema's own `description` text, next to the field they apply to — the schema *is* the spec, with no separate rulebook to keep in sync. The [index of every normative statement](https://github.com/somerandomdude/design-system-documentation-schema#index-of-every-rule) regenerates from the schema on every build, so it can't drift out of date. Each rule has a location-based ID (for example, `common/ref§note.1`) — if that ID changes, the schema moved, and the rule should be double-checked wherever it's cited.
+DSDS keeps its rules inside the schema's own `description` text, next to the field they apply to — the schema *is* the spec, with no separate rulebook to keep in sync. The [index of every normative statement](#index-of-every-normative-statement) below regenerates from the schema on every build, so it can't drift out of date. Each rule has a location-based ID (for example, `common/ref§note.1`) — if that ID changes, the schema moved, and the rule should be double-checked wherever it's cited.
 
 ## Conformance classes
 
@@ -37,13 +37,13 @@ A tool, renderer, or AI agent that reads DSDS documents. A conforming consumer:
 - MUST NOT fail just because it sees an optional field it doesn't recognize
 - MUST keep `$extensions` data intact even if it doesn't understand it
 - MUST treat an unresolvable reference (an `entryId#itemId` pointing nowhere) as an error, not silently ignore it
-- MUST take MUST/SHOULD-style guidance as seriously as the spec says to — a `must-not` guideline is a hard stop for an agent writing code, not a suggestion
+- MUST take MUST/SHOULD-style guidance as seriously as the spec says to, **for a document it has already decided to trust** — a `must-not` guideline is a hard stop for an agent writing code, not a suggestion. This does not extend that same standing to an unvetted or third-party document; see [Security considerations](security.html) for what that trust decision covers and doesn't
 - SHOULD build its own "what points to what" index when it loads a document, rather than expect the document to store that answer directly
 - MUST be able to address every section item, whether or not it was written with an `id` — when one is missing, derive it from the item's own text (lowercase, non-alphanumeric runs collapsed to a dash), the same way every other conforming tool does. See [common/id](schema.html#common-id).
 
 ### Conforming validator
 
-A tool that checks documents. A conforming validator MUST enforce both the schema itself (with format checks on) and the extra rules below (`DSDS-01`–`DSDS-11`). `scripts/validate.js` is the reference implementation. Its `examples/invalid/` folder holds one broken example per semantic rule (`DSDS-XX-*.yaml`) plus a set of schema-shape fixtures (`schema-*.yaml`, no rule id — a pure JSON Schema rejection) pinning constraints like enum casing, empty arrays, and `$extensions` namespacing. Every fixture declares its own contract in a leading comment — `# rejectedBy: schema|semantic`, plus `# expect: DSDS-XX` or `# errorAt: /json/pointer` as applicable — and `scripts/conformance-test.js` confirms each one fails for the exact reason and at the exact layer it claims to, not just that it fails at all.
+A tool that checks documents. A conforming validator MUST enforce both the schema itself (with format checks on) and the extra rules below (`DSDS-01`–`DSDS-11`). `scripts/validate.js` is the reference implementation. Its [`examples/invalid/`](examples.html#invalid) folder holds one broken example per semantic rule (`DSDS-XX-*.yaml`) plus a set of schema-shape fixtures (`schema-*.yaml`, no rule id — a pure JSON Schema rejection) pinning constraints like enum casing, empty arrays, and `$extensions` namespacing. Every fixture declares its own contract in a leading comment — `# rejectedBy: schema|semantic`, plus `# expect: DSDS-XX` or `# errorAt: /json/pointer` as applicable — and `scripts/conformance-test.js` confirms each one fails for the exact reason and at the exact layer it claims to, not just that it fails at all.
 
 ## Enforcement tiers
 
@@ -63,13 +63,25 @@ Every catalog entry declares its own tier explicitly, as `enforcement: structura
 
 ## Rule catalog
 
-The machine-readable list is [`schema/conformance-rules.yaml`](https://github.com/somerandomdude/design-system-documentation-schema/blob/main/schema/conformance-rules.yaml). This table is kept in sync with it by hand, but `scripts/conformance-test.js` and `scripts/check-rule-catalog.js` (both run on every `npm run check`) would catch it if the two ever drifted apart.
+The table below is generated directly from
+[`schema/conformance-rules.yaml`](https://github.com/somerandomdude/design-system-documentation-schema/blob/main/schema/conformance-rules.yaml)
+by `scripts/generate-rule-catalog.mjs` — not a hand-kept copy — so it cannot
+drift from the machine-readable catalog the validator actually reads.
+`scripts/conformance-test.js` and `scripts/check-rule-catalog.js` (both run
+on every `npm run check`) additionally confirm the catalog and
+`scripts/validate.js`'s own implementation agree. The catalog itself is also
+published as a versioned artifact at
+[`/v0.20.0/conformance-rules.yaml`](/v0.20.0/conformance-rules.yaml)
+alongside the schema bundle, for a tool that wants to read the rule
+descriptions programmatically instead of scraping this page.
 
 <ds-callout variant="warning" title="DSDS-01–DSDS-15 is a reset id space, not a continuation of pre-0.20.0's:">
 
 Versions through 0.15.2 used a three-digit catalog (`DSDS-001`–`DSDS-006` and similar, in `rules/rules.yaml`) covering a different rewrite of the model entirely. 0.20.0 restarted numbering at `DSDS-01` for a genuinely different rule set — `DSDS-02` here has nothing to do with whatever `DSDS-002` meant before. (0.15.2's own `DSDS-002` was, fittingly, the rule against reusing an identifier — a reminder this reset itself is worth naming explicitly rather than leaving implicit.) If you're citing a rule id from before 0.15.2, say which catalog it's from; a bare `DSDS-0N` is ambiguous across the two.
 
 </ds-callout>
+
+{/* dsds:rule-catalog */}
 
 | ID | Rule |
 |---|---|
@@ -81,13 +93,15 @@ Versions through 0.15.2 used a three-digit catalog (`DSDS-001`–`DSDS-006` and 
 | `DSDS-06` | A `composes` ref chain must not cycle. |
 | `DSDS-07` | A `depends-on` ref chain must not cycle. |
 | `DSDS-08` | A bare `to:` ref must resolve to a real entry or shared entry. |
-| `DSDS-09` | A `combo`'s `subject`/`items` must resolve to a real trait, token, or entry. |
+| `DSDS-09` | A `combo`'s `subject`/`items` must resolve. |
 | `DSDS-10` | A `same-as` item's `level` must match its target's. |
-| `DSDS-11` | A relative `sourceFiles[].file`/`source`/`rel: file` `href` actually exists on disk. |
-| `DSDS-12` | Advisory: capitalize RFC 2119 keywords (MUST/SHOULD) in a guideline's own statement. |
-| `DSDS-13` | Advisory: a token `description` shouldn't just restate its id/name or repeat a raw value. |
-| `DSDS-14` | Advisory: a hard-requirement guideline (must/must-not) with no `checkedBy` at all. |
-| `DSDS-15` | Advisory: a component entry with no `guidelines` section framed `when-to-use`. |
+| `DSDS-11` | A relative `sourceFiles[].file`, `source`, or `rel: file` `href` must exist on disk. |
+| `DSDS-12` | Capitalize RFC 2119 keywords (MUST/SHOULD) in a guideline's own statement. |
+| `DSDS-13` | A token `description`, when present, shouldn't just restate its id/name or repeat a raw value. |
+| `DSDS-14` | A hard-requirement guideline (must/must-not) with no `checkedBy` at all. |
+| `DSDS-15` | A component entry with no `guidelines` section framed `when-to-use`. |
+
+{/* /dsds:rule-catalog */}
 
 `DSDS-06` and `DSDS-07` restore a cycle check the pre-0.20.0 spec had — nothing should point back at itself through a chain of `composes` or `depends-on` links. The 0.20.0 rewrite dropped it by accident; it's enforced by the validator's own code now, not the schema shape.
 
@@ -102,6 +116,25 @@ An unresolved reference is a **warning**, not a failure, only in this cross-file
 Whether a `to:` value even *looks like* a valid id is checked separately, directly by the schema: `common/ref.schema.yaml`'s `to` field only accepts id-shaped values, so a display name or a value with a space in it fails before `DSDS-05`, `DSDS-08`, or `DSDS-09` ever run. See [common/ref](schema.html#common-ref).
 
 **`DSDS-11`** covers one of these: whether a relative `sourceFiles[].file`, `source`, or `rel: file` `href` actually points at a file that exists on disk, checked relative to the file being validated and bounded to the same directory-of-the-target boundary as `DSDS-05`/`DSDS-08`/`DSDS-09`. It applies to a base document's own top-level `refs` as well as to each entry's. Warning-only, promoted to a failure under `--strict`, same tier and same reason — it's opt-in because it's the one rule that reads the filesystem beyond the document being validated. A related check remains deliberately unbuilt: confirming the exact ids or paths *inside* another file the way DTCG-path resolution would need — that would mean actually reading and parsing the target's contents, not just confirming it exists.
+
+## Conformance suite
+
+`scripts/validate.js` is the reference implementation, but nothing about DSDS requires it to be the only one — a second, independent implementation is one of this spec's own [1.0 criteria](stability.html#criteria-for-declaring-10). The conformance suite is what that second implementation checks itself against, without reading this repo's JavaScript at all.
+
+Published as one versioned artifact per release, at
+[`/v0.20.0/conformance-suite/manifest.json`](/v0.20.0/conformance-suite/manifest.json),
+alongside a copy of every fixture it references (`/v0.20.0/conformance-suite/examples/invalid/`). Generated by `scripts/generate-conformance-suite.mjs` directly from each fixture's own leading-comment contract (the same `rejectedBy`/`expect`/`errorAt` fields [Conformance validator](#conforming-validator) describes above) — not hand-maintained, so it can't drift from the fixtures themselves.
+
+**The runner contract** — what implementing conformance against this artifact means, for a validator in any language:
+
+1. Fetch the manifest. For each entry in `fixtures`, fetch the file it names (relative to the manifest itself).
+2. Validate that file against the schema bundle for the manifest's own `schemaVersion`.
+3. Confirm the document is **rejected** — and rejected for the declared reason, not just rejected somehow:
+   - `rejectedBy: "schema"` — at least one resulting error must be a pure JSON Schema violation (no `DSDS-XX` rule id attached). If `errorAt` is set, one such error's instance path must equal it (`"/"` for the document root).
+   - `rejectedBy: "semantic"` — every id listed in `expect` must appear among the resulting errors *or* warnings tagged with that id (a semantic rule may report as either, depending on whether the validator runs in a `--strict`-equivalent mode).
+4. A fixture that validates cleanly, or fails for a different reason than it declares, is a **conformance failure for the validator under test** — passing "some validators reject it" isn't the bar; rejecting it for the right, stated reason is.
+
+This is exactly what `scripts/conformance-test.js` already does against `scripts/validate.js` on every `npm run check` — the manifest just makes the same check runnable by something that isn't that script.
 
 ## Open conventions
 
@@ -139,7 +172,148 @@ A producer SHOULD declare `metadata.platforms` on the system entry when a docume
 
 ## Passing isn't the same as good
 
-A document with zero errors and zero warnings can still be bad documentation — the schema checks structure, not judgment. `examples/anti-patterns/` collects a few small documents that validate cleanly and are still worth avoiding: a definition that only restates its own term, a `checkedBy: manual` claim too vague to actually check, and guideline prose that names a concept (a "token-group" entry) the spec doesn't have. Each file's own leading comment says what's wrong with it and why the schema can't catch it. Deliberately excluded from the default `npm run check` sweep — not meant to be copied.
+A document with zero errors and zero warnings can still be bad documentation — the schema checks structure, not judgment. [`examples/anti-patterns/`](examples.html#anti-patterns) collects a few small documents that validate cleanly and are still worth avoiding: a definition that only restates its own term, a `checkedBy: manual` claim too vague to actually check, and guideline prose that names a concept (a "token-group" entry) the spec doesn't have. Each file's own leading comment says what's wrong with it and why the schema can't catch it. Deliberately excluded from the default `npm run check` sweep — not meant to be copied.
+
+## Index of every normative statement
+
+Every RFC 2119 sentence (MUST, MUST NOT, SHOULD, SHOULD NOT, MAY) inside the schema's own `description` text, extracted and indexed by `scripts/extract-normative.mjs` directly from `schema/**/*.schema.yaml` — not hand-copied, and regenerated on every build (`npm run normative`, checked via `--check` in `postvalidate`). Each statement's id is location-based (`<dir>/<file>§<jsonPath>.<n>`), so citing one and having the schema move underneath it is a visible, checkable break rather than a silent one.
+
+{/* dsds:normative-index */}
+
+*Generated from the v0.20.0 schemas by `scripts/extract-normative.mjs` — do not edit by hand. 2 statements: 0 MUST, 1 MUST NOT, 1 SHOULD, 0 SHOULD NOT, 0 MAY.*
+
+### metadata
+
+#### metadata/metadata
+
+- **MUST NOT** — MUST NOT contain markup. <small>`metadata/metadata§note.1`</small>
+- **SHOULD** — Tools SHOULD treat `updated.date` as the cache key for this item's documentation specifically. <small>`metadata/metadata§.updated.1`</small>
+
+{/* /dsds:normative-index */}
+
+---
+
+# Examples — DSDS 0.20.0
+
+Every file below lives in the repo's `examples/` directory and is validated on every `npm run check` — nothing here is aspirational or out of date with the schema it demonstrates. `npm run check-examples` additionally confirms any example built from hand-split fragments (`scripts/compose.js`) still matches what those fragments say.
+
+For the example most directly relevant to a specific schema feature, see that feature's own description on the [Schema](schema.html) page or its mention on [Quick start](quickstart.html) — this page is the full index, not a curated tour.
+
+{/* dsds:examples-index */}
+
+## anti-patterns/
+
+Documents that validate cleanly and are still worth avoiding — the schema checks structure, not judgment. See each file's own leading comment.
+
+- [`anti-patterns/circular-definition.yaml`](/examples/anti-patterns/circular-definition.yaml)
+- [`anti-patterns/stale-terminology.yaml`](/examples/anti-patterns/stale-terminology.yaml)
+- [`anti-patterns/unfalsifiable-manual-check.yaml`](/examples/anti-patterns/unfalsifiable-manual-check.yaml)
+
+## base/
+
+Full base documents — a system with multiple entries, split across files via `rel: file`.
+
+- [`base/react-extension.dsds.yaml`](/examples/base/react-extension.dsds.yaml)
+- [`base/starter-kit-fragments/00-system.dsds.yaml`](/examples/base/starter-kit-fragments/00-system.dsds.yaml)
+- [`base/starter-kit-fragments/01-tokens-and-themes.dsds.yaml`](/examples/base/starter-kit-fragments/01-tokens-and-themes.dsds.yaml)
+- [`base/starter-kit-fragments/02-components.dsds.yaml`](/examples/base/starter-kit-fragments/02-components.dsds.yaml)
+- [`base/starter-kit.dsds.yaml`](/examples/base/starter-kit.dsds.yaml)
+- [`base/tokens/dark.tokens.json`](/examples/base/tokens/dark.tokens.json)
+- [`base/tokens/light.tokens.json`](/examples/base/tokens/light.tokens.json)
+
+## entries/
+
+Standalone entry files, one per kind, plus the source/manifest/story files a couple of them point at.
+
+- [`entries/button-group.yaml`](/examples/entries/button-group.yaml)
+- [`entries/button.yaml`](/examples/entries/button.yaml)
+- [`entries/chunks/confirmation-dialog.tsx`](/examples/entries/chunks/confirmation-dialog.tsx)
+- [`entries/color-action-primary-hover.yaml`](/examples/entries/color-action-primary-hover.yaml)
+- [`entries/color-action-primary.yaml`](/examples/entries/color-action-primary.yaml)
+- [`entries/color-surface-default.yaml`](/examples/entries/color-surface-default.yaml)
+- [`entries/color-surface-raised.yaml`](/examples/entries/color-surface-raised.yaml)
+- [`entries/confirmation-dialog.yaml`](/examples/entries/confirmation-dialog.yaml)
+- [`entries/dark.yaml`](/examples/entries/dark.yaml)
+- [`entries/dialog.yaml`](/examples/entries/dialog.yaml)
+- [`entries/empty-state.yaml`](/examples/entries/empty-state.yaml)
+- [`entries/error-state.yaml`](/examples/entries/error-state.yaml)
+- [`entries/getting-started.yaml`](/examples/entries/getting-started.yaml)
+- [`entries/icon-button.yaml`](/examples/entries/icon-button.yaml)
+- [`entries/icon.yaml`](/examples/entries/icon.yaml)
+- [`entries/link.yaml`](/examples/entries/link.yaml)
+- [`entries/manifests/button.cem.json`](/examples/entries/manifests/button.cem.json)
+- [`entries/space-4.yaml`](/examples/entries/space-4.yaml)
+- [`entries/spacing-scale.yaml`](/examples/entries/spacing-scale.yaml)
+- [`entries/src/Button.tsx`](/examples/entries/src/Button.tsx)
+- [`entries/stories/button.stories.tsx`](/examples/entries/stories/button.stories.tsx)
+- [`entries/tokens/dark.tokens.json`](/examples/entries/tokens/dark.tokens.json)
+- [`entries/tokens.dtcg.json`](/examples/entries/tokens.dtcg.json)
+
+## interop/
+
+Worked pairs showing a DSDS entry pointing at a real DTCG token file or CEM manifest, instead of restating it.
+
+- [`interop/color-action-primary.dsds.yaml`](/examples/interop/color-action-primary.dsds.yaml)
+- [`interop/color-action-primary.tokens.json`](/examples/interop/color-action-primary.tokens.json)
+- [`interop/my-element.custom-elements.json`](/examples/interop/my-element.custom-elements.json)
+- [`interop/my-element.dsds.yaml`](/examples/interop/my-element.dsds.yaml)
+- [`interop/my-element.js`](/examples/interop/my-element.js)
+- [`interop/nested-color.dsds.yaml`](/examples/interop/nested-color.dsds.yaml)
+- [`interop/nested-color.tokens.json`](/examples/interop/nested-color.tokens.json)
+
+## invalid/
+
+One broken example per semantic rule (`DSDS-XX-*.yaml`) plus schema-shape fixtures (`schema-*.yaml`) — the negative-test corpus `scripts/conformance-test.js` runs against.
+
+- [`invalid/DSDS-01-one-api-per-platform.yaml`](/examples/invalid/DSDS-01-one-api-per-platform.yaml)
+- [`invalid/DSDS-02-platform-vocabulary-status-list.yaml`](/examples/invalid/DSDS-02-platform-vocabulary-status-list.yaml)
+- [`invalid/DSDS-02-platform-vocabulary.yaml`](/examples/invalid/DSDS-02-platform-vocabulary.yaml)
+- [`invalid/DSDS-03-checked-by-needs-ref.yaml`](/examples/invalid/DSDS-03-checked-by-needs-ref.yaml)
+- [`invalid/DSDS-04-unique-entry-id.yaml`](/examples/invalid/DSDS-04-unique-entry-id.yaml)
+- [`invalid/DSDS-05-item-ref-resolves.yaml`](/examples/invalid/DSDS-05-item-ref-resolves.yaml)
+- [`invalid/DSDS-06-composes-cycle.yaml`](/examples/invalid/DSDS-06-composes-cycle.yaml)
+- [`invalid/DSDS-07-depends-on-cycle.yaml`](/examples/invalid/DSDS-07-depends-on-cycle.yaml)
+- [`invalid/DSDS-08-entry-ref-resolves.yaml`](/examples/invalid/DSDS-08-entry-ref-resolves.yaml)
+- [`invalid/DSDS-09-combo-target-resolves.yaml`](/examples/invalid/DSDS-09-combo-target-resolves.yaml)
+- [`invalid/DSDS-10-same-as-level-matches.yaml`](/examples/invalid/DSDS-10-same-as-level-matches.yaml)
+- [`invalid/DSDS-11-base-document-file-ref.yaml`](/examples/invalid/DSDS-11-base-document-file-ref.yaml)
+- [`invalid/DSDS-11-file-ref-exists.yaml`](/examples/invalid/DSDS-11-file-ref-exists.yaml)
+- [`invalid/schema-combo-target-pattern.yaml`](/examples/invalid/schema-combo-target-pattern.yaml)
+- [`invalid/schema-component-unknown-field.yaml`](/examples/invalid/schema-component-unknown-field.yaml)
+- [`invalid/schema-empty-entries-array.yaml`](/examples/invalid/schema-empty-entries-array.yaml)
+- [`invalid/schema-extensions-unnamespaced-key.yaml`](/examples/invalid/schema-extensions-unnamespaced-key.yaml)
+- [`invalid/schema-kind-enum-invalid.yaml`](/examples/invalid/schema-kind-enum-invalid.yaml)
+- [`invalid/schema-legacy-documentblocks-field.yaml`](/examples/invalid/schema-legacy-documentblocks-field.yaml)
+- [`invalid/schema-legacy-dsdsversion-field.yaml`](/examples/invalid/schema-legacy-dsdsversion-field.yaml)
+- [`invalid/schema-legacy-identifier-field.yaml`](/examples/invalid/schema-legacy-identifier-field.yaml)
+- [`invalid/schema-ref-mutually-exclusive-to-href.yaml`](/examples/invalid/schema-ref-mutually-exclusive-to-href.yaml)
+- [`invalid/schema-requirement-level-casing.yaml`](/examples/invalid/schema-requirement-level-casing.yaml)
+- [`invalid/schema-sourcefile-platform-pattern.yaml`](/examples/invalid/schema-sourcefile-platform-pattern.yaml)
+- [`invalid/schema-sourcefiles-empty-array.yaml`](/examples/invalid/schema-sourcefiles-empty-array.yaml)
+- [`invalid/schema-trait-missing-kind.yaml`](/examples/invalid/schema-trait-missing-kind.yaml)
+
+## quickstart/
+
+The Quick Start guide's own snippets, one per step, building up from a bare base document to a described, related entry.
+
+- [`quickstart/01-base-document.yaml`](/examples/quickstart/01-base-document.yaml)
+- [`quickstart/02-base-document-described.yaml`](/examples/quickstart/02-base-document-described.yaml)
+- [`quickstart/03-base-document-entries.yaml`](/examples/quickstart/03-base-document-entries.yaml)
+- [`quickstart/04-base-document-refs.yaml`](/examples/quickstart/04-base-document-refs.yaml)
+- [`quickstart/05-button-entry.yaml`](/examples/quickstart/05-button-entry.yaml)
+- [`quickstart/06-button-described.yaml`](/examples/quickstart/06-button-described.yaml)
+- [`quickstart/07-button-custom.yaml`](/examples/quickstart/07-button-custom.yaml)
+- [`quickstart/08-token-entry.yaml`](/examples/quickstart/08-token-entry.yaml)
+- [`quickstart/09-token-described.yaml`](/examples/quickstart/09-token-described.yaml)
+- [`quickstart/10-pattern-entry.yaml`](/examples/quickstart/10-pattern-entry.yaml)
+- [`quickstart/11-custom-entry.yaml`](/examples/quickstart/11-custom-entry.yaml)
+- [`quickstart/12-shared-sections.yaml`](/examples/quickstart/12-shared-sections.yaml)
+- [`quickstart/components/button.dsds.yaml`](/examples/quickstart/components/button.dsds.yaml)
+- [`quickstart/tokens.dtcg.json`](/examples/quickstart/tokens.dtcg.json)
+
+*80 files across 6 categories, generated from the `examples/` directory by `scripts/generate-examples-index.mjs` — do not edit by hand.*
+
+{/* /dsds:examples-index */}
 
 ---
 
@@ -180,7 +354,7 @@ sections:
 
 A tool that doesn't know about `com.acme` — the reference validator, another vendor's linter, a plain DSDS reader — skips it entirely. The document is still fully standard DSDS: remove the `$extensions` block and everything left over was already valid on its own.
 
-See it in the repo's own [`button.yaml`](https://github.com/somerandomdude/design-system-documentation-schema/blob/main/examples/entries/button.yaml) for a real, validated example.
+See it in the repo's own [`button.yaml`](/examples/entries/button.yaml) for a real, validated example.
 
 ## Custom kinds
 
@@ -230,7 +404,7 @@ $id: https://your-org.example/profiles/entries/component.schema.yaml
 title: Acme's stable-component profile
 description: Once a component's status is stable, it must have a purpose and at least one source file.
 allOf:
-  - $ref: https://designsystemdocspec.org/v{{VERSION}}/entries/component.schema.yaml
+  - $ref: https://designsystemdocspec.org/v0.20.0/entries/component.schema.yaml
   - if:
       required: [metadata]
       properties:
@@ -343,7 +517,7 @@ No open standard covers design-system documentation end to end. The formats that
 | Design artifacts | Design tool files | A `refs` entry with `rel: design`, or `metadata.preview` |
 | Source code | The repository | A `refs` entry with `rel: source`, or a component's own `sourceFiles` |
 
-DTCG owns token *values*; DSDS owns their *meaning and usage*, so the two can never disagree. CEM (and similar manifests) own a component's generated API details — `specs` points at the manifest itself, `sourceFiles` at the raw source a step earlier in the same pipeline; a component can use either, both, or neither. See `examples/interop/` in the repo for worked examples.
+DTCG owns token *values*; DSDS owns their *meaning and usage*, so the two can never disagree. CEM (and similar manifests) own a component's generated API details — `specs` points at the manifest itself, `sourceFiles` at the raw source a step earlier in the same pipeline; a component can use either, both, or neither. See [`examples/interop/`](examples.html#interop) for worked examples.
 
 ---
 
@@ -351,7 +525,7 @@ DTCG owns token *values*; DSDS owns their *meaning and usage*, so the two can ne
 
 New to DSDS? Start with the [Quick Start Guide](quickstart.html) — document structure, entry kinds, the section system, and examples you can copy.
 
-For the full schema reference, see [Schema](schema.html). For the JSON Schema source, see `schema/`; for working examples, see `examples/`.
+For the full schema reference, see [Schema](schema.html). For the JSON Schema source, see `schema/`; for working examples, see [Examples](examples.html).
 
 ## Contributors
 - [PJ Onori](https://pjonori.com): Current maintainer
@@ -454,7 +628,7 @@ For a larger system, keep each entry in its own file and point at it with `refs`
 
 <ds-callout variant="tip" title="Tip:">
 
-Use a multi-file split for large systems where a different team owns each component. Use one file with everything inlined for smaller systems. `scripts/compose.js` can concatenate many hand-authored fragment files into one document before validation — see the repo's own `examples/base/starter-kit-fragments/`.
+Use a multi-file split for large systems where a different team owns each component. Use one file with everything inlined for smaller systems. `scripts/compose.js` can concatenate many hand-authored fragment files into one document before validation — see the repo's own [`examples/base/`](examples.html#base).
 
 </ds-callout>
 
@@ -725,7 +899,7 @@ Content that isn't itself a design-system artifact — an accessibility rule tha
 Add `$schema` to get editor autocompletion and inline validation:
 
 <ds-code language="yaml" label="" slot="example" wrap>
-$schema: https://designsystemdocspec.org/v{{VERSION}}/dsds.bundled.yaml
+$schema: https://designsystemdocspec.org/v0.20.0/dsds.bundled.yaml
 id: my-component
 kind: component
 name: My Component
@@ -779,9 +953,98 @@ You've seen the basics. Here's where to go deeper.
 
 ---
 
+# Security considerations — DSDS 0.20.0
+
+DSDS lets a document talk to an agent directly, in directive language. A `for: agent` section can carry what [AGENTS.md](AGENTS.md) calls "hard MUST/MUST NOT rules." And [Conformance](conformance.html) says a conforming consumer must treat a `must-not` guideline as "a hard stop for an agent writing code, not a suggestion."
+
+Nothing in that mechanism says who has to have written the document. This page says who.
+
+## A DSDS document is data, not instruction
+
+A DSDS document is content to be read, like any other file an agent opens. That includes one describing a design system your organization didn't build and doesn't control.
+
+It is never a command channel. Nothing in this spec ranks a `for: agent` section, a `must`/`must-not` guideline, or a `steps` checklist above the instructions the operator gave the agent for the task at hand.
+
+This matters because the language is built to *sound* authoritative. That is the feature, not a flaw: a rule that reads like a suggestion won't stop an agent from working around it. But phrasing doesn't move authority from the author to the document. The author is a third party you may or may not trust.
+
+## The `for: agent` rule applies only to documents you trust
+
+[Conformance](conformance.html#conforming-consumer) tells a consumer to take MUST/SHOULD guidance as seriously as the spec means it. That says how to read a document you have already decided to rely on. A linter obeys the config file you point it at, in the same way.
+
+It does not mean every DSDS document on the internet gets to constrain your agent. Trust is a separate decision, and it comes first. You already make it for any dependency or config file. Make it here too, whether the docs came from a vendor, a dependency, or a URL some user supplied.
+
+In a document you haven't vetted, a `must-not` guideline is evidence of how its authors intend the system to be used. Weigh it. It does not carry the force of your own security policy.
+
+## Following a pointer is your decision
+
+[AGENTS.md](AGENTS.md#self-checking-your-work) tells an agent to follow a guideline's `checks` ref "to the real test." A `refs` entry can point anywhere, using `href`.
+
+DSDS never requires you to fetch any of them. No conformance rule says a validator or agent MUST retrieve a `checks` or `href` target. The rules only say that a reference, once resolved, has to resolve correctly (`DSDS-05`, `DSDS-08`, `DSDS-09`).
+
+So treat these pointers like links in any other untrusted input. A relative path inside your own repo is not the same risk as an outside URL. And "the document told me to fetch it" is not permission to fetch it.
+
+## `$extensions` is opaque, never executable
+
+A conforming consumer MUST keep `$extensions` data it doesn't understand ([Conformance](conformance.html#conforming-consumer)). That way the data survives tools that don't know its namespace.
+
+Keeping data is not trusting it. Validation only proves the shape is well formed. It says nothing about whether the contents are safe to run, or to paste into a shell command, a prompt, or a query. Treat every `$extensions` value as untrusted data, whatever namespace it claims.
+
+## In practice
+
+If you're building an agent harness, validator, or renderer:
+
+- Check `schemaVersion` and structure. Treat the content as read-only data for the task, never as instructions that rank with the operator's own.
+- Apply the obedience rule ([Conformance](conformance.html#conforming-consumer)'s MUST bullet) only to sources you have already decided to trust.
+- Apply your own network and tool-use policy before fetching an `href` or `checks` target. DSDS never requires it.
+- Never `eval`, run, or paste unchecked `$extensions` content into a privileged context.
+
+None of this needs new machinery. It is the handling untrusted input already gets. It is written down because a format that invites an agent to read hard directives should say plainly that those directives don't outrank the operator. Most such formats never say it.
+
+---
+
 # Stability — DSDS 0.20.0
 
-DSDS is a **pre-1.0 draft**. Some parts of the schema can grow to cover new cases without a spec change; other parts are locked in. This page says which is which, so you can tell what's safe to build tooling around. For the rules themselves and how each is enforced, see [Conformance](conformance.html).
+DSDS is a **pre-1.0 draft**, maintained by one person, not a working group. Some parts of the schema can grow to cover new cases without a spec change; other parts are locked in. This page is the compatibility contract behind that status — what can change, how you'll be told, and what never changes regardless. For the rules themselves and how each is enforced, see [Conformance](conformance.html).
+
+## What counts as a breaking change
+
+A change is breaking if a document, tool, or workflow that worked before it ships stops working (or starts failing validation) after — not just a rename or removal. Concretely, all of the following count as breaking, even when they look like tightening rather than deleting:
+
+- Renaming, removing, or restructuring a field.
+- Adding a new required field to an existing shape.
+- Narrowing an existing constraint — an enum losing a value, a pattern getting stricter, a type narrowing.
+- **Adding a new validator rule to `scripts/validate.js`'s `DSDS-01`–`DSDS-11` catalog.** A document that validated cleanly yesterday can fail today with no schema change at all, because the new rule now runs against it. This is easy to overlook precisely because no field moved — treat a new conformance rule with the same weight as a schema change, because it has the same effect on existing documents.
+- Any change to what `npm run check` accepts that a previously-passing document, run today, would fail.
+
+**Not** breaking: new optional fields, new union members, relaxed constraints, new advisory (`lint-docs.js`) rules — a warning never blocks a build — and documentation-only edits.
+
+## Version semantics
+
+| Change | Version bump | Your documents |
+|---|---|---|
+| Documentation-only edits | none | Unaffected |
+| Additions and loosenings (new optional fields, new union members, relaxed constraints, new advisory lint rules) | patch | Remain valid unchanged |
+| Tightenings and behavior changes (new constraints, new required fields, moved fields, **a new validator rule**) | minor | May need edits; the CHANGELOG lists every affected position |
+| Renames and removals | batched minor, pre-1.0 (major, post-1.0) | Migration script provided (`scripts/migrate-to-*.js`) |
+
+Pre-1.0, a minor release can carry a tightening or a breaking change with no deprecation window first — that is what "pre-1.0" commits to here, and it's why the table above says "minor" rather than "major" for a rename. Read the CHANGELOG before upgrading a minor version, not just a major one. Post-1.0, tightenings and removals wait for a major version and follow the deprecation window below; see "The post-1.0 contract."
+
+## Deprecation policy
+
+From the point a form is scheduled for removal, DSDS commits to:
+
+1. Marking it deprecated in the schema — the standard JSON Schema `deprecated: true` annotation where the shape supports it, a `$comment` explaining the removal where it doesn't (e.g. a whole shape being replaced).
+2. Naming its replacement in the same schema description or `$comment` — never just "removed," always "removed, use X instead."
+3. Flagging it via `lint-docs.js` (a warning, never a build failure) so it shows up in CI before it disappears.
+4. Keeping it valid for at least one further minor release after the deprecation notice ships, before the removal that breaks it.
+
+This is a process commitment, not yet a schema-level machine-readable one — a consumer currently learns "deprecated, replaced by X" from the annotation and description text, not a dedicated `replacedBy`/`removeIn` field. That's a planned schema addition; until it ships, the schema text is the source of truth for a field's deprecation status.
+
+## Breaking-change windows
+
+Pre-1.0 breaking changes land batched into a named release, not trickled one field at a time across several minors — a single CHANGELOG entry and migration script to read, not several. When a breaking window is being prepared, it's announced on this page (what's changing, and the release it lands in) before that release ships, the same practice earlier 0.15.x releases followed. Each window ships with its own migration script, following `scripts/migrate-to-0.20.js`'s shape: convert what can be converted automatically, preserve anything else under `$extensions["com.dsds.migration"]`, and print a warning for every case that needed a manual call.
+
+**No breaking window is currently open.** 0.20.0 was itself the last one — the entity/`documentBlocks` model's replacement — and the plan from here is additive releases (new optional fields, new fixtures, restored tooling) until the 1.0 criteria below are met.
 
 ## How schema changes get made
 
@@ -2065,7 +2328,7 @@ Whatever else moves, a published version directory doesn't. Every version DSDS h
         },
         "updated": {
           "type": "object",
-          "description": "When this item's documentation last changed. Documentation can change without the design system's own version moving - a wording fix, a new example, a corrected guideline don't warrant a release. Tools SHOULD treat `updated.date` as the cache key for this item's documentation specifically, distinct from `metadata.version`/`since` (which track the design system's own release): pin to it, and re-fetch or re-index once it advances, rather than assuming unchanged content just because the design system's version hasn't moved.",
+          "description": "Tools SHOULD treat `updated.date` as the cache key for this item's documentation specifically. `updated.date` is distinct from `metadata.version`/`since` which tracks the design system's own release. Always use `updated.date` as the source of truth for when to re-fetch or re-index.",
           "$comment": "A bare date, or a date with a change note.",
           "properties": {
             "date": {
