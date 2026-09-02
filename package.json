@@ -4,48 +4,40 @@
   "description": "A standard, machine-readable format for design system documentation.",
   "contributors": [
     {
-      "name": "Afyia Smith",
-      "url": "https://afyiasmith.co/"
+      "name": "Cody Clark",
+      "url": "https://github.com/codysue"
     },
     {
       "name": "Suleiman Ali Shakir",
       "url": "https://iamsuleiman.com/"
+    },
+    {
+      "name": "Mykhaylo Ryechkin",
+      "url": "https://github.com/mryechkin"
+    },
+    {
+      "name": "Afyia Smith",
+      "url": "https://afyiasmith.co/"
     }
   ],
   "scripts": {
-    "sync-examples": "node scripts/sync-examples.js",
-    "check-examples": "node scripts/sync-examples.js --check",
-    "validate": "node scripts/validate.js",
-    "validate:strict": "node scripts/validate.js --strict",
-    "bundle": "node scripts/bundle.js",
-    "compose": "node scripts/compose.js",
-    "conformance-test": "node scripts/conformance-test.js",
-    "check-schema-ids": "node scripts/check-schema-ids.js",
-    "check-rule-catalog": "node scripts/check-rule-catalog.js",
-    "generate-rule-catalog": "node scripts/generate-rule-catalog.mjs",
-    "generate-examples-index": "node scripts/generate-examples-index.mjs",
-    "generate-conformance-suite": "node scripts/generate-conformance-suite.mjs",
-    "lint:docs": "node scripts/lint-docs.js",
-    "test:components": "node scripts/validate.js test/site-components/index.dsds.yaml test/site-components/components/*.dsds.yaml",
-    "test:interop": "node scripts/validate.js examples/interop/color-action-primary.dsds.yaml examples/interop/my-element.dsds.yaml",
-    "test:interop-nested": "node scripts/validate.js examples/interop/nested-color.dsds.yaml",
-    "check": "npm run bundle && npm run check-schema-ids && npm run check-rule-catalog && npm run validate && npm run conformance-test && npm run test:components && npm run test:interop && npm run test:interop-nested && node scripts/sync-skill-versions.js --check",
-    "build": "node scripts/build-site.js",
     "dev": "node scripts/serve.js",
-    "readability": "node scripts/readability-audit.mjs",
+    "build": "npm run generate && node scripts/build-site.js",
+    "check:all": "npm run check && npm run build && npm run check:docs",
+    "check": "node scripts/bundle.js && node scripts/check-schema-ids.js && node scripts/check-rule-catalog.js && node scripts/sync-examples.js --check && node scripts/validate.js && node scripts/conformance-test.js && node scripts/validate.js test/site-components/index.dsds.yaml test/site-components/components/*.dsds.yaml && node scripts/validate.js examples/interop/color-action-primary.dsds.yaml examples/interop/my-element.dsds.yaml && node scripts/validate.js examples/interop/nested-color.dsds.yaml && node scripts/sync-skill-versions.js --check && npm run generate:check",
+    "check:docs": "node scripts/check-markdown-mirrors.mjs && node scripts/check-internal-links.mjs && node scripts/check-docs-coverage.mjs && node scripts/check-scripts-documented.mjs && stylelint \"site/**/*.css\"",
+    "lint": "node scripts/lint-docs.js",
+    "validate": "node scripts/validate.js",
+    "generate": "node scripts/sync-examples.js && node scripts/bundle.js && node scripts/extract-normative.mjs && node scripts/generate-rule-catalog.mjs && node scripts/generate-examples-index.mjs && node scripts/generate-conformance-suite.mjs",
+    "generate:check": "node scripts/extract-normative.mjs --check && node scripts/generate-rule-catalog.mjs --check && node scripts/generate-examples-index.mjs --check && node scripts/generate-conformance-suite.mjs --check",
+    "migrate": "node scripts/migrate-to-0.20.js",
+    "compose": "node scripts/compose.js",
     "bump-version": "node scripts/bump-version.js",
-    "sync-skill-versions": "node scripts/sync-skill-versions.js",
     "og:generate": "node scripts/generate-og-image.mjs",
-    "prebuild": "npm run sync-examples && npm run bundle && npm run generate-rule-catalog && npm run generate-examples-index && npm run generate-conformance-suite",
-    "prevalidate": "npm run sync-examples && npm run bundle",
-    "postvalidate": "node scripts/extract-normative.mjs --check && node scripts/generate-rule-catalog.mjs --check && node scripts/generate-examples-index.mjs --check && node scripts/generate-conformance-suite.mjs --check",
-    "lint:css": "stylelint \"site/**/*.css\"",
-    "pretest:a11y": "npx playwright install chromium",
-    "test:a11y": "node scripts/axe-audit.mjs",
-    "check:markdown-mirrors": "node scripts/check-markdown-mirrors.mjs",
-    "check:internal-links": "node scripts/check-internal-links.mjs",
-    "check:docs-coverage": "node scripts/check-docs-coverage.mjs",
-    "normative": "node scripts/extract-normative.mjs"
+    "readability": "node scripts/readability-audit.mjs",
+    "test:a11y": "npx playwright install chromium && node scripts/axe-audit.mjs",
+    "bundle": "node scripts/bundle.js",
+    "sync-skill-versions": "node scripts/sync-skill-versions.js"
   },
   "repository": {
     "type": "git",

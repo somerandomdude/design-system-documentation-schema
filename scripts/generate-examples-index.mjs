@@ -103,7 +103,7 @@ function main() {
   if (check) {
     if (updated !== page) {
       console.error(
-        "✗ Examples index is out of date. Run `npm run generate-examples-index` to regenerate.",
+        "✗ Examples index is out of date. Run `npm run generate` to regenerate.",
       );
       process.exit(1);
     }

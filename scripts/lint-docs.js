@@ -28,7 +28,7 @@
  *
  * Usage:
  *   node scripts/lint-docs.js [paths…]   # files or directories
- *   npm run lint:docs                    # defaults to the same corpus validate.js does
+ *   npm run lint                    # defaults to the same corpus validate.js does
  */
 "use strict";
 

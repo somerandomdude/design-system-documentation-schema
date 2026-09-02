@@ -20,7 +20,7 @@
  * Reads the already-built site/dist/ (run `npm run build` first), same as
  * check-markdown-mirrors.mjs and check-internal-links.mjs.
  *
- * Run via `npm run check:docs-coverage`.
+ * Run via `npm run check:docs`.
  */
 
 import fs from "node:fs";

@@ -3,7 +3,7 @@ name: CI
 # Nothing else ran these on push/PR before this file existed - npm run
 # check was comprehensive and passed at every release, but only when a
 # person remembered to run it locally. A deploy shipped whether or not the
-# spec validated. See notes/dsds-0.20.0-improvement-plan.md, Phase 1 #1.
+# spec validated.
 on:
   push:
     branches: [main]
@@ -23,66 +23,43 @@ jobs:
       # dependency's own install-time script should be able to affect a
       # validation-only run.
       - run: npm ci --ignore-scripts
-      # examples/**/*.yaml must match the hand-split fragments they're
-      # composed from (scripts/compose.js) - this is the drift guard for
-      # that split.
+
+      # `npm run check:all` is `check` -> `build` -> `check:docs`, and it's
+      # what a contributor runs locally, so CI runs the same thing rather
+      # than a hand-maintained copy of its parts that can drift out of step
+      # with it.
       #
-      # MUST run before `npm run check`: check's `prevalidate` hook runs
-      # `sync-examples`, which *writes* the composed files. Ordered the other
-      # way round (as it was), this guard only ever inspected output the
-      # previous step had just regenerated, so it could never fail - it
-      # reported success on a working tree it had no part in producing.
-      - run: npm run check-examples
-      # Bundles the schema, validates every example/fixture/test corpus
-      # file, runs the conformance fixture suite, and $id-matches-path
-      # (see scripts/check-schema-ids.js).
-      - run: npm run check
-      # The three checks below read site/dist/, which is no longer tracked
-      # (.gitignore) - Netlify regenerates it on every deploy, so git
-      # doesn't carry the generated HTML/markdown/bundle. That makes this
-      # build step load-bearing, not a convenience: without it the checks
-      # would find no dist at all in a fresh checkout. It also makes them
-      # stronger than before, since they now assert against output built
-      # from the commit under test rather than whatever a contributor
-      # happened to commit alongside it.
-      - run: npm run build
-      # site/dist/schema.md (the no-JS markdown mirror) must actually
-      # contain every schema def and field name currently in the schema.
-      - run: npm run check:markdown-mirrors
-      # Every internal link in README.md, AGENTS.md, site/content/*.mdx,
-      # and schema/conformance-rules.yaml, resolved against the freshly
-      # built site/dist/ - catches a page restructure leaving a stale link
-      # behind (this already happened once - see the script's own comment).
-      - run: npm run check:internal-links
-      # Every nav page built with real content, and every schema
-      # definition rendered as a real element on schema.html - the guard
-      # class that would have caught a page silently going missing from a
-      # build (see the script's own comment for the incident this
-      # generalizes from).
-      - run: npm run check:docs-coverage
-      - run: npm run lint:css
-      # The advisory tier (scripts/lint-docs.js). Documentation-quality
-      # findings are warnings by design and the script exits 0 whatever it
-      # finds, so this never fails a build - it runs here so the warnings
-      # are visible on every PR instead of only when someone remembers to
-      # run it, which is how the tier went missing in the first place.
-      # `continue-on-error` covers the other failure mode: the script's own
-      # catalog/implementation drift self-check, which does exit non-zero.
-      # That's worth seeing, not worth blocking a schema change on.
-      - run: npm run lint:docs
+      # The build in the middle is load-bearing, not a convenience:
+      # site/dist/ is git-ignored, so on a fresh checkout check:docs would
+      # otherwise find no dist at all. It also makes those checks stronger
+      # than they were when dist was committed - they now assert against
+      # output built from the commit under test rather than whatever a
+      # contributor happened to commit alongside it.
+      #
+      # `check` opens with sync-examples --check, which used to have to run
+      # as its own step BEFORE `check` because check's `prevalidate` hook
+      # regenerated the composed files first - so the guard only ever
+      # inspected output the previous step had just written, and could never
+      # fail. That hook is gone; nothing regenerates before the guard now,
+      # so the ordering trap is gone with it.
+      - run: npm run check:all
+
+      # Advisory tier: documentation-quality warnings
+      # (scripts/lint-docs.js). A judgment call, not a build-blocking one -
+      # it runs here so the warnings show up on every PR instead of only
+      # when someone remembers, which is how the tier went missing in the
+      # first place. continue-on-error also covers lint's own
+      # catalog/implementation drift self-check, which does exit non-zero:
+      # worth seeing, not worth blocking a schema change on.
+      - run: npm run lint
         continue-on-error: true
-      # Same advisory tier, prose rather than structure
-      # (scripts/readability-audit.mjs): a readability score is a judgment
-      # metric, so it must never gate a build - no wording is "wrong" at 47
-      # and "right" at 56. It runs here for the same reason lint:docs does.
-      # Until now it was wired to nothing at all, and it had already gone
-      # stale exactly the way an unrun tool does: its file list was
-      # hardcoded, so four content pages were silently unaudited. That list
-      # now discovers site/content/ itself, and this step is what makes the
-      # output something a reviewer sees rather than something someone has
-      # to remember to run.
-      - run: npm run readability
-        continue-on-error: true
+      # `npm run readability` (scripts/readability-audit.mjs) is
+      # deliberately NOT run here. It shells out to a `readability` CLI
+      # that is neither a declared dependency nor installable the same way
+      # on every platform - it's a local-only authoring aid, not a CI
+      # check. A step that can never pass is worse than no step; it trains
+      # reviewers to ignore red. Run it locally when writing prose (see
+      # CONTRIBUTING.md).
 
   a11y:
     name: Accessibility (axe, real Chromium)
@@ -94,11 +71,11 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      # This is the only job that needs a browser, and axe-audit.mjs is the
-      # only thing left that uses one: `npm run build` launches nothing now
+      # The only job that needs a browser, and axe-audit.mjs is the only
+      # thing left that uses one: `npm run build` launches nothing
       # (site/assets/og-image.png is a committed source asset, not a
-      # per-build screenshot). test:a11y's own `pretest:a11y` installs
-      # Chromium for itself - no `postinstall` hook, which a published
-      # schema package has no business carrying.
+      # per-build screenshot). `test:a11y` installs Chromium for itself - no
+      # `postinstall` hook, which a published schema package has no business
+      # carrying.
       - run: npm run build
       - run: npm run test:a11y

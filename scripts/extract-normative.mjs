@@ -209,7 +209,7 @@ function main() {
   if (check) {
     if (updated !== page) {
       console.error(
-        "✗ Normative-statements index is out of date. Run `npm run normative` to regenerate.",
+        "✗ Normative-statements index is out of date. Run `npm run generate` to regenerate.",
       );
       process.exit(1);
     }

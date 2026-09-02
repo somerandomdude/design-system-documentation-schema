@@ -29,7 +29,7 @@ catalog) needs all three of:
    asserts the fixture fails for that exact reason, at that exact layer —
    not just that it fails at all.
 
-`npm run check-rule-catalog` fails the build if any of the three exists
+`npm run check` fails the build if any of the three exists
 without the other two — a rule can't be silently half-removed the way
 [`DSDS-011` was during the 0.20.0 rewrite](https://github.com/somerandomdude/design-system-documentation-schema/pull/33).
 
@@ -40,7 +40,7 @@ lint`. Advisory rules warn; they never fail `npm run check`.
 **A new example** (`examples/`) needs an entry in `manifest.json`'s
 `examples` listing, or a link from the page that's supposed to surface it
 (Quick start, Extending, or Overview) — an example nothing points at can't
-be found, and `npm run check:internal-links` won't catch an example that's
+be found, and `npm run check:docs` won't catch an example that's
 simply never linked. If you're adding an example specifically to
 demonstrate a schema feature, say which feature in the PR description so it
 gets referenced from the right page.
@@ -68,37 +68,102 @@ is how a negative-test corpus quietly loses most of its coverage.
 
 ```bash
 npm install
-npm run check-examples      # run before check — see .github/workflows/ci.yml
-npm run check               # schema, fixtures, docs — same as CI's main job
-npm run build               # required: the next three checks read site/dist/
-npm run check:markdown-mirrors
-npm run check:internal-links
-npm run check:docs-coverage
-npm run lint:css
-npm run test:a11y           # needs Chromium: npx playwright install chromium
+npm run check:all   # the whole gate, same as CI
 ```
 
-`site/dist/` is git-ignored and rebuilt on every deploy, so don't commit
-generated output — the `npm run build` above is for the three checks that
-read it, not something to stage. The exception is a release, which adds a
-new immutable `site/dist/v<version>/` directory; those stay tracked because
-the build never regenerates an older one.
+That's the one command to run before pushing. It's three steps —
+`check` → `build` → `check:docs` — and the build in the middle is
+load-bearing, not a convenience: `site/dist/` is git-ignored, so on a fresh
+clone the doc checks would otherwise find no dist to read.
 
-All of the above run in CI on every push and PR, and all of them gate it.
+Run the parts on their own for a narrower loop while iterating:
 
-Two more run in CI without gating it — the **advisory tier**, meant to be
+```bash
+npm run check       # bundle, $id paths, rule catalog, every example and
+                    # fixture, the conformance suite, generated-artifact
+                    # freshness. Needs no dist.
+npm run build       # regenerate site/dist/
+npm run check:docs  # markdown mirrors, internal links, nav/footer page
+                    # coverage, the script reference, CSS. Reads site/dist/,
+                    # so build first.
+```
+
+Don't commit generated output. `site/dist/` is git-ignored and rebuilt on
+every deploy; the build above is for the checks that read it, not something
+to stage. The exception is a release, which adds a new immutable
+`site/dist/v<version>/` directory — those stay tracked, because the build
+never regenerates an older one.
+
+One more runs in CI without gating it — the **advisory tier**, meant to be
 visible rather than blocking:
 
 ```bash
-npm run lint:docs           # documentation-quality rules (DSDS-12–DSDS-15)
-npm run readability         # prose readability per file, incl. every site page
+npm run lint  # documentation-quality rules (DSDS-12–DSDS-15)
 ```
 
-Neither can fail a build. `lint:docs`'s findings are warnings by design, and
-a readability score is a judgment metric — no wording is wrong at 47 and
-right at 56. Read them as a prompt to look, not a verdict. If you're adding
-a page and its score lands well below the others, that usually means long
-sentences rather than hard words; splitting them is the fix that moves it.
+It can't fail a build; its findings are warnings by design.
+
+`npm run readability` is a related but separate tool — prose readability per
+file, including every site page — that is deliberately **not** run in CI. It
+shells out to a `readability` binary this repo doesn't declare as a
+dependency or vendor, so it isn't reliably runnable in CI at all; running it
+there would just be a permanently-red step. Run it locally when writing
+prose. No wording is wrong at 47 and right at 56 — read the score as a
+prompt to look, not a verdict. If you're adding a page and its score lands
+well below the others, that usually means long sentences rather than hard
+words; splitting them is the fix that moves it.
+
+And the accessibility audit, the only thing here that needs a browser (it
+installs Chromium itself):
+
+```bash
+npm run test:a11y
+```
+
+## Every script
+
+`package.json` is the index; this is what each entry is for. Nothing here is
+a wrapper for its own sake — if a script isn't listed, it doesn't exist.
+
+### Everyday
+
+| Script | What it does |
+| --- | --- |
+| `npm run check:all` | The whole gate: `check`, then `build`, then `check:docs`. What CI runs. |
+| `npm run check` | Bundle, `$id`-matches-path, rule-catalog drift, every example and fixture, the conformance suite, generated-artifact freshness. Needs no `site/dist/`. |
+| `npm run check:docs` | Markdown mirrors, internal links, nav/footer page coverage, this reference, CSS. Reads `site/dist/` — build first. |
+| `npm run build` | Regenerates every generated artifact, then builds the site into `site/dist/`. Launches no browser. |
+| `npm run dev` | Local preview server. |
+| `npm run validate` | Validate files you name: `npm run validate -- path/to/doc.dsds.yaml`. Add `-- --strict` to promote project-scope warnings to failures. |
+| `npm run lint` | Advisory tier (`DSDS-12`+): documentation-quality warnings. Always exits 0. |
+
+### One-off tools
+
+| Script | What it does |
+| --- | --- |
+| `npm run generate` | Rewrites every generated artifact: example includes, the schema bundle, the normative index, the rule-catalog table, the examples index, the conformance suite. Run it after editing schema `description`/`$comment` text. |
+| `npm run generate:check` | Asserts those artifacts are current without rewriting them. Part of `check`; useful alone when a check fails and you want to know whether it's just staleness. |
+| `npm run migrate` | Converts a 0.15.2 `.dsds.json` document to 0.20.0 `.dsds.yaml`: `npm run migrate -- <files-or-dirs…> [--dry-run]`. Best-effort — run `validate` on the output. |
+| `npm run compose` | Concatenates hand-split `.dsds.yaml` fragments into one document before validation. |
+| `npm run bump-version` | The release driver. Rewrites every version reference, regenerates, builds, checks, commits, tags. |
+| `npm run og:generate` | Regenerates `site/assets/og-image.png`. Needs Chromium. Run it and commit the result only when the logo or the accent/text tokens change — the build does not do this for you. |
+| `npm run readability` | Prose readability per file. Needs a `readability` binary on PATH that this repo neither declares nor vendors, so it currently exits 1 without producing a score. |
+| `npm run test:a11y` | axe audit against the built site. Installs its own Chromium — the only thing here that needs a browser. |
+
+### Internal
+
+Called by `scripts/bump-version.js` by name. **Don't rename these without
+updating its `runStep` calls** — it shells out to the string, so a rename
+fails at release time, not at review time.
+
+| Script | What it does |
+| --- | --- |
+| `npm run bundle` | Regenerates `schema/dsds.bundled.yaml` and `dsds.bundled.schema.json` from the split schema files. Also the first step of `check`. |
+| `npm run sync-skill-versions` | Keeps `.agents/skills/dsds-*`'s version references in lockstep with the spec version. `--check` asserts without writing. |
+
+Each script file also opens with a header comment explaining why it exists
+and what it's guarding against, which is usually the faster read when
+something fails.
 
 ## Style
 

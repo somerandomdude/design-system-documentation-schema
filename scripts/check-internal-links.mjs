@@ -21,7 +21,7 @@
  * designsystemdocspec.org link out of those two files is this site's
  * concern).
  *
- * Run via `npm run check:internal-links`.
+ * Run via `npm run check:docs`.
  */
 
 import fs from "node:fs";

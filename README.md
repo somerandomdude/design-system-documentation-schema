@@ -87,9 +87,12 @@ This README leaves out schema field listings and example payloads on purpose —
 
 ```bash
 npm install
-npm run check   # bundles the schema, validates every example/fixture/test corpus file
-npm run build   # generates the static site into site/dist/
+npm run check:all   # the whole gate: check, build, then the doc checks
 ```
+
+`check:all` is what CI runs. [CONTRIBUTING.md](CONTRIBUTING.md#every-script)
+documents every npm script and what it's for.
+
 
 To validate just your own file:
 
@@ -97,7 +100,7 @@ To validate just your own file:
 node scripts/validate.js my-system.dsds.yaml
 ```
 
-If your system is split across files via `rel: file`, cross-file `to:` refs are resolved automatically, bounded to the directory of the file you validate (and its subdirectories — not a parent or cousin directory). An otherwise-unresolved target reports as a warning, not a hard failure — add `--strict` (`npm run validate:strict`) to promote those to failures once your project is clean.
+If your system is split across files via `rel: file`, cross-file `to:` refs are resolved automatically, bounded to the directory of the file you validate (and its subdirectories — not a parent or cousin directory). An otherwise-unresolved target reports as a warning, not a hard failure — add `--strict` (`npm run validate -- --strict`) to promote those to failures once your project is clean.
 
 Reference `https://designsystemdocspec.org/v0.20.0/dsds.bundled.yaml` from your DSDS files via the `$schema` keyword for editor autocompletion and inline validation.
 
@@ -157,10 +160,28 @@ a rule, example, or schema change needs to land, and
 
 ### Contributors
 
-- [Afyia Smith](https://afyiasmith.co/) — the `owner`/`reviewed` and `origin` metadata schemas.
-- [Suleiman Ali Shakir](https://iamsuleiman.com/) — README validate command and lockfile.
-- [mryechkin](https://github.com/mryechkin) — the agent skills (`.agents/skills/`).
-- [codysue](https://github.com/codysue) — the CEM and DTCG interop examples, and the token-description lint rule.
+Everyone who has landed a PR here, with what it added:
+
+- **[Cody Clark](https://github.com/codysue)** — the CEM interop example
+  ([#31](https://github.com/somerandomdude/design-system-documentation-schema/pull/31)),
+  the nested/aliased DTCG interop example
+  ([#32](https://github.com/somerandomdude/design-system-documentation-schema/pull/32)),
+  and the token-description lint rule
+  ([#33](https://github.com/somerandomdude/design-system-documentation-schema/pull/33)) —
+  which is `DSDS-13` in today's catalog.
+- **[Suleiman Ali Shakir](https://iamsuleiman.com/)** — the README validation
+  one-liner and lockfile
+  ([#34](https://github.com/somerandomdude/design-system-documentation-schema/pull/34)),
+  and a stale version string in Contributing
+  ([#20](https://github.com/somerandomdude/design-system-documentation-schema/pull/20)).
+- **[Mykhaylo Ryechkin](https://github.com/mryechkin)** — the agent skills
+  (`.agents/skills/`) and `scripts/sync-skill-versions.js`
+  ([#29](https://github.com/somerandomdude/design-system-documentation-schema/pull/29)).
+
+And with thanks for contributions that didn't arrive as a PR:
+
+- **[Afyia Smith](https://afyiasmith.co/)** — the `owner`/`reviewed` and
+  `origin` metadata schemas.
 
 ## License
 

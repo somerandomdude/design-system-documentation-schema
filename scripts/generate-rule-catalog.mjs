@@ -76,7 +76,7 @@ function main() {
   if (check) {
     if (updated !== page) {
       console.error(
-        "✗ Rule catalog table is out of date. Run `npm run generate-rule-catalog` to regenerate.",
+        "✗ Rule catalog table is out of date. Run `npm run generate` to regenerate.",
       );
       process.exit(1);
     }

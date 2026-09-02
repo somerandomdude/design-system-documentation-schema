@@ -106,7 +106,7 @@ function main() {
   if (check) {
     if (!fs.existsSync(MANIFEST_PATH) || fs.readFileSync(MANIFEST_PATH, "utf-8") !== generated) {
       console.error(
-        "✗ Conformance suite manifest is out of date. Run `npm run generate-conformance-suite` to regenerate.",
+        "✗ Conformance suite manifest is out of date. Run `npm run generate` to regenerate.",
       );
       process.exit(1);
     }
