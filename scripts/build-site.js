@@ -24,6 +24,7 @@ const { buildSpecNav, DIR_GROUPS, readSpecVersion, TOP_LINKS } = require("./nav"
 const { renderTemplate } = require("./render-template");
 const {
   esc,
+  escWithCode,
   slug,
   describeType: describeTypeShared,
   renderPropertyTable: renderPropertyTableShared,
@@ -1299,6 +1300,191 @@ function buildJsonLd({ name, description, url, version, pageType, activeSlug, de
 }
 
 // ---------------------------------------------------------------------------
+// Declarative Shadow DOM for <ds-heading>/<ds-header>
+//
+// Every heading on the site - the page's own <h1> (<ds-header>) and every
+// <h2>-<h6> under it (<ds-heading>) - only became a real, semantic heading
+// once client JS ran and built each one's shadow DOM. A crawler, an agent,
+// or any other tool that parses the HTML without executing script saw none
+// of that structure: no <h1>, no <h2>, nothing an accessibility tree or a
+// readability parser recognizes as a heading at all - confirmed directly
+// against the live site (curl | grep for <h1>/<h2>/<h3> turned up zero
+// matches on every page) after an agentic-readiness scan flagged exactly
+// this. <ds-heading>'s own text was at least present as light-DOM slot
+// content; <ds-header>'s title/description live only as attribute values,
+// worse still.
+//
+// Declarative Shadow DOM fixes this without giving up the shadow-DOM
+// component itself: a <template shadowrootmode="open"> as an element's
+// first child is parsed and attached as a real shadow root by the browser
+// during HTML parsing, before any script runs - so the exact same <h1>/
+// <h2> markup these components already build in JS is now *also* present
+// verbatim in the static HTML. `_shared.js`'s createShadow() reuses
+// `el.shadowRoot` if one already exists instead of always calling
+// attachShadow() (which throws once one does), so heading.js/header.js's
+// own client-side render still runs on top of this with no changes and no
+// behavior difference - it just recomputes the same shadow content the
+// declarative template already provided, once JS is available.
+//
+// HEADING_CSS/HEADER_CSS and the markup shape below are hand-kept in sync
+// with site/components/heading.js's/header.js's own HEADING_CSS/HEADER_CSS
+// and _render() - the same "small pure logic duplicated across the
+// Node/browser boundary, single comment on each side" approach this file
+// already uses for other build-time/client-time pairs (see readSpecVersion()
+// across nav.js/compile-mdx.mjs). No shared import: heading.js/header.js
+// are browser ES modules (`export class ... extends HTMLElement`, which
+// throws immediately if evaluated in Node, since HTMLElement doesn't
+// exist there), and bundleComponents() below resolves site/components'
+// own import graph with a regex scan of index.js's barrel imports only,
+// not a real module resolver - introducing a new cross-component import
+// between two component files isn't something it would pick up correctly.
+// ---------------------------------------------------------------------------
+
+const HEADING_CSS_SSR = `
+  :host { display: inline-block; box-sizing: border-box; }
+  :host([hidden]) { display: none !important; }
+  *, *::before, *::after { box-sizing: border-box; }
+  :host { display: block; }
+
+  .heading {
+    display: block;
+    color: var(--ds-color-text);
+    font-family: var(--ds-font-mono);
+    line-height: var(--ds-line-height-snug);
+    letter-spacing: -0.0125em;
+  }
+
+  .heading--1 { font-size: var(--ds-font-size-2xl); font-weight: var(--ds-font-weight-bold); margin: 0 0 var(--ds-space-4); }
+  .heading--2 { font-size: var(--ds-font-size-xl); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-8) 0 var(--ds-space-2); }
+  .heading--3 { font-size: var(--ds-font-size-lg); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-8) 0 var(--ds-space-2); }
+  .heading--4 { font-size: var(--ds-font-size-md); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-4) 0 var(--ds-space-2); }
+  .heading--5 { font-size: var(--ds-font-size-base); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-4) 0 var(--ds-space-2); }
+  .heading--6 { font-size: var(--ds-font-size-sm); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-2) 0 var(--ds-space-2); }
+
+  .anchor-link {
+    display: inline;
+    opacity: 0;
+    margin-inline-start: var(--ds-space-2);
+    color: var(--ds-color-text);
+    text-decoration: none;
+    font-size: 0.75em;
+    vertical-align: baseline;
+    transition: opacity var(--ds-duration-fast) var(--ds-ease-standard);
+  }
+  :where(.heading:hover) .anchor-link { opacity: 0.6; }
+  .anchor-link:hover { opacity: 1; }
+`;
+
+const HEADER_CSS_SSR = `
+  :host { display: inline-block; box-sizing: border-box; }
+  :host([hidden]) { display: none !important; }
+  *, *::before, *::after { box-sizing: border-box; }
+  :host { display: flex; flex-direction: column; min-height: 100vh; min-height: 100dvh; background: var(--ds-color-bg-accent); justify-content: end; padding-block-start: var(--ds-height-nav, 64px); }
+
+  h1 {
+    font-size: clamp(2em, 4vw, 4em);
+    font-family: var(--ds-font-mono);
+    font-weight: 500;
+    line-height: 1.1;
+    letter-spacing: -0.025em;
+    word-spacing: -0.25em;
+    margin: 0 0 var(--ds-space-4);
+    color: var(--ds-color-text);
+    word-break: break-word;
+  }
+  .header-container {
+    max-width: var(--ds-width-content);
+    margin: 0 auto;
+    padding: var(--ds-space-8) var(--ds-space-8);
+    width: 100%;
+    padding-block-end: 64px;
+    padding-block-start: 128px;
+  }
+
+  .desc {
+    color: var(--ds-color-text);
+    font-family: var(--ds-font-body);
+    margin: 0 0 var(--ds-space-4);
+    max-width: 65ch;
+    font-size: clamp(1.05em, 1.7vw, 1.375em);
+    font-weight: 500;
+    line-height: 1.4;
+  }
+  .source {
+    font-size: var(--ds-font-size-sm);
+    margin: 0 0 var(--ds-space-8);
+    display: none;
+  }
+`;
+
+// Reverses esc()'s four entities - needed because attrs come from the
+// already-built HTML string (HTML-attribute-escaped), but the shadow
+// markup below needs the raw text back to re-escape correctly as element
+// content instead (attribute escaping and text-node escaping agree on
+// all four of these entities, so a plain reverse is safe either way).
+function unescAttr(s) {
+  return String(s || "")
+    .replace(/&quot;/g, '"')
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&amp;/g, "&");
+}
+
+function declarativeHeadingTemplate(level, anchor) {
+  const lvl = Math.min(6, Math.max(1, parseInt(level, 10) || 2));
+  const tag = "h" + lvl;
+  return (
+    `<template shadowrootmode="open"><style>${HEADING_CSS_SSR}</style>` +
+    `<${tag} class="heading heading--${lvl}" part="heading"><slot></slot> ` +
+    `<a class="anchor-link" href="#${esc(anchor)}" part="anchor">#</a></${tag}>` +
+    `</template>`
+  );
+}
+
+function declarativeHeaderTemplate({ title, description, source }) {
+  let inner = `<div class="header-container"><h1>${esc(title)}<slot></slot></h1>`;
+  if (source) {
+    inner += `<p class="source">Source: <ds-code inline>${esc(source)}</ds-code></p>`;
+  }
+  if (description) {
+    inner += `<p class="desc">${escWithCode(description)}</p>`;
+  }
+  inner += "</div>";
+  return `<template shadowrootmode="open"><style>${HEADER_CSS_SSR}</style>${inner}</template>`;
+}
+
+// Single post-processing pass over an already-assembled page's HTML,
+// finding every <ds-heading>/<ds-header> opening tag and inserting the
+// matching declarative shadow root as its first child. Run once, on the
+// fully assembled page (pageHtml() below), so it catches every occurrence
+// regardless of which code path (compile-mdx.mjs's markdown->component
+// pass, or this file's own header rendering) produced the tag.
+function injectDeclarativeShadowDom(html) {
+  let out = html.replace(/<ds-heading\s+([^>]*)>/g, (match, attrs) => {
+    const levelMatch = /\blevel="(\d+)"/.exec(attrs);
+    const anchorMatch = /\banchor="([^"]*)"/.exec(attrs);
+    const level = levelMatch ? levelMatch[1] : "2";
+    const anchor = anchorMatch ? anchorMatch[1] : "";
+    // Mirrors heading.js's own `this.id = anchor` (set in JS, at render
+    // time) - a no-JS reader needs it as a real attribute instead.
+    const attrsWithId = /\bid="/.test(attrs) ? attrs : `${attrs} id="${esc(anchor)}"`;
+    return `<ds-heading ${attrsWithId}>${declarativeHeadingTemplate(level, anchor)}`;
+  });
+
+  out = out.replace(/<ds-header\s+([^>]*)>/g, (match, attrs) => {
+    const titleMatch = /\btitle="([^"]*)"/.exec(attrs);
+    const descMatch = /\bdescription="([^"]*)"/.exec(attrs);
+    const sourceMatch = /\bsource="([^"]*)"/.exec(attrs);
+    const title = unescAttr(titleMatch ? titleMatch[1] : "");
+    const description = unescAttr(descMatch ? descMatch[1] : "");
+    const source = unescAttr(sourceMatch ? sourceMatch[1] : "");
+    return `<ds-header ${attrs}>${declarativeHeaderTemplate({ title, description, source })}`;
+  });
+
+  return out;
+}
+
+// ---------------------------------------------------------------------------
 // Overview page — rendered from markdown
 // ---------------------------------------------------------------------------
 
@@ -1358,12 +1544,17 @@ function pageHtml(
   });
   const skipLink = renderSub("skip-link", {});
 
-  return renderTemplate(PAGE_TEMPLATE_PATH, {
+  const rendered = renderTemplate(PAGE_TEMPLATE_PATH, {
     head,
     skip_link: skipLink,
     nav: buildSpecNav(activeSlug, pages, v),
     main: mainHtml,
   });
+  // Every <ds-heading>/<ds-header> on the page, wherever it came from
+  // (compile-mdx.mjs's markdown pass, this file's own header rendering) -
+  // see injectDeclarativeShadowDom()'s own comment above for why this
+  // runs once, here, on the fully assembled page rather than per call site.
+  return injectDeclarativeShadowDom(rendered);
 }
 
 // content--full removes the reading-width cap some pages want (ex: a wide
@@ -1799,6 +1990,48 @@ async function build() {
     guideMarkdownDocs.push({ title, markdown: `# ${title}\n\n${mdBody}` });
   }
   console.log(`  ${mdxPages.length} MDX page(s) compiled.\n`);
+
+  // ── Custom 404 page ──────────────────────────────────────────────────
+  // Not part of the MDX-pages loop above on purpose: a 404 isn't real
+  // content a crawler/agent should ever be deliberately pointed at, so it
+  // stays out of sitemapEntries/guideMarkdownDocs (no sitemap.xml row, no
+  // llms-full.txt entry) - just a real page at the well-known path Netlify
+  // already looks for automatically (site/dist/404.html, served for any
+  // unmatched route with no netlify.toml rule needed), with real recovery
+  // links instead of a bare status code and no page body. Lives in
+  // fragments/ for the same reason the schema-page intro/conformance
+  // fragments do: compileAllMdx()'s directory scan skips it, so it's
+  // compiled directly instead of falling into the loop above.
+  const notFoundPath = path.join(CONTENT_DIR, "fragments", "404.mdx");
+  const notFoundFragment = await compileMdxFile(notFoundPath);
+  const notFoundTitle = notFoundFragment.meta.title || "Page not found";
+  const notFoundHeader = renderSub("header", {
+    title: esc(notFoundTitle),
+    description_attr: notFoundFragment.meta.description
+      ? ` description="${esc(notFoundFragment.meta.description)}"`
+      : "",
+    source_attr: "",
+    badge: "",
+  });
+  const notFoundHtml = pageHtml(
+    notFoundTitle,
+    "404",
+    renderMainGuide({ header: notFoundHeader, content: notFoundFragment.html, layout: null }),
+    pages,
+    undefined,
+    notFoundFragment.meta.description,
+  );
+  fs.writeFileSync(path.join(DIST_DIR, "404.html"), notFoundHtml, "utf-8");
+  const notFoundBody = fs
+    .readFileSync(notFoundPath, "utf-8")
+    .replace(/^---\n[\s\S]*?\n---\n/, "")
+    .trimStart();
+  fs.writeFileSync(
+    path.join(DIST_DIR, "404.md"),
+    `# ${notFoundTitle}\n\n${notFoundBody}`,
+    "utf-8",
+  );
+  console.log("  ✓  site/dist/404.html  ← custom 404 page\n");
 
   // ── Schema page — one page, every definition ────────────────────────────
   //

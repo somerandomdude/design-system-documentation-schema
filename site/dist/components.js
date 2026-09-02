@@ -2,8 +2,18 @@
   "use strict";
 
   // ── _shared.js ──
+  // Reuses `el.shadowRoot` if one already exists instead of always calling
+  // attachShadow() - which throws ("already has a shadow root") the moment
+  // any element in the built HTML carries a declarative shadow root
+  // (<template shadowrootmode="open">, parsed and attached by the browser
+  // itself before this constructor ever runs, no JS required). That's what
+  // makes it safe for build-site.js/compile-mdx.mjs to emit real, semantic,
+  // no-JS-visible markup (an actual <h1>, not just an inert custom element
+  // only JS ever turns into one) for the handful of components worth that
+  // treatment, without every other component's own createShadow() call
+  // needing to know or care whether it was declared that way.
   function createShadow(el, css, mode) {
-    const shadow = el.attachShadow({ mode: mode || "open" });
+    const shadow = el.shadowRoot || el.attachShadow({ mode: mode || "open" });
     const sheet = new CSSStyleSheet();
     sheet.replaceSync(css);
     shadow.adoptedStyleSheets = [sheet];
@@ -884,17 +894,43 @@
       return ["level", "anchor"];
     }
 
-    constructor() {
-      super();
-      this._shadow = createShadow(this, HEADING_CSS);
+    connectedCallback() {
+      // Shadow-root creation deferred here, not in the constructor - and
+      // specifically to DOMContentLoaded, not just "connected." A custom
+      // element already defined before the parser reaches it (true here:
+      // components.js is a blocking <head> script, same as every other
+      // component's own DOMContentLoaded-wait note) gets synchronously
+      // upgraded the instant its *opening* tag is parsed - before its own
+      // children, including a build-time declarative shadow root
+      // (<template shadowrootmode="open">, see build-site.js's
+      // injectDeclarativeShadowDom()), have been parsed at all. Calling
+      // createShadow() that early finds this.shadowRoot still empty,
+      // attaches a fresh one anyway, and the declarative one that was about
+      // to attach a moment later fails outright ("a second declarative
+      // shadow root cannot be created on a host") - confirmed empirically,
+      // not assumed, via a real page load with console errors surfaced.
+      // Waiting for DOMContentLoaded guarantees the declarative shadow root
+      // (if the build put one there) already exists by the time
+      // createShadow() checks for it.
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", () => this._init(), {
+          once: true,
+        });
+      } else {
+        this._init();
+      }
     }
 
-    connectedCallback() {
+    _init() {
+      this._shadow = createShadow(this, HEADING_CSS);
       this._render();
     }
 
     attributeChangedCallback() {
-      if (this.isConnected) this._render();
+      // Guard: an attribute set during initial parsing can fire this before
+      // _init() has run (no shadow root to render into yet) - _init() will
+      // render with final attribute values regardless once it does run.
+      if (this.isConnected && this._shadow) this._render();
     }
 
     _render() {
@@ -1036,15 +1072,28 @@
     static get observedAttributes() {
       return ["title", "description", "source"];
     }
-    constructor() {
-      super();
-      this._shadow = createShadow(this, HEADER_CSS);
-    }
     connectedCallback() {
+      // Shadow-root creation deferred to DOMContentLoaded, not the
+      // constructor - see heading.js's own connectedCallback for the full
+      // reasoning (a build-time declarative shadow root, from
+      // build-site.js's injectDeclarativeShadowDom(), isn't parsed yet at
+      // constructor time for an already-defined custom element, so
+      // createShadow() would attach a second, conflicting shadow root if
+      // called that early).
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", () => this._init(), {
+          once: true,
+        });
+      } else {
+        this._init();
+      }
+    }
+    _init() {
+      this._shadow = createShadow(this, HEADER_CSS);
       this._render();
     }
     attributeChangedCallback() {
-      if (this.isConnected) this._render();
+      if (this.isConnected && this._shadow) this._render();
     }
     _render() {
       var t = this.getAttribute("title") || "";

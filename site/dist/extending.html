@@ -37,16 +37,122 @@
   </ds-spec-nav>
   <div class="content">
     <main class="content__main" id="main-content" role="main">
-    <ds-header title="Extending the schema — DSDS 0.20.0" description="Three ways to go beyond what the spec ships with — $extensions for tool-specific data, custom kinds for a document shape the spec doesn't have, and profiles for making an existing kind's optional fields required."></ds-header>
+    <ds-header title="Extending the schema — DSDS 0.20.0" description="Three ways to go beyond what the spec ships with — $extensions for tool-specific data, custom kinds for a document shape the spec doesn't have, and profiles for making an existing kind's optional fields required."><template shadowrootmode="open"><style>
+  :host { display: inline-block; box-sizing: border-box; }
+  :host([hidden]) { display: none !important; }
+  *, *::before, *::after { box-sizing: border-box; }
+  :host { display: flex; flex-direction: column; min-height: 100vh; min-height: 100dvh; background: var(--ds-color-bg-accent); justify-content: end; padding-block-start: var(--ds-height-nav, 64px); }
+
+  h1 {
+    font-size: clamp(2em, 4vw, 4em);
+    font-family: var(--ds-font-mono);
+    font-weight: 500;
+    line-height: 1.1;
+    letter-spacing: -0.025em;
+    word-spacing: -0.25em;
+    margin: 0 0 var(--ds-space-4);
+    color: var(--ds-color-text);
+    word-break: break-word;
+  }
+  .header-container {
+    max-width: var(--ds-width-content);
+    margin: 0 auto;
+    padding: var(--ds-space-8) var(--ds-space-8);
+    width: 100%;
+    padding-block-end: 64px;
+    padding-block-start: 128px;
+  }
+
+  .desc {
+    color: var(--ds-color-text);
+    font-family: var(--ds-font-body);
+    margin: 0 0 var(--ds-space-4);
+    max-width: 65ch;
+    font-size: clamp(1.05em, 1.7vw, 1.375em);
+    font-weight: 500;
+    line-height: 1.4;
+  }
+  .source {
+    font-size: var(--ds-font-size-sm);
+    margin: 0 0 var(--ds-space-8);
+    display: none;
+  }
+</style><div class="header-container"><h1>Extending the schema — DSDS 0.20.0<slot></slot></h1><p class="desc">Three ways to go beyond what the spec ships with — $extensions for tool-specific data, custom kinds for a document shape the spec doesn't have, and profiles for making an existing kind's optional fields required.</p></div></template></ds-header>
     <div class="content__container">
         <div class="content__inner">
 
           <p>DSDS ships with a fixed set of kinds, and a fixed set of fields on each. Sooner or later, every real project needs more than that — data a specific tool wants to store, a document type the spec has no name for, or fields that should be required instead of just optional. This page covers the three ways to get there, and when to reach for each one.</p>
 <ds-table><table><thead><tr><th>Mechanism</th><th>What it's for</th><th>Who else can read it</th></tr></thead><tbody><tr><td><ds-code inline>$extensions</ds-code></td><td>Data a specific tool needs, attached to something the spec already models</td><td>Only the tool that owns the namespace — everyone else skips it, by design</td></tr><tr><td>A custom kind</td><td>A document shape the spec has no name for at all</td><td>Nobody, unless you also publish the schema that defines it</td></tr><tr><td>A profile</td><td>Making an existing kind's <em>optional</em> fields required, for your own project</td><td>Everybody — the document is still fully standard DSDS</td></tr></tbody></table></ds-table>
-<ds-heading level="2" anchor="extensions"><ds-code inline>$extensions</ds-code></ds-heading>
+<ds-heading level="2" anchor="extensions" id="extensions"><template shadowrootmode="open"><style>
+  :host { display: inline-block; box-sizing: border-box; }
+  :host([hidden]) { display: none !important; }
+  *, *::before, *::after { box-sizing: border-box; }
+  :host { display: block; }
+
+  .heading {
+    display: block;
+    color: var(--ds-color-text);
+    font-family: var(--ds-font-mono);
+    line-height: var(--ds-line-height-snug);
+    letter-spacing: -0.0125em;
+  }
+
+  .heading--1 { font-size: var(--ds-font-size-2xl); font-weight: var(--ds-font-weight-bold); margin: 0 0 var(--ds-space-4); }
+  .heading--2 { font-size: var(--ds-font-size-xl); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-8) 0 var(--ds-space-2); }
+  .heading--3 { font-size: var(--ds-font-size-lg); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-8) 0 var(--ds-space-2); }
+  .heading--4 { font-size: var(--ds-font-size-md); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-4) 0 var(--ds-space-2); }
+  .heading--5 { font-size: var(--ds-font-size-base); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-4) 0 var(--ds-space-2); }
+  .heading--6 { font-size: var(--ds-font-size-sm); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-2) 0 var(--ds-space-2); }
+
+  .anchor-link {
+    display: inline;
+    opacity: 0;
+    margin-inline-start: var(--ds-space-2);
+    color: var(--ds-color-text);
+    text-decoration: none;
+    font-size: 0.75em;
+    vertical-align: baseline;
+    transition: opacity var(--ds-duration-fast) var(--ds-ease-standard);
+  }
+  :where(.heading:hover) .anchor-link { opacity: 0.6; }
+  .anchor-link:hover { opacity: 1; }
+</style><h2 class="heading heading--2" part="heading"><slot></slot> <a class="anchor-link" href="#extensions" part="anchor">#</a></h2></template><ds-code inline>$extensions</ds-code></ds-heading>
 <p><ds-code inline>$extensions</ds-code> is a place to put vendor or tool-specific data, organized by namespace so different tools don't collide. It's available at the document, entry, and section level — and now on every section item too: a <ds-code inline>guidelines</ds-code>, <ds-code inline>definitions</ds-code>, or <ds-code inline>steps</ds-code> item, and a <ds-code inline>freeform</ds-code> entry.</p>
 <p>Every top-level key under <ds-code inline>$extensions</ds-code> MUST be a dotted namespace (<ds-code inline>com.figma</ds-code>, <ds-code inline>com.acme</ds-code>), matching the <a href="https://www.w3.org/community/reports/design-tokens/CG-FINAL-format-20251028/">Design Tokens Community Group's own <ds-code inline>$extensions</ds-code> convention</a>. That namespace is what lets a tool that doesn't recognize your data ignore it safely — it just skips any key it doesn't own.</p>
-<ds-heading level="3" anchor="why-item-level-extensions-matters">Why item-level <ds-code inline>$extensions</ds-code> matters</ds-heading>
+<ds-heading level="3" anchor="why-item-level-extensions-matters" id="why-item-level-extensions-matters"><template shadowrootmode="open"><style>
+  :host { display: inline-block; box-sizing: border-box; }
+  :host([hidden]) { display: none !important; }
+  *, *::before, *::after { box-sizing: border-box; }
+  :host { display: block; }
+
+  .heading {
+    display: block;
+    color: var(--ds-color-text);
+    font-family: var(--ds-font-mono);
+    line-height: var(--ds-line-height-snug);
+    letter-spacing: -0.0125em;
+  }
+
+  .heading--1 { font-size: var(--ds-font-size-2xl); font-weight: var(--ds-font-weight-bold); margin: 0 0 var(--ds-space-4); }
+  .heading--2 { font-size: var(--ds-font-size-xl); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-8) 0 var(--ds-space-2); }
+  .heading--3 { font-size: var(--ds-font-size-lg); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-8) 0 var(--ds-space-2); }
+  .heading--4 { font-size: var(--ds-font-size-md); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-4) 0 var(--ds-space-2); }
+  .heading--5 { font-size: var(--ds-font-size-base); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-4) 0 var(--ds-space-2); }
+  .heading--6 { font-size: var(--ds-font-size-sm); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-2) 0 var(--ds-space-2); }
+
+  .anchor-link {
+    display: inline;
+    opacity: 0;
+    margin-inline-start: var(--ds-space-2);
+    color: var(--ds-color-text);
+    text-decoration: none;
+    font-size: 0.75em;
+    vertical-align: baseline;
+    transition: opacity var(--ds-duration-fast) var(--ds-ease-standard);
+  }
+  :where(.heading:hover) .anchor-link { opacity: 0.6; }
+  .anchor-link:hover { opacity: 1; }
+</style><h3 class="heading heading--3" part="heading"><slot></slot> <a class="anchor-link" href="#why-item-level-extensions-matters" part="anchor">#</a></h3></template>Why item-level <ds-code inline>$extensions</ds-code> matters</ds-heading>
 <p>A <ds-code inline>guidelines</ds-code> item only accepts a fixed set of fields — <ds-code inline>statement</ds-code>, <ds-code inline>level</ds-code>, <ds-code inline>refs</ds-code>, and a few others, nothing else. That's on purpose: any tool that understands the <ds-code inline>guidelines</ds-code> kind keeps understanding it, with no surprise fields to trip over. But until now, that also meant there was no way to attach a reason, or a documented failure case, to <em>one specific rule</em> — you'd either have to give up the well-known <ds-code inline>guidelines</ds-code> kind entirely (see <a href="#custom-kinds">custom kinds</a> below), or wait for the spec itself to add a field that everyone else would then be stuck with too, whether they wanted it or not.</p>
 <p><ds-code inline>$extensions</ds-code> on the item itself solves that without opening the shape up for everyone:</p>
 <ds-code language="yaml">sections:
@@ -62,7 +168,40 @@
 </ds-code>
 <p>A tool that doesn't know about <ds-code inline>com.acme</ds-code> — the reference validator, another vendor's linter, a plain DSDS reader — skips it entirely. The document is still fully standard DSDS: remove the <ds-code inline>$extensions</ds-code> block and everything left over was already valid on its own.</p>
 <p>See it in the repo's own <a href="https://github.com/somerandomdude/design-system-documentation-schema/blob/main/examples/entries/button.yaml"><ds-code inline>button.yaml</ds-code></a> for a real, validated example.</p>
-<ds-heading level="2" anchor="custom-kinds">Custom kinds</ds-heading>
+<ds-heading level="2" anchor="custom-kinds" id="custom-kinds"><template shadowrootmode="open"><style>
+  :host { display: inline-block; box-sizing: border-box; }
+  :host([hidden]) { display: none !important; }
+  *, *::before, *::after { box-sizing: border-box; }
+  :host { display: block; }
+
+  .heading {
+    display: block;
+    color: var(--ds-color-text);
+    font-family: var(--ds-font-mono);
+    line-height: var(--ds-line-height-snug);
+    letter-spacing: -0.0125em;
+  }
+
+  .heading--1 { font-size: var(--ds-font-size-2xl); font-weight: var(--ds-font-weight-bold); margin: 0 0 var(--ds-space-4); }
+  .heading--2 { font-size: var(--ds-font-size-xl); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-8) 0 var(--ds-space-2); }
+  .heading--3 { font-size: var(--ds-font-size-lg); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-8) 0 var(--ds-space-2); }
+  .heading--4 { font-size: var(--ds-font-size-md); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-4) 0 var(--ds-space-2); }
+  .heading--5 { font-size: var(--ds-font-size-base); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-4) 0 var(--ds-space-2); }
+  .heading--6 { font-size: var(--ds-font-size-sm); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-2) 0 var(--ds-space-2); }
+
+  .anchor-link {
+    display: inline;
+    opacity: 0;
+    margin-inline-start: var(--ds-space-2);
+    color: var(--ds-color-text);
+    text-decoration: none;
+    font-size: 0.75em;
+    vertical-align: baseline;
+    transition: opacity var(--ds-duration-fast) var(--ds-ease-standard);
+  }
+  :where(.heading:hover) .anchor-link { opacity: 0.6; }
+  .anchor-link:hover { opacity: 1; }
+</style><h2 class="heading heading--2" part="heading"><slot></slot> <a class="anchor-link" href="#custom-kinds" part="anchor">#</a></h2></template>Custom kinds</ds-heading>
 <p>When the generic <ds-code inline>entry</ds-code> kind isn't specific enough — you want your own name for a whole category of document — use a custom kind instead of <ds-code inline>entry</ds-code>:</p>
 <ds-code language="yaml">id: acme-excerpt-onboarding
 kind: acme.excerpt
@@ -72,12 +211,78 @@ description: A short, reusable pull-quote of onboarding copy, shared across thre
 <p>A custom entry kind (<ds-code inline>acme.excerpt</ds-code> above) or a custom section kind (<ds-code inline>acme.checklist</ds-code>, say) is checked against the same <strong>open</strong> base every generic kind is — <ds-code inline>entry.schema.yaml</ds-code> for an entry, <ds-code inline>section.schema.yaml</ds-code> for a section. Open means genuinely open: no schema file exists for <ds-code inline>acme.excerpt</ds-code> in this repo, so nothing stops a misspelled field, or a value of the wrong type, from passing silently. If you want your custom kind to actually enforce a shape — required fields, no unexpected properties — you have to write and ship that schema file yourself, in your own copy of <ds-code inline>scripts/validate.js</ds-code>'s schema folder. Neither DSDS itself, nor any other tool, will ever recognize a <ds-code inline>kind: acme.excerpt</ds-code> document as anything more than a set of open fields.</p>
 <p>That's the tradeoff with a custom kind: total freedom over the shape, but total unfamiliarity to every other tool. It's the right choice for a document type that's genuinely yours and nobody else's. It's the wrong choice for making a kind the spec already defines stricter — for that, use a profile instead.</p>
 <ds-callout variant="warning" title="A custom kind isn't a lighter-weight profile:"><p>Renaming <ds-code inline>component</ds-code> to <ds-code inline>acme.component</ds-code> to "add a required field" doesn't make the component schema stricter — it drops it entirely. <ds-code inline>traits</ds-code>, <ds-code inline>combos</ds-code>, and <ds-code inline>sourceFiles</ds-code> all stop being checked, because nothing at that new kind name says they still apply. See <a href="#profiles">Profiles</a> below for the way to actually make a kind stricter instead of replacing it.</p></ds-callout>
-<ds-heading level="2" anchor="profiles">Profiles</ds-heading>
+<ds-heading level="2" anchor="profiles" id="profiles"><template shadowrootmode="open"><style>
+  :host { display: inline-block; box-sizing: border-box; }
+  :host([hidden]) { display: none !important; }
+  *, *::before, *::after { box-sizing: border-box; }
+  :host { display: block; }
+
+  .heading {
+    display: block;
+    color: var(--ds-color-text);
+    font-family: var(--ds-font-mono);
+    line-height: var(--ds-line-height-snug);
+    letter-spacing: -0.0125em;
+  }
+
+  .heading--1 { font-size: var(--ds-font-size-2xl); font-weight: var(--ds-font-weight-bold); margin: 0 0 var(--ds-space-4); }
+  .heading--2 { font-size: var(--ds-font-size-xl); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-8) 0 var(--ds-space-2); }
+  .heading--3 { font-size: var(--ds-font-size-lg); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-8) 0 var(--ds-space-2); }
+  .heading--4 { font-size: var(--ds-font-size-md); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-4) 0 var(--ds-space-2); }
+  .heading--5 { font-size: var(--ds-font-size-base); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-4) 0 var(--ds-space-2); }
+  .heading--6 { font-size: var(--ds-font-size-sm); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-2) 0 var(--ds-space-2); }
+
+  .anchor-link {
+    display: inline;
+    opacity: 0;
+    margin-inline-start: var(--ds-space-2);
+    color: var(--ds-color-text);
+    text-decoration: none;
+    font-size: 0.75em;
+    vertical-align: baseline;
+    transition: opacity var(--ds-duration-fast) var(--ds-ease-standard);
+  }
+  :where(.heading:hover) .anchor-link { opacity: 0.6; }
+  .anchor-link:hover { opacity: 1; }
+</style><h2 class="heading heading--2" part="heading"><slot></slot> <a class="anchor-link" href="#profiles" part="anchor">#</a></h2></template>Profiles</ds-heading>
 <p>A profile is a small, local schema file that turns some of a kind's <em>optional</em> fields into required ones, just for your own project. It never adds a new field — it can only make an existing rule stricter.</p>
 <p>That one property is what makes a profile safe to build on: <strong>a profile may narrow. It must not extend.</strong> A document that passes your profile is still a fully valid DSDS document to any tool that's never heard of your profile — nothing is added, nothing is different, just a stricter bar for your own project to clear.</p>
 <ds-callout title="Why this is safe:"><p>A profile is built with JSON Schema's <ds-code inline>allOf</ds-code>, which only ever <em>combines</em> rules — it can never take one away. There's no way to write a profile that makes a required field optional, because the base schema's own list of required fields is still one of the rules being checked. Try to loosen a requirement from the base schema, and the original requirement simply stays in force.</p></ds-callout>
 <p>This isn't a new idea — other standards use the same pattern to narrow a shared format for one group's needs (the EU's <a href="https://www.w3.org/2016/12/staging-dcat-ap/">DCAT-AP</a> metadata standard is one example). DSDS didn't need to invent a mechanism for this: <ds-code inline>allOf</ds-code> plus <ds-code inline>required</ds-code> (and, for a rule that only applies sometimes, <ds-code inline>if</ds-code>/<ds-code inline>then</ds-code>) is already the standard way to write a profile in JSON Schema. What DSDS adds is a documented place to put one.</p>
-<ds-heading level="3" anchor="the-profiles-folder">The <ds-code inline>profiles/</ds-code> folder</ds-heading>
+<ds-heading level="3" anchor="the-profiles-folder" id="the-profiles-folder"><template shadowrootmode="open"><style>
+  :host { display: inline-block; box-sizing: border-box; }
+  :host([hidden]) { display: none !important; }
+  *, *::before, *::after { box-sizing: border-box; }
+  :host { display: block; }
+
+  .heading {
+    display: block;
+    color: var(--ds-color-text);
+    font-family: var(--ds-font-mono);
+    line-height: var(--ds-line-height-snug);
+    letter-spacing: -0.0125em;
+  }
+
+  .heading--1 { font-size: var(--ds-font-size-2xl); font-weight: var(--ds-font-weight-bold); margin: 0 0 var(--ds-space-4); }
+  .heading--2 { font-size: var(--ds-font-size-xl); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-8) 0 var(--ds-space-2); }
+  .heading--3 { font-size: var(--ds-font-size-lg); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-8) 0 var(--ds-space-2); }
+  .heading--4 { font-size: var(--ds-font-size-md); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-4) 0 var(--ds-space-2); }
+  .heading--5 { font-size: var(--ds-font-size-base); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-4) 0 var(--ds-space-2); }
+  .heading--6 { font-size: var(--ds-font-size-sm); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-2) 0 var(--ds-space-2); }
+
+  .anchor-link {
+    display: inline;
+    opacity: 0;
+    margin-inline-start: var(--ds-space-2);
+    color: var(--ds-color-text);
+    text-decoration: none;
+    font-size: 0.75em;
+    vertical-align: baseline;
+    transition: opacity var(--ds-duration-fast) var(--ds-ease-standard);
+  }
+  :where(.heading:hover) .anchor-link { opacity: 0.6; }
+  .anchor-link:hover { opacity: 1; }
+</style><h3 class="heading heading--3" part="heading"><slot></slot> <a class="anchor-link" href="#the-profiles-folder" part="anchor">#</a></h3></template>The <ds-code inline>profiles/</ds-code> folder</ds-heading>
 <p>Save a file at <ds-code inline>profiles/entries/<kind>.schema.yaml</ds-code> or <ds-code inline>profiles/sections/<kind>.schema.yaml</ds-code>, and <ds-code inline>scripts/validate.js</ds-code> picks it up automatically — no code change, nothing to register. <ds-code inline><kind></ds-code> can be a well-known kind (<ds-code inline>component</ds-code>, <ds-code inline>guidelines</ds-code>) or a custom one.</p>
 <p>A profile file needs its own <ds-code inline>$id</ds-code>, different from the schema it's narrowing — reusing the built-in schema's <ds-code inline>$id</ds-code> crashes the validator outright, since two schemas can't share the same id. It narrows the real schema by linking to it with <ds-code inline>$ref</ds-code>, inside <ds-code inline>allOf</ds-code>:</p>
 <ds-code language="yaml"># profiles/entries/component.schema.yaml
@@ -103,9 +308,75 @@ allOf:
 <p>This is the most useful form of profile: <em>if the status is stable, then require these fields.</em> It works on anything with a lifecycle field — a component, a token, a theme — and turns "is the documentation complete?" from a question someone has to remember to ask into something the build checks automatically.</p>
 <p><ds-code inline>profiles/</ds-code> is never bundled into the published schema. <ds-code inline>scripts/bundle.js</ds-code> only ever looks inside <ds-code inline>schema/</ds-code>, so a project's own profile — which reflects decisions specific to that project, not to the spec itself — can never end up in the published <ds-code inline>dsds.bundled.yaml</ds-code>. Only the command-line validator reads it, and only for the project that added it.</p>
 <ds-callout variant="tip" title="This repo doesn't ship a live profile:"><p><ds-code inline>profiles/</ds-code> is opt-in, per project — a profile reflects <em>your</em> completeness bar, not the spec's. This repo's own <ds-code inline>npm run check</ds-code> validates the spec's example files, which intentionally range from bare-minimum to fully filled out; requiring every one of them to be fully complete would defeat the point of having minimal examples at all. The snippet above is real and has been tested, it's just not saved in this repo's own <ds-code inline>profiles/</ds-code> folder — copy it into yours to see it work.</p></ds-callout>
-<ds-heading level="3" anchor="what-a-profile-cant-do">What a profile can't do</ds-heading>
+<ds-heading level="3" anchor="what-a-profile-cant-do" id="what-a-profile-cant-do"><template shadowrootmode="open"><style>
+  :host { display: inline-block; box-sizing: border-box; }
+  :host([hidden]) { display: none !important; }
+  *, *::before, *::after { box-sizing: border-box; }
+  :host { display: block; }
+
+  .heading {
+    display: block;
+    color: var(--ds-color-text);
+    font-family: var(--ds-font-mono);
+    line-height: var(--ds-line-height-snug);
+    letter-spacing: -0.0125em;
+  }
+
+  .heading--1 { font-size: var(--ds-font-size-2xl); font-weight: var(--ds-font-weight-bold); margin: 0 0 var(--ds-space-4); }
+  .heading--2 { font-size: var(--ds-font-size-xl); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-8) 0 var(--ds-space-2); }
+  .heading--3 { font-size: var(--ds-font-size-lg); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-8) 0 var(--ds-space-2); }
+  .heading--4 { font-size: var(--ds-font-size-md); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-4) 0 var(--ds-space-2); }
+  .heading--5 { font-size: var(--ds-font-size-base); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-4) 0 var(--ds-space-2); }
+  .heading--6 { font-size: var(--ds-font-size-sm); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-2) 0 var(--ds-space-2); }
+
+  .anchor-link {
+    display: inline;
+    opacity: 0;
+    margin-inline-start: var(--ds-space-2);
+    color: var(--ds-color-text);
+    text-decoration: none;
+    font-size: 0.75em;
+    vertical-align: baseline;
+    transition: opacity var(--ds-duration-fast) var(--ds-ease-standard);
+  }
+  :where(.heading:hover) .anchor-link { opacity: 0.6; }
+  .anchor-link:hover { opacity: 1; }
+</style><h3 class="heading heading--3" part="heading"><slot></slot> <a class="anchor-link" href="#what-a-profile-cant-do" part="anchor">#</a></h3></template>What a profile can't do</ds-heading>
 <p>A profile can't add a field. If your organization needs a field the spec truly doesn't have anywhere — not "optional and currently empty," but genuinely missing — that's not a job for a profile. Use <ds-code inline>$extensions</ds-code> if it's your own tool's data, or raise it with the spec itself if it's something every DSDS user would benefit from.</p>
-<ds-heading level="2" anchor="things-people-often-want-to-add">Things people often want to add</ds-heading>
+<ds-heading level="2" anchor="things-people-often-want-to-add" id="things-people-often-want-to-add"><template shadowrootmode="open"><style>
+  :host { display: inline-block; box-sizing: border-box; }
+  :host([hidden]) { display: none !important; }
+  *, *::before, *::after { box-sizing: border-box; }
+  :host { display: block; }
+
+  .heading {
+    display: block;
+    color: var(--ds-color-text);
+    font-family: var(--ds-font-mono);
+    line-height: var(--ds-line-height-snug);
+    letter-spacing: -0.0125em;
+  }
+
+  .heading--1 { font-size: var(--ds-font-size-2xl); font-weight: var(--ds-font-weight-bold); margin: 0 0 var(--ds-space-4); }
+  .heading--2 { font-size: var(--ds-font-size-xl); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-8) 0 var(--ds-space-2); }
+  .heading--3 { font-size: var(--ds-font-size-lg); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-8) 0 var(--ds-space-2); }
+  .heading--4 { font-size: var(--ds-font-size-md); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-4) 0 var(--ds-space-2); }
+  .heading--5 { font-size: var(--ds-font-size-base); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-4) 0 var(--ds-space-2); }
+  .heading--6 { font-size: var(--ds-font-size-sm); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-2) 0 var(--ds-space-2); }
+
+  .anchor-link {
+    display: inline;
+    opacity: 0;
+    margin-inline-start: var(--ds-space-2);
+    color: var(--ds-color-text);
+    text-decoration: none;
+    font-size: 0.75em;
+    vertical-align: baseline;
+    transition: opacity var(--ds-duration-fast) var(--ds-ease-standard);
+  }
+  :where(.heading:hover) .anchor-link { opacity: 0.6; }
+  .anchor-link:hover { opacity: 1; }
+</style><h2 class="heading heading--2" part="heading"><slot></slot> <a class="anchor-link" href="#things-people-often-want-to-add" part="anchor">#</a></h2></template>Things people often want to add</ds-heading>
 <p>Before reaching for <ds-code inline>$extensions</ds-code>, a custom kind, or a profile, check this list — a few common requests already have a home, no extension needed:</p>
 <ul>
 <li><strong>A prop table.</strong> Point a tool at the real source instead — a component's <ds-code inline>sourceFiles</ds-code> (or, for an already-generated manifest, <ds-code inline>specs</ds-code>).</li>
@@ -120,7 +391,40 @@ allOf:
 <li><strong>A rationale or failure-mode field on a guideline item</strong> — this is exactly what item-level <a href="#extensions"><ds-code inline>$extensions</ds-code></a> is for.</li>
 <li><strong>Anything else genuinely absent</strong> — a custom kind, or a profile, depending on whether you're naming a new document shape or tightening an existing one.</li>
 </ul>
-<ds-heading level="2" anchor="choosing-between-the-three">Choosing between the three</ds-heading>
+<ds-heading level="2" anchor="choosing-between-the-three" id="choosing-between-the-three"><template shadowrootmode="open"><style>
+  :host { display: inline-block; box-sizing: border-box; }
+  :host([hidden]) { display: none !important; }
+  *, *::before, *::after { box-sizing: border-box; }
+  :host { display: block; }
+
+  .heading {
+    display: block;
+    color: var(--ds-color-text);
+    font-family: var(--ds-font-mono);
+    line-height: var(--ds-line-height-snug);
+    letter-spacing: -0.0125em;
+  }
+
+  .heading--1 { font-size: var(--ds-font-size-2xl); font-weight: var(--ds-font-weight-bold); margin: 0 0 var(--ds-space-4); }
+  .heading--2 { font-size: var(--ds-font-size-xl); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-8) 0 var(--ds-space-2); }
+  .heading--3 { font-size: var(--ds-font-size-lg); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-8) 0 var(--ds-space-2); }
+  .heading--4 { font-size: var(--ds-font-size-md); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-4) 0 var(--ds-space-2); }
+  .heading--5 { font-size: var(--ds-font-size-base); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-4) 0 var(--ds-space-2); }
+  .heading--6 { font-size: var(--ds-font-size-sm); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-2) 0 var(--ds-space-2); }
+
+  .anchor-link {
+    display: inline;
+    opacity: 0;
+    margin-inline-start: var(--ds-space-2);
+    color: var(--ds-color-text);
+    text-decoration: none;
+    font-size: 0.75em;
+    vertical-align: baseline;
+    transition: opacity var(--ds-duration-fast) var(--ds-ease-standard);
+  }
+  :where(.heading:hover) .anchor-link { opacity: 0.6; }
+  .anchor-link:hover { opacity: 1; }
+</style><h2 class="heading heading--2" part="heading"><slot></slot> <a class="anchor-link" href="#choosing-between-the-three" part="anchor">#</a></h2></template>Choosing between the three</ds-heading>
 <ul>
 <li><strong>Attaching data a specific tool needs, to something the spec already models?</strong> <ds-code inline>$extensions</ds-code>.</li>
 <li><strong>Documenting something the spec has no shape for at all — and you're fine with no other tool understanding it?</strong> A custom kind.</li>

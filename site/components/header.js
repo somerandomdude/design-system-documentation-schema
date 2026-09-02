@@ -62,15 +62,28 @@ export class DsHeader extends HTMLElement {
   static get observedAttributes() {
     return ["title", "description", "source"];
   }
-  constructor() {
-    super();
-    this._shadow = createShadow(this, HEADER_CSS);
-  }
   connectedCallback() {
+    // Shadow-root creation deferred to DOMContentLoaded, not the
+    // constructor - see heading.js's own connectedCallback for the full
+    // reasoning (a build-time declarative shadow root, from
+    // build-site.js's injectDeclarativeShadowDom(), isn't parsed yet at
+    // constructor time for an already-defined custom element, so
+    // createShadow() would attach a second, conflicting shadow root if
+    // called that early).
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", () => this._init(), {
+        once: true,
+      });
+    } else {
+      this._init();
+    }
+  }
+  _init() {
+    this._shadow = createShadow(this, HEADER_CSS);
     this._render();
   }
   attributeChangedCallback() {
-    if (this.isConnected) this._render();
+    if (this.isConnected && this._shadow) this._render();
   }
   _render() {
     var t = this.getAttribute("title") || "";
