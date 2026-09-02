@@ -63,7 +63,60 @@ for (const name of referencedNames) {
   }
 }
 
+// Prose claims ABOUT the catalog drift too, and nothing caught that: both
+// README.md and AGENTS.md described the catalog as "DSDS-01 through
+// DSDS-07" long after it reached ten rules, and again after fifteen. The
+// range is derivable, so assert it rather than trusting a human to
+// re-count. Matches "`DSDS-01`–`DSDS-07`", "`DSDS-01` through `DSDS-07`",
+// and the same forms without backticks.
+const numeric = (id) => Number(id.slice("DSDS-".length));
+const byId = (a, b) => numeric(a) - numeric(b);
+const ids = catalog.map((r) => r.id).filter((id) => /^DSDS-\d+$/.test(id)).sort(byId);
+const lowestId = ids[0];
+const highestId = ids[ids.length - 1];
+
+// A range starting at the catalog's first id can legitimately describe
+// either the whole catalog or one tier that happens to start there - the
+// semantic tier runs DSDS-01–DSDS-11 and is cited on its own in both files,
+// which is accurate, not drift. Any tier not starting at `lowestId` (the
+// advisory tier, DSDS-12–DSDS-15) is cited as its own range and never
+// matches the `from !== lowestId` guard below.
+const tierEnds = new Map();
+for (const rule of catalog) {
+  if (!/^DSDS-\d+$/.test(rule.id)) continue;
+  const tier = tierEnds.get(rule.enforcement) || [];
+  tier.push(rule.id);
+  tierEnds.set(rule.enforcement, tier);
+}
+const allowedEnds = new Set([highestId]);
+for (const tierIds of tierEnds.values()) {
+  const sorted = [...tierIds].sort(byId);
+  if (sorted[0] === lowestId) allowedEnds.add(sorted[sorted.length - 1]);
+}
+
+const RANGE_RE = /`?(DSDS-\d+)`?\s*(?:–|—|-|through|to)\s*`?(DSDS-\d+)`?/g;
+const PROSE_FILES = ["README.md", "AGENTS.md"];
+
+for (const rel of PROSE_FILES) {
+  const filePath = path.join(rootDir, rel);
+  if (!fs.existsSync(filePath)) continue;
+  const text = fs.readFileSync(filePath, "utf-8");
+  for (const m of text.matchAll(RANGE_RE)) {
+    const [claim, from, to] = m;
+    // Only a range that starts at the catalog's own first id is claiming to
+    // describe the whole catalog. A narrower range (ex: "DSDS-06 and
+    // DSDS-07" discussing two specific rules) is prose about a subset.
+    if (from !== lowestId) continue;
+    if (!allowedEnds.has(to)) {
+      const line = text.slice(0, m.index).split("\n").length;
+      const expected = [...allowedEnds].sort(byId).map((id) => `${lowestId}–${id}`).join(" or ");
+      console.error(`✗ ${rel}:${line}: describes the catalog as "${claim.replace(/\s+/g, " ")}", but the catalog runs ${expected} (${catalog.length} rules)`);
+      ok = false;
+    }
+  }
+}
+
 if (ok) {
-  console.log(`✓ ${catalog.length} rule(s) in the catalog all declare a valid enforcement tier, and every semantic one matches scripts/validate.js exactly.`);
+  console.log(`✓ ${catalog.length} rule(s) (${lowestId}–${highestId}) all declare a valid enforcement tier, every semantic one matches scripts/validate.js exactly, and README.md/AGENTS.md describe the catalog's real range.`);
 }
 process.exit(ok ? 0 : 1);

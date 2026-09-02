@@ -9,8 +9,21 @@
  * current --ds-color-bg-accent / --ds-color-text values — no color
  * hardcoded here to fall out of sync with the design tokens.
  *
+ * NOT part of `npm run build`. Its output, site/assets/og-image.png, is a
+ * committed source asset - build-site.js copies site/assets/ into
+ * site/dist/assets/ like every other asset, so the published image comes
+ * from the repo, not from a browser running on each deploy. This used to
+ * run in `prebuild`, which made a headless Chromium download a hard
+ * dependency of every build (and of the Netlify deploy) to reproduce a file
+ * that changes about once a year.
+ *
+ * Run it by hand, and commit the result, when something it derives from
+ * changes: the logo (site/assets/dsds.svg) or the accent/text tokens in
+ * site/tokens.css. Nothing detects that automatically - the tradeoff for
+ * not launching a browser on every build.
+ *
  * Usage:
- *   npm run og:generate
+ *   npm run og:generate     # then commit site/assets/og-image.png
  */
 
 import { chromium } from "playwright";

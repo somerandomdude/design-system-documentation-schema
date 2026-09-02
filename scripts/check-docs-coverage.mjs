@@ -27,7 +27,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { buildDefIndex } from "./render-prop-table.js";
-import { TOP_LINKS } from "./nav.js";
+import { TOP_LINKS, FOOTER_LINKS } from "./nav.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "..");
@@ -37,10 +37,18 @@ const DIST_DIR = path.join(ROOT, "site", "dist");
 let ok = true;
 
 // ── 1. Every nav page actually built, with real content ────────────────
-for (const { label, slug } of TOP_LINKS) {
+// Footer links are checked exactly like nav links: a footer link to a page
+// that never got built is the same bug, and Conformance/Stability live only
+// in the footer, so nothing else would catch it.
+const LINKED_PAGES = [
+  ...TOP_LINKS.map((l) => ({ ...l, where: "nav.js's TOP_LINKS" })),
+  ...FOOTER_LINKS.map((l) => ({ ...l, where: "nav.js's FOOTER_LINKS" })),
+];
+
+for (const { label, slug, where } of LINKED_PAGES) {
   const filePath = path.join(DIST_DIR, `${slug}.html`);
   if (!fs.existsSync(filePath)) {
-    console.error(`✗ nav.js's TOP_LINKS lists "${label}" (${slug}.html), but site/dist/${slug}.html doesn't exist`);
+    console.error(`✗ ${where} lists "${label}" (${slug}.html), but site/dist/${slug}.html doesn't exist`);
     ok = false;
     continue;
   }
@@ -78,6 +86,6 @@ if (!fs.existsSync(schemaHtmlPath)) {
 }
 
 if (ok) {
-  console.log(`✓ All ${TOP_LINKS.length} nav pages built with real content.`);
+  console.log(`✓ All ${LINKED_PAGES.length} nav + footer pages built with real content.`);
 }
 process.exit(ok ? 0 : 1);

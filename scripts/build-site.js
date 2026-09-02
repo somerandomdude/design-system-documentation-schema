@@ -20,7 +20,7 @@
 const fs = require("fs");
 const path = require("path");
 
-const { buildSpecNav, DIR_GROUPS, readSpecVersion, TOP_LINKS } = require("./nav");
+const { buildSpecNav, buildFooter, DIR_GROUPS, readSpecVersion, TOP_LINKS } = require("./nav");
 const { renderTemplate } = require("./render-template");
 const {
   esc,
@@ -1576,6 +1576,7 @@ function pageHtml(
     skip_link: skipLink,
     nav: buildSpecNav(activeSlug, pages, v),
     main: mainHtml,
+    footer: buildFooter(v),
   });
   // Every <ds-heading>/<ds-header> on the page, wherever it came from
   // (compile-mdx.mjs's markdown pass, this file's own header rendering) -

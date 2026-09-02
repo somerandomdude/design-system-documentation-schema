@@ -4,8 +4,8 @@
 # the result before pushing, with no safety net if they don't. This runs
 # the real build on every deploy instead, so the published site always
 # matches the source that produced it. `npm run build` itself triggers
-# `prebuild` (sync-examples, bundle, og:generate) via npm's own lifecycle
-# hooks - nothing extra to chain here.
+# `prebuild` (sync-examples, bundle) via npm's own lifecycle hooks -
+# nothing extra to chain here.
 #
 # `base` is explicit on purpose, even though "." is the default when no
 # base is configured at all: a stale "Base directory" saved in the Netlify
@@ -21,15 +21,13 @@
 # site/package.json is an unrelated stub (`"type": "commonjs"`, for the
 # component files), not this project's build.
 #
-# `npm run build`'s own `prebuild` script installs Chromium explicitly
-# (`npx playwright install chromium && ...`) before og:generate needs it -
-# not a package.json `postinstall` hook, which used to do this and got
-# dropped: `postinstall` fires in every consumer's `npm install` too, and a
-# published schema package has no business making its installers download a
-# browser binary. `prebuild` only runs when something explicitly runs `npm
-# run build` in this repo, so it stays out of consumers' way while still
-# being guaranteed to run here regardless of how Netlify restores/caches
-# node_modules (unlike `postinstall`, which a cache hit can skip).
+# No browser is installed or launched anywhere in this build. The one
+# asset that ever needed one - site/assets/og-image.png - is a committed
+# source file now, copied into site/dist/assets/ by build-site.js like
+# every other asset, and regenerated only when someone explicitly runs
+# `npm run og:generate` after changing its design. Playwright remains a
+# devDependency solely for `npm run test:a11y` (scripts/axe-audit.mjs),
+# which runs in its own CI job and installs Chromium itself.
 #
 # `npm run check` runs before `npm run build`, not after: it's the whole
 # validate + conformance-test + component/interop-fixture suite, and

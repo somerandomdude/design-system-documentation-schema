@@ -101,9 +101,43 @@ function migrateMetadata(old, report, label) {
 
   // status/since/deprecationNotice/note/platform - already a compatible
   // shape, except 0.20.0 always requires the object form (no bare-string
-  // shorthand the way 0.15.2 allowed for the common case).
-  if (typeof m.status === "string") out.status = { status: m.status };
-  else if (m.status) out.status = m.status;
+  // shorthand the way 0.15.2 allowed for the common case), and except the
+  // per-platform form handled below.
+  if (typeof m.status === "string") {
+    out.status = { status: m.status };
+  } else if (m.status && (m.status.overall !== undefined || m.status.platforms !== undefined)) {
+    // 0.15.2 modelled status as { overall, platforms: { react: {...}, … } }
+    // - a map keyed by platform, plus a separately authored overall.
+    // 0.20.0 keeps the per-platform facts and drops the authored overall:
+    // `status` takes either one object or a list of them, each naming its
+    // own `platform`, and a consumer derives the overall status from the
+    // aggregate (see entry-metadata.schema.yaml's own $comment and the
+    // Conformance page's "Status across platforms").
+    //
+    // So the map becomes a list, and `overall` is dropped rather than
+    // carried across - it's derivable now, and keeping it would reintroduce
+    // the second source of truth the list form exists to remove.
+    const platforms = m.status.platforms;
+    const platformNames = platforms && typeof platforms === "object" ? Object.keys(platforms) : [];
+
+    if (platformNames.length) {
+      out.status = platformNames.map((platform) => {
+        const entry = platforms[platform];
+        const base = typeof entry === "string" ? { status: entry } : { ...entry };
+        return { platform, ...base };
+      });
+      if (m.status.overall !== undefined) {
+        report.manual.push(`${label}: dropped the authored \`status.overall\` ("${m.status.overall}") - 0.20.0 infers an entry's overall status from its per-platform entries (${platformNames.join(", ")}) rather than storing a second copy. Confirm the aggregate still reads the way you intend.`);
+      }
+    } else if (m.status.overall !== undefined) {
+      out.status = { status: m.status.overall };
+    }
+  } else if (m.status) {
+    out.status = m.status;
+  }
+  // 0.20.0 keeps metadata.since (the version an entry was introduced),
+  // unchanged from 0.15.2. It was silently dropped here.
+  if (m.since !== undefined) out.since = m.since;
   if (Array.isArray(m.tags) && m.tags.length) out.tags = m.tags.slice();
   if (Array.isArray(m.aliases) && m.aliases.length) out.aliases = m.aliases.slice();
 

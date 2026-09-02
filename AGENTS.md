@@ -80,8 +80,12 @@ representations, and manifest.json as the place for DSDS's own domain model.
 Requirement language in DSDS schemas and docs follows RFC 2119: **MUST**,
 **MUST NOT**, **SHOULD**, **SHOULD NOT**, and **MAY**, normative only in
 upper case. See [/conformance](/conformance) for the full conformance rule
-catalog (`DSDS-01` through `DSDS-07`) and the generated index of every
-normative statement in the schema.
+catalog (`DSDS-01` through `DSDS-11`, enforced by the validator, plus the
+advisory `DSDS-12` through `DSDS-15`), the four conformance classes, and how
+a component's status works across platforms. [/stability](/stability) covers
+what can still change before 1.0. The machine-readable catalog is
+`schema/conformance-rules.yaml`; the generated index of every normative
+statement in the schema is in the repo's README.
 
 A `guidelines` section's items are testable by design: each has a
 `requirement-level` (`must`/`should`/`should-not`/`must-not`/`may`), an

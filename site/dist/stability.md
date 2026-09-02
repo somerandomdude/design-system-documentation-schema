@@ -1,0 +1,45 @@
+# Stability — DSDS 0.20.0
+
+DSDS is a **pre-1.0 draft**. Some parts of the schema can grow to cover new cases without a spec change; other parts are locked in. This page says which is which, so you can tell what's safe to build tooling around. For the rules themselves and how each is enforced, see [Conformance](conformance.html).
+
+## How schema changes get made
+
+Every schema file under `schema/` has comments explaining *why* it's shaped the way it is, and often what it replaced. Reading those comments alongside the schema is the best way to understand how the spec has changed — see the [CHANGELOG](https://github.com/somerandomdude/design-system-documentation-schema/blob/main/CHANGELOG) for exactly how each old field maps to its new one.
+
+## Migrating a 0.15.2 document
+
+`scripts/migrate-to-0.20.js <files-or-dirs…> [--dry-run]` converts a 0.15.2 `.dsds.json` document (the entity/`documentBlocks` model) to a 0.20.0 `.dsds.yaml` one, following the CHANGELOG's own field-by-field mapping. It writes a new sibling file rather than overwriting the input, and it's best-effort, not a guarantee: a few 0.15.2 shapes (most notably the `api` block's inline property/event documentation) have no 0.20.0 equivalent to convert *to* — 0.20.0 points `sourceFiles` at real source instead of inlining an extracted API.
+
+Anything the script can't place in a typed field is preserved under the migrated item's own `$extensions["com.dsds.migration"]` rather than dropped, and every such case — plus every genuinely manual decision, like an `alternatives` pointer that wasn't really id-shaped in the source, or a ref that pointed at a token-group's own id before its children flattened to top-level entries — prints as a `⚠` line in the script's own output. Run `npm run validate` on the result afterward.
+
+## Designed to grow without a version bump
+
+A handful of fields accept any string matching a pattern, instead of a fixed list of allowed values — so adding a new value never needs a schema change. Safe to build tooling around, but don't treat today's set as complete:
+
+- **`entries/token.tokenType`** — a token's category (`color`, `spacing`, `typography`, …), checked by pattern, not a fixed list.
+- **`common/ref.rel`** — a reference's relationship (`depends-on`, `same-as`, `implements`, …), open-ended; new values just get documented in the schema's own comments.
+- **`metadata.status`'s status value** — `stable`, `experimental`, `deprecated`, and more, open for the same reason.
+- **`entry.id` and `common/id`** — a lowercase-dash-dot pattern, not a fixed list of parts, so ids fit whatever hierarchy your system uses.
+- **`$extensions`** — vendor or tool-specific data, grouped by namespace; a tool integration can add a field of its own any time, without waiting on a release.
+
+## More likely to require a spec change
+
+A few fields are locked to a fixed list of values, because the number of possible cases is a fact about how the spec itself works, not an open-ended vocabulary. Be defensive about this list, not the one above:
+
+- **`entry.kind`** — five well-known values (`system`, `component`, `token`, `theme`, `entry`), four with their own `entries/<kind>.schema.yaml` file, plus a custom dot-separated kind name (e.g. `acme.icon-library`) for a document that wants its own recognizable name. Adding a well-known value changes what this spec can describe at all, so that bar stays high.
+- **`common/requirement-level`** — five values (`must`, `should`, `should-not`, `must-not`, `may`), taken directly from RFC 2119. This vocabulary belongs to that standard, not DSDS.
+- **`sections/*` (the four section kinds)** — `guidelines`, `definitions`, `steps`, `section`. Any entry kind can use any of these. `section` is the generic fallback, the same role `entry` plays for entries; `freeform` isn't a section kind at all, it's a field every section kind can carry. The part of the schema most likely to still change before 1.0.
+
+## Criteria for declaring 1.0
+
+1.0 is declared when, at minimum:
+
+1. **The kind lists stop changing** — across at least one real pass of merging or splitting them, with no further changes needed.
+2. **A second independent tool exists** — at least one tool the spec authors don't maintain reads or writes DSDS documents for real.
+3. **The validator's extra rules stop changing** — `scripts/validate.js`'s `DSDS-01`–`DSDS-11` (see the [rule catalog](conformance.html#rule-catalog)) stop being added or renamed release to release.
+
+Until then, the fixed lists above are the most stable part of the schema. Everything else can still change between minor versions, including the exact shape of any one `sections/*.schema.yaml` file.
+
+## Versioned artifacts never change
+
+Whatever else moves, a published version directory doesn't. Every version DSDS has ever shipped stays served at its own immutable URL — `/v0.20.0/dsds.bundled.yaml` and `/v0.20.0/dsds.bundled.schema.json` today, and every earlier version at its own path, frozen at the bytes it shipped with. A document that pins `schemaVersion` and a `$schema` URL keeps validating against exactly what it was written against, indefinitely.

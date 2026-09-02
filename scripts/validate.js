@@ -525,6 +525,25 @@ function validateBase(doc, errors, warnings, opts = {}) {
       errors.push(`base schema: ${err.instancePath || "/"} ${err.message}`);
     }
   }
+  // DSDS-11 for the base document's OWN top-level `refs`. Entry-level refs
+  // are covered by validateFileRefs() inside validateEntry/validateShared
+  // below; nothing covered these, and they're the likeliest of the three to
+  // rot - a base document's `rel: file` refs are the multi-file split the
+  // quickstart recommends for a large system, so they're a list of sibling
+  // filenames maintained by hand as components come and go. This repo's own
+  // test/site-components/index.dsds.yaml carried a ref to a component file
+  // that had been deleted, and validated clean.
+  //
+  // Walk only `doc.refs`, not the whole document: findFileHrefRefs recurses,
+  // so passing `doc` would re-find every entry's refs and double-report them.
+  if (opts.filePath) {
+    const docFileHrefs = [];
+    findFileHrefRefs(doc.refs, docFileHrefs);
+    for (const href of docFileHrefs) {
+      checkFileExists(href, opts.filePath, warnings, "base document ref (rel: file)");
+    }
+  }
+
   for (const entry of doc.entries || []) {
     validateEntry(entry, errors, warnings, opts);
   }

@@ -41,6 +41,8 @@ const PAGE_FOR_SOURCE = {
   "overview.mdx": "index",
   "quickstart.mdx": "quickstart",
   "extending.mdx": "extending",
+  "conformance.mdx": "conformance",
+  "stability.mdx": "stability",
   "fragments/404.mdx": "404",
   "fragments/schema-intro.mdx": "schema",
 };
@@ -55,13 +57,21 @@ function extractLinks(text) {
   return [...links];
 }
 
-// A link worth checking against this site's own build: a relative
-// "<page>.html" (optionally with "#anchor"), a bare "#anchor", the root
-// "/", or an absolute designsystemdocspec.org link to one of those. Not
-// worth checking: any other external URL, mailto:, or a versioned
-// artifact path (/v<n>/... - a schema/bundle file, not a doc page; also
-// where an uncompiled {{VERSION}} placeholder would otherwise look like a
-// broken path in the raw .mdx source).
+// A link worth checking against this site's own build: any path this site
+// serves - the root "/", a bare "#anchor", an extensionless page path
+// ("/conformance", the canonical form this site publishes in its own
+// sitemap and llms.txt), an explicit "<page>.html", or a served artifact
+// ("/llms.txt", "/manifest.json", "/schema.md") - as a relative link or an
+// absolute designsystemdocspec.org one. Not worth checking: any other
+// external URL, mailto:, or a versioned artifact path (/v<n>/... - a
+// schema/bundle file, not a doc page; also where an uncompiled
+// {{VERSION}} placeholder would otherwise look like a broken path in the
+// raw .mdx source).
+//
+// This deliberately does NOT require a ".html" extension. It used to, and
+// that silently skipped every link written in the site's own canonical
+// extensionless form - including AGENTS.md's own "/conformance", which
+// pointed at a page that was never built and passed this check anyway.
 function isSiteDocLink(link) {
   let rel = link;
   if (rel.startsWith("https://designsystemdocspec.org")) {
@@ -70,7 +80,11 @@ function isSiteDocLink(link) {
     return false;
   }
   if (/^\/v[\w.{}]/.test(rel)) return false; // versioned schema/bundle artifact
-  return rel === "/" || rel.startsWith("#") || /^\/?[\w-]+\.html(#.*)?$/.test(rel);
+  if (rel === "/" || rel.startsWith("#")) return true;
+  // A path this site could serve: one or more path segments, optionally
+  // with an "#anchor". Excludes anything with a "{{...}}" placeholder or a
+  // space, which is a template or prose, not a link.
+  return /^\/?[\w-]+(\.[\w-]+)?(\/[\w-]+(\.[\w-]+)?)*(#[\w.-]*)?$/.test(rel);
 }
 
 function toDistTarget(link, currentPage) {
@@ -89,12 +103,22 @@ function toDistTarget(link, currentPage) {
     return { file: "index.html", anchor: "" };
   }
   const [file, anchor = ""] = rel.split("#");
-  return { file, anchor };
+  // An extensionless path is a page: this site publishes "/quickstart",
+  // Netlify serves site/dist/quickstart.html for it. A path that already
+  // carries an extension (".html", ".md", ".txt", ".json") is a real file
+  // in site/dist/ and is checked as-is.
+  const hasExtension = path.extname(file) !== "";
+  return { file: hasExtension ? file : `${file}.html`, anchor };
 }
 
 const anchorCache = new Map();
 function anchorExists(file, anchor) {
   if (!anchor) return true;
+  // Only an HTML page carries id="..."/anchor="..." attributes. An anchor
+  // on a markdown mirror ("/schema.md#entries-component") is a heading
+  // slug a markdown renderer derives, not markup in the file - the file's
+  // own existence is all this check can honestly assert.
+  if (!file.endsWith(".html")) return true;
   if (!anchorCache.has(file)) {
     const filePath = path.join(DIST_DIR, file);
     anchorCache.set(file, fs.existsSync(filePath) ? fs.readFileSync(filePath, "utf-8") : null);
@@ -133,7 +157,13 @@ for (const source of sources) {
   const text = fs.readFileSync(source.path, "utf-8");
   for (const link of extractLinks(text)) {
     if (!isSiteDocLink(link)) continue;
-    if (link.startsWith("#") && !source.page) continue; // README/AGENTS.md's own bare anchors aren't this site's concern
+    // README.md and AGENTS.md are read on GitHub as well as served by this
+    // site, so only a rooted "/path" or an absolute designsystemdocspec.org
+    // link out of them is this site's concern. A bare relative link
+    // ("CHANGELOG", "docs/foo.md") is a repo path GitHub resolves, and a
+    // bare "#anchor" is that file's own same-page anchor - neither is a
+    // page on this site.
+    if (!source.page && !link.startsWith("/") && !link.startsWith("https://designsystemdocspec.org")) continue;
     checked++;
     const { file, anchor } = toDistTarget(link, source.page);
     const filePath = path.join(DIST_DIR, file);

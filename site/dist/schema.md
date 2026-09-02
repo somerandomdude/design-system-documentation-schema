@@ -910,7 +910,7 @@ Information about a single entry, on top of the fields every metadata object sha
 
 Source: `metadata/entry-metadata.schema.yaml`
 
-**2 definitions** in this file: `EntryMetadata`, `statusValue`
+**3 definitions** in this file: `EntryMetadata`, `statusEntry`, `statusValue`
 
 ## EntryMetadata {#entrymetadata}
 
@@ -925,13 +925,19 @@ Information about a single entry, on top of the fields every metadata object sha
 | `updated` | object {date, note} |  | When this item's documentation last changed. Documentation can change without the design system's own version moving - a wording fix, a new example, a corrected guideline don't warrant a release. Tools SHOULD treat `updated.date` as the cache key for this item's documentation specifically, distinct from `metadata.version`/`since` (which track the design system's own release): pin to it, and re-fetch or re-index once it advances, rather than assuming unchanged content just because the design system's version hasn't moved. |
 | `origin` | object {method, author, note} |  | How this entry's documentation came to exist, and who or what wrote it. |
 | `$extensions` | [Extensions](schema.md#common-extensions) |  | Escape hatch for tool data scoped to just this entry's metadata, keyed by namespace. |
-| `status` | object |  | A lifecycle status, optionally scoped to one platform. |
+| `status` | `statusEntry` \| `statusEntry`[] |  | A lifecycle status, optionally scoped to one platform - or a list of them, one per platform, when an entry has reached different maturity on each. |
 | `since` | [Since](schema.md#common-since) |  | The version this entry was first introduced. |
 | `group` | string |  | A group name this entry belongs to, for example "color.action" on a set of related tokens, or "action" on a family of related components. |
 | `aliases` | string[] |  | Other names this entry is also known or searched by, like a past name or a common misspelling. |
 | `preview` | [Showcase](schema.md#common-showcase) |  | A visual sample of this entry, either a media file or a link. |
 
-**References:** [Metadata](schema.md#metadata-metadata), [Id](schema.md#common-id), `#/$defs/statusValue`, [Since](schema.md#common-since), [Showcase](schema.md#common-showcase), `#/$defs/isoDate`, [Extensions](schema.md#common-extensions)
+**References:** [Metadata](schema.md#metadata-metadata), `#/$defs/statusEntry`, [Since](schema.md#common-since), [Showcase](schema.md#common-showcase), [Id](schema.md#common-id), `#/$defs/statusValue`, `#/$defs/isoDate`, [Extensions](schema.md#common-extensions)
+
+## statusEntry {#statusentry}
+
+One lifecycle status, optionally scoped to a single platform.
+
+**References:** [Id](schema.md#common-id), `#/$defs/statusValue`, [Since](schema.md#common-since)
 
 ## statusValue {#statusvalue}
 
@@ -964,36 +970,31 @@ allOf:
   - type: object
     properties:
       status:
-        description: A lifecycle status, optionally scoped to one platform.
-        allOf:
-          - type: object
-            required: [status]
-            properties:
-              platform:
-                $ref: https://designsystemdocspec.org/v0.20.0/common/id.schema.yaml
-                description: Which platform this status applies to.
-                $comment: This field isn't necessary if only one platform exists.
-                example: react
-              status:
-                $ref: "#/$defs/statusValue"
-              since:
-                $ref: https://designsystemdocspec.org/v0.20.0/common/since.schema.yaml
-                description: The version this platform (or the system overall) reached this status.
-              deprecationNotice:
-                type: string
-                description: What to use instead, and why.
-                $comment: Required when `status` is deprecated.
-                example: Use `icon-button` instead - this variant never got contrast-tested and is being removed in 2.0.
-              note:
-                type: string
-                description: Free-text context.
-                example: Still supported for legacy integrations only.
-            additionalProperties: false
-          - if:
-              required: [status]
-              properties: { status: { const: deprecated } }
-            then:
-              required: [deprecationNotice]
+        description: >-
+          A lifecycle status, optionally scoped to one platform - or a list
+          of them, one per platform, when an entry has reached different
+          maturity on each.
+        $comment: >-
+          There is deliberately no `overall` field. A consumer SHOULD derive
+          an entry's overall status from the aggregate of its per-platform
+          entries rather than expect a separately authored overall value: a
+          stated overall is a second source of truth that drifts the moment
+          one platform moves, and any consumer needing one can compute it
+          consistently from the entries already present. How to aggregate is
+          the consumer's call - least-mature-wins answers "can I depend on
+          this everywhere?", per-platform answers "can I depend on this
+          here?". A producer using the list form SHOULD declare the system
+          entry's `metadata.platforms` too, so an absent platform is
+          distinguishable from an unsupported one (DSDS-02 then closes that
+          vocabulary). A bare object with no `platform` still means what it
+          always did - this entry's status, everywhere.
+        oneOf:
+          - $ref: "#/$defs/statusEntry"
+          - type: array
+            minItems: 1
+            description: One status per platform.
+            items:
+              $ref: "#/$defs/statusEntry"
       since:
         $ref: https://designsystemdocspec.org/v0.20.0/common/since.schema.yaml
         description: The version this entry was first introduced.
@@ -1017,6 +1018,45 @@ allOf:
         $comment: For a code sample, use a section's own examples instead, which can point at a real file or story.
 
 $defs:
+  statusEntry:
+    description: One lifecycle status, optionally scoped to a single platform.
+    $comment: >-
+      Factored out of `status` so the single-object and one-per-platform
+      list forms enforce exactly the same shape, including the
+      deprecated-needs-a-notice conditional below.
+    allOf:
+      - type: object
+        required: [status]
+        properties:
+          platform:
+            $ref: https://designsystemdocspec.org/v0.20.0/common/id.schema.yaml
+            description: Which platform this status applies to.
+            $comment: >-
+              This field isn't necessary if only one platform exists. It is
+              required in practice for the list form to mean anything - two
+              entries with no `platform` say the same thing twice.
+            example: react
+          status:
+            $ref: "#/$defs/statusValue"
+          since:
+            $ref: https://designsystemdocspec.org/v0.20.0/common/since.schema.yaml
+            description: The version this platform (or the system overall) reached this status.
+          deprecationNotice:
+            type: string
+            description: What to use instead, and why.
+            $comment: Required when `status` is deprecated.
+            example: Use `icon-button` instead - this variant never got contrast-tested and is being removed in 2.0.
+          note:
+            type: string
+            description: Free-text context.
+            example: Still supported for legacy integrations only.
+        additionalProperties: false
+      - if:
+          required: [status]
+          properties: { status: { const: deprecated } }
+        then:
+          required: [deprecationNotice]
+
   statusValue:
     type: string
     pattern: '^[a-z0-9]+(-[a-z0-9]+)*$'

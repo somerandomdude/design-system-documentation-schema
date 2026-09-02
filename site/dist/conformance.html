@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Conformance — DSDS 0.20.0</title>
+  <meta name="description" content="What it means for a document to follow the DSDS spec: the four conformance classes, the three enforcement tiers, and every rule the validator enforces.">
+  <link rel="canonical" href="https://designsystemdocspec.org/conformance">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="alternate" type="text/markdown" href="conformance.md">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Design System Doc Spec">
+  <meta property="og:title" content="Conformance — DSDS 0.20.0">
+  <meta property="og:description" content="What it means for a document to follow the DSDS spec: the four conformance classes, the three enforcement tiers, and every rule the validator enforces.">
+  <meta property="og:url" content="https://designsystemdocspec.org/conformance">
+  <meta property="og:image" content="https://designsystemdocspec.org/assets/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="https://designsystemdocspec.org/assets/og-image.png">
+  <meta name="dsds-version" content="0.20.0">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","name":"Conformance — DSDS 0.20.0","description":"What it means for a document to follow the DSDS spec: the four conformance classes, the three enforcement tiers, and every rule the validator enforces.","url":"https://designsystemdocspec.org/conformance","version":"0.20.0","isPartOf":{"@type":"WebSite","name":"Design System Doc Spec","url":"https://designsystemdocspec.org/"},"sameAs":"https://designsystemdocspec.org/conformance.md"}</script>
+
+  <link rel="stylesheet" href="tokens.css?v=0.20.0">
+  <link rel="stylesheet" href="style.css?v=0.20.0">
+  <script src="components.js?v=0.20.0"></script>
+</head>
+<body>
+  <nav class="skip-nav" aria-label="Skip links">
+  <a class="skip-link" href="#main-content">Skip to content</a>
+</nav>
+    <ds-spec-nav title="Design System Doc Spec 0.20.0" title-href="index.html" active="conformance">
+    <a href="index.html" slug="index">Overview</a>
+    <a href="quickstart.html" slug="quickstart">Quick start</a>
+    <a href="extending.html" slug="extending">Extending the schema</a>
+    <a href="schema.html" slug="schema">Schema</a>
+  </ds-spec-nav>
+  <div class="content">
+    <main class="content__main" id="main-content" role="main">
+    <ds-header title="Conformance — DSDS 0.20.0" description="What it means for a document to follow the DSDS spec: the four conformance classes, the three enforcement tiers, and every rule the validator enforces."><template shadowrootmode="open"><style>
+  :host { display: inline-block; box-sizing: border-box; }
+  :host([hidden]) { display: none !important; }
+  *, *::before, *::after { box-sizing: border-box; }
+  :host { display: flex; flex-direction: column; min-height: 100vh; min-height: 100dvh; background: var(--ds-color-bg-accent); justify-content: end; padding-block-start: var(--ds-height-nav, 64px); }
+
+  h1 {
+    font-size: clamp(2em, 4vw, 4em);
+    font-family: var(--ds-font-mono);
+    font-weight: 500;
+    line-height: 1.1;
+    letter-spacing: -0.025em;
+    word-spacing: -0.25em;
+    margin: 0 0 var(--ds-space-4);
+    color: var(--ds-color-text);
+    word-break: break-word;
+  }
+  .header-container {
+    max-width: var(--ds-width-content);
+    margin: 0 auto;
+    padding: var(--ds-space-8) var(--ds-space-8);
+    width: 100%;
+    padding-block-end: 64px;
+    padding-block-start: 128px;
+  }
+
+  .desc {
+    color: var(--ds-color-text);
+    font-family: var(--ds-font-body);
+    margin: 0 0 var(--ds-space-4);
+    max-width: 65ch;
+    font-size: clamp(1.05em, 1.7vw, 1.375em);
+    font-weight: 500;
+    line-height: 1.4;
+  }
+  .source {
+    font-size: var(--ds-font-size-sm);
+    margin: 0 0 var(--ds-space-8);
+    display: none;
+  }
+</style><div class="header-container"><h1>Conformance — DSDS 0.20.0<slot></slot></h1><p class="desc">What it means for a document to follow the DSDS spec: the four conformance classes, the three enforcement tiers, and every rule the validator enforces.</p></div></template></ds-header>
+    <div class="content__container">
+        <div class="content__inner">
+
+          <p>What it means for a document to follow the DSDS spec: every rule it enforces, and how each one is checked. For what might still change before 1.0, see <a href="stability.html">Stability</a>. For how the schema itself is organized — the shapes every entry, section, and reference is built from — see <a href="schema.html#how-the-schema-is-organized">How the schema is organized</a>.</p>
+<p>The words <strong>MUST</strong>, <strong>MUST NOT</strong>, <strong>SHOULD</strong>, <strong>SHOULD NOT</strong>, and <strong>MAY</strong> have a specific meaning on this page and inside the DSDS schema files, as defined by <a href="https://www.rfc-editor.org/rfc/rfc2119">RFC 2119</a> (updated by <a href="https://www.rfc-editor.org/rfc/rfc8174">RFC 8174</a>). They only carry that meaning when written in capital letters.</p>
+<ds-heading level="2" anchor="where-the-rules-live" id="where-the-rules-live"><template shadowrootmode="open"><style>
+  :host { display: inline-block; box-sizing: border-box; }
+  :host([hidden]) { display: none !important; }
+  *, *::before, *::after { box-sizing: border-box; }
+  :host { display: block; }
+
+  .heading {
+    display: block;
+    color: var(--ds-color-text);
+    font-family: var(--ds-font-mono);
+    line-height: var(--ds-line-height-snug);
+    letter-spacing: -0.0125em;
+  }
+
+  .heading--1 { font-size: var(--ds-font-size-2xl); font-weight: var(--ds-font-weight-bold); margin: 0 0 var(--ds-space-4); }
+  .heading--2 { font-size: var(--ds-font-size-xl); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-8) 0 var(--ds-space-2); }
+  .heading--3 { font-size: var(--ds-font-size-lg); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-8) 0 var(--ds-space-2); }
+  .heading--4 { font-size: var(--ds-font-size-md); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-4) 0 var(--ds-space-2); }
+  .heading--5 { font-size: var(--ds-font-size-base); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-4) 0 var(--ds-space-2); }
+  .heading--6 { font-size: var(--ds-font-size-sm); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-2) 0 var(--ds-space-2); }
+
+  .anchor-link {
+    display: inline;
+    opacity: 0;
+    margin-inline-start: var(--ds-space-2);
+    color: var(--ds-color-text);
+    text-decoration: none;
+    font-size: 0.75em;
+    vertical-align: baseline;
+    transition: opacity var(--ds-duration-fast) var(--ds-ease-standard);
+  }
+  :where(.heading:hover) .anchor-link { opacity: 0.6; }
+  .anchor-link:hover { opacity: 1; }
+</style><h2 class="heading heading--2" part="heading"><slot></slot> <a class="anchor-link" href="#where-the-rules-live" part="anchor">#</a></h2></template>Where the rules live</ds-heading>
+<p>DSDS keeps its rules inside the schema's own <ds-code inline>description</ds-code> text, next to the field they apply to — the schema <em>is</em> the spec, with no separate rulebook to keep in sync. The <a href="https://github.com/somerandomdude/design-system-documentation-schema#index-of-every-rule">index of every normative statement</a> regenerates from the schema on every build, so it can't drift out of date. Each rule has a location-based ID (for example, <ds-code inline>common/ref§note.1</ds-code>) — if that ID changes, the schema moved, and the rule should be double-checked wherever it's cited.</p>
+<ds-heading level="2" anchor="conformance-classes" id="conformance-classes"><template shadowrootmode="open"><style>
+  :host { display: inline-block; box-sizing: border-box; }
+  :host([hidden]) { display: none !important; }
+  *, *::before, *::after { box-sizing: border-box; }
+  :host { display: block; }
+
+  .heading {
+    display: block;
+    color: var(--ds-color-text);
+    font-family: var(--ds-font-mono);
+    line-height: var(--ds-line-height-snug);
+    letter-spacing: -0.0125em;
+  }
+
+  .heading--1 { font-size: var(--ds-font-size-2xl); font-weight: var(--ds-font-weight-bold); margin: 0 0 var(--ds-space-4); }
+  .heading--2 { font-size: var(--ds-font-size-xl); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-8) 0 var(--ds-space-2); }
+  .heading--3 { font-size: var(--ds-font-size-lg); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-8) 0 var(--ds-space-2); }
+  .heading--4 { font-size: var(--ds-font-size-md); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-4) 0 var(--ds-space-2); }
+  .heading--5 { font-size: var(--ds-font-size-base); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-4) 0 var(--ds-space-2); }
+  .heading--6 { font-size: var(--ds-font-size-sm); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-2) 0 var(--ds-space-2); }
+
+  .anchor-link {
+    display: inline;
+    opacity: 0;
+    margin-inline-start: var(--ds-space-2);
+    color: var(--ds-color-text);
+    text-decoration: none;
+    font-size: 0.75em;
+    vertical-align: baseline;
+    transition: opacity var(--ds-duration-fast) var(--ds-ease-standard);
+  }
+  :where(.heading:hover) .anchor-link { opacity: 0.6; }
+  .anchor-link:hover { opacity: 1; }
+</style><h2 class="heading heading--2" part="heading"><slot></slot> <a class="anchor-link" href="#conformance-classes" part="anchor">#</a></h2></template>Conformance classes</ds-heading>
+<p>DSDS defines four ways something can "follow the spec" — a document, and the tools that create, read, and check it. State which one you mean.</p>
+<ds-heading level="3" anchor="conforming-document" id="conforming-document"><template shadowrootmode="open"><style>
+  :host { display: inline-block; box-sizing: border-box; }
+  :host([hidden]) { display: none !important; }
+  *, *::before, *::after { box-sizing: border-box; }
+  :host { display: block; }
+
+  .heading {
+    display: block;
+    color: var(--ds-color-text);
+    font-family: var(--ds-font-mono);
+    line-height: var(--ds-line-height-snug);
+    letter-spacing: -0.0125em;
+  }
+
+  .heading--1 { font-size: var(--ds-font-size-2xl); font-weight: var(--ds-font-weight-bold); margin: 0 0 var(--ds-space-4); }
+  .heading--2 { font-size: var(--ds-font-size-xl); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-8) 0 var(--ds-space-2); }
+  .heading--3 { font-size: var(--ds-font-size-lg); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-8) 0 var(--ds-space-2); }
+  .heading--4 { font-size: var(--ds-font-size-md); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-4) 0 var(--ds-space-2); }
+  .heading--5 { font-size: var(--ds-font-size-base); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-4) 0 var(--ds-space-2); }
+  .heading--6 { font-size: var(--ds-font-size-sm); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-2) 0 var(--ds-space-2); }
+
+  .anchor-link {
+    display: inline;
+    opacity: 0;
+    margin-inline-start: var(--ds-space-2);
+    color: var(--ds-color-text);
+    text-decoration: none;
+    font-size: 0.75em;
+    vertical-align: baseline;
+    transition: opacity var(--ds-duration-fast) var(--ds-ease-standard);
+  }
+  :where(.heading:hover) .anchor-link { opacity: 0.6; }
+  .anchor-link:hover { opacity: 1; }
+</style><h3 class="heading heading--3" part="heading"><slot></slot> <a class="anchor-link" href="#conforming-document" part="anchor">#</a></h3></template>Conforming document</ds-heading>
+<p>A document that passes schema validation for the version named in its <ds-code inline>schemaVersion</ds-code>, <strong>and</strong> the extra rules below (<ds-code inline>DSDS-01</ds-code> through <ds-code inline>DSDS-11</ds-code>) that a schema file alone can't check. Passing schema validation on its own isn't enough.</p>
+<ds-heading level="3" anchor="conforming-producer" id="conforming-producer"><template shadowrootmode="open"><style>
+  :host { display: inline-block; box-sizing: border-box; }
+  :host([hidden]) { display: none !important; }
+  *, *::before, *::after { box-sizing: border-box; }
+  :host { display: block; }
+
+  .heading {
+    display: block;
+    color: var(--ds-color-text);
+    font-family: var(--ds-font-mono);
+    line-height: var(--ds-line-height-snug);
+    letter-spacing: -0.0125em;
+  }
+
+  .heading--1 { font-size: var(--ds-font-size-2xl); font-weight: var(--ds-font-weight-bold); margin: 0 0 var(--ds-space-4); }
+  .heading--2 { font-size: var(--ds-font-size-xl); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-8) 0 var(--ds-space-2); }
+  .heading--3 { font-size: var(--ds-font-size-lg); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-8) 0 var(--ds-space-2); }
+  .heading--4 { font-size: var(--ds-font-size-md); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-4) 0 var(--ds-space-2); }
+  .heading--5 { font-size: var(--ds-font-size-base); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-4) 0 var(--ds-space-2); }
+  .heading--6 { font-size: var(--ds-font-size-sm); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-2) 0 var(--ds-space-2); }
+
+  .anchor-link {
+    display: inline;
+    opacity: 0;
+    margin-inline-start: var(--ds-space-2);
+    color: var(--ds-color-text);
+    text-decoration: none;
+    font-size: 0.75em;
+    vertical-align: baseline;
+    transition: opacity var(--ds-duration-fast) var(--ds-ease-standard);
+  }
+  :where(.heading:hover) .anchor-link { opacity: 0.6; }
+  .anchor-link:hover { opacity: 1; }
+</style><h3 class="heading heading--3" part="heading"><slot></slot> <a class="anchor-link" href="#conforming-producer" part="anchor">#</a></h3></template>Conforming producer</ds-heading>
+<p>A tool or person that creates DSDS documents. A conforming producer:</p>
+<ul>
+<li>MUST only create documents that follow the spec</li>
+<li>MUST NOT use an outdated field or shape in new documents (old shapes are kept around only so existing documents keep working)</li>
+<li>SHOULD record how a document was created, using <ds-code inline>metadata.origin</ds-code></li>
+</ul>
+<ds-heading level="3" anchor="conforming-consumer" id="conforming-consumer"><template shadowrootmode="open"><style>
+  :host { display: inline-block; box-sizing: border-box; }
+  :host([hidden]) { display: none !important; }
+  *, *::before, *::after { box-sizing: border-box; }
+  :host { display: block; }
+
+  .heading {
+    display: block;
+    color: var(--ds-color-text);
+    font-family: var(--ds-font-mono);
+    line-height: var(--ds-line-height-snug);
+    letter-spacing: -0.0125em;
+  }
+
+  .heading--1 { font-size: var(--ds-font-size-2xl); font-weight: var(--ds-font-weight-bold); margin: 0 0 var(--ds-space-4); }
+  .heading--2 { font-size: var(--ds-font-size-xl); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-8) 0 var(--ds-space-2); }
+  .heading--3 { font-size: var(--ds-font-size-lg); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-8) 0 var(--ds-space-2); }
+  .heading--4 { font-size: var(--ds-font-size-md); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-4) 0 var(--ds-space-2); }
+  .heading--5 { font-size: var(--ds-font-size-base); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-4) 0 var(--ds-space-2); }
+  .heading--6 { font-size: var(--ds-font-size-sm); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-2) 0 var(--ds-space-2); }
+
+  .anchor-link {
+    display: inline;
+    opacity: 0;
+    margin-inline-start: var(--ds-space-2);
+    color: var(--ds-color-text);
+    text-decoration: none;
+    font-size: 0.75em;
+    vertical-align: baseline;
+    transition: opacity var(--ds-duration-fast) var(--ds-ease-standard);
+  }
+  :where(.heading:hover) .anchor-link { opacity: 0.6; }
+  .anchor-link:hover { opacity: 1; }
+</style><h3 class="heading heading--3" part="heading"><slot></slot> <a class="anchor-link" href="#conforming-consumer" part="anchor">#</a></h3></template>Conforming consumer</ds-heading>
+<p>A tool, renderer, or AI agent that reads DSDS documents. A conforming consumer:</p>
+<ul>
+<li>MUST NOT fail just because it sees an optional field it doesn't recognize</li>
+<li>MUST keep <ds-code inline>$extensions</ds-code> data intact even if it doesn't understand it</li>
+<li>MUST treat an unresolvable reference (an <ds-code inline>entryId#itemId</ds-code> pointing nowhere) as an error, not silently ignore it</li>
+<li>MUST take MUST/SHOULD-style guidance as seriously as the spec says to — a <ds-code inline>must-not</ds-code> guideline is a hard stop for an agent writing code, not a suggestion</li>
+<li>SHOULD build its own "what points to what" index when it loads a document, rather than expect the document to store that answer directly</li>
+<li>MUST be able to address every section item, whether or not it was written with an <ds-code inline>id</ds-code> — when one is missing, derive it from the item's own text (lowercase, non-alphanumeric runs collapsed to a dash), the same way every other conforming tool does. See <a href="schema.html#common-id">common/id</a>.</li>
+</ul>
+<ds-heading level="3" anchor="conforming-validator" id="conforming-validator"><template shadowrootmode="open"><style>
+  :host { display: inline-block; box-sizing: border-box; }
+  :host([hidden]) { display: none !important; }
+  *, *::before, *::after { box-sizing: border-box; }
+  :host { display: block; }
+
+  .heading {
+    display: block;
+    color: var(--ds-color-text);
+    font-family: var(--ds-font-mono);
+    line-height: var(--ds-line-height-snug);
+    letter-spacing: -0.0125em;
+  }
+
+  .heading--1 { font-size: var(--ds-font-size-2xl); font-weight: var(--ds-font-weight-bold); margin: 0 0 var(--ds-space-4); }
+  .heading--2 { font-size: var(--ds-font-size-xl); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-8) 0 var(--ds-space-2); }
+  .heading--3 { font-size: var(--ds-font-size-lg); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-8) 0 var(--ds-space-2); }
+  .heading--4 { font-size: var(--ds-font-size-md); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-4) 0 var(--ds-space-2); }
+  .heading--5 { font-size: var(--ds-font-size-base); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-4) 0 var(--ds-space-2); }
+  .heading--6 { font-size: var(--ds-font-size-sm); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-2) 0 var(--ds-space-2); }
+
+  .anchor-link {
+    display: inline;
+    opacity: 0;
+    margin-inline-start: var(--ds-space-2);
+    color: var(--ds-color-text);
+    text-decoration: none;
+    font-size: 0.75em;
+    vertical-align: baseline;
+    transition: opacity var(--ds-duration-fast) var(--ds-ease-standard);
+  }
+  :where(.heading:hover) .anchor-link { opacity: 0.6; }
+  .anchor-link:hover { opacity: 1; }
+</style><h3 class="heading heading--3" part="heading"><slot></slot> <a class="anchor-link" href="#conforming-validator" part="anchor">#</a></h3></template>Conforming validator</ds-heading>
+<p>A tool that checks documents. A conforming validator MUST enforce both the schema itself (with format checks on) and the extra rules below (<ds-code inline>DSDS-01</ds-code>–<ds-code inline>DSDS-11</ds-code>). <ds-code inline>scripts/validate.js</ds-code> is the reference implementation. Its <ds-code inline>examples/invalid/</ds-code> folder holds one broken example per semantic rule (<ds-code inline>DSDS-XX-*.yaml</ds-code>) plus a set of schema-shape fixtures (<ds-code inline>schema-*.yaml</ds-code>, no rule id — a pure JSON Schema rejection) pinning constraints like enum casing, empty arrays, and <ds-code inline>$extensions</ds-code> namespacing. Every fixture declares its own contract in a leading comment — <ds-code inline># rejectedBy: schema|semantic</ds-code>, plus <ds-code inline># expect: DSDS-XX</ds-code> or <ds-code inline># errorAt: /json/pointer</ds-code> as applicable — and <ds-code inline>scripts/conformance-test.js</ds-code> confirms each one fails for the exact reason and at the exact layer it claims to, not just that it fails at all.</p>
+<ds-heading level="2" anchor="enforcement-tiers" id="enforcement-tiers"><template shadowrootmode="open"><style>
+  :host { display: inline-block; box-sizing: border-box; }
+  :host([hidden]) { display: none !important; }
+  *, *::before, *::after { box-sizing: border-box; }
+  :host { display: block; }
+
+  .heading {
+    display: block;
+    color: var(--ds-color-text);
+    font-family: var(--ds-font-mono);
+    line-height: var(--ds-line-height-snug);
+    letter-spacing: -0.0125em;
+  }
+
+  .heading--1 { font-size: var(--ds-font-size-2xl); font-weight: var(--ds-font-weight-bold); margin: 0 0 var(--ds-space-4); }
+  .heading--2 { font-size: var(--ds-font-size-xl); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-8) 0 var(--ds-space-2); }
+  .heading--3 { font-size: var(--ds-font-size-lg); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-8) 0 var(--ds-space-2); }
+  .heading--4 { font-size: var(--ds-font-size-md); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-4) 0 var(--ds-space-2); }
+  .heading--5 { font-size: var(--ds-font-size-base); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-4) 0 var(--ds-space-2); }
+  .heading--6 { font-size: var(--ds-font-size-sm); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-2) 0 var(--ds-space-2); }
+
+  .anchor-link {
+    display: inline;
+    opacity: 0;
+    margin-inline-start: var(--ds-space-2);
+    color: var(--ds-color-text);
+    text-decoration: none;
+    font-size: 0.75em;
+    vertical-align: baseline;
+    transition: opacity var(--ds-duration-fast) var(--ds-ease-standard);
+  }
+  :where(.heading:hover) .anchor-link { opacity: 0.6; }
+  .anchor-link:hover { opacity: 1; }
+</style><h2 class="heading heading--2" part="heading"><slot></slot> <a class="anchor-link" href="#enforcement-tiers" part="anchor">#</a></h2></template>Enforcement tiers</ds-heading>
+<p>Every rule is enforced one of three ways:</p>
+<ds-table><table><thead><tr><th>Tier</th><th>How it's checked</th><th>What happens if it fails</th></tr></thead><tbody><tr><td>Structural</td><td>Directly by the schema file (required fields, patterns, and similar built-in checks)</td><td>Blocks — validation fails</td></tr><tr><td>Semantic</td><td>By <ds-code inline>scripts/validate.js</ds-code>'s own code (<ds-code inline>DSDS-01</ds-code>–<ds-code inline>DSDS-11</ds-code>: do references resolve, are ids unique, and so on)</td><td>Blocks — validation fails</td></tr><tr><td>Advisory</td><td>By <ds-code inline>scripts/lint-docs.js</ds-code> (<ds-code inline>npm run lint:docs</ds-code>, <ds-code inline>DSDS-12</ds-code>+: RFC 2119 casing, a token description that just restates its id, and similar documentation-quality checks) where a check exists — otherwise a judgment call</td><td>Never blocks — always exits 0, warnings only</td></tr></tbody></table></ds-table>
+<p>Advisory is the newest tier and doesn't cover every SHOULD/MAY in this spec yet — it's additive, so a gap here is a missing check, not a passing one.</p>
+<p><ds-code inline>DSDS-05</ds-code>, <ds-code inline>DSDS-08</ds-code>, <ds-code inline>DSDS-09</ds-code>, and <ds-code inline>DSDS-11</ds-code> are the exception: they report a warning, not a blocking error, unless the validator runs with <ds-code inline>--strict</ds-code>. Every other rule always blocks.</p>
+<p>Every catalog entry declares its own tier explicitly, as <ds-code inline>enforcement: structural|semantic|advisory|none</ds-code> — not just implied by which row of this table it's listed in. <ds-code inline>scripts/check-rule-catalog.js</ds-code> (run on every <ds-code inline>npm run check</ds-code>) enforces two things: every entry's <ds-code inline>enforcement</ds-code> is one of those four values, and — for the semantic tier specifically — that the catalog and <ds-code inline>scripts/validate.js</ds-code> agree exactly on which rules exist in both directions. A catalog entry with no matching <ds-code inline>RULES.<NAME></ds-code> reference in validate.js, or a <ds-code inline>RULES.<NAME></ds-code> reference with no catalog entry, fails the build instead of silently producing an untraceable <ds-code inline>[undefined]</ds-code> finding.</p>
+<ds-heading level="2" anchor="rule-catalog" id="rule-catalog"><template shadowrootmode="open"><style>
+  :host { display: inline-block; box-sizing: border-box; }
+  :host([hidden]) { display: none !important; }
+  *, *::before, *::after { box-sizing: border-box; }
+  :host { display: block; }
+
+  .heading {
+    display: block;
+    color: var(--ds-color-text);
+    font-family: var(--ds-font-mono);
+    line-height: var(--ds-line-height-snug);
+    letter-spacing: -0.0125em;
+  }
+
+  .heading--1 { font-size: var(--ds-font-size-2xl); font-weight: var(--ds-font-weight-bold); margin: 0 0 var(--ds-space-4); }
+  .heading--2 { font-size: var(--ds-font-size-xl); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-8) 0 var(--ds-space-2); }
+  .heading--3 { font-size: var(--ds-font-size-lg); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-8) 0 var(--ds-space-2); }
+  .heading--4 { font-size: var(--ds-font-size-md); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-4) 0 var(--ds-space-2); }
+  .heading--5 { font-size: var(--ds-font-size-base); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-4) 0 var(--ds-space-2); }
+  .heading--6 { font-size: var(--ds-font-size-sm); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-2) 0 var(--ds-space-2); }
+
+  .anchor-link {
+    display: inline;
+    opacity: 0;
+    margin-inline-start: var(--ds-space-2);
+    color: var(--ds-color-text);
+    text-decoration: none;
+    font-size: 0.75em;
+    vertical-align: baseline;
+    transition: opacity var(--ds-duration-fast) var(--ds-ease-standard);
+  }
+  :where(.heading:hover) .anchor-link { opacity: 0.6; }
+  .anchor-link:hover { opacity: 1; }
+</style><h2 class="heading heading--2" part="heading"><slot></slot> <a class="anchor-link" href="#rule-catalog" part="anchor">#</a></h2></template>Rule catalog</ds-heading>
+<p>The machine-readable list is <a href="https://github.com/somerandomdude/design-system-documentation-schema/blob/main/schema/conformance-rules.yaml"><ds-code inline>schema/conformance-rules.yaml</ds-code></a>. This table is kept in sync with it by hand, but <ds-code inline>scripts/conformance-test.js</ds-code> and <ds-code inline>scripts/check-rule-catalog.js</ds-code> (both run on every <ds-code inline>npm run check</ds-code>) would catch it if the two ever drifted apart.</p>
+<ds-callout variant="warning" title="DSDS-01–DSDS-15 is a reset id space, not a continuation of pre-0.20.0's:"><p>Versions through 0.15.2 used a three-digit catalog (<ds-code inline>DSDS-001</ds-code>–<ds-code inline>DSDS-006</ds-code> and similar, in <ds-code inline>rules/rules.yaml</ds-code>) covering a different rewrite of the model entirely. 0.20.0 restarted numbering at <ds-code inline>DSDS-01</ds-code> for a genuinely different rule set — <ds-code inline>DSDS-02</ds-code> here has nothing to do with whatever <ds-code inline>DSDS-002</ds-code> meant before. (0.15.2's own <ds-code inline>DSDS-002</ds-code> was, fittingly, the rule against reusing an identifier — a reminder this reset itself is worth naming explicitly rather than leaving implicit.) If you're citing a rule id from before 0.15.2, say which catalog it's from; a bare <ds-code inline>DSDS-0N</ds-code> is ambiguous across the two.</p></ds-callout>
+<ds-table><table><thead><tr><th>ID</th><th>Rule</th></tr></thead><tbody><tr><td><ds-code inline>DSDS-01</ds-code></td><td>At most one <ds-code inline>sourceFiles</ds-code> entry per platform.</td></tr><tr><td><ds-code inline>DSDS-02</ds-code></td><td>A system entry's <ds-code inline>metadata.platforms</ds-code> closes the platform vocabulary, once declared.</td></tr><tr><td><ds-code inline>DSDS-03</ds-code></td><td>A <ds-code inline>checkedBy: automated</ds-code> rule needs somewhere to actually run.</td></tr><tr><td><ds-code inline>DSDS-04</ds-code></td><td>Entry and shared ids are unique within a document.</td></tr><tr><td><ds-code inline>DSDS-05</ds-code></td><td>An <ds-code inline>entryId#itemId</ds-code> ref must resolve.</td></tr><tr><td><ds-code inline>DSDS-06</ds-code></td><td>A <ds-code inline>composes</ds-code> ref chain must not cycle.</td></tr><tr><td><ds-code inline>DSDS-07</ds-code></td><td>A <ds-code inline>depends-on</ds-code> ref chain must not cycle.</td></tr><tr><td><ds-code inline>DSDS-08</ds-code></td><td>A bare <ds-code inline>to:</ds-code> ref must resolve to a real entry or shared entry.</td></tr><tr><td><ds-code inline>DSDS-09</ds-code></td><td>A <ds-code inline>combo</ds-code>'s <ds-code inline>subject</ds-code>/<ds-code inline>items</ds-code> must resolve to a real trait, token, or entry.</td></tr><tr><td><ds-code inline>DSDS-10</ds-code></td><td>A <ds-code inline>same-as</ds-code> item's <ds-code inline>level</ds-code> must match its target's.</td></tr><tr><td><ds-code inline>DSDS-11</ds-code></td><td>A relative <ds-code inline>sourceFiles[].file</ds-code>/<ds-code inline>source</ds-code>/<ds-code inline>rel: file</ds-code> <ds-code inline>href</ds-code> actually exists on disk.</td></tr><tr><td><ds-code inline>DSDS-12</ds-code></td><td>Advisory: capitalize RFC 2119 keywords (MUST/SHOULD) in a guideline's own statement.</td></tr><tr><td><ds-code inline>DSDS-13</ds-code></td><td>Advisory: a token <ds-code inline>description</ds-code> shouldn't just restate its id/name or repeat a raw value.</td></tr><tr><td><ds-code inline>DSDS-14</ds-code></td><td>Advisory: a hard-requirement guideline (must/must-not) with no <ds-code inline>checkedBy</ds-code> at all.</td></tr><tr><td><ds-code inline>DSDS-15</ds-code></td><td>Advisory: a component entry with no <ds-code inline>guidelines</ds-code> section framed <ds-code inline>when-to-use</ds-code>.</td></tr></tbody></table></ds-table>
+<p><ds-code inline>DSDS-06</ds-code> and <ds-code inline>DSDS-07</ds-code> restore a cycle check the pre-0.20.0 spec had — nothing should point back at itself through a chain of <ds-code inline>composes</ds-code> or <ds-code inline>depends-on</ds-code> links. The 0.20.0 rewrite dropped it by accident; it's enforced by the validator's own code now, not the schema shape.</p>
+<ds-heading level="3" anchor="project-scope-resolution" id="project-scope-resolution"><template shadowrootmode="open"><style>
+  :host { display: inline-block; box-sizing: border-box; }
+  :host([hidden]) { display: none !important; }
+  *, *::before, *::after { box-sizing: border-box; }
+  :host { display: block; }
+
+  .heading {
+    display: block;
+    color: var(--ds-color-text);
+    font-family: var(--ds-font-mono);
+    line-height: var(--ds-line-height-snug);
+    letter-spacing: -0.0125em;
+  }
+
+  .heading--1 { font-size: var(--ds-font-size-2xl); font-weight: var(--ds-font-weight-bold); margin: 0 0 var(--ds-space-4); }
+  .heading--2 { font-size: var(--ds-font-size-xl); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-8) 0 var(--ds-space-2); }
+  .heading--3 { font-size: var(--ds-font-size-lg); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-8) 0 var(--ds-space-2); }
+  .heading--4 { font-size: var(--ds-font-size-md); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-4) 0 var(--ds-space-2); }
+  .heading--5 { font-size: var(--ds-font-size-base); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-4) 0 var(--ds-space-2); }
+  .heading--6 { font-size: var(--ds-font-size-sm); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-2) 0 var(--ds-space-2); }
+
+  .anchor-link {
+    display: inline;
+    opacity: 0;
+    margin-inline-start: var(--ds-space-2);
+    color: var(--ds-color-text);
+    text-decoration: none;
+    font-size: 0.75em;
+    vertical-align: baseline;
+    transition: opacity var(--ds-duration-fast) var(--ds-ease-standard);
+  }
+  :where(.heading:hover) .anchor-link { opacity: 0.6; }
+  .anchor-link:hover { opacity: 1; }
+</style><h3 class="heading heading--3" part="heading"><slot></slot> <a class="anchor-link" href="#project-scope-resolution" part="anchor">#</a></h3></template>Project-scope resolution</ds-heading>
+<p><ds-code inline>DSDS-05</ds-code>, <ds-code inline>DSDS-08</ds-code>, and <ds-code inline>DSDS-09</ds-code> check the whole <strong>project</strong>, not just the one document they're given. A <ds-code inline>rel: file</ds-code> link (the way the spec recommends splitting up a large system) joins the resolution pool, and so does every other file passed to the validator in the same run, even without a link between them — the way a standalone entry file, with no field of its own to declare "these are my siblings," still resolves a reference to a component listed alongside it.</p>
+<p>The search is bounded to the folder holding the file being validated, and its subfolders — never a parent folder, a sibling folder, or the wider repo. Deliberately narrow: widening it to the nearest <ds-code inline>.git</ds-code> or <ds-code inline>package.json</ds-code> would let a CI job checking one untrusted document read far more of a monorepo than it should. A future <ds-code inline>--root</ds-code> flag could widen it on request; nothing has needed one yet.</p>
+<p>An unresolved reference is a <strong>warning</strong>, not a failure, only in this cross-file case — a self-contained document's unresolved <ds-code inline>to:</ds-code> is still a hard error. A standalone entry file is the one exception even then, since it can never assert "this is definitely everything" the way a base document's <ds-code inline>entries</ds-code>/<ds-code inline>shared</ds-code> arrays can. Run with <ds-code inline>--strict</ds-code> to turn these warnings into failures.</p>
+<p>Whether a <ds-code inline>to:</ds-code> value even <em>looks like</em> a valid id is checked separately, directly by the schema: <ds-code inline>common/ref.schema.yaml</ds-code>'s <ds-code inline>to</ds-code> field only accepts id-shaped values, so a display name or a value with a space in it fails before <ds-code inline>DSDS-05</ds-code>, <ds-code inline>DSDS-08</ds-code>, or <ds-code inline>DSDS-09</ds-code> ever run. See <a href="schema.html#common-ref">common/ref</a>.</p>
+<p><strong><ds-code inline>DSDS-11</ds-code></strong> covers one of these: whether a relative <ds-code inline>sourceFiles[].file</ds-code>, <ds-code inline>source</ds-code>, or <ds-code inline>rel: file</ds-code> <ds-code inline>href</ds-code> actually points at a file that exists on disk, checked relative to the file being validated and bounded to the same directory-of-the-target boundary as <ds-code inline>DSDS-05</ds-code>/<ds-code inline>DSDS-08</ds-code>/<ds-code inline>DSDS-09</ds-code>. It applies to a base document's own top-level <ds-code inline>refs</ds-code> as well as to each entry's. Warning-only, promoted to a failure under <ds-code inline>--strict</ds-code>, same tier and same reason — it's opt-in because it's the one rule that reads the filesystem beyond the document being validated. A related check remains deliberately unbuilt: confirming the exact ids or paths <em>inside</em> another file the way DTCG-path resolution would need — that would mean actually reading and parsing the target's contents, not just confirming it exists.</p>
+<ds-heading level="2" anchor="open-conventions" id="open-conventions"><template shadowrootmode="open"><style>
+  :host { display: inline-block; box-sizing: border-box; }
+  :host([hidden]) { display: none !important; }
+  *, *::before, *::after { box-sizing: border-box; }
+  :host { display: block; }
+
+  .heading {
+    display: block;
+    color: var(--ds-color-text);
+    font-family: var(--ds-font-mono);
+    line-height: var(--ds-line-height-snug);
+    letter-spacing: -0.0125em;
+  }
+
+  .heading--1 { font-size: var(--ds-font-size-2xl); font-weight: var(--ds-font-weight-bold); margin: 0 0 var(--ds-space-4); }
+  .heading--2 { font-size: var(--ds-font-size-xl); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-8) 0 var(--ds-space-2); }
+  .heading--3 { font-size: var(--ds-font-size-lg); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-8) 0 var(--ds-space-2); }
+  .heading--4 { font-size: var(--ds-font-size-md); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-4) 0 var(--ds-space-2); }
+  .heading--5 { font-size: var(--ds-font-size-base); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-4) 0 var(--ds-space-2); }
+  .heading--6 { font-size: var(--ds-font-size-sm); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-2) 0 var(--ds-space-2); }
+
+  .anchor-link {
+    display: inline;
+    opacity: 0;
+    margin-inline-start: var(--ds-space-2);
+    color: var(--ds-color-text);
+    text-decoration: none;
+    font-size: 0.75em;
+    vertical-align: baseline;
+    transition: opacity var(--ds-duration-fast) var(--ds-ease-standard);
+  }
+  :where(.heading:hover) .anchor-link { opacity: 0.6; }
+  .anchor-link:hover { opacity: 1; }
+</style><h2 class="heading heading--2" part="heading"><slot></slot> <a class="anchor-link" href="#open-conventions" part="anchor">#</a></h2></template>Open conventions</ds-heading>
+<p>The schema deliberately leaves some questions unanswered — not oversights, but places where a fixed rule would fit some teams and not others.</p>
+<ul>
+<li><strong>Where does a guideline item's pointer go — <ds-code inline>refs</ds-code>, or a named field?</strong> <ds-code inline>alternatives</ds-code>, <ds-code inline>evidence</ds-code>, <ds-code inline>related</ds-code>, and <ds-code inline>checks</ds-code> each exist for one specific <ds-code inline>rel</ds-code>: <ds-code inline>alternative-to</ds-code>, an external standard, <ds-code inline>refines</ds-code>, and <ds-code inline>test</ds-code>/<ds-code inline>lint-rule</ds-code>. Any other <ds-code inline>rel</ds-code> — <ds-code inline>extends</ds-code>, <ds-code inline>depends-on</ds-code>, <ds-code inline>composes</ds-code>, <ds-code inline>part-of</ds-code>, <ds-code inline>replaces</ds-code>, <ds-code inline>implements</ds-code>, <ds-code inline>relates-to</ds-code>, <ds-code inline>pairs-with</ds-code>, <ds-code inline>excludes</ds-code>, <ds-code inline>see-also</ds-code> — goes in the general-purpose <ds-code inline>refs</ds-code> field instead, alongside <ds-code inline>same-as</ds-code> and <ds-code inline>external-link</ds-code>. See <a href="schema.html#sections-guidelines">sections/guidelines</a>.</li>
+<li><strong>Where does an entry's primary source file go?</strong> <ds-code inline>refs</ds-code> with <ds-code inline>rel: source</ds-code> — see <a href="schema.html#common-ref">common/ref</a>.</li>
+<li><strong>What does <ds-code inline>tags[0]</ds-code> mean?</strong> The first tag, by convention, is the entry's main category — see <a href="schema.html#metadata-metadata">metadata</a>.</li>
+<li><strong>How does a token's <ds-code inline>source</ds-code> point at one key inside a shared DTCG file, not just the whole file?</strong> By convention, a token's own <ds-code inline>id</ds-code> doubles as its path in the DTCG token tree — <ds-code inline>color.action.primary</ds-code> names the same token in both places, which is why <ds-code inline>entries/token.id</ds-code> allows slash separators DSDS ids otherwise don't. When a project's DTCG paths don't line up with its DSDS ids, point <ds-code inline>source</ds-code>'s <ds-code inline>href</ds-code> at the file plus a JSON Pointer fragment instead (<ds-code inline>./tokens.dtcg.json#/color/action/primary</ds-code>) — ordinary URI syntax, no schema change.</li>
+<li><strong>What is a component's status when it ships on more than one platform?</strong> Author one <ds-code inline>metadata.status</ds-code> entry per platform and let the overall status be <em>inferred</em> from them, rather than stating a separate overall value that can silently disagree. See <a href="#status-across-platforms">Status across platforms</a> below.</li>
+</ul>
+<ds-heading level="2" anchor="status-across-platforms" id="status-across-platforms"><template shadowrootmode="open"><style>
+  :host { display: inline-block; box-sizing: border-box; }
+  :host([hidden]) { display: none !important; }
+  *, *::before, *::after { box-sizing: border-box; }
+  :host { display: block; }
+
+  .heading {
+    display: block;
+    color: var(--ds-color-text);
+    font-family: var(--ds-font-mono);
+    line-height: var(--ds-line-height-snug);
+    letter-spacing: -0.0125em;
+  }
+
+  .heading--1 { font-size: var(--ds-font-size-2xl); font-weight: var(--ds-font-weight-bold); margin: 0 0 var(--ds-space-4); }
+  .heading--2 { font-size: var(--ds-font-size-xl); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-8) 0 var(--ds-space-2); }
+  .heading--3 { font-size: var(--ds-font-size-lg); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-8) 0 var(--ds-space-2); }
+  .heading--4 { font-size: var(--ds-font-size-md); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-4) 0 var(--ds-space-2); }
+  .heading--5 { font-size: var(--ds-font-size-base); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-4) 0 var(--ds-space-2); }
+  .heading--6 { font-size: var(--ds-font-size-sm); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-2) 0 var(--ds-space-2); }
+
+  .anchor-link {
+    display: inline;
+    opacity: 0;
+    margin-inline-start: var(--ds-space-2);
+    color: var(--ds-color-text);
+    text-decoration: none;
+    font-size: 0.75em;
+    vertical-align: baseline;
+    transition: opacity var(--ds-duration-fast) var(--ds-ease-standard);
+  }
+  :where(.heading:hover) .anchor-link { opacity: 0.6; }
+  .anchor-link:hover { opacity: 1; }
+</style><h2 class="heading heading--2" part="heading"><slot></slot> <a class="anchor-link" href="#status-across-platforms" part="anchor">#</a></h2></template>Status across platforms</ds-heading>
+<p>A component rarely reaches the same maturity everywhere at once: stable on web, beta on iOS, not started on Android. <ds-code inline>metadata.status</ds-code> accepts either a single object or a list of them, each optionally naming its own <ds-code inline>platform</ds-code>.</p>
+<ds-code language="yaml">metadata:
+  status:
+    - platform: react
+      status: stable
+      since: "1.0.0"
+    - platform: ios
+      status: beta
+      since: "2.0.0"
+</ds-code>
+<p><strong>A consumer SHOULD derive a component's overall status from the aggregate of its per-platform entries, rather than expect a separately authored overall value.</strong> There is no <ds-code inline>overall</ds-code> field, deliberately: a stated overall status is a second source of truth that drifts the moment one platform moves, and every consumer that needs one can compute it consistently from the entries that are already there.</p>
+<p>How to aggregate is the consumer's decision, because it depends on the question being asked. Two conventions cover most cases:</p>
+<ul>
+<li><strong>Least-mature wins</strong> — the honest answer to "can I depend on this everywhere?" A component that is <ds-code inline>stable</ds-code> on web and <ds-code inline>beta</ds-code> on iOS is <ds-code inline>beta</ds-code> overall.</li>
+<li><strong>Per-platform, unaggregated</strong> — the honest answer to "can I depend on this <em>here</em>?" A renderer showing a React developer the React status shouldn't dim it because iOS lags.</li>
+</ul>
+<p>A producer SHOULD declare <ds-code inline>metadata.platforms</ds-code> on the system entry when a document uses per-platform statuses, so a consumer can tell the difference between a platform that is deliberately unsupported and one that simply has no status entry yet (<ds-code inline>DSDS-02</ds-code> then closes that vocabulary). A single status object with no <ds-code inline>platform</ds-code> still means exactly what it always did: this entry's status, everywhere.</p>
+<ds-heading level="2" anchor="passing-isnt-the-same-as-good" id="passing-isnt-the-same-as-good"><template shadowrootmode="open"><style>
+  :host { display: inline-block; box-sizing: border-box; }
+  :host([hidden]) { display: none !important; }
+  *, *::before, *::after { box-sizing: border-box; }
+  :host { display: block; }
+
+  .heading {
+    display: block;
+    color: var(--ds-color-text);
+    font-family: var(--ds-font-mono);
+    line-height: var(--ds-line-height-snug);
+    letter-spacing: -0.0125em;
+  }
+
+  .heading--1 { font-size: var(--ds-font-size-2xl); font-weight: var(--ds-font-weight-bold); margin: 0 0 var(--ds-space-4); }
+  .heading--2 { font-size: var(--ds-font-size-xl); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-8) 0 var(--ds-space-2); }
+  .heading--3 { font-size: var(--ds-font-size-lg); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-8) 0 var(--ds-space-2); }
+  .heading--4 { font-size: var(--ds-font-size-md); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-4) 0 var(--ds-space-2); }
+  .heading--5 { font-size: var(--ds-font-size-base); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-4) 0 var(--ds-space-2); }
+  .heading--6 { font-size: var(--ds-font-size-sm); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-2) 0 var(--ds-space-2); }
+
+  .anchor-link {
+    display: inline;
+    opacity: 0;
+    margin-inline-start: var(--ds-space-2);
+    color: var(--ds-color-text);
+    text-decoration: none;
+    font-size: 0.75em;
+    vertical-align: baseline;
+    transition: opacity var(--ds-duration-fast) var(--ds-ease-standard);
+  }
+  :where(.heading:hover) .anchor-link { opacity: 0.6; }
+  .anchor-link:hover { opacity: 1; }
+</style><h2 class="heading heading--2" part="heading"><slot></slot> <a class="anchor-link" href="#passing-isnt-the-same-as-good" part="anchor">#</a></h2></template>Passing isn't the same as good</ds-heading>
+<p>A document with zero errors and zero warnings can still be bad documentation — the schema checks structure, not judgment. <ds-code inline>examples/anti-patterns/</ds-code> collects a few small documents that validate cleanly and are still worth avoiding: a definition that only restates its own term, a <ds-code inline>checkedBy: manual</ds-code> claim too vague to actually check, and guideline prose that names a concept (a "token-group" entry) the spec doesn't have. Each file's own leading comment says what's wrong with it and why the schema can't catch it. Deliberately excluded from the default <ds-code inline>npm run check</ds-code> sweep — not meant to be copied.</p>
+
+          <ds-back-to-top></ds-back-to-top>
+        </div>
+    </div>
+
+    </main>
+  </div>
+    <footer class="site-footer">
+    <div class="site-footer__inner">
+      <nav class="site-footer__group" aria-label="Specification">
+        <h2 class="site-footer__heading">Specification</h2>
+        <a href="conformance.html">Conformance</a>
+        <a href="stability.html">Stability</a>
+      </nav>
+      <nav class="site-footer__group" aria-label="For machines">
+        <h2 class="site-footer__heading">For machines</h2>
+        <a href="llms.txt">llms.txt</a>
+        <a href="AGENTS.md">AGENTS.md</a>
+        <a href="manifest.json">manifest.json</a>
+      </nav>
+      <nav class="site-footer__group" aria-label="Project">
+        <h2 class="site-footer__heading">Project</h2>
+        <a href="https://github.com/somerandomdude/design-system-documentation-schema">GitHub</a>
+        <a href="https://github.com/somerandomdude/design-system-documentation-schema/blob/main/CHANGELOG">Changelog</a>
+      </nav>
+    </div>
+    <p class="site-footer__meta">Design System Doc Spec 0.20.0 · Apache-2.0</p>
+  </footer>
+</body>
+</html>

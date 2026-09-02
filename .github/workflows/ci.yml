@@ -48,6 +48,16 @@ jobs:
       # generalizes from).
       - run: npm run check:docs-coverage
       - run: npm run lint:css
+      # The advisory tier (scripts/lint-docs.js). Documentation-quality
+      # findings are warnings by design and the script exits 0 whatever it
+      # finds, so this never fails a build - it runs here so the warnings
+      # are visible on every PR instead of only when someone remembers to
+      # run it, which is how the tier went missing in the first place.
+      # `continue-on-error` covers the other failure mode: the script's own
+      # catalog/implementation drift self-check, which does exit non-zero.
+      # That's worth seeing, not worth blocking a schema change on.
+      - run: npm run lint:docs
+        continue-on-error: true
 
   a11y:
     name: Accessibility (axe, real Chromium)
@@ -59,10 +69,11 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      # npm run build's own `prebuild` script installs Chromium explicitly
-      # before it's needed (og:generate); test:a11y's own `pretest:a11y`
-      # does the same for axe-audit.mjs - neither depends on a
-      # `postinstall` hook, which a published schema package can't carry
-      # (see package.json's own comment / Phase 1 #9).
+      # This is the only job that needs a browser, and axe-audit.mjs is the
+      # only thing left that uses one: `npm run build` launches nothing now
+      # (site/assets/og-image.png is a committed source asset, not a
+      # per-build screenshot). test:a11y's own `pretest:a11y` installs
+      # Chromium for itself - no `postinstall` hook, which a published
+      # schema package has no business carrying.
       - run: npm run build
       - run: npm run test:a11y
