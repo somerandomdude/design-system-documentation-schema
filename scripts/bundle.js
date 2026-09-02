@@ -23,6 +23,14 @@ const yaml = require("js-yaml");
 const rootDir = path.join(__dirname, "..");
 const schemaDir = path.join(rootDir, "schema");
 const outFile = path.join(rootDir, "schema/dsds.bundled.yaml");
+// Every version through v0.15.2 published a JSON bundle at this filename,
+// and tooling built against those versions (Ajv/jsonschema CLIs, editor
+// $schema resolution) still expects it - v0.20.0 dropping it silently
+// broke that tooling even though the schema itself didn't change shape.
+// Writing both formats from the one parsed object costs nothing and keeps
+// YAML as the single source of truth; JSON is a projection of it, not a
+// second thing to maintain.
+const outFileJson = path.join(rootDir, "schema/dsds.bundled.schema.json");
 
 function walkYamlFiles(dir) {
   return fs.readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
@@ -56,3 +64,13 @@ const bundle = {
 
 fs.writeFileSync(outFile, yaml.dump(bundle, { lineWidth: -1, noRefs: true }));
 console.log(`Wrote ${path.relative(rootDir, outFile)} (${Object.keys(defs).length} definitions).`);
+
+// JSON projection - same $defs, own $id (a distinct URL needs a distinct
+// $id; reusing the YAML bundle's would make the two indistinguishable to
+// a tool that has both loaded, e.g. Ajv's own schema registry).
+const bundleJson = {
+  ...bundle,
+  $id: "https://designsystemdocspec.org/v0.20.0/dsds.bundled.schema.json",
+};
+fs.writeFileSync(outFileJson, JSON.stringify(bundleJson, null, 2) + "\n");
+console.log(`Wrote ${path.relative(rootDir, outFileJson)} (${Object.keys(defs).length} definitions).`);

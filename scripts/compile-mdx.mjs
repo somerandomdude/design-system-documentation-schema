@@ -84,8 +84,16 @@ function readSpecVersion() {
  * canonical spec version. Run before any other processing so no downstream
  * step — frontmatter parsing, code-fence handling, MDX compilation — ever
  * sees the token.
+ *
+ * Exported because the HTML path is not the only consumer: build-site.js
+ * also builds each page's `.md` mirror (and llms-full.txt) by re-reading the
+ * raw .mdx and stripping frontmatter, which bypasses compileMdxFile()
+ * entirely. Without applying this there too, the mirrors shipped a literal
+ * `/v{{VERSION}}/…` while the HTML resolved it correctly — the two
+ * representations of one page disagreeing, on exactly the artifact AGENTS.md
+ * points machines at.
  */
-function substituteVersion(source) {
+export function substituteVersion(source) {
   return source.replace(/\{\{\s*VERSION\s*\}\}/g, readSpecVersion());
 }
 

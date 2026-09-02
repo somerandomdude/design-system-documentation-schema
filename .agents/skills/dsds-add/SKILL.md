@@ -7,7 +7,7 @@ metadata:
 
 # Add a DSDS Spec
 
-Create a new standalone `.dsds.yaml` entry file in `packages/specs/`.
+Create a new standalone `.dsds.yaml` entry file in your project's spec directory (see File Placement below for where a given kind lives).
 
 ## Procedure
 
@@ -15,8 +15,8 @@ Create a new standalone `.dsds.yaml` entry file in `packages/specs/`.
 2. Gather inputs — read the source (component source code, Figma frame, requirements doc).
 3. Create `{directory}/{id}.dsds.yaml` using the template below.
 4. Add a `refs` entry (`rel: file`) in `index.dsds.yaml` pointing at the new file.
-5. Run `npm run validate -w packages/specs` — fix errors until it passes.
-6. Run `npm run build -w packages/specs` to regenerate the index, if applicable.
+5. Run `npx dsds-validate {directory}/{id}.dsds.yaml` — fix errors until it passes.
+6. If your project generates its own index or catalog from spec files, regenerate it now.
 
 ## File Placement
 
@@ -72,10 +72,10 @@ Include at minimum: a `guidelines` section (`context: how-to-use`) covering usag
 
 When unsure about field shapes or required properties, consult:
 
-- **Bundled schema** (in-repo): `packages/specs/schema/dsds.bundled.schema.json`
+- **Bundled schema**: `https://designsystemdocspec.org/v0.20.0/dsds.bundled.schema.json` (or `node_modules/design-system-documentation-schema/schema/dsds.bundled.schema.json` if DSDS is installed as a dependency)
 - **Entry docs**: `https://designsystemdocspec.org/entries-{kind}` (e.g. `/entries-component`)
 - **Section docs**: `https://designsystemdocspec.org/sections-{kind}` (e.g. `/sections-guidelines`)
-- **Quick start examples**: https://designsystemdocspec.org/quickstart.html
+- **Quick start examples**: https://designsystemdocspec.org/quickstart
 
 ## Gotchas
 

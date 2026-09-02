@@ -1,11 +1,41 @@
 id: icon-button
 kind: component
 name: IconButton
-description: "A minimal icon-only button: a slotted icon plus a required accessible label."
+description: A minimal icon-only button — a slotted icon plus a required accessible label. No built-in positioning, color variants, or sizes; that's left to whatever's using it.
 
 metadata:
   status: {status: stable}
+  tags: [actions, button, icon]
 
 sourceFiles:
   - platform: web-component
     file: ../../../site/components/icon-button.js
+
+imports:
+  - platform: web-component
+    code: |
+      <ds-icon-button label="Toggle JSON view">
+        <svg>...</svg>
+      </ds-icon-button>
+
+sections:
+  - kind: guidelines
+    for: all
+    items:
+      - statement: The label attribute is REQUIRED — it's the only accessible name this button has, since it renders no visible text. The component sets it as the button's aria-label on every attribute change.
+        level: must
+        checkedBy: automated
+        checks:
+          - href: ../../../scripts/axe-audit.mjs
+            rel: test
+      - statement: Never duplicate the icon's meaning as visible text next to the button — if a visible label is wanted, use a plain labeled Button instead of an IconButton.
+        level: should-not
+        checkedBy: manual
+
+  - kind: guidelines
+    for: agent
+    framing: when-to-use
+    items:
+      - statement: Use only where space is genuinely constrained and the icon's meaning is well-established (e.g. a JSON-view toggle in a code block's corner). Where space allows a visible label, use a plain labeled button — an icon-only control always carries more ambiguity risk than one with text.
+        level: should
+        checkedBy: manual

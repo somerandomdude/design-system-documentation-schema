@@ -1,11 +1,43 @@
 id: logo
 kind: component
 name: Logo
-description: "The DSDS mark, inlined from its source SVG so its fill can be recolored at runtime via the current text color."
+description: The DSDS mark, fetched from site/assets/dsds.svg and inlined so its fill can be recolored at runtime.
 
 metadata:
   status: {status: stable}
+  tags: [branding]
 
 sourceFiles:
   - platform: web-component
     file: ../../../site/components/logo.js
+
+imports:
+  - platform: web-component
+    code: <ds-logo size="24px" fill="#fff" background="#0055b3"></ds-logo>
+
+refs:
+  - to: spec-nav
+    rel: part-of
+    note: Rendered at 2rem in the nav bar's title area, aria-hidden (the adjacent title text already names the site).
+
+sections:
+  - kind: guidelines
+    for: all
+    items:
+      - statement: Omit the label attribute when the logo sits next to visible text that already names it (the default — decorative, aria-hidden). Set label only when the logo is used standalone, with no adjacent text.
+        level: must
+        checkedBy: automated
+        checks:
+          - href: ../../../scripts/axe-audit.mjs
+            rel: test
+      - statement: Edit site/assets/dsds.svg directly to change the mark — this component only loads and recolors whatever's there; it does not own the artwork.
+        level: must-not
+        checkedBy: manual
+
+  - kind: guidelines
+    for: agent
+    framing: when-to-use
+    items:
+      - statement: Use only for the DSDS mark itself — nav branding, footer, a standalone "powered by" credit. Not a generic icon component; it always renders the one fixed SVG at site/assets/dsds.svg.
+        level: should
+        checkedBy: manual

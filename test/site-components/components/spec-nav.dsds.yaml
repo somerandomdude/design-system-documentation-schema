@@ -1,11 +1,47 @@
 id: spec-nav
 kind: component
 name: SpecNav
-description: "The specification site's top bar navigation, built from declarative light-DOM children."
+description: The specification site's top bar navigation. Reads its structure from declarative light-DOM `<a>` children instead of a JSON attribute — a flat top bar, not a sidebar, since every schema definition lives on one Schema page instead of its own.
 
 metadata:
   status: {status: stable}
+  tags: [navigation, layout]
+
+traits:
+  - kind: boolean
+    id: open
+    description: Whether the mobile links dropdown (a native popover, at ≤900px) is expanded. The bar itself never hides; only the links row changes presentation.
+    setBy: component
 
 sourceFiles:
   - platform: web-component
     file: ../../../site/components/spec-nav.js
+
+imports:
+  - platform: web-component
+    code: |
+      <ds-spec-nav title="DSDS 0.20" title-href="/" active="quickstart">
+        <a href="/quickstart" slug="quickstart">Quick start</a>
+        <a href="/schema" slug="schema">Schema</a>
+      </ds-spec-nav>
+
+refs:
+  - to: logo
+    rel: composes
+    note: Rendered at 2rem in the title area, replaced by the mobile menu toggle at narrow widths.
+
+sections:
+  - kind: guidelines
+    for: agent
+    items:
+      - statement: Every light-DOM `<a>` intended to highlight as active MUST carry a slug attribute — highlighting matches slug against the active attribute, not the href or link text.
+        level: must
+        checkedBy: manual
+
+  - kind: guidelines
+    for: agent
+    framing: when-to-use
+    items:
+      - statement: Use exactly once per page, as the top bar. It is deliberately flat rather than a sidebar — appropriate only while the site has a handful of top-level pages; a deeper page tree would need a different navigation shape entirely, not more nesting inside this component.
+        level: should
+        checkedBy: manual

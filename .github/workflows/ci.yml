@@ -1,0 +1,81 @@
+name: CI
+
+# Nothing else ran these on push/PR before this file existed - npm run
+# check was comprehensive and passed at every release, but only when a
+# person remembered to run it locally. A deploy shipped whether or not the
+# spec validated.
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  check:
+    name: Schema + fixtures + docs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      # --ignore-scripts: nothing in this job needs a browser, and no
+      # dependency's own install-time script should be able to affect a
+      # validation-only run.
+      - run: npm ci --ignore-scripts
+
+      # `npm run check:all` is `check` -> `build` -> `check:docs`, and it's
+      # what a contributor runs locally, so CI runs the same thing rather
+      # than a hand-maintained copy of its parts that can drift out of step
+      # with it.
+      #
+      # The build in the middle is load-bearing, not a convenience:
+      # site/dist/ is git-ignored, so on a fresh checkout check:docs would
+      # otherwise find no dist at all. It also makes those checks stronger
+      # than they were when dist was committed - they now assert against
+      # output built from the commit under test rather than whatever a
+      # contributor happened to commit alongside it.
+      #
+      # `check` opens with sync-examples --check, which used to have to run
+      # as its own step BEFORE `check` because check's `prevalidate` hook
+      # regenerated the composed files first - so the guard only ever
+      # inspected output the previous step had just written, and could never
+      # fail. That hook is gone; nothing regenerates before the guard now,
+      # so the ordering trap is gone with it.
+      - run: npm run check:all
+
+      # Advisory tier: documentation-quality warnings
+      # (scripts/lint-docs.js). A judgment call, not a build-blocking one -
+      # it runs here so the warnings show up on every PR instead of only
+      # when someone remembers, which is how the tier went missing in the
+      # first place. continue-on-error also covers lint's own
+      # catalog/implementation drift self-check, which does exit non-zero:
+      # worth seeing, not worth blocking a schema change on.
+      - run: npm run lint
+        continue-on-error: true
+      # `npm run readability` (scripts/readability-audit.mjs) is
+      # deliberately NOT run here. It shells out to a `readability` CLI
+      # that is neither a declared dependency nor installable the same way
+      # on every platform - it's a local-only authoring aid, not a CI
+      # check. A step that can never pass is worse than no step; it trains
+      # reviewers to ignore red. Run it locally when writing prose (see
+      # CONTRIBUTING.md).
+
+  a11y:
+    name: Accessibility (axe, real Chromium)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      # The only job that needs a browser, and axe-audit.mjs is the only
+      # thing left that uses one: `npm run build` launches nothing
+      # (site/assets/og-image.png is a committed source asset, not a
+      # per-build screenshot). `test:a11y` installs Chromium for itself - no
+      # `postinstall` hook, which a published schema package has no business
+      # carrying.
+      - run: npm run build
+      - run: npm run test:a11y

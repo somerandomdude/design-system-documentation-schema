@@ -4,8 +4,8 @@
 # the result before pushing, with no safety net if they don't. This runs
 # the real build on every deploy instead, so the published site always
 # matches the source that produced it. `npm run build` itself triggers
-# `prebuild` (sync-examples, bundle, og:generate) via npm's own lifecycle
-# hooks - nothing extra to chain here.
+# `prebuild` (sync-examples, bundle) via npm's own lifecycle hooks -
+# nothing extra to chain here.
 #
 # `base` is explicit on purpose, even though "." is the default when no
 # base is configured at all: a stale "Base directory" saved in the Netlify
@@ -21,17 +21,23 @@
 # site/package.json is an unrelated stub (`"type": "commonjs"`, for the
 # component files), not this project's build.
 #
-# `npx playwright install chromium` runs explicitly here too, not just via
-# package.json's own `postinstall` hook - og:generate (part of `npm run
-# build`'s own `prebuild` step) and axe-audit.mjs both launch a real
-# Chromium via Playwright, and only `postinstall` downloading it once,
-# during `npm install`, isn't reliable proof against every way a CI
-# environment can restore/cache node_modules without re-running install
-# lifecycle scripts. Explicit here means the binary is guaranteed present
-# by the time `npm run build` actually needs it, regardless of that.
+# No browser is installed or launched anywhere in this build. The one
+# asset that ever needed one - site/assets/og-image.png - is a committed
+# source file now, copied into site/dist/assets/ by build-site.js like
+# every other asset, and regenerated only when someone explicitly runs
+# `npm run og:generate` after changing its design. Playwright remains a
+# devDependency solely for `npm run test:a11y` (scripts/axe-audit.mjs),
+# which runs in its own CI job and installs Chromium itself.
+#
+# `npm run check` runs before `npm run build`, not after: it's the whole
+# validate + conformance-test + component/interop-fixture suite, and
+# nothing about the static-site build depends on it passing. Without this,
+# a spec change that fails its own schema could still deploy - the build
+# step only renders whatever's on disk, it was never a proxy for "the spec
+# is valid." A failed `check` now fails the deploy outright instead.
 [build]
   base = "."
-  command = "npx playwright install chromium && npm run build"
+  command = "npm run check && npm run build"
   publish = "site/dist"
 
 # Correct Content-Types for agent/machine-readable artifacts

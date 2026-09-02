@@ -7,15 +7,15 @@ metadata:
 
 # Update a DSDS Spec
 
-Modify an existing `.dsds.yaml` file in `packages/specs/`.
+Modify an existing `.dsds.yaml` file.
 
 ## Procedure
 
 1. Read the existing spec file.
 2. Identify what changed — compare against the source (code diff, Figma update, user instructions).
 3. Apply edits to the spec, preserving structure and existing content.
-4. Run `npm run validate -w packages/specs` — fix errors until it passes.
-5. Run `npm run build -w packages/specs` to regenerate the index, if applicable.
+4. Run `npx dsds-validate <the-file>.dsds.yaml` — fix errors until it passes.
+5. If your project generates its own index or catalog from spec files, regenerate it now.
 
 ## Common Updates
 
@@ -41,10 +41,10 @@ Modify an existing `.dsds.yaml` file in `packages/specs/`.
 
 When adding new sections or fields, verify the exact shape:
 
-- **Bundled schema** (in-repo): `packages/specs/schema/dsds.bundled.schema.json`
+- **Bundled schema**: `https://designsystemdocspec.org/v0.20.0/dsds.bundled.schema.json` (or `node_modules/design-system-documentation-schema/schema/dsds.bundled.schema.json` if DSDS is installed as a dependency)
 - **Section reference**: `https://designsystemdocspec.org/sections-{kind}`
 - **Entry reference**: `https://designsystemdocspec.org/entries-{kind}`
-- **Full architecture**: https://designsystemdocspec.org/schema.html#how-the-schema-is-organized
+- **Full architecture**: https://designsystemdocspec.org/schema#how-the-schema-is-organized
 
 ## Gotchas
 

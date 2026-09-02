@@ -1,11 +1,63 @@
 id: prop-list
 kind: component
 name: PropList
-description: "A vertical, anchorable list of a schema definition's properties: name, type, required/conditional status, and description."
+description: A schema definition's property list. Two elements from one module — `<ds-prop-table>` (the list, sorted required-first) and its declarative child `<ds-prop>` (one property row) — documented as a single entry since one always implies the other.
 
 metadata:
   status: {status: stable}
+  tags: [schema-reference]
+
+traits:
+  - kind: boolean
+    id: required
+    description: Marks a property row as required. Adds a plain-text "required" status next to the name — a fact about the field, not a colored badge.
+    setBy: consumer
+  - kind: boolean
+    id: conditional
+    description: Marks a property row as conditionally required. Renders an "at least 1 required" badge (see ds-badge's experimental variant) instead of the plain "required" text.
+    setBy: consumer
+
+combos:
+  - subject: required
+    level: must-not
+    items: [conditional]
+    note: A property is either unconditionally required or conditionally required, never both — the renderer checks required before conditional and would silently ignore the second attribute if both were set.
 
 sourceFiles:
   - platform: web-component
     file: ../../../site/components/prop-list.js
+
+imports:
+  - platform: web-component
+    code: |
+      <ds-prop-table>
+        <ds-prop name="id" type="string" required>The machine-readable id.</ds-prop>
+        <ds-prop name="name" type="string" conditional>The human-readable name. Uses id when left out.</ds-prop>
+      </ds-prop-table>
+
+refs:
+  - to: def-section
+    rel: part-of
+    note: Renders each schema definition's own property table.
+  - to: badge
+    rel: composes
+    note: The "at least 1 required" marker on a conditional prop reuses ds-badge's experimental variant styling.
+
+sections:
+  - kind: guidelines
+    for: agent
+    items:
+      - statement: Rows sort required-first, then conditional, then plain, and re-sorting happens automatically at render time — do not pre-sort ds-prop children before authoring them.
+        level: may
+        checkedBy: manual
+      - statement: Each rendered property anchor id is derived from the enclosing element's own id (as a scope prefix) plus the slugified property name — two properties named the same thing in different scopes never collide.
+        level: must
+        checkedBy: manual
+
+  - kind: guidelines
+    for: agent
+    framing: when-to-use
+    items:
+      - statement: Use to document a schema definition's own fields — one ds-prop per field, inside a ds-prop-table, inside a def-section. Not a general-purpose two-column list; for prose-only guidance with no field-level API, use a guidelines or definitions section instead.
+        level: should
+        checkedBy: manual

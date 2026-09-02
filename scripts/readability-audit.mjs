@@ -38,14 +38,31 @@ const ROOT = path.resolve(__dirname, "..");
 // Discover content
 // ---------------------------------------------------------------------------
 
+// Every page under site/content/ is discovered rather than listed, including
+// fragments/ (schema-intro, 404) — a hardcoded list silently stopped covering
+// new pages, which is how conformance/stability/security/examples ended up
+// unaudited while the three original guides stayed in the report. Non-content
+// long-form files still need naming, since there's no directory that means
+// "prose worth scoring".
+function findContentPages(dir) {
+  if (!fs.existsSync(path.join(ROOT, dir))) return [];
+  const out = [];
+  for (const entry of fs.readdirSync(path.join(ROOT, dir), { withFileTypes: true })) {
+    const rel = `${dir}/${entry.name}`;
+    if (entry.isDirectory()) out.push(...findContentPages(rel));
+    else if (entry.name.endsWith(".mdx")) out.push(rel);
+  }
+  return out.sort();
+}
+
 const LONG_FORM_PATHS = [
   "README.md",
   "CHANGELOG",
+  "CONTRIBUTING.md",
+  "SECURITY.md",
   "COMPATIBILITY_REPORT.md",
   "recommendations.md",
-  "site/content/overview.mdx",
-  "site/content/quickstart.mdx",
-  "site/content/extending.mdx",
+  ...findContentPages("site/content"),
   ".claude/skills/review-schema/reference.md",
 ].filter((p) => fs.existsSync(path.join(ROOT, p)));
 

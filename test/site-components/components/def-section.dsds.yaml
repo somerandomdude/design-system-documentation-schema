@@ -1,11 +1,72 @@
 id: def-section
 kind: component
 name: DefSection
-description: "Wraps one schema $defs definition with its heading, type badge, and description."
+description: One schema definition's block on the Schema page — a sticky heading (eyebrow, name, type/source line) above its description, property list, and optional worked example. One instance renders per schema file.
 
 metadata:
   status: {status: stable}
+  tags: [schema-reference, layout]
+
+traits:
+  - kind: boolean
+    id: layout-split
+    name: Split layout
+    description: Renders description/props and the worked example as two side-by-side columns instead of stacking the example below the content. Set via layout="split".
+    setBy: consumer
 
 sourceFiles:
   - platform: web-component
     file: ../../../site/components/def-section.js
+
+imports:
+  - platform: web-component
+    code: |
+      <ds-def-section
+        name="ComponentEntry"
+        anchor="component"
+        eyebrow="entries/"
+        type="object"
+        layout="split">
+        A reusable UI element, like a button or a dialog.
+        <ds-prop-table slot="props">...</ds-prop-table>
+        <ds-code slot="example" language="yaml">...</ds-code>
+      </ds-def-section>
+
+refs:
+  - to: prop-list
+    rel: composes
+    note: The property list for this definition.
+  - to: code
+    rel: composes
+    note: The worked-example code block, when layout="split".
+  - to: badge
+    rel: composes
+    note: The type badge shown next to the heading.
+  - to: type-ref
+    rel: composes
+    note: Cross-references to other definitions inside the description/prop text.
+
+sections:
+  - kind: guidelines
+    for: agent
+    items:
+      - statement: One ds-def-section per schema file, in file order — this is how the Schema page's structure stays a direct, verifiable mirror of schema/**/*.schema.yaml (see check-docs-coverage.mjs, which asserts one real element per definition).
+        level: must
+        checkedBy: automated
+        checks:
+          - href: ../../../scripts/check-docs-coverage.mjs
+            rel: test
+      - statement: The heading block (eyebrow + name) sticks to the viewport top while its own content scrolls past — a long property list stays anchored to the definition it belongs to instead of scrolling out of context.
+        level: should
+        checkedBy: manual
+
+  - kind: guidelines
+    for: agent
+    framing: when-to-use
+    items:
+      - statement: Use exactly once per schema definition on the Schema page — it renders the eyebrow, type badge, and property list a definition needs. For narrative guide content with no schema definition behind it, use guide-section instead.
+        level: should
+        alternatives:
+          - to: guide-section
+            rel: alternative-to
+        checkedBy: manual

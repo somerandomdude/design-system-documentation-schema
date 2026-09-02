@@ -1,11 +1,48 @@
 id: guide-section
 kind: component
 name: GuideSection
-description: "A two-column split wrapper for guide pages: help text on the left, its code example on the right."
+description: A two-column split wrapper for narrative guide pages — prose and headings on the left, a worked code example on the right. Renders nothing of its own; both columns are plain slots, so the caller's markdown-compiled content passes through unchanged.
 
 metadata:
   status: {status: stable}
+  tags: [guides, layout]
 
 sourceFiles:
   - platform: web-component
     file: ../../../site/components/guide-section.js
+
+imports:
+  - platform: web-component
+    code: |
+      <ds-guide-section>
+        <h3>Adding more entries</h3>
+        <p>Any entry can sit alongside the system entry...</p>
+        <ds-code slot="example" language="yaml">...</ds-code>
+      </ds-guide-section>
+
+refs:
+  - to: code
+    rel: composes
+    note: Slotted into "example" as the right-hand column's worked example.
+  - to: def-section
+    rel: relates-to
+    note: Same two-column visual language as ds-def-section's layout="split", minus the schema-specific heading it renders itself.
+
+sections:
+  - kind: guidelines
+    for: agent
+    items:
+      - statement: Only slot content into "example" when the step actually has a code sample — the right column is checked once at connect time and simply omitted (not rendered empty) when nothing is assigned to that slot.
+        level: should
+        checkedBy: manual
+
+  - kind: guidelines
+    for: agent
+    framing: when-to-use
+    items:
+      - statement: Use for a narrative guide step that pairs prose with a worked code example (e.g. Quick start). For a schema definition's own reference block, use def-section instead — it adds the eyebrow, type badge, and property list a guide step doesn't need.
+        level: should
+        alternatives:
+          - to: def-section
+            rel: alternative-to
+        checkedBy: manual

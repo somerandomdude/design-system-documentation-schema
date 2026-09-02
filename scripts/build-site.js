@@ -20,10 +20,11 @@
 const fs = require("fs");
 const path = require("path");
 
-const { buildSpecNav, DIR_GROUPS, readSpecVersion, TOP_LINKS } = require("./nav");
+const { buildSpecNav, buildFooter, DIR_GROUPS, readSpecVersion, TOP_LINKS } = require("./nav");
 const { renderTemplate } = require("./render-template");
 const {
   esc,
+  escWithCode,
   slug,
   describeType: describeTypeShared,
   renderPropertyTable: renderPropertyTableShared,
@@ -697,6 +698,30 @@ $extensions:
 // Definition rendering
 // ---------------------------------------------------------------------------
 
+// No-JS fallback content for <ds-def-section> — 36 definitions on the
+// Schema page whose heading/type/description text only exists inside a
+// JS-attached shadow root today (unlike <ds-heading>/<ds-header>, which got
+// a real Declarative Shadow DOM template this same effort; def-section's
+// own sticky/docked-border/eyebrow markup is involved enough that
+// replicating it Node-side wasn't worth it for what's just a heading and
+// two lines of text). Ported from origin/0.16.0's identical-purpose
+// renderHeaderFallback()/renderDefSectionFallback(): plain light-DOM
+// elements, marked with a slot name ("_fallback") that def-section.js's
+// own shadow template never declares a <slot> for. Without JS there's no
+// shadow root at all, so these render as ordinary page content; the
+// instant JS *does* attach a shadow root, the flattening algorithm finds
+// no matching slot for them and drops them from the render tree
+// automatically — no duplicate text, no change needed in def-section.js
+// itself.
+function renderDefSectionFallback(anchor, name, type, description, eyebrow) {
+  let html = "";
+  if (eyebrow) html += `<p slot="_fallback">${esc(eyebrow)}</p>`;
+  html += `<h2 slot="_fallback" id="${esc(anchor)}">${esc(name)}</h2>`;
+  if (type) html += `<p slot="_fallback">${esc(type)}</p>`;
+  if (description) html += `<p slot="_fallback">${escWithCode(description)}</p>`;
+  return html;
+}
+
 /**
  * Render a single $defs definition as an HTML section.
  *
@@ -712,6 +737,7 @@ function renderDefinition(defName, defSchema, { anchor, source, exampleYaml, eye
   const sourceAttr = source ? ` source="${esc(source)}"` : "";
   const layoutAttr = exampleYaml ? ` layout="split"` : "";
   const eyebrowAttr = eyebrow ? ` eyebrow="${esc(eyebrow)}"` : "";
+  const fallback = renderDefSectionFallback(anchor, defName, defSchema.type, defSchema.description, eyebrow);
   const example = exampleYaml
     ? `<ds-code language="yaml" label="" slot="example" wrap>${esc(exampleYaml)}</ds-code>`
     : "";
@@ -747,6 +773,7 @@ function renderDefinition(defName, defSchema, { anchor, source, exampleYaml, eye
       eyebrow_attr: eyebrowAttr,
       content: content.join("\n"),
       example,
+      fallback,
     });
   }
 
@@ -884,6 +911,7 @@ function renderDefinition(defName, defSchema, { anchor, source, exampleYaml, eye
     eyebrow_attr: eyebrowAttr,
     content: content.join("\n"),
     example,
+    fallback,
   });
 }
 
@@ -1182,9 +1210,17 @@ function renderDefinitionMarkdown(defName, defSchema, exampleData) {
 /**
  * Markdown counterpart of renderSchemaPage() for a whole schema file —
  * title, description, root properties (if any), each $def in reference
- * order, and a trailing fenced YAML block with the full source.
+ * order, and (unless `includeSource` is false) a trailing fenced YAML
+ * block with the full source.
+ *
+ * `includeSource: false` is what backs the per-definition markdown files
+ * (site/dist/schema/<baseSlug>.md, ex: entries-component.md) — the same
+ * content `schema.md` carries for this one file, minus the raw YAML dump,
+ * so a consumer that wants one kind's shape doesn't pay for the whole
+ * bundle's worth of text just to get it (see
+ * notes/dsds-0.20.0-improvement-plan.md, Phase 4 #35).
  */
-function buildSchemaMarkdown(page) {
+function buildSchemaMarkdown(page, { includeSource = true } = {}) {
   const defs = page.data.$defs || {};
   const defNames = orderDefsByReference(defs);
   const examples = page.examples || {};
@@ -1224,14 +1260,16 @@ function buildSchemaMarkdown(page) {
     }
   }
 
-  lines.push(
-    "## Full schema source",
-    "",
-    "```yaml",
-    fs.readFileSync(page.filePath, "utf-8").trimEnd(),
-    "```",
-    "",
-  );
+  if (includeSource) {
+    lines.push(
+      "## Full schema source",
+      "",
+      "```yaml",
+      fs.readFileSync(page.filePath, "utf-8").trimEnd(),
+      "```",
+      "",
+    );
+  }
 
   return lines.join("\n").replace(/\n{3,}/g, "\n\n").trimEnd() + "\n";
 }
@@ -1299,6 +1337,193 @@ function buildJsonLd({ name, description, url, version, pageType, activeSlug, de
 }
 
 // ---------------------------------------------------------------------------
+// Declarative Shadow DOM for <ds-heading>/<ds-header>
+//
+// Every heading on the site - the page's own <h1> (<ds-header>) and every
+// <h2>-<h6> under it (<ds-heading>) - only became a real, semantic heading
+// once client JS ran and built each one's shadow DOM. A crawler, an agent,
+// or any other tool that parses the HTML without executing script saw none
+// of that structure: no <h1>, no <h2>, nothing an accessibility tree or a
+// readability parser recognizes as a heading at all - confirmed directly
+// against the live site (curl | grep for <h1>/<h2>/<h3> turned up zero
+// matches on every page) after an agentic-readiness scan flagged exactly
+// this. <ds-heading>'s own text was at least present as light-DOM slot
+// content; <ds-header>'s title/description live only as attribute values,
+// worse still.
+//
+// Declarative Shadow DOM fixes this without giving up the shadow-DOM
+// component itself: a <template shadowrootmode="open"> as an element's
+// first child is parsed and attached as a real shadow root by the browser
+// during HTML parsing, before any script runs - so the exact same <h1>/
+// <h2> markup these components already build in JS is now *also* present
+// verbatim in the static HTML. `_shared.js`'s createShadow() reuses
+// `el.shadowRoot` if one already exists instead of always calling
+// attachShadow() (which throws once one does), so heading.js/header.js's
+// own client-side render still runs on top of this with no changes and no
+// behavior difference - it just recomputes the same shadow content the
+// declarative template already provided, once JS is available.
+//
+// HEADING_CSS/HEADER_CSS and the markup shape below are hand-kept in sync
+// with site/components/heading.js's/header.js's own HEADING_CSS/HEADER_CSS
+// and _render() - the same "small pure logic duplicated across the
+// Node/browser boundary, single comment on each side" approach this file
+// already uses for other build-time/client-time pairs (see readSpecVersion()
+// across nav.js/compile-mdx.mjs). No shared import: heading.js/header.js
+// are browser ES modules (`export class ... extends HTMLElement`, which
+// throws immediately if evaluated in Node, since HTMLElement doesn't
+// exist there), and bundleComponents() below resolves site/components'
+// own import graph with a regex scan of index.js's barrel imports only,
+// not a real module resolver - introducing a new cross-component import
+// between two component files isn't something it would pick up correctly.
+// ---------------------------------------------------------------------------
+
+const HEADING_CSS_SSR = `
+  :host { display: inline-block; box-sizing: border-box; }
+  :host([hidden]) { display: none !important; }
+  *, *::before, *::after { box-sizing: border-box; }
+  :host { display: block; }
+
+  .heading {
+    display: block;
+    color: var(--ds-color-text);
+    font-family: var(--ds-font-mono);
+    line-height: var(--ds-line-height-snug);
+    letter-spacing: -0.0125em;
+  }
+
+  .heading--1 { font-size: var(--ds-font-size-2xl); font-weight: var(--ds-font-weight-bold); margin: 0 0 var(--ds-space-4); }
+  .heading--2 { font-size: var(--ds-font-size-xl); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-8) 0 var(--ds-space-2); }
+  .heading--3 { font-size: var(--ds-font-size-lg); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-8) 0 var(--ds-space-2); }
+  .heading--4 { font-size: var(--ds-font-size-md); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-4) 0 var(--ds-space-2); }
+  .heading--5 { font-size: var(--ds-font-size-base); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-4) 0 var(--ds-space-2); }
+  .heading--6 { font-size: var(--ds-font-size-sm); font-weight: var(--ds-font-weight-bold); margin: var(--ds-space-2) 0 var(--ds-space-2); }
+
+  .anchor-link {
+    display: inline;
+    opacity: 0;
+    margin-inline-start: var(--ds-space-2);
+    color: var(--ds-color-text);
+    text-decoration: none;
+    font-size: 0.75em;
+    vertical-align: baseline;
+    transition: opacity var(--ds-duration-fast) var(--ds-ease-standard);
+  }
+  :where(.heading:hover) .anchor-link { opacity: 0.6; }
+  .anchor-link:hover { opacity: 1; }
+  .anchor-link:focus { opacity: 1; }
+  .anchor-link:focus-visible { opacity: 1; }
+`;
+
+const HEADER_CSS_SSR = `
+  :host { display: inline-block; box-sizing: border-box; }
+  :host([hidden]) { display: none !important; }
+  *, *::before, *::after { box-sizing: border-box; }
+  :host { display: flex; flex-direction: column; min-height: 100vh; min-height: 100dvh; background: var(--ds-color-bg-accent); justify-content: end; padding-block-start: var(--ds-height-nav, 64px); }
+
+  h1 {
+    font-size: clamp(2em, 4vw, 4em);
+    font-family: var(--ds-font-mono);
+    font-weight: 500;
+    line-height: 1.1;
+    letter-spacing: -0.025em;
+    word-spacing: -0.25em;
+    margin: 0 0 var(--ds-space-4);
+    color: var(--ds-color-text);
+    word-break: break-word;
+  }
+  .header-container {
+    max-width: var(--ds-width-content);
+    margin: 0 auto;
+    padding: var(--ds-space-8) var(--ds-space-8);
+    width: 100%;
+    padding-block-end: 64px;
+    padding-block-start: 128px;
+  }
+
+  .desc {
+    color: var(--ds-color-text);
+    font-family: var(--ds-font-body);
+    margin: 0 0 var(--ds-space-4);
+    max-width: 65ch;
+    font-size: clamp(1.05em, 1.7vw, 1.375em);
+    font-weight: 500;
+    line-height: 1.4;
+  }
+  .source {
+    font-size: var(--ds-font-size-sm);
+    margin: 0 0 var(--ds-space-8);
+    display: none;
+  }
+`;
+
+// Reverses esc()'s four entities - needed because attrs come from the
+// already-built HTML string (HTML-attribute-escaped), but the shadow
+// markup below needs the raw text back to re-escape correctly as element
+// content instead (attribute escaping and text-node escaping agree on
+// all four of these entities, so a plain reverse is safe either way).
+function unescAttr(s) {
+  return String(s || "")
+    .replace(/&quot;/g, '"')
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&amp;/g, "&");
+}
+
+function declarativeHeadingTemplate(level, anchor) {
+  const lvl = Math.min(6, Math.max(1, parseInt(level, 10) || 2));
+  const tag = "h" + lvl;
+  return (
+    `<template shadowrootmode="open"><style>${HEADING_CSS_SSR}</style>` +
+    `<${tag} class="heading heading--${lvl}" part="heading"><slot></slot> ` +
+    `<a class="anchor-link" href="#${esc(anchor)}" part="anchor">#</a></${tag}>` +
+    `</template>`
+  );
+}
+
+function declarativeHeaderTemplate({ title, description, source }) {
+  let inner = `<div class="header-container"><h1>${esc(title)}<slot></slot></h1>`;
+  if (source) {
+    inner += `<p class="source">Source: <ds-code inline>${esc(source)}</ds-code></p>`;
+  }
+  if (description) {
+    inner += `<p class="desc">${escWithCode(description)}</p>`;
+  }
+  inner += "</div>";
+  return `<template shadowrootmode="open"><style>${HEADER_CSS_SSR}</style>${inner}</template>`;
+}
+
+// Single post-processing pass over an already-assembled page's HTML,
+// finding every <ds-heading>/<ds-header> opening tag and inserting the
+// matching declarative shadow root as its first child. Run once, on the
+// fully assembled page (pageHtml() below), so it catches every occurrence
+// regardless of which code path (compile-mdx.mjs's markdown->component
+// pass, or this file's own header rendering) produced the tag.
+function injectDeclarativeShadowDom(html) {
+  let out = html.replace(/<ds-heading\s+([^>]*)>/g, (match, attrs) => {
+    const levelMatch = /\blevel="(\d+)"/.exec(attrs);
+    const anchorMatch = /\banchor="([^"]*)"/.exec(attrs);
+    const level = levelMatch ? levelMatch[1] : "2";
+    const anchor = anchorMatch ? anchorMatch[1] : "";
+    // Mirrors heading.js's own `this.id = anchor` (set in JS, at render
+    // time) - a no-JS reader needs it as a real attribute instead.
+    const attrsWithId = /\bid="/.test(attrs) ? attrs : `${attrs} id="${esc(anchor)}"`;
+    return `<ds-heading ${attrsWithId}>${declarativeHeadingTemplate(level, anchor)}`;
+  });
+
+  out = out.replace(/<ds-header\s+([^>]*)>/g, (match, attrs) => {
+    const titleMatch = /\btitle="([^"]*)"/.exec(attrs);
+    const descMatch = /\bdescription="([^"]*)"/.exec(attrs);
+    const sourceMatch = /\bsource="([^"]*)"/.exec(attrs);
+    const title = unescAttr(titleMatch ? titleMatch[1] : "");
+    const description = unescAttr(descMatch ? descMatch[1] : "");
+    const source = unescAttr(sourceMatch ? sourceMatch[1] : "");
+    return `<ds-header ${attrs}>${declarativeHeaderTemplate({ title, description, source })}`;
+  });
+
+  return out;
+}
+
+// ---------------------------------------------------------------------------
 // Overview page — rendered from markdown
 // ---------------------------------------------------------------------------
 
@@ -1358,12 +1583,18 @@ function pageHtml(
   });
   const skipLink = renderSub("skip-link", {});
 
-  return renderTemplate(PAGE_TEMPLATE_PATH, {
+  const rendered = renderTemplate(PAGE_TEMPLATE_PATH, {
     head,
     skip_link: skipLink,
     nav: buildSpecNav(activeSlug, pages, v),
     main: mainHtml,
+    footer: buildFooter(v),
   });
+  // Every <ds-heading>/<ds-header> on the page, wherever it came from
+  // (compile-mdx.mjs's markdown pass, this file's own header rendering) -
+  // see injectDeclarativeShadowDom()'s own comment above for why this
+  // runs once, here, on the fully assembled page rather than per call site.
+  return injectDeclarativeShadowDom(rendered);
 }
 
 // content--full removes the reading-width cap some pages want (ex: a wide
@@ -1569,40 +1800,109 @@ function buildManifest(pages, version) {
   // Every entry kind's own definition now lives at an anchor on the one
   // Schema page, not its own page - anchor = baseSlug, matching
   // render-prop-table.js's buildDefIndex() (entries-component, etc.).
+  // `schema` points at that kind's own split file (~10.5 KB), not the
+  // 77 KB bundle every kind used to point at identically — a consumer
+  // that wants one kind's shape shouldn't have to fetch and re-parse
+  // every other kind's to get it. `bundledSchema` (below) is still there
+  // for a consumer that genuinely wants the whole thing in one fetch.
   const entries = entryPages.map((page) => {
     const kind = page.filename.replace(/\.schema\.yaml$/, "");
     const anchor = `entries-${kind}`;
     return {
       kind,
       page: `${SITE_URL}/schema#${anchor}`,
-      markdown: `${SITE_URL}/schema.md#${anchor}`,
-      schema: `${SITE_URL}/v${version}/dsds.bundled.yaml`,
+      // The per-definition file (~a few KB), not an anchor into the ~111 KB
+      // schema.md whole-schema mirror — see build()'s per-def markdown loop.
+      markdown: `${SITE_URL}/schema/${anchor}.md`,
+      schema: `${SITE_URL}/v${version}/entries/${kind}.schema.yaml`,
     };
   });
   entries.sort((a, b) => a.kind.localeCompare(b.kind));
 
-  const sectionKinds = sectionPages
-    .map((page) => page.filename.replace(/\.schema\.yaml$/, ""))
-    .sort();
+  // Symmetric with `entries` above — a section kind previously appeared
+  // only as a bare name in `sectionKinds`, with no page/markdown/schema
+  // links of its own, unlike every entry kind. `sections-${kind}` matches
+  // the anchor render-prop-table.js's buildDefIndex() already generates
+  // for these definitions on the Schema page.
+  const sections = sectionPages.map((page) => {
+    const kind = page.filename.replace(/\.schema\.yaml$/, "");
+    const anchor = `sections-${kind}`;
+    return {
+      kind,
+      page: `${SITE_URL}/schema#${anchor}`,
+      markdown: `${SITE_URL}/schema/${anchor}.md`,
+      schema: `${SITE_URL}/v${version}/sections/${kind}.schema.yaml`,
+    };
+  });
+  sections.sort((a, b) => a.kind.localeCompare(b.kind));
 
   const manifest = {
     schemaVersion: version,
     bundledSchema: `${SITE_URL}/v${version}/dsds.bundled.yaml`,
-    mcp: "https://www.npmjs.com/package/dsds-mcp",
+    // No `mcp` field: dsds-mcp@0.3.0 bundles v0.15.2's schema and checks
+    // an incoming document's `dsdsVersion` field, which 0.20.0 documents
+    // don't carry (renamed to `schemaVersion`) - it rejects every valid
+    // 0.20.0 document. Pointing agents at it here would be actively worse
+    // than omitting it. Restore once a 0.20-compatible build of dsds-mcp
+    // ships (see notes/dsds-0.20.0-improvement-plan.md, Phase 1 #3).
     indexes: {
       llms: `${SITE_URL}/llms.txt`,
       llmsFull: `${SITE_URL}/llms-full.txt`,
       agents: `${SITE_URL}/AGENTS.md`,
       sitemap: `${SITE_URL}/sitemap.xml`,
     },
+    // The rule catalog as data (id/name/enforcement/title/description per
+    // rule), not just the Conformance page's rendered table — versioned
+    // alongside the schema bundle, generated by
+    // scripts/generate-rule-catalog.mjs so it can't drift from either.
+    conformance: {
+      page: `${SITE_URL}/conformance`,
+      markdown: `${SITE_URL}/conformance.md`,
+      rules: `${SITE_URL}/v${version}/conformance-rules.yaml`,
+      // The negative-fixture corpus + runner contract, as one versioned,
+      // language-agnostic artifact — see Conformance's own "Conformance
+      // suite" section for how to run it against a validator implementation
+      // that isn't scripts/validate.js.
+      suite: `${SITE_URL}/v${version}/conformance-suite/manifest.json`,
+    },
+    // The whole examples/ tree is mirrored to site/dist/examples/ (every
+    // file individually fetchable at its own URL) and indexed, by
+    // category, on the Examples page — generated by
+    // scripts/generate-examples-index.mjs so a new or removed file can't
+    // leave the index stale.
+    examples: {
+      page: `${SITE_URL}/examples`,
+      markdown: `${SITE_URL}/examples.md`,
+      root: `${SITE_URL}/examples/`,
+    },
+    // .agents/skills/dsds-* mirrored to site/dist/skills/ — corrected
+    // (real paths, current rule count, extensionless URLs) and kept that
+    // way by scripts/sync-skill-versions.js --check, part of npm run
+    // check, so a stale skill fails the build instead of shipping quietly
+    // the way it did before (see the improvement plan's contribution
+    // fold-back, F-4).
+    skills: (() => {
+      const skillsRoot = path.join(ROOT, ".agents", "skills");
+      if (!fs.existsSync(skillsRoot)) return null;
+      const names = fs
+        .readdirSync(skillsRoot, { withFileTypes: true })
+        .filter((d) => d.isDirectory() && d.name.startsWith("dsds-"))
+        .map((d) => d.name)
+        .sort();
+      return names.map((name) => ({
+        name,
+        file: `${SITE_URL}/skills/${name}/SKILL.md`,
+      }));
+    })(),
     // Both vocabularies are open — a namespaced custom kind (ex:
     // "acme.icon-library") is always valid alongside these well-known ones.
     // The generic "entry"/"section" fallback kinds are already included
     // here: entries/entry.schema.yaml and sections/section.schema.yaml are
     // real files in their own right, not just a conceptual fallback.
     entryKinds: entries.map((e) => e.kind).sort(),
-    sectionKinds: [...sectionKinds].sort(),
+    sectionKinds: sections.map((s) => s.kind).sort(),
     entries,
+    sections,
   };
 
   const entryDescriptors = entries.map((e) => ({
@@ -1712,6 +2012,17 @@ async function build() {
   // can drift from the schema.
   fs.cpSync(EXAMPLES_DIR, path.join(DIST_DIR, "examples"), { recursive: true });
 
+  // The agent skills (.agents/skills/dsds-*), exposed at /skills/ — see
+  // notes/dsds-0.20.0-improvement-plan.md's contribution fold-back, F-4.
+  // Publishing them (rather than leaving them a GitHub-only, in-repo
+  // curiosity) is only safe now that scripts/sync-skill-versions.js
+  // --check keeps their rule-count and bundle-filename claims from going
+  // stale the way they did before — see that script's own header comment.
+  const skillsSrc = path.join(ROOT, ".agents", "skills");
+  if (fs.existsSync(skillsSrc)) {
+    fs.cpSync(skillsSrc, path.join(DIST_DIR, "skills"), { recursive: true });
+  }
+
   // Bundle web components into a single IIFE for file:// compatibility.
   bundleComponents(SITE_DIR, DIST_DIR);
 
@@ -1724,7 +2035,7 @@ async function build() {
   const guideMarkdownDocs = [];
 
   // ── MDX content pages ─────────────────────────────────────────────────
-  const { compileAllMdx, compileMdxFile } = await loadMdxCompiler();
+  const { compileAllMdx, compileMdxFile, substituteVersion } = await loadMdxCompiler();
   console.log("  Compiling MDX content…");
   const mdxPages = await compileAllMdx();
   for (const mdxPage of mdxPages) {
@@ -1777,7 +2088,7 @@ async function build() {
     // one (its text duplicates the frontmatter title) — mirrors the HTML
     // path's equivalent strip of a leading level-1 <ds-heading> above, so
     // there's exactly one h1 (the one we prepend next) either way.
-    const mdBody = rawMdx
+    const mdBody = substituteVersion(rawMdx)
       .replace(/^---\n[\s\S]*?\n---\n/, "")
       .trimStart()
       .replace(/^#[ \t]+[^\n]*\n\s*/, "");
@@ -1799,6 +2110,53 @@ async function build() {
     guideMarkdownDocs.push({ title, markdown: `# ${title}\n\n${mdBody}` });
   }
   console.log(`  ${mdxPages.length} MDX page(s) compiled.\n`);
+
+  // ── Custom 404 page ──────────────────────────────────────────────────
+  // Not part of the MDX-pages loop above on purpose: a 404 isn't real
+  // content a crawler/agent should ever be deliberately pointed at, so it
+  // stays out of sitemapEntries/guideMarkdownDocs (no sitemap.xml row, no
+  // llms-full.txt entry) - just a real page at the well-known path Netlify
+  // already looks for automatically (site/dist/404.html, served for any
+  // unmatched route with no netlify.toml rule needed), with real recovery
+  // links instead of a bare status code and no page body. Lives in
+  // fragments/ for the same reason the schema-page intro/conformance
+  // fragments do: compileAllMdx()'s directory scan skips it, so it's
+  // compiled directly instead of falling into the loop above.
+  const notFoundPath = path.join(CONTENT_DIR, "fragments", "404.mdx");
+  const notFoundFragment = await compileMdxFile(notFoundPath);
+  const notFoundTitle = notFoundFragment.meta.title || "Page not found";
+  const notFoundHeader = renderSub("header", {
+    title: esc(notFoundTitle),
+    description_attr: notFoundFragment.meta.description
+      ? ` description="${esc(notFoundFragment.meta.description)}"`
+      : "",
+    source_attr: "",
+    badge: "",
+  });
+  const notFoundHtml = pageHtml(
+    notFoundTitle,
+    "404",
+    renderMainGuide({ header: notFoundHeader, content: notFoundFragment.html, layout: null }),
+    pages,
+    undefined,
+    notFoundFragment.meta.description,
+  );
+  fs.writeFileSync(path.join(DIST_DIR, "404.html"), notFoundHtml, "utf-8");
+  // Same three steps as the MDX-pages loop's own .md mirror above —
+  // substitute {{VERSION}}, strip frontmatter, strip a leading "# " h1 — so
+  // this page can't drift from the others. Previously it did only the
+  // frontmatter strip, which shipped a literal /v{{VERSION}}/ link and would
+  // have silently doubled the h1 the moment 404.mdx grew one.
+  const notFoundBody = substituteVersion(fs.readFileSync(notFoundPath, "utf-8"))
+    .replace(/^---\n[\s\S]*?\n---\n/, "")
+    .trimStart()
+    .replace(/^#[ \t]+[^\n]*\n\s*/, "");
+  fs.writeFileSync(
+    path.join(DIST_DIR, "404.md"),
+    `# ${notFoundTitle}\n\n${notFoundBody}`,
+    "utf-8",
+  );
+  console.log("  ✓  site/dist/404.html  ← custom 404 page\n");
 
   // ── Schema page — one page, every definition ────────────────────────────
   //
@@ -1833,7 +2191,19 @@ async function build() {
   );
   const introFragment = await compileMdxFile(introFragmentPath);
   schemaDefinitions.push(introFragment.html);
-  schemaMarkdownParts.push(fs.readFileSync(introFragmentPath, "utf-8").trim());
+  schemaMarkdownParts.push(
+    substituteVersion(fs.readFileSync(introFragmentPath, "utf-8")).trim(),
+  );
+
+  // One small markdown file per schema file (site/dist/schema/<baseSlug>.md,
+  // ex: entries-component.md) alongside the one big schema.md mirror — a
+  // consumer that wants a single kind's shape (component, guidelines, a
+  // common shape) fetches ~a few KB instead of the ~111 KB whole-schema
+  // file. Same content as that file's own slice of schema.md, minus the
+  // raw YAML dump (buildSchemaMarkdown's includeSource: false) - see
+  // notes/dsds-0.20.0-improvement-plan.md, Phase 4 #35.
+  const perDefMarkdownDir = path.join(DIST_DIR, "schema");
+  fs.mkdirSync(perDefMarkdownDir, { recursive: true });
 
   for (const page of pages) {
     const { definitions, defNames, baseSlug } = renderSchemaPage(page);
@@ -1844,6 +2214,11 @@ async function build() {
     }
     schemaDefinitions.push(definitions);
     schemaMarkdownParts.push(buildSchemaMarkdown(page));
+    fs.writeFileSync(
+      path.join(perDefMarkdownDir, `${baseSlug}.md`),
+      buildSchemaMarkdown(page, { includeSource: false }),
+      "utf-8",
+    );
     // Used by buildJsonLd()'s hasPart - reuses the same anchor scheme
     // renderSchemaPage() and buildDefIndex() (render-prop-table.js) already
     // agree on.
@@ -1911,7 +2286,13 @@ async function build() {
   // version is enforced at release/deploy time (git tag + atomic deploy),
   // not by skipping the write — skipping is what let the site go stale.
   const BUNDLE_FILENAME = "dsds.bundled.yaml";
+  // scripts/bundle.js also writes a JSON projection of the same bundle
+  // (every version through v0.15.2 published one; Ajv/jsonschema CLIs and
+  // editor $schema resolution expect it) - mirrored alongside the YAML one
+  // whenever it exists, same as-atomic-as-the-rest-of-the-build treatment.
+  const BUNDLE_FILENAME_JSON = "dsds.bundled.schema.json";
   const bundledSchemaPath = path.join(SCHEMA_DIR, BUNDLE_FILENAME);
+  const bundledSchemaPathJson = path.join(SCHEMA_DIR, BUNDLE_FILENAME_JSON);
   if (fs.existsSync(bundledSchemaPath)) {
     const version = readSpecVersion();
     if (version) {
@@ -1927,6 +2308,52 @@ async function build() {
       console.log(
         `  ✓  ${relTarget}  ← schema/${BUNDLE_FILENAME}${changed ? " (refreshed)" : ""}\n`,
       );
+      if (fs.existsSync(bundledSchemaPathJson)) {
+        const versionedBundleJson = path.join(versionDir, BUNDLE_FILENAME_JSON);
+        fs.copyFileSync(bundledSchemaPathJson, versionedBundleJson);
+        console.log(
+          `  ✓  site/dist/v${version}/${BUNDLE_FILENAME_JSON}  ← schema/${BUNDLE_FILENAME_JSON}\n`,
+        );
+      }
+
+      // The conformance rule catalog, published alongside the schema bundle
+      // so a tool can read every DSDS-XX rule's id/name/enforcement/title/
+      // description programmatically instead of scraping the Conformance
+      // page — same versioned-artifact treatment as the bundle itself.
+      const conformanceRulesPath = path.join(SCHEMA_DIR, "conformance-rules.yaml");
+      if (fs.existsSync(conformanceRulesPath)) {
+        const versionedConformanceRules = path.join(versionDir, "conformance-rules.yaml");
+        fs.copyFileSync(conformanceRulesPath, versionedConformanceRules);
+        console.log(
+          `  ✓  site/dist/v${version}/conformance-rules.yaml  ← schema/conformance-rules.yaml\n`,
+        );
+      }
+
+      // The conformance SUITE — the manifest (generated by
+      // scripts/generate-conformance-suite.mjs from every examples/invalid/
+      // fixture's own rejectedBy/expect/errorAt contract) plus the fixture
+      // files themselves, so an independent validator implementation in any
+      // language can fetch one versioned artifact and self-certify against
+      // it without cloning this repo or reading its JS. Fixture paths
+      // inside the manifest are relative to this directory, so the fixture
+      // tree is mirrored alongside it at the same relative layout.
+      const conformanceSuitePath = path.join(SCHEMA_DIR, "conformance-suite.json");
+      if (fs.existsSync(conformanceSuitePath)) {
+        const suiteDir = path.join(versionDir, "conformance-suite");
+        fs.mkdirSync(suiteDir, { recursive: true });
+        fs.copyFileSync(conformanceSuitePath, path.join(suiteDir, "manifest.json"));
+        const fixturesSrc = path.join(EXAMPLES_DIR, "invalid");
+        const fixturesDest = path.join(suiteDir, "examples", "invalid");
+        fs.mkdirSync(fixturesDest, { recursive: true });
+        for (const file of fs.readdirSync(fixturesSrc)) {
+          if (file.endsWith(".yaml")) {
+            fs.copyFileSync(path.join(fixturesSrc, file), path.join(fixturesDest, file));
+          }
+        }
+        console.log(
+          `  ✓  site/dist/v${version}/conformance-suite/  ← schema/conformance-suite.json + examples/invalid/\n`,
+        );
+      }
 
       // ── Versioned split schema files ────────────────────────────────
       //

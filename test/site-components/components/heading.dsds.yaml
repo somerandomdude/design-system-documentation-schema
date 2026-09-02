@@ -1,11 +1,59 @@
 id: heading
 kind: component
 name: Heading
-description: "A generic anchorable heading element with a hover-revealed deep link, used throughout narrative and reference pages."
+description: An anchored heading — renders the requested heading level with a stable, deep-linkable id, derived from its text content unless one is given explicitly.
 
 metadata:
   status: {status: stable}
+  tags: [content, navigation]
+
+traits:
+  - kind: enum
+    id: level
+    name: Level
+    description: Which native heading level (h1–h6) to render.
+    setBy: consumer
+    values:
+      - id: "1"
+        description: Page title. Reserved for ds-header's own h1 — a page should have exactly one.
+      - id: "2"
+        name: "2 (default)"
+        description: Top-level section heading.
+      - id: "3"
+        description: Sub-section heading.
+      - id: "4"
+        description: Nested sub-section heading.
+      - id: "5"
+        description: Rarely used — most pages don't nest this deep.
+      - id: "6"
+        description: Rarely used — most pages don't nest this deep.
 
 sourceFiles:
   - platform: web-component
     file: ../../../site/components/heading.js
+
+imports:
+  - platform: web-component
+    code: <ds-heading level="3">Conformance classes</ds-heading>
+
+sections:
+  - kind: guidelines
+    for: all
+    items:
+      - statement: Levels MUST NOT skip — e.g. an h2 section's first child heading MUST be h3, never h4, so the page's heading outline stays navigable by assistive-technology heading-jump commands.
+        level: must
+        checkedBy: automated
+        checks:
+          - href: ../../../scripts/axe-audit.mjs
+            rel: test
+      - statement: Prefer the default anchor (derived from text content) — set anchor explicitly only when two headings on the same page would otherwise collide, or when a stable, pre-existing deep link needs to survive a heading text edit.
+        level: should
+        checkedBy: manual
+
+  - kind: guidelines
+    for: agent
+    framing: when-to-use
+    items:
+      - statement: Use for real document structure below the page's own h1. Not a font-size shortcut — if the goal is only larger or bolder text with no actual section boundary, that is a styling need, not a heading.
+        level: should
+        checkedBy: manual

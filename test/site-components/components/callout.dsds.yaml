@@ -1,11 +1,52 @@
 id: callout
 kind: component
 name: Callout
-description: "A callout / info box: a bold title above a plain content box, the variant's meaning carried by the title's color."
+description: An info box with a bold, color-coded title above a plain content area — the variant's meaning lives in the title's background color, not an icon.
 
 metadata:
   status: {status: stable}
+  tags: [content, feedback]
+
+traits:
+  - kind: enum
+    id: variant
+    description: Which accent color the title bar renders in.
+    setBy: consumer
+    values:
+      - id: info
+        description: Default — title bar on the text color.
+      - id: tip
+        description: Title bar on the "encouraged" accent color.
+      - id: warning
+        description: Title bar on the warning color.
+  - kind: boolean
+    id: titled
+    description: Whether a title attribute was set. With no title, the title bar collapses entirely (display:none) and only the content box renders.
+    setBy: consumer
 
 sourceFiles:
   - platform: web-component
     file: ../../../site/components/callout.js
+
+imports:
+  - platform: web-component
+    code: |
+      <ds-callout variant="tip" title="Tip:">
+        A helpful suggestion.
+      </ds-callout>
+
+sections:
+  - kind: guidelines
+    for: all
+    items:
+      - statement: Content SHOULD stay short — the host is capped at 65ch, matching this site's prose measure, so a callout never becomes a second column of body text.
+        level: should
+        checkedBy: manual
+
+  - kind: guidelines
+    for: agent
+    framing: when-to-use
+    items:
+      - statement: Use to interrupt normal reading flow for something worth a reader's full attention — a key idea, a tip, or a warning about a real footgun. For routine supplementary detail that fits the surrounding prose, write it as a plain paragraph instead.
+        level: should
+        checkedBy: manual

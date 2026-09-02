@@ -46,8 +46,15 @@ addFormats(ajv);
 // The catalog itself lives in schema/conformance-rules.yaml, not here -
 // that's the single source both this lookup and the Conformance page's
 // rule list are generated from, so the two can't drift apart.
+// enforcement: semantic only - the catalog also carries structural
+// (enforced by the schema itself, no code here) and advisory (checked by
+// scripts/lint-docs.js instead, never blocking) entries, neither of which
+// this map's own callers below (tagging a hand-written check via err())
+// have any business referencing.
 const RULES = Object.fromEntries(
-  loadYaml(path.join(rootDir, "schema/conformance-rules.yaml")).map((rule) => [rule.name, rule.id])
+  loadYaml(path.join(rootDir, "schema/conformance-rules.yaml"))
+    .filter((rule) => rule.enforcement === "semantic")
+    .map((rule) => [rule.name, rule.id])
 );
 
 function err(id, message) {
@@ -195,6 +202,73 @@ function loadProject(entryAbsPath) {
   };
 }
 
+// DSDS-11: does a relative sourceFiles[].file/source/rel:file href
+// actually exist on disk? Reuses resolveHref()/isWithinRoot() above -
+// same directory-of-the-file boundary loadProject() uses, for the same
+// reason (a CI job validating an untrusted document shouldn't have a
+// relative path walk it outside that file's own directory tree).
+// URL-scheme hrefs (https:, npm:, and similar) aren't filesystem paths at
+// all and are never checked here.
+const URL_SCHEME_RE = /^[a-z][a-z0-9+.-]*:/i;
+
+function checkFileExists(href, filePath, warnings, label) {
+  if (!filePath || typeof href !== "string" || URL_SCHEME_RE.test(href)) return;
+  const abs = resolveHref(href, filePath);
+  const root = path.dirname(filePath);
+  if (!isWithinRoot(abs, root)) return; // outside this check's boundary - not evaluated, not assumed broken
+  if (!fs.existsSync(abs)) {
+    warnings.push(err(RULES.FILE_REF_EXISTS, `${label} points at "${href}", which doesn't exist on disk (checked ${path.relative(rootDir, abs)})`));
+  }
+}
+
+// Every {href, rel: "file"} object anywhere in an entity's own tree - the
+// same exhaustive walk lib.js's findRefs() does for {to, rel}, but keyed
+// on href instead (a file-pointing ref is never a `to:`, which addresses
+// something inside this same document).
+function findFileHrefRefs(value, out) {
+  if (Array.isArray(value)) {
+    value.forEach((item) => findFileHrefRefs(item, out));
+    return;
+  }
+  if (value && typeof value === "object") {
+    if (value.rel === "file" && typeof value.href === "string") out.push(value.href);
+    for (const val of Object.values(value)) findFileHrefRefs(val, out);
+  }
+}
+
+// sourceFiles[].file and source (common/ref.schema.yaml values) accept
+// either a bare string (shorthand for href) or the full {href, ...}
+// object - both point at a real file regardless of any `rel` they carry
+// (or don't), unlike a general `refs` entry, which only means "a file"
+// when it's explicitly tagged rel: file.
+function refHref(value) {
+  if (typeof value === "string") return value;
+  if (value && typeof value.href === "string") return value.href;
+  return undefined;
+}
+
+function validateFileRefs(entity, warnings, opts) {
+  if (!opts.filePath) return;
+  if (entity.kind === "component") {
+    for (const [i, sf] of (entity.sourceFiles || []).entries()) {
+      checkFileExists(refHref(sf.file), opts.filePath, warnings, `"${entity.id}" sourceFiles[${i}].file`);
+    }
+  }
+  if (entity.kind === "token" && entity.source !== undefined) {
+    checkFileExists(refHref(entity.source), opts.filePath, warnings, `"${entity.id}" source`);
+  }
+  // Exclude sourceFiles/source from this generic walk - already checked
+  // explicitly above, regardless of whether they use the bare-string or
+  // {href, rel: file} object form. Walking them again here would double
+  // up a finding whenever the object form happens to carry rel: file.
+  const { sourceFiles, source, ...rest } = entity;
+  const fileHrefs = [];
+  findFileHrefRefs(rest, fileHrefs);
+  for (const href of fileHrefs) {
+    checkFileExists(href, opts.filePath, warnings, `"${entity.id}" ref (rel: file)`);
+  }
+}
+
 // The current spec version, read back out of any loaded schema's own
 // $id (they all encode the same version) rather than hardcoded — so this
 // file never needs touching on a version bump. See scripts/bump-version.js,
@@ -329,7 +403,7 @@ function collapseContainsFailures(ajvErrors) {
 function validateSections(sections, label, errors) {
   for (const [i, section] of (sections || []).entries()) {
     const sectionSchemaId = specUrl(`sections/${section.kind}.schema.yaml`);
-    const validateSection = schemaFor(sectionSchemaId, specUrl("section.schema.yaml"), profileSectionIdByKind.get(section.kind));
+    const validateSection = schemaFor(sectionSchemaId, specUrl("sections/section.schema.yaml"), profileSectionIdByKind.get(section.kind));
     const sectionLabel = `${label} section[${i}] (${section.kind})`;
 
     if (!validateSection(section)) {
@@ -355,7 +429,7 @@ const NESTED_SECTION_ERROR = /^\/sections\/\d/;
 // would just duplicate every finding.
 function validateEntry(entry, errors, warnings, opts = {}) {
   const entrySchemaId = specUrl(`entries/${entry.kind}.schema.yaml`);
-  const validate = schemaFor(entrySchemaId, specUrl("entry.schema.yaml"), profileEntryIdByKind.get(entry.kind));
+  const validate = schemaFor(entrySchemaId, specUrl("entries/entry.schema.yaml"), profileEntryIdByKind.get(entry.kind));
   const isComponent = entry.kind === "component";
 
   if (!validate(entry)) {
@@ -377,9 +451,10 @@ function validateEntry(entry, errors, warnings, opts = {}) {
     validateSameAsLevels(entry, errors, warnings, opts);
   }
   validateSemanticRules(entry, errors);
+  validateFileRefs(entry, warnings, opts);
 }
 
-function validateShared(entry, errors) {
+function validateShared(entry, errors, warnings, opts = {}) {
   const validate = ajv.getSchema(specUrl("shared.schema.yaml"));
   if (!validate(entry)) {
     for (const err of validate.errors) {
@@ -389,6 +464,7 @@ function validateShared(entry, errors) {
   }
   validateSections(entry.sections, `shared "${entry.id}"`, errors);
   validateSemanticRules(entry, errors);
+  validateFileRefs(entry, warnings, opts);
 }
 
 // Checks that can't be expressed as a single item's shape - they need to
@@ -449,11 +525,30 @@ function validateBase(doc, errors, warnings, opts = {}) {
       errors.push(`base schema: ${err.instancePath || "/"} ${err.message}`);
     }
   }
+  // DSDS-11 for the base document's OWN top-level `refs`. Entry-level refs
+  // are covered by validateFileRefs() inside validateEntry/validateShared
+  // below; nothing covered these, and they're the likeliest of the three to
+  // rot - a base document's `rel: file` refs are the multi-file split the
+  // quickstart recommends for a large system, so they're a list of sibling
+  // filenames maintained by hand as components come and go. This repo's own
+  // test/site-components/index.dsds.yaml carried a ref to a component file
+  // that had been deleted, and validated clean.
+  //
+  // Walk only `doc.refs`, not the whole document: findFileHrefRefs recurses,
+  // so passing `doc` would re-find every entry's refs and double-report them.
+  if (opts.filePath) {
+    const docFileHrefs = [];
+    findFileHrefRefs(doc.refs, docFileHrefs);
+    for (const href of docFileHrefs) {
+      checkFileExists(href, opts.filePath, warnings, "base document ref (rel: file)");
+    }
+  }
+
   for (const entry of doc.entries || []) {
     validateEntry(entry, errors, warnings, opts);
   }
   for (const entry of doc.shared || []) {
-    validateShared(entry, errors);
+    validateShared(entry, errors, warnings, opts);
   }
 
   // entries and shared entries share one id/addressing space (an
@@ -494,10 +589,22 @@ function validateBase(doc, errors, warnings, opts = {}) {
           );
         }
       }
+      // `status` has two schema-legal shapes (entry-metadata.schema.yaml): a
+      // single object, or a list with one entry per platform. Reading
+      // `.platform` off the raw value only ever saw the object form, so the
+      // list form — the shape that exists *specifically* to name platforms —
+      // escaped this rule entirely. Normalize to an array and check each.
       const entryStatus = entry.metadata && entry.metadata.status;
-      if (entryStatus && entryStatus.platform && !known.has(entryStatus.platform)) {
+      const statusEntries = Array.isArray(entryStatus)
+        ? entryStatus
+        : entryStatus
+          ? [entryStatus]
+          : [];
+      for (const [i, statusEntry] of statusEntries.entries()) {
+        if (!statusEntry || !statusEntry.platform || known.has(statusEntry.platform)) continue;
+        const where = Array.isArray(entryStatus) ? `metadata.status[${i}]` : "metadata.status";
         errors.push(
-          err(RULES.PLATFORM_VOCABULARY, `entry "${entry.id}" metadata.status declares platform "${entryStatus.platform}", which is not in the system entry's metadata.platforms [${[...known].join(", ")}]`)
+          err(RULES.PLATFORM_VOCABULARY, `entry "${entry.id}" ${where} declares platform "${statusEntry.platform}", which is not in the system entry's metadata.platforms [${[...known].join(", ")}]`)
         );
       }
     }
@@ -932,6 +1039,19 @@ function validateDoc(doc, opts = {}) {
   const errors = [];
   const warnings = [];
   const isBase = typeof doc.schemaVersion !== "undefined";
+  // A root-level `dsdsVersion` with no `schemaVersion` is DSDS ≤0.15.2's
+  // own base-document marker, renamed in 0.20.0 - without this check,
+  // `isBase` above reads false (schemaVersion really is absent) and the
+  // document gets routed into validateEntry() instead, which then reports
+  // confusing entry-shape errors (missing id/kind/name/description) for a
+  // document that was never trying to be a standalone entry at all. Catch
+  // it here, before routing, with the actual reason instead.
+  if (!isBase && doc && typeof doc === "object" && typeof doc.dsdsVersion !== "undefined") {
+    errors.push(
+      `this document targets DSDS ≤0.15.2; 0.20.0 renamed the root "dsdsVersion" field to "schemaVersion" (see the CHANGELOG's 0.20.0 entry for the rest of what changed). Rename the field, or run a 0.15.2-era validator against this document instead.`,
+    );
+    return { errors, warnings };
+  }
   if (isBase) {
     validateBase(doc, errors, warnings, opts);
   } else {

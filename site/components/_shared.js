@@ -1,5 +1,15 @@
+// Reuses `el.shadowRoot` if one already exists instead of always calling
+// attachShadow() - which throws ("already has a shadow root") the moment
+// any element in the built HTML carries a declarative shadow root
+// (<template shadowrootmode="open">, parsed and attached by the browser
+// itself before this constructor ever runs, no JS required). That's what
+// makes it safe for build-site.js/compile-mdx.mjs to emit real, semantic,
+// no-JS-visible markup (an actual <h1>, not just an inert custom element
+// only JS ever turns into one) for the handful of components worth that
+// treatment, without every other component's own createShadow() call
+// needing to know or care whether it was declared that way.
 export function createShadow(el, css, mode) {
-  const shadow = el.attachShadow({ mode: mode || "open" });
+  const shadow = el.shadowRoot || el.attachShadow({ mode: mode || "open" });
   const sheet = new CSSStyleSheet();
   sheet.replaceSync(css);
   shadow.adoptedStyleSheets = [sheet];

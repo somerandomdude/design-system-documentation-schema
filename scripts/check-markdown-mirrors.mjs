@@ -18,7 +18,7 @@
  * different notion of "every schema definition" than what actually gets
  * built.
  *
- * Run via `npm run check:markdown-mirrors`.
+ * Run via `npm run check:docs`.
  *
  * Exits non-zero if schema.md is missing or missing any expected name.
  */

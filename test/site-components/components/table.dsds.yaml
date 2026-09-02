@@ -1,11 +1,38 @@
 id: table
 kind: component
 name: Table
-description: "A styled wrapper for a slotted table element, with a sticky header and a horizontal-scroll fallback on narrow viewports."
+description: A styled table wrapper that accepts a slotted `<table>` element — all styling is encapsulated in shadow DOM so the slotted table inherits consistent typography, spacing, borders, and responsive overflow.
 
 metadata:
   status: {status: stable}
+  tags: [content, layout]
 
 sourceFiles:
   - platform: web-component
     file: ../../../site/components/table.js
+
+imports:
+  - platform: web-component
+    code: |
+      <ds-table>
+        <table>
+          <thead><tr><th>Name</th><th>Type</th></tr></thead>
+          <tbody><tr><td>kind</td><td>string</td></tr></tbody>
+        </table>
+      </ds-table>
+
+sections:
+  - kind: guidelines
+    for: agent
+    items:
+      - statement: Page-scroll header stickiness and the below-900px horizontal-scroll fallback are mutually exclusive by construction, not by choice — a horizontally-scrolling wrapper forces the browser to set overflow-y to auto, which re-scopes position:sticky to that wrapper instead of the page. Do not try to make both apply to the same table at the same viewport width.
+        level: must-not
+        checkedBy: manual
+
+  - kind: guidelines
+    for: agent
+    framing: when-to-use
+    items:
+      - statement: Use for genuinely tabular data with comparable rows and columns. Not a layout mechanism — a two-column visual arrangement with no real row/column relationship belongs in guide-section or def-section's own split layout instead.
+        level: should
+        checkedBy: manual

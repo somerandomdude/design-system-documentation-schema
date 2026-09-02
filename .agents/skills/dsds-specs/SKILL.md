@@ -15,9 +15,9 @@ DSDS documents a graph of **entries** (a system, a component, a token, a theme, 
 
 When you need precise field-level details beyond this skill, consult these in order:
 
-1. **Bundled schema** (in-repo): `packages/specs/schema/dsds.bundled.schema.json`
-2. **Schema architecture reference**: https://designsystemdocspec.org/schema.html#how-the-schema-is-organized (and [Conformance](https://github.com/somerandomdude/design-system-documentation-schema#conformance) in the README for conformance classes and the rule catalog)
-3. **Quick start with examples**: https://designsystemdocspec.org/quickstart.html
+1. **Bundled schema**: `https://designsystemdocspec.org/v0.20.0/dsds.bundled.schema.json` (or `node_modules/design-system-documentation-schema/schema/dsds.bundled.schema.json` if installed as a dependency)
+2. **Schema architecture reference**: https://designsystemdocspec.org/schema#how-the-schema-is-organized (and [Conformance](https://designsystemdocspec.org/conformance) for conformance classes and the full rule catalog)
+3. **Quick start with examples**: https://designsystemdocspec.org/quickstart
 4. **GitHub source** (split schema + examples): https://github.com/somerandomdude/design-system-documentation-schema/tree/main/schema
 
 Key pages for field-level detail:
@@ -98,11 +98,13 @@ Mark a section `for: agent` for firm, ready-to-act notes a person wouldn't need 
 
 ## Schema Validation
 
-The bundled schema is at `packages/specs/schema/dsds.bundled.schema.json`. Uses JSON Schema draft 2020-12. Validate with:
+The bundled schema is published at `https://designsystemdocspec.org/v0.20.0/dsds.bundled.schema.json`, using JSON Schema draft 2020-12. Validate with:
 
 ```bash
-npm run validate -w packages/specs
+npx dsds-validate <files-or-globs>
 ```
+
+See the `dsds-validate` skill for the full rule catalog (`DSDS-01`–`DSDS-15`) and how to interpret failures.
 
 ## Deep-Dive References
 

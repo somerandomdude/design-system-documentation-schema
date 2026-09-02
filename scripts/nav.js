@@ -47,6 +47,33 @@ const TOP_LINKS = [
   { label: "Schema", href: "schema.html", slug: "schema" },
 ];
 
+// Reference pages that belong to the spec but aren't part of the reading
+// path the top nav describes. Conformance and Stability are the spec's own
+// normative and forward-looking halves - cited constantly, read start to
+// finish rarely - so they live in the footer rather than competing with the
+// four pages someone actually works through in order.
+//
+// Same shape as TOP_LINKS on purpose: scripts/check-docs-coverage.mjs
+// asserts every page in BOTH lists actually got built with real content, so
+// a footer link can't rot into a 404 any more than a nav link can.
+const FOOTER_LINKS = [
+  { label: "Conformance", href: "conformance.html", slug: "conformance" },
+  { label: "Stability", href: "stability.html", slug: "stability" },
+  { label: "Security", href: "security.html", slug: "security" },
+  { label: "Examples", href: "examples.html", slug: "examples" },
+];
+
+// Machine-readable entry points, and the repo. Not pages this site builds,
+// so deliberately not covered by check-docs-coverage.mjs's build assertion -
+// but check-internal-links.mjs does resolve the ones that are local files.
+const FOOTER_RESOURCES = [
+  { label: "llms.txt", href: "llms.txt" },
+  { label: "AGENTS.md", href: "AGENTS.md" },
+  { label: "manifest.json", href: "manifest.json" },
+];
+
+const REPO_URL = "https://github.com/somerandomdude/design-system-documentation-schema";
+
 function esc(text) {
   if (typeof text !== "string") return String(text);
   return text
@@ -115,11 +142,52 @@ function buildSpecNav(activeSlug, pages, version) {
   );
 }
 
+/**
+ * Build the site footer: the spec's reference pages, its machine-readable
+ * entry points, and the repo.
+ *
+ * Plain semantic HTML, no custom element - a footer is the one thing on
+ * every page that a no-JS reader (and a crawler that doesn't run JS) should
+ * never have to hydrate to see, and it has no behaviour worth a component.
+ *
+ * @param {string} [version] Override the spec version; derived when omitted.
+ * @returns {string}
+ */
+function buildFooter(version) {
+  const v = version || readSpecVersion() || "";
+  const link = ({ label, href }) => `<a href="${esc(href)}">${esc(label)}</a>`;
+
+  return [
+    `  <footer class="site-footer">`,
+    `    <div class="site-footer__inner">`,
+    `      <nav class="site-footer__group" aria-label="Specification">`,
+    `        <h2 class="site-footer__heading">Specification</h2>`,
+    ...FOOTER_LINKS.map((l) => `        ${link(l)}`),
+    `      </nav>`,
+    `      <nav class="site-footer__group" aria-label="For machines">`,
+    `        <h2 class="site-footer__heading">For machines</h2>`,
+    ...FOOTER_RESOURCES.map((l) => `        ${link(l)}`),
+    `      </nav>`,
+    `      <nav class="site-footer__group" aria-label="Project">`,
+    `        <h2 class="site-footer__heading">Project</h2>`,
+    `        <a href="${esc(REPO_URL)}">GitHub</a>`,
+    `        <a href="${esc(REPO_URL)}/blob/main/CHANGELOG">Changelog</a>`,
+    `      </nav>`,
+    `    </div>`,
+    `    <p class="site-footer__meta">Design System Doc Spec${v ? ` ${esc(v)}` : ""} · Apache-2.0</p>`,
+    `  </footer>`,
+  ].join("\n");
+}
+
 module.exports = {
   buildNavChildren,
   buildSpecNav,
+  buildFooter,
   readSpecVersion,
   TOP_LINKS,
+  FOOTER_LINKS,
+  FOOTER_RESOURCES,
+  REPO_URL,
   DIR_GROUPS,
   ROOT_FILES,
 };
