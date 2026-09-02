@@ -84,8 +84,8 @@ npm run check       # bundle, $id paths, rule catalog, every example and
                     # freshness. Needs no dist.
 npm run build       # regenerate site/dist/
 npm run check:docs  # markdown mirrors, internal links, nav/footer page
-                    # coverage, the script reference, CSS. Reads site/dist/,
-                    # so build first.
+                    # coverage, the script reference, the edge function's
+                    # page list, CSS. Reads site/dist/, so build first.
 ```
 
 Don't commit generated output. `site/dist/` is git-ignored and rebuilt on
@@ -131,7 +131,7 @@ a wrapper for its own sake — if a script isn't listed, it doesn't exist.
 | --- | --- |
 | `npm run check:all` | The whole gate: `check`, then `build`, then `check:docs`. What CI runs. |
 | `npm run check` | Bundle, `$id`-matches-path, rule-catalog drift, every example and fixture, the conformance suite, generated-artifact freshness. Needs no `site/dist/`. |
-| `npm run check:docs` | Markdown mirrors, internal links, nav/footer page coverage, this reference, CSS. Reads `site/dist/` — build first. |
+| `npm run check:docs` | Markdown mirrors, internal links, nav/footer page coverage, this reference, the edge function's page list, CSS. Reads `site/dist/` — build first. |
 | `npm run build` | Regenerates every generated artifact, then builds the site into `site/dist/`. Launches no browser. |
 | `npm run dev` | Local preview server. |
 | `npm run validate` | Validate files you name: `npm run validate -- path/to/doc.dsds.yaml`. Add `-- --strict` to promote project-scope warnings to failures. |

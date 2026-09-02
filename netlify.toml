@@ -1,11 +1,12 @@
-# `site/dist/` is committed to the repo (not gitignored), so Netlify could
-# in principle just serve it as-is with no build step - but that means every
-# change ships only if someone remembers to run `npm run build` and commit
-# the result before pushing, with no safety net if they don't. This runs
-# the real build on every deploy instead, so the published site always
-# matches the source that produced it. `npm run build` itself triggers
-# `prebuild` (sync-examples, bundle) via npm's own lifecycle hooks -
-# nothing extra to chain here.
+# `site/dist/` is git-ignored except its immutable `v<version>/` archives
+# (see .gitignore's own comment) - Netlify has no committed HTML/markdown to
+# fall back on, so this build step is load-bearing, not a safety net on top
+# of a committed copy. It also means the published site always matches the
+# source that produced it: no risk of a change shipping only because someone
+# remembered to run `npm run build` and commit the result, or of stale
+# generated output surviving a source change that should have replaced it.
+# `npm run build` itself triggers `prebuild` (sync-examples, bundle) via
+# npm's own lifecycle hooks - nothing extra to chain here.
 #
 # `base` is explicit on purpose, even though "." is the default when no
 # base is configured at all: a stale "Base directory" saved in the Netlify

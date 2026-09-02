@@ -1839,12 +1839,20 @@ function buildManifest(pages, version) {
   const manifest = {
     schemaVersion: version,
     bundledSchema: `${SITE_URL}/v${version}/dsds.bundled.yaml`,
-    // No `mcp` field: dsds-mcp@0.3.0 bundles v0.15.2's schema and checks
-    // an incoming document's `dsdsVersion` field, which 0.20.0 documents
-    // don't carry (renamed to `schemaVersion`) - it rejects every valid
-    // 0.20.0 document. Pointing agents at it here would be actively worse
-    // than omitting it. Restore once a 0.20-compatible build of dsds-mcp
-    // ships (see notes/dsds-0.20.0-improvement-plan.md, Phase 1 #3).
+    // dsds-mcp@0.4.0 added real 0.20.0 support: `dsds_validate` auto-detects
+    // a document's shape (0.20.0 YAML vs. legacy 0.15.2 JSON) instead of
+    // hard-checking the `dsdsVersion` field 0.20.0 renamed to
+    // `schemaVersion`, which is what made every 0.3.0 install reject every
+    // valid 0.20.0 document. Verified directly against this repo's own
+    // examples/entries/button.yaml over the real MCP stdio protocol before
+    // restoring this field - not just read from its package's changelog.
+    // `minVersion` is the floor this repo has actually tested, not merely
+    // "whatever's newest" - a future dsds-mcp release could regress this.
+    mcp: {
+      package: "dsds-mcp",
+      minVersion: "0.4.0",
+      install: "npx dsds-mcp",
+    },
     indexes: {
       llms: `${SITE_URL}/llms.txt`,
       llmsFull: `${SITE_URL}/llms-full.txt`,
