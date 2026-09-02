@@ -20,9 +20,18 @@
 # build script under site/ to run from either way - the one at
 # site/package.json is an unrelated stub (`"type": "commonjs"`, for the
 # component files), not this project's build.
+#
+# `npx playwright install chromium` runs explicitly here too, not just via
+# package.json's own `postinstall` hook - og:generate (part of `npm run
+# build`'s own `prebuild` step) and axe-audit.mjs both launch a real
+# Chromium via Playwright, and only `postinstall` downloading it once,
+# during `npm install`, isn't reliable proof against every way a CI
+# environment can restore/cache node_modules without re-running install
+# lifecycle scripts. Explicit here means the binary is guaranteed present
+# by the time `npm run build` actually needs it, regardless of that.
 [build]
   base = "."
-  command = "npm run build"
+  command = "npx playwright install chromium && npm run build"
   publish = "site/dist"
 
 # Correct Content-Types for agent/machine-readable artifacts
