@@ -21,10 +21,12 @@ either the spec itself or a document written against it.
 - **Every page has a `.md` mirror** at the same path (e.g. `/quickstart.md`,
   `/common-ref.md`) — the full content as plain text, no HTML or JS
   required to read it.
-- **[MCP server](https://www.npmjs.com/package/dsds-mcp)**
-  (`npm install dsds-mcp`) — if your agent can use tools instead of fetching
-  URLs directly, this wraps the schema and validation as MCP tools. Also
-  linked from manifest.json's `mcp` field.
+- **MCP server** — `dsds-mcp` on npm wraps the schema and validation as MCP
+  tools, but its latest published build (`0.3.0`) bundles the v0.15.2 schema
+  and checks for the `dsdsVersion` field that version used, which 0.20.0
+  renamed to `schemaVersion` — it currently rejects every valid 0.20.0
+  document. Not linked here until a 0.20-compatible build ships; validate
+  directly against the bundled schema or `scripts/validate.js` instead.
 
 ## The entry envelope
 

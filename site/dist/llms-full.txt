@@ -687,7 +687,7 @@ You've seen the basics. Here's where to go deeper.
           "description": "Every entry this document owns, listed directly.",
           "$comment": "A single-entry file just has one item here. System-wide facts (version, organization, url, license, platforms) live on this list's own `kind: system` entry. Reusable content that is not a standalong artifact belongs in `shared`.",
           "items": {
-            "$ref": "https://designsystemdocspec.org/v0.20.0/entry.schema.yaml#/$defs/dispatch"
+            "$ref": "https://designsystemdocspec.org/v0.20.0/entries/entry.schema.yaml#/$defs/dispatch"
           }
         },
         "shared": {
@@ -1084,7 +1084,7 @@ You've seen the basics. Here's where to go deeper.
       "$comment": "`traits`, `combos`, `imports`, `sourceFiles`, and `specs` live directly here rather than in a section, since they're facts about the component as a build artifact, not documentation content.",
       "allOf": [
         {
-          "$ref": "https://designsystemdocspec.org/v0.20.0/entry.schema.yaml"
+          "$ref": "https://designsystemdocspec.org/v0.20.0/entries/entry.schema.yaml"
         },
         {
           "type": "object",
@@ -1352,7 +1352,7 @@ You've seen the basics. Here's where to go deeper.
     },
     "entries/entry": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "$id": "https://designsystemdocspec.org/v0.20.0/entry.schema.yaml",
+      "$id": "https://designsystemdocspec.org/v0.20.0/entries/entry.schema.yaml",
       "title": "Entry",
       "type": "object",
       "description": "The structure every entry kind shares: `id`, `kind`, `name`, `description` (required), plus `purpose`, `metadata`, `related`, `extends`, `refs`, `sections`, `$extensions` (optional). This schema doubles as a general-use entry that isn't explicitly defined in the schema (ex: pattern, foundation, guideline). See schema/entries/ for each kind's own closing file.",
@@ -1448,7 +1448,7 @@ You've seen the basics. Here's where to go deeper.
           "minItems": 1,
           "description": "Every documentation section for this entry.",
           "items": {
-            "$ref": "https://designsystemdocspec.org/v0.20.0/section.schema.yaml#/$defs/dispatch"
+            "$ref": "https://designsystemdocspec.org/v0.20.0/sections/section.schema.yaml#/$defs/dispatch"
           }
         },
         "$extensions": {
@@ -1515,7 +1515,7 @@ You've seen the basics. Here's where to go deeper.
                   "$ref": "https://designsystemdocspec.org/v0.20.0/entries/system.schema.yaml"
                 },
                 "else": {
-                  "$ref": "https://designsystemdocspec.org/v0.20.0/entry.schema.yaml"
+                  "$ref": "https://designsystemdocspec.org/v0.20.0/entries/entry.schema.yaml"
                 }
               }
             }
@@ -1531,7 +1531,7 @@ You've seen the basics. Here's where to go deeper.
       "$comment": "Does not contain entries. A system points at its own components/tokens/etc with `refs` instead. It can reference other systems the same way to state a relationship (sibling, child, parent).",
       "allOf": [
         {
-          "$ref": "https://designsystemdocspec.org/v0.20.0/entry.schema.yaml"
+          "$ref": "https://designsystemdocspec.org/v0.20.0/entries/entry.schema.yaml"
         },
         {
           "type": "object",
@@ -1566,7 +1566,7 @@ You've seen the basics. Here's where to go deeper.
       "$comment": "This entry doesn't list which tokens the theme overrides. `source` points to the DTCG JSON file which acts as the source of truth.",
       "allOf": [
         {
-          "$ref": "https://designsystemdocspec.org/v0.20.0/entry.schema.yaml"
+          "$ref": "https://designsystemdocspec.org/v0.20.0/entries/entry.schema.yaml"
         },
         {
           "type": "object",
@@ -1611,7 +1611,7 @@ You've seen the basics. Here's where to go deeper.
       "description": "A single design token, from the Design Tokens Community Group (DTCG) format.",
       "allOf": [
         {
-          "$ref": "https://designsystemdocspec.org/v0.20.0/entry.schema.yaml"
+          "$ref": "https://designsystemdocspec.org/v0.20.0/entries/entry.schema.yaml"
         },
         {
           "type": "object",
@@ -1678,7 +1678,7 @@ You've seen the basics. Here's where to go deeper.
       "$comment": "Adds fields that only make sense per-entry: `status`, `since`, `group`, `aliases`, `preview`. A system's own metadata adds a different set instead - see metadata/system-metadata.schema.yaml.\nDeliberately left open (no `unevaluatedProperties`) - a system entry needs this schema's fields AND system-metadata.schema.yaml's own fields to both apply to the same `metadata` object at once, so only the combined usage (entries/system.schema.yaml's own `metadata` property) can correctly close the union. Every other kind file (component/token/theme) closes its own `metadata` property locally instead, since only this schema applies there.",
       "allOf": [
         {
-          "$ref": "https://designsystemdocspec.org/v0.20.0/metadata.schema.yaml"
+          "$ref": "https://designsystemdocspec.org/v0.20.0/metadata/metadata.schema.yaml"
         },
         {
           "type": "object",
@@ -1785,7 +1785,7 @@ You've seen the basics. Here's where to go deeper.
     },
     "metadata/metadata": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "$id": "https://designsystemdocspec.org/v0.20.0/metadata.schema.yaml",
+      "$id": "https://designsystemdocspec.org/v0.20.0/metadata/metadata.schema.yaml",
       "title": "Metadata",
       "type": "object",
       "description": "Optional information about an element.",
@@ -1860,7 +1860,7 @@ You've seen the basics. Here's where to go deeper.
         },
         "updated": {
           "type": "object",
-          "description": "When this item's documentation last changed.",
+          "description": "When this item's documentation last changed. Documentation can change without the design system's own version moving - a wording fix, a new example, a corrected guideline don't warrant a release. Tools SHOULD treat `updated.date` as the cache key for this item's documentation specifically, distinct from `metadata.version`/`since` (which track the design system's own release): pin to it, and re-fetch or re-index once it advances, rather than assuming unchanged content just because the design system's version hasn't moved.",
           "$comment": "A bare date, or a date with a change note.",
           "properties": {
             "date": {
@@ -1923,7 +1923,7 @@ You've seen the basics. Here's where to go deeper.
       "$comment": "Adds fields specifically for the system. See metadata/entry-metadata.schema.yaml for the per-entry equivalent.",
       "allOf": [
         {
-          "$ref": "https://designsystemdocspec.org/v0.20.0/metadata.schema.yaml"
+          "$ref": "https://designsystemdocspec.org/v0.20.0/metadata/metadata.schema.yaml"
         },
         {
           "type": "object",
@@ -1975,7 +1975,7 @@ You've seen the basics. Here's where to go deeper.
       "$comment": "A `definitions` section on an entry defines that entry's own terms. Distinct from `metadata.tags` or any other classification label.\n`definitions` does several genuinely different jobs - a component's anatomy, a glossary, a prop list stand-in, keyboard interactions, event names - told apart only by `title` until `context` existed. `context` (inherited from section.schema.yaml - see its own $comment) makes the job machine-readable: a renderer can find \"the anatomy table\" by checking `context: anatomy` instead of matching on a human-written heading string, which drifts and gets localized. `title` still carries the human-facing heading; `context` is what a tool reads.",
       "allOf": [
         {
-          "$ref": "https://designsystemdocspec.org/v0.20.0/section.schema.yaml"
+          "$ref": "https://designsystemdocspec.org/v0.20.0/sections/section.schema.yaml"
         },
         {
           "type": "object",
@@ -2046,7 +2046,7 @@ You've seen the basics. Here's where to go deeper.
       "$comment": "The same structure covers both a how-to-build rule and a when-to-use judgment. Only `framing` is different (`framing: when-to-use` for a judgment). Named `framing`, not `context`, to stay clear of section.schema.yaml's own `context` field (what job this section is doing) - this one is narrower, just how-to-use vs. when-to-use.\n`statement` is required unless the item points somewhere else instead. Use `same-as` for a statement already declared once elsewhere (usually a shared item), or `external-link` for a rule tracked in another system, like a ticket. Both always go in `refs`.\n`alternatives`, `evidence`, `related`, and `checks` are `refs` lists with a specific name, so a tool can ask \"what backs up this guideline\" without checking every `refs` entry's `rel`. `refs` itself is the catch-all for anything that doesn't fit those four.\n`checkedBy` says what type of verification is used, not what does the checking. Point `checks` (rel: test or lint-rule) at the actual test or lint rule. `example` always matches `level`, so there's no need for a separate pass/fail flag.\nAn `external-link` item with no `statement` (just `level` plus the `refs` entry) is intentional, not a gap: it says \"this rule exists, at this strictness, tracked in another system\" without restating text that lives there. It's genuinely unreadable on its own - there is no local summary to fall back on - so a reader who wants the actual rule MUST follow the link. A renderer SHOULD show the level and the link clearly (not hide a level-with-nothing-under-it as if it were empty content), and an author who expects a person to read the guideline without following the link SHOULD add a `statement` instead of leaving this form as the only text.",
       "allOf": [
         {
-          "$ref": "https://designsystemdocspec.org/v0.20.0/section.schema.yaml"
+          "$ref": "https://designsystemdocspec.org/v0.20.0/sections/section.schema.yaml"
         },
         {
           "type": "object",
@@ -2214,7 +2214,7 @@ You've seen the basics. Here's where to go deeper.
     },
     "sections/section": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "$id": "https://designsystemdocspec.org/v0.20.0/section.schema.yaml",
+      "$id": "https://designsystemdocspec.org/v0.20.0/sections/section.schema.yaml",
       "title": "Section",
       "type": "object",
       "description": "A logical documentation section. Supplies the fields every section kind shares — `kind`, `for`, `title`, `description`, `items`, `metadata`, `$extensions` — plus `freeform`, and is tagged with who it is for (human, agent, or all). Content always lives in `items`, never in a field named after the kind. Each sections/<kind>.schema.yaml file adds its own `kind` value (`definitions`, `guidelines`, `steps`, or the generic `section`) and its own structure for `items` on top of this shared base.",
@@ -2299,7 +2299,7 @@ You've seen the basics. Here's where to go deeper.
           "example": "anatomy"
         },
         "metadata": {
-          "$ref": "https://designsystemdocspec.org/v0.20.0/metadata.schema.yaml"
+          "$ref": "https://designsystemdocspec.org/v0.20.0/metadata/metadata.schema.yaml"
         },
         "items": {
           "type": "array",
@@ -2376,7 +2376,7 @@ You've seen the basics. Here's where to go deeper.
                 "$ref": "https://designsystemdocspec.org/v0.20.0/sections/steps.schema.yaml"
               },
               "else": {
-                "$ref": "https://designsystemdocspec.org/v0.20.0/section.schema.yaml"
+                "$ref": "https://designsystemdocspec.org/v0.20.0/sections/section.schema.yaml"
               }
             }
           }
@@ -2443,7 +2443,7 @@ You've seen the basics. Here's where to go deeper.
       "$comment": "Useful whenever documenting a multi-phase process of job to be done.",
       "allOf": [
         {
-          "$ref": "https://designsystemdocspec.org/v0.20.0/section.schema.yaml"
+          "$ref": "https://designsystemdocspec.org/v0.20.0/sections/section.schema.yaml"
         },
         {
           "type": "object",
@@ -2557,7 +2557,7 @@ You've seen the basics. Here's where to go deeper.
         "metadata": {
           "allOf": [
             {
-              "$ref": "https://designsystemdocspec.org/v0.20.0/metadata.schema.yaml"
+              "$ref": "https://designsystemdocspec.org/v0.20.0/metadata/metadata.schema.yaml"
             }
           ],
           "unevaluatedProperties": false
@@ -2577,7 +2577,7 @@ You've seen the basics. Here's where to go deeper.
           "minItems": 1,
           "description": "The reusable content itself, in the same section structure an entry uses.",
           "items": {
-            "$ref": "https://designsystemdocspec.org/v0.20.0/section.schema.yaml#/$defs/dispatch"
+            "$ref": "https://designsystemdocspec.org/v0.20.0/sections/section.schema.yaml#/$defs/dispatch"
           }
         },
         "$extensions": {

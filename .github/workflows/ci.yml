@@ -1,0 +1,68 @@
+name: CI
+
+# Nothing else ran these on push/PR before this file existed - npm run
+# check was comprehensive and passed at every release, but only when a
+# person remembered to run it locally. A deploy shipped whether or not the
+# spec validated. See notes/dsds-0.20.0-improvement-plan.md, Phase 1 #1.
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  check:
+    name: Schema + fixtures + docs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      # --ignore-scripts: nothing in this job needs a browser, and no
+      # dependency's own install-time script should be able to affect a
+      # validation-only run.
+      - run: npm ci --ignore-scripts
+      # Bundles the schema, validates every example/fixture/test corpus
+      # file, runs the conformance fixture suite, and $id-matches-path
+      # (see scripts/check-schema-ids.js).
+      - run: npm run check
+      # examples/**/*.yaml must match the hand-split fragments they're
+      # composed from (scripts/compose.js) - this is the drift guard for
+      # that split.
+      - run: npm run check-examples
+      # site/dist/schema.md (the no-JS markdown mirror) must actually
+      # contain every schema def and field name currently in the schema -
+      # checked against the committed site/dist/, same as a contributor
+      # is expected to keep it in sync locally before committing.
+      - run: npm run check:markdown-mirrors
+      # Every internal link in README.md, AGENTS.md, site/content/*.mdx,
+      # and schema/conformance-rules.yaml, resolved against the committed
+      # site/dist/ - catches a page restructure leaving a stale link
+      # behind (this already happened once - see the script's own comment).
+      - run: npm run check:internal-links
+      # Every nav page built with real content, and every schema
+      # definition rendered as a real element on schema.html - the guard
+      # class that would have caught a page silently going missing from a
+      # build (see the script's own comment for the incident this
+      # generalizes from).
+      - run: npm run check:docs-coverage
+      - run: npm run lint:css
+
+  a11y:
+    name: Accessibility (axe, real Chromium)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      # npm run build's own `prebuild` script installs Chromium explicitly
+      # before it's needed (og:generate); test:a11y's own `pretest:a11y`
+      # does the same for axe-audit.mjs - neither depends on a
+      # `postinstall` hook, which a published schema package can't carry
+      # (see package.json's own comment / Phase 1 #9).
+      - run: npm run build
+      - run: npm run test:a11y

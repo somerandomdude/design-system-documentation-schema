@@ -108,7 +108,7 @@ properties:
       list's own `kind: system` entry. Reusable content that is not
       a standalong artifact belongs in `shared`.
     items:
-      $ref: https://designsystemdocspec.org/v0.20.0/entry.schema.yaml#/$defs/dispatch
+      $ref: https://designsystemdocspec.org/v0.20.0/entries/entry.schema.yaml#/$defs/dispatch
   shared:
     type: array
     minItems: 1
@@ -187,7 +187,7 @@ properties:
     example: Accessibility rules that apply broadly across components.
   metadata:
     allOf:
-      - $ref: https://designsystemdocspec.org/v0.20.0/metadata.schema.yaml
+      - $ref: https://designsystemdocspec.org/v0.20.0/metadata/metadata.schema.yaml
     unevaluatedProperties: false
   refs:
     $ref: https://designsystemdocspec.org/v0.20.0/common/ref.schema.yaml#/$defs/list
@@ -200,7 +200,7 @@ properties:
     minItems: 1
     description: The reusable content itself, in the same section structure an entry uses.
     items:
-      $ref: https://designsystemdocspec.org/v0.20.0/section.schema.yaml#/$defs/dispatch
+      $ref: https://designsystemdocspec.org/v0.20.0/sections/section.schema.yaml#/$defs/dispatch
   $extensions:
     $ref: https://designsystemdocspec.org/v0.20.0/common/extensions.schema.yaml
     description: Escape hatch for tool data or an outside id, the same structure as an entry's own $extensions.
@@ -772,7 +772,7 @@ Optional information about an element.
 | `owner` | string |  | The owning team, role, or group. |
 | `reviewed` | object {date, by, note}[] |  | Independent reviews confirming this item's documentation, each recording who confirmed it and when. (Min items: 1) |
 | `context` | string |  | Why this entry was created, and how and why to use it. |
-| `updated` | object {date, note} |  | When this item's documentation last changed. |
+| `updated` | object {date, note} |  | When this item's documentation last changed. Documentation can change without the design system's own version moving - a wording fix, a new example, a corrected guideline don't warrant a release. Tools SHOULD treat `updated.date` as the cache key for this item's documentation specifically, distinct from `metadata.version`/`since` (which track the design system's own release): pin to it, and re-fetch or re-index once it advances, rather than assuming unchanged content just because the design system's version hasn't moved. |
 | `origin` | object {method, author, note} |  | How this entry's documentation came to exist, and who or what wrote it. |
 | `$extensions` | [Extensions](schema.md#common-extensions) |  | Escape hatch for tool data scoped to just this entry's metadata, keyed by namespace. |
 
@@ -792,7 +792,7 @@ An ISO 8601 date (YYYY-MM-DD).
 
 ```yaml
 $schema: https://json-schema.org/draft/2020-12/schema
-$id: https://designsystemdocspec.org/v0.20.0/metadata.schema.yaml
+$id: https://designsystemdocspec.org/v0.20.0/metadata/metadata.schema.yaml
 title: Metadata
 type: object
 description: Optional information about an element.
@@ -857,7 +857,16 @@ properties:
     example: Introduced to give provide agents extra information for how to ingest/use an entry.
   updated:
     type: object
-    description: When this item's documentation last changed.
+    description: >-
+      When this item's documentation last changed. Documentation can change
+      without the design system's own version moving - a wording fix, a
+      new example, a corrected guideline don't warrant a release. Tools
+      SHOULD treat `updated.date` as the cache key for this item's
+      documentation specifically, distinct from `metadata.version`/`since`
+      (which track the design system's own release): pin to it, and
+      re-fetch or re-index once it advances, rather than assuming
+      unchanged content just because the design system's version hasn't
+      moved.
     $comment: A bare date, or a date with a change note.
     properties:
       date:
@@ -913,7 +922,7 @@ Information about a single entry, on top of the fields every metadata object sha
 | `owner` | string |  | The owning team, role, or group. |
 | `reviewed` | object {date, by, note}[] |  | Independent reviews confirming this item's documentation, each recording who confirmed it and when. (Min items: 1) |
 | `context` | string |  | Why this entry was created, and how and why to use it. |
-| `updated` | object {date, note} |  | When this item's documentation last changed. |
+| `updated` | object {date, note} |  | When this item's documentation last changed. Documentation can change without the design system's own version moving - a wording fix, a new example, a corrected guideline don't warrant a release. Tools SHOULD treat `updated.date` as the cache key for this item's documentation specifically, distinct from `metadata.version`/`since` (which track the design system's own release): pin to it, and re-fetch or re-index once it advances, rather than assuming unchanged content just because the design system's version hasn't moved. |
 | `origin` | object {method, author, note} |  | How this entry's documentation came to exist, and who or what wrote it. |
 | `$extensions` | [Extensions](schema.md#common-extensions) |  | Escape hatch for tool data scoped to just this entry's metadata, keyed by namespace. |
 | `status` | object |  | A lifecycle status, optionally scoped to one platform. |
@@ -951,7 +960,7 @@ $comment: >-
   instead, since only this schema applies there.
 
 allOf:
-  - $ref: https://designsystemdocspec.org/v0.20.0/metadata.schema.yaml
+  - $ref: https://designsystemdocspec.org/v0.20.0/metadata/metadata.schema.yaml
   - type: object
     properties:
       status:
@@ -1032,7 +1041,7 @@ Information about the design system as a whole, on top of the fields every metad
 | `owner` | string |  | The owning team, role, or group. |
 | `reviewed` | object {date, by, note}[] |  | Independent reviews confirming this item's documentation, each recording who confirmed it and when. (Min items: 1) |
 | `context` | string |  | Why this entry was created, and how and why to use it. |
-| `updated` | object {date, note} |  | When this item's documentation last changed. |
+| `updated` | object {date, note} |  | When this item's documentation last changed. Documentation can change without the design system's own version moving - a wording fix, a new example, a corrected guideline don't warrant a release. Tools SHOULD treat `updated.date` as the cache key for this item's documentation specifically, distinct from `metadata.version`/`since` (which track the design system's own release): pin to it, and re-fetch or re-index once it advances, rather than assuming unchanged content just because the design system's version hasn't moved. |
 | `origin` | object {method, author, note} |  | How this entry's documentation came to exist, and who or what wrote it. |
 | `$extensions` | [Extensions](schema.md#common-extensions) |  | Escape hatch for tool data scoped to just this entry's metadata, keyed by namespace. |
 | `version` | [Since](schema.md#common-since) |  | The current version of the design system. |
@@ -1053,7 +1062,7 @@ description: Information about the design system as a whole, on top of the field
 $comment: Adds fields specifically for the system. See metadata/entry-metadata.schema.yaml for the per-entry equivalent.
 
 allOf:
-  - $ref: https://designsystemdocspec.org/v0.20.0/metadata.schema.yaml
+  - $ref: https://designsystemdocspec.org/v0.20.0/metadata/metadata.schema.yaml
   - type: object
     properties:
       version:
@@ -1123,7 +1132,7 @@ Routes an entry to its own kind-specific schema by `kind` (`system`, `component`
 
 ```yaml
 $schema: https://json-schema.org/draft/2020-12/schema
-$id: https://designsystemdocspec.org/v0.20.0/entry.schema.yaml
+$id: https://designsystemdocspec.org/v0.20.0/entries/entry.schema.yaml
 title: Entry
 type: object
 description: >-
@@ -1206,7 +1215,7 @@ properties:
     minItems: 1
     description: Every documentation section for this entry.
     items:
-      $ref: https://designsystemdocspec.org/v0.20.0/section.schema.yaml#/$defs/dispatch
+      $ref: https://designsystemdocspec.org/v0.20.0/sections/section.schema.yaml#/$defs/dispatch
   $extensions:
     $ref: https://designsystemdocspec.org/v0.20.0/common/extensions.schema.yaml
 $defs:
@@ -1254,7 +1263,7 @@ $defs:
           then:
             $ref: https://designsystemdocspec.org/v0.20.0/entries/system.schema.yaml
           else:
-            $ref: https://designsystemdocspec.org/v0.20.0/entry.schema.yaml
+            $ref: https://designsystemdocspec.org/v0.20.0/entries/entry.schema.yaml
 ```
 
 # ComponentEntry
@@ -1326,7 +1335,7 @@ $comment: >-
   directly here rather than in a section, since they're facts about the
   component as a build artifact, not documentation content.
 allOf:
-  - $ref: https://designsystemdocspec.org/v0.20.0/entry.schema.yaml
+  - $ref: https://designsystemdocspec.org/v0.20.0/entries/entry.schema.yaml
   - type: object
     properties:
       kind:
@@ -1574,7 +1583,7 @@ $comment: >-
   parent).
 
 allOf:
-  - $ref: https://designsystemdocspec.org/v0.20.0/entry.schema.yaml
+  - $ref: https://designsystemdocspec.org/v0.20.0/entries/entry.schema.yaml
   - type: object
     properties:
       kind:
@@ -1631,7 +1640,7 @@ title: ThemeEntry
 description: A defined system theme.
 $comment: This entry doesn't list which tokens the theme overrides. `source` points to the DTCG JSON file which acts as the source of truth.
 allOf:
-  - $ref: https://designsystemdocspec.org/v0.20.0/entry.schema.yaml
+  - $ref: https://designsystemdocspec.org/v0.20.0/entries/entry.schema.yaml
   - type: object
     properties:
       kind:
@@ -1693,7 +1702,7 @@ $comment: >-
   Never stores the token's real value or type. `source` points to the DTCG JSON file which acts as the source of truth. This entry describes what the token is, why is exists, and how to use it.
 description: A single design token, from the Design Tokens Community Group (DTCG) format.
 allOf:
-  - $ref: https://designsystemdocspec.org/v0.20.0/entry.schema.yaml
+  - $ref: https://designsystemdocspec.org/v0.20.0/entries/entry.schema.yaml
   - type: object
     properties:
       kind:
@@ -1793,7 +1802,7 @@ One nestable, headed block of prose - a freeform section's own building block.
 
 ```yaml
 $schema: https://json-schema.org/draft/2020-12/schema
-$id: https://designsystemdocspec.org/v0.20.0/section.schema.yaml
+$id: https://designsystemdocspec.org/v0.20.0/sections/section.schema.yaml
 title: Section
 type: object
 description: >-
@@ -1867,7 +1876,7 @@ properties:
         example: acme.slots
     example: anatomy
   metadata:
-    $ref: https://designsystemdocspec.org/v0.20.0/metadata.schema.yaml
+    $ref: https://designsystemdocspec.org/v0.20.0/metadata/metadata.schema.yaml
   items:
     type: array
     description: The one universal list for this section kind's own structured content.
@@ -1926,7 +1935,7 @@ $defs:
         then:
           $ref: https://designsystemdocspec.org/v0.20.0/sections/steps.schema.yaml
         else:
-          $ref: https://designsystemdocspec.org/v0.20.0/section.schema.yaml
+          $ref: https://designsystemdocspec.org/v0.20.0/sections/section.schema.yaml
   freeformEntry:
     type: object
     required: [title]
@@ -2011,7 +2020,7 @@ $comment: >-
   `title` still carries the human-facing heading; `context` is what a
   tool reads.
 allOf:
-  - $ref: https://designsystemdocspec.org/v0.20.0/section.schema.yaml
+  - $ref: https://designsystemdocspec.org/v0.20.0/sections/section.schema.yaml
   - type: object
     properties:
       kind:
@@ -2123,7 +2132,7 @@ $comment: >-
   of leaving this form as the only text.
 
 allOf:
-  - $ref: https://designsystemdocspec.org/v0.20.0/section.schema.yaml
+  - $ref: https://designsystemdocspec.org/v0.20.0/sections/section.schema.yaml
   - type: object
     properties:
       kind:
@@ -2282,7 +2291,7 @@ $comment: >-
   Useful whenever documenting a multi-phase process of job to be done.
 
 allOf:
-  - $ref: https://designsystemdocspec.org/v0.20.0/section.schema.yaml
+  - $ref: https://designsystemdocspec.org/v0.20.0/sections/section.schema.yaml
   - type: object
     properties:
       kind:

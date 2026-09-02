@@ -13,7 +13,6 @@
     }
   ],
   "scripts": {
-    "postinstall": "playwright install chromium",
     "sync-examples": "node scripts/sync-examples.js",
     "check-examples": "node scripts/sync-examples.js --check",
     "validate": "node scripts/validate.js",
@@ -21,21 +20,27 @@
     "bundle": "node scripts/bundle.js",
     "compose": "node scripts/compose.js",
     "conformance-test": "node scripts/conformance-test.js",
+    "check-schema-ids": "node scripts/check-schema-ids.js",
+    "check-rule-catalog": "node scripts/check-rule-catalog.js",
+    "lint:docs": "node scripts/lint-docs.js",
     "test:components": "node scripts/validate.js test/site-components/index.dsds.yaml test/site-components/components/*.dsds.yaml",
     "test:interop": "node scripts/validate.js examples/interop/color-action-primary.dsds.yaml examples/interop/my-element.dsds.yaml",
-    "check": "npm run bundle && npm run validate && npm run conformance-test && npm run test:components && npm run test:interop",
+    "check": "npm run bundle && npm run check-schema-ids && npm run check-rule-catalog && npm run validate && npm run conformance-test && npm run test:components && npm run test:interop",
     "build": "node scripts/build-site.js",
     "dev": "node scripts/serve.js",
     "readability": "node scripts/readability-audit.mjs",
     "bump-version": "node scripts/bump-version.js",
     "sync-skill-versions": "node scripts/sync-skill-versions.js",
     "og:generate": "node scripts/generate-og-image.mjs",
-    "prebuild": "npm run sync-examples && npm run bundle && npm run og:generate",
+    "prebuild": "npx playwright install chromium && npm run sync-examples && npm run bundle && npm run og:generate",
     "prevalidate": "npm run sync-examples && npm run bundle",
     "postvalidate": "node scripts/extract-normative.mjs --check",
     "lint:css": "stylelint \"site/**/*.css\"",
+    "pretest:a11y": "npx playwright install chromium",
     "test:a11y": "node scripts/axe-audit.mjs",
     "check:markdown-mirrors": "node scripts/check-markdown-mirrors.mjs",
+    "check:internal-links": "node scripts/check-internal-links.mjs",
+    "check:docs-coverage": "node scripts/check-docs-coverage.mjs",
     "normative": "node scripts/extract-normative.mjs"
   },
   "repository": {
@@ -59,15 +64,27 @@
     "url": "https://github.com/somerandomdude/design-system-documentation-schema/issues"
   },
   "homepage": "https://github.com/somerandomdude/design-system-documentation-schema#readme",
+  "bin": {
+    "dsds-validate": "scripts/validate.js"
+  },
+  "files": [
+    "schema",
+    "scripts/validate.js",
+    "scripts/lib.js",
+    "scripts/bundle.js",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG"
+  ],
   "dependencies": {
     "ajv": "^8.18.0",
     "ajv-cli": "^5.0.0",
-    "ajv-formats": "^3.0.1"
+    "ajv-formats": "^3.0.1",
+    "js-yaml": "^4.2.0"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.12.1",
     "@mdx-js/mdx": "^3.1.1",
-    "js-yaml": "^4.2.0",
     "playwright": "^1.61.1",
     "remark-gfm": "^4.0.1",
     "stylelint": "^17.14.0",

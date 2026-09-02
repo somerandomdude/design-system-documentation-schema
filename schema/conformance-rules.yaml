@@ -1,5 +1,6 @@
 - id: DSDS-01
   name: ONE_API_PER_PLATFORM
+  enforcement: semantic
   title: At most one `sourceFiles` entry per platform.
   description: >-
     A component cannot declare two `sourceFiles` entries for the same
@@ -8,6 +9,7 @@
 
 - id: DSDS-02
   name: PLATFORM_VOCABULARY
+  enforcement: semantic
   title: "A system entry's `metadata.platforms` closes the platform vocabulary, once declared."
   description: >-
     When a `kind: system` entry declares `metadata.platforms`, every
@@ -17,6 +19,7 @@
 
 - id: DSDS-03
   name: CHECKED_BY_NEEDS_REF
+  enforcement: semantic
   title: "A `checkedBy: automated` rule needs somewhere to actually run."
   description: >-
     A guideline item that claims `automated` verification must carry at
@@ -26,6 +29,7 @@
 
 - id: DSDS-04
   name: UNIQUE_ENTRY_ID
+  enforcement: semantic
   title: Entry and shared ids are unique within a document.
   description: >-
     `entries` and `shared` share one id and addressing space. An
@@ -35,10 +39,11 @@
 
 - id: DSDS-05
   name: ITEM_REF_RESOLVES
+  enforcement: semantic
   title: An `entryId#itemId` ref must resolve.
   description: >-
-    When a `ref`'s `to` uses the `#itemId` form (see [Schema
-    architecture](schema-architecture.html#refs-1)), the named entry or
+    When a `ref`'s `to` uses the `#itemId` form (see
+    [common/ref](schema.html#common-ref)), the named entry or
     shared entry must exist in the document. The named item's `id` must
     also exist somewhere in its sections. This is what makes `same-as`
     transclusion off a `base.shared` entry a real, checked connection,
@@ -46,6 +51,7 @@
 
 - id: DSDS-06
   name: COMPOSES_CYCLE
+  enforcement: semantic
   title: A `composes` ref chain must not cycle.
   description: >-
     Following every `rel: composes` ref from entry to entry must never lead
@@ -54,6 +60,7 @@
 
 - id: DSDS-07
   name: DEPENDS_ON_CYCLE
+  enforcement: semantic
   title: A `depends-on` ref chain must not cycle.
   description: >-
     Following every `rel: depends-on` ref from entry to entry must never
@@ -63,6 +70,7 @@
 
 - id: DSDS-08
   name: ENTRY_REF_RESOLVES
+  enforcement: semantic
   title: A bare `to:` ref must resolve to a real entry or shared entry.
   description: >-
     When a `ref`'s `to` is a bare id (no `#itemId`), the entry or shared
@@ -76,6 +84,7 @@
 
 - id: DSDS-09
   name: COMBO_TARGET_RESOLVES
+  enforcement: semantic
   title: A `combo`'s `subject`/`items` must resolve.
   description: >-
     A `combo` target names one of three things: a trait on the same
@@ -92,6 +101,7 @@
 
 - id: DSDS-10
   name: SAME_AS_LEVEL_MATCHES
+  enforcement: semantic
   title: A `same-as` item's `level` must match its target's.
   description: >-
     `level` is required on every guidelines item, even one that borrows
@@ -99,3 +109,87 @@
     borrowing site and the shared rule each carry their own copy of
     `level`, with nothing checking the two agree. Whenever the same-as
     target resolves and has its own `level`, this checks they match.
+
+- id: DSDS-11
+  name: FILE_REF_EXISTS
+  enforcement: semantic
+  title: "A relative `sourceFiles[].file`, `source`, or `rel: file` `href` must exist on disk."
+  description: >-
+    A relative path in `sourceFiles[].file` (component), `source` (token),
+    or any `rel: file` `href` elsewhere should point at a real file - a
+    typo'd or stale path silently breaks the promise those fields make
+    (that a tool can extract an API, or read a DTCG source, straight from
+    what's named there). Checked relative to the directory of the file
+    being validated, the same boundary `DSDS-05`/`DSDS-08`/`DSDS-09`'s
+    project-scope search uses - a path resolving outside that boundary, or
+    with a URL scheme (`https:`, `npm:`, and similar - not a filesystem
+    path at all), isn't evaluated.
+  note: >-
+    Warning-only, promoted to a failure under `--strict` - same tier as
+    `DSDS-05`/`DSDS-08`/`DSDS-09`, and opt-in for the same reason: this is
+    the one rule that reads files the validator otherwise has no reason to
+    open.
+
+# Advisory rules below start at DSDS-12, after DSDS-11 above.
+
+- id: DSDS-12
+  name: rfc-keywords-lowercase-in-normative-prose
+  enforcement: advisory
+  title: Capitalize RFC 2119 keywords (MUST/SHOULD) in a guideline's own statement.
+  description: >-
+    A guideline `statement` using lowercase "must" or "should" reads as
+    ordinary prose instead of a normative rule - capitalizing it makes the
+    conformance weight explicit at a glance, the same convention this
+    spec's own schema descriptions follow.
+  note: >-
+    Ported from origin/0.16.0's scripts/lint-docs.js, adapted to check
+    sections[].items[].statement instead of the pre-0.20.0
+    documentBlocks/criteria shape.
+
+- id: DSDS-13
+  name: token-description-restates-identifier
+  enforcement: advisory
+  title: A token `description`, when present, shouldn't just restate its id/name or repeat a raw value.
+  description: >-
+    A token entry's `description` is optional and meant to stay terse -
+    when an author writes one, it should add what the id can't (the
+    token's role, or when to use it). A description that only echoes the
+    id/name, or restates the raw value the DTCG source already owns,
+    reads as documented intent while carrying none.
+  note: >-
+    Ported from PR #33 (by Cody Clark), originally implemented as
+    DSDS-011 against the pre-0.20.0 entity model (`git show 3c805b7`) -
+    same algorithm (exact-restatement or bare-value-literal check after
+    normalization), re-hosted on a token entry's own id/name/description.
+    Deliberately conservative to avoid false positives: a description that
+    adds any role or usage information is never flagged.
+
+- id: DSDS-14
+  name: guideline-missing-checkedby
+  enforcement: advisory
+  title: A hard-requirement guideline (must/must-not) with no `checkedBy` at all.
+  description: >-
+    `checkedBy` says whether a guideline is automated, assisted, or manual
+    verification - leaving it out entirely means a tool can't tell if the
+    rule is verifiable at all, not just that it isn't verified yet. Only
+    flagged for `must`/`must-not` items: a `should`/`may` item not
+    declaring how it's checked is a much smaller gap.
+  note: >-
+    DSDS-03 already blocks the narrower case (`checkedBy: automated`
+    with no `checks` ref backing it). This is the advisory sibling for
+    the case DSDS-03 can't see - `checkedBy` left out entirely.
+
+- id: DSDS-15
+  name: component-missing-when-to-use
+  enforcement: advisory
+  title: A component entry with no `guidelines` section framed `when-to-use`.
+  description: >-
+    "When do I use this?" is usually the first question a component's
+    documentation needs to answer, before how to use it correctly.
+    Flagged when a component has no guidelines section with
+    `framing: when-to-use` at all.
+  note: >-
+    Adapted from origin/0.16.0's "entity-missing-use-cases" (which
+    checked for a `documentBlocks` entry of `kind: use-cases`) - 0.20.0
+    folds that content into a `guidelines` section instead of a separate
+    block kind, so this checks for that section's presence instead.

@@ -698,6 +698,30 @@ $extensions:
 // Definition rendering
 // ---------------------------------------------------------------------------
 
+// No-JS fallback content for <ds-def-section> — 36 definitions on the
+// Schema page whose heading/type/description text only exists inside a
+// JS-attached shadow root today (unlike <ds-heading>/<ds-header>, which got
+// a real Declarative Shadow DOM template this same effort; def-section's
+// own sticky/docked-border/eyebrow markup is involved enough that
+// replicating it Node-side wasn't worth it for what's just a heading and
+// two lines of text). Ported from origin/0.16.0's identical-purpose
+// renderHeaderFallback()/renderDefSectionFallback(): plain light-DOM
+// elements, marked with a slot name ("_fallback") that def-section.js's
+// own shadow template never declares a <slot> for. Without JS there's no
+// shadow root at all, so these render as ordinary page content; the
+// instant JS *does* attach a shadow root, the flattening algorithm finds
+// no matching slot for them and drops them from the render tree
+// automatically — no duplicate text, no change needed in def-section.js
+// itself.
+function renderDefSectionFallback(anchor, name, type, description, eyebrow) {
+  let html = "";
+  if (eyebrow) html += `<p slot="_fallback">${esc(eyebrow)}</p>`;
+  html += `<h2 slot="_fallback" id="${esc(anchor)}">${esc(name)}</h2>`;
+  if (type) html += `<p slot="_fallback">${esc(type)}</p>`;
+  if (description) html += `<p slot="_fallback">${escWithCode(description)}</p>`;
+  return html;
+}
+
 /**
  * Render a single $defs definition as an HTML section.
  *
@@ -713,6 +737,7 @@ function renderDefinition(defName, defSchema, { anchor, source, exampleYaml, eye
   const sourceAttr = source ? ` source="${esc(source)}"` : "";
   const layoutAttr = exampleYaml ? ` layout="split"` : "";
   const eyebrowAttr = eyebrow ? ` eyebrow="${esc(eyebrow)}"` : "";
+  const fallback = renderDefSectionFallback(anchor, defName, defSchema.type, defSchema.description, eyebrow);
   const example = exampleYaml
     ? `<ds-code language="yaml" label="" slot="example" wrap>${esc(exampleYaml)}</ds-code>`
     : "";
@@ -748,6 +773,7 @@ function renderDefinition(defName, defSchema, { anchor, source, exampleYaml, eye
       eyebrow_attr: eyebrowAttr,
       content: content.join("\n"),
       example,
+      fallback,
     });
   }
 
@@ -885,6 +911,7 @@ function renderDefinition(defName, defSchema, { anchor, source, exampleYaml, eye
     eyebrow_attr: eyebrowAttr,
     content: content.join("\n"),
     example,
+    fallback,
   });
 }
 
@@ -1779,7 +1806,12 @@ function buildManifest(pages, version) {
   const manifest = {
     schemaVersion: version,
     bundledSchema: `${SITE_URL}/v${version}/dsds.bundled.yaml`,
-    mcp: "https://www.npmjs.com/package/dsds-mcp",
+    // No `mcp` field: dsds-mcp@0.3.0 bundles v0.15.2's schema and checks
+    // an incoming document's `dsdsVersion` field, which 0.20.0 documents
+    // don't carry (renamed to `schemaVersion`) - it rejects every valid
+    // 0.20.0 document. Pointing agents at it here would be actively worse
+    // than omitting it. Restore once a 0.20-compatible build of dsds-mcp
+    // ships (see notes/dsds-0.20.0-improvement-plan.md, Phase 1 #3).
     indexes: {
       llms: `${SITE_URL}/llms.txt`,
       llmsFull: `${SITE_URL}/llms-full.txt`,
@@ -2144,7 +2176,13 @@ async function build() {
   // version is enforced at release/deploy time (git tag + atomic deploy),
   // not by skipping the write — skipping is what let the site go stale.
   const BUNDLE_FILENAME = "dsds.bundled.yaml";
+  // scripts/bundle.js also writes a JSON projection of the same bundle
+  // (every version through v0.15.2 published one; Ajv/jsonschema CLIs and
+  // editor $schema resolution expect it) - mirrored alongside the YAML one
+  // whenever it exists, same as-atomic-as-the-rest-of-the-build treatment.
+  const BUNDLE_FILENAME_JSON = "dsds.bundled.schema.json";
   const bundledSchemaPath = path.join(SCHEMA_DIR, BUNDLE_FILENAME);
+  const bundledSchemaPathJson = path.join(SCHEMA_DIR, BUNDLE_FILENAME_JSON);
   if (fs.existsSync(bundledSchemaPath)) {
     const version = readSpecVersion();
     if (version) {
@@ -2160,6 +2198,13 @@ async function build() {
       console.log(
         `  ✓  ${relTarget}  ← schema/${BUNDLE_FILENAME}${changed ? " (refreshed)" : ""}\n`,
       );
+      if (fs.existsSync(bundledSchemaPathJson)) {
+        const versionedBundleJson = path.join(versionDir, BUNDLE_FILENAME_JSON);
+        fs.copyFileSync(bundledSchemaPathJson, versionedBundleJson);
+        console.log(
+          `  ✓  site/dist/v${version}/${BUNDLE_FILENAME_JSON}  ← schema/${BUNDLE_FILENAME_JSON}\n`,
+        );
+      }
 
       // ── Versioned split schema files ────────────────────────────────
       //

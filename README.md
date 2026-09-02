@@ -53,7 +53,7 @@ DSDS defines four ways something can "follow the spec" — a document, and the t
 
 #### Conforming document
 
-A document that passes schema validation for the version named in its `schemaVersion`, **and** the extra rules below (`DSDS-01` through `DSDS-10`) that a schema file alone can't check. Passing schema validation on its own isn't enough.
+A document that passes schema validation for the version named in its `schemaVersion`, **and** the extra rules below (`DSDS-01` through `DSDS-11`) that a schema file alone can't check. Passing schema validation on its own isn't enough.
 
 #### Conforming producer
 
@@ -76,23 +76,30 @@ A tool, renderer, or AI agent that reads DSDS documents. A conforming consumer:
 
 #### Conforming validator
 
-A tool that checks documents. A conforming validator MUST enforce both the schema itself (with format checks on) and the extra rules below (`DSDS-01`–`DSDS-10`). `scripts/validate.js` is the reference implementation. Its `examples/invalid/` folder holds one broken example per rule, and `scripts/conformance-test.js` confirms each one fails for the exact reason it's supposed to.
+A tool that checks documents. A conforming validator MUST enforce both the schema itself (with format checks on) and the extra rules below (`DSDS-01`–`DSDS-11`). `scripts/validate.js` is the reference implementation. Its `examples/invalid/` folder holds one broken example per semantic rule (`DSDS-XX-*.yaml`) plus a set of schema-shape fixtures (`schema-*.yaml`, no rule id - a pure JSON Schema rejection) pinning constraints like enum casing, empty arrays, and `$extensions` namespacing. Every fixture declares its own contract in a leading comment - `# rejectedBy: schema|semantic`, plus `# expect: DSDS-XX` or `# errorAt: /json/pointer` as applicable - and `scripts/conformance-test.js` confirms each one fails for the exact reason and at the exact layer it claims to, not just that it fails at all.
 
 ### Enforcement tiers
 
-Every rule is enforced one of two ways, or is explicitly advisory (a suggestion, not something checked automatically):
+Every rule is enforced one of three ways:
 
 | Tier | How it's checked | What happens if it fails |
 |---|---|---|
 | Structural | Directly by the schema file (required fields, patterns, and similar built-in checks) | Blocks — validation fails |
-| Semantic | By `scripts/validate.js`'s own code (`DSDS-01`–`DSDS-10`: do references resolve, are ids unique, and so on) | Blocks — validation fails |
-| Advisory | Nothing automatic — SHOULD/MAY guidance is a judgment call | Nothing — it's a suggestion |
+| Semantic | By `scripts/validate.js`'s own code (`DSDS-01`–`DSDS-11`: do references resolve, are ids unique, and so on) | Blocks — validation fails |
+| Advisory | By `scripts/lint-docs.js` (`npm run lint:docs`, `DSDS-12`+: RFC 2119 casing, a token description that just restates its id, and similar documentation-quality checks) where a check exists — otherwise a judgment call | Never blocks — always exits 0, warnings only |
+
+Advisory is the newest tier and doesn't cover every SHOULD/MAY in this spec yet — it's additive, so a gap here is a missing check, not a passing one.
 
 `DSDS-05`, `DSDS-08`, and `DSDS-09` are the one exception: an unresolved reference is reported as a warning, not a blocking error, unless the validator runs with `--strict`. Every other rule always blocks. See the [rule catalog](#rule-catalog) below.
+
+Every catalog entry declares its own tier explicitly, as `enforcement: structural|semantic|advisory|none` — not just implied by which section of this table it's listed in. `scripts/check-rule-catalog.js` (run on every `npm run check`) enforces two things: every entry's `enforcement` is one of those four values, and — for the semantic tier specifically — that the catalog and `scripts/validate.js` agree exactly on which rules exist in both directions. A catalog entry with no matching `RULES.<NAME>` reference in validate.js, or a `RULES.<NAME>` reference with no catalog entry, fails the build instead of silently producing an untraceable `[undefined]` finding.
 
 ### Rule catalog
 
 The full list lives in `schema/conformance-rules.yaml`. This table is kept in sync with it by hand, but `scripts/conformance-test.js` (run on every `npm run check`) would catch it if the two ever drifted apart.
+
+> [!IMPORTANT]
+> **`DSDS-01`–`DSDS-15` is a reset id space, not a continuation of pre-0.20.0's.** Versions through 0.15.2 used a three-digit catalog (`DSDS-001`–`DSDS-006` and similar, in `rules/rules.yaml`) covering a different rewrite of the model entirely. 0.20.0 restarted numbering at `DSDS-01` for a genuinely different rule set — `DSDS-02` here has nothing to do with whatever `DSDS-002` meant before. (0.15.2's own `DSDS-002` was, fittingly, the rule against reusing an identifier — a reminder this reset itself is worth naming explicitly rather than leaving implicit.) If you're citing a rule id from before 0.15.2, say which catalog it's from; a bare `DSDS-0N` is ambiguous across the two.
 
 | ID | Rule |
 |---|---|
@@ -106,6 +113,11 @@ The full list lives in `schema/conformance-rules.yaml`. This table is kept in sy
 | `DSDS-08` | A bare `to:` ref must resolve to a real entry or shared entry. |
 | `DSDS-09` | A `combo`'s `subject`/`items` must resolve to a real trait, token, or entry. |
 | `DSDS-10` | A `same-as` item's `level` must match its target's. |
+| `DSDS-11` | A relative `sourceFiles[].file`/`source`/`rel: file` `href` actually exists on disk. |
+| `DSDS-12` | Advisory: capitalize RFC 2119 keywords (MUST/SHOULD) in a guideline's own statement. |
+| `DSDS-13` | Advisory: a token `description` shouldn't just restate its id/name or repeat a raw value. |
+| `DSDS-14` | Advisory: a hard-requirement guideline (must/must-not) with no `checkedBy` at all. |
+| `DSDS-15` | Advisory: a component entry with no `guidelines` section framed `when-to-use`. |
 
 `DSDS-06` and `DSDS-07` restore a cycle check the pre-0.20.0 spec had — nothing should point back at itself through a chain of `composes` or `depends-on` links. The 0.20.0 rewrite dropped it by accident; it's enforced by the validator's own code now, not the schema shape.
 
@@ -117,7 +129,7 @@ An unresolved reference is a **warning**, not a failure, only in this cross-file
 
 Whether a `to:` value even *looks like* a valid id is checked separately, directly by the schema: `common/ref.schema.yaml`'s `to` field only accepts id-shaped values, so a display name or a value with a space in it fails before `DSDS-05`, `DSDS-08`, or `DSDS-09` ever run. See [common/ref](https://designsystemdocspec.org/schema.html#common-ref).
 
-Two related checks remain deliberately unbuilt: whether a relative `href`, a `sourceFiles[].file`, or a `source` actually points at a file that exists on disk (out of scope for now — an explicit, opt-in `DSDS-11` would cover this, not yet implemented), and confirming the exact ids or paths inside another file the way DTCG-path resolution would need. Both would mean reading files the validator has no other reason to open.
+**`DSDS-11`** covers one of these: whether a relative `sourceFiles[].file`, `source`, or `rel: file` `href` actually points at a file that exists on disk, checked relative to the file being validated and bounded to the same directory-of-the-target boundary as `DSDS-05`/`DSDS-08`/`DSDS-09`. Warning-only, promoted to a failure under `--strict`, same tier and same reason — it's opt-in because it's the one rule that reads the filesystem beyond the document being validated. A related check remains deliberately unbuilt: confirming the exact ids or paths *inside* another file the way DTCG-path resolution would need — that would mean actually reading and parsing the target's contents, not just confirming it exists.
 
 ### Open conventions
 
@@ -139,6 +151,10 @@ DSDS is a **pre-1.0 draft**. Some parts of the schema can grow to cover new case
 #### How schema changes get made
 
 Every schema file under `schema/` has comments explaining *why* it's shaped the way it is, and often what it replaced. Reading those comments alongside the schema is the best way to understand how the spec has changed — see the [`CHANGELOG`](CHANGELOG) for exactly how each old field maps to its new one.
+
+#### Migrating a 0.15.2 document
+
+`scripts/migrate-to-0.20.js <files-or-dirs…> [--dry-run]` converts a 0.15.2 `.dsds.json` document (the entity/`documentBlocks` model) to a 0.20.0 `.dsds.yaml` one, following the CHANGELOG's own field-by-field mapping. It writes a new sibling file rather than overwriting the input, and it's best-effort, not a guarantee: a few 0.15.2 shapes (most notably the `api` block's inline property/event documentation) have no 0.20.0 equivalent to convert *to* — 0.20.0 points `sourceFiles` at real source instead of inlining an extracted API. Anything the script can't place in a typed field is preserved under the migrated item's own `$extensions["com.dsds.migration"]` rather than dropped, and every such case (plus every genuinely manual decision — an `alternatives` pointer that wasn't really id-shaped in the source, a ref that pointed at a token-group's own id before its children flattened to top-level entries) prints as a `⚠` line in the script's own output. Run `npm run validate` on the result afterward.
 
 #### Designed to grow without a version bump
 
@@ -164,7 +180,7 @@ A few fields are locked to a fixed list of values, because the number of possibl
 
 1. **The kind lists stop changing** — across at least one real pass of merging or splitting them, with no further changes needed.
 2. **A second independent tool exists** — at least one tool the spec authors don't maintain reads or writes DSDS documents for real.
-3. **The validator's extra rules stop changing** — `scripts/validate.js`'s `DSDS-01`–`DSDS-10` (see [Rule catalog](#rule-catalog)) stop being added or renamed release to release.
+3. **The validator's extra rules stop changing** — `scripts/validate.js`'s `DSDS-01`–`DSDS-11` (see [Rule catalog](#rule-catalog)) stop being added or renamed release to release.
 
 Until then, the fixed lists above are the most stable part of the schema. Everything else can still change between minor versions, including the exact shape of any one `sections/*.schema.yaml` file.
 
@@ -172,13 +188,14 @@ Until then, the fixed lists above are the most stable part of the schema. Everyt
 
 <!-- dsds:normative-index -->
 
-*Generated from the v0.20.0 schemas by `scripts/extract-normative.mjs` — do not edit by hand. 1 statements: 0 MUST, 1 MUST NOT, 0 SHOULD, 0 SHOULD NOT, 0 MAY.*
+*Generated from the v0.20.0 schemas by `scripts/extract-normative.mjs` — do not edit by hand. 2 statements: 0 MUST, 1 MUST NOT, 1 SHOULD, 0 SHOULD NOT, 0 MAY.*
 
 ### metadata
 
 #### metadata/metadata
 
 - **MUST NOT** — MUST NOT contain markup. <small>`metadata/metadata§note.1`</small>
+- **SHOULD** — Tools SHOULD treat `updated.date` as the cache key for this item's documentation specifically, distinct from `metadata.version`/`since` (which track the design system's own release): pin to it, and re-fetch or re-index once it advances, rather than assuming unchanged content just because the design system's version hasn't moved. <small>`metadata/metadata§.updated.1`</small>
 
 <!-- /dsds:normative-index -->
 
@@ -186,7 +203,7 @@ Until then, the fixed lists above are the most stable part of the schema. Everyt
 
 The authoritative reference for every schema and field is the **documentation site at [designsystemdocspec.org](https://designsystemdocspec.org/)**. Property tables there come straight from the schema files, so they cannot drift from the code.
 
-- **[Overview](https://designsystemdocspec.org/)** — What DSDS is, the entry/section model, design principles, humans & agents, and interoperability with DTCG/CEM/Storybook. For conformance classes, the `DSDS-01`–`DSDS-10` semantic rule catalog, and stability guarantees, see [Conformance](#conformance) below.
+- **[Overview](https://designsystemdocspec.org/)** — What DSDS is, the entry/section model, design principles, humans & agents, and interoperability with DTCG/CEM/Storybook. For conformance classes, the `DSDS-01`–`DSDS-11` semantic rule catalog, and stability guarantees, see [Conformance](#conformance) below.
 - **[Quick Start](https://designsystemdocspec.org/quickstart.html)** — Document structure, entry kinds, the section system, and minimal examples for every entry kind.
 - **[Extending the schema](https://designsystemdocspec.org/extending.html)** — `$extensions`, custom kinds, and profiles: the three ways to go beyond what the spec ships with, and when to reach for each.
 - **[Schema](https://designsystemdocspec.org/schema.html)** — Opens with how the schema itself is organized, then every schema definition, each with a real example next to it.
@@ -235,15 +252,19 @@ There's no single version field — every `schema/**/*.schema.yaml` file's own `
 npm run bump-version 0.20.1     # rewrites every version reference, bundles, syncs skill versions
 npm run build                   # publishes a new site/dist/v<new-version>/
 npm run check                   # must pass before committing
+git tag v0.20.1                 # tag the release commit once it's merged — see below
+git push origin v0.20.1
 ```
 
 Use `npm run bump-version <version> -- --dry-run` to preview changes first, or `--help` for the rest of the flags.
 
-The versioned dist directories (`site/dist/v<n>/dsds.bundled.schema.{json,yaml}` — the extension depends on which version; see the "Bundle format" note below) are **immutable public contracts** — older `v<n>/` directories must stay untouched. Commit the schema changes, examples, README, CHANGELOG, `package.json`, and the full `site/dist/` tree together.
+The versioned dist directories (`site/dist/v<n>/dsds.bundled.schema.json` and `dsds.bundled.yaml`) are **immutable public contracts** — older `v<n>/` directories must stay untouched. Commit the schema changes, examples, README, CHANGELOG, `package.json`, and the full `site/dist/` tree together.
+
+Tag every release (`vX.Y.Z`, pushed to the remote) once its commit is merged — a released version with no tag is indistinguishable from a work-in-progress one to anything that resolves "latest" by walking tags (`dsds-mcp`'s staleness check is one real example). Releases through v0.15.2 did this consistently; if the working tree is currently untagged past that point, tag it before cutting anything new so tag history stops having a gap.
 
 ### Bundle format
 
-`dsds.bundled.yaml` (YAML, matching the hand-authored `schema/**/*.schema.yaml` source it's built from) starting with this version. Versions before this one published `dsds.bundled.schema.json` and keep doing so, frozen, under their own `site/dist/v<n>/` directory — only the *current* version's bundle format changed. "JSON Schema" names the spec both formats conform to (a constraint language for a data model), not a file-syntax requirement — see `scripts/bundle.js`'s own comment.
+Both `dsds.bundled.yaml` (matching the hand-authored `schema/**/*.schema.yaml` source it's built from) and `dsds.bundled.schema.json` (the same document, as JSON) are published for every version, generated together by `scripts/bundle.js` from the one parsed schema tree. "JSON Schema" names the spec both formats conform to (a constraint language for a data model), not a file-syntax requirement — see `scripts/bundle.js`'s own comment for why YAML is the source format either way.
 
 For a documentation-only edit (no schema/example changes), just run `npm run build` and commit the regenerated HTML — no version bump, no new `/v<n>/` artifact.
 
