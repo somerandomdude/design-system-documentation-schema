@@ -138,10 +138,13 @@ if (TAG && DRY_RUN) {
   process.exit(1);
 }
 
-// --tag is going to `git commit` everything this run touches, plus the
-// rebuilt site/dist/ tree. Folding in unrelated, already-uncommitted work
-// would attribute it to "vX.Y.Z" without anyone deciding that on purpose —
-// refuse up front instead, before any file is rewritten.
+// --tag is going to `git commit` everything this run touches, plus the new
+// site/dist/v<new-version>/ directory the build produces. (The rest of
+// site/dist/ is git-ignored and rebuilt on deploy, so `git add -A` picks up
+// the versioned artifact and nothing else — see .gitignore.) Folding in
+// unrelated, already-uncommitted work would attribute it to "vX.Y.Z"
+// without anyone deciding that on purpose — refuse up front instead,
+// before any file is rewritten.
 if (TAG) {
   const status = execFileSync("git", ["status", "--porcelain"], {
     cwd: ROOT,

@@ -5,3 +5,19 @@ claude.md
 node_modules
 
 notes
+
+# Built site output. Netlify runs `npm run check && npm run build` on every
+# deploy (netlify.toml), so the served site is always generated from the
+# source that produced it — there's no reason to carry the generated HTML,
+# markdown mirrors, component bundle, or copied examples in git.
+#
+# The `v<version>/` directories are the deliberate exception, and they are
+# NOT build output: scripts/build-site.js preserves them across rebuilds and
+# never regenerates an older one (see its own comment — "URLs are public
+# contracts — we MUST NOT blow them away on rebuild"). They are the
+# immutable published artifacts every released `$id` and `$schema` URL
+# resolves against, and /stability promises each stays "frozen at the bytes
+# it shipped with". Ignoring them would 404 every version before the current
+# one. They stay tracked.
+/site/dist/*
+!/site/dist/v[0-9]*

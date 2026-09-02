@@ -18,8 +18,9 @@
 - [ ] If this changes the document *model* (not just adds to it): I've
       enumerated every guard/fixture/skill/example that pointed at the old
       shape and said, below, what happens to each (port or drop)
-- [ ] `site/dist/` is regenerated (`npm run build`) and committed alongside
-      the source change, if this touches schema, site content, or examples
+- [ ] I have **not** committed generated `site/dist/` output — it's
+      git-ignored and rebuilt on deploy. The one exception is a release,
+      which adds a new immutable `site/dist/v<version>/` directory
 
 ## If this changes the model
 

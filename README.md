@@ -81,7 +81,7 @@ This README leaves out schema field listings and example payloads on purpose —
 - **`examples/`** — Validated example documents: full base documents, standalone entries per kind, quickstart snippets, interop pairs, and one `invalid/` fixture per semantic rule.
 - **`test/site-components/`** — A regression corpus documenting this repo's own `site/components/` web components as DSDS entries (dogfooding), checked on every `npm run check`.
 - **`scripts/`** — Bundling, validation, composition, and the static site generator.
-- **`site/`** — The spec site source (`content/*.mdx`, `templates/`, `components/`) and its generated output in `site/dist/`, including immutable versioned `v<n>/` archives.
+- **`site/`** — The spec site source (`content/*.mdx`, `templates/`, `components/`). Its build output lands in `site/dist/`, which is git-ignored apart from the immutable versioned `v<n>/` archives.
 
 ## Quick Start
 
@@ -136,7 +136,9 @@ change. Playwright is a devDependency for `npm run test:a11y` alone.
 
 Use `npm run bump-version <version> -- --dry-run` to preview changes first, or `--help` for the rest of the flags.
 
-The versioned dist directories (`site/dist/v<n>/dsds.bundled.schema.json` and `dsds.bundled.yaml`) are **immutable public contracts** — older `v<n>/` directories must stay untouched. Commit the schema changes, examples, README, CHANGELOG, `package.json`, and the full `site/dist/` tree together.
+The versioned dist directories (`site/dist/v<n>/dsds.bundled.schema.json` and `dsds.bundled.yaml`) are **immutable public contracts** — older `v<n>/` directories must stay untouched, and they are the one part of `site/dist/` that is tracked in git. `scripts/build-site.js` preserves them across rebuilds and never regenerates an older one, so nothing else would put them back.
+
+The rest of `site/dist/` is git-ignored generated output: Netlify runs `npm run check && npm run build` on every deploy, so the served site is always built from the source that produced it. Commit the schema changes, examples, README, CHANGELOG, `package.json`, and the new `site/dist/v<new-version>/` directory together — but not the regenerated HTML, markdown mirrors, or component bundle.
 
 Tag every release (`vX.Y.Z`, pushed to the remote) once its commit is merged — a released version with no tag is indistinguishable from a work-in-progress one to anything that resolves "latest" by walking tags (`dsds-mcp`'s staleness check is one real example). Releases through v0.15.2 did this consistently; if the working tree is currently untagged past that point, tag it before cutting anything new so tag history stops having a gap.
 
@@ -144,7 +146,7 @@ Tag every release (`vX.Y.Z`, pushed to the remote) once its commit is merged —
 
 Both `dsds.bundled.yaml` (matching the hand-authored `schema/**/*.schema.yaml` source it's built from) and `dsds.bundled.schema.json` (the same document, as JSON) are published for every version, generated together by `scripts/bundle.js` from the one parsed schema tree. "JSON Schema" names the spec both formats conform to (a constraint language for a data model), not a file-syntax requirement — see `scripts/bundle.js`'s own comment for why YAML is the source format either way.
 
-For a documentation-only edit (no schema/example changes), just run `npm run build` and commit the regenerated HTML — no version bump, no new `/v<n>/` artifact.
+For a documentation-only edit (no schema/example changes), just commit the `site/content/` change — no version bump, no new `/v<n>/` artifact, and nothing to commit from `site/dist/`. Run `npm run build` locally when you want to check the result before pushing; the deploy rebuilds it either way.
 
 ## Contributing
 

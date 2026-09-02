@@ -37,14 +37,21 @@ jobs:
       # file, runs the conformance fixture suite, and $id-matches-path
       # (see scripts/check-schema-ids.js).
       - run: npm run check
+      # The three checks below read site/dist/, which is no longer tracked
+      # (.gitignore) - Netlify regenerates it on every deploy, so git
+      # doesn't carry the generated HTML/markdown/bundle. That makes this
+      # build step load-bearing, not a convenience: without it the checks
+      # would find no dist at all in a fresh checkout. It also makes them
+      # stronger than before, since they now assert against output built
+      # from the commit under test rather than whatever a contributor
+      # happened to commit alongside it.
+      - run: npm run build
       # site/dist/schema.md (the no-JS markdown mirror) must actually
-      # contain every schema def and field name currently in the schema -
-      # checked against the committed site/dist/, same as a contributor
-      # is expected to keep it in sync locally before committing.
+      # contain every schema def and field name currently in the schema.
       - run: npm run check:markdown-mirrors
       # Every internal link in README.md, AGENTS.md, site/content/*.mdx,
-      # and schema/conformance-rules.yaml, resolved against the committed
-      # site/dist/ - catches a page restructure leaving a stale link
+      # and schema/conformance-rules.yaml, resolved against the freshly
+      # built site/dist/ - catches a page restructure leaving a stale link
       # behind (this already happened once - see the script's own comment).
       - run: npm run check:internal-links
       # Every nav page built with real content, and every schema

@@ -70,13 +70,19 @@ is how a negative-test corpus quietly loses most of its coverage.
 npm install
 npm run check-examples      # run before check — see .github/workflows/ci.yml
 npm run check               # schema, fixtures, docs — same as CI's main job
-npm run build               # regenerate site/dist/
+npm run build               # required: the next three checks read site/dist/
 npm run check:markdown-mirrors
 npm run check:internal-links
 npm run check:docs-coverage
 npm run lint:css
 npm run test:a11y           # needs Chromium: npx playwright install chromium
 ```
+
+`site/dist/` is git-ignored and rebuilt on every deploy, so don't commit
+generated output — the `npm run build` above is for the three checks that
+read it, not something to stage. The exception is a release, which adds a
+new immutable `site/dist/v<version>/` directory; those stay tracked because
+the build never regenerates an older one.
 
 All of the above run in CI on every push and PR, and all of them gate it.
 
