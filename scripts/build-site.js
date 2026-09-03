@@ -19,6 +19,7 @@
 
 const fs = require("fs");
 const path = require("path");
+const { execFileSync } = require("child_process");
 
 const { buildSpecNav, buildFooter, DIR_GROUPS, readSpecVersion, TOP_LINKS } = require("./nav");
 const { renderTemplate } = require("./render-template");
@@ -1939,6 +1940,149 @@ function buildManifest(pages, version) {
 // Main build
 // ---------------------------------------------------------------------------
 
+// ---------------------------------------------------------------------------
+// Released-version guard
+//
+// /stability's policy: a version's published directory is frozen from the
+// moment its `vX.Y.Z` git tag exists. scripts/bump-version.js already
+// enforces the release half (it refuses to re-cut a version whose tag it
+// finds). This is the build half - without it, `npm run build` would still
+// silently rewrite a tagged version's artifacts the moment anyone edited a
+// schema file, which is exactly how site/dist/v0.20.0/ got mutated after
+// 0.20.0 was published.
+//
+// Deliberately WARNS rather than fails by default. The failure mode being
+// fixed is silence, not the write itself: a loud, specific report of which
+// published bytes moved is what was missing. A hard default failure would
+// also block the legitimate case of continuing to iterate on a version
+// that's been tagged but isn't finished. Pass --strict-versions (or set
+// DSDS_STRICT_VERSIONS=1) to make it fatal - worth doing in a release job.
+//
+// Fails OPEN when tag state can't be determined: `git tag -l` returns
+// nothing in a shallow clone, and neither CI (actions/checkout@v4 doesn't
+// fetch tags by default) nor Netlify's build clone has them. Treating
+// "can't prove it's released" as "not released" is the only safe direction
+// - the alternative would break every deploy the moment tags appeared.
+// ---------------------------------------------------------------------------
+
+// Every file the tag actually published under this version's directory, as
+// repo-relative paths. Null means "can't tell" - no git, no tag, shallow
+// clone - which callers treat as not-released (fail open).
+function releasedFilesAtTag(version) {
+  const prefix = `site/dist/v${version}`;
+  try {
+    const out = execFileSync(
+      "git",
+      ["ls-tree", "-r", "--name-only", `v${version}`, "--", prefix],
+      { cwd: ROOT, encoding: "utf-8", stdio: ["ignore", "pipe", "ignore"] },
+    ).trim();
+    return out ? out.split("\n") : [];
+  } catch {
+    return null;
+  }
+}
+
+function blobAtTag(version, repoRelPath) {
+  try {
+    // No encoding: return a Buffer, so this compares correctly for the
+    // JSON/YAML bundles and would still work if a binary artifact is ever
+    // published under a version directory.
+    return execFileSync("git", ["show", `v${version}:${repoRelPath}`], {
+      cwd: ROOT,
+      stdio: ["ignore", "pipe", "ignore"],
+      maxBuffer: 64 * 1024 * 1024,
+    });
+  } catch {
+    return null;
+  }
+}
+
+function isReleasedVersion(version) {
+  try {
+    const found = execFileSync("git", ["tag", "--list", `v${version}`], {
+      cwd: ROOT,
+      encoding: "utf-8",
+      stdio: ["ignore", "pipe", "ignore"],
+    }).trim();
+    return found === `v${version}`;
+  } catch {
+    // No git, not a repo, or git failed - can't prove it's released.
+    return false;
+  }
+}
+
+function releasedVersionGuard(version, versionDir) {
+  if (!isReleasedVersion(version)) return; // Not tagged: still in development.
+
+  // Compare what's on disk against the bytes the TAG published - not against
+  // the working tree as it looked before this build. Comparing to the
+  // pre-build state made the guard stateful and wrong in both directions: it
+  // went quiet on every build after the first bad one (the mutation was
+  // already on disk, so nothing "changed"), and it fired while *restoring*
+  // the released bytes. Against the tag it's stateless: drift is reported
+  // every build until it's actually resolved, and never when it isn't there.
+  const released = releasedFilesAtTag(version);
+  if (released === null || released.length === 0) return;
+
+  const prefix = `site/dist/v${version}`;
+  const moved = [];
+  const seen = new Set();
+
+  for (const repoRelPath of released) {
+    const rel = path.relative(prefix, repoRelPath);
+    seen.add(rel);
+    const onDisk = path.join(versionDir, rel);
+    if (!fs.existsSync(onDisk)) {
+      moved.push(`${rel} (removed)`);
+      continue;
+    }
+    const tagged = blobAtTag(version, repoRelPath);
+    if (tagged === null) continue; // Unreadable at the tag; can't judge it.
+    if (!tagged.equals(fs.readFileSync(onDisk))) moved.push(rel);
+  }
+
+  if (fs.existsSync(versionDir)) {
+    const walk = (current) => {
+      for (const entry of fs.readdirSync(current, { withFileTypes: true })) {
+        const full = path.join(current, entry.name);
+        if (entry.isDirectory()) walk(full);
+        else {
+          const rel = path.relative(versionDir, full);
+          if (!seen.has(rel)) moved.push(`${rel} (added)`);
+        }
+      }
+    };
+    walk(versionDir);
+  }
+
+  if (moved.length === 0) return;
+
+  const strict =
+    process.argv.includes("--strict-versions") || process.env.DSDS_STRICT_VERSIONS === "1";
+  const lines = [
+    "",
+    `${strict ? "✗" : "⚠"}  v${version} is tagged (released), but this build changed ${moved.length} of its published artifact(s):`,
+    ...moved.sort().map((rel) => `      site/dist/v${version}/${rel}`),
+    "",
+    "   /stability promises a released version stays frozen at the bytes it shipped with,",
+    "   and anything pinning a v" + version + " $schema URL is relying on that.",
+    "",
+    "   Either bump the version so these land in a new directory, or revert them with",
+    `      git checkout -- site/dist/v${version}`,
+    strict
+      ? "   (--strict-versions is set, so this is fatal. The files above have already been written.)"
+      : "   Pass --strict-versions to make this fatal.",
+    "",
+  ];
+  const message = lines.join("\n");
+  if (strict) {
+    console.error(message);
+    process.exitCode = 1;
+    throw new Error(`Released version v${version} was modified by this build.`);
+  }
+  console.warn(message);
+}
+
 async function build() {
   console.log("Building DSDS specification site (schema-driven)...\n");
 
@@ -2404,6 +2548,8 @@ async function build() {
       console.log(
         `  ✓  site/dist/v${version}/{${DIR_GROUPS.map((g) => g.dir).join(",")}}/*.schema.yaml  ← schema/ (${splitSchemaFiles.length} files mirrored)\n`,
       );
+
+      releasedVersionGuard(version, versionDir);
     }
   }
 
