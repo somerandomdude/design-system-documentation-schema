@@ -1947,9 +1947,23 @@ async function build() {
   // Versioned subdirectories (`v<n>/`) hold published schema bundles whose
   // URLs are public contracts — we MUST NOT blow them away on rebuild.
   // Everything else under dist is regenerated each build, so we wipe it
-  // and recreate. The versioned subdirectory write step further down is
-  // also defensive (refuses to overwrite an existing versioned bundle),
-  // but this is the primary safeguard.
+  // and recreate.
+  //
+  // This loop is the ONLY thing protecting older versions, and it's enough:
+  // the versioned write step further down only ever writes
+  // `site/dist/v<current-version>/`, so no build can reach an older
+  // version's directory at all. (An earlier version of this comment claimed
+  // that step "refuses to overwrite an existing versioned bundle." It never
+  // did — it computes a `changed` flag and uses it only to append
+  // "(refreshed)" to a log line, then copies unconditionally. The claim was
+  // load-bearing-looking and false, so it's gone rather than restated.)
+  //
+  // The current version's directory IS refreshed on every build, on purpose:
+  // while a version is still in development its published artifacts should
+  // track the source they're built from. What stops a *released* version
+  // from being re-cut is scripts/bump-version.js, which refuses to run if a
+  // tag for the target version already exists — see /stability's
+  // "Versioned artifacts" section for the policy this implements.
   if (fs.existsSync(DIST_DIR)) {
     for (const entry of fs.readdirSync(DIST_DIR, { withFileTypes: true })) {
       // Preserve site/dist/v<version>/ directories. The leading `v`

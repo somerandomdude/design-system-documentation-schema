@@ -34,6 +34,27 @@ DSDS addresses that with a format that is:
 
 The W3C Design Tokens Community Group defines a format for trading token **values** between tools. DSDS defines a format for the **documentation** around them. The two are built to work together — DSDS never duplicates a value or platform identifier; a token or theme entry's `source` field links back to its DTCG definition.
 
+## Interoperability
+
+DSDS is built to sit alongside the formats that already own a layer, not to
+replace them. **If another format owns a fact, DSDS points at it rather than
+restating it** — a token entry has a `source` and no `value`; a component
+entry has `sourceFiles` and `specs` and no property table.
+
+| Format | What it owns | The DSDS field |
+|---|---|---|
+| [DTCG](https://www.w3.org/community/reports/design-tokens/CG-FINAL-format-20251028/) | Token values, types, aliases | A token or theme entry's `source` |
+| [Custom Elements Manifest](https://github.com/webcomponents/custom-elements-manifest) and other contract formats | A component's generated API | A component's `specs` (`rel: contract`) |
+| [CSF](https://storybook.js.org/docs/api/csf) / Storybook | Stories and live demos | A `refs`/`examples` entry with `rel: storybook` |
+| Source files, framework typings | The real interface | A component's `sourceFiles` |
+| vitest, axe-core, stylelint, ESLint | Whether a guideline actually holds | A guideline's `checks` (`rel: test`, `rel: lint-rule`) |
+| WCAG, ARIA APG, MDN | Why a guideline exists | A guideline's `evidence` |
+| Figma, npm, anything else | Design artifacts, distribution, vendor data | `rel: design`, `imports[].package`, `$extensions` |
+
+Full detail, with a worked example for each, is on the site's
+**[Interoperability](https://designsystemdocspec.org/interoperability)** page.
+Validated example pairs live in [`examples/interop/`](examples/interop/).
+
 > [!NOTE]
 > **Credit where due:** DSDS's conformance design follows the trail blazed by the [Adobe Spectrum Design Data specification](https://opensource.adobe.com/spectrum-design-data/spec/) — a layered model of structural schema rules plus a semantic-rule catalog with stable IDs. Prior art this good deserves a shoutout.
 
@@ -69,6 +90,7 @@ The authoritative reference for every schema and field is the **documentation si
 - **[Overview](https://designsystemdocspec.org/)** — What DSDS is, the entry/section model, design principles, humans & agents, and interoperability with DTCG/CEM/Storybook. For conformance classes, the `DSDS-01`–`DSDS-11` semantic rule catalog, and stability guarantees, see [Conformance](#conformance) below.
 - **[Quick Start](https://designsystemdocspec.org/quickstart.html)** — Document structure, entry kinds, the section system, and minimal examples for every entry kind.
 - **[Extending the schema](https://designsystemdocspec.org/extending.html)** — `$extensions`, custom kinds, and profiles: the three ways to go beyond what the spec ships with, and when to reach for each.
+- **[Interoperability](https://designsystemdocspec.org/interoperability)** — every format DSDS points at instead of restating: DTCG, CEM, CSF/Storybook, tests, standards, design tools.
 - **[Schema](https://designsystemdocspec.org/schema.html)** — Opens with how the schema itself is organized, then every schema definition, each with a real example next to it.
 
 You can also build the site locally with `npm run build` and open `site/dist/index.html`.

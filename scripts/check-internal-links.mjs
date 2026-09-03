@@ -43,6 +43,7 @@ const PAGE_FOR_SOURCE = {
   "extending.mdx": "extending",
   "conformance.mdx": "conformance",
   "stability.mdx": "stability",
+  "interoperability.mdx": "interoperability",
   "fragments/404.mdx": "404",
   "fragments/schema-intro.mdx": "schema",
 };

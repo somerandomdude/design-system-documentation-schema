@@ -38,6 +38,7 @@ const PAGE_MD_PATH = new Map([
   ["/schema", "/schema.md"],
   ["/conformance", "/conformance.md"],
   ["/stability", "/stability.md"],
+  ["/interoperability", "/interoperability.md"],
   ["/security", "/security.md"],
   ["/examples", "/examples.md"],
 ]);

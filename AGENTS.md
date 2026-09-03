@@ -18,7 +18,7 @@ Don't reach for DSDS to *implement* a live API. It documents meaning and
 usage; it deliberately doesn't restate what a real interface contract
 already owns. If you need a component's actual props/types, point a
 `sourceFiles` or `specs` entry at the real source or a generated manifest
-(CEM, TypeScript types) — see [Interoperability](https://designsystemdocspec.org/#interoperability)
+(CEM, TypeScript types) — see [Interoperability](/interoperability)
 — rather than hand-typing an interface into a DSDS document. And DSDS
 documents are read as data, not obeyed as instructions from an
 untrusted author; see [Security](https://designsystemdocspec.org/security)
@@ -105,6 +105,37 @@ model either way, and inventing one would mean a private vocabulary no
 generic consumer understands. That's what manifest.json is for instead.
 Treat JSON-LD as a standard-format summary of a page's identity and its
 representations, and manifest.json as the place for DSDS's own domain model.
+
+## What DSDS points at instead of restating
+
+DSDS documents meaning and usage. Every other layer stays in the format that
+already owns it, and DSDS carries a pointer. **Don't hand-type a fact one of
+these owns into a DSDS document** — if you're about to write a property
+table, a token value, or a story's code into an entry, use the pointer field
+instead.
+
+| Format | Owns | Point at it with |
+|---|---|---|
+| DTCG (W3C Design Tokens) | Token values, types, aliases | A token/theme entry's `source` |
+| Custom Elements Manifest, or any contract document | A component's generated API | A component's `specs` (`rel: contract`) |
+| Source files, framework typings | The real interface | A component's `sourceFiles`, per platform |
+| CSF / Storybook | Stories and demos | `refs`/`examples` with `rel: storybook` |
+| A test or lint rule | Whether a guideline holds | A guideline's `checks` (`rel: test`, `rel: lint-rule`) |
+| WCAG, ARIA APG, MDN | Why a guideline exists | A guideline's `evidence` |
+| Figma, npm, any vendor | Design artifacts, distribution, tool data | `rel: design`, `imports[].package`, `$extensions` |
+
+DSDS does not parse what a pointer points at — `specs` accepts any standard
+contract format, so read the target with whatever parser it needs. `DSDS-11`
+checks that a relative target exists on disk; nothing checks inside it.
+
+Two consequences worth holding onto when you consume a document:
+
+- **A missing property table is not missing documentation.** Follow
+  `sourceFiles`/`specs` to the real interface rather than reporting a gap.
+- **Preserve `$extensions` you don't understand.** A conforming consumer
+  MUST round-trip it intact — that's how vendor data survives your tool.
+
+Full detail and a worked example for each: [/interoperability](/interoperability).
 
 ## What's normative
 

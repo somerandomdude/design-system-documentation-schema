@@ -51,18 +51,11 @@ Write for people by default. It serves agents too. Use `for: agent` when all els
 
 ## Interoperability
 
-No open standard covers design-system documentation end to end. The formats that do exist each cover one layer well. DSDS sits above them, documenting meaning and usage instead of restating what they already own.
+No open standard covers design-system documentation end to end. The formats that do exist each cover one layer well — [DTCG](https://www.w3.org/community/reports/design-tokens/CG-FINAL-format-20251028/) owns token values, [CEM](https://github.com/webcomponents/custom-elements-manifest) owns a component's generated API, [CSF](https://storybook.js.org/docs/api/csf) owns a story, a test runner owns whether a rule actually holds.
 
-| Concern | Source of truth | How DSDS points at it |
-|---|---|---|
-| Token values and platform mappings | [W3C Design Tokens](https://www.w3.org/community/reports/design-tokens/CG-FINAL-format-20251028/) (DTCG) files | A token or theme entry's `source` |
-| Component source code, per platform | A source file or framework typings | A component's `sourceFiles` — pointing a tool at the real file to extract from, instead of hand-typing an interface |
-| Component API contract, already generated | [Custom Elements Manifest](https://github.com/webcomponents/custom-elements-manifest) (CEM), or another standard contract format | A component's `specs` — pointing at the generated document itself, not re-deriving it from source |
-| Live component demos | Storybook or equivalent | A `refs`/`examples` entry with `rel: storybook` |
-| Design artifacts | Design tool files | A `refs` entry with `rel: design`, or `metadata.preview` |
-| Source code | The repository | A `refs` entry with `rel: source`, or a component's own `sourceFiles` |
+DSDS sits above them and documents meaning and usage. **If another format owns a fact, DSDS points at it rather than restating it** — which is why a token entry has a `source` and no `value`, and a component entry has `sourceFiles` and `specs` and no property table. A pointer can go stale in exactly one way, and `DSDS-11` catches it; a copy goes stale silently.
 
-DTCG owns token *values*; DSDS owns their *meaning and usage*, so the two can never disagree. CEM (and similar manifests) own a component's generated API details — `specs` points at the manifest itself, `sourceFiles` at the raw source a step earlier in the same pipeline; a component can use either, both, or neither. See [`examples/interop/`](examples.html#interop) for worked examples.
+→ **[Interoperability](interoperability.html)** covers every format DSDS is built to sit alongside, the field that points at each, and a worked example for all of them.
 
 ---
 

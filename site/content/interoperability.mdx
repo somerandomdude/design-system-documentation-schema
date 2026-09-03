@@ -1,0 +1,185 @@
+---
+title: "Interoperability — DSDS {{VERSION}}"
+slug: interoperability
+description: "Every format DSDS is built to sit alongside — DTCG, CEM, CSF/Storybook, source files, tests and lint rules, standards, design tools and packages — with the field that points at each and a worked example."
+---
+
+# Interoperability
+
+No open standard covers design-system documentation end to end. The formats that do exist each cover one layer well: DTCG owns token values, CEM owns a component's generated API, CSF owns a story, a test runner owns whether a rule actually holds.
+
+DSDS sits above them and documents **meaning and usage**. It is deliberately not a second copy of what those formats already own.
+
+<ds-callout title="The rule, in one line:">
+
+If another format owns a fact, DSDS points at it rather than restating it. A pointer can go stale in exactly one way — the target moves — and `DSDS-11` catches that. A copy goes stale silently, every time the source changes.
+
+</ds-callout>
+
+That is why a token entry has a `source` and no `value`, and why a component entry has `sourceFiles` and `specs` and no property table.
+
+## The map
+
+Every integration below is a field that exists today, not a plan. `rel` values come from [`common/ref`](schema.html#common-ref); the whole list is open, so an unlisted format still has a home.
+
+| Layer | Format it interoperates with | The DSDS field |
+|---|---|---|
+| Token values, types, aliases | [DTCG](https://www.w3.org/community/reports/design-tokens/CG-FINAL-format-20251028/) (W3C Design Tokens) | A token entry's `source`; a theme's `source` |
+| Component API contract, already generated | [Custom Elements Manifest](https://github.com/webcomponents/custom-elements-manifest) (CEM), or any standard contract document | A component's `specs` (`rel: contract`) |
+| Component source, per platform | `.tsx`, `.vue`, `.swift`, framework typings — whatever a generator reads | A component's `sourceFiles` |
+| Stories and live demos | [Component Story Format](https://storybook.js.org/docs/api/csf) (CSF), Storybook, or an equivalent | A `refs`/`examples` entry with `rel: storybook` |
+| Whether a guideline actually holds | A test or lint rule — vitest, axe-core, stylelint, ESLint | A guideline's `checks` (`rel: test`, `rel: lint-rule`) |
+| Why a guideline exists | WCAG, ARIA APG, MDN, an internal RFC | A guideline's `evidence` (`rel: external-link`) |
+| Design artifacts | Figma or another design tool | A `refs` entry with `rel: design`, or `metadata.preview` |
+| Distribution | npm, or any package registry | A component's `imports[].package`, or `rel: package` |
+| Editor validation of the DSDS file itself | [JSON Schema](https://json-schema.org/) draft 2020-12 | The document's own `$schema` key |
+| Anything not listed | Any vendor or tool | `$extensions`, keyed by namespace |
+
+## Tokens — DTCG
+
+A token entry documents what a token is *for*. Its value, type, and aliases stay in the DTCG file, and `source` points at them.
+
+```yaml
+id: color.action.primary
+kind: token
+name: Primary action color
+description: The fill behind the single highest-priority action on a surface.
+tokenType: color
+source: ./color-action-primary.tokens.json
+```
+
+The `id` doubles as the path into the DTCG tree, which is why token ids allow the dot and slash separators other DSDS ids don't. When your DTCG paths don't line up with your ids, point `source`'s `href` at a JSON Pointer instead — `./tokens.dtcg.json#/color/action/primary` — ordinary URI syntax, no schema change.
+
+Nested groups, group-level `$type` inheritance, and alias references all work, because DSDS never parses the file: [`examples/interop/nested-color.*`](examples.html#interop) is a worked pair where the DTCG side uses `{color.palette.blue-500}` aliases and a Tokens Studio `$extensions` block, and the DSDS side just points at it.
+
+A theme is the same move one level up: `source` points at the DTCG file holding that theme's overrides, and DSDS records what the theme is for.
+
+## Component APIs — CEM, source files, and contracts
+
+Two fields, one step apart in the same pipeline. A component can use either, both, or neither.
+
+- **`sourceFiles`** points at the real source a generator reads — one entry per platform.
+- **`specs`** points at the *already-generated* contract document, so a consumer doesn't have to re-derive it.
+
+```yaml
+sourceFiles:
+  - platform: react
+    file: ./src/Button.tsx
+
+specs:
+  - rel: contract
+    href: ./contracts/button.contract.json
+    role: DS Contracts
+```
+
+DSDS does not parse or validate what `specs` points at, so **any** standard contract format works — CEM, [DS Contracts](https://github.com/southleft/ds-contracts-poc), a typedoc or react-docgen dump, something in-house. Name the format in `role` when the file extension doesn't make it obvious.
+
+CEM is a community project maintained at [webcomponents/custom-elements-manifest](https://github.com/webcomponents/custom-elements-manifest), not a W3C specification — worth stating because it sits next to DTCG on this page, and DTCG *is* a W3C Community Group report. Neither is a W3C Recommendation; both are widely enough adopted to point at.
+
+[`examples/interop/my-element.*`](examples.html#interop) is a full CEM pair: a real `custom-elements.json` alongside the DSDS entry that points at it, so you can see exactly which facts live on which side.
+
+## Stories — CSF and Storybook
+
+A story is an example, and DSDS treats it as one. The same `rel: storybook` covers hosted docs and the CSF source they're built from — `role` and `note` say which is which:
+
+```yaml
+refs:
+  - href: https://storybook.org/ds/button
+    rel: storybook
+    role: hosted docs
+  - href: ./stories/button.stories.tsx
+    rel: storybook
+    role: CSF story source
+    note: Component Story Format (CSF3) - the source the hosted docs above are built from.
+```
+
+Point `examples[].ref` at a specific story when a guideline needs one, rather than pasting the code into the document. A CSF story is a named export, so name it with a fragment — `./stories/button.stories.tsx#Primary` — the same ordinary URI syntax the DTCG section above uses to point into a token tree, and the same reason it needs no schema change:
+
+```yaml
+examples:
+  - title: Loading state announces itself
+    ref:
+      href: ./stories/button.stories.tsx#Loading
+      rel: storybook
+```
+
+## Tests and lint rules
+
+This is the integration that makes a guideline falsifiable rather than decorative. A guideline that claims automated verification MUST say what runs it — `DSDS-03` enforces exactly that.
+
+```yaml
+- statement: Every icon-only button MUST have an accessible name.
+  level: must
+  checkedBy: automated
+  checks:
+    - href: ./tests/button.a11y.test.ts
+      rel: test
+      role: vitest + axe-core
+```
+
+`rel: lint-rule` is the same idea for a static check (an ESLint or stylelint rule id). Nothing constrains the runner: DSDS names the rule and points at the thing that proves it.
+
+## Standards and evidence
+
+`evidence` points a guideline at the outside standard it comes from, so a reader can tell a house preference from a WCAG requirement:
+
+```yaml
+- statement: A focus indicator MUST remain visible for keyboard users.
+  level: must
+  evidence:
+    - href: https://www.w3.org/WAI/WCAG21/Understanding/focus-visible.html
+      rel: external-link
+```
+
+## Design tools and packages
+
+```yaml
+refs:
+  - href: https://figma.com/file/…/Button
+    rel: design
+  - href: npm:@org/ds-react
+    rel: package
+
+imports:
+  - platform: react
+    code: "import { Button } from '@acme/ui';"
+    package: "@acme/ui"
+```
+
+Figma node ids, Tokens Studio metadata, and anything else tool-specific belong in `$extensions` under a vendor namespace — see [Extending the schema](extending.html).
+
+## The DSDS file itself
+
+DSDS is JSON Schema draft 2020-12, so a DSDS document is a first-class citizen in any editor that resolves `$schema`:
+
+```yaml
+$schema: https://designsystemdocspec.org/v{{VERSION}}/dsds.bundled.yaml
+schemaVersion: "{{VERSION}}"
+```
+
+The bundle ships as both YAML and JSON (`dsds.bundled.schema.json`) at that same versioned path, because a tool that only reads JSON schemas over HTTP is common enough to be worth serving directly. Documents themselves can be YAML or JSON.
+
+This site's own pages carry `schema.org` JSON-LD, and [`llms.txt`](/llms.txt) indexes every page for agents — that's interop for the *documentation*, separate from the spec.
+
+## Anything not on this list
+
+`$extensions` is the escape hatch, namespaced so two tools can't collide:
+
+```yaml
+$extensions:
+  com.acme.designops:
+    figmaNodeId: "1:234"
+```
+
+A conforming consumer MUST preserve `$extensions` it doesn't understand rather than dropping it, so data survives a round trip through a tool that has never heard of your namespace. It's available on the document, every entry, every section, and every section item.
+
+## What DSDS won't do
+
+Worth stating plainly, because it's the boundary that keeps the format small:
+
+- **It won't restate a component's props, types, or defaults.** That's what `sourceFiles` and `specs` are for. Hand-typed API tables are the single most common source of documentation drift.
+- **It won't hold a token's value.** DTCG owns that.
+- **It won't parse or validate what a pointer points at.** DSDS checks that a relative target exists on disk (`DSDS-11`); reading inside it is the consuming tool's job.
+- **It won't invent a vocabulary another standard already has.** RFC 2119 for requirement levels, JSON Schema for structure, schema.org for page identity.
+
+Every worked pair lives in [`examples/interop/`](examples.html#interop), and each one is validated on every `npm run check` — so the examples on this page can't drift from what the schema actually accepts.

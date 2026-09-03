@@ -86,6 +86,10 @@ A few fields are locked to a fixed list of values, because the number of possibl
 
 Until then, the fixed lists above are the most stable part of the schema. Everything else can still change between minor versions, including the exact shape of any one `sections/*.schema.yaml` file.
 
-## Versioned artifacts never change
+## Released versions never change
 
-Whatever else moves, a published version directory doesn't. Every version DSDS has ever shipped stays served at its own immutable URL — `/v0.20.0/dsds.bundled.yaml` and `/v0.20.0/dsds.bundled.schema.json` today, and every earlier version at its own path, frozen at the bytes it shipped with. A document that pins `schemaVersion` and a `$schema` URL keeps validating against exactly what it was written against, indefinitely.
+Whatever else moves, a *released* version directory doesn't. Every version DSDS has shipped stays served at its own URL — `/v0.15.2/dsds.bundled.schema.json`, and every earlier version at its own path — frozen at the bytes it shipped with. A document that pins `schemaVersion` and a `$schema` URL keeps validating against exactly what it was written against, indefinitely.
+
+Released means tagged. A version is frozen from the moment its `vX.Y.Z` git tag exists, and `scripts/bump-version.js` refuses to re-cut a version whose tag it already finds. Before that tag, the version currently in development is a different case: its directory is rebuilt from source on every build, so it tracks the schema it's generated from rather than lagging behind it. `{{VERSION}}` is that version today — treat `/v{{VERSION}}/` as still settling, and pin an older, tagged version if you need bytes that cannot move under you.
+
+Two mechanisms keep this honest, and neither is a promise you have to take on faith. `scripts/build-site.js` only ever writes the *current* version's directory, so no build can reach an older one. And `bump-version.js`'s tag check is what turns "current" into "released."

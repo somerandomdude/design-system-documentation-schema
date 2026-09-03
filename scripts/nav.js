@@ -59,6 +59,7 @@ const TOP_LINKS = [
 const FOOTER_LINKS = [
   { label: "Conformance", href: "conformance.html", slug: "conformance" },
   { label: "Stability", href: "stability.html", slug: "stability" },
+  { label: "Interoperability", href: "interoperability.html", slug: "interoperability" },
   { label: "Security", href: "security.html", slug: "security" },
   { label: "Examples", href: "examples.html", slug: "examples" },
 ];
