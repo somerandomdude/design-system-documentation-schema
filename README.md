@@ -61,7 +61,7 @@ Validated example pairs live in [`examples/interop/`](examples/interop/).
 ## Conformance
 
 What it means for a document to follow the DSDS spec — the four conformance
-classes, the three enforcement tiers, and the full `DSDS-01`–`DSDS-15` rule
+classes, the three enforcement tiers, and the full `DSDS-01`–`DSDS-16` rule
 catalog — is documented on the site:
 
 - **[Conformance](https://designsystemdocspec.org/conformance)** — the rule
@@ -99,7 +99,7 @@ This README leaves out schema field listings and example payloads on purpose —
 
 ## Repository layout
 
-- **`schema/`** — The split JSON Schema source (`common/`, `metadata/`, `entries/`, `sections/`), plus the auto-generated `dsds.bundled.yaml` / `dsds.bundled.schema.json` and the `DSDS-01`–`DSDS-15` `conformance-rules.yaml` catalog.
+- **`schema/`** — The split JSON Schema source (`common/`, `metadata/`, `entries/`, `sections/`), plus the auto-generated `dsds.bundled.yaml` / `dsds.bundled.schema.json` and the `DSDS-01`–`DSDS-16` `conformance-rules.yaml` catalog.
 - **`examples/`** — Validated example documents: full base documents, standalone entries per kind, quickstart snippets, interop pairs, and one `invalid/` fixture per semantic rule.
 - **`test/site-components/`** — A regression corpus documenting this repo's own `site/components/` web components as DSDS entries (dogfooding), checked on every `npm run check`.
 - **`scripts/`** — Bundling, validation, composition, and the static site generator.

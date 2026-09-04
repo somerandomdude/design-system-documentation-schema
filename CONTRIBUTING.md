@@ -35,7 +35,7 @@ without the other two — a rule can't be silently half-removed the way
 
 **A new advisory (documentation-quality) rule** goes in `scripts/lint-docs.js`
 plus the same `schema/conformance-rules.yaml` catalog, with `enforcement:
-lint`. Advisory rules warn; they never fail `npm run check`.
+advisory`. Advisory rules warn; they never fail `npm run check`.
 
 **A new example** (`examples/`) needs an entry in `manifest.json`'s
 `examples` listing, or a link from the page that's supposed to surface it
@@ -98,7 +98,7 @@ One more runs in CI without gating it — the **advisory tier**, meant to be
 visible rather than blocking:
 
 ```bash
-npm run lint  # documentation-quality rules (DSDS-12–DSDS-15)
+npm run lint  # documentation-quality rules (DSDS-12–DSDS-16)
 ```
 
 It can't fail a build; its findings are warnings by design.
