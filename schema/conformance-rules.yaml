@@ -193,3 +193,28 @@
     checked for a `documentBlocks` entry of `kind: use-cases`) - 0.20.0
     folds that content into a `guidelines` section instead of a separate
     block kind, so this checks for that section's presence instead.
+
+- id: DSDS-16
+  name: token-description-restates-scale-position
+  enforcement: advisory
+  title: A token `description`, when present, shouldn't just restate its position on a scale.
+  description: >-
+    A token entry's optional `description` should add what the id can't -
+    the token's role, or when to use it. One that only restates the token's
+    position on a scale ("Shade 900", "Step 500", "Level 6 of the neutral
+    scale") reads as documented intent while carrying none: that ordinal is
+    already in the id and in the token's place among its `metadata.group`
+    siblings. The companion case to DSDS-13 - the scale step, rather than the
+    id or the raw value.
+  note: >-
+    Ported from PR #37 (by Cody Clark), originally proposed as DSDS-012
+    against the pre-0.20.0 entity model - same algorithm (flag a description
+    that reduces to a single leading scale word plus a number, optionally
+    "<word> <n> of the <family> scale"/"ramp"), re-hosted on a token entry's
+    own id/name/description like DSDS-13 was. 0.20.0 has no separate
+    token-group kind, so it checks `kind: token` only. Deliberately
+    conservative: the scale word must lead and be singular, so number-first
+    and plural forms ("Nine weights", "Twelve steps") and a bare
+    family-plus-number ("Neutral 700") are left alone, and any role or usage
+    word stops the match. A description that also restates the id or name is
+    left to DSDS-13, so it is reported once.

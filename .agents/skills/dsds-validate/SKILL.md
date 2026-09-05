@@ -19,13 +19,13 @@ This validates every file given against the DSDS v0.20.0 bundled schema using Aj
 
 ## Documentation-Quality Checks (advisory)
 
-A second, separate tier (`DSDS-12`–`DSDS-15`) that answers "is this documentation good?" rather than "is this document allowed?" — RFC 2119 keyword casing, a token description that just restates its id, a hard-requirement guideline with no `checkedBy`, a component with no `when-to-use` guidance. Warnings only; never blocks a build on their own. Not part of the published `dsds-validate` package — it runs from a clone of the DSDS repo itself: `node scripts/lint-docs.js <files-or-globs>`.
+A second, separate tier (`DSDS-12`–`DSDS-16`) that answers "is this documentation good?" rather than "is this document allowed?" — RFC 2119 keyword casing, a token description that just restates its id or its scale position, a hard-requirement guideline with no `checkedBy`, a component with no `when-to-use` guidance. Warnings only; never blocks a build on their own. Not part of the published `dsds-validate` package — it runs from a clone of the DSDS repo itself: `node scripts/lint-docs.js <files-or-globs>`.
 
 ## Full Validation
 
 1. Schema compliance (every file validates against the bundled schema)
 2. Semantic rules (`DSDS-01`–`DSDS-11`, via `npx dsds-validate`)
-3. Documentation-quality advisories (`DSDS-12`–`DSDS-15`, informational, repo-only — see above)
+3. Documentation-quality advisories (`DSDS-12`–`DSDS-16`, informational, repo-only — see above)
 
 ## Interpreting Failures
 

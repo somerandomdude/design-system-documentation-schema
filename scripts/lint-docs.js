@@ -180,6 +180,45 @@ const IMPLEMENTATIONS = {
       );
     }
   },
+
+  // Ported from PR #37 (DSDS-012, by Cody Clark) - the scale-position
+  // companion to token-description-restates-identifier (DSDS-13). Same
+  // algorithm as the original: flag a description that reduces to a single
+  // leading scale word plus a number and nothing else - the ordinal the id
+  // and the token's place among its metadata.group siblings already carry.
+  // Adapted to 0.20.0's model the same way DSDS-13 was: a token entry's own
+  // id/name/description, kind: token only (0.20.0 has no token-group kind).
+  "token-description-restates-scale-position": (entry, emit) => {
+    if (entry.kind !== "token") return;
+    const desc = entry.description;
+    if (typeof desc !== "string" || !desc.trim()) return;
+    const d = normalizeProse(desc);
+    if (!d) return;
+    // A description that restates the id or name is DSDS-13's case; leave it
+    // there so one that is both is reported once, not twice.
+    const id = normalizeProse(entry.id || "");
+    const name = normalizeProse(entry.name || "");
+    if ((id && d === id) || (name && d === name)) return;
+    // A single leading scale word plus a number, and nothing else: "shade
+    // 900", "step 500", "level six", and the phrasal "level 6 of the neutral
+    // scale"/"ramp". Kept deliberately narrow - the scale word must lead and
+    // be singular, so number-first and plural forms ("nine weights", "twelve
+    // steps") and a bare family-plus-number ("neutral 700") are left alone,
+    // and any role or usage word stops the match. See the DSDS-16 note in
+    // schema/conformance-rules.yaml.
+    const SW = "(?:level|step|shade|tint|grade|weight|size|swatch)";
+    const N = "(?:\\d+|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve)";
+    const scaleOnly = [
+      new RegExp(`^${SW} ${N}$`),
+      new RegExp(`^${SW} ${N} of the [a-z]+ (?:scale|ramp)$`),
+    ];
+    if (scaleOnly.some((re) => re.test(d))) {
+      emit(
+        "/description",
+        `token "${entry.id}" has a description that only restates its scale position — a token description should state the token's role or when to use it, not repeat the ordinal the id and its place in the scale already carry. Drop it (description is optional here) or state its purpose.`,
+      );
+    }
+  },
 };
 
 // ---------------------------------------------------------------------------
