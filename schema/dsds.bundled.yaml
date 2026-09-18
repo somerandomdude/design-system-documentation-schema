@@ -97,12 +97,23 @@ $defs:
     additionalProperties: false
     $defs:
       target:
-        description: A bare id, or a token reference wrapped in braces.
+        description: An entry id, a trait target on this entry, or a token reference wrapped in braces.
         anyOf:
           - $ref: https://designsystemdocspec.org/v0.21.0/common/id.schema.yaml
-          - type: string
-            pattern: ^\{[a-z0-9]+(-[a-z0-9]+)*(\.[a-z0-9]+(-[a-z0-9]+)*)*\}$
-            description: A token reference, wrapped in braces.
+          - $ref: '#/$defs/traitTarget'
+          - $ref: '#/$defs/tokenRef'
+        example: '{color.action.primary}'
+      traitTarget:
+        type: string
+        description: A boolean trait's id, or `traitId.valueId` for one enum value.
+        $comment: 'Segments use the same shape as common/id.schema.yaml''s `apiId`, since a trait id mirrors a real prop or attribute name. Exactly one optional dot: the addressing form is never deeper than trait-then-value, which is why `apiId` itself forbids a dot.'
+        pattern: ^[A-Za-z0-9_$]+(-[A-Za-z0-9_$]+)*(\.[A-Za-z0-9_$]+(-[A-Za-z0-9_$]+)*)?$
+        example: size.large
+      tokenRef:
+        type: string
+        description: A token reference, wrapped in braces.
+        $comment: 'Wraps common/id.schema.yaml''s `tokenId` shape, so a token id this schema accepts can always be referenced here. The two drifted before: `tokenId` allowed slashes and this pattern did not.'
+        pattern: ^\{[A-Za-z0-9_$]+(-[A-Za-z0-9_$]+)*([./][A-Za-z0-9_$]+(-[A-Za-z0-9_$]+)*)*\}$
         example: '{color.action.primary}'
   common/example:
     $schema: https://json-schema.org/draft/2020-12/schema
@@ -176,11 +187,17 @@ $defs:
     pattern: ^[a-z0-9]+(-[a-z0-9]+)*(\.[a-z0-9]+(-[a-z0-9]+)*)*$
     example: color.action.primary
     $defs:
+      apiId:
+        type: string
+        description: A single identifier copied verbatim from a real API, in whatever case that API uses.
+        $comment: 'For an id that names something that already exists rather than being derived from prose: a prop, an attribute, an enum value. The base id format assumes derivation (a guideline''s `statement`, a definition''s `term`) via the lowercase-and-dash algorithm above, so a slug shape fits there. A trait id is the opposite - it mirrors a React or Vue prop, or a Web Component attribute, and rewriting `isDisabled` as `is-disabled` gives a name no tool can call. Accepts camelCase, PascalCase, snake_case and kebab-case; rejects spaces, an empty string, and a leading or trailing dash. A leading digit is allowed, since a real enum value can be a bare number (`<ds-heading>`''s `level` trait uses `1`-`6`, matching the real attribute value). A dot is deliberately forbidden, and that - not the slash - is why this can''t just be `tokenId`: a `combo` addresses an enum value as `traitId.valueId`, so a dot inside a trait id would make `size.large` ambiguous between a trait named `size.large` and value `large` of trait `size`.'
+        pattern: ^[A-Za-z0-9_$]+(-[A-Za-z0-9_$]+)*$
+        example: isDisabled
       tokenId:
         type: string
-        description: The same as the base id format, but a segment can also be separated by a slash.
-        $comment: Only for token entries. Their id often comes from a design tool that names paths that way.
-        pattern: ^[a-z0-9]+(-[a-z0-9]+)*([./][a-z0-9]+(-[a-z0-9]+)*)*$
+        description: The same as `apiId`, but segments can also be chained with a dot or a slash.
+        $comment: Only for token entries. Their id often comes from a design tool that names paths that way, and that tool's casing comes with it - a Figma variable named `Color/Action/Primary` is the real name, so it validates as written.
+        pattern: ^[A-Za-z0-9_$]+(-[A-Za-z0-9_$]+)*([./][A-Za-z0-9_$]+(-[A-Za-z0-9_$]+)*)*$
         example: color/action/primary
       namespaced:
         type: string
@@ -222,11 +239,11 @@ $defs:
         properties:
           to:
             type: string
-            pattern: ^[a-z0-9]+(-[a-z0-9]+)*([./][a-z0-9]+(-[a-z0-9]+)*)*(#[a-z0-9]+(-[a-z0-9]+)*(\.[a-z0-9]+(-[a-z0-9]+)*)*)?$
+            pattern: ^[A-Za-z0-9_$]+(-[A-Za-z0-9_$]+)*([./][A-Za-z0-9_$]+(-[A-Za-z0-9_$]+)*)*(#[a-z0-9]+(-[a-z0-9]+)*(\.[a-z0-9]+(-[a-z0-9]+)*)*)?$
             description: What this points at, inside this document's own graph.
             $comment: |-
-              A bare id points at a whole entry. Add `#itemId` (ex: `shared-a11y#focus-visible`) to point at one item inside it. The entry half accepts a token id's looser slash-separated form too (see common/id.schema.yaml's tokenId), since `to` can target a token entry.
-              This pattern only checks the target is *shaped* like an id (or id#itemId) - not that it actually exists. A capitalized display name (`to: Button`) or a value with a space in it can never be a real id, whatever else is in the document, so this catches that class of mistake with no other file needed. Whether the target actually resolves is a separate, resolution-level check (see DSDS-05 for the #itemId form).
+              A bare id points at a whole entry. Add `#itemId` (ex: `shared-a11y#focus-visible`) to point at one item inside it. The entry half accepts a token id's looser form too (see common/id.schema.yaml's tokenId), slashes and mixed case included, since `to` can target a token entry.
+              This pattern only checks the target is *shaped* like an id (or id#itemId) - not that it actually exists. It catches a value with a space in it with no other file needed. It does *not* catch a capitalized display name like `to: Button`: the entry half accepts a token id's casing, since a design tool's own name (`Color/Action/Primary`) is the real id. That was never a complete check anyway - an entry's own `id` in entries/entry.schema.yaml carries no pattern at all. Whether the target actually resolves is a separate, resolution-level check: DSDS-08 for a bare id, DSDS-05 for the #itemId form. Note that in single-file validation DSDS-08 warns rather than fails, since it cannot see the other files that might hold the target.
             example: shared-a11y#focus-visible
           href:
             type: string
@@ -509,9 +526,9 @@ $defs:
         $comment: The shared properties of boolean and enum traits. Contains all the details to describe a trait's value, what it is, and what it's for.
         properties:
           id:
-            $ref: https://designsystemdocspec.org/v0.21.0/common/id.schema.yaml
-            description: The machine-readable id.
-            example: loading
+            $ref: https://designsystemdocspec.org/v0.21.0/common/id.schema.yaml#/$defs/apiId
+            description: The machine-readable id. Mirrors the real prop, attribute or value name, so it accepts camelCase, PascalCase, snake_case and kebab-case.
+            example: isDisabled
           name:
             type: string
             description: The human-readable name. Uses `id` when left out.

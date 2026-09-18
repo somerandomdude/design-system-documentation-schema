@@ -16,11 +16,34 @@ $comment: >-
 pattern: '^[a-z0-9]+(-[a-z0-9]+)*(\.[a-z0-9]+(-[a-z0-9]+)*)*$'
 example: color.action.primary
 $defs:
+  apiId:
+    type: string
+    description: A single identifier copied verbatim from a real API, in whatever case that API uses.
+    $comment: >-
+      For an id that names something that already exists rather than being derived
+      from prose: a prop, an attribute, an enum value. The base id format assumes
+      derivation (a guideline's `statement`, a definition's `term`) via the
+      lowercase-and-dash algorithm above, so a slug shape fits there. A trait id is
+      the opposite - it mirrors a React or Vue prop, or a Web Component attribute,
+      and rewriting `isDisabled` as `is-disabled` gives a name no tool can call.
+      Accepts camelCase, PascalCase, snake_case and kebab-case; rejects spaces, an
+      empty string, and a leading or trailing dash. A leading digit is allowed, since
+      a real enum value can be a bare number (`<ds-heading>`'s `level` trait uses
+      `1`-`6`, matching the real attribute value). A dot is deliberately forbidden,
+      and that - not the slash - is why this can't just be `tokenId`: a `combo`
+      addresses an enum value as `traitId.valueId`, so a dot inside a trait id would
+      make `size.large` ambiguous between a trait named `size.large` and value
+      `large` of trait `size`.
+    pattern: '^[A-Za-z0-9_$]+(-[A-Za-z0-9_$]+)*$'
+    example: isDisabled
   tokenId:
     type: string
-    description: The same as the base id format, but a segment can also be separated by a slash.
-    $comment: Only for token entries. Their id often comes from a design tool that names paths that way.
-    pattern: '^[a-z0-9]+(-[a-z0-9]+)*([./][a-z0-9]+(-[a-z0-9]+)*)*$'
+    description: The same as `apiId`, but segments can also be chained with a dot or a slash.
+    $comment: >-
+      Only for token entries. Their id often comes from a design tool that names paths
+      that way, and that tool's casing comes with it - a Figma variable named
+      `Color/Action/Primary` is the real name, so it validates as written.
+    pattern: '^[A-Za-z0-9_$]+(-[A-Za-z0-9_$]+)*([./][A-Za-z0-9_$]+(-[A-Za-z0-9_$]+)*)*$'
     example: color/action/primary
   namespaced:
     type: string

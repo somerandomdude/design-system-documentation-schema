@@ -32,22 +32,26 @@ oneOf:
     properties:
       to:
         type: string
-        pattern: '^[a-z0-9]+(-[a-z0-9]+)*([./][a-z0-9]+(-[a-z0-9]+)*)*(#[a-z0-9]+(-[a-z0-9]+)*(\.[a-z0-9]+(-[a-z0-9]+)*)*)?$'
+        pattern: '^[A-Za-z0-9_$]+(-[A-Za-z0-9_$]+)*([./][A-Za-z0-9_$]+(-[A-Za-z0-9_$]+)*)*(#[a-z0-9]+(-[a-z0-9]+)*(\.[a-z0-9]+(-[a-z0-9]+)*)*)?$'
         description: What this points at, inside this document's own graph.
         $comment: >-
           A bare id points at a whole entry. Add `#itemId` (ex:
           `shared-a11y#focus-visible`) to point at one item inside it. The
-          entry half accepts a token id's looser slash-separated form too
-          (see common/id.schema.yaml's tokenId), since `to` can target a
-          token entry.
+          entry half accepts a token id's looser form too (see
+          common/id.schema.yaml's tokenId), slashes and mixed case included,
+          since `to` can target a token entry.
 
           This pattern only checks the target is *shaped* like an id (or
-          id#itemId) - not that it actually exists. A capitalized display
-          name (`to: Button`) or a value with a space in it can never be a
-          real id, whatever else is in the document, so this catches that
-          class of mistake with no other file needed. Whether the target
-          actually resolves is a separate, resolution-level check (see
-          DSDS-05 for the #itemId form).
+          id#itemId) - not that it actually exists. It catches a value with
+          a space in it with no other file needed. It does *not* catch a
+          capitalized display name like `to: Button`: the entry half accepts
+          a token id's casing, since a design tool's own name (`Color/Action/Primary`)
+          is the real id. That was never a complete check anyway - an entry's
+          own `id` in entries/entry.schema.yaml carries no pattern at all. Whether
+          the target actually resolves is a separate, resolution-level check:
+          DSDS-08 for a bare id, DSDS-05 for the #itemId form. Note that in
+          single-file validation DSDS-08 warns rather than fails, since it
+          cannot see the other files that might hold the target.
         example: "shared-a11y#focus-visible"
       href:
         type: string

@@ -37,10 +37,28 @@ properties:
 additionalProperties: false
 $defs:
   target:
-    description: A bare id, or a token reference wrapped in braces.
+    description: An entry id, a trait target on this entry, or a token reference wrapped in braces.
     anyOf:
       - $ref: https://designsystemdocspec.org/v0.21.0/common/id.schema.yaml
-      - type: string
-        pattern: '^\{[a-z0-9]+(-[a-z0-9]+)*(\.[a-z0-9]+(-[a-z0-9]+)*)*\}$'
-        description: A token reference, wrapped in braces.
+      - $ref: "#/$defs/traitTarget"
+      - $ref: "#/$defs/tokenRef"
+    example: "{color.action.primary}"
+  traitTarget:
+    type: string
+    description: A boolean trait's id, or `traitId.valueId` for one enum value.
+    $comment: >-
+      Segments use the same shape as common/id.schema.yaml's `apiId`, since a trait
+      id mirrors a real prop or attribute name. Exactly one optional dot: the
+      addressing form is never deeper than trait-then-value, which is why `apiId`
+      itself forbids a dot.
+    pattern: '^[A-Za-z0-9_$]+(-[A-Za-z0-9_$]+)*(\.[A-Za-z0-9_$]+(-[A-Za-z0-9_$]+)*)?$'
+    example: size.large
+  tokenRef:
+    type: string
+    description: A token reference, wrapped in braces.
+    $comment: >-
+      Wraps common/id.schema.yaml's `tokenId` shape, so a token id this schema
+      accepts can always be referenced here. The two drifted before: `tokenId`
+      allowed slashes and this pattern did not.
+    pattern: '^\{[A-Za-z0-9_$]+(-[A-Za-z0-9_$]+)*([./][A-Za-z0-9_$]+(-[A-Za-z0-9_$]+)*)*\}$'
     example: "{color.action.primary}"
