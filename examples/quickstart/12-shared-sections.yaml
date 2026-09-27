@@ -7,16 +7,39 @@ entries:
     id: button
     name: Button
     description: Triggers an action.
+    refs:
+      - to: order-confirmation
+        rel: implements
     sections:
       - kind: guidelines
         for: all
         items:
-          # No `statement` here — this item IS the "touch-target" rule
-          # declared once on shared-a11y below, not a second copy of it.
-          - level: must
-            refs:
+          # Both items are pure pointers - no `statement`, no `level`.
+          # Everything comes from the target.
+
+          # Borrowed from `shared`: a rule no single entry owns.
+          - refs:
               - to: shared-a11y#touch-target
                 rel: same-as
+
+          # Borrowed from another entry: the rule lives on the pattern
+          # that owns it, so it never had to move into `shared`.
+          - refs:
+              - to: order-confirmation#name-the-order
+                rel: same-as
+
+  # A pattern, and the rule it owns. Several components follow this one.
+  - kind: entry
+    id: order-confirmation
+    name: Order Confirmation
+    description: The pattern for confirming an order before it reaches the kitchen.
+    sections:
+      - kind: guidelines
+        for: all
+        items:
+          - id: name-the-order
+            level: must
+            statement: The confirming action names what is being ordered, rather than just saying "OK".
 
 shared:
   - id: shared-a11y
