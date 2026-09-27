@@ -2,7 +2,7 @@
 name: dsds-add
 description: Author a new Design System Doc Spec (DSDS) spec from component implementation, Figma design, or written requirements. Triggers on "add spec", "create spec", "new spec", "author spec", "spec from component", "spec from Figma".
 metadata:
-  version: 0.21.1
+  version: 0.21.2
 ---
 
 # Add a DSDS Spec
@@ -94,7 +94,7 @@ When a guideline claims `checkedBy: automated`, `checks` must point at what runs
 
 When unsure about fields or required properties, consult:
 
-- **Bundled schema**: `https://designsystemdocspec.org/v0.21.1/dsds.bundled.schema.json` (or `node_modules/design-system-documentation-schema/schema/dsds.bundled.schema.json` if DSDS is installed as a dependency)
+- **Bundled schema**: `https://designsystemdocspec.org/v0.21.2/dsds.bundled.schema.json` (or `node_modules/design-system-documentation-schema/schema/dsds.bundled.schema.json` if DSDS is installed as a dependency)
 - **One entry kind's fields**: `/schema/entries-<kind>.md` on this site — a few KB of field
   names, types, requiredness and descriptions for that kind alone, in the order the schema
   declares them. Prefer it over the whole bundle when you need one shape:

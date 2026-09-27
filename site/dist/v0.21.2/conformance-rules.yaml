@@ -1,0 +1,347 @@
+- id: DSDS-01
+  name: ONE_API_PER_PLATFORM
+  enforcement: semantic
+  title: At most one `sourceFiles` entry per platform.
+  description: >-
+    A component cannot declare two `sourceFiles` entries for the same
+    `platform` (or two with no `platform` at all) - a tool needs exactly
+    one source file to extract each platform's interface from.
+
+- id: DSDS-02
+  name: PLATFORM_VOCABULARY
+  enforcement: semantic
+  title: "A system entry's `metadata.platforms` closes the platform vocabulary, once declared."
+  description: >-
+    When a `kind: system` entry declares `metadata.platforms`, every
+    `platform` value used anywhere in the document must be one of them.
+    This includes a component's own `sourceFiles` and `imports` entries,
+    and a status entry.
+
+- id: DSDS-03
+  name: CHECKED_BY_NEEDS_REF
+  enforcement: semantic
+  title: "A `checkedBy: automated` rule needs somewhere to actually run."
+  description: >-
+    A guideline item that claims `automated` verification must carry at
+    least one `refs` or `checks` entry with `rel: test`, `rel:
+    lint-rule`, or `rel: agent-test`. Otherwise, "automated" is just an
+    unverifiable label, not a real connection to a check.
+  note: >-
+    This only checks that a ref exists, not what it proves. A `rel:
+    agent-test` fixture's result is often a pass rate or a judged
+    rubric rather than a strict boolean (see common/ref.schema.yaml's
+    own note) - `checkedBy: assisted` is the more honest choice unless
+    the fixture's assertion really is deterministic pass/fail.
+
+- id: DSDS-04
+  name: UNIQUE_ENTRY_ID
+  enforcement: semantic
+  title: Entry and shared ids are unique within a document.
+  description: >-
+    `entries` and `shared` share one id and addressing space. An
+    `entryId#itemId` ref cannot tell which array its entryId half came
+    from. So no two entries across both arrays can share an `id` — not
+    just within `entries` alone.
+
+- id: DSDS-05
+  name: ITEM_REF_RESOLVES
+  enforcement: semantic
+  title: An `entryId#itemId` ref must resolve.
+  description: >-
+    When a `ref`'s `to` uses the `#itemId` form (see
+    [common/ref](schema.html#common-ref)), the named entry or
+    shared entry must exist in the document. The named item's `id` must
+    also exist somewhere in its sections. This is what makes `same-as`
+    transclusion a real, checked connection, rather than a string that
+    happens to look right. It applies whether the target is a
+    `base.shared` entry or any other entry.
+
+- id: DSDS-06
+  name: COMPOSES_CYCLE
+  enforcement: semantic
+  title: A `composes` ref chain must not cycle.
+  description: >-
+    Following every `rel: composes` ref from entry to entry must never lead
+    back to an entry already in the chain. A composition graph with a cycle
+    has no well-defined "what is this built from" answer.
+
+- id: DSDS-07
+  name: DEPENDS_ON_CYCLE
+  enforcement: semantic
+  title: A `depends-on` ref chain must not cycle.
+  description: >-
+    Following every `rel: depends-on` ref from entry to entry must never
+    lead back to an entry already in the chain, for the same reason a
+    `composes` cycle is invalid - a dependency graph with a cycle has no
+    valid resolution order.
+
+- id: DSDS-08
+  name: ENTRY_REF_RESOLVES
+  enforcement: semantic
+  title: A bare `to:` ref must resolve to a real entry or shared entry.
+  description: >-
+    When a `ref`'s `to` is a bare id (no `#itemId`), the entry or shared
+    entry it names must exist - `entries` and `shared` share one id space
+    (see `DSDS-04`). Resolves against the whole project, not just the one
+    document handed to the validator: a `rel: file` link is followed
+    transitively, and every file passed to one CLI invocation is treated
+    as belonging to the same project. A target still not found this way
+    reports as a warning, not a hard error, unless nothing wider was
+    available to check against at all.
+
+- id: DSDS-09
+  name: COMBO_TARGET_RESOLVES
+  enforcement: semantic
+  title: A `combo`'s `subject`/`items` must resolve.
+  description: >-
+    A `combo` target names one of three things: a trait on the same
+    entry (a bare id for a boolean trait, `traitId.valueId` for an enum
+    value), a token entry wrapped in braces (`{color.action.primary}`),
+    or a bare entry id. `subject: size.small` against a component with
+    no `size` trait, or a token reference to a token that doesn't exist,
+    now fails instead of passing silently. The trait form is always
+    checked against the owning entry's own `traits` - that space is
+    always fully visible, so it's a hard error unconditionally. The
+    token and entry forms follow the same project-scope search
+    `DSDS-05`/`DSDS-08` use, with the same warning-not-error treatment
+    when the search is incomplete.
+
+- id: DSDS-10
+  name: SAME_AS_LEVEL_MATCHES
+  enforcement: semantic
+  title: A `same-as` item's `level`, when declared, must match its target's.
+  description: >-
+    An item that borrows its content via a `same-as` ref inherits the
+    target's `level` and does not need to restate it - the pointer is
+    the whole item. An author may still declare `level` explicitly, and
+    when they do, the borrowing site and the shared rule each carry
+    their own copy with nothing else checking the two agree. Whenever
+    the same-as target resolves, has its own `level`, and the borrowing
+    item declares one too, this checks they match. An item that means to
+    state a different level is a `refines`, not a `same-as`.
+
+- id: DSDS-11
+  name: FILE_REF_EXISTS
+  enforcement: semantic
+  title: "A relative `sourceFiles[].file`, `source`, or `rel: file` `href` must exist on disk."
+  description: >-
+    A relative path in `sourceFiles[].file` (component), `source` (token),
+    or any `rel: file` `href` elsewhere should point at a real file - a
+    typo'd or stale path silently breaks the promise those fields make
+    (that a tool can extract an API, or read a DTCG source, straight from
+    what's named there). Checked relative to the directory of the file
+    being validated, the same boundary `DSDS-05`/`DSDS-08`/`DSDS-09`'s
+    project-scope search uses - a path resolving outside that boundary, or
+    with a URL scheme (`https:`, `npm:`, and similar - not a filesystem
+    path at all), isn't evaluated.
+  note: >-
+    Warning-only, promoted to a failure under `--strict` - same tier as
+    `DSDS-05`/`DSDS-08`/`DSDS-09`, and opt-in for the same reason: this is
+    the one rule that reads files the validator otherwise has no reason to
+    open.
+
+# Advisory rules below start at DSDS-12, after DSDS-11 above.
+
+- id: DSDS-12
+  name: rfc-keywords-lowercase-in-normative-prose
+  enforcement: advisory
+  title: Capitalize RFC 2119 keywords (MUST/SHOULD) in a guideline's own statement.
+  description: >-
+    A guideline `statement` using lowercase "must" or "should" reads as
+    ordinary prose instead of a normative rule - capitalizing it makes the
+    conformance weight explicit at a glance, the same convention this
+    spec's own schema descriptions follow.
+  note: >-
+    Ported from origin/0.16.0's scripts/lint-docs.js, adapted to check
+    sections[].items[].statement instead of the pre-0.20.0
+    documentBlocks/criteria layout.
+
+- id: DSDS-13
+  name: token-description-restates-identifier
+  enforcement: advisory
+  title: A token `description`, when present, shouldn't just restate its id/name or repeat a raw value.
+  description: >-
+    A token entry's `description` is optional and meant to stay terse -
+    when an author writes one, it should add what the id can't (the
+    token's role, or when to use it). A description that only echoes the
+    id/name, or restates the raw value the DTCG source already owns,
+    reads as documented intent while carrying none.
+  note: >-
+    Ported from PR #33 (by Cody Clark), originally implemented as
+    DSDS-011 against the pre-0.20.0 entity model (`git show 3c805b7`) -
+    same algorithm (exact-restatement or bare-value-literal check after
+    normalization), re-hosted on a token entry's own id/name/description.
+    Deliberately conservative to avoid false positives: a description that
+    adds any role or usage information is never flagged.
+
+- id: DSDS-14
+  name: guideline-missing-checkedby
+  enforcement: advisory
+  title: A hard-requirement guideline (must/must-not) with no `checkedBy` at all.
+  description: >-
+    `checkedBy` says whether a guideline is automated, assisted, or manual
+    verification - leaving it out entirely means a tool can't tell if the
+    rule is verifiable at all, not just that it isn't verified yet. Only
+    flagged for `must`/`must-not` items: a `should`/`may` item not
+    declaring how it's checked is a much smaller gap. An item that borrows
+    its content via a same-as ref (DSDS-10) is checked against its resolved
+    target first, since it inherits `checkedBy` the same way it inherits
+    everything else - only flagged if neither the item nor that target
+    declares one.
+  note: >-
+    DSDS-03 already blocks the narrower case (`checkedBy: automated`
+    with no `checks` ref backing it). This is the advisory sibling for
+    the case DSDS-03 can't see - `checkedBy` left out entirely.
+
+- id: DSDS-15
+  name: component-missing-when-to-use
+  enforcement: advisory
+  title: A component entry with no `guidelines` section framed `when-to-use`.
+  description: >-
+    "When do I use this?" is usually the first question a component's
+    documentation needs to answer, before how to use it correctly.
+    Flagged when a component has no guidelines section with
+    `framing: when-to-use` at all.
+  note: >-
+    Adapted from origin/0.16.0's "entity-missing-use-cases" (which
+    checked for a `documentBlocks` entry of `kind: use-cases`) - 0.20.0
+    folds that content into a `guidelines` section instead of a separate
+    block kind, so this checks for that section's presence instead.
+
+- id: DSDS-16
+  name: token-description-restates-scale-position
+  enforcement: advisory
+  title: A token `description`, when present, shouldn't just restate its position on a scale.
+  description: >-
+    A token entry's optional `description` should add what the id can't -
+    the token's role, or when to use it. One that only restates the token's
+    position on a scale ("Shade 900", "Step 500", "Level 6 of the neutral
+    scale") reads as documented intent while carrying none: that ordinal is
+    already in the id and in the token's place among its `metadata.group`
+    siblings. The companion case to DSDS-13 - the scale step, rather than the
+    id or the raw value.
+  note: >-
+    Ported from PR #37 (by Cody Clark), originally proposed as DSDS-012
+    against the pre-0.20.0 entity model - same algorithm (flag a description
+    that reduces to a single leading scale word plus a number, optionally
+    "<word> <n> of the <family> scale"/"ramp"), re-hosted on a token entry's
+    own id/name/description like DSDS-13 was. 0.20.0 has no separate
+    token-group kind, so it checks `kind: token` only. Deliberately
+    conservative: the scale word must lead and be singular, so number-first
+    and plural forms ("Nine weights", "Twelve steps") and a bare
+    family-plus-number ("Neutral 700") are left alone, and any role or usage
+    word stops the match. A description that also restates the id or name is
+    left to DSDS-13, so it is reported once.
+
+- id: DSDS-17
+  name: entry-field-order
+  enforcement: advisory
+  title: An entry's own top-level fields don't follow STYLE_GUIDE.md's field order.
+  description: >-
+    STYLE_GUIDE.md defines one canonical top-level field order per entry
+    kind (identity, then metadata, then primary content pointer, then
+    sections, then structured facts, then relationships, then
+    $extensions last). Order has no effect on validity - this is purely
+    a readability/diff-noise convention - so a violation is advisory, not
+    a schema rule.
+  note: >-
+    Checks only the relative order of fields actually present; an entry
+    that omits a field is never flagged for that field's absence.
+
+- id: DSDS-18
+  name: section-order
+  enforcement: advisory
+  title: An entry's `sections[]` doesn't follow STYLE_GUIDE.md's grouping and ordering.
+  description: >-
+    Per STYLE_GUIDE.md §4, sections of the same `kind` must stay
+    contiguous, kinds are ordered general-to-specific (guidelines,
+    definitions, steps, then the generic `section`), multiple
+    `guidelines` sections are ordered by breadth (`framing: when-to-use`,
+    then `how-to-use`/unset, then a section about a single tag), and
+    within one breadth tier they order by audience: `for: all`, then
+    `human`, then `agent`.
+  note: >-
+    The two sorts compose in that order - breadth, then audience - so the
+    audience check runs per breadth tier rather than across the whole
+    guidelines run. A `for: agent` when-to-use section legitimately
+    precedes a `for: all` how-to-use one, and a `for: all` tag-scoped
+    section legitimately follows a `for: human` one, so comparing across
+    tiers on `for` would be a false positive.
+
+    The third breadth tier reads `tags` on the section: a section
+    declaring `tags` is about that topic, and the first tag is the scope.
+    It used to be inferred instead - two or more items all naming the same
+    tag - which made the tier depend on how many items a section had and on
+    whether their tags happened to intersect. Adding a rule to a section
+    could move it, and a section with ten tagged items could still miss the
+    tier if no single tag ran through all of them.
+
+- id: DSDS-19
+  name: guideline-item-level-order
+  enforcement: advisory
+  title: A `guidelines` section's items aren't ordered must, should, may, should-not, must-not.
+  description: >-
+    Per STYLE_GUIDE.md §5, items within one guidelines section should be
+    ordered by `level` in that exact sequence - strongest positive to
+    strongest negative, with the two conditional levels in the middle.
+    Items sharing a level keep their relative order; only a level-to-level
+    inversion is flagged.
+
+- id: DSDS-20
+  name: document-field-order
+  enforcement: advisory
+  title: A base document's own top-level fields don't follow STYLE_GUIDE.md's field order.
+  description: >-
+    STYLE_GUIDE.md's base-document order is `schemaVersion`, `$schema`,
+    `name`, `entries`, `shared`, `refs`, `$extensions`. Checked once per
+    base document (a file with a `schemaVersion`), separately from
+    DSDS-17's per-entry check.
+
+- id: DSDS-21
+  name: entry-order
+  enforcement: advisory
+  title: A base document's `entries[]` aren't ordered by `kind`.
+  description: >-
+    Per STYLE_GUIDE.md §1, entries are ordered by `kind`, in the order
+    entries/entry.schema.yaml lists its `kind` values: `system`, `token`,
+    `theme`, `component`, then `entry`. A namespaced custom kind is not in
+    that list and sorts after all five.
+  note: >-
+    Order within one kind is deliberately not checked. STYLE_GUIDE.md asks
+    for "whatever order reads best" there, which has no answer a tool could
+    compute, so only a kind-to-kind inversion is reported.
+
+- id: DSDS-22
+  name: nested-field-order
+  enforcement: advisory
+  title: A nested object's fields don't follow the order its own schema file declares.
+  description: >-
+    Per STYLE_GUIDE.md §2, §3, §4, §5 and §6, the fields of a `metadata`
+    block, a component `trait` and its `values`, a section, a
+    `guidelines`/`definitions`/`steps` item, a `combo` and a `ref` each go
+    in the order that thing's own schema file lists them. Two compose
+    rather than concatenate: a section leads with `kind`, `for`, then the
+    single field its kind adds (`framing` for guidelines, `ordered` for
+    steps), then the rest of sections/section.schema.yaml's order; a trait
+    leads with `traitType`, then `kind`, then the fields every trait
+    shares, then the rest its own boolean or enum branch adds.
+  note: >-
+    Reads every order out of the schema files at runtime, the way DSDS-17
+    and DSDS-20 do, so this rule keeps no second copy of any order. Skips
+    `$extensions` subtrees: their contents are vendor data, not DSDS objects,
+    and an object in there that happens to carry `href` is not a ref.
+
+- id: DSDS-23
+  name: combo-order
+  enforcement: advisory
+  title: An entry's `combos[]` don't keep one `subject` together, in `level` order.
+  description: >-
+    Per STYLE_GUIDE.md §6, every combo for one `subject` stays together in
+    `combos[]`, and within a subject they run in `level` order, so a reader
+    checking one trait or token finds all of its rules in one place.
+  note: >-
+    Grouping, not sorting. Which subject comes first is the author's call -
+    STYLE_GUIDE.md's global rule is "don't alphabetize", so this reports only a
+    subject that appears, stops, and appears again. `level` uses the order
+    common/requirement-level.schema.yaml declares, the same order DSDS-19
+    applies to guideline items.
