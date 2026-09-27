@@ -187,9 +187,12 @@ Everyone who has landed a PR here, with what it added:
   ([#31](https://github.com/somerandomdude/design-system-documentation-schema/pull/31)),
   the nested/aliased DTCG interop example
   ([#32](https://github.com/somerandomdude/design-system-documentation-schema/pull/32)),
-  and the token-description lint rule
+  the token-description lint rule
   ([#33](https://github.com/somerandomdude/design-system-documentation-schema/pull/33)) —
-  which is `DSDS-13` in today's catalog.
+  which is `DSDS-13` in today's catalog — and its companion for descriptions that
+  only restate a scale position
+  ([#37](https://github.com/somerandomdude/design-system-documentation-schema/pull/37)),
+  now `DSDS-16`.
 - **[Suleiman Ali Shakir](https://iamsuleiman.com/)** — the README validation
   one-liner and lockfile
   ([#34](https://github.com/somerandomdude/design-system-documentation-schema/pull/34)),
@@ -197,7 +200,21 @@ Everyone who has landed a PR here, with what it added:
   ([#20](https://github.com/somerandomdude/design-system-documentation-schema/pull/20)).
 - **[Mykhaylo Ryechkin](https://github.com/mryechkin)** — the agent skills
   (`.agents/skills/`) and `scripts/generate/sync-skill-versions.js`
-  ([#29](https://github.com/somerandomdude/design-system-documentation-schema/pull/29)).
+  ([#29](https://github.com/somerandomdude/design-system-documentation-schema/pull/29)),
+  and updating those skills for the 0.21 schema
+  ([#46](https://github.com/somerandomdude/design-system-documentation-schema/pull/46)).
+- **[Mark Toadvine](https://github.com/marktoadvine)** — the `shared-a11y` WCAG 2.2
+  accessibility guidelines in the starter kit
+  ([#38](https://github.com/somerandomdude/design-system-documentation-schema/pull/38)).
+- **[Chris Strahl](https://github.com/chrisstrahl)** — real API identifier shapes on a
+  trait `id` and the widened `combo` target
+  ([#42](https://github.com/somerandomdude/design-system-documentation-schema/pull/42)),
+  and resolving a `same-as` target before flagging a missing `checkedBy`, fixing a
+  `DSDS-14` false positive
+  ([#43](https://github.com/somerandomdude/design-system-documentation-schema/pull/43)).
+- **[isabelthedesigner](https://www.isabelthedesigner.com)** — the anti-pattern for bare
+  WCAG conformance claims
+  ([#44](https://github.com/somerandomdude/design-system-documentation-schema/pull/44)).
 
 And with thanks for contributions that didn't arrive as a PR:
 
