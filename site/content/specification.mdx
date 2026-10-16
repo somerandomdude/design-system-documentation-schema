@@ -84,6 +84,10 @@ An entry's `id` MUST be lowercase words joined by dashes, with dots allowed betw
 
 A lowercase UUID fits this shape, so an entry's or an item's `id` MAY be one, like `3f9a1c2e-8b4d-4e2a-9c71-5d0e6f8a2b13`. It suits something that tools outside the project link to and that gets renamed: `name` holds the readable label, and the `id` never has to change. A project can mix readable ids and UUIDs.
 
+When a stable machine key is needed alongside a readable ref target, an entry SHOULD use a readable `id` and `metadata.uuid`. A lowercase UUID as `id` remains valid. `metadata.uuid` is independent of `id` and `name`, and is not a ref target; `to:` refs continue to use `id`. Like a published `id`, `metadata.uuid` SHOULD NOT change once published.
+
+For an example, see [`xui.header-and-in-page-navigation`](/examples/entries/header-and-in-page-navigation.yaml).
+
 Whatever its form, an `id` SHOULD NOT change once a document using it is published, since every pointer and inline link to it would break. Change `name` instead. If an entry's `id` has to change, keep the old entry as a deprecated stub whose `replacedBy` names the new one, so consumers can follow it (processing model §7). A validator sees one version of a document, so it can't check this; a project that needs the guarantee checks it in its own CI, by comparing ids with the version before.
 
 ### 3.2 Item ids and addresses
@@ -111,6 +115,8 @@ A `system`, `token`, `theme` or `component` entry MUST NOT have any field its sc
 ### 4.2 Metadata
 
 Every date in `metadata` MUST be written as `YYYY-MM-DD` (schema: metadata/metadata).
+
+When present, `metadata.uuid` MUST be a lowercase hyphenated UUID, with no UUID version restriction (schema: metadata/metadata).
 
 `metadata.status` is one status object, or a list with one for each platform. A status MUST have a `status` word (schema: metadata/entry-metadata). When the word is `deprecated`, the status MUST also have a `deprecationNotice` that says what to use instead (schema: metadata/entry-metadata). It can name the replacement in `replacedBy`, which MUST NOT appear in a status that isn't `deprecated` (schema: metadata/entry-metadata).
 
