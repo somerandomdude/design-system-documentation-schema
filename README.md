@@ -223,6 +223,8 @@ Everyone who has landed a PR here, with what it added:
 - **[isabelthedesigner](https://www.isabelthedesigner.com)** — the anti-pattern for bare
   WCAG conformance claims
   ([#44](https://github.com/somerandomdude/design-system-documentation-schema/pull/44)).
+- **[Josh Harwood](https://github.com/NoWorries)** — the optional stable entry `uuid`
+  field and its examples ([#54](https://github.com/somerandomdude/design-system-documentation-schema/pull/54)).
 
 And with thanks for contributions that didn't arrive as a PR:
 

@@ -183,7 +183,7 @@ $defs:
     description: Lowercase, dash-separated segments, optionally chained with dots. A section item's own `id` is optional, but a conforming consumer MUST be able to address every item. When an item has no `id`, consumers MUST derive one from the item's own text so content has a consistent id. The `$comment` below gives the exact derivation.
     $comment: |-
       An id from an outside tool that doesn't fit this format goes under `$extensions.<namespace>.displayName` instead.
-      A lowercase UUID fits this format, so it can be the id itself (`3f9a1c2e-8b4d-4e2a-9c71-5d0e6f8a2b13`), for an entry or an item that other tools link to and that gets renamed. Put the readable label in `name`, and link to it with `<dsds:…>` in prose, which shows the name. An uppercase UUID doesn't fit: generate it in lowercase. Readable ids and UUIDs can be mixed in one project.
+      A lowercase UUID is a valid `id`. For an entry that needs a separate stable key, use a readable `id` and a top-level `uuid`.
       A published id should never change, since every pointer and inline link to it would break, along with any link from outside the project. Change `name` instead. If the id really has to change, keep the old entry as a deprecated stub whose `replacedBy` names the new one.
       An agent citing "why did you do that" needs something to cite, and same-as/refines/checks all point at an item by id. To derive one: lowercase the item's own primary text field (a definitions item's `term`, a guidelines item's `statement`, a steps item's or freeform entry's `title`), replace each run of characters outside `[a-z0-9]` with a single dash, then trim any leading or trailing dash.
     pattern: ^[a-z0-9]+(-[a-z0-9]+)*(\.[a-z0-9]+(-[a-z0-9]+)*)*$
@@ -651,6 +651,12 @@ $defs:
         description: The human-readable display name.
         $comment: Kept separate from `id`, which is machine-readable.
         example: Button
+      uuid:
+        type: string
+        pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$
+        description: A stable machine identifier for this entry, independent of its `id` and `name`. It SHOULD NOT change once published.
+        $comment: 'Not a ref target: `to:` pointers still use `id`.'
+        example: 550e8400-e29b-41d4-a716-446655440000
       description:
         $ref: https://designsystemdocspec.org/v0.23.0/common/markdown.schema.yaml
         description: What this entry is, and why it exists. Lead with what it is, in one sentence.

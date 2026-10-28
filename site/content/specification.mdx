@@ -84,6 +84,10 @@ An entry's `id` MUST be lowercase words joined by dashes, with dots allowed betw
 
 A lowercase UUID fits this shape, so an entry's or an item's `id` MAY be one, like `3f9a1c2e-8b4d-4e2a-9c71-5d0e6f8a2b13`. It suits something that tools outside the project link to and that gets renamed: `name` holds the readable label, and the `id` never has to change. A project can mix readable ids and UUIDs.
 
+An entry MAY have a top-level `uuid` as a stable machine key. It is not a ref target: `to:` refs still use `id`. A published `uuid` SHOULD NOT change.
+
+For an example, see [`example.entry-with-uuid`](/examples/entries/entry-with-uuid.yaml).
+
 Whatever its form, an `id` SHOULD NOT change once a document using it is published, since every pointer and inline link to it would break. Change `name` instead. If an entry's `id` has to change, keep the old entry as a deprecated stub whose `replacedBy` names the new one, so consumers can follow it (processing model §7). A validator sees one version of a document, so it can't check this; a project that needs the guarantee checks it in its own CI, by comparing ids with the version before.
 
 ### 3.2 Item ids and addresses
@@ -102,7 +106,7 @@ Some values can be custom: an entry kind, a section kind, a section's `context`,
 
 ### 4.1 Every entry
 
-Every entry MUST have `kind`, `id`, `name` and `description` (schema: entries/entry). `description` says what the entry is and why it exists, starting with what it is.
+Every entry MUST have `kind`, `id`, `name` and `description` (schema: entries/entry). Entries MAY also have a top-level `uuid` as a stable machine identifier. `description` says what the entry is and why it exists, starting with what it is.
 
 `kind` MUST be `system`, `token`, `theme`, `component` or `entry`, or a namespaced custom kind (schema: entries/entry). Use `entry` for content like patterns, foundations, guides, or anything else that has no kind of its own.
 

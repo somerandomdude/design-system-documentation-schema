@@ -88,7 +88,7 @@ open base:
 <!-- dsds:entry-envelope -->
 
 ```
-kind, id, name, description, metadata, sections, uses, extends, alternatives, refs, $extensions
+kind, id, name, uuid, description, metadata, sections, uses, extends, alternatives, refs, $extensions
 ```
 
 <!-- /dsds:entry-envelope -->
