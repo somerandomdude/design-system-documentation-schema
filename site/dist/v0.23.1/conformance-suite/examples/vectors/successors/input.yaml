@@ -1,0 +1,72 @@
+# Processing model §7: following `replaced-by` to a successor.
+# - `variant.primary-blue` was renamed: one successor;
+# - `variant.secondary-green` has two successors, so a reader has to choose;
+# - `content.icon` moved to another component;
+# - `old-button` is replaced by `button-v2`, itself deprecated in favour of `button`, so the
+#   successor a reader should use is `button`.
+# A successor sits in `status.replacedBy`, next to the deprecation notice, so only something
+# deprecated can name one - the schema rejects `replacedBy` anywhere else.
+schemaVersion: "0.23.1"
+name: Successors
+entries:
+  - kind: component
+    id: button
+    name: Button
+    description: Triggers an action.
+    traits:
+      - traitType: variant
+        kind: enum
+        id: variant
+        description: Fill and colour.
+        values:
+          - id: primary
+            description: Filled, for the main action.
+          - id: primary-blue
+            description: Blue filled button.
+            status:
+              status: deprecated
+              deprecationNotice: Renamed to `primary`.
+              replacedBy:
+                - to: button#variant.primary
+          - id: secondary
+            description: Outlined.
+          - id: success
+            description: Filled green.
+          - id: secondary-green
+            description: Green outlined button.
+            status:
+              status: deprecated
+              deprecationNotice: Use `success` for a filled green action, or `secondary` when it has to stay outlined.
+              replacedBy:
+                - to: button#variant.success
+                - to: button#variant.secondary
+      - traitType: variant
+        kind: enum
+        id: content
+        description: What the button shows.
+        values:
+          - id: label
+            description: Text, with optional icons.
+          - id: icon
+            description: Icon only.
+            status:
+              status: deprecated
+              deprecationNotice: Icon-only buttons are their own component now.
+              replacedBy:
+                - to: icon-button
+  - kind: component
+    id: icon-button
+    name: Icon Button
+    description: A button with only an icon.
+  - kind: component
+    id: old-button
+    name: Old Button
+    description: The first button.
+    metadata:
+      status: {status: deprecated, deprecationNotice: Use `button-v2`., replacedBy: [{to: button-v2}]}
+  - kind: component
+    id: button-v2
+    name: Button v2
+    description: The second button.
+    metadata:
+      status: {status: deprecated, deprecationNotice: Use `button`., replacedBy: [{to: button}]}

@@ -1,0 +1,61 @@
+# Processing model §2: how a `#` address finds its target.
+# - an explicit `id` (`name-it`) beats the id another item derives from its text;
+# - an item with no `id` is addressed by the id derived from its text;
+# - a freeform entry, at any depth, is addressed the same way, by `title`;
+# - a trait is addressed by its id, and an enum value as `traitId.valueId`;
+# - an item that only reuses another takes that item's address. On shared-a11y the reused
+#   item and the item reusing it share `focus-visible`; the one that states it wins.
+schemaVersion: "0.23.1"
+name: Addresses
+entries:
+  - kind: component
+    id: button
+    name: Button
+    description: Triggers an action.
+    sections:
+      - kind: guidelines
+        for: all
+        items:
+          - id: name-it
+            level: must
+            statement: Give every button an accessible name.
+          - level: should
+            statement: Name it!
+          - refs:
+              - to: shared-a11y#focus-visible
+                rel: same-as
+      - kind: section
+        for: all
+        freeform:
+          - title: Keyboard & focus
+            items:
+              - title: Tab order
+    traits:
+      - traitType: variant
+        kind: enum
+        id: size
+        description: How big it is.
+        values:
+          - id: small
+            description: Compact.
+      - traitType: state
+        kind: boolean
+        id: isDisabled
+        description: Can't be pressed.
+shared:
+  - id: shared-a11y
+    name: Shared accessibility rules
+    description: Rules every interactive component follows.
+    sections:
+      - kind: guidelines
+        for: all
+        items:
+          - id: focus-visible
+            level: must
+            statement: Keep the focus indicator visible.
+      - kind: guidelines
+        for: agent
+        items:
+          - refs:
+              - to: shared-a11y#focus-visible
+                rel: same-as

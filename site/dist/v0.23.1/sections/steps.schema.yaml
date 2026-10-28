@@ -1,0 +1,71 @@
+$schema: https://json-schema.org/draft/2020-12/schema
+$id: https://designsystemdocspec.org/v0.23.1/sections/steps.schema.yaml
+title: StepsSection
+description: >-
+  A series of actions/steps/tasks, like a tutorial, a migration, a pattern's
+  interaction flow, or checklist of things to verify.
+$comment: >-
+  Useful whenever documenting a multi-phase process of job to be done.
+
+allOf:
+  - $ref: https://designsystemdocspec.org/v0.23.1/sections/section.schema.yaml
+  - type: object
+    properties:
+      kind:
+        const: steps
+        description: Marks this section as a stepped process or checklist.
+      ordered:
+        type: boolean
+        default: true
+        description: Whether entries must be done in order. Set to false for an unordered checklist.
+      items:
+        type: array
+        description: The steps or checklist entries, in order.
+        minItems: 1
+        items:
+          type: object
+          # `title` is required only when the entry states its own content. An
+          # entry that points elsewhere via `refs` takes the target's and
+          # doesn't restate it.
+          if:
+            not:
+              required: [refs]
+          then:
+            required: [title]
+          properties:
+            id:
+              $ref: https://designsystemdocspec.org/v0.23.1/common/id.schema.yaml
+              description: "An optional stable id, so a ref or a same-as pointer can address this step directly. `id` is optional, but a conforming consumer MUST derive one from this item's own text."
+              $comment: The derivation algorithm is in common/id.schema.yaml's own description.
+            optional:
+              type: boolean
+              default: false
+              description: Whether this entry can be skipped without breaking the procedure or checklist.
+            title:
+              type: string
+              description: "A short heading for this entry, for example 'Install the package' or 'Focus ring is visible'."
+              example: Install the package
+            description:
+              $ref: https://designsystemdocspec.org/v0.23.1/common/markdown.schema.yaml
+              description: What to do, what happens, and what success looks like.
+              example: Run `npm install @org/ds-react`.
+            examples:
+              $ref: https://designsystemdocspec.org/v0.23.1/common/example.schema.yaml#/$defs/list
+              description: "A screenshot, recording, or live URL. For code, point at a file or story through the example's `ref` instead."
+            uses:
+              $ref: https://designsystemdocspec.org/v0.23.1/common/ref.schema.yaml#/$defs/targets
+              description: "Entries this item is about or needs, like the components a step involves (uses). No `rel`: this field says it."
+              example:
+                - to: button
+            refs:
+              $ref: https://designsystemdocspec.org/v0.23.1/common/ref.schema.yaml#/$defs/list
+              description: "Every other pointer from this step, each with its own `rel`. To say a step verifies a guideline, point the guideline's `checks` at the step instead."
+              example:
+                - href: ./install.sh
+                  rel: file
+            $extensions:
+              $ref: https://designsystemdocspec.org/v0.23.1/common/extensions.schema.yaml
+              description: Escape hatch for tool data scoped to just this one step, keyed by namespace.
+          additionalProperties: false
+
+unevaluatedProperties: false

@@ -1,0 +1,56 @@
+# Processing model §4: reusing an item with `same-as`.
+# - `short-pointer` reuses `stated`, which reuses `source`: content comes from the end of the
+#   chain, and `origin` names the item that states it;
+# - `with-own-check` keeps its own `checkedBy` and takes the rest;
+# - `wrong-level` declares a level its target doesn't share: a problem;
+# - `wrong-kind` is a guidelines item reusing a definitions item: a problem.
+schemaVersion: "0.23.1"
+name: Reuse
+entries:
+  - kind: entry
+    id: pattern
+    name: Pattern
+    description: A pattern that owns a rule.
+    sections:
+      - kind: guidelines
+        for: all
+        items:
+          - id: source
+            level: must
+            statement: Name what's being confirmed.
+            checkedBy: manual
+      - kind: definitions
+        for: all
+        items:
+          - term: Confirm
+            definition: Agree to go ahead.
+  - kind: component
+    id: dialog
+    name: Dialog
+    description: Asks the user to confirm.
+    sections:
+      - kind: guidelines
+        for: all
+        items:
+          - id: stated
+            refs:
+              - to: pattern#source
+                rel: same-as
+          - id: short-pointer
+            refs:
+              - to: dialog#stated
+                rel: same-as
+          - id: with-own-check
+            checkedBy: assisted
+            refs:
+              - to: pattern#source
+                rel: same-as
+          - id: wrong-level
+            level: should
+            refs:
+              - to: pattern#source
+                rel: same-as
+          - id: wrong-kind
+            refs:
+              - to: pattern#confirm
+                rel: same-as

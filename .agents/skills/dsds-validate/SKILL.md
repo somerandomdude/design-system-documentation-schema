@@ -2,7 +2,7 @@
 name: dsds-validate
 description: Validate DSDS specs against the bundled schema and check for consistency issues. Triggers on "validate specs", "check specs", "spec errors", "run validation".
 metadata:
-  version: 0.23.0
+  version: 0.23.1
 ---
 
 # Validate DSDS Specs
@@ -15,7 +15,7 @@ Run schema and semantic validation on your `.dsds.yaml` documents.
 npx dsds-validate <files-or-globs>
 ```
 
-This validates every file given against the DSDS v0.23.0 bundled schema using Ajv2020, plus a set of semantic rules JSON Schema alone can't express — `DSDS-01`–`DSDS-11`, `DSDS-24` and `DSDS-25` (resolution, uniqueness, platform vocabulary, loops in `uses`/`extends`/`same-as`/`replaced-by` chains, where `same-as` and `replaced-by` may sit, file-existence checks, and unknown fields on a generic `entry` or `section`), each tagged `structural` or `semantic`. Pass `--strict` to promote the warning-only rules (`DSDS-05`, `DSDS-08`, `DSDS-09`, `DSDS-11`, `DSDS-24`) to hard failures.
+This validates every file given against the DSDS v0.23.1 bundled schema using Ajv2020, plus a set of semantic rules JSON Schema alone can't express — `DSDS-01`–`DSDS-11`, `DSDS-24` and `DSDS-25` (resolution, uniqueness, platform vocabulary, loops in `uses`/`extends`/`same-as`/`replaced-by` chains, where `same-as` and `replaced-by` may sit, file-existence checks, and unknown fields on a generic `entry` or `section`), each tagged `structural` or `semantic`. Pass `--strict` to promote the warning-only rules (`DSDS-05`, `DSDS-08`, `DSDS-09`, `DSDS-11`, `DSDS-24`) to hard failures.
 
 ## Documentation-Quality Checks (advisory)
 
@@ -86,7 +86,7 @@ Prefer `--json` when you're fixing findings yourself: the pointer tells you wher
 
 The validation schema comes from the [DSDS project](https://github.com/somerandomdude/design-system-documentation-schema):
 
-- **Bundled schema** (used by `dsds-validate`): `https://designsystemdocspec.org/v0.23.0/dsds.bundled.schema.json`, or `node_modules/design-system-documentation-schema/schema/dsds.bundled.schema.json` if installed as a dependency
+- **Bundled schema** (used by `dsds-validate`): `https://designsystemdocspec.org/v0.23.1/dsds.bundled.schema.json`, or `node_modules/design-system-documentation-schema/schema/dsds.bundled.schema.json` if installed as a dependency
 - This is a single-file version with every schema file's own `$id` still present, so `$ref`s resolve without needing to be inlined
 
 If validation fails on a field you're unsure about, consult the relevant docs page:

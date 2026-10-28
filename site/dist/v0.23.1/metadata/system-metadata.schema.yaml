@@ -1,0 +1,50 @@
+$schema: https://json-schema.org/draft/2020-12/schema
+$id: https://designsystemdocspec.org/v0.23.1/metadata/system-metadata.schema.yaml
+title: SystemMetadata
+description: Information about the design system as a whole, on top of the fields every metadata object shares.
+$comment: Adds fields specifically for the system. See metadata/entry-metadata.schema.yaml for the per-entry equivalent.
+
+allOf:
+  - $ref: https://designsystemdocspec.org/v0.23.1/metadata/metadata.schema.yaml
+  - type: object
+    properties:
+      organization:
+        type: string
+        description: The team or company that owns the design system.
+        example: Acme Inc.
+      url:
+        type: string
+        format: uri
+        description: The main home page or repository for the design system.
+        example: https://github.com/acme/design-system
+      version:
+        $ref: https://designsystemdocspec.org/v0.23.1/common/since.schema.yaml
+        description: The current version of the design system.
+      platforms:
+        type: array
+        description: "The platforms this system ships on, for example \"react\" or \"web-component\". When this list is present, every other `platform` value used anywhere in the document MUST match one of these."
+        minItems: 1
+        uniqueItems: true
+        items:
+          $ref: https://designsystemdocspec.org/v0.23.1/common/id.schema.yaml
+        example: [react, web-component, ios]
+      license:
+        type: string
+        description: The license this design system is published under.
+        example: MIT
+      sourceRoot:
+        type: string
+        format: uri-reference
+        description: >-
+          Where relative `sourceFiles` paths start from, when the code lives
+          somewhere other than these documents. A path is relative to the
+          document that holds this system entry; a URL is used as is. Every
+          relative `sourceFiles` path in the project MUST be read from here
+          when it's set (DSDS-11).
+        $comment: >-
+          For docs kept apart from the code they describe, such as a docs
+          repo next to a code repo. Applies to `sourceFiles` only: a token's
+          `source` and a `rel: source` ref still start from their own
+          document. Without it, a `sourceFiles` path starts from its own
+          document's folder.
+        example: ../ui

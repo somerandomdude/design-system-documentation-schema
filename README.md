@@ -142,7 +142,7 @@ Add `--json` for a machine-readable report: each finding carries its rule id, a 
 
 To put a document's fields in the style guide's order, run `node scripts/format/format.js my-system.dsds.yaml` (`dsds-format` once installed). It only moves lines, so text and comments stay as they are. Add `--check` to change nothing and exit 1 if a file needs formatting.
 
-Reference `https://designsystemdocspec.org/v0.23.0/dsds.bundled.yaml` from your DSDS files via the `$schema` keyword for editor autocompletion and inline validation.
+Reference `https://designsystemdocspec.org/v0.23.1/dsds.bundled.yaml` from your DSDS files via the `$schema` keyword for editor autocompletion and inline validation.
 
 For document structure, composing hand-split fragments (`scripts/tools/compose.js`), and authoring narrative pages with schema-driven property tables, see the **[Quick Start docs page](https://designsystemdocspec.org/quickstart.html)** and [How the schema is organized](https://designsystemdocspec.org/schema.html#how-the-schema-is-organized).
 
@@ -185,7 +185,7 @@ For a documentation-only edit (no schema/example changes), just commit the `site
 
 ## Contributing
 
-This is an early-stage specification (currently DSDS 0.23.0). Feedback and contributions are welcome — see [CONTRIBUTING.md](CONTRIBUTING.md) for what a rule, example, or schema change needs to land, and [SECURITY.md](SECURITY.md) to report a vulnerability.
+This is an early-stage specification (currently DSDS 0.23.1). Feedback and contributions are welcome — see [CONTRIBUTING.md](CONTRIBUTING.md) for what a rule, example, or schema change needs to land, and [SECURITY.md](SECURITY.md) to report a vulnerability.
 
 ### Contributors
 

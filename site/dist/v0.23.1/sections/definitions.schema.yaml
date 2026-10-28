@@ -1,0 +1,80 @@
+$schema: https://json-schema.org/draft/2020-12/schema
+$id: https://designsystemdocspec.org/v0.23.1/sections/definitions.schema.yaml
+title: DefinitionsSection
+description: Term definitions. Can describe content labels within components or patterns, define naming conventions, act as a glossary, or be a simple way to outline component props/APIs.
+$comment: >-
+  A `definitions` section on an entry defines that entry's own terms.
+  Distinct from `metadata.tags` or any other classification label.
+
+  `definitions` does several genuinely different jobs - a component's
+  anatomy, a glossary, a prop list stand-in, keyboard interactions,
+  event names - told apart only by `title` until `context` existed.
+  `context` (inherited from section.schema.yaml - see its own
+  $comment) makes the job machine-readable: a renderer can find "the
+  anatomy table" by checking `context: anatomy` instead of matching on
+  a human-written heading string, which drifts and gets localized.
+  `title` still carries the human-facing heading; `context` is what a
+  tool reads.
+allOf:
+  - $ref: https://designsystemdocspec.org/v0.23.1/sections/section.schema.yaml
+  - type: object
+    properties:
+      kind:
+        const: definitions
+        description: Marks this section as term-definition documentation.
+      items:
+        type: array
+        minItems: 1
+        description: One entry per term.
+        items:
+          type: object
+          # `term` and `definition` are required only when the entry states
+          # its own content. An entry that points elsewhere via `refs` takes
+          # the target's and doesn't restate it.
+          if:
+            not:
+              required: [refs]
+          then:
+            required: [term, definition]
+          properties:
+            id:
+              $ref: https://designsystemdocspec.org/v0.23.1/common/id.schema.yaml
+              description: "An optional stable id, so a ref or a same-as pointer can address this term directly. `id` is optional, but a conforming consumer MUST derive one from this item's own text."
+              $comment: The derivation algorithm is in common/id.schema.yaml's own description.
+            term:
+              type: string
+              description: The subject of the definition.
+              example: OK
+            definition:
+              $ref: https://designsystemdocspec.org/v0.23.1/common/markdown.schema.yaml
+              description: What the term means.
+              example: To confirm an action.
+            usage:
+              $ref: https://designsystemdocspec.org/v0.23.1/common/markdown.schema.yaml
+              description: When and how to use it, with formatting notes.
+              example: Use as the confirming action's label in a destructive-action dialog.
+            aliases:
+              type: array
+              minItems: 1
+              uniqueItems: true
+              items:
+                type: string
+                description: Related terms often confused with this one.
+                example: Confirm
+            uses:
+              $ref: https://designsystemdocspec.org/v0.23.1/common/ref.schema.yaml#/$defs/targets
+              description: "Entries this item relates to, like the components a step involves (uses)."
+              example:
+                - to: button
+            refs:
+              $ref: https://designsystemdocspec.org/v0.23.1/common/ref.schema.yaml#/$defs/list
+              description: "Pointers from this term, including `rel: same-as` to borrow a term declared once, in `base.shared` or in any entry."
+              example:
+                - to: "shared-terms#ok"
+                  rel: same-as
+            $extensions:
+              $ref: https://designsystemdocspec.org/v0.23.1/common/extensions.schema.yaml
+              description: Escape hatch for tool data scoped to just this one term, keyed by namespace.
+          additionalProperties: false
+
+unevaluatedProperties: false

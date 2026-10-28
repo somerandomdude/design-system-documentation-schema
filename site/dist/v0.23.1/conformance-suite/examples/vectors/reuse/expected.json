@@ -1,0 +1,143 @@
+{
+  "entries": [
+    {
+      "id": "pattern",
+      "kind": "entry",
+      "items": [
+        {
+          "address": "source",
+          "type": "item",
+          "source": "explicit",
+          "pointer": "/sections/0/items/0",
+          "content": {
+            "level": "must",
+            "statement": "Name what's being confirmed.",
+            "checkedBy": "manual"
+          }
+        },
+        {
+          "address": "confirm",
+          "type": "item",
+          "source": "derived",
+          "pointer": "/sections/1/items/0",
+          "content": {
+            "term": "Confirm",
+            "definition": "Agree to go ahead."
+          }
+        }
+      ],
+      "incoming": [
+        {
+          "rel": "same-as",
+          "from": "dialog#stated",
+          "pointer": "dialog/sections/0/items/0/refs/0",
+          "at": "source"
+        },
+        {
+          "rel": "same-as",
+          "from": "dialog#with-own-check",
+          "pointer": "dialog/sections/0/items/2/refs/0",
+          "at": "source"
+        },
+        {
+          "rel": "same-as",
+          "from": "dialog#wrong-kind",
+          "pointer": "dialog/sections/0/items/4/refs/0",
+          "at": "confirm"
+        },
+        {
+          "rel": "same-as",
+          "from": "dialog#wrong-level",
+          "pointer": "dialog/sections/0/items/3/refs/0",
+          "at": "source"
+        }
+      ]
+    },
+    {
+      "id": "dialog",
+      "kind": "component",
+      "items": [
+        {
+          "address": "stated",
+          "type": "item",
+          "source": "explicit",
+          "pointer": "/sections/0/items/0",
+          "reuses": "pattern#source",
+          "origin": "pattern#source",
+          "content": {
+            "level": "must",
+            "statement": "Name what's being confirmed.",
+            "checkedBy": "manual"
+          }
+        },
+        {
+          "address": "short-pointer",
+          "type": "item",
+          "source": "explicit",
+          "pointer": "/sections/0/items/1",
+          "reuses": "dialog#stated",
+          "origin": "pattern#source",
+          "content": {
+            "level": "must",
+            "statement": "Name what's being confirmed.",
+            "checkedBy": "manual"
+          }
+        },
+        {
+          "address": "with-own-check",
+          "type": "item",
+          "source": "explicit",
+          "pointer": "/sections/0/items/2",
+          "reuses": "pattern#source",
+          "origin": "pattern#source",
+          "content": {
+            "level": "must",
+            "statement": "Name what's being confirmed.",
+            "checkedBy": "assisted"
+          }
+        },
+        {
+          "address": "wrong-level",
+          "type": "item",
+          "source": "explicit",
+          "pointer": "/sections/0/items/3",
+          "reuses": "pattern#source",
+          "origin": "pattern#source",
+          "content": {
+            "level": "should",
+            "statement": "Name what's being confirmed.",
+            "checkedBy": "manual"
+          }
+        },
+        {
+          "address": "wrong-kind",
+          "type": "item",
+          "source": "explicit",
+          "pointer": "/sections/0/items/4",
+          "reuses": "pattern#confirm",
+          "content": {}
+        }
+      ],
+      "incoming": [
+        {
+          "rel": "same-as",
+          "from": "dialog#short-pointer",
+          "pointer": "dialog/sections/0/items/1/refs/0",
+          "at": "stated"
+        }
+      ]
+    }
+  ],
+  "problems": [
+    {
+      "code": "same-as-kind",
+      "at": "dialog#wrong-kind",
+      "message": "same-as target is a different kind of item: a guidelines item reuses a definitions item"
+    },
+    {
+      "code": "level-mismatch",
+      "at": "dialog#wrong-level",
+      "message": "declares level \"should\" but reuses \"pattern#source\", which declares \"must\""
+    }
+  ]
+}

@@ -1,0 +1,64 @@
+$schema: https://json-schema.org/draft/2020-12/schema
+$id: https://designsystemdocspec.org/v0.23.1/common/combo.schema.yaml
+title: Combo
+type: object
+description: Defines what an element can or cannot be paired with. Relates to traits, tokens, and entries.
+$comment: >-
+  A combo is a pairing rule, It lives on the entry the rule is about
+  (`subject`), naming what else (`items`) can or cannot be used with
+  it, and how strict the rule is (`level`). `subject` and each of
+  `items` do not need to be the same type.
+required: [subject, items, level]
+properties:
+  subject:
+    $ref: "#/$defs/target"
+    description: "The subject of what elements can or cannot be paired with. Can be a trait, token, or entry id."
+    example: size.large
+  level:
+    $ref: https://designsystemdocspec.org/v0.23.1/common/requirement-level.schema.yaml
+    description: Whether the elements in `items` can or cannot be paired with the subject—and how strict the rule is.
+    $comment: >-
+      `must`/`should` make `items` allowed. `should-not`/`must-not` make `items`
+      denied. `must`/`must-not` make the rule explicit. `should`/`should-not` make it a recommendation.
+  items:
+    type: array
+    minItems: 1
+    uniqueItems: true
+    items:
+      $ref: "#/$defs/target"
+    description: The elements paired with the subject.
+    $comment: What `level` says (permitted or forbidden) applies to every entry here.
+    example: ["{color.surface.default}", "{color.surface.raised}"]
+  note:
+    type: string
+    description: Why this rule holds.
+    $comment: Provides rationale to the rule defined in `subject`/`items`/`level`.
+    example: Contrast is verified only against these surfaces; on any other background the label ratio is unproven.
+additionalProperties: false
+$defs:
+  target:
+    description: An entry id, a trait target on this entry, or a token reference wrapped in braces.
+    anyOf:
+      - $ref: https://designsystemdocspec.org/v0.23.1/common/id.schema.yaml
+      - $ref: "#/$defs/traitTarget"
+      - $ref: "#/$defs/tokenRef"
+    example: "{color.action.primary}"
+  traitTarget:
+    type: string
+    description: A boolean trait's id, or `traitId.valueId` for one enum value.
+    $comment: >-
+      Segments use the same shape as common/id.schema.yaml's `apiId`, since a trait
+      id mirrors a real prop or attribute name. Exactly one optional dot: the
+      addressing form is never deeper than trait-then-value, which is why `apiId`
+      itself forbids a dot.
+    pattern: '^[A-Za-z0-9_$]+(-[A-Za-z0-9_$]+)*(\.[A-Za-z0-9_$]+(-[A-Za-z0-9_$]+)*)?$'
+    example: size.large
+  tokenRef:
+    type: string
+    description: A token reference, wrapped in braces.
+    $comment: >-
+      Wraps common/id.schema.yaml's `tokenId` shape, so a token id this schema
+      accepts can always be referenced here. The two drifted before: `tokenId`
+      allowed slashes and this pattern did not.
+    pattern: '^\{[A-Za-z0-9_$]+(-[A-Za-z0-9_$]+)*([./][A-Za-z0-9_$]+(-[A-Za-z0-9_$]+)*)*\}$'
+    example: "{color.action.primary}"
