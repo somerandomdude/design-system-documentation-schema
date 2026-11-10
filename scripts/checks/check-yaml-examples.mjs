@@ -89,6 +89,11 @@ if (fs.existsSync(DIST_DIR)) {
     for (const line of text.split("\n")) {
       if (DSDS_KEY.test(line)) fail(`built ${path.relative(ROOT, file)}`, line);
     }
+    // A YAML <ds-code> keeps a plain <pre> fallback first, so its line breaks show without JavaScript.
+    if (/<ds-code\b[^>]*language="yaml"[^>]*>(?!<pre><code class="language-yaml">)/.test(html)) {
+      console.error(`✗ built ${path.relative(ROOT, file)}: a YAML <ds-code> has no plain <pre> fallback, so it shows as one line without JavaScript.`);
+      failures++;
+    }
   }
 }
 
