@@ -22,7 +22,7 @@
 //      - not Netlify's static 404.html pushed through a markdown reader.
 //
 // PAGE_MD_PATH is exactly the set of pages this site publishes as an
-// HTML+.md pair: nav.js's TOP_LINKS + FOOTER_LINKS, plus "/" for the
+// HTML+.md pair: nav.js's TOP_LINKS + FOOTER_LINKS + PROJECT_LINKS, plus "/" for the
 // Overview page itself (nav.js's own "index" slug). Kept as an explicit,
 // hand-written list rather than generated at build time, because an edge
 // function is committed source Netlify's own deploy step discovers - it
@@ -42,6 +42,9 @@ const PAGE_MD_PATH = new Map([
   ["/stability", "/stability.md"],
   ["/interoperability", "/interoperability.md"],
   ["/security", "/security.md"],
+  ["/about", "/about.md"],
+  ["/contact", "/contact.md"],
+  ["/privacy", "/privacy.md"],
   ["/examples", "/examples.md"],
   ["/style-guide", "/style-guide.md"],
 ]);

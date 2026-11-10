@@ -13,7 +13,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { TOP_LINKS, FOOTER_LINKS } from "../site/nav.js";
+import { TOP_LINKS, FOOTER_LINKS, PROJECT_LINKS } from "../site/nav.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "..", "..");
@@ -36,7 +36,7 @@ if (!match) {
 const negotiatedPaths = new Set([...match[1].matchAll(/\["([^"]+)"/g)].map((m) => m[1]));
 
 const expectedPaths = new Set(
-  [...TOP_LINKS, ...FOOTER_LINKS].map(({ slug }) => (slug === "index" ? "/" : `/${slug}`)),
+  [...TOP_LINKS, ...FOOTER_LINKS, ...PROJECT_LINKS].map(({ slug }) => (slug === "index" ? "/" : `/${slug}`)),
 );
 
 for (const p of expectedPaths) {
