@@ -64,7 +64,7 @@ Two pages on the site cover what it takes to follow the spec:
 - **[Conformance](https://designsystemdocspec.org/conformance)** — the four conformance classes, the three enforcement tiers, all 25 rules, how a project's scope gets worked out, and how a component's status works when it ships on more than one platform.
 - **[Specification](https://designsystemdocspec.org/specification)** — the normative definition of DSDS in numbered sections: what a document must contain, and what validators and consumers must do. Every requirement names the schema file, rule or test vector that enforces it.
 - **[Processing model](https://designsystemdocspec.org/processing)** — what a consumer works out from a document: which item a `#` address names, where a reused rule's content comes from, what replaces a deprecated value. Normative, with test vectors.
-- **[Stability](https://designsystemdocspec.org/stability)** — what's safe to build tooling on, what can still change before 1.0, how to bring a 0.15.2 document up to date, and what has to be true before 1.0 ships.
+- **[Stability](https://designsystemdocspec.org/stability)** — what's safe to build tooling on, what can still change before 1.0, how to bring an older document up to date, and what has to be true before 1.0 ships.
 
 If you're writing a tool, read the rules from [`schema/conformance-rules.yaml`](schema/conformance-rules.yaml) rather than from a page. `npm run check` keeps that file honest: for the semantic rules, every rule in the file has to exist in `scripts/validate/validate.js`, and every rule in the validator has to exist in the file.
 

@@ -69,7 +69,7 @@ A guideline item states one rule:
 - `checkedBy`: how the rule is verified. `automated` (a tool checks it), `assisted` (a tool flags likely cases and a person decides), or `manual`. Leave it out if you don't know yet.
 - `checks`: what verifies the rule. A test, lint rule or agent eval as an `href`, with `role: test`, `lint-rule` or `agent-test`; or a checklist step as a `to`. `checkedBy: automated` needs at least one `href`.
 - `evidence`: the outside standard behind the rule, such as a WCAG criterion.
-- `alternatives`: what to use instead. `refines`, on a `for: agent` item: the human rule it sharpens.
+- `alternatives`: what to use instead. On an entry it's where a 0.21 `related` went, with no `rel`. `refines`, on a `for: agent` item: the human rule it sharpens.
 - `example`, `tags`, and `refs` for any other pointer.
 
 `checks`, `evidence`, `alternatives` and `refines` are each named for one kind of pointer, so a pointer in them has no `rel`: `evidence: [{href: https://www.w3.org/…}]`.

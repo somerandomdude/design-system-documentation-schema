@@ -86,6 +86,19 @@ This is what your document would look like once a system and component are added
 
 Every entry kind shares one open base — `id`, `kind`, `name`, `description`, plus a handful of optional fields — defined at [entries/entry](schema.html#entries-entry). `kind` then picks a specialization: [`component`](schema.html#entries-component), [`token`](schema.html#entries-token), [`theme`](schema.html#entries-theme), [`system`](schema.html#entries-system), the open `entry` kind for anything else, or a custom kind of your own (like `acme.icon-library`). See [How the schema is organized](schema.html#how-the-schema-is-organized) for the full picture.
 
+Three fields on an entry point at other entries, and each one says what kind of link it is. `uses` lists what the entry is built from, or depends on. `extends` names the entry it inherits from. `alternatives` names an entry to use instead, in some situation. Upgrading a 0.21 document: an entry's `related` becomes `alternatives`, with no `rel`, and `purpose` and `metadata.context` fold into `description`. Each of the three takes a list of pointers, with no `rel`, because the field already says what they are:
+
+```yaml
+kind: component
+id: dialog
+name: Dialog
+description: A window that asks for a decision before the person goes on.
+uses:
+  - to: button
+alternatives:
+  - to: popover
+```
+
 </ds-guide-section>
 
 <ds-guide-section>
@@ -239,6 +252,7 @@ traits:
     traitType: variant
     kind: enum
     name: Tone
+    description: The visual weight of the button.
     values:
       - id: default
         description: Neutral. General-purpose actions.
@@ -359,16 +373,21 @@ A link only mentions something. If the entry depends on what it mentions, say so
 
 ## Validate your document
 
+Every complete document on this page validates as written. The first one is deliberately partial (see above), and the snippets that show one part of an entry, like `traits` or `combos`, are fragments, so they don't validate on their own.
+
 ### Using the bundled schema
 
-Add `$schema` to get editor autocompletion and inline validation:
+Add `$schema` to a base document, the file that has `schemaVersion`, to get editor autocompletion and inline validation. Entry files don't take `$schema`. To get the same help in them, map those files to the schema in your editor's YAML settings instead:
 
 <ds-code language="yaml" label="" slot="example" wrap>
 $schema: https://designsystemdocspec.org/v{{VERSION}}/dsds.bundled.yaml
-kind: component
-id: my-component
-name: My Component
-description: What this component is and does.
+schemaVersion: "{{VERSION}}"
+name: My Design System
+entries:
+  - kind: component
+    id: my-component
+    name: My Component
+    description: What this component is and does.
 </ds-code>
 
 </ds-guide-section>

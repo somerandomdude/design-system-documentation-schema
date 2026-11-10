@@ -122,6 +122,8 @@ Sections in the same breadth tier are then ordered by how broad the audience is.
 2. **`for: human`**
 3. **`for: agent`**
 
+The rule for audience is the same as the Overview page's: write for people by default. Add a `for: agent` section where an agent needs something a person doesn't, such as a recurring misreading.
+
 
 ```yaml
 sections:

@@ -1,0 +1,673 @@
+# DSDS quick start guide
+
+<ds-guide-section>
+
+## What is DSDS?
+
+DSDS (Design System Doc Spec) is a YAML format for documenting design systems. It helps document the how, when and why of a design system in a machine-readable format.
+
+This quick start guide is here to help you write your first DSDS document. If a dummy like PJ can write one, you can as well. 
+
+The schema itself is written in [JSON Schema](https://json-schema.org/), but the docs are written in YAML. All the validators that help you catch errors (like `npm run check`) require that format. 
+
+### What you get
+
+- **Structured data:** Every section has a defined structure to reduce ambiguity
+- **Machine-readable:** Tools can parse, generate, validate, and transform it
+- **Portable:** Say buh-bye to vendor lock-in
+- **Extensible:** Add your own content and metadata without breaking compatibility
+- **Validatable:** The schema catches errors before they reach consumers
+
+```
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@@                                   @@
+@@                                   @@
+@@    @@@@@@@@@@@     @@@@@@@@@@     @@
+@@    @@        @@   @@        @@    @@
+@@    @@        @@   @@              @@
+@@    @@        @@    @@@@@@@@@@     @@
+@@    @@        @@             @@    @@
+@@    @@        @@   @@        @@    @@
+@@    @@@@@@@@@@@     @@@@@@@@@@     @@
+@@                                   @@
+@@    @@@@@@@@@@@     @@@@@@@@@@     @@
+@@    @@        @@   @@        @@    @@
+@@    @@        @@   @@              @@
+@@    @@        @@    @@@@@@@@@@     @@
+@@    @@        @@             @@    @@
+@@    @@        @@   @@        @@    @@
+@@    @@@@@@@@@@@     @@@@@@@@@@     @@
+@@                                   @@
+@@                                   @@
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+```
+
+</ds-guide-section>
+
+<ds-guide-section>
+
+## Document structure
+
+A DSDS document starts with a **base**: `schemaVersion`, a `name`, and a list of **entries**.
+
+### The bare minimum
+
+This is valid YAML, but it's not a valid DSDS document yet. `entries` still need to be added:
+
+```yaml
+schemaVersion: "0.23.1"
+
+name: Acme Design System
+```
+
+</ds-guide-section>
+
+<ds-guide-section>
+
+### Adding a system entry
+
+DSDS uses entries to describe pieces of the system—even the system itself. So the best entry to add first is a system. This entry allows you to document all system-level information (version, organization, url, license, platforms). It also gives you the freedom to document multiple systems in one document (if that's your kind of thing):
+
+```yaml
+schemaVersion: "0.23.1"
+
+name: Pizza Party Design System
+
+entries:
+  - kind: system
+    id: pizza-party-design-system
+    name: Pizza Party Design System
+    description: The design system behind Pizza Party Super-time.
+    metadata:
+      status: {status: alpha}
+      organization: Pizza Party Super-time LLC
+      version: 0.1.0
+      platforms: [web-component]
+```
+
+</ds-guide-section>
+
+<ds-guide-section>
+
+### Adding more entries
+
+Once your system is documented, it's time to add other stuff—like a button. DSDS has a specific entry for components (`kind: component`—duh). Entries have no hierarchy, so your button sits at the same level as a system entry. Entries need _very little_ information to be valid. This'll give you the freedom to add placeholder content to fill out later.
+
+This is what your document would look like once a system and component are added.
+
+
+```yaml
+schemaVersion: "0.23.1"
+
+name: Pizza Party Design System
+
+entries:
+  - kind: system
+    id: pizza-party-design-system
+    name: Pizza Party Design System
+    description: The design system behind Pizza Party Super-time.
+    metadata:
+      status: {status: alpha}
+      organization: Pizza Party Super-time LLC
+      version: 0.1.0
+      platforms: [web-component]
+
+  - kind: component
+    id: button
+    name: Button
+    description: Triggers an action.
+```
+
+Every entry kind shares one open base — `id`, `kind`, `name`, `description`, plus a handful of optional fields — defined at [entries/entry](schema.html#entries-entry). `kind` then picks a specialization: [`component`](schema.html#entries-component), [`token`](schema.html#entries-token), [`theme`](schema.html#entries-theme), [`system`](schema.html#entries-system), the open `entry` kind for anything else, or a custom kind of your own (like `acme.icon-library`). See [How the schema is organized](schema.html#how-the-schema-is-organized) for the full picture.
+
+Three fields on an entry point at other entries, and each one says what kind of link it is. `uses` lists what the entry is built from, or depends on. `extends` names the entry it inherits from. `alternatives` names an entry to use instead, in some situation. Upgrading a 0.21 document: an entry's `related` becomes `alternatives`, with no `rel`, and `purpose` and `metadata.context` fold into `description`. Each of the three takes a list of pointers, with no `rel`, because the field already says what they are:
+
+```yaml
+kind: component
+id: dialog
+name: Dialog
+description: A window that asks for a decision before the person goes on.
+uses:
+  - to: button
+alternatives:
+  - to: popover
+```
+
+</ds-guide-section>
+
+<ds-guide-section>
+
+### Splitting across files with `refs`
+
+It's cool to add all your content into one DSDS YAML file. But that's going to get big really fast. Most of you will want to break content up by entry—and the good news is that's easy.
+
+DSDS has a `refs` property which allows you to point to other files. This lets the base DSDS document be a list of links to all of your DSDS YAML files. It also gives you the freedom to organize your documents however you want.
+
+```yaml
+schemaVersion: "0.23.1"
+
+name: Pizza Party Design System
+
+entries:
+  - kind: system
+    id: pizza-party-design-system
+    name: Pizza Party Design System
+    description: The design system behind Pizza Party Super-time.
+    metadata:
+      status: {status: alpha}
+      organization: Pizza Party Super-time LLC
+      version: 0.1.0
+      platforms: [web-component]
+
+refs:
+  - href: ./components/button.dsds.yaml
+    rel: file
+    role: Button component, documented in its own sibling file
+```
+
+</ds-guide-section>
+
+<ds-guide-section>
+
+### Metadata
+
+`metadata` holds optional information about an entry—things like who owns it, when it last changed, how it's tagged, its status, and more. All metadata is optional, so add as little or as much as is needed.
+
+A few of the more common ones: 
+* `owner`: An RFC 5322 mailbox for the responsible team
+* `tags`: Keywords for search and grouping. The schema treats the first tag as a category
+* `since`: The version this entry was introduced
+* `group`: A way to tie related entries together, like `color.action` on a family of tokens.
+* `status`: Defines where an entry is in the system lifecycle (ex: beta, available, deprecated). 
+
+See [common/metadata](schema.html#metadata-metadata) for the complete field list.
+
+```yaml
+metadata:
+  status: {status: stable}
+  tags: [action, CTA, interactive]
+  owner: pj@pizzapartysupertime.com
+```
+
+</ds-guide-section>
+
+<ds-guide-section>
+
+## The section system
+
+Structured docs live in the `sections` array on each entry. Each section has a `kind` field naming its type — `guidelines`, `definitions`, `steps`, or the generic `section`. Any entry kind can use any section kind; nothing restricts which section kinds go with which entry kind.
+
+Every section also carries a `for` field (`human`, `agent`, or `all`) naming its audience — see [For humans and agents on the Overview page](index.html#for-humans-and-agents).
+
+</ds-guide-section>
+
+<ds-guide-section>
+
+### Guidelines explain when and how to use an entry
+
+`guidelines` take two different shapes based on the `framing` property:
+* `when-to-use`: Describes when and when not to use the entry 
+* `how-to-use` (default): Explains how to use the entry correctly
+
+A fully-defined guideline acts as both guidance and a reference to test against. But it can also be as simple as a `statement` with a `level`. That's all you need to make a guideline. You can optionally add `alternatives` to point towards a better option for use cases, `evidence` to back up a statement, or a `checkedBy`/`checks` verification pair for testing purposes. 
+
+```yaml
+kind: component
+id: button
+name: Button
+description: >-
+  Triggers an action. Gives users a single, consistent way to trigger an action
+  across the product.
+
+metadata:
+  tags: [actions, form]
+  status: {status: stable}
+
+sections:
+  - kind: guidelines
+    for: all
+    items:
+      - level: should
+        statement: Limit each surface to one primary button.
+```
+
+The `level` field's values are lowercase kebab-case, like every DSDS vocabulary: `must`, `should`, `may`, `should-not`, `must-not`. Agents treat `must`/`must-not` items as hard limits.
+
+</ds-guide-section>
+
+<ds-guide-section>
+
+### Definitions help you define terms or things in the system
+
+A `definitions` section pairs a `term` with a `definition`. And that structure can be used for all sorts of things (component anatomy, naming conventions, a basic list of component API options, etc.). It's a super flexible section that can explicitly describe system concepts.
+
+```yaml
+sections:
+  - kind: definitions
+    for: all
+    title: Anatomy
+    context: anatomy
+    items:
+      - term: Container
+        definition: The interactive root element. Receives background, border, radius, and padding.
+      - term: Label
+        definition: The visible text of the button.
+```
+
+</ds-guide-section>
+
+<ds-guide-section>
+
+### Steps let you break down a process, guide, or checklist
+
+A `steps` section is an ordered procedure or an unordered checklist (`ordered: false`). When a step verifies a guideline, the guideline lists the step in its own `checks`, next to any test or lint rule that checks it. Everything that checks a rule is then in one place. A self-check checklist, and the rule it checks:
+
+```yaml
+sections:
+  - kind: guidelines
+    for: all
+    items:
+      - id: aria-label-required
+        level: must
+        statement: Give an icon-only button an aria-label.
+        checkedBy: manual
+        checks:
+          - to: button#icon-only-buttons-have-an-aria-label
+  - kind: steps
+    for: agent
+    ordered: false
+    title: Self-check before shipping
+    items:
+      - title: Icon-only buttons have an aria-label
+```
+
+</ds-guide-section>
+
+<ds-guide-section>
+
+### Freeform lets you do your own thing
+
+Every section can add a `freeform` property which allows you to add nestable unstructured writing. It's DSDS' way to allow you to add extra color to any section in your docs:
+
+```yaml
+sections:
+  - kind: section
+    for: all
+    title: Overview
+    freeform:
+      - title: About
+        body: Button is the primary interactive primitive in this design system.
+```
+
+</ds-guide-section>
+
+<ds-guide-section>
+
+## A component's own top-level fields
+
+A component is an opinionated kind of entry. And with that, it comes with specific properties to document a component. Here are the special properties it contains:
+
+- **`sourceFiles`**: Points to the component's source file. This pointer can be used for tools to extract the component's API. One entry per platform. 
+- **`imports`**: A code sample showing how to import the component. One entry per platform.
+- **`traits`**: Describes every way the component can vary. A trait can be a `traitType`: `variant` (like `size: sm | md | lg`), or `state` (like `hover` or `loading`). 
+- **`combos`**: Helps describe acceptable and unacceptable pairing between traits, tokens, or entries (ex: "loading and disabled must not both be set").
+
+Here's `sourceFiles`, `traits`, and `combos` together:
+
+```yaml
+sourceFiles:
+  - platform: react
+    file: ./src/Button.tsx
+
+traits:
+  - id: tone
+    traitType: variant
+    kind: enum
+    name: Tone
+    description: The visual weight of the button.
+    values:
+      - id: default
+        description: Neutral. General-purpose actions.
+      - id: critical
+        description: Destructive or irreversible actions only.
+  - id: loading
+    traitType: state
+    kind: boolean
+    name: Loading
+    description: An async operation triggered by the button is in progress.
+  - id: hover
+    traitType: state
+    kind: boolean
+    name: Hover
+    description: Background darkens slightly when the pointer is over the button.
+
+combos:
+  - subject: loading
+    level: should-not
+    items: [disabled]
+    note: Loading already makes the button non-interactive.
+```
+
+</ds-guide-section>
+
+<ds-guide-section>
+
+## Do your own thang
+
+### `$extensions`
+
+`$extensions` allow you to structure your own data at the document, entry, or section level. Keys MUST use a namespace (e.g. `com.figma`) so a tool integration never collides with a future field the spec adds. Here, linking a component to its Figma source:
+
+```yaml
+kind: component
+id: button
+name: Button
+description: Triggers an action.
+
+$extensions:
+  com.figma:
+    context: Links this entry to its source Figma component for design-file lookups.
+    nodeId: "12:4045"
+```
+
+</ds-guide-section>
+
+<ds-guide-section>
+
+### Custom kinds
+
+When the generic `entry` kind isn't specific enough, use a custom kind instead. It's checked against the same open `entry.schema.yaml` base the generic kind is:
+
+```yaml
+kind: acme.icon-library
+id: material-icons
+name: Material Icons
+description: The icon set Acme's products ship with.
+```
+
+See [Extending the schema](extending.html) for a third option too — profiles, for making an existing kind's optional fields required on your own project — and for more on when to reach for each of the three.
+
+</ds-guide-section>
+
+<ds-guide-section>
+
+## Minimal examples
+
+These are close to the smallest valid entry for each kind. Copy one, fill in your content, and add `sections` as your docs grow.
+
+### Component
+
+A minimal standalone component entry:
+
+```yaml
+kind: component
+id: button
+name: Button
+description: Triggers an action.
+```
+
+</ds-guide-section>
+
+<ds-guide-section>
+
+### Token
+
+A token needs `id`, `kind`, `name`, `description`, and (usually) `tokenType`. Use `source` to point back at the DTCG file that holds the real value:
+
+```yaml
+kind: token
+id: color.action.primary
+name: Action Primary
+description: The fill color for high-emphasis interactive surfaces.
+tokenType: color
+```
+
+A described token adds `metadata.group` (the recommended way to group related tokens — there's no separate token-group kind) and a guideline:
+
+```yaml
+kind: token
+id: color.action.primary
+name: Action Primary
+description: The fill color for high-emphasis interactive surfaces.
+metadata:
+  status: {status: stable}
+  group: color.action
+
+sections:
+  - kind: guidelines
+    for: all
+    items:
+      - level: must
+        statement: Pair with `color.surface.default` or `color.surface.raised` only — contrast is unverified on any other background.
+
+tokenType: color
+source: ./tokens.dtcg.json
+```
+
+</ds-guide-section>
+
+<ds-guide-section>
+
+### A pattern, using the generic entry kind
+
+A pattern, documented as a generic entry:
+
+```yaml
+kind: entry
+id: empty-state
+name: Empty State
+description: >-
+  A pattern shown in place of a list or grid that has no content yet. Tells the
+  user why an area is empty and what to do next, instead of leaving a blank
+  surface.
+
+sections:
+  - kind: guidelines
+    for: all
+    framing: when-to-use
+    items:
+      - level: should
+        statement: Use an empty state the first time a user visits a list or grid that has no content yet.
+```
+
+</ds-guide-section>
+
+<ds-guide-section>
+
+### Sharing content
+
+A lot of design system documentation covers the same topics—and you shouldn't have to rewrite it. Declare a rule, term, or step once and then point to it everywhere it applies with `entryId#itemId` and `rel: same-as`. The borrowing item can act as a pure pointer with no duplicated `statement` or `level`.
+
+The target can be an item in the base document's `shared` array, or an item in any entry. Use `shared` when the content doesn't fit in any single entry:
+
+```yaml
+schemaVersion: "0.23.1"
+
+name: Pizza Party Design System
+
+entries:
+  - kind: component
+    id: button
+    name: Button
+    description: Triggers an action.
+    sections:
+      - kind: guidelines
+        for: all
+        framing: when-to-use
+        items:
+          - level: should
+            statement: Use for an action the user takes on the current screen, like placing an order.
+
+      - kind: guidelines
+        for: all
+        items:
+          # Borrowed from another entry: the rule lives on the pattern
+          # that owns it, so it never had to move into `shared`.
+          - refs:
+              - to: order-confirmation#name-the-order
+                rel: same-as
+
+      - kind: guidelines
+        for: all
+        title: Accessibility
+        tags: [accessibility]
+        items:
+          # The tag identifies this section's topic. The shared rule
+          # supplies the statement and level without duplicating them.
+          - refs:
+              - to: shared-a11y#touch-target
+                rel: same-as
+    uses:
+      - to: order-confirmation
+
+  # A pattern, and the rule it owns. Several components follow this one.
+  - kind: entry
+    id: order-confirmation
+    name: Order Confirmation
+    description: The pattern for confirming an order before it reaches the kitchen.
+    sections:
+      - kind: guidelines
+        for: all
+        items:
+          - id: name-the-order
+            level: must
+            statement: The confirming action names what is being ordered, rather than just saying "OK".
+            checkedBy: manual
+
+shared:
+  - id: shared-a11y
+    name: Shared Accessibility Rules
+    description: Cross-cutting accessibility rules, stated once and referenced from every entry they apply to.
+    sections:
+      - kind: guidelines
+        for: all
+        items:
+          - id: touch-target
+            level: must
+            statement: Minimum touch target 44x44px.
+            checkedBy: assisted
+```
+
+The button's accessibility section uses `tags: [accessibility]` to identify its topic for conforming consumers, while its `same-as` pointer supplies the shared rule. Keep unrelated guidance in a separate section. The tag identifies documentation; it does not mean the component has passed an accessibility audit. Use `checks` and `checkedBy` on the rule to describe how it is verified.
+
+</ds-guide-section>
+
+<ds-guide-section>
+
+### Linking from prose
+
+When a description or a rule mentions another part of the system, link to it with a `dsds:` link instead of writing its id in backticks. The part after `dsds:` is written exactly like a `to`. The validator checks it, so a mention of something that doesn't exist gets caught.
+
+- `<dsds:order-confirmation>` shows the target's own name, "Order Confirmation", and stays right if it's renamed.
+- `[names what's being ordered](dsds:order-confirmation#name-the-order)` shows your own words. Use this form for a guideline, which has no short name.
+
+```yaml
+schemaVersion: "0.23.1"
+
+name: Pizza Party Design System
+
+entries:
+  - kind: component
+    id: button
+    name: Button
+    # <dsds:order-confirmation> shows as "Order Confirmation", the
+    # pattern's name, and stays right if the pattern is renamed.
+    description: Triggers an action. To confirm an order, follow <dsds:order-confirmation>.
+    sections:
+      - kind: guidelines
+        for: all
+        framing: when-to-use
+        items:
+          # A guideline has no short name, so this link writes its own text.
+          - level: should
+            statement: >-
+              Use to place an order on the current screen, with a label that
+              [names what's being ordered](dsds:order-confirmation#name-the-order).
+    # The link above only mentions the pattern. This pointer says the button
+    # follows it, which is what a tool reads to answer "what does this affect?"
+    uses:
+      - to: order-confirmation
+
+  - kind: entry
+    id: order-confirmation
+    name: Order Confirmation
+    description: The pattern for confirming an order before it reaches the kitchen. The confirming action is a <dsds:button>.
+    sections:
+      - kind: guidelines
+        for: all
+        items:
+          - id: name-the-order
+            level: must
+            statement: The confirming action names what is being ordered, rather than just saying "OK".
+            checkedBy: manual
+```
+
+A link only mentions something. If the entry depends on what it mentions, say so with `uses` as well, as the button does here. Tools read pointers, not prose, to work out what a change affects.
+
+</ds-guide-section>
+
+<ds-guide-section>
+
+## Validate your document
+
+Every complete document on this page validates as written. The first one is deliberately partial (see above), and the snippets that show one part of an entry, like `traits` or `combos`, are fragments, so they don't validate on their own.
+
+### Using the bundled schema
+
+Add `$schema` to a base document, the file that has `schemaVersion`, to get editor autocompletion and inline validation. Entry files don't take `$schema`. To get the same help in them, map those files to the schema in your editor's YAML settings instead:
+
+```yaml
+$schema: https://designsystemdocspec.org/v0.23.1/dsds.bundled.yaml
+schemaVersion: "0.23.1"
+name: My Design System
+entries:
+  - kind: component
+    id: my-component
+    name: My Component
+    description: What this component is and does.
+```
+
+</ds-guide-section>
+
+<ds-guide-section>
+
+### Using the CLI
+
+```bash
+# Clone the repo
+git clone https://github.com/somerandomdude/design-system-documentation-schema.git
+cd design-system-documentation-schema
+npm install
+
+# Validate the built-in examples and test corpus
+npm run check
+
+# Validate your own file
+node scripts/validate/validate.js my-system.dsds.yaml
+```
+
+</ds-guide-section>
+
+<ds-guide-section>
+
+## Next steps
+
+You've seen the basics. Here's where to go deeper.
+
+| Resource | Description |
+|----------|-------------|
+| [Full Spec](schema.html) | Complete schema reference for every field and constraint |
+| [Schema files](https://github.com/somerandomdude/design-system-documentation-schema/tree/main/schema) | The raw `.schema.yaml` files — use for editor autocompletion |
+| [Example files](https://github.com/somerandomdude/design-system-documentation-schema/tree/main/examples) | Complete, valid example documents for every entry and section kind |
+| [GitHub Discussions](https://github.com/somerandomdude/design-system-documentation-schema/discussions) | Ask questions, share ideas, propose changes |
+
+<ds-callout variant="tip" title="Getting started recipe:">
+
+1. Copy the [minimal component example](#component) above
+2. Replace it with your own design system's first component
+3. Add `sections` as your docs grow
+4. Validate with `npm run check` to catch schema errors early
+
+</ds-callout>
+
+</ds-guide-section>

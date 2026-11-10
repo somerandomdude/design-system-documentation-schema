@@ -1197,12 +1197,12 @@ function validateDoc(doc, opts = {}) {
   const ownRoot = doc && typeof doc === "object" ? sourceRootIn(doc, opts.filePath) : null;
   if (ownRoot) opts = { ...opts, sourceRoot: ownRoot };
   const isBase = typeof doc.schemaVersion !== "undefined";
-  // A root `dsdsVersion` with no `schemaVersion` is DSDS ≤0.15.2's old base-document marker
+  // A root `dsdsVersion` with no `schemaVersion` is the old base-document marker from before 0.20.0
   // (renamed in 0.20.0); catch it here with a clear message instead of routing into
   // validateEntry() and reporting confusing entry-level errors.
   if (!isBase && doc && typeof doc === "object" && typeof doc.dsdsVersion !== "undefined") {
     report.error(
-      `this document targets DSDS ≤0.15.2; 0.20.0 renamed the root "dsdsVersion" field to "schemaVersion" (see the CHANGELOG's 0.20.0 entry for the rest of what changed). Rename the field, or run a 0.15.2-era validator against this document instead.`,
+      `this document targets a DSDS version before 0.20.0; 0.20.0 renamed the root "dsdsVersion" field to "schemaVersion" (see the CHANGELOG's 0.20.0 entry for the rest of what changed). Rename the field, or run an older validator against this document instead.`,
       { pointer: "/dsdsVersion", fix: 'Rename "dsdsVersion" to "schemaVersion".' },
     );
   } else if (isBase) {

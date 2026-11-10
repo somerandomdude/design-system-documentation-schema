@@ -427,11 +427,14 @@ function postProcess(html) {
 
   // ── 2. Fenced code blocks with language: <pre><code class="language-xxx"> → <ds-code>,
   //    also extracting an optional label="…" preserved in the class string.
+  // A raw `<dsds:button#variant.primary>` in a code block would be read by the browser as a
+  // tag and dropped, so brackets are escaped here too. Already-escaped text has none.
+  const escapeBrackets = (s) => s.replace(/</g, "&lt;").replace(/>/g, "&gt;");
   out = out.replace(
     /<pre><code\s+class="language-(\w+)(?:\s+label=&quot;([^&]*)&quot;)?">([\s\S]*?)<\/code><\/pre>/g,
     (_m, lang, label, content) => {
       const labelAttr = label ? ` label="${label}"` : "";
-      return `<ds-code language="${lang}"${labelAttr}>${content}</ds-code>`;
+      return `<ds-code language="${lang}"${labelAttr}>${escapeBrackets(content)}</ds-code>`;
     },
   );
 
@@ -439,20 +442,22 @@ function postProcess(html) {
   out = out.replace(
     /<pre><code\s+class="language-(\w+)">([\s\S]*?)<\/code><\/pre>/g,
     (_m, lang, content) => {
-      return `<ds-code language="${lang}">${content}</ds-code>`;
+      return `<ds-code language="${lang}">${escapeBrackets(content)}</ds-code>`;
     },
   );
 
   // ── 3. Fenced code blocks without language ──────────────────────────
   out = out.replace(
     /<pre><code>([\s\S]*?)<\/code><\/pre>/g,
-    (_m, content) => `<ds-code>${content}</ds-code>`,
+    (_m, content) => `<ds-code>${escapeBrackets(content)}</ds-code>`,
   );
 
   // ── 4. Inline code → <ds-code inline>. Must run after fenced-code replacement, above.
+  //    A raw `<` in the code (`<files-or-dirs…>`) would be read by the browser as a tag and
+  //    dropped, so it's escaped here. Text already escaped has no raw brackets, so it's unchanged.
   out = out.replace(
     /<code>([\s\S]*?)<\/code>/g,
-    (_m, content) => `<ds-code inline>${content}</ds-code>`,
+    (_m, content) => `<ds-code inline>${content.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</ds-code>`,
   );
 
   // ── 5. Wrap bare <table> in <ds-table>, skipping tables already inside one.
