@@ -2099,7 +2099,7 @@ async function build() {
   const introFragment = await compileMdxFile(introFragmentPath);
   schemaDefinitions.push(introFragment.html);
   schemaMarkdownParts.push(
-    substituteVersion(fs.readFileSync(introFragmentPath, "utf-8")).trim(),
+    expandShortcodesForMarkdown(substituteVersion(fs.readFileSync(introFragmentPath, "utf-8"))).trim(),
   );
 
   // One small markdown file per schema file, alongside the big schema.md mirror, so a
