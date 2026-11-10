@@ -1184,6 +1184,25 @@ function buildAlternateLinks(activeSlug, pageType, version) {
   return links.join("\n");
 }
 
+// Who the structured data names as the author and the publisher. The contact email is the
+// maintainer's; the address and phone aren't published.
+const AUTHOR = { "@type": "Person", name: "PJ Onori", url: "https://pjonori.com" };
+const ORGANIZATION = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: "Design System Doc Spec",
+  url: `${SITE_URL}/`,
+  contactPoint: { "@type": "ContactPoint", email: "pj@pizzapartysupertime.com", contactType: "general" },
+};
+
+// The release date of a version, from its CHANGELOG heading ("## [0.23.1] — 2026-10-17"). Undefined
+// for a version with no dated heading, so datePublished is left out rather than guessed.
+function releaseDate(version) {
+  const changelog = fs.readFileSync(path.join(ROOT, "CHANGELOG"), "utf-8");
+  const match = new RegExp(`## \\[${version.replace(/\./g, "\\.")}\\] — (\\d{4}-\\d{2}-\\d{2})`).exec(changelog);
+  return match ? match[1] : undefined;
+}
+
 function buildJsonLd({ name, description, url, version, pageType, activeSlug, defEntries }) {
   const data = {
     "@context": "https://schema.org",
@@ -1192,6 +1211,8 @@ function buildJsonLd({ name, description, url, version, pageType, activeSlug, de
     description,
     url,
     version,
+    author: AUTHOR,
+    datePublished: releaseDate(version),
     isPartOf: {
       "@type": "WebSite",
       name: "Design System Doc Spec",
@@ -1214,7 +1235,10 @@ function buildJsonLd({ name, description, url, version, pageType, activeSlug, de
   }
   // Escape "<" so a description containing "</script>" can't break out of the script tag early.
   const json = JSON.stringify(data).replace(/</g, "\\u003c");
-  return `  <script type="application/ld+json">${json}</script>`;
+  return [
+    `  <script type="application/ld+json">${json}</script>`,
+    `  <script type="application/ld+json">${JSON.stringify(ORGANIZATION)}</script>`,
+  ].join("\n");
 }
 
 // Declarative Shadow DOM for <ds-heading>/<ds-header>: without it, headings only exist once
@@ -1505,6 +1529,12 @@ function buildLlmsTxt(entries, version, definitionCount) {
       "Schema page's markdown includes every definition's field names, " +
       "types, and requiredness; the bundled schema below is the " +
       "single-file version of the same data.",
+  );
+  lines.push("");
+  lines.push("## When to use DSDS");
+  lines.push("");
+  lines.push(
+    `Use DSDS to document a design system for people and agents at once: what a component, token or pattern is for, how to use it, and how it relates to the rest of the system, in one YAML file. Don't use it to describe a live API. Point at the real source or a generated contract instead, as [Interoperability](${SITE_URL}/interoperability) explains.`,
   );
   lines.push("");
   lines.push("## Machine-readable schema");
