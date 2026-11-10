@@ -44,7 +44,7 @@ This is a process commitment, not yet a schema-level machine-readable one — a 
 
 ## Breaking-change windows
 
-Pre-1.0 breaking changes land batched into a named release, not trickled one field at a time across several minors — a single CHANGELOG entry and migration script to read, not several. When a breaking window is being prepared, it's announced on this page (what's changing, and the release it lands in) before that release ships, the same practice earlier 0.15.x releases followed. Each window ships with its own migration script, following `scripts/tools/migrate-to-0.20.js`'s pattern: convert what can be converted automatically, preserve anything else under `$extensions["com.dsds.migration"]`, and print a warning for every case that needed a manual call.
+Pre-1.0 breaking changes land batched into a named release, not trickled one field at a time across several minors — a single CHANGELOG entry and migration script to read, not several. When a breaking window is being prepared, it's announced on this page (what's changing, and the release it lands in) before that release ships, the same practice earlier releases followed. Each window ships with its own migration script, following `scripts/tools/migrate-to-0.20.js`'s pattern: convert what can be converted automatically, preserve anything else under `$extensions["com.dsds.migration"]`, and print a warning for every case that needed a manual call.
 
 **0.21.0 was a breaking window, and it is now closed.** It changed one shape — a component trait — and it changed it twice: `traitType` became required, and `setBy` was removed. Both landed in the same release rather than one per minor, which is what "batched" means here, and `scripts/tools/migrate-to-0.21.js` handles both in a single pass. There was no deprecation window first; pre-1.0 that is allowed, and it is the commitment this page makes above. 0.20.0 was the previous window, replacing the entity/`documentBlocks` model.
 
@@ -68,12 +68,6 @@ Pre-1.0 breaking changes land batched into a named release, not trickled one fie
 ## How schema changes get made
 
 Every schema file under `schema/` has comments explaining *why* it's shaped the way it is, and often what it replaced. Reading those comments alongside the schema is the best way to understand how the spec has changed — see the [CHANGELOG](https://github.com/somerandomdude/design-system-documentation-schema/blob/main/CHANGELOG) for exactly how each old field maps to its new one.
-
-## Migrating a 0.15.2 document
-
-`scripts/tools/migrate-to-0.20.js <files-or-dirs…> [--dry-run]` converts a 0.15.2 `.dsds.json` document (the entity/`documentBlocks` model) to a `.dsds.yaml` one in the current shape — stamped `schemaVersion: {{VERSION}}`, with component traits already carrying `traitType` — following the CHANGELOG's own field-by-field mapping. That one script is the whole migration from 0.15.2; there is no second step. It writes a new sibling file rather than overwriting the input, and it's best-effort, not a guarantee: a few 0.15.2 structures (most notably the `api` block's inline property/event documentation) have no 0.20.0 equivalent to convert *to* — 0.20.0 points `sourceFiles` at real source instead of inlining an extracted API.
-
-Anything the script can't place in a typed field is preserved under the migrated item's own `$extensions["com.dsds.migration"]` rather than dropped, and every such case — plus every genuinely manual decision, like an `alternatives` pointer that wasn't really id-shaped in the source, or a ref that pointed at a token-group's own id before its children flattened to top-level entries — prints as a `⚠` line in the script's own output. Run `npm run validate` on the result afterward.
 
 ## Migrating a 0.20.x document
 
@@ -113,7 +107,7 @@ Until then, the fixed lists above are the most stable part of the schema. Everyt
 
 ## Released versions never change
 
-Whatever else moves, a *released* version directory doesn't. Every version DSDS has shipped stays served at its own URL — `/v0.15.2/dsds.bundled.schema.json`, and every earlier version at its own path — frozen at the bytes it shipped with. A document that pins `schemaVersion` and a `$schema` URL keeps validating against exactly what it was written against, indefinitely.
+Whatever else moves, a *released* version directory doesn't. Every version DSDS has shipped stays served at its own URL: an early release's `dsds.bundled.schema.json` is still there, and so is every later version's bundle, each frozen at the bytes it shipped with. A document that pins `schemaVersion` and a `$schema` URL keeps validating against exactly what it was written against, indefinitely.
 
 Released means tagged. A version is frozen from the moment its `vX.Y.Z` git tag exists, and `scripts/tools/bump-version.js` refuses to re-cut a version whose tag it already finds. Before that tag, the version currently in development is a different case: its directory is rebuilt from source on every build, so it tracks the schema it's generated from rather than lagging behind it. `{{VERSION}}` is that version today — treat `/v{{VERSION}}/` as still settling, and pin an older, tagged version if you need bytes that cannot move under you.
 

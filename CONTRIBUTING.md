@@ -131,7 +131,8 @@ a wrapper for its own sake — if a script isn't listed, it doesn't exist.
 | --- | --- |
 | `npm run check:all` | The whole gate: `check`, then `build`, then `check:docs`. What CI runs. |
 | `npm run check` | Bundle, `$id`-matches-path, rule-catalog drift, every example and fixture, the conformance suite, generated-artifact freshness. Needs no `site/dist/`. |
-| `npm run check:docs` | Markdown mirrors, internal links, nav/footer page coverage, this reference, the edge function's page list, CSS. Reads `site/dist/` — build first. |
+| `npm run check:docs` | Markdown mirrors, their text (every block on a page is in its `.md`), every reference on the schema page links to its definition, internal links, YAML examples in code blocks, one current version everywhere it's stated, nav/footer page coverage, this reference, the edge function's page list, CSS. Reads `site/dist/` — build first. |
+| `npm run check:live` | Fetches the published site and checks every URL in the sitemap, `llms.txt` and `manifest.json` answers 200 with the right type, and each page's Markdown mirror answers. Needs the network, so it isn't in `check` or `check:all`. Run it after a deploy; `--base <url>` checks another host. |
 | `npm run build` | Regenerates every generated artifact, then builds the site into `site/dist/`. Launches no browser. Warns if it changed a *released* (git-tagged) version's published artifacts; add `-- --strict-versions` to make that fatal. |
 | `npm run dev` | Local preview server. |
 | `npm run validate` | Validate files you name: `npm run validate -- path/to/doc.dsds.yaml`. Add `-- --strict` to promote project-scope warnings to failures, or `-- --json` for a machine-readable report. `-- --help` lists every option. |
@@ -145,7 +146,7 @@ a wrapper for its own sake — if a script isn't listed, it doesn't exist.
 | --- | --- |
 | `npm run generate` | Rewrites every generated artifact: example includes, the schema bundle, the normative index, the rule-catalog table, the examples index, the conformance suite. Run it after editing schema `description`/`$comment` text. |
 | `npm run generate:check` | Asserts those artifacts are current without rewriting them. Part of `check`; useful alone when a check fails and you want to know whether it's just staleness. |
-| `npm run migrate` | Converts a 0.15.2 `.dsds.json` document to a `.dsds.yaml` one in the current shape: `npm run migrate -- <files-or-dirs…> [--dry-run]`. This is the whole migration from 0.15.2 — no second step. Best-effort — run `validate` on the output. |
+| `npm run migrate` | Converts a pre-0.20 `.dsds.json` document (the model before 0.20.0) to a `.dsds.yaml` one in the current shape: `npm run migrate -- <files-or-dirs…> [--dry-run]`. This is the whole migration from that model, with no second step. Best-effort — run `validate` on the output. |
 | `node scripts/tools/migrate-to-0.21.js` | For a document already in 0.20.x YAML: adds `traitType` to every component trait and removes `setBy`, in place: `<files-or-dirs…> [--dry-run]`. Not an npm script, and not needed after `npm run migrate`. |
 | `node scripts/tools/migrate-to-0.22.js` | For a document in 0.21.x YAML: folds `purpose` and `metadata.context` into `description`, moves section `metadata` under `$extensions`, maps `origin.author` to its three values, merges `rel` values and moves pointers into their named fields, in place: `<files-or-dirs…> [--dry-run]`. Keeps comments. Not an npm script, and not needed after `npm run migrate`. |
 | `npm run compose` | Concatenates hand-split `.dsds.yaml` fragments into one document before validation. |

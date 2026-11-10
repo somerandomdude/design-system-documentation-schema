@@ -1,0 +1,256 @@
+# Specification — DSDS 0.23.1
+
+This page defines DSDS 0.23.1. The [schema](schema.html) gives the exact shape of every field. This page says what those shapes mean together, and what a document, a validator and a consumer have to do. If the two ever seem to disagree, the schema is right and this page has a bug.
+
+## 1. Conventions
+
+### 1.1 Requirement words
+
+MUST, MUST NOT, SHOULD, SHOULD NOT and MAY mean what [RFC 2119](https://www.rfc-editor.org/rfc/rfc2119) says, and only when written in capitals.
+
+### 1.2 What enforces each requirement
+
+Every MUST and MUST NOT on this page ends with what checks it, in parentheses:
+
+- **`(schema: entries/entry)`**: the JSON Schema file `schema/entries/entry.schema.yaml`. Any JSON Schema validator checks it.
+- **`(DSDS-04)`**: a rule in the [rule catalog](conformance.html#rule-details). A conforming validator checks it, on top of the schema.
+- **`(vector: addresses)`**: a [consumer test vector](processing.html#11-test-vectors) whose expected answer depends on it.
+- **`(suite)`**: the [conformance suite](conformance.html#conformance-suite), which tests a validator.
+- **`(consumer)`**: a requirement on what a consumer does with a document. No check on the document itself can see it.
+
+`npm run check` fails if a requirement on this page or in the [processing model](processing.html) has nothing in parentheses. It also fails if one names a schema file, rule or vector that doesn't exist, or if a validator rule isn't named anywhere.
+
+### 1.3 Terms
+
+This page uses the words in the [terms table](conformance.html#the-words-this-spec-uses):
+
+- a **document** is one file;
+- an **entry** is one documented thing;
+- a **section** is one member of an entry's `sections`;
+- an **item** is one member of a section's `items`;
+- a **field** is a named slot on an object.
+
+### 1.4 Conformance classes
+
+The [Conformance page](conformance.html#conformance-classes) defines four kinds of conforming thing: document, producer, consumer and validator. A **conforming document** meets every requirement in §2 to §7. A **conforming validator** meets §8. A **conforming consumer** meets §9 and the [processing model](processing.html).
+
+## 2. Documents
+
+### 2.1 Format
+
+A document is one YAML 1.2 or JSON file, and its top level MUST be a single mapping (schema: base, entries/entry). By convention, YAML files end in `.dsds.yaml` and JSON files in `.dsds.json`.
+
+### 2.2 Base documents
+
+A document with a `schemaVersion` field is a base document. It MUST have `schemaVersion`, `name` and an `entries` list that isn't empty (schema: base). It MUST NOT have any field that `base.schema.yaml` doesn't declare (schema: base). `schemaVersion` SHOULD name the DSDS version the document was written for.
+
+A base document's `shared` list holds content that no single entry owns, such as an accessibility rule many components follow. A shared entry MUST have an `id`, a `name` and a `description` (schema: shared). Entries and shared entries draw ids from the same pool, so one id MUST NOT name two of them in a document (DSDS-04).
+
+### 2.3 Entry documents
+
+A document with no `schemaVersion` is a single entry, written at the top level (schema: entries/entry). §4 applies to it in the same way as to an entry in `entries`.
+
+### 2.4 Projects
+
+A large system is usually split across several files. A base document lists the others in `refs`, with `rel: file`. A `rel: file` ref MUST point at another DSDS document (DSDS-25). A code file or a DTCG token file is `rel: source` instead.
+
+A relative path MUST point at a file that exists (DSDS-11). That applies to the path in a `rel: file` or `rel: source` ref, in a component's `sourceFiles`, and in a token's or theme's `source`.
+
+The code a system describes often lives somewhere other than its documents, such as in a separate repository. A system entry can say where with `metadata.sourceRoot`: a path relative to its own document, or a URL. When a project's system sets it, every relative `sourceFiles` path in the project MUST be read starting from there (DSDS-11). The [processing model, §3](processing.html#3-projects) says how a consumer gathers a project's files.
+
+### 2.5 Markdown fields
+
+A field whose schema is [common/markdown](schema.html#common-markdown) holds CommonMark. GFM tables and fenced code blocks are allowed too. These fields are:
+
+- an entry's and a shared entry's `description`;
+- a section's `description`, and a freeform entry's `body`;
+- a guideline's `statement`, a definition's `definition` and `usage`, and a step's `description`;
+- a trait's and a trait value's `description`;
+- an example's `description`.
+
+Other text fields, such as `name`, `title`, `term` and `deprecationNotice`, are plain text. A Markdown field can link to something in the project (§6.5).
+
+## 3. Identifiers
+
+### 3.1 Entry ids
+
+An entry's `id` MUST be lowercase words joined by dashes, with dots allowed between parts, like `button` or `color.action.primary` (schema: entries/entry, common/id). A token's `id` MAY also use a design tool's own capitals and slashes, like `Color/Action/Primary` (schema: entries/token).
+
+A lowercase UUID fits this shape, so an entry's or an item's `id` MAY be one, like `3f9a1c2e-8b4d-4e2a-9c71-5d0e6f8a2b13`. It suits something that tools outside the project link to and that gets renamed: `name` holds the readable label, and the `id` never has to change. A project can mix readable ids and UUIDs.
+
+An entry MAY have a top-level `uuid` as a stable machine key. It is not a ref target: `to:` refs still use `id`. A published `uuid` SHOULD NOT change.
+
+For an example, see [`example.entry-with-uuid`](/examples/entries/entry-with-uuid.yaml).
+
+Whatever its form, an `id` SHOULD NOT change once a document using it is published, since every pointer and inline link to it would break. Change `name` instead. If an entry's `id` has to change, keep the old entry as a deprecated stub whose `replacedBy` names the new one, so consumers can follow it (processing model §7). A validator sees one version of a document, so it can't check this; a project that needs the guarantee checks it in its own CI, by comparing ids with the version before.
+
+### 3.2 Item ids and addresses
+
+A section item doesn't need an `id`. When it has none, a consumer MUST give it one made from its own text (vector: addresses). If an address points at two things on one entry, and neither one wins, that's an error (DSDS-05). The [processing model, §2](processing.html#2-addresses) has the full rules.
+
+### 3.3 Trait ids
+
+A trait's `id`, and an enum value's, copy a real API name in whatever case the API uses, like `isDisabled`. They MUST NOT contain a dot, because `traitId.valueId` is how one value is addressed (schema: entries/component, common/id).
+
+### 3.4 Namespaced values
+
+Some values can be custom: an entry kind, a section kind, a section's `context`, a `rel`, and every key in `$extensions`. A custom one MUST be namespaced: lowercase parts with at least one dot, like `acme.icon-library` (schema: common/id, common/extensions, entries/entry, sections/section, common/ref). The dot means a custom value can never clash with a built-in one.
+
+## 4. Entries
+
+### 4.1 Every entry
+
+Every entry MUST have `kind`, `id`, `name` and `description` (schema: entries/entry). Entries MAY also have a top-level `uuid` as a stable machine identifier. `description` says what the entry is and why it exists, starting with what it is.
+
+`kind` MUST be `system`, `token`, `theme`, `component` or `entry`, or a namespaced custom kind (schema: entries/entry). Use `entry` for content like patterns, foundations, guides, or anything else that has no kind of its own.
+
+A `system`, `token`, `theme` or `component` entry MUST NOT have any field its schema file doesn't declare (schema: entries/component, entries/token, entries/theme, entries/system). A generic `entry` and a custom kind accept extra fields. On a generic `entry`, a validator warns about a field no DSDS schema declares (DSDS-24). What fields a custom kind has is up to whoever made it.
+
+### 4.2 Metadata
+
+Every date in `metadata` MUST be written as `YYYY-MM-DD` (schema: metadata/metadata).
+
+`metadata.status` is one status object, or a list with one for each platform. A status MUST have a `status` word (schema: metadata/entry-metadata). When the word is `deprecated`, the status MUST also have a `deprecationNotice` that says what to use instead (schema: metadata/entry-metadata). It can name the replacement in `replacedBy`, which MUST NOT appear in a status that isn't `deprecated` (schema: metadata/entry-metadata).
+
+### 4.3 Components
+
+A component's `sourceFiles` points at its real source code, with one entry for each platform. Each entry MUST have a `platform` and a `file` (schema: entries/component). Two entries MUST NOT name the same platform (DSDS-01).
+
+Each of a component's `traits` MUST say whether it's a `variant` or a `state` with `traitType`, and whether it's a `boolean` or an `enum` with `kind` (schema: entries/component). Each trait MUST also have an `id` and a `description` (schema: entries/component). An `enum` trait MUST list its `values`, each with an `id` and a `description` (schema: entries/component). A trait or a value MAY have its own `status`, with the same shape as an entry's.
+
+Whether the caller sets a trait as a prop is a fact about the component's API, so DSDS doesn't record it. A consumer reads it from `sourceFiles` or `specs`.
+
+### 4.4 Combos
+
+A component's or token's `combos` are rules about what can be paired with what. Each MUST have a `subject`, an `items` list that isn't empty, and a `level` (schema: common/combo). `must` and `should` allow the pairing. `should-not` and `must-not` forbid it.
+
+Each subject or item MUST name one of three things (schema: common/combo; DSDS-09):
+
+- a trait on the same entry, like `size`, or one of its values, like `size.small`;
+- a token, in braces, like `{color.action.primary}`;
+- an entry.
+
+### 4.5 Tokens, themes and systems
+
+A token's `tokenType` names its DTCG type, and MUST be a camelCase word like `color` or `fontFamily` (schema: entries/token). A token's value lives in the DTCG file its `source` points at, never in the DSDS document.
+
+A theme's `colorScheme` MUST be `light` or `dark` (schema: entries/theme).
+
+A system's `metadata.platforms` lists the platforms it ships on. Once that list exists, every `platform` in the document MUST be one of them (DSDS-02). That covers a status, a `sourceFiles` entry and an `imports` entry.
+
+## 5. Sections
+
+### 5.1 Every section
+
+Every section MUST have a `kind` and a `for` (schema: sections/section). It MUST also have `items`, `freeform` content, or both (schema: sections/section). `kind` is `guidelines`, `definitions`, `steps`, `section`, or a namespaced custom kind.
+
+`for` says who the section is written for: `all`, `human` or `agent`. A tool showing documentation to people SHOULD NOT show a `for: agent` section. An agent SHOULD read every section, not only the `for: agent` ones.
+
+A `guidelines`, `definitions` or `steps` section MUST NOT have any field that its schema file doesn't declare, on the section or on its items (schema: sections/guidelines, sections/definitions, sections/steps). A generic `section` is checked the same way as a generic entry (DSDS-24).
+
+Each freeform entry MUST have a `title` (schema: sections/section).
+
+### 5.2 Guidelines
+
+A guideline item states one rule. It MUST have a `statement`, with two exceptions (schema: sections/guidelines):
+
+- its `refs` reuse another item with `same-as`;
+- its `refs` link to where the rule is tracked, with a `relates-to` `href`.
+
+It MUST have a `level` unless it has `refs` (schema: sections/guidelines).
+
+When an item that reuses another states its own `level`, the two MUST match (DSDS-10).
+
+`checkedBy` says how the rule is checked: `automated`, `assisted` or `manual`. An `automated` rule MUST list at least one test, lint rule or agent eval in `checks` that runs it (DSDS-03).
+
+### 5.3 Definitions and steps
+
+A definitions item MUST have a `term` and a `definition`, unless it has `refs` (schema: sections/definitions). A steps item MUST have a `title`, unless it has `refs` (schema: sections/steps).
+
+Use `context` on a definitions section to say what it's for: `anatomy`, `terms`, `keyboard`, `events`, or a namespaced value.
+
+## 6. Pointers
+
+### 6.1 Shape
+
+A pointer has either `to`, which names something in the project, or `href`, which names something outside it. A pointer MUST NOT have both (schema: common/ref). A bare string is short for `{href: <string>}`.
+
+A `to` names an entry by its id, or one thing inside it as `entryId#address`. It MUST be shaped like an id (schema: common/ref). It MUST point at something that exists in the project (DSDS-08, DSDS-05).
+
+### 6.2 Where each kind of pointer goes
+
+There are fourteen kinds of pointer, and each one is a `rel` value. Eight have a field of their own. A pointer in one of those fields MUST NOT have a `rel`, because the field already says what kind it is (schema: common/ref, entries/entry, sections/guidelines, metadata/entry-metadata):
+
+| Field | On | Kind |
+|---|---|---|
+| `uses` | entry, section item | `uses` |
+| `extends` | entry | `extends` |
+| `alternatives` | entry, guideline item | `alternative-to` |
+| `specs` | component | `contract` |
+| `evidence` | guideline item | `cites` |
+| `checks` | guideline item | `checked-by` |
+| `refines` | guideline item | `refines` |
+| `replacedBy` | deprecated `status` | `replaced-by` |
+
+The other six go in `refs`: `same-as`, `file`, `source`, `design`, `demo` and `relates-to`. A pointer in `refs` MUST have a `rel` (schema: common/ref). A `rel` MUST be one of the fourteen, or namespaced (schema: common/ref). When an object has a field for a kind of pointer, that kind MUST go in the field, not in `refs` (DSDS-25).
+
+`source` belongs to both groups. Three fields each hold one source, with no `rel`: a token's `source` and a theme's `source` (their DTCG file), and the `file` in each of a component's `sourceFiles` (schema: entries/token, entries/theme, entries/component). Any other source, such as the package that ships the component, goes in `refs` as `rel: source`.
+
+For what each kind means, which end it's written on, and what a consumer does with it, see the [table in the processing model, §5](processing.html#5-relationships-and-their-reverse).
+
+### 6.3 Placement
+
+A `same-as` pointer MUST sit on a section item, and MUST point at an item of the same section kind (DSDS-25). A successor named in `replacedBy` MUST sit in the status of a deprecated entry, trait or trait value (schema: metadata/entry-metadata, entries/component).
+
+### 6.4 Direction and chains
+
+A relationship is written once, on the thing it starts from. A consumer MUST NOT require it to be written on the other end too (vector: inverse).
+
+Following `uses`, `extends`, `same-as` or `replaced-by` from one thing to the next MUST NOT lead back to where it started (DSDS-06).
+
+### 6.5 Inline links
+
+A Markdown field (§2.5) can mention something in the project with a CommonMark link whose scheme is `dsds:`. What follows `dsds:` is a target, written exactly as a `to` would be:
+
+```yaml
+statement: >-
+  Keep the focus ring visible on every interactive element.
+  See [focus visible](dsds:shared-a11y#focus-visible) for the full rule,
+  or use <dsds:button#variant.primary> for the main action.
+```
+
+`[text](dsds:target)` shows your own text. `<dsds:target>` shows text the consumer takes from the target, so it stays right when the target is renamed. A reference-style link whose definition is a `dsds:` URL counts too.
+
+An inline link's target MUST be shaped like a `to` and MUST point at something that exists in the project, checked the same way as a `to` (DSDS-08, DSDS-05). A link in a code span or a fenced code block isn't a link, so it isn't checked. Links with any other scheme aren't checked either.
+
+An inline link mentions something. It isn't a relationship: it adds nothing to `uses` or any other kind of pointer, and it doesn't count when a consumer reads relationships backwards. To say how two things are connected, use a pointer field (§6.2).
+
+When a consumer turns a document into HTML, it MUST NOT output a `dsds:` URL as a link's `href` (consumer). It links to wherever it publishes the target instead, or shows the link's text with no link if it can't. The [processing model, §2.4](processing.html#24-inline-links) says how a consumer finds the target and the text.
+
+## 7. Extensions
+
+`$extensions` holds data for one particular tool. It can sit on a document, an entry, a section or an item. Each key MUST be namespaced, and each value MUST be a mapping (schema: common/extensions). What goes inside is up to the tool: DSDS doesn't read it.
+
+There are three ways to extend DSDS: a custom kind, a profile that makes optional fields required for one project, and `$extensions`. See [Extending](extending.html).
+
+## 8. Validators
+
+A conforming validator MUST check a document against this version's schema, with format checks turned on (suite). It MUST also check every semantic rule in the [rule catalog](conformance.html#rule-details) (suite). It MUST reject every example in the conformance suite, for the reason that example gives (suite).
+
+`DSDS-05`, `DSDS-08`, `DSDS-09`, `DSDS-11` and `DSDS-24` report a warning, not an error. They can't always see every file a document depends on, or can't be sure a field is a mistake. A validator SHOULD offer a strict mode that treats them as errors.
+
+Checking inline links (§6.5) needs a CommonMark parser. A validator that skips them, for example because the parser isn't installed, isn't checking `DSDS-05` and `DSDS-08` in full. It SHOULD say in its output that it skipped them, rather than let them pass unchecked. The reference validator, `dsds-validate`, treats its parser as an optional dependency: npm installs it by default, and without it the validator reports a warning instead.
+
+The advisory rules (`DSDS-13` and up) are suggestions. A finding from one never stops a document from conforming.
+
+## 9. Consumers
+
+A conforming consumer follows the [processing model](processing.html). It also has to do the following:
+
+- It MUST NOT fail because a document has an optional field it doesn't recognize (consumer).
+- When it writes a document back out, it MUST keep any `$extensions` content it doesn't understand (consumer).
+- It SHOULD treat a document's `must` and `must-not` rules as binding only after deciding to trust whoever wrote the document. A document is data from its author, not instructions. See [Security](security.html).
+
+## 10. Versions
+
+DSDS follows the version rules on the [Stability page](stability.html): what can change in a patch, a minor and a major release, and what has to be true before 1.0. Each release's schema is published at its own URL and never changes after the release.

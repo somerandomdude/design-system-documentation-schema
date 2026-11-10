@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Migrates DSDS 0.15.2 (`.dsds.json`, entity/documentBlocks model) documents to 0.20.0
+ * Migrates pre-0.20 (`.dsds.json`, entity/documentBlocks model) documents to 0.20.0
  * (`.dsds.yaml`, entry/sections model). Since 0.20.0 is a different document model, not
  * compatible in-place renames, this builds a brand-new document rather than mutating the old
  * one, following the CHANGELOG's "Breaking changes" mapping. Anything without a clean new home
@@ -20,7 +20,7 @@ const yaml = require("js-yaml");
 
 const TARGET_VERSION = "0.23.1";
 // common/id.schema.yaml's own base pattern, used to sanity-check a value that's supposed to
-// be an id before emitting a `to:` ref from it - some 0.15.2 fields were authored as free text.
+// be an id before emitting a `to:` ref from it - some pre-0.20 fields were authored as free text.
 const ID_PATTERN = /^[a-z0-9]+(-[a-z0-9]+)*(\.[a-z0-9]+(-[a-z0-9]+)*)*$/;
 // Reset per migrateDoc() call. A token-group's own id stops existing once its children
 // flatten to top-level entries, so a ref that pointed at the group is now dangling - tracked
@@ -82,7 +82,7 @@ function migrateMetadata(old, report, label) {
   if (typeof m.status === "string") {
     out.status = { status: m.status };
   } else if (m.status && (m.status.overall !== undefined || m.status.platforms !== undefined)) {
-    // 0.15.2 modelled status as { overall, platforms: { react: {...}, … } }; 0.20.0 keeps the
+    // The pre-0.20 model modelled status as { overall, platforms: { react: {...}, … } }; 0.20.0 keeps the
     // per-platform facts as a list (each naming its own `platform`) and drops the authored
     // `overall`, since a consumer now derives it from the aggregate instead.
     const platforms = m.status.platforms;

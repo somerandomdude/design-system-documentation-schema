@@ -4,6 +4,33 @@ All notable changes to the DSDS specification are documented in this file.
 
 ---
 
+## [0.23.1 refinements] — 2026-11-170
+
+Site, checks and examples only. No schema change, and no document that validated under 0.23.1 stops validating.
+
+### Fixes to the site
+
+- **Inline code and code blocks lost any text inside `<` and `>`.** A browser reads `<files-or-dirs…>` or `<dsds:button#variant.primary>` as an HTML tag and drops it, so pages showed less than the source says. Brackets are escaped now. Found by the new mirror check below.
+- **Markdown mirrors had no examples.** Each page's `.md` (and `llms-full.txt`) now has the YAML that the page shows, where `<ds-example>` and `<ds-code>` used to be left as tags. A schema definition's mirror shows the same curated example as its page.
+- **A curated example on the schema page was stuck on 0.20.0.** It now follows the current version.
+- **A definition with reference alternatives showed an empty "Constraints" heading.** It's hidden when there's nothing to list.
+- **DSDS-16's note showed `<family>` as nothing.** It's written as code now.
+- **References on the schema page were plain text in places.** A `#/$defs/…` reference, and a reference to a definition in a file the page merges in, didn't link. Every reference now links to its definition. The Markdown mirror's links to definitions resolve too: its headings had different anchors from the page's.
+
+### Docs
+
+- The Overview and the style guide state the `for: agent` rule the same way: write for people by default, and add a `for: agent` section where an agent needs something a person doesn't.
+- The Quick Start has a section on the entry pointers `uses`, `extends` and `alternatives`, with an example. A 0.21 document's entry `related` becomes `alternatives`, and `purpose` and `metadata.context` fold into `description`. The primer (`llms-small.txt`) says the same.
+- The Quick Start says `$schema` goes on a base document. Entry documents don't accept it yet.
+- The Schema page has a table of the validator's schema messages, each with what it means and a minimal fix.
+- The Security page says every crawler and agent fetcher may read every page, as `robots.txt` says.
+- Version notes that covered 0.15.2 are gone from the site. The release notes below still record it.
+
+### Checks
+
+- `npm run check:docs` now also checks that every YAML example is in a code block, that every current-version string says the current version (including `package-lock.json`), and that every Markdown mirror has the text of its page.
+- `npm run check:live` fetches the deployed site and checks its sitemap, `llms.txt`, `manifest.json` and Markdown mirrors. It needs the network, so it isn't part of `check`.
+
 ## [0.23.1] — 2026-10-17
 
 - Add optional entry `uuid` for stable external identification; refs still use `id`. (Josh Harwood)

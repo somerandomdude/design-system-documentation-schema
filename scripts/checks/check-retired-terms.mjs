@@ -34,7 +34,7 @@ const RETIRED = [
 // Files whose subject is the old model, or which are machine-written from something else.
 const EXEMPT = [
   "CHANGELOG",
-  "site/content/stability.mdx", // documents the 0.15.2 → 0.20.0 migration
+  "site/content/stability.mdx", // documents the pre-0.20 → 0.20.0 migration
   "site/content/style-guide.mdx", // generated from STYLE_GUIDE.md
   "dsds-work-2026-09-12",
 ];
