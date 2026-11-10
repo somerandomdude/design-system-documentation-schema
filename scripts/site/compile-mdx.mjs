@@ -119,6 +119,12 @@ function stripJsxComments(source) {
 
 // Escape bare `{`/`}` outside fenced code blocks so MDX doesn't try to interpret them as JSX
 // expressions - safe because the only `{}` occurrences in prose here are stray literals.
+// The plain copy inside a YAML <ds-code>. ds-code draws its highlighted view from the same text,
+// and only this copy shows without its JavaScript, so the line breaks survive either way.
+function yamlFallback(text) {
+  return `<pre><code class="language-yaml">${esc(text)}</code></pre>`;
+}
+
 function escapeCurlyBraces(source) {
   const parts = source.split(/(```[\s\S]*?```)/g);
   return parts
@@ -182,7 +188,8 @@ function preprocessDsCodeBlocks(source, slots) {
       const restAttrs = attrsRaw
         .replace(/\s+language="[^"]*"/, "")
         .replace(/\s+label="[^"]*"/, "");
-      const html = `<ds-code${langAttr}${labelAttr}${restAttrs}>${esc(trimmed)}</ds-code>`;
+      const body = lang === "yaml" ? yamlFallback(trimmed) : esc(trimmed);
+      const html = `<ds-code${langAttr}${labelAttr}${restAttrs}>${body}</ds-code>`;
       return pushHtmlSlot(slots, html);
     },
   );
@@ -222,7 +229,8 @@ function preprocessExamples(source, slots) {
       const slotAttr = slot ? ` slot="${esc(slot)}"` : "";
       // wrap unconditionally: an example's column is often half-width or narrower, where a
       // long line should break instead of forcing horizontal scroll.
-      const html = `<ds-code language="${lang}"${labelAttr}${slotAttr} wrap>${esc(raw)}</ds-code>`;
+      const body = lang === "yaml" ? yamlFallback(raw) : esc(raw);
+      const html = `<ds-code language="${lang}"${labelAttr}${slotAttr} wrap>${body}</ds-code>`;
       return pushHtmlSlot(slots, html);
     },
   );
@@ -433,6 +441,9 @@ function postProcess(html) {
   out = out.replace(
     /<pre><code\s+class="language-(\w+)(?:\s+label=&quot;([^&]*)&quot;)?">([\s\S]*?)<\/code><\/pre>/g,
     (_m, lang, label, content) => {
+      if (lang === "yaml" && !label) {
+        return `<ds-code language="yaml"><pre><code class="language-yaml">${escapeBrackets(content)}</code></pre></ds-code>`;
+      }
       const labelAttr = label ? ` label="${label}"` : "";
       return `<ds-code language="${lang}"${labelAttr}>${escapeBrackets(content)}</ds-code>`;
     },
@@ -442,6 +453,7 @@ function postProcess(html) {
   out = out.replace(
     /<pre><code\s+class="language-(\w+)">([\s\S]*?)<\/code><\/pre>/g,
     (_m, lang, content) => {
+      if (lang === "yaml") return _m; // already wrapped by the regex above
       return `<ds-code language="${lang}">${escapeBrackets(content)}</ds-code>`;
     },
   );

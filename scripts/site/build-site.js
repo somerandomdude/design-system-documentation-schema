@@ -681,7 +681,7 @@ function renderDefinition(defName, defSchema, { anchor, source, exampleYaml, eye
   const eyebrowAttr = eyebrow ? ` eyebrow="${esc(eyebrow)}"` : "";
   const fallback = renderDefSectionFallback(anchor, defName, defSchema.type, defSchema.description, eyebrow);
   const example = exampleYaml
-    ? `<ds-code language="yaml" label="" slot="example" wrap>${esc(exampleYaml)}</ds-code>`
+    ? `<ds-code language="yaml" label="" slot="example" wrap><pre><code class="language-yaml">${esc(exampleYaml)}</code></pre></ds-code>`
     : "";
   const content = [];
 
