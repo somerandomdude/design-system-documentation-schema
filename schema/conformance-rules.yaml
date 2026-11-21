@@ -62,9 +62,12 @@
     (`#traitId.valueId`). It also can't name two things equally (processing
     model §2). This is what makes a `same-as` reuse a real, checked link,
     rather than text that only looks right. It applies whether the target
-    is in `shared` or `entries`.
+    is in `shared` or `entries`. Since 0.23.0 it also checks the target of
+    an inline link in a Markdown field, like
+    `[focus visible](dsds:shared-a11y#focus-visible)` (processing model
+    §2.4).
   fix: >-
-    Change the part after `#` to an address that exists on the target entry, or give the item you mean that `id`. If it names two things, give one of them its own `id`.
+    Change the part after `#` to an address that exists on the target entry, or give the item you mean that `id`. If it names two things, give one of them its own `id`. In an inline link, fix the part after `#` in the `dsds:` URL the same way.
 
 - id: DSDS-06
   name: CHAIN_CYCLE
@@ -108,9 +111,12 @@
     follows `rel: file` links, and the links in those files, and treats
     every file given to it in one run as part of the same project. If the
     target still isn't found, that's a warning rather than an error, unless
-    there was nothing else to look in.
+    there was nothing else to look in. Since 0.23.0 it also checks the
+    target of an inline link in a Markdown field, like `<dsds:button>`,
+    including one that isn't shaped like a `to` at all, which the schema
+    can't see inside a string.
   fix: >-
-    Change `to` to an id that exists. If the target lives in another file, validate both files in the same run, or link them with a `rel: file` ref.
+    Change `to` to an id that exists. If the target lives in another file, validate both files in the same run, or link them with a `rel: file` ref. In an inline link, change the part after `dsds:` to an id that exists, written the way a `to` would be.
 
 - id: DSDS-09
   name: COMBO_TARGET_RESOLVES

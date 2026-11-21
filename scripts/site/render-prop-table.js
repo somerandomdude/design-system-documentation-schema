@@ -107,6 +107,21 @@ function refFallbackLabel(ref) {
 // schema registry and merging every branch's `properties`/`required` into one object.
 // ---------------------------------------------------------------------------
 
+// A `$ref: #/$defs/x` means the $defs of the file it's written in. Once a file's content is merged
+// into another page, the ref has to name that file, so it's rewritten to its full $id form here.
+function withAbsoluteRefs(node, baseId) {
+  if (Array.isArray(node)) return node.map((n) => withAbsoluteRefs(n, baseId));
+  if (node !== null && typeof node === "object") {
+    return Object.fromEntries(
+      Object.entries(node).map(([k, v]) => [
+        k,
+        k === "$ref" && typeof v === "string" && v.startsWith("#") ? `${baseId}${v}` : withAbsoluteRefs(v, baseId),
+      ]),
+    );
+  }
+  return node;
+}
+
 function resolveSchema(schema, schemaById) {
   if (!schema || !schema.allOf) return schema;
 
@@ -117,7 +132,7 @@ function resolveSchema(schema, schemaById) {
     if (!branch) return;
     if (branch.$ref) {
       const target = schemaById.get(stripFragment(branch.$ref));
-      if (target) mergeBranch(resolveSchema(target, schemaById));
+      if (target) mergeBranch(resolveSchema(withAbsoluteRefs(target, target.$id), schemaById));
       return;
     }
     if (branch.allOf) {
@@ -598,6 +613,7 @@ module.exports = {
   renderPropertyTableForRef,
   buildDefIndex,
   resolveSchema,
+  withAbsoluteRefs,
   loadSchemaYaml,
   ROOT_FILES,
   DEFAULT_SCHEMA_GROUPS,

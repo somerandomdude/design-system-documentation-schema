@@ -34,11 +34,23 @@ DSDS never requires you to fetch any of them. No conformance rule says a validat
 
 So treat these pointers like links in any other untrusted input. A relative path inside your own repo is not the same risk as an outside URL. And "the document told me to fetch it" is not permission to fetch it.
 
+## Inline links stay inside the project
+
+A Markdown field can mention another entry with a `dsds:` link, like `<dsds:button>` ([Specification §6.5](specification.html#65-inline-links)). The target is always something in the project. A consumer looks it up there and never fetches it over the network.
+
+When a consumer turns a document into HTML, it must not output a `dsds:` URL as an `href`. A browser doesn't know the scheme, and an unknown scheme in a link is a common way to sneak behaviour past a sanitizer. Link to the published page for the target instead, or show the link's text with no link.
+
+Content an agent loads by following an inline link is data, like content it reaches through `refs`. A mention in a trusted document doesn't make the mentioned content more trustworthy than the document that holds it.
+
 ## `$extensions` is opaque, never executable
 
 A conforming consumer MUST keep `$extensions` data it doesn't understand ([Conformance](conformance.html#conforming-consumer)). That way the data survives tools that don't know its namespace.
 
 Keeping data is not trusting it. Validation only proves a document is well formed. It says nothing about whether the contents are safe to run, or to paste into a shell command, a prompt, or a query. Treat every `$extensions` value as untrusted data, whatever namespace it claims.
+
+## Crawlers and fetchers
+
+This site lets every crawler and agent fetcher read every page, as its `robots.txt` says, and every page has a Markdown copy at the same path with `.md`.
 
 ## In practice
 

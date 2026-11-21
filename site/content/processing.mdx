@@ -18,6 +18,7 @@ Each MUST ends with what checks it, in parentheses, as the [specification's §1.
 - An **address** is the part of a ref's `to` after the `#`. In `shared-a11y#focus-visible`, the address is `focus-visible`.
 - An **item** is one member of a section's `items`, or one `freeform` entry.
 - A **chain** is a path a consumer follows from one thing to the next, through `uses`, `extends`, `same-as` or `replaced-by` (§9).
+- An **inline link** is a link inside a Markdown field whose URL starts with `dsds:`, like `[focus visible](dsds:shared-a11y#focus-visible)` (§2.4).
 
 ## 2. Addresses
 
@@ -46,6 +47,23 @@ Two things on one entry can end up with the same address. A consumer MUST pick t
 If two things tie for the strongest source, the address is ambiguous. A consumer MUST NOT choose between them, because it's an error (DSDS-05). The fix is to give one of the two its own `id`.
 
 So when an item and another item reusing it sit on the same entry, their shared address points at the item that states the rule.
+
+### 2.4 Inline links
+
+An inline link names its target the same way a `to` does, so it's found with the same rules.
+
+- A consumer MUST find inline links with a CommonMark parser, not by searching the text (vector: inline-links). A `dsds:` URL in a code span or a fenced code block isn't a link. A reference-style link (`[text][x]`, with `[x]: dsds:button` elsewhere in the field) is.
+- A consumer MUST treat the scheme as case-insensitive, so `DSDS:button` is an inline link too (vector: inline-links). The target is everything after the colon, after the parser has decoded escapes such as `%23` for `#`.
+- A consumer MUST resolve the target with the rules in §2.1 to §2.3, and report it the way §3 reports a `to` that can't be found (DSDS-08, DSDS-05; vector: inline-links). A target that isn't shaped like a `to` is a problem too.
+- For `[text](dsds:target)`, the text to show is the author's. For `<dsds:target>`, a consumer MUST show the first of these the target has (vector: inline-links):
+  1. an entry's `name`;
+  2. a definition's `term`;
+  3. a step's or freeform entry's `title`;
+  4. a trait's or trait value's `name`;
+  5. otherwise, the target itself, without `dsds:`.
+
+  A reusing item (§4) uses its effective content, so a reused definition shows the `term` of the item it reuses. A guideline has no short name, so an autolink to one shows its target. Write `[text](dsds:…)` for a guideline instead.
+- An inline link isn't a relationship. A consumer MUST NOT count it in §5: it isn't a `uses`, and it doesn't appear when relationships are read backwards (vector: inline-links). A consumer MAY offer a separate "mentioned in" list built from inline links.
 
 ## 3. Projects
 
@@ -100,6 +118,8 @@ Every `rel`, where it's written, and what a consumer does with it:
 
 A "—" means the pointer leads outside the project, so nothing in the project reads it backwards. Custom namespaced `rel` values are covered in §8.
 
+Only pointers are relationships. An inline link in prose (§2.4) isn't one.
+
 When a consumer shows an entry's relationships, it SHOULD include the ones written on other entries that point at it. A pointer inside an item belongs to that item. So a step that `uses` `button` is a relationship from the step, not from its whole entry.
 
 ## 6. `extends`
@@ -152,11 +172,17 @@ What `scripts/resolve/resolve.js` reports, and the rule that catches each one in
 | `replaced-by-misplaced` | A `replaced-by` pointer is on something that can't be deprecated. | the schema, `DSDS-25` |
 | `replaced-by-not-deprecated` | A `replaced-by` pointer is on something that isn't deprecated. | the schema |
 | `cycle` | A chain leads back to where it started. | `DSDS-06` |
+| `malformed-link` | An inline link's target isn't shaped like a `to`. | `DSDS-08` |
+| `inline-links-skipped` | A Markdown field mentions `dsds:`, but the consumer had no Markdown parser to read its links. | — |
+
+`unresolved-entry`, `unresolved-item` and `ambiguous-address` cover inline links too. For a problem in an inline link, `at` is the item or entry whose field holds the link.
 
 ## 11. Test vectors
 
-Each folder in [`examples/vectors/`](/examples/vectors/) holds one or more documents and an `expected.json`: what a conforming consumer should work out from them. They cover addresses (§2), a project split across files (§3), reused content (§4), reverse relationships (§5), successors (§7) and loops (§9).
+Each folder in [`examples/vectors/`](/examples/vectors/) holds one or more documents and an `expected.json`: what a conforming consumer should work out from them. They cover addresses (§2), inline links (§2.4), a project split across files (§3), reused content (§4), reverse relationships (§5), successors (§7) and loops (§9).
 
 They're published with the conformance suite at [`/v{{VERSION}}/conformance-suite/manifest.json`](/v{{VERSION}}/conformance-suite/manifest.json), next to the broken examples that validators are tested against. The manifest's `consumerContract` explains how to compare results. In short, everything has to match except each problem's `message`, which is text for people to read.
+
+The result has `inlineLinks` only when the project has inline links. Each one says where it is (`from`, `pointer`, `offset`), its `form` and `target`, what it `resolves` to (missing when it doesn't resolve), and its `text`: the author's for `[text](dsds:…)`, the §2.4 text for `<dsds:…>`, and none for a reference definition, whose text is on the link that uses it.
 
 In this repo, `node scripts/resolve/resolve.js <files…>` prints what any project resolves to, and `npm run check` checks every vector.

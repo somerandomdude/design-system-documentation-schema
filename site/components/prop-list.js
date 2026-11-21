@@ -64,25 +64,6 @@ const PROP_TABLE_CSS = `
     color: var(--ds-color-text);
   }
 
-  /* Deep-link, revealed on row hover — mirrors <ds-heading>'s anchor-link
-     (after the text, not before - order: 1 moves it past prop-name/
-     prop-type/prop-status, all still default order: 0, regardless of
-     which of them wrap onto their own line). */
-  .prop-anchor {
-    order: 1;
-    display: inline;
-    opacity: 0;
-    margin-inline-start: var(--ds-space-1);
-    color: var(--ds-color-text);
-    text-decoration: none;
-    font-size: 0.85em;
-    transition: opacity var(--ds-duration-fast) var(--ds-ease-standard);
-  }
-  /* :where() zeroes out .prop:hover's contribution to specificity here,
-     so .prop-anchor:hover naturally outranks it on direct hover - same
-     fix as <ds-heading>'s own anchor-link, no !important needed. */
-  :where(.prop:hover) .prop-anchor { opacity: 0.5; }
-  .prop-anchor:hover { opacity: 1; }
 
   .prop-desc {
     font-family: ${FONT.body};
@@ -200,11 +181,6 @@ export class DsPropTable extends HTMLElement {
           esc(anchor) +
           '" part="prop">' +
           '<h3 class="prop-head" part="prop-head">' +
-          '<a class="prop-anchor" href="#' +
-          esc(anchor) +
-          '" part="anchor" aria-label="Link to ' +
-          esc(name) +
-          '">#</a>' +
           '<code class="prop-name" part="name">' +
           esc(name) +
           "</code>" +
@@ -224,30 +200,14 @@ export class DsPropTable extends HTMLElement {
     this._shadow.innerHTML =
       '<div class="prop-list" part="list">' + blocks + "</div>";
 
-    this._wireAnchors();
+    this._scrollToHash();
   }
 
-  // Native #id URL-fragment navigation can't reach into shadow DOM — the
-  // browser's scroll-to-fragment lookup only ever checks the top-level
-  // document, and every anchor this renders lives inside this element's own
-  // shadow root. So deep links here need their own scroll handling: on
-  // click (intercepting the default same-page navigation), and once on
-  // render (in case the page loaded with a matching #hash already in the
-  // URL, before this table existed to be scrolled to).
-  _wireAnchors() {
+  // Native #id URL-fragment navigation can't reach into shadow DOM, so a
+  // page loaded with a #hash that names a property scrolls to it here, once
+  // the table has rendered.
+  _scrollToHash() {
     var shadow = this._shadow;
-
-    shadow.querySelectorAll(".prop-anchor").forEach(function (link) {
-      link.addEventListener("click", function (e) {
-        e.preventDefault();
-        var id = link.getAttribute("href").slice(1);
-        var target = shadow.querySelector('[id="' + CSS.escape(id) + '"]');
-        if (!target) return;
-        history.pushState(null, "", "#" + id);
-        target.scrollIntoView({ block: "start" });
-      });
-    });
-
     var currentHash = location.hash.slice(1);
     if (!currentHash) return;
     var target = shadow.querySelector('[id="' + CSS.escape(currentHash) + '"]');

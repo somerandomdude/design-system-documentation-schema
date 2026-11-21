@@ -63,13 +63,17 @@ function fixturesFor(id) {
 }
 
 // Catalog prose is plain markdown, but this lands in MDX, where a bare `<word>` opens a tag.
-// Escape `<` everywhere except inside `code spans`.
+// Show a `<word>` as code, and escape any other `<`, everywhere except inside `code spans`.
 const oneLine = (text) =>
   String(text)
     .replace(/\s+/g, " ")
     .trim()
     .split(/(`[^`]*`)/g)
-    .map((part, i) => (i % 2 === 1 ? part : part.replace(/</g, "\\<")))
+    .map((part, i) =>
+      i % 2 === 1
+        ? part
+        : part.replace(/<([A-Za-z][^<>]*)>|</g, (m, word) => (word === undefined ? "\\<" : "`" + m + "`")),
+    )
     .join("");
 
 function renderDetails(rules) {

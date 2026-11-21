@@ -122,6 +122,8 @@ Sections in the same breadth tier are then ordered by how broad the audience is.
 2. **`for: human`**
 3. **`for: agent`**
 
+The rule for audience is the same as the Overview page's: write for people by default. Add a `for: agent` section where an agent needs something a person doesn't, such as a recurring misreading.
+
 
 ```yaml
 sections:
@@ -229,6 +231,17 @@ A ref answers what it points at before what kind of pointer it is. That's the or
 2. **`rel`:** What kind of pointer is it? Left out in a field named for one kind of pointer (`uses`, `extends`, `alternatives`, `evidence`, `checks`, `refines`, `replacedBy`, `specs`), where the field says it.
 3. **`role`:** What does the thing being pointed at do here?
 4. **`note`:** Anything else worth saying about the connection.
+
+### Inline links: a pointer for a relationship, a link for a mention
+
+When prose mentions another part of the system, link to it instead of writing its id in backticks. A validator checks a `dsds:` link; it can't check `` `button#variant.primary` ``.
+
+- **`<dsds:button>`** for a named thing: an entry, a definition, a step, or a trait or value with a `name`. The text comes from the target, so it stays right after a rename.
+- **`[keep the focus ring visible](dsds:shared-a11y#focus-visible)`** for a guideline, which has no short name, and anywhere the sentence needs its own words.
+- **Give a link's target its own readable `id`, and don't change it.** An item without one is addressed by a slug of its text, so rewording the rule breaks its links. Rename by changing `name`, never `id`. A lowercase UUID remains valid as an `id`; use a readable entry `id` plus `uuid` when an external system needs a separate stable key. `<dsds:…>` still shows the target's `name`.
+- **A link isn't a relationship.** If the entry depends on the thing it mentions, say so in `uses` too. A tool answering "what does changing this affect?" reads pointers, not prose.
+
+This is about reading order, not field order, so `dsds-format` doesn't apply it.
 
 ---
 

@@ -4,6 +4,77 @@ All notable changes to the DSDS specification are documented in this file.
 
 ---
 
+## [0.23.1 refinements] — 2026-11-170
+
+Site, checks and examples only. No schema change, and no document that validated under 0.23.1 stops validating.
+
+### Fixes to the site
+
+- **Code blocks show their line breaks without JavaScript.** A block is still a `<ds-code>`, which draws the highlighted view with its JavaScript. It now holds a plain `<pre><code>` copy of the same text, which shows if that JavaScript doesn't run. This covers YAML, bash, and blocks with no language. The Markdown mirror has a fence either way.
+- **Inline code and code blocks lost any text inside `<` and `>`.** A browser reads `<files-or-dirs…>` or `<dsds:button#variant.primary>` as an HTML tag and drops it, so pages showed less than the source says. Brackets are escaped now. Found by the new mirror check below.
+- **Markdown mirrors had no examples.** Each page's `.md` (and `llms-full.txt`) now has the YAML that the page shows, where `<ds-example>` and `<ds-code>` used to be left as tags. A schema definition's mirror shows the same curated example as its page.
+- **A curated example on the schema page was stuck on 0.20.0.** It now follows the current version.
+- **A definition with reference alternatives showed an empty "Constraints" heading.** It's hidden when there's nothing to list.
+- **DSDS-16's note showed `<family>` as nothing.** It's written as code now.
+- **References on the schema page were plain text in places.** A `#/$defs/…` reference, and a reference to a definition in a file the page merges in, didn't link. Every reference now links to its definition. The Markdown mirror's links to definitions resolve too: its headings had different anchors from the page's.
+
+### Docs
+
+- **About, Contact and Privacy pages** in the footer's Project group, also linked from the 404 page and served as Markdown.
+- **The homepage links the GitHub org** as well as the repo.
+- **`llms.txt` has a "When to use DSDS" section**, matching `AGENTS.md`.
+- **Structured data names an author and a release date.** Every page's JSON-LD names PJ Onori as author and dates the release from the CHANGELOG. Every page also carries an Organization block with a contact email.
+
+- The Overview and the style guide state the `for: agent` rule the same way: write for people by default, and add a `for: agent` section where an agent needs something a person doesn't.
+- The Quick Start has a section on the entry pointers `uses`, `extends` and `alternatives`, with an example. A 0.21 document's entry `related` becomes `alternatives`, and `purpose` and `metadata.context` fold into `description`. The primer (`llms-small.txt`) says the same.
+- The Quick Start says `$schema` goes on a base document. Entry documents don't accept it yet.
+- The Schema page has a table of the validator's schema messages, each with what it means and a minimal fix.
+- The Security page says every crawler and agent fetcher may read every page, as `robots.txt` says.
+- Version notes that covered 0.15.2 are gone from the site. The release notes below still record it.
+
+### Checks
+
+- `npm run check:docs` now also checks that every YAML example is in a code block, that every current-version string says the current version (including `package-lock.json`), and that every Markdown mirror has the text of its page.
+- `npm run check:live` fetches the deployed site and checks its sitemap, `llms.txt`, `manifest.json` and Markdown mirrors. It needs the network, so it isn't part of `check`.
+
+## [0.23.1] — 2026-10-17
+
+- Add optional entry `uuid` for stable external identification; refs still use `id`. (Josh Harwood)
+- Fix: an inline link in a guideline item's `example` wasn't found, so `DSDS-05`, `DSDS-08` and the resolver's `inlineLinks` missed it. Found now. (0.23.0 bug, found in review.)
+
+## [0.23.0] — 2026-10-13
+
+An additive release. No document that validates under 0.22.0 stops validating, and there's no migration script.
+
+### Inline links in prose
+
+- **A Markdown field can link to something in the project with a `dsds:` link.** `[focus visible](dsds:shared-a11y#focus-visible)` shows your own text; `<dsds:button>` shows the target's name. The part after `dsds:` is written exactly like a `to`. Defined in the Specification (§2.5, §6.5), the processing model (§2.4) and `common/markdown.schema.yaml`.
+- **An inline link isn't a relationship.** It doesn't count as `uses`, and it doesn't appear when relationships are read backwards. Use a pointer field for that.
+- **A renderer must not output a `dsds:` URL as an `href`.** Added to the Security page.
+- **`DSDS-05` and `DSDS-08` check inline links** the same way they check a `to`, with the same error-or-warning rule. `DSDS-08` also reports a target that isn't shaped like a `to`, since the schema can't see inside a string. In `--json` output, a finding for an inline link has an `offset`: where the link starts in the field. New fixtures: `DSDS-08-inline-unknown-entry.yaml`, `DSDS-08-inline-malformed-target.yaml`, `DSDS-05-inline-unknown-address.yaml`, `DSDS-05-inline-ambiguous-address.yaml`.
+- **The reference resolver lists inline links.** `scripts/resolve/resolve.js` adds `inlineLinks` to its result when a project has any: where each link is, what it resolves to, and the text an autolink shows. It's never added to `incoming`. Two new problem codes: `malformed-link` and `inline-links-skipped`. New consumer test vector: `examples/vectors/inline-links/`. A project with no inline links resolves exactly as before, so the existing vectors are unchanged.
+- **The validator's Markdown parser is optional.** `dsds-validate` finds links with `mdast-util-from-markdown`, listed under `optionalDependencies`, so npm installs it by default. Leave it out (`npm install --omit=optional`), or run on a Node older than 20.19, and the validator skips inline links and says so with a warning, which fails `--strict`. It loads the parser only when a Markdown field contains `dsds:`, so documents with no inline links are unaffected either way.
+- **The Quick Start has a new step, "Linking from prose"**, with `examples/quickstart/13-inline-links.yaml`. The style guide says when to use each form. `llms-small.txt`, `AGENTS.md` and all four agent skills explain inline links.
+- **`npm run check:docs` fails if a built page has a `dsds:` href**, in any case or quoting.
+- Merged Mark Toadvine's update to the quick start to include accessibility tagging.
+
+### `description` is Markdown everywhere
+
+- An entry's, a shared entry's, a section's and an example's `description` now use `common/markdown.schema.yaml`, like the prose fields that already did. Its JSON type is still a string, so no document changes validity. Two things to check:
+  - a description containing `*`, `_` or `<` may render differently in a tool that now treats it as Markdown;
+  - a tool that shows a description on one line, such as in a table or a search result, shows each link as its text.
+
+### Stable ids and UUIDs
+
+- **The Specification (§3.1) says a published `id` SHOULD NOT change**, and how to rename instead: change `name`, or keep the old entry as a deprecated stub whose `replacedBy` names the new one. A validator can't check this across versions, so it's guidance, not a rule.
+- **A lowercase UUID is a valid `id`, and now documented as one**, for an entry or item that outside tools link to and that gets renamed. This already validated; nothing in the schema changed. Also in `common/id.schema.yaml` and the style guide.
+
+### Fixes
+
+- `AGENTS.md` linked to an Overview heading by its old anchor.
+
+---
+
 ## [0.22.0] — 2026-10-09
 
 Breaking release. It simplifies the format rather than adding to it: one place to say why something exists, one field for each kind of pointer, and 14 `rel` values instead of 23. It's the last breaking window planned before 1.0 (see [Stability](https://designsystemdocspec.org/stability)). A 0.21 document fails validation until it's migrated: run `node scripts/tools/migrate-to-0.22.js <files-or-dirs…>` over every file of a project in one run, then `dsds-format` and `dsds-validate` on the same files. The fixes first planned as a 0.21.3 patch are folded in here too.

@@ -2,7 +2,7 @@
 name: dsds-update
 description: Update an existing DSDS spec based on implementation changes, Figma updates, or written instructions. Triggers on "update spec", "modify spec", "add prop to spec", "sync spec", "spec drift".
 metadata:
-  version: 0.22.0
+  version: 0.23.1
 ---
 
 # Update a DSDS Spec
@@ -45,13 +45,14 @@ Modify an existing `.dsds.yaml` file.
   reorders the whole file.
 - When adding trait values, place them in logical order (not necessarily alphabetical) — the first value is implied as the default. A value's `id` is the real API name in whatever case the API uses.
 - Update `metadata.status` if the change constitutes a breaking API modification.
+- Before renaming an entry `id` or rewording an item that has no `id`, search the project for `dsds:` links to it as well as `to:` pointers. Both break, and both are reported (`DSDS-08`, `DSDS-05`). Giving the item an explicit `id` first keeps its links working.
 - If adding a new relationship, check first whether it has a field of its own: `uses`, `extends` and `alternatives` on an entry; `uses` on a section item; `specs` on a component; `alternatives`, `evidence`, `checks` and `refines` on a guideline; and `replacedBy` inside a deprecated `status`, next to `deprecationNotice`. A pointer there is just `{to: "<id>"}` or `{href: "<url>"}`, with no `rel`. Anything else goes in `refs` as `{to: "<id>", rel: "<same-as|relates-to|...>"}`, or `{href: "<url>", rel: "<file|source|design|demo|relates-to>"}`. A test in `checks` names its kind in `role`: `test`, `lint-rule` or `agent-test`.
 
 ## Schema References
 
 When adding new sections or fields, verify the exact fields:
 
-- **Bundled schema**: `https://designsystemdocspec.org/v0.22.0/dsds.bundled.schema.json` (or `node_modules/design-system-documentation-schema/schema/dsds.bundled.schema.json` if DSDS is installed as a dependency)
+- **Bundled schema**: `https://designsystemdocspec.org/v0.23.1/dsds.bundled.schema.json` (or `node_modules/design-system-documentation-schema/schema/dsds.bundled.schema.json` if DSDS is installed as a dependency)
 - **Section reference**: `/schema/sections-<kind>.md` on this site — for example
   [sections-guidelines.md](https://designsystemdocspec.org/schema/sections-guidelines.md)
 - **Entry reference**: `/schema/entries-<kind>.md` — for example

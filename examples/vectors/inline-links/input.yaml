@@ -1,0 +1,104 @@
+# Processing model §2.4: inline links in Markdown fields.
+# - An autolink shows the first of: an entry's name, a definition's term, a step's or freeform
+#   entry's title, a trait's or value's name; otherwise the target. `[text](dsds:…)` shows its
+#   own text, and a reference definition has none of its own.
+# - A reused definition shows the term of the item it reuses (§4).
+# - A token id keeps its own form (`Color/Action/Primary`).
+# - `glossary` is mentioned only in prose, so it has no `incoming`: a link isn't a relationship.
+#   The token is mentioned and also in `uses`, so it has one `incoming`, from the pointer.
+# - The last two links are broken on purpose: an unknown address, and a malformed target.
+schemaVersion: "0.23.1"
+name: Inline Links
+entries:
+  - kind: component
+    id: button
+    name: Button
+    description: >-
+      Triggers an action. Built from <dsds:Color/Action/Primary> and described in
+      <dsds:glossary>.
+    sections:
+      - kind: guidelines
+        for: all
+        items:
+          - id: label
+            level: must
+            statement: >-
+              Label it with a <dsds:glossary#action-verb>, set its <dsds:button#variant>
+              to <dsds:button#variant.primary> or <dsds:button#variant.quiet>, and follow
+              <dsds:onboarding#check-the-label> and <dsds:onboarding#setup>.
+          # A literal block keeps the blank line, so `[g]: …` is a reference definition.
+          # In a folded block (`>-`) it would join the paragraph above and be plain text.
+          - id: one-per-screen
+            level: should
+            statement: |-
+              Keep to [one primary button](dsds:button#label) per screen. See
+              <dsds:button#label> and the [glossary][g].
+
+              [g]: dsds:glossary
+          - id: broken
+            level: may
+            statement: >-
+              Use a <dsds:glossary#confirm>. Broken: <dsds:glossary#nope> and
+              [this](dsds:glossary#a..b).
+    # The button mentions the token and the glossary in prose, but only this pointer is a
+    # relationship: the token has `incoming`, the glossary doesn't.
+    uses:
+      - to: Color/Action/Primary
+    traits:
+      - traitType: variant
+        kind: enum
+        id: variant
+        name: Variant
+        description: How much the button stands out.
+        values:
+          - id: primary
+            name: Primary
+            description: The main action.
+          - id: quiet
+            description: A secondary action.
+  - kind: entry
+    id: glossary
+    name: Glossary
+    description: Words the system uses.
+    sections:
+      - kind: definitions
+        for: all
+        items:
+          - id: action-verb
+            term: Action verb
+            definition: A verb that says what happens, like "Save".
+          - id: confirm
+            refs:
+              - to: onboarding#confirm-term
+                rel: same-as
+  - kind: entry
+    id: onboarding
+    name: Onboarding
+    # Three edge cases: a link in a code span isn't a link, the scheme is read in any case, and
+    # `%23` is decoded to `#` before the target is resolved.
+    description: >-
+      Getting started. Not a link: `<dsds:glossary>`. Read <DSDS:glossary>, then
+      [set up](dsds:onboarding%23setup).
+    sections:
+      - kind: steps
+        for: all
+        items:
+          - id: check-the-label
+            title: Check the label
+      - kind: definitions
+        for: all
+        items:
+          - id: confirm-term
+            term: Confirm
+            definition: Agree to go ahead.
+      - kind: section
+        for: all
+        freeform:
+          - id: setup
+            title: Set up
+            body: Install the package.
+  - kind: token
+    id: Color/Action/Primary
+    name: Action primary
+    description: The color of the main action.
+    tokenType: color

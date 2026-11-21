@@ -1,8 +1,8 @@
 {
-  "schemaVersion": "0.22.0",
+  "schemaVersion": "0.23.1",
   "generatedBy": "scripts/generate/generate-conformance-suite.mjs",
-  "runnerContract": "For each fixture: load it as YAML, validate it against the bundled schema at v0.22.0, and confirm it is REJECTED. If rejectedBy is \"schema\", at least one resulting error must NOT carry a [DSDS-XX] rule id (a pure JSON Schema violation), and if errorAt is set, one such error's instance path must equal it (\"/\" for the document root). If rejectedBy is \"semantic\", every id in expect must appear among the resulting errors or warnings (a semantic rule may report as either, depending on --strict) tagged with that [DSDS-XX] id. A fixture that validates cleanly, or fails for a different reason than it declares, is a conformance failure for the validator under test — not a passing result.",
-  "fixtureCount": 35,
+  "runnerContract": "For each fixture: load it as YAML, validate it against the bundled schema at v0.23.1, and confirm it is REJECTED. If rejectedBy is \"schema\", at least one resulting error must NOT carry a [DSDS-XX] rule id (a pure JSON Schema violation), and if errorAt is set, one such error's instance path must equal it (\"/\" for the document root). If rejectedBy is \"semantic\", every id in expect must appear among the resulting errors or warnings (a semantic rule may report as either, depending on --strict) tagged with that [DSDS-XX] id. A fixture that validates cleanly, or fails for a different reason than it declares, is a conformance failure for the validator under test — not a passing result.",
+  "fixtureCount": 40,
   "fixtures": [
     {
       "file": "examples/invalid/DSDS-01-one-api-per-platform.yaml",
@@ -50,6 +50,24 @@
       "kind": null
     },
     {
+      "file": "examples/invalid/DSDS-05-inline-ambiguous-address.yaml",
+      "rejectedBy": "semantic",
+      "expect": [
+        "DSDS-05"
+      ],
+      "errorAt": "/entries/0/description",
+      "kind": null
+    },
+    {
+      "file": "examples/invalid/DSDS-05-inline-unknown-address.yaml",
+      "rejectedBy": "semantic",
+      "expect": [
+        "DSDS-05"
+      ],
+      "errorAt": "/entries/0/sections/0/items/0/statement",
+      "kind": null
+    },
+    {
       "file": "examples/invalid/DSDS-05-item-ref-resolves.yaml",
       "rejectedBy": "semantic",
       "expect": [
@@ -83,6 +101,24 @@
         "DSDS-08"
       ],
       "errorAt": null,
+      "kind": null
+    },
+    {
+      "file": "examples/invalid/DSDS-08-inline-malformed-target.yaml",
+      "rejectedBy": "semantic",
+      "expect": [
+        "DSDS-08"
+      ],
+      "errorAt": "/entries/0/sections/0/items/0/statement",
+      "kind": null
+    },
+    {
+      "file": "examples/invalid/DSDS-08-inline-unknown-entry.yaml",
+      "rejectedBy": "semantic",
+      "expect": [
+        "DSDS-08"
+      ],
+      "errorAt": "/entries/0/description",
       "kind": null
     },
     {
@@ -282,10 +318,17 @@
       "expect": [],
       "errorAt": null,
       "kind": "component"
+    },
+    {
+      "file": "examples/invalid/schema-uuid-pattern.yaml",
+      "rejectedBy": "schema",
+      "expect": [],
+      "errorAt": "/uuid",
+      "kind": "component"
     }
   ],
-  "consumerContract": "For each vector: read every file in inputs as one project, resolve it the way the processing model (https://designsystemdocspec.org/processing) says, and compare the result with the JSON in expected. `entries` and each entry's `items`, `incoming` and `succession` must match exactly. `problems` must match on `code` and `at`; `message` is prose for people and isn't compared. A consumer that implements only part of the model can compare only the fields for the sections it implements, and should say which.",
-  "vectorCount": 6,
+  "consumerContract": "For each vector: read every file in inputs as one project, resolve it the way the processing model (https://designsystemdocspec.org/processing) says, and compare the result with the JSON in expected. `entries` and each entry's `items`, `incoming` and `succession` must match exactly, and so must `inlineLinks`, which is present only when the project has inline links. `problems` must match on `code` and `at`; `message` is prose for people and isn't compared. A consumer that implements only part of the model can compare only the fields for the sections it implements, and should say which.",
+  "vectorCount": 7,
   "vectors": [
     {
       "name": "addresses",
@@ -308,6 +351,13 @@
         "examples/vectors/cycles/input.yaml"
       ],
       "expected": "examples/vectors/cycles/expected.json"
+    },
+    {
+      "name": "inline-links",
+      "inputs": [
+        "examples/vectors/inline-links/input.yaml"
+      ],
+      "expected": "examples/vectors/inline-links/expected.json"
     },
     {
       "name": "inverse",

@@ -1,0 +1,27 @@
+$schema: https://json-schema.org/draft/2020-12/schema
+$id: https://designsystemdocspec.org/v0.23.1/entries/theme.schema.yaml
+title: ThemeEntry
+description: A defined system theme.
+$comment: This entry doesn't list which tokens the theme overrides. `source` points to the DTCG JSON file which acts as the source of truth.
+allOf:
+  - $ref: https://designsystemdocspec.org/v0.23.1/entries/entry.schema.yaml
+  - type: object
+    properties:
+      kind:
+        const: theme
+        description: Marks this entry as a theme.
+      metadata:
+        allOf:
+          - $ref: https://designsystemdocspec.org/v0.23.1/metadata/entry-metadata.schema.yaml
+        unevaluatedProperties: false
+      colorScheme:
+        type: string
+        enum: [light, dark]
+        default: light
+        description: Which native color-scheme setting this theme matches.
+      source:
+        $ref: https://designsystemdocspec.org/v0.23.1/common/ref.schema.yaml#/$defs/target
+        description: "The theme's DTCG source file (rel: source). No `rel`: this field says it."
+        $comment: A bare string is a plain file path (shorthand for href). Use the object form when role or note matters.
+        example: tokens/dark.tokens.json
+unevaluatedProperties: false

@@ -119,6 +119,13 @@ function stripJsxComments(source) {
 
 // Escape bare `{`/`}` outside fenced code blocks so MDX doesn't try to interpret them as JSX
 // expressions - safe because the only `{}` occurrences in prose here are stray literals.
+// The plain copy inside a <ds-code>. ds-code draws its highlighted view from the same text, and
+// only this copy shows without its JavaScript, so the line breaks survive either way.
+function codeFallback(lang, text) {
+  const cls = lang ? ` class="language-${lang}"` : "";
+  return `<pre><code${cls}>${esc(text)}</code></pre>`;
+}
+
 function escapeCurlyBraces(source) {
   const parts = source.split(/(```[\s\S]*?```)/g);
   return parts
@@ -182,7 +189,7 @@ function preprocessDsCodeBlocks(source, slots) {
       const restAttrs = attrsRaw
         .replace(/\s+language="[^"]*"/, "")
         .replace(/\s+label="[^"]*"/, "");
-      const html = `<ds-code${langAttr}${labelAttr}${restAttrs}>${esc(trimmed)}</ds-code>`;
+      const html = `<ds-code${langAttr}${labelAttr}${restAttrs}>${codeFallback(lang, trimmed)}</ds-code>`;
       return pushHtmlSlot(slots, html);
     },
   );
@@ -222,7 +229,7 @@ function preprocessExamples(source, slots) {
       const slotAttr = slot ? ` slot="${esc(slot)}"` : "";
       // wrap unconditionally: an example's column is often half-width or narrower, where a
       // long line should break instead of forcing horizontal scroll.
-      const html = `<ds-code language="${lang}"${labelAttr}${slotAttr} wrap>${esc(raw)}</ds-code>`;
+      const html = `<ds-code language="${lang}"${labelAttr}${slotAttr} wrap>${codeFallback(lang, raw)}</ds-code>`;
       return pushHtmlSlot(slots, html);
     },
   );
@@ -427,32 +434,31 @@ function postProcess(html) {
 
   // ── 2. Fenced code blocks with language: <pre><code class="language-xxx"> → <ds-code>,
   //    also extracting an optional label="…" preserved in the class string.
+  // A raw `<dsds:button#variant.primary>` in a code block would be read by the browser as a
+  // tag and dropped, so brackets are escaped here too. Already-escaped text has none.
+  const escapeBrackets = (s) => s.replace(/</g, "&lt;").replace(/>/g, "&gt;");
   out = out.replace(
     /<pre><code\s+class="language-(\w+)(?:\s+label=&quot;([^&]*)&quot;)?">([\s\S]*?)<\/code><\/pre>/g,
     (_m, lang, label, content) => {
       const labelAttr = label ? ` label="${label}"` : "";
-      return `<ds-code language="${lang}"${labelAttr}>${content}</ds-code>`;
-    },
-  );
-
-  // Fallback: language but no label in a simpler class format
-  out = out.replace(
-    /<pre><code\s+class="language-(\w+)">([\s\S]*?)<\/code><\/pre>/g,
-    (_m, lang, content) => {
-      return `<ds-code language="${lang}">${content}</ds-code>`;
+      const pre = `<pre><code class="language-${lang}">${escapeBrackets(content)}</code></pre>`;
+      return `<ds-code language="${lang}"${labelAttr}>${pre}</ds-code>`;
     },
   );
 
   // ── 3. Fenced code blocks without language ──────────────────────────
   out = out.replace(
     /<pre><code>([\s\S]*?)<\/code><\/pre>/g,
-    (_m, content) => `<ds-code>${content}</ds-code>`,
+    (_m, content) => `<ds-code><pre><code>${escapeBrackets(content)}</code></pre></ds-code>`,
   );
 
   // ── 4. Inline code → <ds-code inline>. Must run after fenced-code replacement, above.
+  //    A raw `<` in the code (`<files-or-dirs…>`) would be read by the browser as a tag and
+  //    dropped, so it's escaped here. Text already escaped has no raw brackets, so it's unchanged.
+  // A code block's own <code> is left alone: it's inside a <pre>, not an inline span.
   out = out.replace(
-    /<code>([\s\S]*?)<\/code>/g,
-    (_m, content) => `<ds-code inline>${content}</ds-code>`,
+    /<pre>[\s\S]*?<\/pre>|<code>([\s\S]*?)<\/code>/g,
+    (m, content) => (content === undefined ? m : `<ds-code inline>${content.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</ds-code>`),
   );
 
   // ── 5. Wrap bare <table> in <ds-table>, skipping tables already inside one.

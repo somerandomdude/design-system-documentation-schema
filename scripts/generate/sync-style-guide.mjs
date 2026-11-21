@@ -64,7 +64,9 @@ function build(markdown) {
 
   // Anything still pointing at a bare repo path would 404 here. Better to fail the build than
   // publish a dead link: every such path either needs a rule above or shouldn't be a link.
-  const stray = [...body.matchAll(/\]\((?!https?:|\/|#|[\w-]+\.html)([^)]+)\)/g)].map((m) => m[1]);
+  // Code spans and fenced blocks are skipped: a link written inside code is text, not a link.
+  const prose = body.replace(/^```[\s\S]*?^```/gm, "").replace(/(`+)[^`\n][\s\S]*?\1/g, "");
+  const stray = [...prose.matchAll(/\]\((?!https?:|\/|#|[\w-]+\.html)([^)]+)\)/g)].map((m) => m[1]);
   if (stray.length) {
     throw new Error(
       `STYLE_GUIDE.md links to repo path(s) the site doesn't serve: ${[...new Set(stray)].join(", ")}. ` +

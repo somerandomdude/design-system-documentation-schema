@@ -25,6 +25,7 @@ const {
   resolveSchema,
   loadSchemaYaml,
   ROOT_FILES,
+  withAbsoluteRefs,
 } = require("./render-prop-table");
 
 // MDX compiler (ESM) — loaded dynamically in build()
@@ -51,6 +52,27 @@ const SITE_DIR = path.join(ROOT, "site");
 const CONTENT_DIR = path.join(SITE_DIR, "content");
 const DIST_DIR = path.join(SITE_DIR, "dist");
 const EXAMPLES_DIR = path.join(ROOT, "examples");
+
+// The Markdown mirror (and llms-full.txt) of a page: its shortcodes become what they show.
+// <ds-example file="…"/> is the example file's own text, and <ds-code>…</ds-code> is a fenced
+// block, so an agent reading the mirror gets the same examples a person sees. Without this a
+// mirror had the tag and not the YAML inside it.
+function expandShortcodesForMarkdown(text) {
+  return text
+    .replace(/<ds-example\s+file="([^"]+)"(?:\s+label="([^"]*)")?(?:\s+slot="([^"]*)")?\s*\/>/g, (_m, file, label) => {
+      const full = path.join(EXAMPLES_DIR, file);
+      if (!fs.existsSync(full)) return `(example not found: ${file})`;
+      const lang = path.extname(file).slice(1).replace(/^yml$/, "yaml");
+      const body = fs.readFileSync(full, "utf-8").replace(/\s+$/, "");
+      return `${label ? `**${label}**\n\n` : ""}\`\`\`${lang}\n${body}\n\`\`\``;
+    })
+    .replace(/<ds-code(\s[^>]*)?>([\s\S]*?)<\/ds-code>/g, (_m, attrs = "", body) => {
+      const content = body.replace(/^\n+|\n+$/g, "");
+      if (/\binline\b/.test(attrs)) return `\`${content}\``;
+      const lang = /language="([^"]+)"/.exec(attrs)?.[1] ?? "";
+      return `\`\`\`${lang}\n${content}\n\`\`\``;
+    });
+}
 const TEMPLATES_DIR = path.join(SITE_DIR, "templates");
 const PAGE_TEMPLATE_PATH = path.join(TEMPLATES_DIR, "page.template.html");
 const SUBTEMPLATES_DIR = path.join(TEMPLATES_DIR, "subtemplates");
@@ -155,12 +177,15 @@ function renderPropertyTableMarkdown(defSchema) {
 // renderSchemaPage() compute (root def: baseSlug; local $def: `${baseSlug}-${slug(defName)}`).
 // A definition with no entry here just renders without the example column.
 
+// The spec's current version, so the curated examples can't go stale (they were stuck on 0.20.0).
+const CURRENT_SPEC_VERSION = readSpecVersion();
+
 const CURATED_EXAMPLES = {
   base: {
     file: "examples/base/starter-kit.dsds.yaml",
-    yaml: `schemaVersion: "0.20.0"
+    yaml: `schemaVersion: "${CURRENT_SPEC_VERSION}"
 name: Acme Design System
-$schema: https://designsystemdocspec.org/v0.20.0/dsds.bundled.yaml
+$schema: https://designsystemdocspec.org/v${CURRENT_SPEC_VERSION}/dsds.bundled.yaml
 
 entries:
   - id: acme-design-system
@@ -656,7 +681,7 @@ function renderDefinition(defName, defSchema, { anchor, source, exampleYaml, eye
   const eyebrowAttr = eyebrow ? ` eyebrow="${esc(eyebrow)}"` : "";
   const fallback = renderDefSectionFallback(anchor, defName, defSchema.type, defSchema.description, eyebrow);
   const example = exampleYaml
-    ? `<ds-code language="yaml" label="" slot="example" wrap>${esc(exampleYaml)}</ds-code>`
+    ? `<ds-code language="yaml" label="" slot="example" wrap><pre><code class="language-yaml">${esc(exampleYaml)}</code></pre></ds-code>`
     : "";
   const content = [];
 
@@ -773,7 +798,9 @@ function renderDefinition(defName, defSchema, { anchor, source, exampleYaml, eye
             `<li>${alt.required.map((r) => `<ds-code inline>${esc(r)}</ds-code>`).join(", ")} must be present</li>`,
         )
         .join("\n");
-      content.push(renderSub("anyof-constraints", { items }));
+      // Alternatives that are references, not required-field lists, leave nothing to list:
+      // an empty "Constraints" heading would tell the reader there's a rule and show none.
+      if (items) content.push(renderSub("anyof-constraints", { items }));
     }
   }
 
@@ -925,7 +952,7 @@ function renderSchemaPage(page) {
       const isRoot = defName === page.title;
       const anchor = isRoot ? baseSlug : `${baseSlug}-${slug(defName)}`;
       const curated = CURATED_EXAMPLES[anchor];
-      return renderDefinition(defName, defs[defName], {
+      return renderDefinition(defName, withAbsoluteRefs(defs[defName], page.data.$id), {
         anchor,
         source: relPath,
         exampleYaml: curated ? curated.yaml : undefined,
@@ -942,9 +969,8 @@ function renderSchemaPage(page) {
 // same page/def/example data and propTableRows() as the HTML path, so the two can't drift.
 
 /** Markdown counterpart of renderDefinition() for one $defs entry. */
-function renderDefinitionMarkdown(defName, defSchema, exampleData) {
-  const hid = slug(defName);
-  const lines = [`## ${defName} {#${hid}}`, ""];
+function renderDefinitionMarkdown(defName, defSchema, exampleData, curatedYaml, anchor) {
+  const lines = [`## ${defName} {#${anchor}}`, ""];
 
   if (defSchema.description) {
     lines.push(defSchema.description, "");
@@ -961,12 +987,13 @@ function renderDefinitionMarkdown(defName, defSchema, exampleData) {
     if (defSchema.pattern) {
       lines.push(`**Pattern:** \`${defSchema.pattern}\``, "");
     }
+    if (curatedYaml) lines.push("**Example:**", "", "```yaml", curatedYaml.replace(/\s+$/, ""), "```", "");
     return lines.join("\n");
   }
 
   // oneOf alternatives (e.g. richText's string | object forms)
   if (defSchema.oneOf) {
-    lines.push("One of:", "");
+    lines.push("**Accepts one of:**", "");
     for (const alt of defSchema.oneOf) {
       if (alt.$ref) {
         const target = DEF_INDEX[alt.$ref];
@@ -1003,7 +1030,7 @@ function renderDefinitionMarkdown(defName, defSchema, exampleData) {
     !defSchema.properties
   ) {
     lines.push(
-      `Open map — values are \`${defSchema.additionalProperties.type || "any"}\`.`,
+      `**Open map:** keys are strings, values are \`${defSchema.additionalProperties.type || "any"}\`.`,
       "",
     );
   }
@@ -1027,7 +1054,7 @@ function renderDefinitionMarkdown(defName, defSchema, exampleData) {
     } else {
       const items = defSchema.anyOf.filter((alt) => alt.required);
       if (items.length) {
-        lines.push("**Constraints:**", "");
+        lines.push("**Constraints:** at least one of:", "");
         for (const alt of items) {
           lines.push(
             `- ${alt.required.map((r) => `\`${r}\``).join(", ")} must be present`,
@@ -1066,8 +1093,10 @@ function renderDefinitionMarkdown(defName, defSchema, exampleData) {
     lines.push(`**References:** ${refLinks.join(", ")}`, "");
   }
 
-  // Example
-  if (exampleData !== undefined && exampleData !== null) {
+  // Example: the same one the page shows (its curated YAML), else the schema's own example.
+  if (curatedYaml) {
+    lines.push("**Example:**", "", "```yaml", curatedYaml.replace(/\s+$/, ""), "```", "");
+  } else if (exampleData !== undefined && exampleData !== null) {
     lines.push(
       "**Example:**",
       "",
@@ -1116,10 +1145,13 @@ function buildSchemaMarkdown(page, { includeSource = true } = {}) {
         "",
       );
     }
+    const baseName = page.filename.replace(/\.schema\.yaml$/, "");
+    const baseSlug = page.group === "root" ? baseName : `${page.group}-${baseName}`;
     for (const defName of defNames) {
       const exampleData =
         examples[defName] !== undefined ? examples[defName] : null;
-      lines.push(renderDefinitionMarkdown(defName, defs[defName], exampleData));
+      const anchor = defName === page.title ? baseSlug : `${baseSlug}-${slug(defName)}`;
+      lines.push(renderDefinitionMarkdown(defName, withAbsoluteRefs(defs[defName], page.data.$id), exampleData, CURATED_EXAMPLES[anchor]?.yaml, anchor));
     }
   }
 
@@ -1152,6 +1184,25 @@ function buildAlternateLinks(activeSlug, pageType, version) {
   return links.join("\n");
 }
 
+// Who the structured data names as the author and the publisher. The contact email is the
+// maintainer's; the address and phone aren't published.
+const AUTHOR = { "@type": "Person", name: "PJ Onori", url: "https://pjonori.com" };
+const ORGANIZATION = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: "Design System Doc Spec",
+  url: `${SITE_URL}/`,
+  contactPoint: { "@type": "ContactPoint", email: "pj@pizzapartysupertime.com", contactType: "general" },
+};
+
+// The release date of a version, from its CHANGELOG heading ("## [0.23.1] — 2026-10-17"). Undefined
+// for a version with no dated heading, so datePublished is left out rather than guessed.
+function releaseDate(version) {
+  const changelog = fs.readFileSync(path.join(ROOT, "CHANGELOG"), "utf-8");
+  const match = new RegExp(`## \\[${version.replace(/\./g, "\\.")}\\] — (\\d{4}-\\d{2}-\\d{2})`).exec(changelog);
+  return match ? match[1] : undefined;
+}
+
 function buildJsonLd({ name, description, url, version, pageType, activeSlug, defEntries }) {
   const data = {
     "@context": "https://schema.org",
@@ -1160,6 +1211,8 @@ function buildJsonLd({ name, description, url, version, pageType, activeSlug, de
     description,
     url,
     version,
+    author: AUTHOR,
+    datePublished: releaseDate(version),
     isPartOf: {
       "@type": "WebSite",
       name: "Design System Doc Spec",
@@ -1182,7 +1235,10 @@ function buildJsonLd({ name, description, url, version, pageType, activeSlug, de
   }
   // Escape "<" so a description containing "</script>" can't break out of the script tag early.
   const json = JSON.stringify(data).replace(/</g, "\\u003c");
-  return `  <script type="application/ld+json">${json}</script>`;
+  return [
+    `  <script type="application/ld+json">${json}</script>`,
+    `  <script type="application/ld+json">${JSON.stringify(ORGANIZATION)}</script>`,
+  ].join("\n");
 }
 
 // Declarative Shadow DOM for <ds-heading>/<ds-header>: without it, headings only exist once
@@ -1473,6 +1529,12 @@ function buildLlmsTxt(entries, version, definitionCount) {
       "Schema page's markdown includes every definition's field names, " +
       "types, and requiredness; the bundled schema below is the " +
       "single-file version of the same data.",
+  );
+  lines.push("");
+  lines.push("## When to use DSDS");
+  lines.push("");
+  lines.push(
+    `Use DSDS to document a design system for people and agents at once: what a component, token or pattern is for, how to use it, and how it relates to the rest of the system, in one YAML file. Don't use it to describe a live API. Point at the real source or a generated contract instead, as [Interoperability](${SITE_URL}/interoperability) explains.`,
   );
   lines.push("");
   lines.push("## Machine-readable schema");
@@ -1987,10 +2049,12 @@ async function build() {
       "utf-8",
     );
     // Strip frontmatter, then a leading "# " h1 if present (mirrors the HTML path's h1 strip above).
-    const mdBody = substituteVersion(rawMdx)
-      .replace(/^---\n[\s\S]*?\n---\n/, "")
-      .trimStart()
-      .replace(/^#[ \t]+[^\n]*\n\s*/, "");
+    const mdBody = expandShortcodesForMarkdown(
+      substituteVersion(rawMdx)
+        .replace(/^---\n[\s\S]*?\n---\n/, "")
+        .trimStart()
+        .replace(/^#[ \t]+[^\n]*\n\s*/, ""),
+    );
     fs.writeFileSync(
       path.join(DIST_DIR, `${slug}.md`),
       `# ${title}\n\n${mdBody}`,
@@ -2065,7 +2129,7 @@ async function build() {
   const introFragment = await compileMdxFile(introFragmentPath);
   schemaDefinitions.push(introFragment.html);
   schemaMarkdownParts.push(
-    substituteVersion(fs.readFileSync(introFragmentPath, "utf-8")).trim(),
+    expandShortcodesForMarkdown(substituteVersion(fs.readFileSync(introFragmentPath, "utf-8"))).trim(),
   );
 
   // One small markdown file per schema file, alongside the big schema.md mirror, so a

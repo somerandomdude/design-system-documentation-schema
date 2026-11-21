@@ -2,7 +2,7 @@
 name: dsds-specs
 description: Everything about Design System Doc Spec (DSDS) — entry kinds, sections, schema structure, and how it fits into the ecosystem. Use when authoring, reviewing, or reasoning about DSDS specs and `*.dsds.yaml` files.
 metadata:
-  version: 0.22.0
+  version: 0.23.1
 ---
 
 # Design System Doc Spec (DSDS)
@@ -15,7 +15,7 @@ DSDS documents a graph of **entries** (a system, a component, a token, a theme, 
 
 When you need precise field-level details beyond this skill, consult these in order:
 
-1. **Bundled schema**: `https://designsystemdocspec.org/v0.22.0/dsds.bundled.schema.json` (or `node_modules/design-system-documentation-schema/schema/dsds.bundled.schema.json` if installed as a dependency)
+1. **Bundled schema**: `https://designsystemdocspec.org/v0.23.1/dsds.bundled.schema.json` (or `node_modules/design-system-documentation-schema/schema/dsds.bundled.schema.json` if installed as a dependency)
 2. **Schema architecture reference**: https://designsystemdocspec.org/schema#how-the-schema-is-organized (and [Conformance](https://designsystemdocspec.org/conformance) for conformance classes and the full rule catalog)
 3. **Quick start with examples**: https://designsystemdocspec.org/quickstart
    — and the [style guide](https://designsystemdocspec.org/style-guide)
@@ -68,7 +68,7 @@ description: A styled checkbox input for boolean or indeterminate selection.
 A **base document** (the root `index.dsds.yaml`, or any file meant to hold more than one entry) requires `schemaVersion`, `name`, and a non-empty `entries` array. System-wide facts live on that list's own `kind: system` entry:
 
 ```yaml
-schemaVersion: "0.22.0"
+schemaVersion: "0.23.1"
 name: Acme Design System
 
 entries:
@@ -122,7 +122,7 @@ Mark a section `for: agent` for firm, ready-to-act notes a person wouldn't need 
 
 ## Schema Validation
 
-The bundled schema is published at `https://designsystemdocspec.org/v0.22.0/dsds.bundled.schema.json`, using JSON Schema draft 2020-12. Validate with:
+The bundled schema is published at `https://designsystemdocspec.org/v0.23.1/dsds.bundled.schema.json`, using JSON Schema draft 2020-12. Validate with:
 
 ```bash
 npx dsds-validate <files-or-globs>   # is this document allowed?
@@ -155,3 +155,4 @@ Fetch these pages when authoring specific pieces:
 - Requirement levels: `must`, `should`, `should-not`, `must-not`, `may` (lowercase, hyphenated — RFC 2119).
 - `metadata.status` is always an object: `{status: "stable"}`, optionally scoped with `platform`, `since`, `deprecationNotice`, `note`. There's no bare-string shorthand.
 - All pointers — dependencies, composition, citations, external links — use one type: `common/ref` (`to` for this document's own graph, `href` for outside it, plus a `rel`). There's no separate "relationship" or "link" type.
+- Prose fields (every `description`, `statement`, `definition`, `usage`, freeform `body`) are CommonMark. Mention something in the project with a `dsds:` link, written like a `to`: `<dsds:button>` shows its name, `[your words](dsds:shared-a11y#focus-visible)` shows yours. A validator checks the target (`DSDS-08`, `DSDS-05`); it can't check an id in backticks. A link is only a mention: a dependency still needs `uses`.

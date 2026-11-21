@@ -69,7 +69,7 @@ A guideline item states one rule:
 - `checkedBy`: how the rule is verified. `automated` (a tool checks it), `assisted` (a tool flags likely cases and a person decides), or `manual`. Leave it out if you don't know yet.
 - `checks`: what verifies the rule. A test, lint rule or agent eval as an `href`, with `role: test`, `lint-rule` or `agent-test`; or a checklist step as a `to`. `checkedBy: automated` needs at least one `href`.
 - `evidence`: the outside standard behind the rule, such as a WCAG criterion.
-- `alternatives`: what to use instead. `refines`, on an item: the targeted rule it sharpens.
+- `alternatives`: what to use instead. On an entry it's where a 0.21 `related` went, with no `rel`. `refines`: a broader rule this one adds to or narrows, for any audience.
 - `example`, `tags`, and `refs` for any other pointer.
 
 `checks`, `evidence`, `alternatives` and `refines` are each named for one kind of pointer, so a pointer in them has no `rel`: `evidence: [{href: https://www.w3.org/…}]`.
@@ -96,6 +96,15 @@ The other eight are what the named fields mean. The two you'll use most:
 
 - `uses` (the `uses` field): the entry is built from the target, needs it, or follows it. A dialog uses its button; a button uses a color token.
 - `replaced-by` (`replacedBy`, in a deprecated status): the successor, next to the `deprecationNotice`. A single trait value can be deprecated too: `status: {status: deprecated, deprecationNotice: Renamed to primary., replacedBy: [{to: button#variant.primary}]}`.
+
+## Inline links
+
+Prose fields are CommonMark: every `description`, a guideline's `statement`, a definition's `definition` and `usage`, a step's `description`, and a freeform `body`. To mention something in the project, link to it with a `dsds:` URL whose target is written exactly like a `to`. Don't write its id in backticks: a validator can't check that.
+
+- `<dsds:button>` shows the target's name, so it stays right after a rename.
+- `[keep the focus ring visible](dsds:shared-a11y#focus-visible)` shows your own words. Use it for a guideline, which has no short name.
+
+A broken target fails `DSDS-08` or `DSDS-05`, the same as a broken `to`. A link only mentions something: it isn't a relationship. If the entry depends on what it mentions, add a `uses` pointer too. When you turn a document into HTML, never output a `dsds:` URL as an `href`.
 
 ## A worked example
 

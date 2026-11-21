@@ -177,4 +177,25 @@ for (const source of sources) {
 if (ok) {
   console.log(`✓ ${checked} internal link(s) across ${sources.length} source file(s) all resolve against site/dist/.`);
 }
+
+// A renderer MUST NOT output a `dsds:` URL as a link's href (specification §6.5): a browser
+// can't follow it, and an unknown scheme in an href is a classic way past a sanitizer. This
+// site's pages can't resolve one, so any that reaches built HTML is a bug. The scheme is
+// case-insensitive, and an href can be quoted, unquoted, or start with whitespace.
+const RAW_DSDS_HREF = /\bhref\s*=\s*["']?\s*dsds:/i;
+function htmlFiles(dir) {
+  return fs.readdirSync(dir, { withFileTypes: true }).flatMap((e) => {
+    const full = path.join(dir, e.name);
+    if (e.isDirectory()) return htmlFiles(full);
+    return e.name.endsWith(".html") ? [full] : [];
+  });
+}
+const pages = htmlFiles(DIST_DIR);
+const rawHrefs = pages.filter((file) => RAW_DSDS_HREF.test(fs.readFileSync(file, "utf-8")));
+for (const file of rawHrefs) {
+  console.error(`✗ ${path.relative(ROOT, file)}: has an href with a dsds: URL. Link to the published page instead, or show the text with no link.`);
+  ok = false;
+}
+if (!rawHrefs.length) console.log(`✓ No dsds: href in ${pages.length} built page(s).`);
+
 process.exit(ok ? 0 : 1);

@@ -1,0 +1,348 @@
+{
+  "description": "Agent eval for the DSDS site (plan item 8). Each task is given to an agent with only the Markdown pages in evals/context/. The agent's answer is scored by evals/score.js: the document must validate with no errors, and each check must hold. Paths use dots and [n]. Ops: sourceToken (the `source` pointer resolves, in the task's `dtcg` file, to a token with that $value; given null, only that it resolves), eq, exists, notExists, len>= (value is a number), contains (string), some (array has an element matching the partial object), deepContains (the values of every `checks` key anywhere in the document contain the string).",
+  "tasks": [
+    {
+      "id": "01-checkbox-component",
+      "prompt": "Write a valid DSDS component entry for a checkbox. It needs kind, id `checkbox`, name, and description; one guidelines section (for: all) with two items, one `must` and one `should`, each with a statement; and one variant trait called `size` with kind enum and three values (small, medium, large), each with an id and a description.",
+      "checks": [
+        [
+          "kind",
+          "eq",
+          "component"
+        ],
+        [
+          "id",
+          "eq",
+          "checkbox"
+        ],
+        [
+          "sections[0].kind",
+          "eq",
+          "guidelines"
+        ],
+        [
+          "sections[0].items",
+          "len>=",
+          2
+        ],
+        [
+          "traits[0].traitType",
+          "eq",
+          "variant"
+        ],
+        [
+          "traits[0].kind",
+          "eq",
+          "enum"
+        ],
+        [
+          "traits[0].values",
+          "len>=",
+          3
+        ]
+      ]
+    },
+    {
+      "id": "02-color-token",
+      "prompt": "Write a valid DSDS token entry for `color.action.primary`. Its value lives in the DTCG file `./tokens.dtcg.json`, at the path `#/color/action/primary`. That file is in your context folder, and it holds this token. Include a description.",
+      "checks": [
+        [
+          "kind",
+          "eq",
+          "token"
+        ],
+        [
+          "id",
+          "eq",
+          "color.action.primary"
+        ],
+        [
+          "tokenType",
+          "eq",
+          "color"
+        ],
+        [
+          "source",
+          "sourceToken",
+          "#0055ff"
+        ],
+        [
+          "value",
+          "notExists"
+        ]
+      ],
+      "dtcg": "evals/context/tokens.dtcg.json"
+    },
+    {
+      "id": "03-fix-token",
+      "prompt": "Fix this DSDS token entry so it validates. Keep its meaning. The DTCG file `./tokens.dtcg.json` is in your context folder; it holds this token's value at `#/color/action/primary`, so the entry should point at that value rather than state it. Output the corrected document only.\n\n```yaml\nkind: token\nid: Color Action Primary\nname: Primary action\ntokenType: Color\nvalue: \"#0055ff\"\ndescription: Main action color.\n```",
+      "checks": [
+        [
+          "kind",
+          "eq",
+          "token"
+        ],
+        [
+          "id",
+          "notContains",
+          " "
+        ],
+        [
+          "tokenType",
+          "eq",
+          "color"
+        ],
+        [
+          "value",
+          "notExists"
+        ],
+        [
+          "source",
+          "sourceToken",
+          "#0055ff"
+        ]
+      ],
+      "dtcg": "evals/context/tokens.dtcg.json"
+    },
+    {
+      "id": "04-dark-theme",
+      "prompt": "Write a valid DSDS theme entry called `theme-dark`. It is a dark colour scheme that inherits from `theme-light`, which already exists in the project. Its DTCG tokens are in `./themes/dark.dtcg.json`. Include a description.",
+      "checks": [
+        [
+          "kind",
+          "eq",
+          "theme"
+        ],
+        [
+          "colorScheme",
+          "eq",
+          "dark"
+        ],
+        [
+          "extends",
+          "some",
+          {
+            "to": "theme-light"
+          }
+        ],
+        [
+          "source",
+          "exists"
+        ]
+      ]
+    },
+    {
+      "id": "05-shared-rule-reuse",
+      "prompt": "Write a valid DSDS base document: schemaVersion set to the version these pages describe, a name, and entries. Its shared list has one entry, `shared-a11y`, with an item `focus-visible` (level must, statement \"Keep the focus ring visible.\"). Its entries list has one component, `button`, with one guidelines section (for: all) whose only item reuses `shared-a11y#focus-visible` through a same-as ref and has no statement of its own.",
+      "checks": [
+        [
+          "schemaVersion",
+          "exists"
+        ],
+        [
+          "shared[0].id",
+          "eq",
+          "shared-a11y"
+        ],
+        [
+          "entries[0].id",
+          "eq",
+          "button"
+        ],
+        [
+          "entries[0].sections[0].items[0].refs[0].rel",
+          "eq",
+          "same-as"
+        ],
+        [
+          "entries[0].sections[0].items[0].refs[0].to",
+          "eq",
+          "shared-a11y#focus-visible"
+        ]
+      ]
+    },
+    {
+      "id": "06-deprecate-trait-value",
+      "prompt": "Write the complete `button` component entry (kind, id, name, description) with one trait, `variant` (traitType variant, kind enum), and three values: `primary`, `secondary`, and `primary-blue`. `primary-blue` has been renamed to `primary`, so mark it deprecated and name its successor.",
+      "checks": [
+        [
+          "traits[0].values[2].id",
+          "eq",
+          "primary-blue"
+        ],
+        [
+          "traits[0].values[2].status.status",
+          "eq",
+          "deprecated"
+        ],
+        [
+          "traits[0].values[2].status.deprecationNotice",
+          "exists"
+        ],
+        [
+          "traits[0].values[2].status.replacedBy[0].to",
+          "eq",
+          "button#variant.primary"
+        ]
+      ]
+    },
+    {
+      "id": "07-automated-check",
+      "prompt": "Write a component entry for `card` with one guidelines item (level must) that is checked automatically. The check is the test file `tests/card.a11y.test.ts`. The item cites the WCAG 2.2 page https://www.w3.org/WAI/WCAG22/Understanding/focus-visible.html as its evidence.",
+      "checks": [
+        [
+          "sections[0].items[0].checkedBy",
+          "eq",
+          "automated"
+        ],
+        [
+          "sections[0].items[0].checks[0].href",
+          "contains",
+          "card.a11y.test.ts"
+        ],
+        [
+          "sections[0].items[0].checks[0].role",
+          "eq",
+          "test"
+        ],
+        [
+          "sections[0].items[0].evidence",
+          "exists"
+        ]
+      ]
+    },
+    {
+      "id": "08-inline-link-and-uses",
+      "prompt": "Write a component entry for `dialog`. Its description mentions the `button` component with an inline link. Its one guideline item tells people to keep the focus ring visible, with an inline link to the rule `shared-a11y#focus-visible`. A dialog is built from a button, so declare that as a pointer too.",
+      "checks": [
+        [
+          "description",
+          "contains",
+          "dsds:button"
+        ],
+        [
+          "uses[0].to",
+          "eq",
+          "button"
+        ],
+        [
+          "sections[0].items[0].statement",
+          "contains",
+          "dsds:shared-a11y#focus-visible"
+        ]
+      ]
+    },
+    {
+      "id": "09-upgrade-0.21-document",
+      "prompt": "This component document was written for DSDS 0.21. Upgrade it to 0.23 so it validates. Keep its meaning, and output the corrected document only.\n\n```yaml\nkind: component\nid: tooltip\nname: Tooltip\ndescription: Shows extra info on hover.\npurpose: Gives context for an icon without a label.\nrelated:\n  - to: popover\n    rel: related\nmetadata:\n  status: {status: stable}\n  context: Used in toolbars.\nsections:\n  - kind: guidelines\n    for: all\n    items:\n      - level: should\n        statement: Show on hover and focus.\n```",
+      "checks": [
+        [
+          "purpose",
+          "notExists"
+        ],
+        [
+          "related",
+          "notExists"
+        ],
+        [
+          "metadata.context",
+          "notExists"
+        ],
+        [
+          "alternatives[0].to",
+          "eq",
+          "popover"
+        ],
+        [
+          "description",
+          "contains",
+          "Gives context"
+        ]
+      ]
+    },
+    {
+      "id": "10-steps-and-checks-to-step",
+      "prompt": "Write a component entry for `toast`. Give it a steps section, for: agent, with three checklist steps with ids: `set-duration` (Set the duration), `check-contrast` (Check the contrast), and `test-screen-reader` (Test with a screen reader). Add a guidelines item (level must, checkedBy manual) that is verified by the first step: point its checks at that step with a `to` pointer.",
+      "checks": [
+        [
+          "sections",
+          "some",
+          {
+            "kind": "steps",
+            "for": "agent"
+          }
+        ],
+        [
+          "checks",
+          "deepContains",
+          "set-duration"
+        ],
+        [
+          "sections",
+          "len>=",
+          2
+        ]
+      ]
+    },
+    {
+      "id": "11-platforms-and-contract",
+      "prompt": "Write a component entry for `avatar`, implemented on two platforms: React in `src/Avatar.tsx` and iOS in `ios/Avatar.swift`. Its API is documented in a generated Custom Elements Manifest at `dist/custom-elements.json`. Include a description and one guidelines item.",
+      "checks": [
+        [
+          "kind",
+          "eq",
+          "component"
+        ],
+        [
+          "sourceFiles",
+          "some",
+          {
+            "platform": "react"
+          }
+        ],
+        [
+          "sourceFiles",
+          "some",
+          {
+            "platform": "ios"
+          }
+        ],
+        [
+          "specs",
+          "exists"
+        ],
+        [
+          "sections",
+          "len>=",
+          1
+        ]
+      ]
+    },
+    {
+      "id": "12-combo-forbids-pair",
+      "prompt": "Write a component entry for `button`. It has a `size` trait (traitType variant, kind enum, values small and large) and a `loading` state (traitType state, kind boolean). Add a combo that forbids `size.small` together with `loading`, at level must-not.",
+      "checks": [
+        [
+          "traits",
+          "len>=",
+          2
+        ],
+        [
+          "combos[0].level",
+          "eq",
+          "must-not"
+        ],
+        [
+          "combos[0]",
+          "contains",
+          "size.small"
+        ],
+        [
+          "combos[0]",
+          "contains",
+          "loading"
+        ]
+      ]
+    }
+  ]
+}

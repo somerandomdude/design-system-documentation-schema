@@ -1,0 +1,61 @@
+$schema: https://json-schema.org/draft/2020-12/schema
+$id: https://designsystemdocspec.org/v0.23.1/common/id.schema.yaml
+title: Id
+type: string
+description: >-
+  Lowercase, dash-separated segments, optionally chained with dots. A section
+  item's own `id` is optional, but a conforming consumer MUST
+  be able to address every item. When an item has no `id`,
+  consumers MUST derive one from the item's own text so content has a
+  consistent id. The `$comment` below gives the exact derivation.
+$comment: >-
+  An id from an outside tool that doesn't fit this format goes under
+  `$extensions.<namespace>.displayName` instead.
+
+  A lowercase UUID is a valid `id`. For an entry that needs a separate
+  stable key, use a readable `id` and a top-level `uuid`.
+
+  A published id should never change, since every pointer and inline
+  link to it would break, along with any link from outside the project.
+  Change `name` instead. If the id really has to change, keep the old
+  entry as a deprecated stub whose `replacedBy` names the new one.
+
+  An agent citing "why did you do that" needs something to cite, and same-as/refines/checks all point at an item by id. To derive one: lowercase the item's own primary text field (a definitions item's `term`, a guidelines item's `statement`, a steps item's or freeform entry's `title`), replace each run of characters outside `[a-z0-9]` with a single dash, then trim any leading or trailing dash.
+pattern: '^[a-z0-9]+(-[a-z0-9]+)*(\.[a-z0-9]+(-[a-z0-9]+)*)*$'
+example: color.action.primary
+$defs:
+  apiId:
+    type: string
+    description: A single identifier copied verbatim from a real API, in whatever case that API uses.
+    $comment: >-
+      For an id that names something that already exists rather than being derived
+      from prose: a prop, an attribute, an enum value. The base id format assumes
+      derivation (a guideline's `statement`, a definition's `term`) via the
+      lowercase-and-dash algorithm above, so a slug shape fits there. A trait id is
+      the opposite - it mirrors a React or Vue prop, or a Web Component attribute,
+      and rewriting `isDisabled` as `is-disabled` gives a name no tool can call.
+      Accepts camelCase, PascalCase, snake_case and kebab-case; rejects spaces, an
+      empty string, and a leading or trailing dash. A leading digit is allowed, since
+      a real enum value can be a bare number (`<ds-heading>`'s `level` trait uses
+      `1`-`6`, matching the real attribute value). A dot is deliberately forbidden,
+      and that - not the slash - is why this can't just be `tokenId`: a `combo`
+      addresses an enum value as `traitId.valueId`, so a dot inside a trait id would
+      make `size.large` ambiguous between a trait named `size.large` and value
+      `large` of trait `size`.
+    pattern: '^[A-Za-z0-9_$]+(-[A-Za-z0-9_$]+)*$'
+    example: isDisabled
+  tokenId:
+    type: string
+    description: The same as `apiId`, but segments can also be chained with a dot or a slash.
+    $comment: >-
+      Only for token entries. Their id often comes from a design tool that names paths
+      that way, and that tool's casing comes with it - a Figma variable named
+      `Color/Action/Primary` is the real name, so it validates as written.
+    pattern: '^[A-Za-z0-9_$]+(-[A-Za-z0-9_$]+)*([./][A-Za-z0-9_$]+(-[A-Za-z0-9_$]+)*)*$'
+    example: color/action/primary
+  namespaced:
+    type: string
+    description: A dotted, namespaced custom value. The open extension point alongside a fixed set of well-known values.
+    $comment: Same lowercase-dash-per-segment format as the base id, but requires at least one dot. This is so a custom value can't collide with existing ids.
+    pattern: '^[a-z0-9]+(-[a-z0-9]+)*(\.[a-z0-9]+(-[a-z0-9]+)*)+$'
+    example: acme.icon-library

@@ -64,11 +64,31 @@ A relative path MUST point at a file that exists (DSDS-11). That applies to the 
 
 The code a system describes often lives somewhere other than its documents, such as in a separate repository. A system entry can say where with `metadata.sourceRoot`: a path relative to its own document, or a URL. When a project's system sets it, every relative `sourceFiles` path in the project MUST be read starting from there (DSDS-11). The [processing model, §3](processing.html#3-projects) says how a consumer gathers a project's files.
 
+### 2.5 Markdown fields
+
+A field whose schema is [common/markdown](schema.html#common-markdown) holds CommonMark. GFM tables and fenced code blocks are allowed too. These fields are:
+
+- an entry's and a shared entry's `description`;
+- a section's `description`, and a freeform entry's `body`;
+- a guideline's `statement`, a definition's `definition` and `usage`, and a step's `description`;
+- a trait's and a trait value's `description`;
+- an example's `description`.
+
+Other text fields, such as `name`, `title`, `term` and `deprecationNotice`, are plain text. A Markdown field can link to something in the project (§6.5).
+
 ## 3. Identifiers
 
 ### 3.1 Entry ids
 
 An entry's `id` MUST be lowercase words joined by dashes, with dots allowed between parts, like `button` or `color.action.primary` (schema: entries/entry, common/id). A token's `id` MAY also use a design tool's own capitals and slashes, like `Color/Action/Primary` (schema: entries/token).
+
+A lowercase UUID fits this shape, so an entry's or an item's `id` MAY be one, like `3f9a1c2e-8b4d-4e2a-9c71-5d0e6f8a2b13`. It suits something that tools outside the project link to and that gets renamed: `name` holds the readable label, and the `id` never has to change. A project can mix readable ids and UUIDs.
+
+An entry MAY have a top-level `uuid` as a stable machine key. It is not a ref target: `to:` refs still use `id`. A published `uuid` SHOULD NOT change.
+
+For an example, see [`example.entry-with-uuid`](/examples/entries/entry-with-uuid.yaml).
+
+Whatever its form, an `id` SHOULD NOT change once a document using it is published, since every pointer and inline link to it would break. Change `name` instead. If an entry's `id` has to change, keep the old entry as a deprecated stub whose `replacedBy` names the new one, so consumers can follow it (processing model §7). A validator sees one version of a document, so it can't check this; a project that needs the guarantee checks it in its own CI, by comparing ids with the version before.
 
 ### 3.2 Item ids and addresses
 
@@ -86,7 +106,7 @@ Some values can be custom: an entry kind, a section kind, a section's `context`,
 
 ### 4.1 Every entry
 
-Every entry MUST have `kind`, `id`, `name` and `description` (schema: entries/entry). `description` says what the entry is and why it exists, starting with what it is.
+Every entry MUST have `kind`, `id`, `name` and `description` (schema: entries/entry). Entries MAY also have a top-level `uuid` as a stable machine identifier. `description` says what the entry is and why it exists, starting with what it is.
 
 `kind` MUST be `system`, `token`, `theme`, `component` or `entry`, or a namespaced custom kind (schema: entries/entry). Use `entry` for content like patterns, foundations, guides, or anything else that has no kind of its own.
 
@@ -194,6 +214,25 @@ A relationship is written once, on the thing it starts from. A consumer MUST NOT
 
 Following `uses`, `extends`, `same-as` or `replaced-by` from one thing to the next MUST NOT lead back to where it started (DSDS-06).
 
+### 6.5 Inline links
+
+A Markdown field (§2.5) can mention something in the project with a CommonMark link whose scheme is `dsds:`. What follows `dsds:` is a target, written exactly as a `to` would be:
+
+```yaml
+statement: >-
+  Keep the focus ring visible on every interactive element.
+  See [focus visible](dsds:shared-a11y#focus-visible) for the full rule,
+  or use <dsds:button#variant.primary> for the main action.
+```
+
+`[text](dsds:target)` shows your own text. `<dsds:target>` shows text the consumer takes from the target, so it stays right when the target is renamed. A reference-style link whose definition is a `dsds:` URL counts too.
+
+An inline link's target MUST be shaped like a `to` and MUST point at something that exists in the project, checked the same way as a `to` (DSDS-08, DSDS-05). A link in a code span or a fenced code block isn't a link, so it isn't checked. Links with any other scheme aren't checked either.
+
+An inline link mentions something. It isn't a relationship: it adds nothing to `uses` or any other kind of pointer, and it doesn't count when a consumer reads relationships backwards. To say how two things are connected, use a pointer field (§6.2).
+
+When a consumer turns a document into HTML, it MUST NOT output a `dsds:` URL as a link's `href` (consumer). It links to wherever it publishes the target instead, or shows the link's text with no link if it can't. The [processing model, §2.4](processing.html#24-inline-links) says how a consumer finds the target and the text.
+
 ## 7. Extensions
 
 `$extensions` holds data for one particular tool. It can sit on a document, an entry, a section or an item. Each key MUST be namespaced, and each value MUST be a mapping (schema: common/extensions). What goes inside is up to the tool: DSDS doesn't read it.
@@ -205,6 +244,8 @@ There are three ways to extend DSDS: a custom kind, a profile that makes optiona
 A conforming validator MUST check a document against this version's schema, with format checks turned on (suite). It MUST also check every semantic rule in the [rule catalog](conformance.html#rule-details) (suite). It MUST reject every example in the conformance suite, for the reason that example gives (suite).
 
 `DSDS-05`, `DSDS-08`, `DSDS-09`, `DSDS-11` and `DSDS-24` report a warning, not an error. They can't always see every file a document depends on, or can't be sure a field is a mistake. A validator SHOULD offer a strict mode that treats them as errors.
+
+Checking inline links (§6.5) needs a CommonMark parser. A validator that skips them, for example because the parser isn't installed, isn't checking `DSDS-05` and `DSDS-08` in full. It SHOULD say in its output that it skipped them, rather than let them pass unchecked. The reference validator, `dsds-validate`, treats its parser as an optional dependency: npm installs it by default, and without it the validator reports a warning instead.
 
 The advisory rules (`DSDS-13` and up) are suggestions. A finding from one never stops a document from conforming.
 

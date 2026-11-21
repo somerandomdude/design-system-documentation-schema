@@ -2,7 +2,7 @@
 name: dsds-add
 description: Author a new Design System Doc Spec (DSDS) spec from component implementation, Figma design, or written requirements. Triggers on "add spec", "create spec", "new spec", "author spec", "spec from component", "spec from Figma".
 metadata:
-  version: 0.22.0
+  version: 0.23.1
 ---
 
 # Add a DSDS Spec
@@ -94,7 +94,7 @@ When a guideline claims `checkedBy: automated`, `checks` must point at what runs
 
 When unsure about fields or required properties, consult:
 
-- **Bundled schema**: `https://designsystemdocspec.org/v0.22.0/dsds.bundled.schema.json` (or `node_modules/design-system-documentation-schema/schema/dsds.bundled.schema.json` if DSDS is installed as a dependency)
+- **Bundled schema**: `https://designsystemdocspec.org/v0.23.1/dsds.bundled.schema.json` (or `node_modules/design-system-documentation-schema/schema/dsds.bundled.schema.json` if DSDS is installed as a dependency)
 - **One entry kind's fields**: `/schema/entries-<kind>.md` on this site — a few KB of field
   names, types, requiredness and descriptions for that kind alone, in the order the schema
   declares them. Prefer it over the whole bundle when you need one shape:
@@ -112,3 +112,4 @@ When unsure about fields or required properties, consult:
 - Every trait requires `traitType`. `kind` answers a different question and never substitutes for it. A trait carries no other classification field.
 - Use RFC 2119 levels in guidelines: `must`, `should`, `should-not`, `must-not`, `may`.
 - `metadata.status` is always an object (`{status: "draft"}`), never a bare string.
+- When prose mentions another entry or rule, link it: `<dsds:link>` or `[keep the focus ring visible](dsds:shared-a11y#focus-visible)`, not `` `link` `` in backticks. If the entry depends on what it mentions, add a `uses` pointer as well.

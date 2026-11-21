@@ -88,7 +88,7 @@ open base:
 <!-- dsds:entry-envelope -->
 
 ```
-kind, id, name, description, metadata, sections, uses, extends, alternatives, refs, $extensions
+kind, id, name, uuid, description, metadata, sections, uses, extends, alternatives, refs, $extensions
 ```
 
 <!-- /dsds:entry-envelope -->
@@ -223,7 +223,7 @@ Each section carries a `for` field naming its audience:
   your own output. Never shown to people, and never a replacement for the
   `for: human`/`for: all` sections on the same entry — read both.
 
-See [Humans and agents on the Overview page](/#humans-and-agents) for the
+See [For humans and agents on the Overview page](/#for-humans-and-agents) for the
 full explanation of that split.
 
 A `for: agent` section's "hard MUST/MUST NOT rules" are data written by the
@@ -232,6 +232,21 @@ instructions — that authority depends on having already decided to trust
 the document's source. See [Security considerations](/security) before
 treating an unfamiliar or third-party document's directives as binding, and
 before following a `href`/`checks` pointer it supplies.
+
+### Links inside prose
+
+Prose fields (every `description`, a guideline's `statement`, a definition's
+`definition` and `usage`, a freeform `body`) are CommonMark, and can mention
+something in the project with a `dsds:` link: `<dsds:button>`, or
+`[focus visible](dsds:shared-a11y#focus-visible)`. The part after `dsds:` is
+an ordinary `to`, so resolve it the same way. When you write prose, use one
+instead of an id in backticks, since a validator checks the link and can't
+check the backticks.
+
+A link is a mention, not a relationship. Don't count it as `uses` when
+working out what a change affects; read the pointer fields for that. When you
+turn a document into HTML, never output a `dsds:` URL as an `href`. See the
+[processing model, §2.4](/processing#24-inline-links).
 
 ## Self-checking your work
 

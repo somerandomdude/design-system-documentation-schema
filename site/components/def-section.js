@@ -56,6 +56,22 @@ const DEF_SECTION_CSS = `
     line-height: 1.2;
     margin: 0;
   }
+  /* The same permalink every other heading on the site has (heading.js): hidden until the
+     heading is hovered or focused, and a focusable link when it is. */
+  .anchor-link {
+    display: inline;
+    opacity: 0;
+    margin-inline-start: var(--ds-space-2);
+    color: var(--ds-color-text);
+    text-decoration: none;
+    font-size: 0.5em;
+    vertical-align: baseline;
+    transition: opacity var(--ds-duration-fast) var(--ds-ease-standard);
+  }
+  :where(.heading-block:hover) .anchor-link { opacity: 0.6; }
+  .anchor-link:hover { opacity: 1; }
+  .anchor-link:focus { opacity: 1; }
+  .anchor-link:focus-visible { opacity: 1; }
   /* Docked-state styling: Chrome/Edge only (no @supports fallback, same
      stance as the CSS Custom Highlight API in code.js) - a border only
      appears once the block has actually stuck to the nav bar, not for
@@ -225,7 +241,16 @@ export class DsDefSection extends HTMLElement {
     // Eyebrow and title dock together as one sticky block - see
     // .heading-block's own CSS comment.
     var headingBlock = eyebrow ? '<p class="eyebrow">' + esc(eyebrow) + "</p>" : "";
-    headingBlock += '<h2 id="' + esc(anchor) + '">' + esc(name) + "</h2>";
+    headingBlock +=
+      '<h2 id="' +
+      esc(anchor) +
+      '">' +
+      esc(name) +
+      ' <a class="anchor-link" href="#' +
+      esc(anchor) +
+      '" part="anchor" aria-label="Link to ' +
+      esc(name) +
+      '">#</a></h2>';
     var start = '<div class="heading-block">' + headingBlock + "</div>";
     // type and source share one line, separated by a middle dot, instead of
     // type living here and source living in a separate "References:"-labeled

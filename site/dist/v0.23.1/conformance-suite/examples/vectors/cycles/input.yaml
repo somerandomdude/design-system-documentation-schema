@@ -1,0 +1,60 @@
+# Processing model §9: following a chain must never loop.
+# - `a` uses `b`, which uses `a`;
+# - `light` extends `dark`, which extends `light`;
+# - `one#rule` reuses `two#rule`, which reuses `one#rule`;
+# - `old` is replaced by `older`, which is replaced by `old`.
+schemaVersion: "0.23.1"
+name: Cycles
+entries:
+  - kind: component
+    id: a
+    name: A
+    description: Uses b.
+    uses: [{to: b}]
+  - kind: component
+    id: b
+    name: B
+    description: Uses a.
+    uses: [{to: a}]
+  - kind: theme
+    id: light
+    name: Light
+    description: Extends dark.
+    extends: [{to: dark}]
+  - kind: theme
+    id: dark
+    name: Dark
+    description: Extends light.
+    extends: [{to: light}]
+  - kind: entry
+    id: one
+    name: One
+    description: Reuses two.
+    sections:
+      - kind: guidelines
+        for: all
+        items:
+          - id: rule
+            refs: [{to: "two#rule", rel: same-as}]
+  - kind: entry
+    id: two
+    name: Two
+    description: Reuses one.
+    sections:
+      - kind: guidelines
+        for: all
+        items:
+          - id: rule
+            refs: [{to: "one#rule", rel: same-as}]
+  - kind: component
+    id: old
+    name: Old
+    description: Replaced by older.
+    metadata:
+      status: {status: deprecated, deprecationNotice: Use older., replacedBy: [{to: older}]}
+  - kind: component
+    id: older
+    name: Older
+    description: Replaced by old.
+    metadata:
+      status: {status: deprecated, deprecationNotice: Use old., replacedBy: [{to: old}]}

@@ -110,7 +110,8 @@ function buildManifest() {
       "For each vector: read every file in inputs as one project, resolve it the way the " +
       "processing model (https://designsystemdocspec.org/processing) says, and compare the " +
       "result with the JSON in expected. `entries` and each entry's `items`, `incoming` and " +
-      "`succession` must match exactly. `problems` must match on `code` and `at`; `message` is " +
+      "`succession` must match exactly, and so must `inlineLinks`, which is present only when " +
+      "the project has inline links. `problems` must match on `code` and `at`; `message` is " +
       "prose for people and isn't compared. A consumer that implements only part of the model " +
       "can compare only the fields for the sections it implements, and should say which.",
     vectorCount: vectors.length,

@@ -1,0 +1,45 @@
+# Processing model §5: a relationship is written once, on its source. Every relationship
+# below appears in the resolved output twice: as written, and in its target's `incoming`.
+# Pointers in a named field (`alternatives`, `checks`) have no `rel`; the field implies it.
+# A ref inside an item belongs to the item, not the whole entry.
+schemaVersion: "0.23.1"
+name: Inverse
+entries:
+  - kind: token
+    id: color.action
+    name: Action color
+    description: The fill for actions.
+    tokenType: color
+  - kind: component
+    id: button
+    name: Button
+    description: Triggers an action.
+    uses:
+      - to: color.action
+    alternatives:
+      - to: link
+  - kind: component
+    id: link
+    name: Link
+    description: Navigates.
+  - kind: component
+    id: dialog
+    name: Dialog
+    description: A modal surface.
+    sections:
+      - kind: guidelines
+        for: all
+        items:
+          - level: must
+            statement: Name every button in the dialog.
+            checks:
+              - to: dialog#check-the-button-names
+            checkedBy: manual
+      - kind: steps
+        for: all
+        items:
+          - title: Check the button names
+            uses:
+              - to: button
+    uses:
+      - to: button

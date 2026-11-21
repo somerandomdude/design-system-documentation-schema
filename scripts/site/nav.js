@@ -50,6 +50,14 @@ const FOOTER_LINKS = [
   { label: "Style guide", href: "style-guide.html", slug: "style-guide" },
 ];
 
+// Who runs the site and how to reach them. Same fields, and covered by the same checks, as the
+// lists above. They sit in the footer's Project group, not under Specification.
+const PROJECT_LINKS = [
+  { label: "About", href: "about.html", slug: "about" },
+  { label: "Contact", href: "contact.html", slug: "contact" },
+  { label: "Privacy", href: "privacy.html", slug: "privacy" },
+];
+
 // Machine-readable entry points, and the repo. Not pages this site builds, so deliberately
 // not covered by check-docs-coverage.mjs - but check-internal-links.mjs resolves local files.
 const FOOTER_RESOURCES = [
@@ -127,6 +135,7 @@ function buildFooter(version) {
     `      </nav>`,
     `      <nav class="site-footer__group" aria-label="Project">`,
     `        <h2 class="site-footer__heading">Project</h2>`,
+    ...PROJECT_LINKS.map((l) => `        ${link(l)}`),
     `        <a href="${esc(REPO_URL)}">GitHub</a>`,
     `        <a href="${esc(REPO_URL)}/blob/main/CHANGELOG">Changelog</a>`,
     `      </nav>`,
@@ -143,6 +152,7 @@ module.exports = {
   readSpecVersion,
   TOP_LINKS,
   FOOTER_LINKS,
+  PROJECT_LINKS,
   FOOTER_RESOURCES,
   REPO_URL,
   DIR_GROUPS,

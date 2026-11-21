@@ -64,7 +64,7 @@ Two pages on the site cover what it takes to follow the spec:
 - **[Conformance](https://designsystemdocspec.org/conformance)** — the four conformance classes, the three enforcement tiers, all 25 rules, how a project's scope gets worked out, and how a component's status works when it ships on more than one platform.
 - **[Specification](https://designsystemdocspec.org/specification)** — the normative definition of DSDS in numbered sections: what a document must contain, and what validators and consumers must do. Every requirement names the schema file, rule or test vector that enforces it.
 - **[Processing model](https://designsystemdocspec.org/processing)** — what a consumer works out from a document: which item a `#` address names, where a reused rule's content comes from, what replaces a deprecated value. Normative, with test vectors.
-- **[Stability](https://designsystemdocspec.org/stability)** — what's safe to build tooling on, what can still change before 1.0, how to bring a 0.15.2 document up to date, and what has to be true before 1.0 ships.
+- **[Stability](https://designsystemdocspec.org/stability)** — what's safe to build tooling on, what can still change before 1.0, how to bring an older document up to date, and what has to be true before 1.0 ships.
 
 If you're writing a tool, read the rules from [`schema/conformance-rules.yaml`](schema/conformance-rules.yaml) rather than from a page. `npm run check` keeps that file honest: for the semantic rules, every rule in the file has to exist in `scripts/validate/validate.js`, and every rule in the validator has to exist in the file.
 
@@ -142,7 +142,7 @@ Add `--json` for a machine-readable report: each finding carries its rule id, a 
 
 To put a document's fields in the style guide's order, run `node scripts/format/format.js my-system.dsds.yaml` (`dsds-format` once installed). It only moves lines, so text and comments stay as they are. Add `--check` to change nothing and exit 1 if a file needs formatting.
 
-Reference `https://designsystemdocspec.org/v0.22.0/dsds.bundled.yaml` from your DSDS files via the `$schema` keyword for editor autocompletion and inline validation.
+Reference `https://designsystemdocspec.org/v0.23.1/dsds.bundled.yaml` from your DSDS files via the `$schema` keyword for editor autocompletion and inline validation.
 
 For document structure, composing hand-split fragments (`scripts/tools/compose.js`), and authoring narrative pages with schema-driven property tables, see the **[Quick Start docs page](https://designsystemdocspec.org/quickstart.html)** and [How the schema is organized](https://designsystemdocspec.org/schema.html#how-the-schema-is-organized).
 
@@ -185,7 +185,7 @@ For a documentation-only edit (no schema/example changes), just commit the `site
 
 ## Contributing
 
-This is an early-stage specification (currently DSDS 0.22.0). Feedback and contributions are welcome — see [CONTRIBUTING.md](CONTRIBUTING.md) for what a rule, example, or schema change needs to land, and [SECURITY.md](SECURITY.md) to report a vulnerability.
+This is an early-stage specification (currently DSDS 0.23.1). Feedback and contributions are welcome — see [CONTRIBUTING.md](CONTRIBUTING.md) for what a rule, example, or schema change needs to land, and [SECURITY.md](SECURITY.md) to report a vulnerability.
 
 ### Contributors
 
@@ -223,6 +223,8 @@ Everyone who has landed a PR here, with what it added:
 - **[isabelthedesigner](https://www.isabelthedesigner.com)** — the anti-pattern for bare
   WCAG conformance claims
   ([#44](https://github.com/somerandomdude/design-system-documentation-schema/pull/44)).
+- **[Josh Harwood](https://github.com/NoWorries)** — the optional stable entry `uuid`
+  field and its examples ([#54](https://github.com/somerandomdude/design-system-documentation-schema/pull/54)).
 
 And with thanks for contributions that didn't arrive as a PR:
 

@@ -2,7 +2,7 @@
 name: dsds-validate
 description: Validate DSDS specs against the bundled schema and check for consistency issues. Triggers on "validate specs", "check specs", "spec errors", "run validation".
 metadata:
-  version: 0.22.0
+  version: 0.23.1
 ---
 
 # Validate DSDS Specs
@@ -15,7 +15,7 @@ Run schema and semantic validation on your `.dsds.yaml` documents.
 npx dsds-validate <files-or-globs>
 ```
 
-This validates every file given against the DSDS v0.22.0 bundled schema using Ajv2020, plus a set of semantic rules JSON Schema alone can't express — `DSDS-01`–`DSDS-11`, `DSDS-24` and `DSDS-25` (resolution, uniqueness, platform vocabulary, loops in `uses`/`extends`/`same-as`/`replaced-by` chains, where `same-as` and `replaced-by` may sit, file-existence checks, and unknown fields on a generic `entry` or `section`), each tagged `structural` or `semantic`. Pass `--strict` to promote the warning-only rules (`DSDS-05`, `DSDS-08`, `DSDS-09`, `DSDS-11`, `DSDS-24`) to hard failures.
+This validates every file given against the DSDS v0.23.1 bundled schema using Ajv2020, plus a set of semantic rules JSON Schema alone can't express — `DSDS-01`–`DSDS-11`, `DSDS-24` and `DSDS-25` (resolution, uniqueness, platform vocabulary, loops in `uses`/`extends`/`same-as`/`replaced-by` chains, where `same-as` and `replaced-by` may sit, file-existence checks, and unknown fields on a generic `entry` or `section`), each tagged `structural` or `semantic`. Pass `--strict` to promote the warning-only rules (`DSDS-05`, `DSDS-08`, `DSDS-09`, `DSDS-11`, `DSDS-24`) to hard failures.
 
 ## Documentation-Quality Checks (advisory)
 
@@ -67,6 +67,8 @@ Prefer `--json` when you're fixing findings yourself: the pointer tells you wher
 | `unevaluatedProperty` on a trait | A trait's fields are closed: `traitType`, `kind`, `id`, `name`, `description`, `examples`, `since`, `refs`, and `values` on an enum. A trait carries no `$extensions` of its own — put vendor data on the entry instead |
 | `[DSDS-04] id "..." is declared more than once` | Two entries (or an entry and a `shared` item) share an `id` — rename one |
 | `[DSDS-05] ... targets unknown entry/shared / unknown item` | A ref's `to: "entryId#itemId"` doesn't resolve — check the target `id` and item `id` both exist |
+| `[DSDS-05]`/`[DSDS-08] ... inline link ...` | A `dsds:` link in prose doesn't resolve, or ("isn't shaped like a to") isn't written like a `to`. Fix the part after `dsds:`. `--json` gives the link's `offset` in the field |
+| `inline links weren't checked: ...` | The optional Markdown parser isn't available. Run `npm install` (it's an optional dependency) on Node 20.19 or later. Fails `--strict` |
 | `[DSDS-24] ... which no DSDS schema declares` | A generic `entry` or `section` has a field the schema doesn't know — usually a typo; the message suggests the closest real field. Warning-only unless run with `--strict` |
 | `[DSDS-06]` cycle | A `uses`, `extends`, `same-as` or `replaced-by` chain loops back on itself — break the cycle |
 | `[DSDS-25]` | A `same-as` points at a different kind of item, or a `replaced-by` sits on something that isn't deprecated — see [the processing model](https://designsystemdocspec.org/processing) |
@@ -84,7 +86,7 @@ Prefer `--json` when you're fixing findings yourself: the pointer tells you wher
 
 The validation schema comes from the [DSDS project](https://github.com/somerandomdude/design-system-documentation-schema):
 
-- **Bundled schema** (used by `dsds-validate`): `https://designsystemdocspec.org/v0.22.0/dsds.bundled.schema.json`, or `node_modules/design-system-documentation-schema/schema/dsds.bundled.schema.json` if installed as a dependency
+- **Bundled schema** (used by `dsds-validate`): `https://designsystemdocspec.org/v0.23.1/dsds.bundled.schema.json`, or `node_modules/design-system-documentation-schema/schema/dsds.bundled.schema.json` if installed as a dependency
 - This is a single-file version with every schema file's own `$id` still present, so `$ref`s resolve without needing to be inlined
 
 If validation fails on a field you're unsure about, consult the relevant docs page:

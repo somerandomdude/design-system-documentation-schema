@@ -14,6 +14,8 @@
  *     source;
  *   - every deprecated thing's successors (§7), following `replaced-by` through successors
  *     that are themselves deprecated;
+ *   - every inline link in a Markdown field (§2.4): what it resolves to, and the text an
+ *     autolink shows. Listed on its own, never as a relationship;
  *   - the problems found on the way, each with a code the processing model defines.
  *
  * It never merges an `extends` target into the entry that extends it (§6).
@@ -24,7 +26,7 @@
 
 const fs = require("fs");
 const path = require("path");
-const { loadYaml, entriesIn, findRefs, itemAddresses, resolveAddress, ownerOf } = require("../lib");
+const { loadYaml, entriesIn, findRefs, itemAddresses, resolveAddress, ownerOf, inlineLinksIn, TO_PATTERN } = require("../lib");
 
 // The fields that make up an item's content, per section kind (§4).
 const CONTENT_FIELDS = {
@@ -267,6 +269,50 @@ function resolveProject(documents) {
     out.push(resolved);
   }
 
+  // §2.4: inline links. Kept apart from `incoming`: a mention isn't a relationship (§5).
+  // The text an autolink shows: an entry's name, a definition's term, a step's or freeform
+  // entry's title, a trait's or value's name - else the target itself. A reusing item's
+  // effective content counts, so a reused definition shows the term it reuses.
+  const displayText = (r, target) => {
+    if (r.error) return target;
+    if (!r.candidate) return typeof r.known.entity.name === "string" ? r.known.entity.name : target;
+    const c = r.candidate;
+    if (c.type === "item") {
+      const content = effective(r.entityId, r.address, c).content;
+      const field = { definitions: "term", steps: "title" }[c.sectionKind];
+      return field && typeof content[field] === "string" ? content[field] : target;
+    }
+    if (c.type === "freeform") return typeof c.target.title === "string" ? c.target.title : target;
+    if (c.type === "trait" || c.type === "value") return typeof c.target.name === "string" ? c.target.name : target;
+    return target;
+  };
+  const inlineLinks = [];
+  for (const [id, { entity, book }] of entities) {
+    const { links, skipped } = inlineLinksIn(entity);
+    if (skipped) problem("inline-links-skipped", id, `inline links weren't read: ${skipped}`);
+    // Document order within each entry: by field, then by where the link starts in it.
+    links.sort((a, b) => comparePointers(a.pointer, b.pointer) || a.offset - b.offset);
+    for (const link of links) {
+      const owner = ownerOf(book, link.pointer);
+      const from = owner ? `${id}#${owner.address}` : id;
+      const out = { from, pointer: `${id}${link.pointer}`, offset: link.offset, form: link.form, target: link.target };
+      if (!TO_PATTERN.test(link.target)) {
+        problem("malformed-link", from, `inline link "dsds:${link.target}" isn't shaped like a \`to\``);
+        if (link.form !== "reference") out.text = link.form === "inline" ? link.text : link.target;
+        inlineLinks.push(out);
+        continue;
+      }
+      const r = lookup(link.target);
+      if (r.error) problem(r.error, from, `inline link ${describe(r, link.target)}`);
+      else out.resolves = r.address ? `${r.entityId}#${r.address}` : r.entityId;
+      // A reference definition has no text of its own: the `[text][x]` that uses it does.
+      if (link.form === "inline") out.text = link.text;
+      else if (link.form === "autolink") out.text = displayText(r, link.target);
+      inlineLinks.push(out);
+    }
+  }
+
+
   const seen = new Set();
   const unique = problems.filter((p) => {
     const key = JSON.stringify(p);
@@ -275,7 +321,9 @@ function resolveProject(documents) {
     return true;
   });
   unique.sort((a, b) => (a.at < b.at ? -1 : a.at > b.at ? 1 : a.code < b.code ? -1 : a.code > b.code ? 1 : a.message < b.message ? -1 : 1));
-  return { entries: out, problems: unique };
+  // `inlineLinks` only when there are some, so a project without them resolves exactly as it
+  // did before inline links existed.
+  return { entries: out, ...(inlineLinks.length ? { inlineLinks } : {}), problems: unique };
 }
 
 if (require.main === module) {

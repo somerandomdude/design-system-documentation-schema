@@ -1,0 +1,427 @@
+- id: DSDS-01
+  name: ONE_API_PER_PLATFORM
+  enforcement: semantic
+  title: At most one `sourceFiles` entry per platform.
+  description: >-
+    A component can't have two `sourceFiles` entries for the same
+    `platform`, or two with no `platform` at all. A tool reads each
+    platform's API from exactly one source file, so it needs to know which
+    one.
+  fix: >-
+    Merge the duplicate `sourceFiles` entries, or give each one its own `platform`.
+
+- id: DSDS-02
+  name: PLATFORM_VOCABULARY
+  enforcement: semantic
+  title: "Once a system lists its platforms in `metadata.platforms`, no other platform can be used."
+  description: >-
+    When a `kind: system` entry lists `metadata.platforms`, every
+    `platform` used anywhere in the document has to be on that list. That
+    includes a component's `sourceFiles` and `imports` entries, and a
+    status.
+  fix: >-
+    Use a platform listed in the system entry's `metadata.platforms`, or add the new platform to that list.
+
+- id: DSDS-03
+  name: CHECKED_BY_NEEDS_REF
+  enforcement: semantic
+  title: "A `checkedBy: automated` rule needs something that actually runs it."
+  description: >-
+    A guideline that says it's checked automatically has to list, in its
+    `checks`, at least one test, lint rule or agent eval: a pointer with
+    an `href` to something that runs outside the document. A checklist
+    step (a `to`) doesn't count, because a person works through it.
+    Without one, "automated" is a label nobody can verify.
+  fix: >-
+    Add the test, lint rule or agent eval to `checks` as an `href`, with `role` saying which. If nothing runs it, change `checkedBy` to `assisted` or `manual`.
+  note: >-
+    This only checks that such a pointer exists, not what it proves. An
+    agent eval often gives a pass rate or a judged score rather than a
+    clear pass or fail. So `checkedBy: assisted` is the more honest choice,
+    unless the eval really does give the same yes-or-no answer every time.
+
+- id: DSDS-04
+  name: UNIQUE_ENTRY_ID
+  enforcement: semantic
+  title: Entry and shared ids are unique within a document.
+  description: >-
+    `entries` and `shared` draw their ids from the same pool. A ref like
+    `entryId#itemId` can't say which of the two lists it means. So no two
+    entries can share an `id`, whichever list each one is in.
+  fix: >-
+    Rename one of the entries so every id across `entries` and `shared` is different.
+
+- id: DSDS-05
+  name: ITEM_REF_RESOLVES
+  enforcement: semantic
+  title: An `entryId#itemId` ref must point at something that exists.
+  description: >-
+    When a ref's `to` has a `#` (see [common/ref](schema.html#common-ref)),
+    the entry before the `#` has to exist. The part after it has to name
+    something on that entry: an item, a trait (`#traitId`) or a trait value
+    (`#traitId.valueId`). It also can't name two things equally (processing
+    model §2). This is what makes a `same-as` reuse a real, checked link,
+    rather than text that only looks right. It applies whether the target
+    is in `shared` or `entries`. Since 0.23.0 it also checks the target of
+    an inline link in a Markdown field, like
+    `[focus visible](dsds:shared-a11y#focus-visible)` (processing model
+    §2.4).
+  fix: >-
+    Change the part after `#` to an address that exists on the target entry, or give the item you mean that `id`. If it names two things, give one of them its own `id`. In an inline link, fix the part after `#` in the `dsds:` URL the same way.
+
+- id: DSDS-06
+  name: CHAIN_CYCLE
+  enforcement: semantic
+  title: A `uses`, `extends`, `same-as` or `replaced-by` chain must not loop.
+  description: >-
+    A consumer follows these four kinds of pointer from one thing to the
+    next, to find out what an entry is built from, what it inherits from,
+    where an item's content is stated, and what replaces something
+    deprecated. Following any of them must never lead back to where it
+    started, or the question has no answer. `uses` and `extends` link
+    entries. `same-as` and `replaced-by` link items, trait values and
+    entries. Each kind is checked on its own.
+  fix: >-
+    Remove or change one ref so the chain no longer leads back to where it started.
+  note: >-
+    Until 0.22.0 this checked `composes` refs only, and DSDS-07 checked
+    `depends-on`. 0.22.0 merged both into `uses`, and added the other three
+    chains the processing model follows (§9).
+
+- id: DSDS-07
+  name: DEPENDS_ON_CYCLE
+  enforcement: none
+  retired: 0.22.0
+  title: "Retired: merged into DSDS-06."
+  description: >-
+    Checked that a chain of `depends-on` refs didn't loop. 0.22.0 merged
+    `depends-on` into `uses`, which DSDS-06 checks. The id is kept so it's
+    never reused for a different rule.
+  fix: >-
+    Nothing to fix. A finding citing DSDS-07 came from a validator older than 0.22.0; see DSDS-06.
+
+- id: DSDS-08
+  name: ENTRY_REF_RESOLVES
+  enforcement: semantic
+  title: A `to` with no `#` must point at an entry that exists.
+  description: >-
+    When a ref's `to` is just an id, with no `#`, the entry it names has
+    to exist, in `entries` or `shared` (see `DSDS-04`). The validator looks
+    across the whole project, not only the document it was given. It
+    follows `rel: file` links, and the links in those files, and treats
+    every file given to it in one run as part of the same project. If the
+    target still isn't found, that's a warning rather than an error, unless
+    there was nothing else to look in. Since 0.23.0 it also checks the
+    target of an inline link in a Markdown field, like `<dsds:button>`,
+    including one that isn't shaped like a `to` at all, which the schema
+    can't see inside a string.
+  fix: >-
+    Change `to` to an id that exists. If the target lives in another file, validate both files in the same run, or link them with a `rel: file` ref. In an inline link, change the part after `dsds:` to an id that exists, written the way a `to` would be.
+
+- id: DSDS-09
+  name: COMBO_TARGET_RESOLVES
+  enforcement: semantic
+  title: "A combo's `subject` and `items` must point at things that exist."
+  description: >-
+    Each `subject` and item in a combo names one of three things: a trait
+    on the same entry (its id for a boolean trait, `traitId.valueId` for
+    an enum value), a token in braces (`{color.action.primary}`), or an
+    entry's id. So `subject: size.small` on a component with no `size`
+    trait fails, and so does a token that doesn't exist. A trait is always
+    looked up on the same entry, which the validator can always see in
+    full, so a missing one is always an error. A token or an entry is
+    looked up across the project, the same way as `DSDS-05` and `DSDS-08`,
+    and is a warning when the search couldn't see every file.
+  fix: >-
+    Name a trait on this entry (`traitId` or `traitId.valueId`), a token in braces (`{token-id}`), or an existing entry id.
+
+- id: DSDS-10
+  name: SAME_AS_LEVEL_MATCHES
+  enforcement: semantic
+  title: "If a `same-as` item states a `level`, it must match its target's."
+  description: >-
+    An item that reuses another with `same-as` takes the target's `level`,
+    so it doesn't need to state one: the pointer is the whole item. An
+    author can still write a `level`, and then there are two copies with
+    nothing else keeping them the same. When the target can be found, has
+    a `level`, and the reusing item states one too, this checks the two
+    match. An item meant to have a different level is a `refines`, not a
+    `same-as`.
+  fix: >-
+    Remove `level` from the reusing item so it takes the target's. If the level is meant to differ, write a `for: agent` rule with its own level and point its `refines` at the target, instead of reusing it with `same-as`.
+
+- id: DSDS-11
+  name: FILE_REF_EXISTS
+  enforcement: semantic
+  title: "A relative file path in `sourceFiles`, `source`, `rel: file` or `rel: source` must point at a file that exists."
+  description: >-
+    A relative path should point at a real file. That covers a component's
+    `sourceFiles[].file`, a token's or theme's `source`, and the `href` of
+    any `rel: file` or `rel: source` ref. A typo or an out-of-date path
+    quietly breaks what those fields promise: that a tool can read the API,
+    or the DTCG tokens, straight from the file named there. Anything after
+    a `#` or `?` is ignored, so only the file itself has to exist. A
+    `sourceFiles` path starts from the system's `metadata.sourceRoot` when
+    the validator can see it (in the same document, or in a file validated
+    in the same run), and from the document's own folder otherwise. A
+    `sourceRoot` that's a URL isn't checked. Only paths inside the folder
+    of the file being validated are checked, the same limit `DSDS-05`,
+    `DSDS-08` and `DSDS-09` use. A path that leads outside it, or a URL
+    (`https:`, `npm:` and so on), is skipped.
+  fix: >-
+    Fix the path so it's correct relative to this document's folder (or, for `sourceFiles`, the system's `sourceRoot`), or remove the reference if the file is gone. If the code lives in another repository, set `metadata.sourceRoot` on the system entry.
+  note: >-
+    A warning, which becomes a failure with `--strict`, like `DSDS-05`,
+    `DSDS-08` and `DSDS-09`. It's opt-in for a similar reason: it's the one
+    rule that opens files the validator otherwise wouldn't read.
+
+# Advisory rules below start at DSDS-12, after DSDS-11 above.
+
+- id: DSDS-12
+  name: rfc-keywords-lowercase-in-normative-prose
+  enforcement: none
+  retired: 0.22.0
+  title: "Retired: a guideline's `level` already says how strong it is."
+  description: >-
+    Reported a lowercase "must" or "should" in a guideline's `statement`, and
+    asked for it in capitals. A guideline's `level` already says how strong
+    the rule is, so capitals added nothing a tool needs. And in plain English,
+    like "when a button must stay in the tab order", capitalizing the word
+    added a requirement nobody meant. Documenting Sanity UI raised 161 of
+    these. The id is kept so it's never reused.
+  fix: >-
+    Nothing to fix. Set the rule's strength with `level`.
+
+- id: DSDS-13
+  name: token-description-restates-identifier
+  enforcement: advisory
+  title: "A token's `description` shouldn't just repeat its id, its name or its value."
+  description: >-
+    A token's `description` is optional and meant to be short. If an author
+    writes one, it should add what the id can't, such as the token's role
+    or when to use it. A description that only repeats the id or name, or
+    the raw value the DTCG file already holds, looks like documentation but
+    says nothing.
+  fix: >-
+    Say what the token is for or when to use it, or remove the description.
+  note: >-
+    Ported from PR #33 by Cody Clark, first written as DSDS-011 for the
+    model before 0.20.0 (`git show 3c805b7`). It uses the same method:
+    after tidying the text, it flags an exact repeat or a bare value. It
+    errs on the side of not flagging: a description with any role or usage
+    information in it is never flagged.
+
+- id: DSDS-14
+  name: guideline-missing-checkedby
+  enforcement: advisory
+  title: "A `must` or `must-not` guideline has no `checkedBy`."
+  description: >-
+    `checkedBy` says whether a guideline is checked automatically, with
+    help, or by hand. Leaving it out means a tool can't tell whether the
+    rule can be checked at all, not just that nobody has yet. Only `must`
+    and `must-not` items are flagged: a `should` or `may` item that doesn't
+    say how it's checked matters much less. An item that reuses another
+    with `same-as` (DSDS-10) takes the target's `checkedBy`, like the rest
+    of its content, so it's only flagged when neither one has it. A `same-as`
+    target in another document isn't flagged: the lint can't see it, and
+    making the pointer repeat its `checkedBy` would defeat the point of the
+    pointer.
+  fix: >-
+    Add `checkedBy: manual`, `checkedBy: assisted`, or `checkedBy: automated` with a `checks` ref.
+  note: >-
+    DSDS-03 already blocks a narrower case: `checkedBy: automated` with no
+    `checks` to back it. This advisory rule covers the case DSDS-03 can't
+    see: `checkedBy` left out entirely.
+
+- id: DSDS-15
+  name: component-missing-when-to-use
+  enforcement: advisory
+  title: A component has no `guidelines` section framed `when-to-use`.
+  description: >-
+    "When do I use this?" is usually the first question a component's
+    documentation has to answer, before how to use it well. This flags a
+    component with no guidelines section that has `framing: when-to-use`.
+  fix: >-
+    Add a `guidelines` section with `framing: when-to-use`.
+  note: >-
+    Adapted from the 0.16.0 branch's "entity-missing-use-cases" check,
+    which looked for a separate `use-cases` block. 0.20.0 moved that content
+    into a `guidelines` section, so this looks for the section instead.
+
+- id: DSDS-16
+  name: token-description-restates-scale-position
+  enforcement: advisory
+  title: "A token's `description` shouldn't just repeat its place on a scale."
+  description: >-
+    A token's optional `description` should add what the id can't, such as
+    the token's role or when to use it. One that only gives its place on a
+    scale ("Shade 900", "Step 500", "Level 6 of the neutral scale") looks
+    like documentation but says nothing. That number is already in the id,
+    and in where the token sits among its `metadata.group`. This is the
+    companion to DSDS-13: the scale step, rather than the id or the value.
+  fix: >-
+    Say what the token is for or when to use it, or remove the description.
+  note: >-
+    Ported from PR #37 by Cody Clark, first proposed as DSDS-012 for the
+    model before 0.20.0. It uses the same method: it flags a description
+    that is only a scale word followed by a number, optionally followed by
+    "of the <family> scale" or "ramp". 0.20.0 has no separate token-group
+    kind, so it checks `kind: token` only. It errs on the side of not
+    flagging. The scale word has to come first and be singular, so forms
+    like "Nine weights", "Twelve steps" and "Neutral 700" are left alone,
+    and any word about role or usage stops a match. A description that also
+    repeats the id or name is left to DSDS-13, so it's only reported once.
+
+- id: DSDS-17
+  name: entry-field-order
+  enforcement: none
+  retired: 0.22.0
+  title: "Retired: `dsds-format` applies this order."
+  description: >-
+    Reported that an entry's own fields weren't in STYLE_GUIDE.md's order.
+    That order has one right answer, read from the schema files, so 0.22.0
+    replaced the report with `dsds-format`, which puts the fields in order.
+    The id is kept so it's never reused.
+  fix: >-
+    Run `dsds-format` on the document.
+
+- id: DSDS-18
+  name: section-order
+  enforcement: advisory
+  title: "An entry's `sections` aren't grouped and ordered as STYLE_GUIDE.md asks."
+  description: >-
+    STYLE_GUIDE.md §4 asks for sections of the same `kind` to sit
+    together, with the kinds running from general to specific: guidelines,
+    definitions, steps, then the generic `section`. Several `guidelines`
+    sections are ordered by scope: `framing: when-to-use` first, then
+    `how-to-use` or no framing. Sections with the same framing are then
+    ordered by who they're for: `for: all`, then `human`, then `agent`.
+  fix: >-
+    Keep sections of one kind together, in the order guidelines, definitions, steps, section. Order guidelines sections by framing, then audience.
+  note: >-
+    Framing comes first and audience second, so audience is only compared
+    between sections with the same framing. A `for: agent` when-to-use
+    section rightly comes before a `for: all` how-to-use one, so comparing
+    audience across framings would flag something that's fine.
+
+    Until 0.22.0 a section with `tags` was ranked as a third, narrowest
+    group. That gave `tags` two jobs, classifying a section and placing
+    it, so tagging a section could put it out of order. `tags` only
+    classify now, and this rule ignores them.
+
+- id: DSDS-19
+  name: guideline-item-level-order
+  enforcement: advisory
+  title: A `guidelines` section's items aren't ordered must, should, may, should-not, must-not.
+  description: >-
+    STYLE_GUIDE.md §5 asks for the items in a guidelines section to be
+    ordered by `level`, in exactly that order: strongest "do" to strongest
+    "don't", with the two weaker levels in the middle. Items with the same
+    level keep the order they're written in; only an item placed before a
+    stronger level is flagged. An item with no `level` of its own is ranked
+    at its `same-as` target's level when the target is in the same
+    document, and left out of the check when it isn't.
+  fix: >-
+    Reorder the items: must, should, may, should-not, must-not.
+
+- id: DSDS-20
+  name: document-field-order
+  enforcement: none
+  retired: 0.22.0
+  title: "Retired: `dsds-format` applies this order."
+  description: >-
+    Reported that a base document's own fields weren't in STYLE_GUIDE.md's
+    order. That order has one right answer, read from the schema files, so
+    0.22.0 replaced the report with `dsds-format`, which puts the fields in
+    order. The id is kept so it's never reused.
+  fix: >-
+    Run `dsds-format` on the document.
+
+- id: DSDS-21
+  name: entry-order
+  enforcement: advisory
+  title: "A base document's `entries` aren't ordered by `kind`."
+  description: >-
+    STYLE_GUIDE.md §1 asks for entries to be ordered by `kind`, in the
+    order entries/entry.schema.yaml lists them: `system`, `token`, `theme`,
+    `component`, then `entry`. A namespaced custom kind isn't on that list,
+    and goes after all five.
+  fix: >-
+    Reorder `entries` by kind: `system`, `token`, `theme`, `component`, `entry`, then any custom kinds.
+  note: >-
+    The order of entries of the same kind isn't checked on purpose.
+    STYLE_GUIDE.md asks for "whatever order reads best" there, which no
+    tool can work out, so only an entry placed before a kind that should
+    come first is reported.
+
+- id: DSDS-22
+  name: nested-field-order
+  enforcement: none
+  retired: 0.22.0
+  title: "Retired: `dsds-format` applies this order."
+  description: >-
+    Reported that a nested object's fields weren't in the order its schema
+    file lists them. That order has one right answer, read from the schema
+    files, so 0.22.0 replaced the report with `dsds-format`, which puts the
+    fields in order. The id is kept so it's never reused.
+  fix: >-
+    Run `dsds-format` on the document.
+
+- id: DSDS-23
+  name: combo-order
+  enforcement: none
+  retired: 0.22.0
+  title: "Retired: `dsds-format` applies this order."
+  description: >-
+    Reported that an entry's `combos` didn't keep each `subject` together,
+    in `level` order. That grouping has one right answer, so 0.22.0
+    replaced the report with `dsds-format`, which groups them. The id is
+    kept so it's never reused.
+  fix: >-
+    Run `dsds-format` on the document.
+
+- id: DSDS-24
+  name: UNDECLARED_FIELD
+  enforcement: semantic
+  title: "A generic `entry` or `section` has a field no DSDS schema declares."
+  description: >-
+    `kind: entry` and `kind: section` are checked against the open base
+    that the other kinds build on. So the schema accepts any extra field on
+    them, and on a generic entry's `metadata`. That openness is what lets
+    namespaced custom kinds add fields. But on the generic kinds it means a
+    typo (`descripton`) or a field a release removed (`purpose`) passes
+    without a word. This reports each one. Namespaced custom kinds aren't
+    checked, since extra fields are what they're for.
+  fix: >-
+    Fix the spelling, or remove the field. Put vendor data under `$extensions` with a namespaced key. If you need real extra fields, use a namespaced custom kind (`acme.pattern`) instead of `kind: entry`.
+  note: >-
+    A warning, which becomes a failure with `--strict`. Added in 0.22.0
+    instead of closing the two kinds, which would have broken any document
+    that relies on them being open. A validator that only runs the JSON
+    Schema won't report it, because the schema still accepts the field. The
+    items of a generic section aren't checked, because the base doesn't say
+    what shape they have.
+
+- id: DSDS-25
+  name: REF_PLACEMENT
+  enforcement: semantic
+  title: A pointer must sit where its kind belongs.
+  description: >-
+    `same-as` reuses another item's content, so it goes on a section item
+    and has to point at an item of the same section kind: a guideline
+    reuses a guideline, a definition a definition, a step a step.
+    `replaced-by` names what replaces something deprecated, so it goes on a
+    deprecated entry, trait or trait value. A kind of pointer that has its
+    own field goes in that field, not in `refs`: `extends` and
+    `alternatives` on an entry, `specs` on a component, and `alternatives`,
+    `evidence`, `checks` and `refines` on a guideline item. And a
+    `rel: file` ref points at another DSDS document, which a consumer reads
+    as part of the project. So one that points at a code or token file is
+    reported as a warning, judged by its file extension or, for a `.json`
+    file on disk, by its content. Processing model §3, §4, §5 and §7.
+  fix: >-
+    Point `same-as` at an item of the same section kind. Move `replaced-by` onto the deprecated entry, trait or trait value, or deprecate the thing it sits on. Move a pointer with its own field into that field, without its `rel`. Make a `rel: file` that points at a code or token file `rel: source`.
+  note: >-
+    Added in 0.22.0, with the processing model. The `same-as` and
+    `replaced-by` checks only run once the target is found, so they never
+    repeat what DSDS-05 or DSDS-08 already report.

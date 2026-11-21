@@ -10,7 +10,7 @@ const fs = require("fs");
 const path = require("path");
 const Ajv = require("ajv/dist/2020");
 const addFormats = require("ajv-formats");
-const { rootDir, schemaDir, loadYaml, walkYamlFiles, defaultTargets, findRefs, entriesIn, escapePointer, declaredProps, itemAddresses, resolveAddress, ownerOf, entryFieldOrder } = require("../lib");
+const { rootDir, schemaDir, loadYaml, walkYamlFiles, defaultTargets, findRefs, entriesIn, escapePointer, declaredProps, itemAddresses, resolveAddress, ownerOf, entryFieldOrder, inlineLinksIn, TO_PATTERN } = require("../lib");
 
 const ajv = new Ajv({ allErrors: true, strict: false });
 addFormats(ajv);
@@ -50,12 +50,15 @@ class Report {
     this.add("warning", message, detail);
   }
 
-  add(severity, message, { rule = null, pointer = "", fix } = {}) {
+  // `offset` is only given for a finding inside a Markdown field (an inline link): the
+  // character offset of the link within the field the pointer names.
+  add(severity, message, { rule = null, pointer = "", fix, offset } = {}) {
     (severity === "error" ? this.errors : this.warnings).push(rule ? err(rule, message) : message);
     this.findings.push({
       rule,
       severity,
       pointer,
+      ...(offset !== undefined ? { offset } : {}),
       message,
       fix: fix !== undefined ? fix : (rule && RULE_FIX.get(rule)) || null,
       docs: rule ? `${SITE_URL}/conformance#${rule.toLowerCase()}` : null,
@@ -1089,62 +1092,97 @@ function validateItemRefs(doc, report, opts = {}) {
     return ambiguous ? ambiguous.map((c) => c.pointer).join(" and ") : null;
   };
 
+  // DSDS-08 for a bare id, DSDS-05 for `entryId#address`. `extra` carries an inline link's
+  // offset into the finding; a `to` has none.
+  function checkTarget(to, label, pointer, extra = {}) {
+    const hashIdx = to.indexOf("#");
+
+    if (hashIdx === -1) {
+      if (!to || localIds.has(to)) return;
+      const rule = RULES.ENTRY_REF_RESOLVES;
+      if (treatAsError) {
+        report.error(`${label} targets unknown entry/shared "${to}"`, { rule, pointer, ...extra });
+      } else if (!widerIds || !widerIds.has(to)) {
+        report.warn(`${label} targets unknown entry/shared "${to}" ${scopeNote}`, { rule, pointer, ...extra });
+      }
+      return;
+    }
+
+    const targetId = to.slice(0, hashIdx);
+    const itemId = to.slice(hashIdx + 1);
+    if (!targetId || !itemId) return;
+    const rule = RULES.ITEM_REF_RESOLVES;
+
+    const localItemIds = localItemIdsByEntity.get(targetId);
+    if (localItemIds) {
+      const twice = ambiguity(localItemIds, itemId);
+      if (twice) {
+        report.error(`${label} matches more than one item on "${targetId}" (${twice})`, {
+          rule,
+          pointer,
+          fix: `Give one of the two items its own \`id\`, so "${itemId}" names only one of them.`,
+          ...extra,
+        });
+      } else if (!localItemIds.has(itemId)) {
+        report.error(`${label} targets unknown item "${itemId}" on "${targetId}"`, { rule, pointer, ...extra });
+      }
+      return;
+    }
+
+    if (treatAsError) {
+      report.error(`${label} targets unknown entry/shared "${targetId}"`, { rule, pointer, ...extra });
+      return;
+    }
+
+    const widerItemIds = widerItemIdsByEntity && widerItemIdsByEntity.get(targetId);
+    if (!widerItemIds) {
+      report.warn(`${label} targets unknown entry/shared "${targetId}" ${scopeNote}`, { rule, pointer, ...extra });
+    } else if (ambiguity(widerItemIds, itemId)) {
+      report.error(`${label} matches more than one item on "${targetId}" (${ambiguity(widerItemIds, itemId)})`, { rule, pointer, ...extra });
+    } else if (!widerItemIds.has(itemId)) {
+      report.warn(`${label} targets unknown item "${itemId}" on "${targetId}" ${scopeNote}`, { rule, pointer, ...extra });
+    }
+  }
+
+  const skippedBecause = new Set();
   for (const [entity, entityPointer] of entitiesWithPointers(doc)) {
     const found = [];
     findRefs(entity, "", found);
     for (const { to, rel, at, pointer: refPointer } of found) {
       if (to.includes("://")) continue;
       const label = `"${entity.id}" ref${at ? ` (${at})` : ""} "${to}" (rel: ${rel})`;
-      const pointer = `${entityPointer}${refPointer}/to`;
-      const hashIdx = to.indexOf("#");
+      checkTarget(to, label, `${entityPointer}${refPointer}/to`);
+    }
 
-      if (hashIdx === -1) {
-        if (!to || localIds.has(to)) continue;
-        const rule = RULES.ENTRY_REF_RESOLVES;
-        if (treatAsError) {
-          report.error(`${label} targets unknown entry/shared "${to}"`, { rule, pointer });
-        } else if (!widerIds || !widerIds.has(to)) {
-          report.warn(`${label} targets unknown entry/shared "${to}" ${scopeNote}`, { rule, pointer });
-        }
+    // Inline links in Markdown fields (specification §6.5): the same checks as a `to`, plus
+    // the shape check the schema makes on a `to` but can't make inside a string.
+    const { links, skipped } = inlineLinksIn(entity);
+    if (skipped) skippedBecause.add(skipped);
+    for (const { pointer: fieldPointer, offset, target } of links) {
+      const pointer = `${entityPointer}${fieldPointer}`;
+      const label = `"${entity.id}" inline link (${fieldPointer.slice(1).replace(/\//g, ".")}) "dsds:${target}"`;
+      if (!TO_PATTERN.test(target)) {
+        report.error(`${label} isn't shaped like a \`to\``, {
+          rule: RULES.ENTRY_REF_RESOLVES,
+          pointer,
+          offset,
+          fix: "Write the part after `dsds:` the way a `to` would be: an entry id, optionally followed by `#` and an address, like `dsds:shared-a11y#focus-visible`.",
+        });
         continue;
       }
-
-      const targetId = to.slice(0, hashIdx);
-      const itemId = to.slice(hashIdx + 1);
-      if (!targetId || !itemId) continue;
-      const rule = RULES.ITEM_REF_RESOLVES;
-
-      const localItemIds = localItemIdsByEntity.get(targetId);
-      if (localItemIds) {
-        const twice = ambiguity(localItemIds, itemId);
-        if (twice) {
-          report.error(`${label} matches more than one item on "${targetId}" (${twice})`, {
-            rule,
-            pointer,
-            fix: `Give one of the two items its own \`id\`, so "${itemId}" names only one of them.`,
-          });
-        } else if (!localItemIds.has(itemId)) {
-          report.error(`${label} targets unknown item "${itemId}" on "${targetId}"`, { rule, pointer });
-        }
-        continue;
-      }
-
-      if (treatAsError) {
-        report.error(`${label} targets unknown entry/shared "${targetId}"`, { rule, pointer });
-        continue;
-      }
-
-      const widerItemIds = widerItemIdsByEntity && widerItemIdsByEntity.get(targetId);
-      if (!widerItemIds) {
-        report.warn(`${label} targets unknown entry/shared "${targetId}" ${scopeNote}`, { rule, pointer });
-      } else if (ambiguity(widerItemIds, itemId)) {
-        report.error(`${label} matches more than one item on "${targetId}" (${ambiguity(widerItemIds, itemId)})`, { rule, pointer });
-      } else if (!widerItemIds.has(itemId)) {
-        report.warn(`${label} targets unknown item "${itemId}" on "${targetId}" ${scopeNote}`, { rule, pointer });
-      }
+      checkTarget(target, label, pointer, { offset });
     }
   }
+
+  // A validator that can't read the links says so, rather than letting them pass unchecked
+  // (specification §8). A warning, so --strict fails: it can't vouch for what it didn't check.
+  for (const reason of skippedBecause) {
+    report.warn(`inline links weren't checked: ${reason}`, {
+      fix: "Install the optional dependency (npm install mdast-util-from-markdown) on Node 20.19 or later, then validate again.",
+    });
+  }
 }
+
 
 // The reusable core: given an already-parsed document, returns every error and warning as
 // strings, with no I/O beyond opts.filePath's project discovery and no process exit -
@@ -1159,12 +1197,12 @@ function validateDoc(doc, opts = {}) {
   const ownRoot = doc && typeof doc === "object" ? sourceRootIn(doc, opts.filePath) : null;
   if (ownRoot) opts = { ...opts, sourceRoot: ownRoot };
   const isBase = typeof doc.schemaVersion !== "undefined";
-  // A root `dsdsVersion` with no `schemaVersion` is DSDS ≤0.15.2's old base-document marker
+  // A root `dsdsVersion` with no `schemaVersion` is the old base-document marker from before 0.20.0
   // (renamed in 0.20.0); catch it here with a clear message instead of routing into
   // validateEntry() and reporting confusing entry-level errors.
   if (!isBase && doc && typeof doc === "object" && typeof doc.dsdsVersion !== "undefined") {
     report.error(
-      `this document targets DSDS ≤0.15.2; 0.20.0 renamed the root "dsdsVersion" field to "schemaVersion" (see the CHANGELOG's 0.20.0 entry for the rest of what changed). Rename the field, or run a 0.15.2-era validator against this document instead.`,
+      `this document targets a DSDS version before 0.20.0; 0.20.0 renamed the root "dsdsVersion" field to "schemaVersion" (see the CHANGELOG's 0.20.0 entry for the rest of what changed). Rename the field, or run an older validator against this document instead.`,
       { pointer: "/dsdsVersion", fix: 'Rename "dsdsVersion" to "schemaVersion".' },
     );
   } else if (isBase) {
@@ -1250,6 +1288,7 @@ In --json output, each finding has:
   rule      The rule id (DSDS-XX), or null for a schema error.
   severity  "error" or "warning".
   pointer   Where the problem is, as a JSON Pointer into the document ("" is the whole document).
+  offset    Only for an inline link: its character offset within the Markdown field at pointer.
   message   What's wrong.
   fix       How to fix it, or null when there's no single obvious fix.
   docs      The rule's section on the Conformance page, or null for a schema error.

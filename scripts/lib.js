@@ -339,6 +339,125 @@ function escapePointer(key) {
   return String(key).replace(/~/g, "~0").replace(/\//g, "~1");
 }
 
+// ---------------------------------------------------------------------------
+// Inline links (specification §2.5 and §6.5, processing model §2.4)
+// ---------------------------------------------------------------------------
+
+// The CommonMark parser is an optional dependency. It's loaded the first time a Markdown field
+// actually contains `dsds:`, so a document with no inline links never needs it. It's ESM-only:
+// Node 20.19 and later can require() it, and an older Node fails here like a missing package.
+let markdownParser;
+let markdownParserProblem = null;
+function loadMarkdownParser() {
+  if (markdownParser !== undefined) return markdownParser;
+  try {
+    markdownParser = require("mdast-util-from-markdown").fromMarkdown;
+  } catch (e) {
+    markdownParser = null;
+    markdownParserProblem =
+      e && e.code === "ERR_REQUIRE_ESM"
+        ? `Node ${process.version} can't load the optional Markdown parser; Node 20.19 or later can`
+        : "the optional Markdown parser (mdast-util-from-markdown) isn't installed";
+  }
+  return markdownParser;
+}
+
+// Every Markdown field on one entry (specification §2.5), as [value, pointer] with the pointer
+// relative to the entry. Walked by structure rather than by field name, since `description`
+// is Markdown on some objects and not on others.
+function markdownFields(entry) {
+  const out = [];
+  const isObject = (v) => v && typeof v === "object" && !Array.isArray(v);
+  const list = (v) => (Array.isArray(v) ? v : []);
+  const text = (obj, key, pointer) => {
+    if (isObject(obj) && typeof obj[key] === "string") out.push([obj[key], `${pointer}/${key}`]);
+  };
+  const examples = (holder, pointer) =>
+    list(holder && holder.examples).forEach((ex, i) => text(ex, "description", `${pointer}/examples/${i}`));
+  const freeform = (entries, pointer) =>
+    list(entries).forEach((f, i) => {
+      const p = `${pointer}/${i}`;
+      text(f, "body", p);
+      examples(f, p);
+      freeform(isObject(f) && f.items, `${p}/items`);
+    });
+
+  if (!isObject(entry)) return out;
+  text(entry, "description", "");
+  list(entry.sections).forEach((section, si) => {
+    const sp = `/sections/${si}`;
+    text(section, "description", sp);
+    list(isObject(section) && section.items).forEach((item, ii) => {
+      const p = `${sp}/items/${ii}`;
+      for (const key of ["statement", "definition", "usage", "description"]) text(item, key, p);
+      examples(item, p);
+      // A guideline item holds one `example` (singular), not a list.
+      if (isObject(item) && isObject(item.example)) text(item.example, "description", `${p}/example`);
+    });
+    freeform(isObject(section) && section.freeform, `${sp}/freeform`);
+  });
+  list(entry.traits).forEach((trait, ti) => {
+    const p = `/traits/${ti}`;
+    text(trait, "description", p);
+    examples(trait, p);
+    list(isObject(trait) && trait.values).forEach((value, vi) => {
+      text(value, "description", `${p}/values/${vi}`);
+      examples(value, `${p}/values/${vi}`);
+    });
+  });
+  return out;
+}
+
+const DSDS_SCHEME = /^dsds:/i;
+
+// The shape a `to` must have, read from common/ref.schema.yaml, so an inline link's target is
+// held to exactly the pattern the schema applies to a `to` field.
+const TO_PATTERN = new RegExp(loadYaml(path.join(schemaDir, "common/ref.schema.yaml")).$defs.to.pattern);
+
+// The visible text of an mdast node.
+const nodeText = (node) =>
+  typeof node.value === "string" ? node.value : (node.children || []).map(nodeText).join("");
+
+/**
+ * Every inline link on one entry. Returns { links, skipped }:
+ *
+ * - `links`: { pointer, offset, target, form, text } for each `dsds:` link. `pointer` is the
+ *   Markdown field, relative to the entry; `offset` is the link's character offset in it;
+ *   `form` is "inline" (`[text](dsds:…)`), "autolink" (`<dsds:…>`) or "reference" (a
+ *   `[x]: dsds:…` definition, reported once, where the target is written); `text` is the
+ *   author's text, or null for an autolink and a reference definition.
+ * - `skipped`: null, or why the links weren't read - set only when a Markdown field mentions
+ *   `dsds:` and the optional parser can't be loaded.
+ *
+ * A link in a code span or fenced block isn't a link, so the parser never reports one there.
+ */
+function inlineLinksIn(entry) {
+  const fields = markdownFields(entry).filter(([value]) => /dsds:/i.test(value));
+  if (!fields.length) return { links: [], skipped: null };
+  const parse = loadMarkdownParser();
+  if (!parse) return { links: [], skipped: markdownParserProblem };
+
+  const links = [];
+  for (const [value, pointer] of fields) {
+    (function walk(node) {
+      const isLink = node.type === "link" || node.type === "definition";
+      if (isLink && typeof node.url === "string" && DSDS_SCHEME.test(node.url)) {
+        const offset = node.position ? node.position.start.offset : 0;
+        const form = node.type === "definition" ? "reference" : value[offset] === "<" ? "autolink" : "inline";
+        let target = node.url.slice("dsds:".length);
+        try {
+          target = decodeURIComponent(target);
+        } catch {
+          // A stray `%` stays as written, and the target check reports it as malformed.
+        }
+        links.push({ pointer, offset, target, form, text: form === "inline" ? nodeText(node) : null });
+      }
+      (node.children || []).forEach(walk);
+    })(parse(value));
+  }
+  return { links, skipped: null };
+}
+
 module.exports = {
   rootDir,
   schemaDir,
@@ -361,4 +480,7 @@ module.exports = {
   itemAddresses,
   resolveAddress,
   ownerOf,
+  markdownFields,
+  inlineLinksIn,
+  TO_PATTERN,
 };

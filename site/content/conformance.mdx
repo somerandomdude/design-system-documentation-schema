@@ -102,7 +102,7 @@ The catalog is published with each release, next to the schema bundle, at [`/v{{
 
 <ds-callout variant="warning" title="DSDS-01–DSDS-25 started counting again from 1 in 0.20.0:">
 
-Versions up to 0.15.2 had a different catalog, with three-digit ids (`DSDS-001`–`DSDS-006` and so on, in `rules/rules.yaml`), for a different model. 0.20.0 started again at `DSDS-01` for a new set of rules. So `DSDS-02` here has nothing to do with the old `DSDS-002`. (Fittingly, the old `DSDS-002` was the rule against reusing an id.) If you cite a rule id from 0.15.2 or earlier, say which catalog it's from. A bare `DSDS-0N` could mean either.
+Versions before 0.20.0 had a different catalog, with three-digit ids (`DSDS-001`–`DSDS-006` and so on, in `rules/rules.yaml`), for a different model. 0.20.0 started again at `DSDS-01` for a new set of rules. So `DSDS-02` here has nothing to do with the old `DSDS-002`. (Fittingly, the old `DSDS-002` was the rule against reusing an id.) If you cite a rule id from before 0.20.0, say which catalog it's from. A bare `DSDS-0N` could mean either.
 
 </ds-callout>
 
@@ -216,11 +216,11 @@ A guideline that says it's checked automatically has to list, in its `checks`, a
 
 *Checked by `dsds-validate`.*
 
-When a ref's `to` has a `#` (see [common/ref](schema.html#common-ref)), the entry before the `#` has to exist. The part after it has to name something on that entry: an item, a trait (`#traitId`) or a trait value (`#traitId.valueId`). It also can't name two things equally (processing model §2). This is what makes a `same-as` reuse a real, checked link, rather than text that only looks right. It applies whether the target is in `shared` or `entries`.
+When a ref's `to` has a `#` (see [common/ref](schema.html#common-ref)), the entry before the `#` has to exist. The part after it has to name something on that entry: an item, a trait (`#traitId`) or a trait value (`#traitId.valueId`). It also can't name two things equally (processing model §2). This is what makes a `same-as` reuse a real, checked link, rather than text that only looks right. It applies whether the target is in `shared` or `entries`. Since 0.23.0 it also checks the target of an inline link in a Markdown field, like `[focus visible](dsds:shared-a11y#focus-visible)` (processing model §2.4).
 
-**How to fix:** Change the part after `#` to an address that exists on the target entry, or give the item you mean that `id`. If it names two things, give one of them its own `id`.
+**How to fix:** Change the part after `#` to an address that exists on the target entry, or give the item you mean that `id`. If it names two things, give one of them its own `id`. In an inline link, fix the part after `#` in the `dsds:` URL the same way.
 
-**Example that breaks it:** [`DSDS-05-item-ref-resolves.yaml`](/examples/invalid/DSDS-05-item-ref-resolves.yaml)
+**Example that breaks it:** [`DSDS-05-inline-ambiguous-address.yaml`](/examples/invalid/DSDS-05-inline-ambiguous-address.yaml), [`DSDS-05-inline-unknown-address.yaml`](/examples/invalid/DSDS-05-inline-unknown-address.yaml), [`DSDS-05-item-ref-resolves.yaml`](/examples/invalid/DSDS-05-item-ref-resolves.yaml)
 
 ### DSDS-06
 
@@ -252,11 +252,11 @@ Checked that a chain of `depends-on` refs didn't loop. 0.22.0 merged `depends-on
 
 *Checked by `dsds-validate`.*
 
-When a ref's `to` is just an id, with no `#`, the entry it names has to exist, in `entries` or `shared` (see `DSDS-04`). The validator looks across the whole project, not only the document it was given. It follows `rel: file` links, and the links in those files, and treats every file given to it in one run as part of the same project. If the target still isn't found, that's a warning rather than an error, unless there was nothing else to look in.
+When a ref's `to` is just an id, with no `#`, the entry it names has to exist, in `entries` or `shared` (see `DSDS-04`). The validator looks across the whole project, not only the document it was given. It follows `rel: file` links, and the links in those files, and treats every file given to it in one run as part of the same project. If the target still isn't found, that's a warning rather than an error, unless there was nothing else to look in. Since 0.23.0 it also checks the target of an inline link in a Markdown field, like `<dsds:button>`, including one that isn't shaped like a `to` at all, which the schema can't see inside a string.
 
-**How to fix:** Change `to` to an id that exists. If the target lives in another file, validate both files in the same run, or link them with a `rel: file` ref.
+**How to fix:** Change `to` to an id that exists. If the target lives in another file, validate both files in the same run, or link them with a `rel: file` ref. In an inline link, change the part after `dsds:` to an id that exists, written the way a `to` would be.
 
-**Example that breaks it:** [`DSDS-08-entry-ref-resolves.yaml`](/examples/invalid/DSDS-08-entry-ref-resolves.yaml)
+**Example that breaks it:** [`DSDS-08-entry-ref-resolves.yaml`](/examples/invalid/DSDS-08-entry-ref-resolves.yaml), [`DSDS-08-inline-malformed-target.yaml`](/examples/invalid/DSDS-08-inline-malformed-target.yaml), [`DSDS-08-inline-unknown-entry.yaml`](/examples/invalid/DSDS-08-inline-unknown-entry.yaml)
 
 ### DSDS-09
 
@@ -352,7 +352,7 @@ A token's optional `description` should add what the id can't, such as the token
 
 **How to fix:** Say what the token is for or when to use it, or remove the description.
 
-**Note:** Ported from PR #37 by Cody Clark, first proposed as DSDS-012 for the model before 0.20.0. It uses the same method: it flags a description that is only a scale word followed by a number, optionally followed by "of the \<family> scale" or "ramp". 0.20.0 has no separate token-group kind, so it checks `kind: token` only. It errs on the side of not flagging. The scale word has to come first and be singular, so forms like "Nine weights", "Twelve steps" and "Neutral 700" are left alone, and any word about role or usage stops a match. A description that also repeats the id or name is left to DSDS-13, so it's only reported once.
+**Note:** Ported from PR #37 by Cody Clark, first proposed as DSDS-012 for the model before 0.20.0. It uses the same method: it flags a description that is only a scale word followed by a number, optionally followed by "of the `<family>` scale" or "ramp". 0.20.0 has no separate token-group kind, so it checks `kind: token` only. It errs on the side of not flagging. The scale word has to come first and be singular, so forms like "Nine weights", "Twelve steps" and "Neutral 700" are left alone, and any word about role or usage stops a match. A description that also repeats the id or name is left to DSDS-13, so it's only reported once.
 
 ### DSDS-17
 
@@ -523,7 +523,7 @@ Each statement's id is based on where it lives (`<dir>/<file>§<jsonPath>.<n>`).
 
 {/* dsds:normative-index */}
 
-*Generated from the v{{VERSION}} schemas by `scripts/generate/extract-normative.mjs` — do not edit by hand. 19 statements: 14 MUST, 2 MUST NOT, 3 SHOULD, 0 SHOULD NOT, 0 MAY.*
+*Generated from the v{{VERSION}} schemas by `scripts/generate/extract-normative.mjs` — do not edit by hand. 20 statements: 14 MUST, 2 MUST NOT, 3 SHOULD, 1 SHOULD NOT, 0 MAY.*
 
 ### common
 
@@ -547,6 +547,10 @@ Each statement's id is based on where it lives (`<dir>/<file>§<jsonPath>.<n>`).
 
 - **MUST** — When the document declares a `metadata.platforms` list, this MUST be one of its entries. <small>`entries/component§[allOf][1].sourceFiles.items.platform.1`</small>
 - **MUST** — When the document declares a `metadata.platforms` list, this MUST be one of its entries. <small>`entries/component§[allOf][1].imports.items.platform.1`</small>
+
+#### entries/entry
+
+- **SHOULD NOT** — It SHOULD NOT change once published. <small>`entries/entry§.uuid.1`</small>
 
 ### metadata
 
