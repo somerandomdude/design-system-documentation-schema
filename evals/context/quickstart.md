@@ -55,7 +55,7 @@ A DSDS document starts with a **base**: `schemaVersion`, a `name`, and a list of
 This is valid YAML, but it's not a valid DSDS document yet. `entries` still need to be added:
 
 ```yaml
-schemaVersion: "0.23.1"
+schemaVersion: "0.23.2"
 
 name: Acme Design System
 ```
@@ -69,7 +69,7 @@ name: Acme Design System
 DSDS uses entries to describe pieces of the system—even the system itself. So the best entry to add first is a system. This entry allows you to document all system-level information (version, organization, url, license, platforms). It also gives you the freedom to document multiple systems in one document (if that's your kind of thing):
 
 ```yaml
-schemaVersion: "0.23.1"
+schemaVersion: "0.23.2"
 
 name: Pizza Party Design System
 
@@ -97,7 +97,7 @@ This is what your document would look like once a system and component are added
 
 
 ```yaml
-schemaVersion: "0.23.1"
+schemaVersion: "0.23.2"
 
 name: Pizza Party Design System
 
@@ -144,7 +144,7 @@ It's cool to add all your content into one DSDS YAML file. But that's going to g
 DSDS has a `refs` property which allows you to point to other files. This lets the base DSDS document be a list of links to all of your DSDS YAML files. It also gives you the freedom to organize your documents however you want.
 
 ```yaml
-schemaVersion: "0.23.1"
+schemaVersion: "0.23.2"
 
 name: Pizza Party Design System
 
@@ -481,7 +481,7 @@ A lot of design system documentation covers the same topics—and you shouldn't 
 The target can be an item in the base document's `shared` array, or an item in any entry. Use `shared` when the content doesn't fit in any single entry:
 
 ```yaml
-schemaVersion: "0.23.1"
+schemaVersion: "0.23.2"
 
 name: Pizza Party Design System
 
@@ -562,7 +562,7 @@ When a description or a rule mentions another part of the system, link to it wit
 - `[names what's being ordered](dsds:order-confirmation#name-the-order)` shows your own words. Use this form for a guideline, which has no short name.
 
 ```yaml
-schemaVersion: "0.23.1"
+schemaVersion: "0.23.2"
 
 name: Pizza Party Design System
 
@@ -617,8 +617,8 @@ Every complete document on this page validates as written. The first one is deli
 Add `$schema` to a base document, the file that has `schemaVersion`, to get editor autocompletion and inline validation. Entry files don't take `$schema`. To get the same help in them, map those files to the schema in your editor's YAML settings instead:
 
 ```yaml
-$schema: https://designsystemdocspec.org/v0.23.1/dsds.bundled.yaml
-schemaVersion: "0.23.1"
+$schema: https://designsystemdocspec.org/v0.23.2/dsds.bundled.yaml
+schemaVersion: "0.23.2"
 name: My Design System
 entries:
   - kind: component

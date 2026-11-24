@@ -1,4 +1,4 @@
-# Processing model — DSDS 0.23.1
+# Processing model — DSDS 0.23.2
 
 The schema says what a document can contain. This page says what a tool works out when it reads one. For example: which item a `#` address points to, where a reused rule gets its text, and what replaces something deprecated. 
 
@@ -83,7 +83,7 @@ An item with a `same-as` ref reuses the content of the item it points at.
 - When both items state a `level`, the two MUST match (`DSDS-10`). An item that means to state a different level is a `refines`, not a `same-as`.
 - When the target of a `same-as` ref can't be found, a consumer SHOULD show the reusing item's `level` and the link, rather than nothing (see [sections/guidelines](schema.html#sections-guidelines)).
 
-`refines` works differently. A `for: agent` item uses `refines` to point at the human rule it states more precisely for an agent. A consumer reading for an agent SHOULD apply both rules. The refinement doesn't replace the rule it refines.
+`refines` works differently. An item uses `refines` to point at a broader rule that it adds to or narrows. The two can be written for any audience: a component rule can refine a shared one, and a `for: agent` rule can refine a rule written for people. A consumer SHOULD apply both rules. The refinement doesn't replace the rule it refines.
 
 ## 5. Relationships and their reverse
 
@@ -108,7 +108,7 @@ Every `rel`, where it's written, and what a consumer does with it:
 | `cites` | a guideline's `evidence` | The outside standard the rule is based on. | cited by | SHOULD show it, so a reader can tell a requirement from a house preference. |
 | `checked-by` | a guideline's `checks` | What checks the rule: a test, lint rule or agent eval (an `href`, with `role` saying which), or a checklist step (a `to`). | checks | Runs it or links to it. `checkedBy: automated` needs one with an `href` (`DSDS-03`). |
 | `contract` | a component's `specs` | A machine-readable API contract that was already generated. | — | Reads the component's props, slots and events from it, with whatever parser its format needs. |
-| `refines` | a guideline's `refines`, on a `for: agent` item | This states a human rule more precisely, for an agent. | refined by | When reading for an agent, applies both rules (§4). |
+| `refines` | a guideline's `refines` | This rule adds to or narrows the target, a broader rule, for any audience. | refined by | Applies both rules (§4). |
 
 A "—" means the pointer leads outside the project, so nothing in the project reads it backwards. Custom namespaced `rel` values are covered in §8.
 
@@ -175,7 +175,7 @@ What `scripts/resolve/resolve.js` reports, and the rule that catches each one in
 
 Each folder in [`examples/vectors/`](/examples/vectors/) holds one or more documents and an `expected.json`: what a conforming consumer should work out from them. They cover addresses (§2), inline links (§2.4), a project split across files (§3), reused content (§4), reverse relationships (§5), successors (§7) and loops (§9).
 
-They're published with the conformance suite at [`/v0.23.1/conformance-suite/manifest.json`](/v0.23.1/conformance-suite/manifest.json), next to the broken examples that validators are tested against. The manifest's `consumerContract` explains how to compare results. In short, everything has to match except each problem's `message`, which is text for people to read.
+They're published with the conformance suite at [`/v0.23.2/conformance-suite/manifest.json`](/v0.23.2/conformance-suite/manifest.json), next to the broken examples that validators are tested against. The manifest's `consumerContract` explains how to compare results. In short, everything has to match except each problem's `message`, which is text for people to read.
 
 The result has `inlineLinks` only when the project has inline links. Each one says where it is (`from`, `pointer`, `offset`), its `form` and `target`, what it `resolves` to (missing when it doesn't resolve), and its `text`: the author's for `[text](dsds:…)`, the §2.4 text for `<dsds:…>`, and none for a reference definition, whose text is on the link that uses it.
 

@@ -1,0 +1,46 @@
+# expect: DSDS-25
+# rejectedBy: semantic
+# Three pointers in the wrong place. A guideline reuses a definition
+# through `same-as`, which only reuses an item of the same kind. A
+# guideline puts a citation in `refs` when it has an `evidence` field for
+# it. And a deprecated trait value names its successor in `refs` instead
+# of next to its deprecation notice, in `status.replacedBy`.
+# Processing model §4, §5 and §7.
+kind: component
+id: button
+name: Button
+description: Triggers an action.
+sections:
+  - kind: guidelines
+    for: all
+    items:
+      - refs:
+          - to: button#confirm
+            rel: same-as
+      - level: must
+        statement: Keep the focus ring visible.
+        checkedBy: manual
+        refs:
+          - href: https://www.w3.org/WAI/WCAG22/Understanding/focus-visible.html
+            rel: cites
+  - kind: definitions
+    for: all
+    items:
+      - term: Confirm
+        definition: Agree to go ahead.
+traits:
+  - traitType: variant
+    kind: enum
+    id: variant
+    description: Fill and colour.
+    values:
+      - id: primary
+        description: Filled.
+      - id: ghost
+        description: Borderless.
+        status:
+          status: deprecated
+          deprecationNotice: Use `primary`.
+        refs:
+          - to: button#variant.primary
+            rel: replaced-by
