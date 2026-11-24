@@ -1,25 +1,22 @@
 $schema: https://json-schema.org/draft/2020-12/schema
-$id: https://designsystemdocspec.org/v0.23.1/common/ref.schema.yaml
+$id: https://designsystemdocspec.org/v0.23.2/common/ref.schema.yaml
 title: Ref
 description: A pointer from one thing to another, with `rel` saying what kind of pointer it is.
 $comment: >-
-  Every link in DSDS is this one shape: "A points at B". What kind of
-  link it is (built from, replaced by, cited, and so on) is the `rel`.
+  Every link in DSDS follows an "A points at B" pattern. `rel` describes what kind of
+  link it is (built from, replaced by, cited, and so on).
 
-  B is either `to` or `href`, never both. `to` points at something in
-  this project: an entry id, or `entryId#itemId` for one item inside
-  an entry. `href` points outside it: a file, a URL or a package. Which
-  one you use doesn't depend on `rel`.
+  B is either `to` or `href`. `to` points at internal DSDS content: an entry id, or
+  `entryId#itemId` for an item in an entry. `href` points externally: a file, a URL
+  or a package. `rel` works the same for both.
 
-  There are two places a pointer can be written. In `refs`, each
-  pointer says its kind with `rel`. In a field named for one kind of
-  pointer (`uses`, `extends`, `alternatives`, `evidence`, `checks`,
-  `refines`, `replacedBy`, a component's `specs` and
-  `sourceFiles[].file`, a token's or theme's `source`), the field name
-  already says the kind, so the pointer has no `rel`. See
-  `$defs/target`.
+  Pointers are used two ways. In `refs`, each pointer says its kind with `rel`.
+  There are also purpose-build pointer fields (`uses`, `extends`, `alternatives`, `evidence`,
+  `checks`, `refines`, `replacedBy`, a component's `specs` and `sourceFiles[].file`, a
+  token's or theme's `source`). These fields have pre-set `rel` values and should be left
+  out. See `$defs/target`.
 
-  Only add a new `rel` value when no existing one fits. Otherwise widen
+  Custom `rel` values are accepted, but only add one when no existing one fits. Otherwise widen
   that value's description.
 
   A plain string means `{href: <string>}`. A plain string is never read
@@ -87,7 +84,7 @@ $defs:
     oneOf:
       - type: string
         enum: [same-as, file, source, design, demo, relates-to, uses, extends, alternative-to, replaced-by, cites, checked-by, contract, refines]
-      - $ref: https://designsystemdocspec.org/v0.23.1/common/id.schema.yaml#/$defs/namespaced
+      - $ref: https://designsystemdocspec.org/v0.23.2/common/id.schema.yaml#/$defs/namespaced
     description: >-
       What kind of pointer this is, or a namespaced custom value. A
       relationship is written once, on the thing it starts from. A
@@ -109,7 +106,7 @@ $defs:
       repeating it. Goes on a section item, pointing at an item of the
       same kind (`shared-a11y#focus-visible`). The item can then leave
       out its own text. Reads "reused by" from the other end. Not the
-      same as `refines`, which states a stricter rule for an agent.
+      same as `refines`, which adds to or narrows a broader rule.
 
       `file`: another DSDS document in the same project. Goes on a base
       document or an entry. A consumer reads the target as part of the
@@ -178,8 +175,10 @@ $defs:
       contract that already exists, such as a Custom Elements Manifest.
       DSDS points at it and doesn't read it.
 
-      `refines`: a guideline's `refines` field.
-      This states the target, a referenced broader rule, and a statement that adds to and/or refines the broader rule. Reads "refined by".
+      `refines`: a guideline's `refines` field. This rule adds to, adjusts, or
+      narrows the target. Refines can be used for any audience. A component
+      rule can refine a shared one, and an agent rule can refine a rule
+      written for people. A consumer applies both. Reads "refined by".
 
       A namespaced custom value (`acme.supersedes`) is allowed too. A
       consumer that doesn't understand it can ignore it.
@@ -190,7 +189,7 @@ $defs:
     description: One or more pointers, in order, each with its own `rel`.
     $comment: The general `refs` list.
     items:
-      $ref: https://designsystemdocspec.org/v0.23.1/common/ref.schema.yaml
+      $ref: https://designsystemdocspec.org/v0.23.2/common/ref.schema.yaml
   target:
     description: >-
       A pointer in a field named for one kind of pointer. It has no

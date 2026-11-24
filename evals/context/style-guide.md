@@ -1,4 +1,4 @@
-# DSDS authoring style guide — DSDS 0.23.1
+# DSDS authoring style guide — DSDS 0.23.2
 
 How to order things inside a DSDS document, so every document reads the same way no matter who wrote it.
 
@@ -28,13 +28,13 @@ Everything below is one of a few ideas, applied to a different part of a documen
 
 ## 1. Base documents and `shared` entries
 
-A base document is the outermost object. Its fields go in the order seen in [`base.schema.yaml`](/v0.23.1/base.schema.yaml). `shared` entries follow [`shared.schema.yaml`](/v0.23.1/shared.schema.yaml).
+A base document is the outermost object. Its fields go in the order seen in [`base.schema.yaml`](/v0.23.2/base.schema.yaml). `shared` entries follow [`shared.schema.yaml`](/v0.23.2/shared.schema.yaml).
 
 `dsds-format` applies both, falling back to `shared.schema.yaml` for an object with no `kind`.
 
 ### Entry order, inside `entries[]`
 
-When a base document holds several entries, order the entries themselves by `kind` (the order [`entries/entry.schema.yaml`](/v0.23.1/entries/entry.schema.yaml) lists its `kind` values). This order intends to reflect the "food chain" of systems' elements.
+When a base document holds several entries, order the entries themselves by `kind` (the order [`entries/entry.schema.yaml`](/v0.23.2/entries/entry.schema.yaml) lists its `kind` values). This order intends to reflect the "food chain" of systems' elements.
 
 1. **`system`:** Always first since it contextualizes everything contained within.
 2. **`token`:** Defines the attributes that themes and components are created from.
@@ -62,7 +62,7 @@ entries:
 
 Follow the high-level order:
 
-1. **Shared entry fields _except_ `$extensions`** defined in [`entries/entry.schema.yaml`](/v0.23.1/entries/entry.schema.yaml).
+1. **Shared entry fields _except_ `$extensions`** defined in [`entries/entry.schema.yaml`](/v0.23.2/entries/entry.schema.yaml).
 2. **Then that kind's own fields**, defined in `entries/<kind>.schema.yaml`. A custom kind has no file of its own, so should follow the high-level guidance.
 3. **Then `$extensions`.** All information that adds to the schema goes last.
 
@@ -70,7 +70,7 @@ Follow the high-level order:
 
 ### A trait's own fields
 
-A component's `traits` lead with `traitType`, then `kind`, then the rest of the order [`entries/component.schema.yaml`](/v0.23.1/entries/component.schema.yaml) declares. `traitType` goes first because it answers the question a reader has: is this a variant the caller configures, or a state the component can be in? `kind` follows, saying whether the value is a `boolean` toggle or an `enum` with named `values`. The two are independent — `hover` is a boolean state, `size` an enum variant.
+A component's `traits` lead with `traitType`, then `kind`, then the rest of the order [`entries/component.schema.yaml`](/v0.23.2/entries/component.schema.yaml) declares. `traitType` goes first because it answers the question a reader has: is this a variant the caller configures, or a state the component can be in? `kind` follows, saying whether the value is a `boolean` toggle or an `enum` with named `values`. The two are independent — `hover` is a boolean state, `size` an enum variant.
 
 `dsds-format` applies this, along with the field order of each value inside an `enum` trait. It reads both orders out of `entries/component.schema.yaml` at runtime, so this guide holds no second copy of either.
 
@@ -78,7 +78,7 @@ A component's `traits` lead with `traitType`, then `kind`, then the rest of the 
 
 ## 3. `metadata`
 
-A `metadata` block joins two lists the same way an entry does: the fields every entry's metadata shares, from [`metadata/metadata.schema.yaml`](/v0.23.1/metadata/metadata.schema.yaml), then the ones for that kind of entry, from [`metadata/entry-metadata.schema.yaml`](/v0.23.1/metadata/entry-metadata.schema.yaml) or [`metadata/system-metadata.schema.yaml`](/v0.23.1/metadata/system-metadata.schema.yaml), then `$extensions` last. All `metadata` types work the same way.
+A `metadata` block joins two lists the same way an entry does: the fields every entry's metadata shares, from [`metadata/metadata.schema.yaml`](/v0.23.2/metadata/metadata.schema.yaml), then the ones for that kind of entry, from [`metadata/entry-metadata.schema.yaml`](/v0.23.2/metadata/entry-metadata.schema.yaml) or [`metadata/system-metadata.schema.yaml`](/v0.23.2/metadata/system-metadata.schema.yaml), then `$extensions` last. All `metadata` types work the same way.
 
 ---
 
@@ -86,7 +86,7 @@ A `metadata` block joins two lists the same way an entry does: the fields every 
 
 ### A section's own fields
 
-A section leads with the fields that say what it is: `kind`, then `for`, then the one field its kind adds — `framing` for `guidelines`, `ordered` for `steps`. The rest follow in the order [`sections/section.schema.yaml`](/v0.23.1/sections/section.schema.yaml) lists them.
+A section leads with the fields that say what it is: `kind`, then `for`, then the one field its kind adds — `framing` for `guidelines`, `ordered` for `steps`. The rest follow in the order [`sections/section.schema.yaml`](/v0.23.2/sections/section.schema.yaml) lists them.
 
 That's the same reason the identifying field leads everywhere. On an entry or a section that field is `kind`. On a component trait it's `traitType`, because there `kind` only says whether the value is a boolean or an enum, not what sort of trait you're reading. Either way the field tells a reader what they're looking at before they read any of it, so it sits at the top where the reader already is.
 
@@ -103,20 +103,20 @@ Order section kinds like this:
 3. **`steps`** — one procedure or checklist. The narrowest of the three, because it's one exact sequence rather than general advice.
 4. **`section`** (the plain kind) — prose that didn't fit the other three. Last, because it's the fallback.
 
-That's the order [`sections/section.schema.yaml`](/v0.23.1/sections/section.schema.yaml) lists its `kind` values in. A namespaced custom kind like `acme.custom-section` isn't in that list, so it sorts after all four. A section with no `kind` at all is read as `section`, the default that file declares.
+That's the order [`sections/section.schema.yaml`](/v0.23.2/sections/section.schema.yaml) lists its `kind` values in. A namespaced custom kind like `acme.custom-section` isn't in that list, so it sorts after all four. A section with no `kind` at all is read as `section`, the default that file declares.
 
 ### Within `guidelines`: how broad, then who it's for
 
 Guidelines sorts content by: **how broad first, who it's for second.** `for: agent`, `framing: when-to-use` still comes before a `for: all` `framing: how-to-use`, because breadth is settled first. Audience only sorts within one breadth tier — the two below.
 
-Guidelines should lead with when to use, then describe how to use it. That's the order [`sections/guidelines.schema.yaml`](/v0.23.1/sections/guidelines.schema.yaml) lists its `framing` values in:
+Guidelines should lead with when to use, then describe how to use it. That's the order [`sections/guidelines.schema.yaml`](/v0.23.2/sections/guidelines.schema.yaml) lists its `framing` values in:
 
 1. **`framing: when-to-use`:** Does it make sense to use?
 2. **`framing: how-to-use`:** If so, how do you use it? Leaving `framing` out means this — it's the default that file declares.
 
 A section's `tags` say what it's about — the accessibility rules, say, or the mobile-only ones. They don't change where it sits. Within a tier, put narrow sections after general ones if that reads better; no rule checks it.
 
-Sections in the same breadth tier are then ordered by how broad the audience is. The order [`sections/section.schema.yaml`](/v0.23.1/sections/section.schema.yaml) lists its `for` values in:
+Sections in the same breadth tier are then ordered by how broad the audience is. The order [`sections/section.schema.yaml`](/v0.23.2/sections/section.schema.yaml) lists its `for` values in:
 
 1. **`for: all`** — also what you get by leaving `for` out, since it's the default that file declares. So an omitted `for` sorts first, not last.
 2. **`for: human`**
@@ -174,13 +174,13 @@ Order an item's fields the way its own schema file lists them.
 
 | Shape | Its schema file |
 |---|---|
-| A `guidelines` item | [`sections/guidelines.schema.yaml`](/v0.23.1/sections/guidelines.schema.yaml) |
-| A `definitions` item | [`sections/definitions.schema.yaml`](/v0.23.1/sections/definitions.schema.yaml) |
-| A `steps` item | [`sections/steps.schema.yaml`](/v0.23.1/sections/steps.schema.yaml) |
+| A `guidelines` item | [`sections/guidelines.schema.yaml`](/v0.23.2/sections/guidelines.schema.yaml) |
+| A `definitions` item | [`sections/definitions.schema.yaml`](/v0.23.2/sections/definitions.schema.yaml) |
+| A `steps` item | [`sections/steps.schema.yaml`](/v0.23.2/sections/steps.schema.yaml) |
 
 ### Guideline item order, by `level`
 
-Order items by `level`, in the order [`common/requirement-level.schema.yaml`](/v0.23.1/common/requirement-level.schema.yaml) lists its values in:
+Order items by `level`, in the order [`common/requirement-level.schema.yaml`](/v0.23.2/common/requirement-level.schema.yaml) lists its values in:
 
 ```
 must
@@ -216,7 +216,7 @@ Combos group by: **subject first, level second.** Keep every combo for one subje
 
 Which subject goes first is up to you — put the one that matters most where a reader will look first. Don't alphabetize, same as everywhere else.
 
-A combo reads as one sentence: this subject, at this strength, with these things. That's the order [`common/combo.schema.yaml`](/v0.23.1/common/combo.schema.yaml) lists its fields in:
+A combo reads as one sentence: this subject, at this strength, with these things. That's the order [`common/combo.schema.yaml`](/v0.23.2/common/combo.schema.yaml) lists its fields in:
 
 1. **`subject`:** What is the rule about? A trait, a token, or an entry.
 2. **`level`:** Does it permit or forbid and how strictly?
@@ -225,7 +225,7 @@ A combo reads as one sentence: this subject, at this strength, with these things
 
 ### Refs: what it points at, then what kind of pointer
 
-A ref answers what it points at before what kind of pointer it is. That's the order [`common/ref.schema.yaml`](/v0.23.1/common/ref.schema.yaml) lists its fields in:
+A ref answers what it points at before what kind of pointer it is. That's the order [`common/ref.schema.yaml`](/v0.23.2/common/ref.schema.yaml) lists its fields in:
 
 1. **`to` or `href`:** What does this point at? `to` for something in this document, `href` for anything outside it. Exactly one of the two.
 2. **`rel`:** What kind of pointer is it? Left out in a field named for one kind of pointer (`uses`, `extends`, `alternatives`, `evidence`, `checks`, `refines`, `replacedBy`, `specs`), where the field says it.

@@ -1,6 +1,6 @@
-# Specification — DSDS 0.23.1
+# Specification — DSDS 0.23.2
 
-This page defines DSDS 0.23.1. The [schema](schema.html) gives the exact shape of every field. This page says what those shapes mean together, and what a document, a validator and a consumer have to do. If the two ever seem to disagree, the schema is right and this page has a bug.
+This page defines DSDS 0.23.2. The [schema](schema.html) gives the exact shape of every field. This page says what those shapes mean together, and what a document, a validator and a consumer have to do. If the two ever seem to disagree, the schema is right and this page has a bug.
 
 ## 1. Conventions
 
