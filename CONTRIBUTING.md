@@ -1,6 +1,6 @@
 # Contributing to DSDS
 
-This is an early-stage, pre-1.0 specification (currently 0.23.2), maintained
+This is an early-stage, pre-1.0 specification (currently 0.23.3), maintained
 by one person. Feedback and contributions are welcome — this file says what
 a contribution needs to land and stay landed.
 

@@ -50,7 +50,16 @@ function composedOrder(baseFile, memberFile) {
 function itemOrder(kind) {
   const doc = loadYaml(path.join(schemaDir, "sections", `${kind}.schema.yaml`));
   const inline = (doc.allOf || []).find((m) => m.properties);
-  return Object.keys(inline.properties.items.items.properties);
+  const itemsRef = inline.properties.items.items;
+  // The item shape is a named local $defs entry on every kind as of the docs-site exposure
+  // work, each named for its own kind (`guidelineItem`, not a generic `item`) so the docs
+  // page can tell the three apart - resolve by $ref instead of assuming a name. Falls back to
+  // the pre-promotion inline shape in case a future kind skips naming it.
+  if (itemsRef.$ref && itemsRef.$ref.startsWith("#/$defs/")) {
+    const defName = itemsRef.$ref.slice("#/$defs/".length);
+    return Object.keys(doc.$defs[defName].properties);
+  }
+  return Object.keys(itemsRef.properties);
 }
 
 const ENTRY_METADATA_ORDER = composedOrder("metadata/metadata.schema.yaml", "metadata/entry-metadata.schema.yaml");

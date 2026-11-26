@@ -1,0 +1,156 @@
+{
+  "entries": [
+    {
+      "id": "a",
+      "kind": "component",
+      "items": [],
+      "incoming": [
+        {
+          "rel": "uses",
+          "from": "b",
+          "pointer": "b/uses/0"
+        }
+      ]
+    },
+    {
+      "id": "b",
+      "kind": "component",
+      "items": [],
+      "incoming": [
+        {
+          "rel": "uses",
+          "from": "a",
+          "pointer": "a/uses/0"
+        }
+      ]
+    },
+    {
+      "id": "light",
+      "kind": "theme",
+      "items": [],
+      "incoming": [
+        {
+          "rel": "extends",
+          "from": "dark",
+          "pointer": "dark/extends/0"
+        }
+      ]
+    },
+    {
+      "id": "dark",
+      "kind": "theme",
+      "items": [],
+      "incoming": [
+        {
+          "rel": "extends",
+          "from": "light",
+          "pointer": "light/extends/0"
+        }
+      ]
+    },
+    {
+      "id": "one",
+      "kind": "entry",
+      "items": [
+        {
+          "address": "rule",
+          "type": "item",
+          "source": "explicit",
+          "pointer": "/sections/0/items/0",
+          "reuses": "two#rule",
+          "content": {}
+        }
+      ],
+      "incoming": [
+        {
+          "rel": "same-as",
+          "from": "two#rule",
+          "pointer": "two/sections/0/items/0/refs/0",
+          "at": "rule"
+        }
+      ]
+    },
+    {
+      "id": "two",
+      "kind": "entry",
+      "items": [
+        {
+          "address": "rule",
+          "type": "item",
+          "source": "explicit",
+          "pointer": "/sections/0/items/0",
+          "reuses": "one#rule",
+          "content": {}
+        }
+      ],
+      "incoming": [
+        {
+          "rel": "same-as",
+          "from": "one#rule",
+          "pointer": "one/sections/0/items/0/refs/0",
+          "at": "rule"
+        }
+      ]
+    },
+    {
+      "id": "old",
+      "kind": "component",
+      "items": [],
+      "incoming": [
+        {
+          "rel": "replaced-by",
+          "from": "older",
+          "pointer": "older/metadata/status/replacedBy/0"
+        }
+      ],
+      "succession": {
+        "replacedBy": [
+          "older"
+        ],
+        "successors": [],
+        "choose": false
+      }
+    },
+    {
+      "id": "older",
+      "kind": "component",
+      "items": [],
+      "incoming": [
+        {
+          "rel": "replaced-by",
+          "from": "old",
+          "pointer": "old/metadata/status/replacedBy/0"
+        }
+      ],
+      "succession": {
+        "replacedBy": [
+          "old"
+        ],
+        "successors": [],
+        "choose": false
+      }
+    }
+  ],
+  "problems": [
+    {
+      "code": "cycle",
+      "at": "a",
+      "message": "uses chain loops: a -> b -> a"
+    },
+    {
+      "code": "cycle",
+      "at": "light",
+      "message": "extends chain loops: light -> dark -> light"
+    },
+    {
+      "code": "cycle",
+      "at": "old",
+      "message": "replaced-by chain loops: old -> older -> old"
+    },
+    {
+      "code": "cycle",
+      "at": "one#rule",
+      "message": "same-as chain loops: one#rule -> two#rule -> one#rule"
+    }
+  ]
+}

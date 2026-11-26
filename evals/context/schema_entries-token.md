@@ -17,13 +17,13 @@ A single design token, from the Design Tokens Community Group (DTCG) format.
 | `uuid` | string |  | A stable machine identifier for this entry, independent of its `id` and `name`. It SHOULD NOT change once published. (Pattern: `^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$`) |
 | `metadata` | object |  |  |
 | `sections` | [dispatch](schema.md#sections-section-dispatch)[] |  | Every documentation section for this entry. (Min items: 1) |
-| `uses` | [targets](schema.md#common-ref-targets) |  | Entries this one is built from, needs, or follows (uses). No `rel`: this field says it. |
-| `extends` | [targets](schema.md#common-ref-targets) |  | The entry this one inherits from (extends). No `rel`: this field says it. |
-| `alternatives` | [targets](schema.md#common-ref-targets) |  | Entries to use instead of this one, in some situation (alternative-to). No `rel`: this field says it. |
+| `uses` | [targets](schema.md#common-ref-targets) |  | Entries this one is built from, needs, or follows (uses). No `rel` is needed. |
+| `extends` | [targets](schema.md#common-ref-targets) |  | The entry this one inherits from (extends). No `rel` is needed. |
+| `alternatives` | [targets](schema.md#common-ref-targets) |  | Entries to use instead of this one, in some situation (alternative-to). No `rel` is needed. |
 | `refs` | [list](schema.md#common-ref-list) |  | Every other pointer from this entry, to entries and outside resources, each with its own `rel`. |
 | `$extensions` | [Extensions](schema.md#common-extensions) |  | Escape hatch for tool data, or for an outside id that doesn't fit this schema's own id pattern. Each top-level key MUST be a dotted namespace, like `com.acme`, matching the Design Tokens Community Group's own `$extensions` convention. |
 | `tokenType` | string |  | The token's type, from DTCG. (Pattern: `^[a-z][a-zA-Z0-9]*$`) |
-| `source` | [target](schema.md#common-ref-target) |  | The token's DTCG source file (rel: source). No `rel`: this field says it. |
+| `source` | [target](schema.md#common-ref-target) |  | The token's DTCG source file (rel: source). No `rel` is needed. |
 | `combos` | [Combo](schema.md#common-combo)[] |  | Rules about which other tokens this one must or must never be paired with. (Min items: 1) |
 
 **References:** [Entry](schema.md#entries-entry), [tokenId](schema.md#common-id-tokenid), [EntryMetadata](schema.md#metadata-entry-metadata), [target](schema.md#common-ref-target), [Combo](schema.md#common-combo), [Markdown](schema.md#common-markdown), [dispatch](schema.md#sections-section-dispatch), [targets](schema.md#common-ref-targets), [list](schema.md#common-ref-list), [Extensions](schema.md#common-extensions)

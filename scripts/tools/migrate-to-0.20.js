@@ -18,7 +18,7 @@ const fs = require("fs");
 const path = require("path");
 const yaml = require("js-yaml");
 
-const TARGET_VERSION = "0.23.2";
+const TARGET_VERSION = "0.23.3";
 // common/id.schema.yaml's own base pattern, used to sanity-check a value that's supposed to
 // be an id before emitting a `to:` ref from it - some pre-0.20 fields were authored as free text.
 const ID_PATTERN = /^[a-z0-9]+(-[a-z0-9]+)*(\.[a-z0-9]+(-[a-z0-9]+)*)*$/;

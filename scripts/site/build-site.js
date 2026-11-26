@@ -609,6 +609,30 @@ combos:
   $extensions:
     com.acme: {...}`,
   },
+  "sections-guidelines-guidelineitem": {
+    file: "examples/entries/button.yaml",
+    yaml: `level: must
+statement: Give an icon-only button an accessible name that matches its visible tooltip.
+checks:
+  - href: ./tests/button.a11y.test.ts
+    role: test
+    note: vitest + axe-core
+checkedBy: automated
+tags: [accessibility, naming]`,
+  },
+  "sections-definitions-definitionitem": {
+    file: "examples/entries/button.yaml",
+    yaml: `term: OK
+definition: To confirm an action.`,
+  },
+  "sections-steps-stepitem": {
+    file: "examples/entries/empty-state.yaml",
+    yaml: `title: List loads with zero results
+description: When a filter or search narrows the results to zero, the empty state renders in place of the list, with a heading, body text, and (if applicable) a primary action.
+uses:
+  - to: button
+    role: Clears the filter or starts the relevant action.`,
+  },
   "sections-section": {
     file: "examples/entries/getting-started.yaml",
     yaml: `- kind: section
@@ -804,26 +828,29 @@ function renderDefinition(defName, defSchema, { anchor, source, exampleYaml, eye
     }
   }
 
-  // if/then (conditional requirements like deprecation)
+  // if/then (conditional requirements): either a const condition (deprecation), or the
+  // "required unless this other field is present" shape every section item's `if` uses.
   if (defSchema.if && defSchema.then) {
-    const ifProps = defSchema.if.properties || {};
-    const thenReq = defSchema.then.required || [];
-    const conditions = Object.entries(ifProps)
-      .map(
-        ([k, v]) =>
-          `<ds-code inline>${esc(k)}</ds-code> is <ds-code inline>"${esc(String(v.const || ""))}"</ds-code>`,
-      )
-      .join(" and ");
-    const requirements = thenReq
+    const requirements = (defSchema.then.required || [])
       .map((r) => `<ds-code inline>${esc(r)}</ds-code>`)
       .join(", ");
-    if (conditions && requirements) {
-      content.push(
-        renderSub("callout-warning", {
-          label: "Conditional",
-          message: `When ${conditions}, then ${requirements} is required.`,
-        }),
-      );
+    let message = "";
+    if (defSchema.if.properties) {
+      const conditions = Object.entries(defSchema.if.properties)
+        .map(
+          ([k, v]) =>
+            `<ds-code inline>${esc(k)}</ds-code> is <ds-code inline>"${esc(String(v.const || ""))}"</ds-code>`,
+        )
+        .join(" and ");
+      if (conditions) message = `When ${conditions}, then ${requirements} is required.`;
+    } else if (defSchema.if.not && defSchema.if.not.required) {
+      const unless = defSchema.if.not.required
+        .map((r) => `<ds-code inline>${esc(r)}</ds-code>`)
+        .join(", ");
+      message = `${requirements} is required, unless ${unless} is present.`;
+    }
+    if (message) {
+      content.push(renderSub("callout-warning", { label: "Conditional", message }));
     }
   }
 
@@ -1065,19 +1092,22 @@ function renderDefinitionMarkdown(defName, defSchema, exampleData, curatedYaml, 
     }
   }
 
-  // if/then (conditional requirements like deprecation)
+  // if/then (conditional requirements): either a const condition (deprecation), or the
+  // "required unless this other field is present" shape every section item's `if` uses.
   if (defSchema.if && defSchema.then) {
-    const ifProps = defSchema.if.properties || {};
-    const thenReq = defSchema.then.required || [];
-    const conditions = Object.entries(ifProps)
-      .map(([k, v]) => `\`${k}\` is \`"${v.const || ""}"\``)
-      .join(" and ");
-    const requirements = thenReq.map((r) => `\`${r}\``).join(", ");
-    if (conditions && requirements) {
-      lines.push(
-        `**Conditional:** When ${conditions}, then ${requirements} is required.`,
-        "",
-      );
+    const requirements = (defSchema.then.required || []).map((r) => `\`${r}\``).join(", ");
+    let message = "";
+    if (defSchema.if.properties) {
+      const conditions = Object.entries(defSchema.if.properties)
+        .map(([k, v]) => `\`${k}\` is \`"${v.const || ""}"\``)
+        .join(" and ");
+      if (conditions) message = `When ${conditions}, then ${requirements} is required.`;
+    } else if (defSchema.if.not && defSchema.if.not.required) {
+      const unless = defSchema.if.not.required.map((r) => `\`${r}\``).join(", ");
+      message = `${requirements} is required, unless ${unless} is present.`;
+    }
+    if (message) {
+      lines.push(`**Conditional:** ${message}`, "");
     }
   }
 

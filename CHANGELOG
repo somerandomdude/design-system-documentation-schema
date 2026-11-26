@@ -4,6 +4,21 @@ All notable changes to the DSDS specification are documented in this file.
 
 ---
 
+## [0.23.3] — 2026-11-25
+
+Documentation and tooling only — no schema shape change. No document that validated under 0.23.2 stops validating. The published v0.23.2 files are unchanged.
+
+### Fixes to the site
+
+- **A `guidelines`, `definitions`, or `steps` section's own item shape had no page of its own.** Each was an anonymous inline object, so the fields a guideline, a term, or a step actually carries - `statement`, `checkedBy`, `term`, `usage`, `title`, and the rest - were invisible on the schema page and absent from `manifest.json`. Each is now a named definition (`guidelineItem`, `definitionItem`, `stepItem`) with its own property table, its "at least one of `statement`/`refs`" and "required unless `refs`" rules shown as callouts, and a real example pulled from the existing `examples/` corpus. Naming the shape is the only change; it's the same object `allOf`-flattens to, verified by diffing the two forms with description text stripped out.
+- **A schema definition's "required unless another field is present" rule showed no callout.** The renderer's conditional-requirement callout only understood the "if a field equals a constant, then..." shape (used for deprecation). It now also covers the shape above, which is what every section item's own rule actually uses.
+
+### Tooling
+
+- **`dsds-format` no longer assumes a section item's shape is inline.** `itemOrder()` now resolves it by following the `$ref` the schema itself declares, rather than reading a fixed path - the fix the item-shape promotion above needed, and no longer fragile to a future rename.
+
+---
+
 ## [0.23.2] — 2026-11-21
 
 A patch release. `refines` now works for any audience, and the site and checks have fixes. No document that validated under 0.23.1 stops validating. The published v0.23.1 files are unchanged.

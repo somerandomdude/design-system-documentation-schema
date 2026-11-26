@@ -1,5 +1,5 @@
 $schema: https://json-schema.org/draft/2020-12/schema
-$id: https://designsystemdocspec.org/v0.23.2/sections/guidelines.schema.yaml
+$id: https://designsystemdocspec.org/v0.23.3/sections/guidelines.schema.yaml
 title: GuidelinesSection
 description: >-
   Rules for an entry. When and how to use it. Each item pairs a rule with why it
@@ -38,7 +38,7 @@ $comment: >-
   follow the link to access the rule.
 
 allOf:
-  - $ref: https://designsystemdocspec.org/v0.23.2/sections/section.schema.yaml
+  - $ref: https://designsystemdocspec.org/v0.23.3/sections/section.schema.yaml
   - type: object
     properties:
       kind:
@@ -58,122 +58,126 @@ allOf:
         minItems: 1
         description: The rules, in order.
         items:
-          type: object
-          allOf:
-            # Every item either states its rule here, or points at where the
-            # rule really lives.
-            - anyOf:
-                - required: [statement]
-                - required: [refs]
-                  properties:
-                    refs:
-                      contains:
-                        anyOf:
-                          - type: object
-                            required: [rel, to]
-                            properties:
-                              rel:
-                                const: same-as
-                          - type: object
-                            required: [rel, href]
-                            properties:
-                              rel:
-                                const: relates-to
-            # `level` is required only when the item states its own rule. An
-            # item that points elsewhere via `refs` takes the target's level
-            # and doesn't restate it.
-            - if:
-                not:
-                  required: [refs]
-              then:
-                required: [level]
-          properties:
-            id:
-              $ref: https://designsystemdocspec.org/v0.23.2/common/id.schema.yaml
-              description: "A stable id for this guideline, so another item, like a refinement or a checklist entry, can point at it. `id` is optional, but a conforming consumer MUST derive one from this item's own text."
-              $comment: The derivation algorithm is in common/id.schema.yaml's own description.
-            level:
-              $ref: https://designsystemdocspec.org/v0.23.2/common/requirement-level.schema.yaml
-            statement:
-              $ref: https://designsystemdocspec.org/v0.23.2/common/markdown.schema.yaml
-              description: An individual, concrete usage rule.
-              $comment: >-
-                When the section's framing is when-to-use, this states
-                a user situation. Leave it out only when `refs` carries a
-                same-as pointer, or a relates-to link, instead (see the
-                file comment above).
-              example: Limit each surface to one primary button.
-            example:
-              $ref: https://designsystemdocspec.org/v0.23.2/common/example.schema.yaml
-              description: "An example illustrating this rule. It MUST reflect `level`. A `must-not` item's example MUST show what not to do."
-              $comment: Matching `level` is why there's no separate pass/fail flag on an example.
-            alternatives:
-              $ref: https://designsystemdocspec.org/v0.23.2/common/ref.schema.yaml#/$defs/targets
-              description: "What to use instead, when this is a fit judgment (alternative-to). No `rel`: this field says it."
-              example:
-                - to: link
-            evidence:
-              $ref: https://designsystemdocspec.org/v0.23.2/common/ref.schema.yaml#/$defs/targets
-              description: "The outside standard this rule follows, like a WCAG criterion or MDN (cites). No `rel`: this field says it."
-              example:
-                - href: https://www.w3.org/WAI/WCAG21/Understanding/focus-visible.html
-                  role: WCAG 2.2 SC 2.4.7 (AA)
-            checks:
-              $ref: https://designsystemdocspec.org/v0.23.2/common/ref.schema.yaml#/$defs/targets
-              description: "What verifies this rule (checked-by): a test, lint rule or agent eval (an `href`, with `role` saying which), or a checklist step (a `to`). No `rel`: this field says it."
-              example:
-                - href: ./tests/button.a11y.test.ts
-                  role: test
-            checkedBy:
-              type: string
-              enum: [automated, assisted, manual]
-              description: How this rule is verified.
-              $comment: >-
-                `automated`: a tool checks this on its own. Point
-                `checks` at the real test, lint rule or agent eval (ex:
-                a promptfoo config) doing the checking (DSDS-03).
-
-                `assisted`: a tool flags likely cases, but a person
-                makes the call.
-
-                `manual`: a person checks this by hand, no tool involved.
-                Leave this out if you don't know yet how it'll be checked.
-            tags:
-              type: array
-              description: Freeform keywords that relate guidelines across categories.
-              items:
-                type: string
-              minItems: 1
-              uniqueItems: true
-              example: [accessibility, focus]
-            refines:
-              $ref: https://designsystemdocspec.org/v0.23.2/common/ref.schema.yaml#/$defs/targets
-              description: "A broader rule this one adds to, adjusts, or narrows (refines). No `rel`: this field says it."
-              $comment: "Written on the narrower rule, pointing at the broader one, so the broader rule never has to know it's been refined. Any audience: a component rule can refine a shared one, and a `for: agent` rule can refine a rule written for people. A consumer applies both, and the refinement doesn't replace the rule it refines."
-              example:
-                - to: "button#loading-announcement"
-            uses:
-              $ref: https://designsystemdocspec.org/v0.23.2/common/ref.schema.yaml#/$defs/targets
-              description: "Entries this item is about or needs, like the components a step involves (uses). No `rel`: this field says it."
-              example:
-                - to: button
-            refs:
-              $ref: https://designsystemdocspec.org/v0.23.2/common/ref.schema.yaml#/$defs/list
-              description: Every other pointer from this guideline, each with its own `rel`.
-              $comment: "Includes rel: same-as, and rel: relates-to with an href, which point at where the rule is really stated instead of here (see `statement`'s own $comment)."
-              example:
-                - to: "shared-a11y#focus-visible"
-                  rel: same-as
-            $extensions:
-              $ref: https://designsystemdocspec.org/v0.23.2/common/extensions.schema.yaml
-              description: Escape hatch for tool data scoped to just this one guideline, keyed by namespace.
-              $comment: >-
-                A custom `kind` (ex: "acme.rule") can add its own typed
-                fields directly. A well-known kind like `guidelines` can't —
-                its items are closed so every tool that understands
-                `guidelines` keeps understanding it — so this is the one way
-                to attach org-specific data (a rationale, a failure mode, an
-                internal ticket) to a single item without forking the kind.
-          additionalProperties: false
+          $ref: "#/$defs/guidelineItem"
 
 unevaluatedProperties: false
+
+$defs:
+  guidelineItem:
+    type: object
+    description: One guideline - a rule paired with why it exists, or a pointer to where it's really stated.
+    anyOf:
+      # Every item either states its rule here, or points at where the
+      # rule really lives.
+      - required: [statement]
+      - required: [refs]
+        properties:
+          refs:
+            contains:
+              anyOf:
+                - type: object
+                  required: [rel, to]
+                  properties:
+                    rel:
+                      const: same-as
+                - type: object
+                  required: [rel, href]
+                  properties:
+                    rel:
+                      const: relates-to
+    # `level` is required only when the item states its own rule. An item
+    # that points elsewhere via `refs` takes the target's level and
+    # doesn't restate it.
+    if:
+      not:
+        required: [refs]
+    then:
+      required: [level]
+    properties:
+      id:
+        $ref: https://designsystemdocspec.org/v0.23.3/common/id.schema.yaml
+        description: "A stable id for this guideline, so another item, like a refinement or a checklist entry, can point at it. `id` is optional, but a conforming consumer MUST derive one from this item's own text."
+        $comment: The derivation algorithm is in common/id.schema.yaml's own description.
+      level:
+        $ref: https://designsystemdocspec.org/v0.23.3/common/requirement-level.schema.yaml
+      statement:
+        $ref: https://designsystemdocspec.org/v0.23.3/common/markdown.schema.yaml
+        description: An individual, concrete usage rule.
+        $comment: >-
+          When the section's framing is when-to-use, this states
+          a user situation. Leave it out only when `refs` carries a
+          same-as pointer, or a relates-to link, instead (see the
+          file comment above).
+        example: Limit each surface to one primary button.
+      example:
+        $ref: https://designsystemdocspec.org/v0.23.3/common/example.schema.yaml
+        description: "An example illustrating this rule. It MUST reflect `level`. A `must-not` item's example MUST show what not to do."
+        $comment: Matching `level` is why there's no separate pass/fail flag on an example.
+      alternatives:
+        $ref: https://designsystemdocspec.org/v0.23.3/common/ref.schema.yaml#/$defs/targets
+        description: "What to use instead, when this is a fit judgment (alternative-to). No `rel` is needed."
+        example:
+          - to: link
+      evidence:
+        $ref: https://designsystemdocspec.org/v0.23.3/common/ref.schema.yaml#/$defs/targets
+        description: "The outside standard this rule follows, like a WCAG criterion or MDN (cites). No `rel` is needed."
+        example:
+          - href: https://www.w3.org/WAI/WCAG21/Understanding/focus-visible.html
+            role: WCAG 2.2 SC 2.4.7 (AA)
+      checks:
+        $ref: https://designsystemdocspec.org/v0.23.3/common/ref.schema.yaml#/$defs/targets
+        description: "What verifies this rule (checked-by): a test, lint rule or agent eval (an `href`, with `role` saying which), or a checklist step (a `to`). No `rel` is needed."
+        example:
+          - href: ./tests/button.a11y.test.ts
+            role: test
+      checkedBy:
+        type: string
+        enum: [automated, assisted, manual]
+        description: How this rule is verified.
+        $comment: >-
+          `automated`: a tool checks this on its own. Point
+          `checks` at the real test, lint rule or agent eval (ex:
+          a promptfoo config) doing the checking (DSDS-03).
+
+          `assisted`: a tool flags likely cases, but a person
+          makes the call.
+
+          `manual`: a person checks this by hand, no tool involved.
+          Leave this out if you don't know yet how it'll be checked.
+      tags:
+        type: array
+        description: Freeform keywords that relate guidelines across categories.
+        items:
+          type: string
+        minItems: 1
+        uniqueItems: true
+        example: [accessibility, focus]
+      refines:
+        $ref: https://designsystemdocspec.org/v0.23.3/common/ref.schema.yaml#/$defs/targets
+        description: "A broader rule this one adds to, adjusts, or narrows (refines). No `rel` is needed."
+        $comment: "Written on the narrower rule, pointing at the broader one, so the broader rule never has to know it's been refined. Any audience: a component rule can refine a shared one, and a `for: agent` rule can refine a rule written for people. A consumer applies both, and the refinement doesn't replace the rule it refines."
+        example:
+          - to: "button#loading-announcement"
+      uses:
+        $ref: https://designsystemdocspec.org/v0.23.3/common/ref.schema.yaml#/$defs/targets
+        description: "Entries this item is about or needs, like the components a step involves (uses). No `rel` is needed."
+        example:
+          - to: button
+      refs:
+        $ref: https://designsystemdocspec.org/v0.23.3/common/ref.schema.yaml#/$defs/list
+        description: Every other pointer from this guideline, each with its own `rel`.
+        $comment: "Includes rel: same-as, and rel: relates-to with an href, which point at where the rule is really stated instead of here (see `statement`'s own $comment)."
+        example:
+          - to: "shared-a11y#focus-visible"
+            rel: same-as
+      $extensions:
+        $ref: https://designsystemdocspec.org/v0.23.3/common/extensions.schema.yaml
+        description: Escape hatch for tool data scoped to just this one guideline, keyed by namespace.
+        $comment: >-
+          A custom `kind` (ex: "acme.rule") can add its own typed
+          fields directly. A well-known kind like `guidelines` can't —
+          its items are closed so every tool that understands
+          `guidelines` keeps understanding it — so this is the one way
+          to attach org-specific data (a rationale, a failure mode, an
+          internal ticket) to a single item without forking the kind.
+    additionalProperties: false
